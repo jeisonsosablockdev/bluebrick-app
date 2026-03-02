@@ -1,0 +1,71 @@
+🔴 SECURITY + QUALITY POLICY
+
+⸻
+
+🔴 SECURITY PACK (MANDATORY BEFORE DEPLOY)
+
+Run ALL:
+	•	security-audit
+	•	security-auditor
+	•	threat-modeling-expert
+	•	threat-mitigation-mapping
+	•	security-scanning-security-sast
+	•	security-scanning-security-hardening
+	•	security-scanning-security-dependencies
+	•	top-web-vulnerabilities
+	•	production-code-audit
+
+⸻
+
+🏁 PRE-MAINNET CHECKLIST
+	•	All Anchor tests executed on devnet.
+	•	All transactions confirmed on-chain.
+	•	Authority model verified.
+	•	No unchecked accounts.
+	•	No unsafe CPIs.
+	•	No floating point math.
+	•	No unchecked signer assumptions.
+	•	All frontend auth verified server-side.
+	•	Replay protection validated.
+	•	Clean code standards enforced.
+	•	No warnings in build output.
+	•	Dependencies audited.
+
+⸻
+
+🔐 MONOREPO SECURITY RULES
+
+If change affects /programs:
+	•	Validate authority model
+	•	Validate signer checks
+	•	Validate PDA derivations
+	•	No unchecked CPIs
+	•	No floating point arithmetic
+	•	Must provide real devnet tx proof
+
+If change affects /app:
+	•	Server-side signature verification mandatory
+	•	Replay protection validated
+	•	No client authority trust
+	•	Devnet RPC enforced
+
+If change affects NFT logic:
+	•	Validate mint authority
+	•	Validate update authority
+	•	Validate metadata owner
+	•	Validate seller fee basis points
+	•	Confirm metadata account on devnet
+
+⸻
+
+🧬 DEVELOPMENT PHILOSOPHY
+	•	Devnet-first execution.
+	•	Zero simulation.
+	•	Zero mocks.
+	•	Real signatures only.
+	•	Clean Code always.
+	•	Security before features.
+	•	Deterministic state transitions.
+	•	Minimal trust surface.
+	•	Explicit authority validation.
+	•	Refactor continuously.

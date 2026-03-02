@@ -1,0 +1,22 @@
+0 verbose cli /Users/jaymusicmachine/.nvm/versions/node/v23.8.0/bin/node /Users/jaymusicmachine/.nvm/versions/node/v23.8.0/bin/npm
+1 info using npm@10.9.2
+2 info using node@v23.8.0
+3 silly config load:file:/Users/jaymusicmachine/.nvm/versions/node/v23.8.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npmrc
+5 silly config load:file:/Users/jaymusicmachine/.nvm/versions/node/v23.8.0/etc/npmrc
+6 verbose title npm install
+7 verbose argv "install" "--loglevel" "verbose"
+8 verbose logfile logs-max:10 dir:/Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npm-cache/_logs/2026-03-02T17_13_30_111Z-
+9 verbose logfile /Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npm-cache/_logs/2026-03-02T17_13_30_111Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+12 silly idealTree buildDeps
+13 silly fetch manifest next@15.2.4
+14 silly packumentCache full:https://registry.npmjs.org/next cache-miss
+15 http fetch GET https://registry.npmjs.org/next attempt 1 failed with ENOTFOUND
+16 http fetch GET https://registry.npmjs.org/next attempt 2 failed with ENOTFOUND
+17 http fetch GET https://registry.npmjs.org/next attempt 3 failed with ENOTFOUND
+18 silly fetch manifest react@19.0.0
+19 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+20 http fetch GET https://registry.npmjs.org/react attempt 1 failed with ENOTFOUND
+21 http fetch GET https://registry.npmjs.org/react attempt 2 failed with ENOTFOUND

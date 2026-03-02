@@ -1,0 +1,19 @@
+0 verbose cli /Users/jaymusicmachine/.nvm/versions/node/v23.8.0/bin/node /Users/jaymusicmachine/.nvm/versions/node/v23.8.0/bin/npm
+1 info using npm@10.9.2
+2 info using node@v23.8.0
+3 silly config load:file:/Users/jaymusicmachine/.nvm/versions/node/v23.8.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npmrc
+5 silly config load:file:/Users/jaymusicmachine/.nvm/versions/node/v23.8.0/etc/npmrc
+6 verbose title npm config set registry https://registry.npmjs.org/
+7 verbose argv "config" "set" "registry" "https://registry.npmjs.org/"
+8 verbose logfile logs-max:10 dir:/Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npm-cache/_logs/2026-03-02T17_13_07_739Z-
+9 verbose logfile /Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/.npm-cache/_logs/2026-03-02T17_13_07_739Z-debug-0.log
+10 silly logfile done cleaning log files
+11 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with ENOTFOUND
+12 info config set "registry" "https://registry.npmjs.org/"
+13 verbose cwd /Users/jaymusicmachine/Documents/Desarrollo/solana-test-1
+14 verbose os Darwin 24.6.0
+15 verbose node v23.8.0
+16 verbose npm  v10.9.2
+17 verbose exit 0
+18 info ok

@@ -1,0 +1,59 @@
+{
+  "heroStats": [
+    { "label": "Inversores", "value": "15K+" },
+    { "label": "Propiedades", "value": "120+" },
+    { "label": "Rentabilidad", "value": "20%" },
+    { "label": "Capital", "value": "$50M+" }
+  ],
+  "features": [
+    {
+      "title": "Tokenización Segura",
+      "description": "Transforma activos reales en fracciones digitales con trazabilidad completa.",
+      "action": "Explorar"
+    },
+    {
+      "title": "Ingresos Recurrentes",
+      "description": "Recibe pagos periódicos por rendimiento de renta con panel de seguimiento.",
+      "action": "Ver Flujo"
+    },
+    {
+      "title": "Liquidez Flexible",
+      "description": "Compra o vende fracciones con reglas de mercado transparentes.",
+      "action": "Conocer Más"
+    }
+  ],
+  "properties": [
+    {
+      "title": "Edificio Central Norte",
+      "location": "Bogotá, CO",
+      "roi": "12.8% ROI",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Complejo Marberia",
+      "location": "Medellín, CO",
+      "roi": "11.4% ROI",
+      "image": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Torre del Río",
+      "location": "CDMX, MX",
+      "roi": "13.2% ROI",
+      "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cómo inicio con BRIDS?",
+      "answer": "Regístrate, completa verificación y selecciona una propiedad fraccionada desde el panel principal."
+    },
+    {
+      "question": "¿Cuál es la inversión mínima?",
+      "answer": "Puedes iniciar desde montos bajos según la propiedad, con acceso a diversificación progresiva."
+    },
+    {
+      "question": "¿Cómo se distribuyen los retornos?",
+      "answer": "La plataforma calcula y distribuye ingresos pasivos según la participación fraccionada."
+    }
+  ]
+}
