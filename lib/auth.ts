@@ -127,3 +127,12 @@ export async function getAuthenticatedPublicKeyFromCookies(): Promise<string | n
   return getSessionPublicKey(sessionToken);
 }
 
+export function getAuthenticatedPublicKeyFromRequest(request: NextRequest): string | null {
+  const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+
+  if (!sessionToken) {
+    return null;
+  }
+
+  return getSessionPublicKey(sessionToken);
+}

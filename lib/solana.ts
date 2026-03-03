@@ -21,6 +21,6 @@ export function getSolanaRpcUrl(): string {
   return configuredUrl;
 }
 
-export function isDevnetProofEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_ENABLE_DEVNET_PROOF === "true";
+export function getWalletModalAutoClose(): boolean {
+  return process.env.NEXT_PUBLIC_WALLET_MODAL_AUTO_CLOSE === "true";
 }
