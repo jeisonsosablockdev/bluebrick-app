@@ -10,6 +10,8 @@ Detailed policies are maintained here:
 - [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 - [NFT Policy](docs/governance/nft-policy.md)
 - [Security + Quality Policy](docs/governance/security-quality-policy.md)
+- [Frontend UI Policy](docs/governance/frontend-ui-policy.md)
+- [Documentation Policy](docs/governance/documentation-policy.md)
 
 If any conflict exists, governance documents take precedence over summaries.
 
@@ -36,6 +38,53 @@ Example (blockchain + NFT + frontend task):
 
 ⸻
 
+📖 CONTINUOUS DOCUMENTATION POLICY
+
+Documentation must be created and updated alongside development.
+No feature is complete without documentation.
+
+For Blockchain Changes (`/programs`)
+- Must update/create:
+  - `/docs/architecture.md`
+  - `/docs/authority-model.md`
+  - `/docs/state-machine.md`
+  - `/docs/threat-model.md`
+  - `/docs/devnet-proof.md`
+- Must document:
+  - Account architecture
+  - PDA seeds
+  - Authority validation logic
+  - Explicit invariants
+  - Identified attack vectors
+  - Mitigation mapping
+  - Devnet transaction proof (real signature)
+
+For Frontend/Auth Changes (`/app`)
+- Must update/create:
+  - `/docs/auth-flow.md`
+  - `/docs/session-model.md`
+- Must document:
+  - SIWS flow
+  - Nonce lifecycle
+  - Cookie strategy
+  - Replay protection logic
+  - Trust boundaries
+
+For NFT Features
+- Must update:
+  - `/docs/nft-spec.md`
+- Must document:
+  - Mint authority model
+  - Metadata ownership
+  - Royalty model
+  - Collection validation
+  - Devnet mint proof
+
+Strict Rule:
+If documentation is missing or outdated → task incomplete.
+
+⸻
+
 🌿 BRANCH HANDLING (QUICK GUIDE)
 
 Workflow:
@@ -59,6 +108,20 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 
 ⸻
 
+⚙️ AUTOMATION SCRIPTS (QUICK USE)
+
+- `./scripts/docs-sync.sh <scope-list>`
+  - Sync/validate required docs and stage them.
+  - Example: `./scripts/docs-sync.sh program`
+  - Example: `./scripts/docs-sync.sh app,nft`
+
+- `./scripts/full-cycle.sh <scope> <name> "mensaje" [docs]`
+  - Runs: start branch → docs sync → commit → push.
+  - Example: `./scripts/full-cycle.sh app initial-ui "initial UI scaffold"`
+  - Example: `./scripts/full-cycle.sh program nft-mint "add nft mint flow" program,nft`
+
+⸻
+
 🧠 GLOBAL NON-NEGOTIABLE RULES
 	1.	Always start with concise-planning.
 	2.	Always enforce clean-code in every task.
@@ -75,6 +138,31 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 	13.	Code must be readable before being clever.
 	14.	No console logs in production code.
 	15.	Explicit error handling required everywhere.
+
+⸻
+
+📱 RESPONSIVE DESIGN POLICY (MANDATORY — DESKTOP + MOBILE)
+
+All frontend work must be responsive and usable on both mobile and desktop.
+
+Requirements:
+	1.	Mobile-first layout with progressive enhancement for larger screens.
+	2.	Must work at 320px width minimum (small phones).
+	3.	No horizontal overflow (no sideways scrolling).
+	4.	Use Tailwind responsive utilities: sm, md, lg, xl.
+	5.	Touch targets must be accessible: >= 44px height for primary actions.
+	6.	Modals must be usable on mobile:
+	•	Full width on small screens
+	•	Internal scroll if content exceeds viewport height
+	•	Close button visible at all times
+	7.	Test these viewport widths before marking complete:
+	•	320px
+	•	375px
+	•	768px
+	•	1024px
+	8.	Provide a short “Responsive QA checklist” result in the PR description.
+
+If UI breaks at any of the widths above → task incomplete.
 
 ⸻
 
@@ -219,6 +307,25 @@ Strict Rules
 	•	All authority transitions explicitly validated
 	•	All replay protections verified
 	•	All sessions cryptographically verified
+
+⸻
+
+🟢 @responsive-qa
+Trigger:
+Run @responsive-qa
+
+Mandatory Checklist
+	1.	Validate layout at 320px, 375px, 768px, 1024px.
+	2.	Confirm no horizontal overflow at all tested widths.
+	3.	Confirm primary actions have touch target height >= 44px.
+	4.	Confirm modals are mobile-safe:
+	•	Full width on small screens
+	•	Internal scroll for long content
+	•	Close button always visible
+	5.	Attach short “Responsive QA checklist” result in PR description.
+
+Strict Rule
+If any viewport fails or checklist is missing in PR → task incomplete.
 
 ⸻
 
