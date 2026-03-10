@@ -14,3 +14,6 @@ BRANCH="feature/${SCOPE}-${NAME}"
 git status --porcelain >/dev/null
 git checkout -b "$BRANCH"
 echo "✅ Rama creada: $BRANCH"
+echo "🧪 Gate inicial obligatorio:"
+echo "   1) Define o actualiza tests unitarios de la historia primero (fase RED)."
+echo "   2) Implementa codigo solo despues de tener esos tests definidos."

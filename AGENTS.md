@@ -138,6 +138,8 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 	13.	Code must be readable before being clever.
 	14.	No console logs in production code.
 	15.	Explicit error handling required everywhere.
+	16.	Every story starts by defining/updating unit tests (TDD RED first).
+	17.	No story is complete unless unit tests pass at final verification.
 
 ⸻
 

@@ -17,6 +17,18 @@ Run ALL:
 
 ⸻
 
+🧪 STORY-LEVEL UNIT TEST GATES (MANDATORY)
+
+For every story:
+	•	Start with unit tests first (TDD RED) before implementation code.
+	•	Keep unit tests updated as acceptance criteria evolve.
+	•	Before marking the story complete, run and pass unit tests.
+	•	Before commit/PR, run full quality gate (`npm test` + `npm run validate`, or equivalent stack commands).
+
+If tests are missing or failing → story is incomplete.
+
+⸻
+
 🏁 PRE-MAINNET CHECKLIST
 	•	All Anchor tests executed on devnet.
 	•	All transactions confirmed on-chain.

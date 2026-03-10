@@ -1,28 +1,45 @@
 # Threat Model
 
 ## Scope
-- Feature:
-- Components:
+- Feature: P0-06 H1 + H4 + H5 + H6 + H7 - Persistent idempotency and replay-safe mint orchestration with signing UI, webhook/DAS reconciliation, and permanent mutation authority.
+- Components: admin mint job APIs, PostgreSQL idempotency schema, orchestrator in-memory store, Helius webhook route, DAS paginated read client.
 
 ## Attack Vectors
 | Threat | Entry Point | Impact | Likelihood | Severity |
 | --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+| Duplicate submit after timeout | `submit-batch` retry from frontend | Double mint or inconsistent counters | High | High |
+| Replay of same webhook payload | Helius webhook retries | Duplicate processing side effects | High | Medium |
+| Forged webhook request | Public webhook endpoint | Unauthorized status mutation attempts | Medium | High |
+| DAS pagination under-scan | Low `maxPages` / narrow query scope | Submitted assets remain unresolved | Medium | Medium |
+| Non-devnet DAS source | Misconfigured DAS endpoint | Incorrect network state reconciliation | Low | High |
+| Frontend tampering on batch identity | forged batch token/fingerprint | Cross-batch contamination and wrong state updates | Medium | High |
+| Non-admin creation/read of jobs | `/api/admin/mint-jobs*` | Unauthorized operational control/visibility | Medium | High |
+| Cross-admin mutation attempt | Manual admin mutation endpoints on someone else’s job | Unauthorized state transition on immutable job authority | Medium | High |
+| Server restart during confirming | process crash/redeploy | Lost transient in-memory state | High | High |
 
 ## Mitigations
 | Threat | Mitigation | Where Implemented | Verification |
 | --- | --- | --- | --- |
-|  |  |  |  |
+| Duplicate submit after timeout | Unique constraints at job/batch/item/signature levels | `db/migrations/001_mint_job_idempotency.sql` + repository upserts | Unit/integration tests for duplicate requests |
+| Replay of same webhook payload | Dedupe on (`provider`, `event_id`) and (`provider`, `event_fingerprint`) before reconcile | `recordMintWebhookEvent` in `lib/mint-orchestrator-store.ts` + webhook route | Re-send identical payload and verify no new reconciliation changes |
+| Forged webhook request | Optional shared secret check before processing payload | `HELIUS_WEBHOOK_SECRET` + `app/api/webhooks/helius/mint-orchestrator/route.ts` | Missing/wrong secret returns `401` |
+| DAS pagination under-scan | Explicit `page/limit/maxPages` controls with `nextPage` continuation signal | `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` | Run reconciliation in bounded passes until `nextPage=null` |
+| Non-devnet DAS source | Endpoint validation rejects non-devnet/local/mainnet/testnet markers | `lib/das-client.ts` | Configure invalid DAS URL and expect validation error |
+| Frontend tampering on batch identity | Batch row revalidation for token/fingerprint invariants | `createOrGetMintBatch` repository guard | Submit mismatched token/fingerprint and expect rejection |
+| Non-admin creation/read of jobs | Role check on every admin mint route | `app/api/admin/mint-jobs/**` | Request with non-admin session returns `403` |
+| Cross-admin mutation attempt | Manual mutations require `actorPubkey === job.createdBy` | `prepareNextMintBatch`, `submitMintBatch`, `reconcileMintJobSignatures` + admin route pubkey pass-through | Different admin wallet attempt returns `403` |
+| Server restart during confirming | Durable backend state in PostgreSQL | `mint_jobs`, `mint_job_batches`, `mint_job_items` | Restart process and continue from persisted statuses |
 
 ## Security Checks
-- [ ] Signer checks validated
-- [ ] PDA derivations validated
-- [ ] Account ownership validated
-- [ ] Replay protection validated (if auth/session)
-- [ ] CPI safety validated
+- [x] Signer checks validated (admin SIWS role for protected endpoints)
+- [ ] PDA derivations validated (not in H1; no on-chain mint yet)
+- [ ] Account ownership validated (not in H1; no on-chain mint yet)
+- [x] Replay protection validated (idempotency and webhook dedupe)
+- [ ] CPI safety validated (not in H1; no on-chain instructions)
 
 ## Residual Risk
-- Risk:
-- Acceptance reason:
+- Risk: Webhook dedupe store is process-local in-memory in H4. Restart loses dedupe cache until a persistent store is wired.
+- Risk: DAS reconciliation can still require multiple passes when assets are spread across many pages.
+- Acceptance reason: H5 intentionally exposes bounded, repeatable pagination to keep reconciliation predictable and safe.
 
-Last Updated: 2026-03-03 08:55:00 UTC
+Last Updated: 2026-03-10 07:35:00 UTC

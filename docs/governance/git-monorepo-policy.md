@@ -36,6 +36,16 @@ Main Rules
 
 ⸻
 
+🧪 STORY TDD WORKFLOW (MANDATORY)
+
+For every story branch (`h1`, `h2`, `h3`, ... and independent stories):
+	1.	Start in TDD RED phase: create/update unit tests for the story before implementation.
+	2.	Implementation starts only after story tests are defined.
+	3.	Before each story commit/PR, run unit tests and quality gates (`npm test` and `npm run validate`, or stack equivalent).
+	4.	If unit tests fail or are missing, story is blocked and cannot be marked complete.
+
+⸻
+
 Branch Naming Convention (Scope Required)
 
 feature/program-<name>
