@@ -6,6 +6,7 @@ import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -13,6 +14,8 @@ type DashboardMetric = {
   label: string;
   value: string;
 };
+
+type TranslateFn = ReturnType<typeof useI18n>["t"];
 
 function DashboardSkeleton(): ReactElement {
   return (
@@ -33,40 +36,49 @@ function DashboardSkeleton(): ReactElement {
   );
 }
 
-function EmptyState(): ReactElement {
+function EmptyState({ t }: { t: TranslateFn }): ReactElement {
   return (
     <Card className="space-y-3 border-dashed">
-      <p className="text-sm font-medium text-white">Aun no tienes activos en tu cuenta.</p>
+      <p className="text-sm font-medium text-white">{t({ en: "You do not have assets in your account yet.", es: "Aun no tienes activos en tu cuenta.", pt: "Voce ainda nao tem ativos na sua conta." })}</p>
       <p className="text-sm text-white/70">
-        Cuando completes tu primera inversion, aqui veras tus NFTs, rentas acumuladas y eventos recientes.
+        {t({
+          en: "When you complete your first investment, your NFTs, accumulated yield and recent events will appear here.",
+          es: "Cuando completes tu primera inversion, aqui veras tus NFTs, rentas acumuladas y eventos recientes.",
+          pt: "Quando voce concluir seu primeiro investimento, aqui voce vera seus NFTs, rendas acumuladas e eventos recentes."
+        })}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button className="min-h-11" variant="primary">
-          Explorar propiedades
+          {t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar propriedades" })}
         </Button>
         <Link href="/" className="inline-flex min-h-11 items-center text-sm text-cyan-300 hover:text-cyan-200">
-          Volver al inicio
+          {t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar ao inicio" })}
         </Link>
       </div>
     </Card>
   );
 }
 
-function ErrorState(): ReactElement {
+function ErrorState({ t }: { t: TranslateFn }): ReactElement {
   return (
     <Card className="space-y-3 border-red-400/40 bg-red-500/5">
-      <h2 className="text-lg font-semibold text-white">No se pudo cargar el dashboard</h2>
+      <h2 className="text-lg font-semibold text-white">{t({ en: "Could not load dashboard", es: "No se pudo cargar el dashboard", pt: "Nao foi possivel carregar o dashboard" })}</h2>
       <p className="text-sm text-white/80">
-        Ocurrio un error al recuperar tu resumen. Intenta de nuevo en unos segundos.
+        {t({
+          en: "An error occurred while fetching your summary. Try again in a few seconds.",
+          es: "Ocurrio un error al recuperar tu resumen. Intenta de nuevo en unos segundos.",
+          pt: "Ocorreu um erro ao carregar seu resumo. Tente novamente em alguns segundos."
+        })}
       </p>
       <Link href="/protected" className="text-sm text-cyan-300 hover:text-cyan-200">
-        Reintentar carga
+        {t({ en: "Retry", es: "Reintentar carga", pt: "Tentar novamente" })}
       </Link>
     </Card>
   );
 }
 
 export function OverviewModule(): ReactElement {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const stateParam = searchParams.get("state");
   const [isLoading, setIsLoading] = useState(stateParam !== "error");
@@ -86,27 +98,27 @@ export function OverviewModule(): ReactElement {
   const metrics = useMemo<DashboardMetric[]>(() => {
     if (isEmpty) {
       return [
-        { label: "Valor invertido", value: "$0.00" },
-        { label: "Numero de NFTs", value: "0" },
-        { label: "Rentas acumuladas", value: "$0.00" },
-        { label: "Rentas claimables", value: "$0.00" }
+        { label: t({ en: "Invested value", es: "Valor invertido", pt: "Valor investido" }), value: "$0.00" },
+        { label: t({ en: "Number of NFTs", es: "Numero de NFTs", pt: "Numero de NFTs" }), value: "0" },
+        { label: t({ en: "Accumulated yield", es: "Rentas acumuladas", pt: "Rendas acumuladas" }), value: "$0.00" },
+        { label: t({ en: "Claimable yield", es: "Rentas claimables", pt: "Rendas disponiveis" }), value: "$0.00" }
       ];
     }
 
     return [
-      { label: "Valor invertido", value: "$48,500.00" },
-      { label: "Numero de NFTs", value: "7" },
-      { label: "Rentas acumuladas", value: "$2,140.20" },
-      { label: "Rentas claimables", value: "$365.10" }
+      { label: t({ en: "Invested value", es: "Valor invertido", pt: "Valor investido" }), value: "$48,500.00" },
+      { label: t({ en: "Number of NFTs", es: "Numero de NFTs", pt: "Numero de NFTs" }), value: "7" },
+      { label: t({ en: "Accumulated yield", es: "Rentas acumuladas", pt: "Rendas acumuladas" }), value: "$2,140.20" },
+      { label: t({ en: "Claimable yield", es: "Rentas claimables", pt: "Rendas disponiveis" }), value: "$365.10" }
     ];
-  }, [isEmpty]);
+  }, [isEmpty, t]);
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
   if (isError) {
-    return <ErrorState />;
+    return <ErrorState t={t} />;
   }
 
   return (
@@ -121,13 +133,17 @@ export function OverviewModule(): ReactElement {
       </div>
 
       {isEmpty ? (
-        <EmptyState />
+        <EmptyState t={t} />
       ) : (
         <>
           <Card className="space-y-2">
-            <h2 className="text-lg font-semibold text-white">Estado general</h2>
+            <h2 className="text-lg font-semibold text-white">{t({ en: "General status", es: "Estado general", pt: "Estado geral" })}</h2>
             <p className="text-sm text-white/75">
-              Tus activos se encuentran activos y listos para gestionarse desde los modulos de Portfolio, Rentas y Stake.
+              {t({
+                en: "Your assets are active and ready to be managed from Portfolio, Yield and Stake modules.",
+                es: "Tus activos se encuentran activos y listos para gestionarse desde los modulos de Portfolio, Rentas y Stake.",
+                pt: "Seus ativos estao ativos e prontos para serem gerenciados nos modulos de Portfolio, Rendas e Stake."
+              })}
             </p>
           </Card>
           <DashboardCharts context="user" />

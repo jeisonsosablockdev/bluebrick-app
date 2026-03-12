@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import Link from "next/link";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -78,10 +79,34 @@ type AssetForm = {
   landRegulatoryStatus: string;
 };
 
-const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: string; subtitle: string }> = [
-  { value: "building_new", title: "Edificio nuevo", subtitle: "Activo en fase de desarrollo o entrega." },
-  { value: "rental_property", title: "Propiedad en renta", subtitle: "Activo enfocado en flujo de renta recurrente." },
-  { value: "land_lot", title: "Lote de engorde", subtitle: "Activo con tesis de valorizacion futura." }
+const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: { en: string; es: string; pt: string }; subtitle: { en: string; es: string; pt: string } }> = [
+  {
+    value: "building_new",
+    title: { en: "New building", es: "Edificio nuevo", pt: "Edificio novo" },
+    subtitle: {
+      en: "Asset in development or delivery stage.",
+      es: "Activo en fase de desarrollo o entrega.",
+      pt: "Ativo em fase de desenvolvimento ou entrega."
+    }
+  },
+  {
+    value: "rental_property",
+    title: { en: "Rental property", es: "Propiedad en renta", pt: "Propriedade em renda" },
+    subtitle: {
+      en: "Asset focused on recurring yield flow.",
+      es: "Activo enfocado en flujo de renta recurrente.",
+      pt: "Ativo focado em fluxo de renda recorrente."
+    }
+  },
+  {
+    value: "land_lot",
+    title: { en: "Land lot", es: "Lote de engorde", pt: "Lote de valorizacao" },
+    subtitle: {
+      en: "Asset with future appreciation thesis.",
+      es: "Activo con tesis de valorizacion futura.",
+      pt: "Ativo com tese de valorizacao futura."
+    }
+  }
 ];
 
 const initialForm: AssetForm = {
@@ -154,6 +179,7 @@ function updateListField(current: string[], fileName: string): string[] {
 }
 
 export function AssetCreationForm(): ReactElement {
+  const { t } = useI18n();
   const [form, setForm] = useState<AssetForm>(initialForm);
   const [formStatus, setFormStatus] = useState<FormStatus>("draft");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -162,52 +188,61 @@ export function AssetCreationForm(): ReactElement {
     const errors: string[] = [];
 
     if (!form.assetType) {
-      errors.push("Debes seleccionar tipo de activo.");
+      errors.push(t({ en: "You must select an asset type.", es: "Debes seleccionar tipo de activo.", pt: "Voce deve selecionar o tipo de ativo." }));
     }
     if (!form.assetName.trim()) {
-      errors.push("Nombre del activo es obligatorio.");
+      errors.push(t({ en: "Asset name is required.", es: "Nombre del activo es obligatorio.", pt: "Nome do ativo e obrigatorio." }));
     }
     if (!form.country.trim() || !form.city.trim()) {
-      errors.push("Ciudad y pais son obligatorios.");
+      errors.push(t({ en: "City and country are required.", es: "Ciudad y pais son obligatorios.", pt: "Cidade e pais sao obrigatorios." }));
     }
     if (!form.coverImage.trim()) {
-      errors.push("Cover image es obligatoria.");
+      errors.push(t({ en: "Cover image is required.", es: "Cover image es obligatoria.", pt: "Cover image e obrigatoria." }));
     }
     if (!form.collectionName.trim()) {
-      errors.push("Collection name es obligatorio para continuar.");
+      errors.push(t({ en: "Collection name is required to continue.", es: "Collection name es obligatorio para continuar.", pt: "Collection name e obrigatorio para continuar." }));
     }
 
     return errors;
-  }, [form]);
+  }, [form, t]);
 
   const typeValidation = useMemo<{ state: TypeFormState; errors: string[] }>(() => {
     if (!form.assetType) {
-      return { state: "incomplete", errors: ["Selecciona un tipo de activo para validar campos diferenciales."] };
+      return {
+        state: "incomplete",
+        errors: [
+          t({
+            en: "Select an asset type to validate differential fields.",
+            es: "Selecciona un tipo de activo para validar campos diferenciales.",
+            pt: "Selecione um tipo de ativo para validar campos diferenciais."
+          })
+        ]
+      };
     }
 
     const errors: string[] = [];
 
     if (form.assetType === "building_new") {
-      if (!form.buildingDeveloperName.trim()) errors.push("developerName obligatorio.");
-      if (!form.buildingProjectStage.trim()) errors.push("projectStage obligatorio.");
-      if (!form.buildingEstimatedDeliveryDate.trim()) errors.push("estimatedDeliveryDate obligatorio.");
-      if (Number(form.buildingFundingGoal || "0") <= 0) errors.push("fundingGoal debe ser mayor a 0.");
+      if (!form.buildingDeveloperName.trim()) errors.push(t({ en: "developerName is required.", es: "developerName obligatorio.", pt: "developerName obrigatorio." }));
+      if (!form.buildingProjectStage.trim()) errors.push(t({ en: "projectStage is required.", es: "projectStage obligatorio.", pt: "projectStage obrigatorio." }));
+      if (!form.buildingEstimatedDeliveryDate.trim()) errors.push(t({ en: "estimatedDeliveryDate is required.", es: "estimatedDeliveryDate obligatorio.", pt: "estimatedDeliveryDate obrigatorio." }));
+      if (Number(form.buildingFundingGoal || "0") <= 0) errors.push(t({ en: "fundingGoal must be greater than 0.", es: "fundingGoal debe ser mayor a 0.", pt: "fundingGoal deve ser maior que 0." }));
     }
 
     if (form.assetType === "rental_property") {
       const occupancy = Number(form.rentalOccupancyRate || "0");
-      if (Number(form.rentalMonthlyRentEstimate || "0") <= 0) errors.push("monthlyRentEstimate debe ser mayor a 0.");
-      if (occupancy < 0 || occupancy > 100) errors.push("occupancyRate debe estar entre 0 y 100.");
+      if (Number(form.rentalMonthlyRentEstimate || "0") <= 0) errors.push(t({ en: "monthlyRentEstimate must be greater than 0.", es: "monthlyRentEstimate debe ser mayor a 0.", pt: "monthlyRentEstimate deve ser maior que 0." }));
+      if (occupancy < 0 || occupancy > 100) errors.push(t({ en: "occupancyRate must be between 0 and 100.", es: "occupancyRate debe estar entre 0 y 100.", pt: "occupancyRate deve estar entre 0 e 100." }));
       if (form.rentalLeaseStartDate && form.rentalLeaseEndDate && form.rentalLeaseStartDate > form.rentalLeaseEndDate) {
-        errors.push("leaseStartDate no puede ser mayor a leaseEndDate.");
+        errors.push(t({ en: "leaseStartDate cannot be greater than leaseEndDate.", es: "leaseStartDate no puede ser mayor a leaseEndDate.", pt: "leaseStartDate nao pode ser maior que leaseEndDate." }));
       }
     }
 
     if (form.assetType === "land_lot") {
-      if (Number(form.landAreaM2 || "0") <= 0) errors.push("landAreaM2 debe ser mayor a 0.");
-      if (Number(form.landAppreciationHorizonMonths || "0") <= 0) errors.push("appreciationHorizonMonths debe ser mayor a 0.");
-      if (Number(form.landEntryPrice || "0") <= 0) errors.push("entryPrice debe ser mayor a 0.");
-      if (!form.landUse.trim()) errors.push("landUse es obligatorio.");
+      if (Number(form.landAreaM2 || "0") <= 0) errors.push(t({ en: "landAreaM2 must be greater than 0.", es: "landAreaM2 debe ser mayor a 0.", pt: "landAreaM2 deve ser maior que 0." }));
+      if (Number(form.landAppreciationHorizonMonths || "0") <= 0) errors.push(t({ en: "appreciationHorizonMonths must be greater than 0.", es: "appreciationHorizonMonths debe ser mayor a 0.", pt: "appreciationHorizonMonths deve ser maior que 0." }));
+      if (Number(form.landEntryPrice || "0") <= 0) errors.push(t({ en: "entryPrice must be greater than 0.", es: "entryPrice debe ser mayor a 0.", pt: "entryPrice deve ser maior que 0." }));
+      if (!form.landUse.trim()) errors.push(t({ en: "landUse is required.", es: "landUse es obligatorio.", pt: "landUse e obrigatorio." }));
     }
 
     if (errors.length > 0) {
@@ -215,7 +250,7 @@ export function AssetCreationForm(): ReactElement {
     }
 
     return { state: "valid", errors: [] };
-  }, [form]);
+  }, [form, t]);
 
   const canContinueToMint = requiredErrors.length === 0 && typeValidation.state === "valid";
 
@@ -257,14 +292,18 @@ export function AssetCreationForm(): ReactElement {
   return (
     <div className="space-y-4 pb-24">
       <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">Crear activo tokenizable</h2>
+        <h2 className="text-lg font-semibold text-white">{t({ en: "Create tokenizable asset", es: "Crear activo tokenizable", pt: "Criar ativo tokenizavel" })}</h2>
         <p className="text-sm text-white/75">
-          Crea el registro maestro del activo. Regla: una coleccion por activo y no se habilita mint sin activo definido.
+          {t({
+            en: "Create the master asset record. Rule: one collection per asset, and mint cannot be enabled without a defined asset.",
+            es: "Crea el registro maestro del activo. Regla: una coleccion por activo y no se habilita mint sin activo definido.",
+            pt: "Crie o registro mestre do ativo. Regra: uma colecao por ativo, e o mint nao e habilitado sem ativo definido."
+          })}
         </p>
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Paso inicial: seleccion de tipo</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Initial step: type selection", es: "Paso inicial: seleccion de tipo", pt: "Passo inicial: selecao de tipo" })}</p>
         <div className="grid gap-3 md:grid-cols-3">
           {assetTypeOptions.map((option) => {
             const active = form.assetType === option.value;
@@ -275,8 +314,8 @@ export function AssetCreationForm(): ReactElement {
                 onClick={() => setForm((prev) => ({ ...prev, assetType: option.value }))}
                 type="button"
               >
-                <p className="font-medium text-white">{option.title}</p>
-                <p className="text-xs text-white/70">{option.subtitle}</p>
+                <p className="font-medium text-white">{t(option.title)}</p>
+                <p className="text-xs text-white/70">{t(option.subtitle)}</p>
               </button>
             );
           })}
@@ -284,7 +323,7 @@ export function AssetCreationForm(): ReactElement {
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Identificacion</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Identification", es: "Identificacion", pt: "Identificacao" })}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Input placeholder="assetName" value={form.assetName} onChange={(event) => setForm((prev) => ({ ...prev, assetName: event.target.value }))} />
           <Input placeholder="slug" value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} />
@@ -304,7 +343,7 @@ export function AssetCreationForm(): ReactElement {
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Ubicacion</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Location", es: "Ubicacion", pt: "Localizacao" })}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Input placeholder="country" value={form.country} onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))} />
           <Input placeholder="state" value={form.state} onChange={(event) => setForm((prev) => ({ ...prev, state: event.target.value }))} />
@@ -316,7 +355,7 @@ export function AssetCreationForm(): ReactElement {
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Descripcion comercial</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Commercial description", es: "Descripcion comercial", pt: "Descricao comercial" })}</p>
         <div className="grid gap-3">
           <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="shortDescription" value={form.shortDescription} onChange={(event) => setForm((prev) => ({ ...prev, shortDescription: event.target.value }))} />
           <textarea className="min-h-24 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="longDescription" value={form.longDescription} onChange={(event) => setForm((prev) => ({ ...prev, longDescription: event.target.value }))} />
@@ -326,56 +365,56 @@ export function AssetCreationForm(): ReactElement {
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Media y documentos</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Media and documents", es: "Media y documentos", pt: "Midia e documentos" })}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            coverImage (obligatoria)
+            {t({ en: "coverImage (required)", es: "coverImage (obligatoria)", pt: "coverImage (obrigatoria)" })}
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("coverImage")} />
-            <p className="mt-1 text-xs text-white/60">{form.coverImage || "Sin archivo"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             galleryImages[]
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("galleryImages")} />
-            <p className="mt-1 text-xs text-white/60">{form.galleryImages.join(", ") || "Sin archivos"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.galleryImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             brochureFile
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("brochureFile")} />
-            <p className="mt-1 text-xs text-white/60">{form.brochureFile || "Sin archivo"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             legalDocs[]
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("legalDocs")} />
-            <p className="mt-1 text-xs text-white/60">{form.legalDocs.join(", ") || "Sin archivos"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.legalDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             financialDocs[]
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("financialDocs")} />
-            <p className="mt-1 text-xs text-white/60">{form.financialDocs.join(", ") || "Sin archivos"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.financialDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             propertyImages[]
             <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("propertyImages")} />
-            <p className="mt-1 text-xs text-white/60">{form.propertyImages.join(", ") || "Sin archivos"}</p>
+            <p className="mt-1 text-xs text-white/60">{form.propertyImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
         </div>
-        <Input placeholder="videoUrl opcional" value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
+        <Input placeholder={t({ en: "videoUrl optional", es: "videoUrl opcional", pt: "videoUrl opcional" })} value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Relacion NFT / Coleccion</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="collectionName (obligatorio para continuar)" value={form.collectionName} onChange={(event) => setForm((prev) => ({ ...prev, collectionName: event.target.value }))} />
+          <Input placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })} value={form.collectionName} onChange={(event) => setForm((prev) => ({ ...prev, collectionName: event.target.value }))} />
           <Input placeholder="collectionSymbol" value={form.collectionSymbol} onChange={(event) => setForm((prev) => ({ ...prev, collectionSymbol: event.target.value }))} />
           <Input placeholder="metadataBaseName" value={form.metadataBaseName} onChange={(event) => setForm((prev) => ({ ...prev, metadataBaseName: event.target.value }))} />
-          <Input placeholder="metadataBaseUri opcional" value={form.metadataBaseUri} onChange={(event) => setForm((prev) => ({ ...prev, metadataBaseUri: event.target.value }))} />
+          <Input placeholder={t({ en: "metadataBaseUri optional", es: "metadataBaseUri opcional", pt: "metadataBaseUri opcional" })} value={form.metadataBaseUri} onChange={(event) => setForm((prev) => ({ ...prev, metadataBaseUri: event.target.value }))} />
         </div>
       </Card>
 
       {form.assetType && (
         <Card className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-white">Campos diferenciales por tipo</p>
+            <p className="text-sm font-semibold text-white">{t({ en: "Differential fields by type", es: "Campos diferenciales por tipo", pt: "Campos diferenciais por tipo" })}</p>
             <span
               className={`rounded-full px-2 py-1 text-xs ${
                 typeValidation.state === "valid"
@@ -462,13 +501,17 @@ export function AssetCreationForm(): ReactElement {
       )}
 
       <Card className="space-y-1 border-cyan-400/30 bg-cyan-500/5">
-        <p className="text-sm text-cyan-100">Estado UI actual: {formStatus}</p>
+        <p className="text-sm text-cyan-100">{t({ en: "Current UI status", es: "Estado UI actual", pt: "Status atual da UI" })}: {formStatus}</p>
         <p className="text-xs text-cyan-100">
-          Reglas: no se puede continuar sin tipo de activo. No se puede avanzar al mint sin activo y coleccion definidos.
+          {t({
+            en: "Rules: cannot continue without asset type. Cannot advance to mint without defined asset and collection.",
+            es: "Reglas: no se puede continuar sin tipo de activo. No se puede avanzar al mint sin activo y coleccion definidos.",
+            pt: "Regras: nao e possivel continuar sem tipo de ativo. Nao e possivel avancar para mint sem ativo e colecao definidos."
+          })}
         </p>
         {canContinueToMint && (
           <Link className="text-sm text-cyan-200 underline" href="/admin/mint">
-            Ir a consola de mint
+            {t({ en: "Go to mint console", es: "Ir a consola de mint", pt: "Ir para console de mint" })}
           </Link>
         )}
       </Card>
@@ -477,14 +520,14 @@ export function AssetCreationForm(): ReactElement {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
           <Link href="/admin/assets">
             <Button className="min-h-11" variant="ghost">
-              Cancelar
+              {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
             </Button>
           </Link>
           <Button className="min-h-11" variant="outline" onClick={saveDraft}>
-            Guardar borrador
+            {t({ en: "Save draft", es: "Guardar borrador", pt: "Salvar rascunho" })}
           </Button>
           <Button className="min-h-11" onClick={continueToMint}>
-            Continuar a mint
+            {t({ en: "Continue to mint", es: "Continuar a mint", pt: "Continuar para mint" })}
           </Button>
         </div>
       </div>

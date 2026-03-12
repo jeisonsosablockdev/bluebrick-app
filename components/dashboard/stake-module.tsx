@@ -3,6 +3,7 @@
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -14,7 +15,11 @@ type StakeAsset = {
   fraction: string;
   currentState: "available" | "staked";
   status: StakeStatus;
-  reason: string;
+  reason: {
+    en: string;
+    es: string;
+    pt: string;
+  };
 };
 
 const STAKE_ASSETS: StakeAsset[] = [
@@ -24,7 +29,11 @@ const STAKE_ASSETS: StakeAsset[] = [
     fraction: "2.50%",
     currentState: "available",
     status: "eligible",
-    reason: "Activo habilitado para stake inmediato."
+    reason: {
+      en: "Asset is enabled for immediate stake.",
+      es: "Activo habilitado para stake inmediato.",
+      pt: "Ativo habilitado para stake imediato."
+    }
   },
   {
     id: "3xPm...Q8tB",
@@ -32,7 +41,11 @@ const STAKE_ASSETS: StakeAsset[] = [
     fraction: "1.00%",
     currentState: "staked",
     status: "processing",
-    reason: "Tu ultimo claim esta en confirmacion on-chain."
+    reason: {
+      en: "Your latest claim is in on-chain confirmation.",
+      es: "Tu ultimo claim esta en confirmacion on-chain.",
+      pt: "Seu ultimo claim esta em confirmacao on-chain."
+    }
   },
   {
     id: "6Nh1...L5eV",
@@ -40,7 +53,11 @@ const STAKE_ASSETS: StakeAsset[] = [
     fraction: "0.75%",
     currentState: "available",
     status: "frozen",
-    reason: "Bloqueado por validacion operativa del activo."
+    reason: {
+      en: "Blocked due to operational asset validation.",
+      es: "Bloqueado por validacion operativa del activo.",
+      pt: "Bloqueado por validacao operacional do ativo."
+    }
   },
   {
     id: "7sQ2...Y3rN",
@@ -48,24 +65,28 @@ const STAKE_ASSETS: StakeAsset[] = [
     fraction: "1.20%",
     currentState: "staked",
     status: "ineligible",
-    reason: "Periodo minimo de lockup aun no cumplido."
+    reason: {
+      en: "Minimum lockup period is not completed yet.",
+      es: "Periodo minimo de lockup aun no cumplido.",
+      pt: "Periodo minimo de lockup ainda nao cumprido."
+    }
   }
 ];
 
-function statusLabel(status: StakeStatus): string {
+function statusLabel(status: StakeStatus, t: ReturnType<typeof useI18n>["t"]): string {
   if (status === "eligible") {
-    return "Elegible";
+    return t({ en: "Eligible", es: "Elegible", pt: "Elegivel" });
   }
 
   if (status === "frozen") {
-    return "Congelado";
+    return t({ en: "Frozen", es: "Congelado", pt: "Congelado" });
   }
 
   if (status === "processing") {
-    return "En proceso";
+    return t({ en: "Processing", es: "En proceso", pt: "Em processo" });
   }
 
-  return "No elegible";
+  return t({ en: "Not eligible", es: "No elegible", pt: "Nao elegivel" });
 }
 
 function statusClassName(status: StakeStatus): string {
@@ -103,32 +124,51 @@ function ConfirmActionModal({
   onClose: () => void;
   onConfirm: () => void;
 }): ReactElement {
+  const { t } = useI18n();
+
   return (
     <div className="fixed inset-0 z-50">
-      <button aria-label="Cerrar confirmacion" className="absolute inset-0 bg-black/70" onClick={onClose} type="button" />
+      <button
+        aria-label={t({ en: "Close confirmation", es: "Cerrar confirmacion", pt: "Fechar confirmacao" })}
+        className="absolute inset-0 bg-black/70"
+        onClick={onClose}
+        type="button"
+      />
 
       <section className="relative mx-auto mt-10 w-[92%] max-w-lg rounded-2xl border border-white/10 bg-[#070b14] p-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-white">Confirmar accion: {action}</h2>
+        <h2 className="text-lg font-semibold text-white">
+          {t({ en: "Confirm action", es: "Confirmar accion", pt: "Confirmar acao" })}: {action}
+        </h2>
         <p className="mt-2 text-sm text-white/75">
-          Vas a ejecutar <span className="font-semibold text-white">{action}</span> sobre el NFT {asset.id} de{" "}
+          {t({ en: "You are about to execute", es: "Vas a ejecutar", pt: "Voce vai executar" })}{" "}
+          <span className="font-semibold text-white">{action}</span>{" "}
+          {t({ en: "on NFT", es: "sobre el NFT", pt: "no NFT" })} {asset.id} {t({ en: "from", es: "de", pt: "de" })}{" "}
           <span className="font-semibold text-white">{asset.property}</span>.
         </p>
 
         <Card className="mt-4 space-y-2 border-amber-400/30 bg-amber-500/5">
           <p className="text-sm text-amber-100">
-            Advertencia UX: al hacer stake, el NFT quedara bloqueado para transferencias hasta su desbloqueo.
+            {t({
+              en: "UX warning: when staking, NFT transfers stay blocked until unlock.",
+              es: "Advertencia UX: al hacer stake, el NFT quedara bloqueado para transferencias hasta su desbloqueo.",
+              pt: "Aviso UX: ao fazer stake, o NFT ficara bloqueado para transferencias ate o desbloqueio."
+            })}
           </p>
           <p className="text-sm text-amber-100">
-            La firma wallet se integrara en el siguiente paso; esta confirmacion prepara el flujo de accion.
+            {t({
+              en: "Wallet signature will be integrated in the next step; this confirmation prepares the action flow.",
+              es: "La firma wallet se integrara en el siguiente paso; esta confirmacion prepara el flujo de accion.",
+              pt: "A assinatura da wallet sera integrada no proximo passo; esta confirmacao prepara o fluxo da acao."
+            })}
           </p>
         </Card>
 
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           <Button className="min-h-11" variant="ghost" onClick={onClose}>
-            Cancelar
+            {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
           </Button>
           <Button className="min-h-11" variant="primary" onClick={onConfirm}>
-            Confirmar {action}
+            {t({ en: "Confirm", es: "Confirmar", pt: "Confirmar" })} {action}
           </Button>
         </div>
       </section>
@@ -137,6 +177,7 @@ function ConfirmActionModal({
 }
 
 export function StakeModule(): ReactElement {
+  const { t } = useI18n();
   const [selectedAsset, setSelectedAsset] = useState<StakeAsset | null>(null);
   const [doneMessage, setDoneMessage] = useState<string | null>(null);
 
@@ -152,21 +193,33 @@ export function StakeModule(): ReactElement {
   return (
     <div className="space-y-4">
       <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">NFTs elegibles para Stake / Unstake</h2>
+        <h2 className="text-lg font-semibold text-white">
+          {t({ en: "NFTs eligible for Stake / Unstake", es: "NFTs elegibles para Stake / Unstake", pt: "NFTs elegiveis para Stake / Unstake" })}
+        </h2>
         <p className="text-sm text-white/70">
-          Revisa el estado operativo de cada posicion antes de ejecutar una accion.
+          {t({
+            en: "Review the operational status of each position before executing an action.",
+            es: "Revisa el estado operativo de cada posicion antes de ejecutar una accion.",
+            pt: "Revise o status operacional de cada posicao antes de executar uma acao."
+          })}
         </p>
       </Card>
 
       <Card className="space-y-2 border-amber-400/30 bg-amber-500/5">
         <p className="text-sm text-amber-100">
-          Nota importante: los NFTs en stake mantienen restricciones de transferencia hasta finalizar su periodo de bloqueo.
+          {t({
+            en: "Important note: staked NFTs keep transfer restrictions until lock period ends.",
+            es: "Nota importante: los NFTs en stake mantienen restricciones de transferencia hasta finalizar su periodo de bloqueo.",
+            pt: "Nota importante: NFTs em stake mantem restricoes de transferencia ate o fim do periodo de bloqueio."
+          })}
         </p>
       </Card>
 
       {doneMessage && (
         <Card className="space-y-1 border-emerald-400/30 bg-emerald-500/5">
-          <p className="text-sm font-semibold text-emerald-200">Accion preparada</p>
+          <p className="text-sm font-semibold text-emerald-200">
+            {t({ en: "Action prepared", es: "Accion preparada", pt: "Acao preparada" })}
+          </p>
           <p className="text-sm text-emerald-100">{doneMessage}</p>
         </Card>
       )}
@@ -184,11 +237,11 @@ export function StakeModule(): ReactElement {
                   </p>
                 </div>
                 <span className={`rounded-full px-2 py-1 text-xs ${statusClassName(asset.status)}`}>
-                  {statusLabel(asset.status)}
+                  {statusLabel(asset.status, t)}
                 </span>
               </div>
 
-              <p className="text-sm text-white/70">{asset.reason}</p>
+              <p className="text-sm text-white/70">{t(asset.reason)}</p>
 
               {availableAction ? (
                 <Button className="min-h-11 w-full" variant={availableAction === "Stake" ? "primary" : "outline"} onClick={() => setSelectedAsset(asset)}>
@@ -196,7 +249,7 @@ export function StakeModule(): ReactElement {
                 </Button>
               ) : (
                 <Button className="min-h-11 w-full" disabled variant="ghost">
-                  Sin accion disponible
+                  {t({ en: "No action available", es: "Sin accion disponible", pt: "Sem acao disponivel" })}
                 </Button>
               )}
             </Card>
@@ -210,7 +263,13 @@ export function StakeModule(): ReactElement {
           asset={selectedAsset}
           onClose={() => setSelectedAsset(null)}
           onConfirm={() => {
-            setDoneMessage(`Se preparo la accion ${action} para ${selectedAsset.id}. Pendiente integrar firma wallet.`);
+            setDoneMessage(
+              t({
+                en: `Action ${action} prepared for ${selectedAsset.id}. Wallet signature integration pending.`,
+                es: `Se preparo la accion ${action} para ${selectedAsset.id}. Pendiente integrar firma wallet.`,
+                pt: `A acao ${action} foi preparada para ${selectedAsset.id}. Integracao da assinatura wallet pendente.`
+              })
+            );
             setSelectedAsset(null);
           }}
         />

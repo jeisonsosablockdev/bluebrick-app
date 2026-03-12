@@ -1,16 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ReactElement } from "react";
-import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import type { ReactElement } from "react";
+import { useMemo, useState } from "react";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 type PortfolioStatus = "available" | "staked" | "frozen";
+
+type LocalizedText = {
+  en: string;
+  es: string;
+  pt: string;
+};
 
 type PortfolioItem = {
   id: string;
@@ -34,11 +41,11 @@ type PortfolioItem = {
   };
   recentHistory: Array<{
     date: string;
-    event: string;
-    status: string;
+    event: LocalizedText;
+    status: LocalizedText;
   }>;
   documents: Array<{
-    label: string;
+    label: LocalizedText;
     href: string;
   }>;
 };
@@ -64,12 +71,26 @@ const PORTFOLIO_DATA: PortfolioItem[] = [
       lastUpdateAt: "2026-03-01"
     },
     recentHistory: [
-      { date: "2026-03-01", event: "Actualizacion metadata", status: "Completado" },
-      { date: "2026-02-20", event: "Renta distribuida", status: "Completado" }
+      {
+        date: "2026-03-01",
+        event: { en: "Metadata update", es: "Actualizacion metadata", pt: "Atualizacao de metadata" },
+        status: { en: "Completed", es: "Completado", pt: "Concluido" }
+      },
+      {
+        date: "2026-02-20",
+        event: { en: "Yield distribution", es: "Renta distribuida", pt: "Renda distribuida" },
+        status: { en: "Completed", es: "Completado", pt: "Concluido" }
+      }
     ],
     documents: [
-      { label: "Ficha tecnica del activo", href: "#" },
-      { label: "Contrato de tokenizacion", href: "#" }
+      {
+        label: { en: "Asset technical sheet", es: "Ficha tecnica del activo", pt: "Ficha tecnica do ativo" },
+        href: "#"
+      },
+      {
+        label: { en: "Tokenization contract", es: "Contrato de tokenizacion", pt: "Contrato de tokenizacao" },
+        href: "#"
+      }
     ]
   },
   {
@@ -93,12 +114,26 @@ const PORTFOLIO_DATA: PortfolioItem[] = [
       lastUpdateAt: "2026-03-04"
     },
     recentHistory: [
-      { date: "2026-03-04", event: "Stake aplicado", status: "En curso" },
-      { date: "2026-02-28", event: "Claim ejecutado", status: "Completado" }
+      {
+        date: "2026-03-04",
+        event: { en: "Stake applied", es: "Stake aplicado", pt: "Stake aplicado" },
+        status: { en: "In progress", es: "En curso", pt: "Em curso" }
+      },
+      {
+        date: "2026-02-28",
+        event: { en: "Claim executed", es: "Claim ejecutado", pt: "Claim executado" },
+        status: { en: "Completed", es: "Completado", pt: "Concluido" }
+      }
     ],
     documents: [
-      { label: "Condiciones de staking", href: "#" },
-      { label: "Detalle legal de propiedad", href: "#" }
+      {
+        label: { en: "Staking conditions", es: "Condiciones de staking", pt: "Condicoes de staking" },
+        href: "#"
+      },
+      {
+        label: { en: "Property legal detail", es: "Detalle legal de propiedad", pt: "Detalhe legal da propriedade" },
+        href: "#"
+      }
     ]
   },
   {
@@ -119,8 +154,27 @@ const PORTFOLIO_DATA: PortfolioItem[] = [
       purchasedAt: "2025-12-01",
       lastUpdateAt: "2026-02-25"
     },
-    recentHistory: [{ date: "2026-02-25", event: "Activo congelado por proceso", status: "Pendiente" }],
-    documents: [{ label: "Informe de estado del activo", href: "#" }]
+    recentHistory: [
+      {
+        date: "2026-02-25",
+        event: {
+          en: "Asset frozen by process",
+          es: "Activo congelado por proceso",
+          pt: "Ativo congelado por processo"
+        },
+        status: { en: "Pending", es: "Pendiente", pt: "Pendente" }
+      }
+    ],
+    documents: [
+      {
+        label: {
+          en: "Asset status report",
+          es: "Informe de estado del activo",
+          pt: "Relatorio de estado do ativo"
+        },
+        href: "#"
+      }
+    ]
   },
   {
     id: "7sQ2...Y3rN",
@@ -142,33 +196,47 @@ const PORTFOLIO_DATA: PortfolioItem[] = [
       lastUpdateAt: "2026-03-02"
     },
     recentHistory: [
-      { date: "2026-03-02", event: "Cambio de estado", status: "Completado" },
-      { date: "2026-02-26", event: "Renta acumulada", status: "Completado" }
+      {
+        date: "2026-03-02",
+        event: { en: "Status change", es: "Cambio de estado", pt: "Mudanca de status" },
+        status: { en: "Completed", es: "Completado", pt: "Concluido" }
+      },
+      {
+        date: "2026-02-26",
+        event: { en: "Accumulated yield", es: "Renta acumulada", pt: "Renda acumulada" },
+        status: { en: "Completed", es: "Completado", pt: "Concluido" }
+      }
     ],
     documents: [
-      { label: "Resumen de valuacion", href: "#" },
-      { label: "Informacion de alquiler", href: "#" }
+      {
+        label: { en: "Valuation summary", es: "Resumen de valuacion", pt: "Resumo de avaliacao" },
+        href: "#"
+      },
+      {
+        label: { en: "Rental information", es: "Informacion de alquiler", pt: "Informacoes de aluguel" },
+        href: "#"
+      }
     ]
   }
 ];
 
-const STATUS_FILTERS: Array<{ value: "all" | PortfolioStatus; label: string }> = [
-  { value: "all", label: "Todos" },
-  { value: "available", label: "Disponible" },
-  { value: "staked", label: "Staked" },
-  { value: "frozen", label: "Frozen" }
+const STATUS_FILTERS: Array<{ value: "all" | PortfolioStatus; label: LocalizedText }> = [
+  { value: "all", label: { en: "All", es: "Todos", pt: "Todos" } },
+  { value: "available", label: { en: "Available", es: "Disponible", pt: "Disponivel" } },
+  { value: "staked", label: { en: "Staked", es: "Staked", pt: "Staked" } },
+  { value: "frozen", label: { en: "Frozen", es: "Congelado", pt: "Congelado" } }
 ];
 
-function statusLabel(status: PortfolioStatus): string {
+function statusLabel(status: PortfolioStatus, t: ReturnType<typeof useI18n>["t"]): string {
   if (status === "staked") {
-    return "Staked";
+    return t({ en: "Staked", es: "Staked", pt: "Staked" });
   }
 
   if (status === "frozen") {
-    return "Frozen";
+    return t({ en: "Frozen", es: "Frozen", pt: "Frozen" });
   }
 
-  return "Disponible";
+  return t({ en: "Available", es: "Disponible", pt: "Disponivel" });
 }
 
 function statusClassName(status: PortfolioStatus): string {
@@ -183,28 +251,40 @@ function statusClassName(status: PortfolioStatus): string {
   return "bg-emerald-500/20 text-emerald-200";
 }
 
-function PortfolioEmptyState({ hasFilters }: { hasFilters: boolean }): ReactElement {
+function PortfolioEmptyState({
+  hasFilters,
+  t
+}: {
+  hasFilters: boolean;
+  t: ReturnType<typeof useI18n>["t"];
+}): ReactElement {
   if (hasFilters) {
     return (
       <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">Sin resultados</h2>
-        <p className="text-sm text-white/70">No encontramos NFTs con esos filtros. Prueba con otro estado o termino.</p>
+        <h2 className="text-lg font-semibold text-white">{t({ en: "No results", es: "Sin resultados", pt: "Sem resultados" })}</h2>
+        <p className="text-sm text-white/70">{t({ en: "No NFTs found with those filters. Try another status or term.", es: "No encontramos NFTs con esos filtros. Prueba con otro estado o termino.", pt: "Nao encontramos NFTs com esses filtros. Tente outro status ou termo." })}</p>
       </Card>
     );
   }
 
   return (
     <Card className="space-y-2 border-dashed">
-      <h2 className="text-lg font-semibold text-white">No tienes NFTs en portfolio</h2>
+      <h2 className="text-lg font-semibold text-white">{t({ en: "You do not have NFTs in your portfolio", es: "No tienes NFTs en portfolio", pt: "Voce nao tem NFTs no portfolio" })}</h2>
       <p className="text-sm text-white/70">
-        Cuando compres tu primer NFT fraccionado, esta pantalla mostrara tus posiciones y su rentabilidad estimada.
+        {t({
+          en: "When you buy your first fractional NFT, this screen will show your positions and estimated yield.",
+          es: "Cuando compres tu primer NFT fraccionado, esta pantalla mostrara tus posiciones y su rentabilidad estimada.",
+          pt: "Quando voce comprar seu primeiro NFT fracionado, esta tela mostrara suas posicoes e rentabilidade estimada."
+        })}
       </p>
     </Card>
   );
 }
 
-function valueOrFallback(value: string | undefined): string {
-  return value && value.trim().length > 0 ? value : "No disponible";
+function valueOrFallback(value: string | undefined, t: ReturnType<typeof useI18n>["t"]): string {
+  return value && value.trim().length > 0
+    ? value
+    : t({ en: "Not available", es: "No disponible", pt: "Nao disponivel" });
 }
 
 function DetailModal({
@@ -214,22 +294,28 @@ function DetailModal({
   item: PortfolioItem;
   onClose: () => void;
 }): ReactElement {
+  const { t } = useI18n();
   const canStake = item.status === "available";
   const canUnstake = item.status === "staked";
-  const showOnlyRentas = item.status === "frozen";
+  const showOnlyYield = item.status === "frozen";
 
   return (
     <div className="fixed inset-0 z-50">
-      <button aria-label="Cerrar detalle" className="absolute inset-0 bg-black/70" onClick={onClose} type="button" />
+      <button
+        aria-label={t({ en: "Close detail", es: "Cerrar detalle", pt: "Fechar detalhe" })}
+        className="absolute inset-0 bg-black/70"
+        onClick={onClose}
+        type="button"
+      />
 
       <section className="relative ml-auto h-full w-full overflow-y-auto border-l border-white/10 bg-[#070b14] md:max-w-3xl">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#070b14] px-4 py-3 sm:px-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Detalle NFT</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{t({ en: "NFT detail", es: "Detalle NFT", pt: "Detalhe NFT" })}</p>
             <h2 className="text-lg font-semibold text-white">{item.property}</h2>
           </div>
           <Button className="min-h-11" variant="ghost" onClick={onClose}>
-            Cerrar
+            {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
           </Button>
         </header>
 
@@ -239,66 +325,66 @@ function DetailModal({
               <Image alt={`NFT ${item.property}`} className="h-full w-full object-cover" height={360} src={item.imageUrl} width={640} />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2 py-1 text-xs ${statusClassName(item.status)}`}>{statusLabel(item.status)}</span>
+              <span className={`rounded-full px-2 py-1 text-xs ${statusClassName(item.status)}`}>{statusLabel(item.status, t)}</span>
               <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/80">ID: {item.id}</span>
             </div>
           </Card>
 
           <Card className="space-y-2">
-            <h3 className="text-sm font-semibold text-white">Metadata basica</h3>
+            <h3 className="text-sm font-semibold text-white">{t({ en: "Basic metadata", es: "Metadata basica", pt: "Metadata basica" })}</h3>
             <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-white/60">Coleccion</dt>
-                <dd className="text-white">{valueOrFallback(item.metadata.collection)}</dd>
+                <dt className="text-white/60">{t({ en: "Collection", es: "Coleccion", pt: "Colecao" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.metadata.collection, t)}</dd>
               </div>
               <div>
-                <dt className="text-white/60">Token standard</dt>
-                <dd className="text-white">{valueOrFallback(item.metadata.tokenStandard)}</dd>
+                <dt className="text-white/60">{t({ en: "Token standard", es: "Token standard", pt: "Padrao do token" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.metadata.tokenStandard, t)}</dd>
               </div>
               <div>
-                <dt className="text-white/60">Ubicacion</dt>
-                <dd className="text-white">{valueOrFallback(item.metadata.location)}</dd>
+                <dt className="text-white/60">{t({ en: "Location", es: "Ubicacion", pt: "Localizacao" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.metadata.location, t)}</dd>
               </div>
               <div>
                 <dt className="text-white/60">Registry ID</dt>
-                <dd className="text-white">{valueOrFallback(item.metadata.registryId)}</dd>
+                <dd className="text-white">{valueOrFallback(item.metadata.registryId, t)}</dd>
               </div>
             </dl>
           </Card>
 
           <Card className="space-y-2">
-            <h3 className="text-sm font-semibold text-white">Fechas relevantes</h3>
+            <h3 className="text-sm font-semibold text-white">{t({ en: "Relevant dates", es: "Fechas relevantes", pt: "Datas relevantes" })}</h3>
             <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-white/60">Minted</dt>
-                <dd className="text-white">{valueOrFallback(item.dates.mintedAt)}</dd>
+                <dt className="text-white/60">{t({ en: "Minted", es: "Minted", pt: "Minted" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.dates.mintedAt, t)}</dd>
               </div>
               <div>
-                <dt className="text-white/60">Compra</dt>
-                <dd className="text-white">{valueOrFallback(item.dates.purchasedAt)}</dd>
+                <dt className="text-white/60">{t({ en: "Purchase", es: "Compra", pt: "Compra" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.dates.purchasedAt, t)}</dd>
               </div>
               <div>
-                <dt className="text-white/60">Unlock Stake</dt>
-                <dd className="text-white">{valueOrFallback(item.dates.stakeUnlockAt)}</dd>
+                <dt className="text-white/60">{t({ en: "Stake unlock", es: "Unlock stake", pt: "Unlock stake" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.dates.stakeUnlockAt, t)}</dd>
               </div>
               <div>
-                <dt className="text-white/60">Ultima actualizacion</dt>
-                <dd className="text-white">{valueOrFallback(item.dates.lastUpdateAt)}</dd>
+                <dt className="text-white/60">{t({ en: "Last update", es: "Ultima actualizacion", pt: "Ultima atualizacao" })}</dt>
+                <dd className="text-white">{valueOrFallback(item.dates.lastUpdateAt, t)}</dd>
               </div>
             </dl>
           </Card>
 
           <Card className="space-y-2">
-            <h3 className="text-sm font-semibold text-white">Historial reciente</h3>
+            <h3 className="text-sm font-semibold text-white">{t({ en: "Recent history", es: "Historial reciente", pt: "Historico recente" })}</h3>
             {item.recentHistory.length === 0 ? (
-              <p className="text-sm text-white/70">Sin eventos recientes.</p>
+              <p className="text-sm text-white/70">{t({ en: "No recent events.", es: "Sin eventos recientes.", pt: "Sem eventos recentes." })}</p>
             ) : (
               <ul className="space-y-2">
                 {item.recentHistory.map((entry) => (
-                  <li key={`${entry.date}-${entry.event}`} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
-                    <p className="font-medium text-white">{entry.event}</p>
+                  <li key={`${entry.date}-${entry.event.es}`} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+                    <p className="font-medium text-white">{t(entry.event)}</p>
                     <p className="text-white/70">
-                      {entry.date} · {entry.status}
+                      {entry.date} · {t(entry.status)}
                     </p>
                   </li>
                 ))}
@@ -307,15 +393,15 @@ function DetailModal({
           </Card>
 
           <Card className="space-y-2">
-            <h3 className="text-sm font-semibold text-white">Documentos y enlaces del activo</h3>
+            <h3 className="text-sm font-semibold text-white">{t({ en: "Asset documents and links", es: "Documentos y enlaces del activo", pt: "Documentos e links do ativo" })}</h3>
             {item.documents.length === 0 ? (
-              <p className="text-sm text-white/70">No hay documentos disponibles para este activo.</p>
+              <p className="text-sm text-white/70">{t({ en: "No documents available for this asset.", es: "No hay documentos disponibles para este activo.", pt: "Nao ha documentos disponiveis para este ativo." })}</p>
             ) : (
               <ul className="space-y-1">
                 {item.documents.map((doc) => (
-                  <li key={doc.label}>
+                  <li key={doc.label.es}>
                     <Link className="text-sm text-cyan-300 hover:text-cyan-200" href={doc.href}>
-                      {doc.label}
+                      {t(doc.label)}
                     </Link>
                   </li>
                 ))}
@@ -325,7 +411,11 @@ function DetailModal({
 
           <Card className="space-y-3 border-amber-400/30 bg-amber-500/5">
             <p className="text-sm text-amber-100">
-              Aviso: si un NFT entra en staking, las transferencias quedan bloqueadas hasta el periodo de desbloqueo.
+              {t({
+                en: "Notice: when an NFT enters staking, transfers are blocked until unlock period ends.",
+                es: "Aviso: si un NFT entra en staking, las transferencias quedan bloqueadas hasta el periodo de desbloqueo.",
+                pt: "Aviso: se um NFT entra em staking, as transferencias ficam bloqueadas ate o periodo de desbloqueio."
+              })}
             </p>
             <div className="flex flex-wrap gap-2">
               {canStake && (
@@ -338,12 +428,12 @@ function DetailModal({
                   Unstake
                 </Button>
               )}
-              {(showOnlyRentas || canStake || canUnstake) && (
+              {(showOnlyYield || canStake || canUnstake) && (
                 <Link
                   className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 text-sm text-white/90 hover:bg-white/10"
                   href="/protected/rentas"
                 >
-                  Ver rentas
+                  {t({ en: "View yield", es: "Ver rentas", pt: "Ver rendas" })}
                 </Link>
               )}
             </div>
@@ -355,6 +445,7 @@ function DetailModal({
 }
 
 export function PortfolioModule(): ReactElement {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const forceEmpty = searchParams.get("state") === "empty";
   const [searchTerm, setSearchTerm] = useState("");
@@ -381,12 +472,12 @@ export function PortfolioModule(): ReactElement {
   return (
     <div className="space-y-4">
       <Card className="space-y-3">
-        <h2 className="text-lg font-semibold text-white">Activos NFT</h2>
-        <p className="text-sm text-white/70">Filtra por estado o busca por propiedad e ID para ubicar una posicion rapido.</p>
+        <h2 className="text-lg font-semibold text-white">{t({ en: "NFT assets", es: "Activos NFT", pt: "Ativos NFT" })}</h2>
+        <p className="text-sm text-white/70">{t({ en: "Filter by status or search by property and ID to find a position quickly.", es: "Filtra por estado o busca por propiedad e ID para ubicar una posicion rapido.", pt: "Filtre por status ou busque por propriedade e ID para localizar uma posicao rapidamente." })}</p>
         <div className="grid gap-3 md:grid-cols-[1fr,auto]">
           <Input
-            aria-label="Buscar NFT por propiedad o ID"
-            placeholder="Buscar por propiedad o ID..."
+            aria-label={t({ en: "Search NFT by property or ID", es: "Buscar NFT por propiedad o ID", pt: "Buscar NFT por propriedade ou ID" })}
+            placeholder={t({ en: "Search by property or ID...", es: "Buscar por propiedad o ID...", pt: "Buscar por propriedade ou ID..." })}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
@@ -400,7 +491,7 @@ export function PortfolioModule(): ReactElement {
                   variant={active ? "primary" : "ghost"}
                   onClick={() => setStatusFilter(filterOption.value)}
                 >
-                  {filterOption.label}
+                  {t(filterOption.label)}
                 </Button>
               );
             })}
@@ -409,13 +500,13 @@ export function PortfolioModule(): ReactElement {
       </Card>
 
       {filteredData.length === 0 ? (
-        <PortfolioEmptyState hasFilters={hasFilters} />
+        <PortfolioEmptyState hasFilters={hasFilters} t={t} />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {filteredData.map((item) => (
             <Card key={item.id} className="space-y-3">
               <button
-                aria-label={`Ver detalle de ${item.property}`}
+                aria-label={t({ en: `View detail for ${item.property}`, es: `Ver detalle de ${item.property}`, pt: `Ver detalhe de ${item.property}` })}
                 className="relative block aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/10 bg-slate-900/60"
                 onClick={() => setSelectedItem(item)}
                 type="button"
@@ -433,7 +524,7 @@ export function PortfolioModule(): ReactElement {
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm font-semibold text-white">{item.property}</p>
                 <span className={`rounded-full px-2 py-1 text-xs ${statusClassName(item.status)}`}>
-                  {statusLabel(item.status)}
+                  {statusLabel(item.status, t)}
                 </span>
               </div>
 
@@ -443,21 +534,21 @@ export function PortfolioModule(): ReactElement {
                   <dd className="mt-1 font-medium text-white">{item.id}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Cantidad / Fraccion</dt>
+                  <dt className="text-white/60">{t({ en: "Quantity / Fraction", es: "Cantidad / Fraccion", pt: "Quantidade / Fracao" })}</dt>
                   <dd className="mt-1 font-medium text-white">{item.fraction}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Precio de compra</dt>
+                  <dt className="text-white/60">{t({ en: "Purchase price", es: "Precio de compra", pt: "Preco de compra" })}</dt>
                   <dd className="mt-1 font-medium text-white">{item.purchasePrice}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Rentabilidad estimada</dt>
+                  <dt className="text-white/60">{t({ en: "Estimated yield", es: "Rentabilidad estimada", pt: "Rentabilidade estimada" })}</dt>
                   <dd className="mt-1 font-medium text-emerald-300">{item.estimatedYield}</dd>
                 </div>
               </dl>
 
               <Button className="min-h-11 w-full" variant="outline" onClick={() => setSelectedItem(item)}>
-                Ver detalle
+                {t({ en: "View detail", es: "Ver detalle", pt: "Ver detalhe" })}
               </Button>
             </Card>
           ))}

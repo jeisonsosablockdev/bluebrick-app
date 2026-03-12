@@ -1,20 +1,47 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { H2, Lead } from "@/components/ui/typography";
 
-const steps = [
-  "Regístrate y valida identidad",
-  "Conecta tu perfil de inversión",
-  "Selecciona propiedad objetivo",
-  "Recibe rendimiento periódicamente"
-];
-
 export function ProcessSection() {
+  const { t } = useI18n();
+
+  const steps = [
+    t({
+      en: "Sign up and verify your identity",
+      es: "Registrate y valida identidad",
+      pt: "Cadastre-se e valide sua identidade"
+    }),
+    t({
+      en: "Connect your investment profile",
+      es: "Conecta tu perfil de inversion",
+      pt: "Conecte seu perfil de investimento"
+    }),
+    t({
+      en: "Select your target property",
+      es: "Selecciona propiedad objetivo",
+      pt: "Selecione o imovel alvo"
+    }),
+    t({
+      en: "Receive periodic yield",
+      es: "Recibe rendimiento periodicamente",
+      pt: "Receba rendimento periodico"
+    })
+  ];
+
   return (
     <section className="rounded-3xl border border-white/10 bg-gradientPanel p-7 md:p-10">
       <div className="mb-8 text-center">
-        <H2 className="text-white">Cómo Empezar</H2>
-        <Lead className="mx-auto mt-2 max-w-xl">Cuatro pasos simples para comenzar a generar ingresos pasivos.</Lead>
+        <H2 className="text-white">{t({ en: "How to Start", es: "Como Empezar", pt: "Como Comecar" })}</H2>
+        <Lead className="mx-auto mt-2 max-w-xl">
+          {t({
+            en: "Four simple steps to start generating passive income.",
+            es: "Cuatro pasos simples para comenzar a generar ingresos pasivos.",
+            pt: "Quatro passos simples para comecar a gerar renda passiva."
+          })}
+        </Lead>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
@@ -29,7 +56,7 @@ export function ProcessSection() {
       </div>
 
       <div className="mt-7 text-center">
-        <Button className="px-7">Empieza con una cuenta gratis</Button>
+        <Button className="px-7">{t({ en: "Start with a free account", es: "Empieza con una cuenta gratis", pt: "Comece com uma conta gratis" })}</Button>
       </div>
     </section>
   );

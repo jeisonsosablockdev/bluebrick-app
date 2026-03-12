@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import type { ListingStatus } from "@/lib/property-service";
 import { Input } from "@/components/ui/input";
 
@@ -18,6 +19,7 @@ type MarketplaceFiltersProps = {
 };
 
 export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceFiltersProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [search, setSearch] = useState(currentFilters.search ?? "");
   const [city, setCity] = useState(currentFilters.city ?? "");
@@ -67,19 +69,19 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Input
-          aria-label="Buscar propiedad"
-          placeholder="Buscar por nombre o ciudad"
+          aria-label={t({ en: "Search property", es: "Buscar propiedad", pt: "Buscar imovel" })}
+          placeholder={t({ en: "Search by name or city", es: "Buscar por nombre o ciudad", pt: "Buscar por nome ou cidade" })}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
 
         <select
-          aria-label="Filtrar por ciudad"
+          aria-label={t({ en: "Filter by city", es: "Filtrar por ciudad", pt: "Filtrar por cidade" })}
           value={city}
           onChange={(event) => setCity(event.target.value)}
           className="h-[46px] w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
         >
-          <option value="">Todas las ciudades</option>
+          <option value="">{t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" })}</option>
           {cityOptions.map((city) => (
             <option key={city} value={city}>
               {city}
@@ -88,22 +90,22 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
         </select>
 
         <select
-          aria-label="Filtrar por estado"
+          aria-label={t({ en: "Filter by status", es: "Filtrar por estado", pt: "Filtrar por status" })}
           value={status}
           onChange={(event) => setStatus(event.target.value as ListingStatus | "")}
           className="h-[46px] w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
         >
-          <option value="">Todos los estados</option>
-          <option value="active">Activo</option>
-          <option value="funding">Funding</option>
-          <option value="sold-out">Sold out</option>
+          <option value="">{t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" })}</option>
+          <option value="active">{t({ en: "Active", es: "Activo", pt: "Ativo" })}</option>
+          <option value="funding">{t({ en: "Funding", es: "Funding", pt: "Captação" })}</option>
+          <option value="sold-out">{t({ en: "Sold out", es: "Agotado", pt: "Esgotado" })}</option>
         </select>
 
         <Input
-          aria-label="ROI minimo"
+          aria-label={t({ en: "Minimum ROI", es: "ROI minimo", pt: "ROI minimo" })}
           min={0}
           type="number"
-          placeholder="ROI minimo %"
+          placeholder={t({ en: "Minimum ROI %", es: "ROI minimo %", pt: "ROI minimo %" })}
           value={minRoi}
           onChange={(event) => setMinRoi(event.target.value)}
         />
@@ -118,7 +120,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           }}
           className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
         >
-          Clear filters
+          {t({ en: "Clear filters", es: "Limpiar filtros", pt: "Limpar filtros" })}
         </Link>
       </div>
     </div>

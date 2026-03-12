@@ -79,4 +79,4 @@
   - App restart invalidates sessions.
   - Shared store (for example Redis) is required before horizontal scaling.
 
-Last Updated: 2026-03-12 07:31:36 UTC
+Last Updated: 2026-03-12 13:16:59 UTC

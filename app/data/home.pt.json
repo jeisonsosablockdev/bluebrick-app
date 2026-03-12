@@ -1,0 +1,59 @@
+{
+  "heroStats": [
+    { "label": "Investidores", "value": "15K+" },
+    { "label": "Imoveis", "value": "120+" },
+    { "label": "Rentabilidade", "value": "20%" },
+    { "label": "Capital", "value": "$50M+" }
+  ],
+  "features": [
+    {
+      "title": "Tokenizacao Segura",
+      "description": "Transforme ativos reais em fracoes digitais com rastreabilidade completa.",
+      "action": "Explorar"
+    },
+    {
+      "title": "Renda Recorrente",
+      "description": "Receba pagamentos periodicos de rendimento com painel claro de acompanhamento.",
+      "action": "Ver Fluxo"
+    },
+    {
+      "title": "Liquidez Flexivel",
+      "description": "Compre ou venda fracoes com regras de mercado transparentes.",
+      "action": "Saiba Mais"
+    }
+  ],
+  "properties": [
+    {
+      "title": "Edificio Central Norte",
+      "location": "Bogota, CO",
+      "roi": "12.8% ROI",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Complexo Marberia",
+      "location": "Medellin, CO",
+      "roi": "11.4% ROI",
+      "image": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Torre do Rio",
+      "location": "CDMX, MX",
+      "roi": "13.2% ROI",
+      "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "Como comeco na BRIDS?",
+      "answer": "Cadastre-se, conclua a verificacao e selecione um imovel fracionado no painel principal."
+    },
+    {
+      "question": "Qual e o investimento minimo?",
+      "answer": "Voce pode comecar com valores baixos dependendo do imovel, com diversificacao progressiva."
+    },
+    {
+      "question": "Como os retornos sao distribuidos?",
+      "answer": "A plataforma calcula e distribui renda passiva de acordo com sua participacao fracionada."
+    }
+  ]
+}

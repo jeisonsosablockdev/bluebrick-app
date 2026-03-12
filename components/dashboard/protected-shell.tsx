@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { useMemo, useState } from "react";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { WalletModal } from "@/components/WalletModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,45 +24,6 @@ type NavItem = {
   description: string;
 };
 
-const DASHBOARD_NAV: NavItem[] = [
-  {
-    href: "/protected",
-    label: "Overview",
-    title: "Overview",
-    description: "Resumen general de cuenta y KPIs principales."
-  },
-  {
-    href: "/protected/portfolio",
-    label: "Mi Portfolio",
-    title: "Mi Portfolio",
-    description: "Consulta tus NFTs, valor y estado de posiciones."
-  },
-  {
-    href: "/protected/stake",
-    label: "Stake / Unstake",
-    title: "Stake / Unstake",
-    description: "Gestiona el estado de staking de tus activos."
-  },
-  {
-    href: "/protected/rentas",
-    label: "Rentas / Claim",
-    title: "Rentas / Claim",
-    description: "Monitorea rentas disponibles y acciones de claim."
-  },
-  {
-    href: "/protected/historial",
-    label: "Historial",
-    title: "Historial",
-    description: "Audita eventos recientes y movimientos de cuenta."
-  },
-  {
-    href: "/protected/perfil",
-    label: "Perfil / Soporte",
-    title: "Perfil / Soporte",
-    description: "Administra configuracion de perfil y canales de soporte."
-  }
-];
-
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
 }
@@ -71,17 +33,84 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, children }: ProtectedShellProps): ReactElement {
+  const { t } = useI18n();
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  const dashboardNav = useMemo<NavItem[]>(
+    () => [
+      {
+        href: "/protected",
+        label: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
+        title: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
+        description: t({
+          en: "General account summary and main KPIs.",
+          es: "Resumen general de cuenta y KPIs principales.",
+          pt: "Resumo geral da conta e principais KPIs."
+        })
+      },
+      {
+        href: "/protected/portfolio",
+        label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
+        title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
+        description: t({
+          en: "Review your NFTs, valuation and position status.",
+          es: "Consulta tus NFTs, valor y estado de posiciones.",
+          pt: "Consulte seus NFTs, valor e estado das posicoes."
+        })
+      },
+      {
+        href: "/protected/stake",
+        label: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
+        title: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
+        description: t({
+          en: "Manage staking status for your assets.",
+          es: "Gestiona el estado de staking de tus activos.",
+          pt: "Gerencie o status de staking dos seus ativos."
+        })
+      },
+      {
+        href: "/protected/rentas",
+        label: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
+        title: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
+        description: t({
+          en: "Track available yield and claim actions.",
+          es: "Monitorea rentas disponibles y acciones de claim.",
+          pt: "Monitore rendas disponiveis e acoes de claim."
+        })
+      },
+      {
+        href: "/protected/historial",
+        label: t({ en: "History", es: "Historial", pt: "Historico" }),
+        title: t({ en: "History", es: "Historial", pt: "Historico" }),
+        description: t({
+          en: "Audit recent events and account movements.",
+          es: "Audita eventos recientes y movimientos de cuenta.",
+          pt: "Audite eventos recentes e movimentacoes da conta."
+        })
+      },
+      {
+        href: "/protected/perfil",
+        label: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
+        title: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
+        description: t({
+          en: "Manage profile settings and support channels.",
+          es: "Administra configuracion de perfil y canales de soporte.",
+          pt: "Gerencie configuracoes de perfil e canais de suporte."
+        })
+      }
+    ],
+    [t]
+  );
+
   const currentModule = useMemo<NavItem>(() => {
-    const active = DASHBOARD_NAV.find((item) => isActive(pathname, item.href));
-    return active ?? DASHBOARD_NAV[0];
-  }, [pathname]);
+    const active = dashboardNav.find((item) => isActive(pathname, item.href));
+    return active ?? dashboardNav[0];
+  }, [dashboardNav, pathname]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto mb-4 max-w-7xl">
+    <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-6 md:py-8">
+      <div className="mx-auto mb-4 max-w-6xl">
         <WalletModal
           initialAuth={{
             authenticated: true,
@@ -95,10 +124,12 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
         <aside className="hidden lg:block">
           <Card className="glass-surface sticky top-6 h-[calc(100vh-3rem)] space-y-4 bg-transparent p-3">
             <div>
-              <p className="px-2 text-xs uppercase tracking-[0.2em] text-white/50">Navegacion</p>
+              <p className="px-2 text-xs uppercase tracking-[0.2em] text-white/50">
+                {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
+              </p>
             </div>
             <nav className="space-y-1">
-              {DASHBOARD_NAV.map((item) => {
+              {dashboardNav.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
                   <Link
@@ -121,12 +152,12 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
           <header className="space-y-4 border-b border-white/10 pb-4">
             <div className="flex items-center justify-between gap-3">
               <Button
-                aria-label="Abrir menu del dashboard"
+                aria-label={t({ en: "Open dashboard menu", es: "Abrir menu del dashboard", pt: "Abrir menu do dashboard" })}
                 className="min-h-11 min-w-11 px-0 lg:hidden"
                 variant="ghost"
                 onClick={() => setIsDrawerOpen(true)}
               >
-                Menu
+                {t({ en: "Menu", es: "Menu", pt: "Menu" })}
               </Button>
               <div className="ml-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -134,12 +165,14 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
               </div>
             </div>
             <nav aria-label="breadcrumb" className="text-xs text-white/60">
-              <span className="text-white/80">Dashboard</span>
+              <span className="text-white/80">{t({ en: "Dashboard", es: "Dashboard", pt: "Dashboard" })}</span>
               <span className="px-1">/</span>
               <span>{currentModule.title}</span>
             </nav>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Investor Dashboard</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
+                {t({ en: "Investor Dashboard", es: "Dashboard de inversionista", pt: "Dashboard do investidor" })}
+              </p>
               <h1 className="text-2xl font-semibold text-white">{currentModule.title}</h1>
               <p className="mt-1 text-sm text-white/70">{currentModule.description}</p>
             </div>
@@ -152,20 +185,22 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
       {isDrawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
-            aria-label="Cerrar menu"
+            aria-label={t({ en: "Close menu", es: "Cerrar menu", pt: "Fechar menu" })}
             className="absolute inset-0 bg-black/70"
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
           <aside className="glass-surface relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4">
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Navegacion</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
+              </p>
               <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
-                Cerrar
+                {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
               </Button>
             </div>
             <nav className="space-y-1">
-              {DASHBOARD_NAV.map((item) => {
+              {dashboardNav.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
                   <Link

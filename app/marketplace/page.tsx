@@ -5,6 +5,8 @@ import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { getServerLocale } from "@/lib/i18n-server";
+import { localize } from "@/lib/i18n";
 import { listProperties, PROPERTY_CITIES, type ListingStatus, type PropertyFilters } from "@/lib/property-service";
 import { getRoleForWallet } from "@/lib/rbac";
 
@@ -40,6 +42,7 @@ function parseFilters(raw: Record<string, string | string[] | undefined>): Prope
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const locale = await getServerLocale();
   const filters = parseFilters(await searchParams);
   const properties = listProperties(filters);
 
@@ -54,10 +57,22 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       />
 
       <section className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Marketplace</p>
-        <H1 className="text-white">Marketplace de propiedades tokenizadas</H1>
+        <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">
+          {localize(locale, { en: "Marketplace", es: "Marketplace", pt: "Marketplace" })}
+        </p>
+        <H1 className="text-white">
+          {localize(locale, {
+            en: "Tokenized property marketplace",
+            es: "Marketplace de propiedades tokenizadas",
+            pt: "Marketplace de propriedades tokenizadas"
+          })}
+        </H1>
         <Lead className="max-w-3xl">
-          Revisa disponibilidad, supply y datos relevantes de inversion antes de comprar fracciones NFT.
+          {localize(locale, {
+            en: "Review availability, supply and investment data before purchasing NFT fractions.",
+            es: "Revisa disponibilidad, supply y datos relevantes de inversion antes de comprar fracciones NFT.",
+            pt: "Revise disponibilidade, supply e dados relevantes de investimento antes de comprar fracoes NFT."
+          })}
         </Lead>
       </section>
 
@@ -67,7 +82,13 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
       <section className="mt-6">
         {properties.length === 0 ? (
-          <Card className="p-4 text-sm text-slate-300">No hay propiedades para los filtros seleccionados.</Card>
+          <Card className="p-4 text-sm text-slate-300">
+            {localize(locale, {
+              en: "There are no properties matching the selected filters.",
+              es: "No hay propiedades para los filtros seleccionados.",
+              pt: "Nao ha propriedades para os filtros selecionados."
+            })}
+          </Card>
         ) : <MarketplaceGridClient properties={properties} />}
       </section>
 

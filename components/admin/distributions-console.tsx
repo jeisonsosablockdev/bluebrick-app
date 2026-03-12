@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import type { ReactElement } from "react";
+import { useState } from "react";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -51,18 +52,28 @@ function statusClass(status: DistributionStatus): string {
   return "bg-slate-500/20 text-slate-200";
 }
 
+function statusLabel(status: DistributionStatus, t: ReturnType<typeof useI18n>["t"]): string {
+  if (status === "draft") return t({ en: "Draft", es: "Borrador", pt: "Rascunho" });
+  if (status === "calculated") return t({ en: "Calculated", es: "Calculado", pt: "Calculado" });
+  if (status === "ready") return t({ en: "Ready", es: "Listo", pt: "Pronto" });
+  if (status === "executing") return t({ en: "Executing", es: "Ejecutando", pt: "Executando" });
+  if (status === "completed") return t({ en: "Completed", es: "Completado", pt: "Concluido" });
+  return t({ en: "Failed", es: "Fallido", pt: "Falhou" });
+}
+
 export function DistributionsConsole(): ReactElement {
+  const { t } = useI18n();
   const [selected, setSelected] = useState<DistributionBatch | null>(null);
 
   return (
     <div className="space-y-4">
       <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">Distribucion</h2>
-        <p className="text-sm text-white/75">Gestion de lotes de distribucion y estado de ejecucion.</p>
+        <h2 className="text-lg font-semibold text-white">{t({ en: "Distribution", es: "Distribucion", pt: "Distribuicao" })}</h2>
+        <p className="text-sm text-white/75">{t({ en: "Manage distribution batches and execution status.", es: "Gestion de lotes de distribucion y estado de ejecucion.", pt: "Gestao de lotes de distribuicao e status de execucao." })}</p>
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">Lotes de distribucion</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Distribution batches", es: "Lotes de distribucion", pt: "Lotes de distribuicao" })}</p>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
@@ -75,7 +86,7 @@ export function DistributionsConsole(): ReactElement {
                 <th className="px-2 py-2 font-medium">status</th>
                 <th className="px-2 py-2 font-medium">createdAt</th>
                 <th className="px-2 py-2 font-medium">executedAt</th>
-                <th className="px-2 py-2 font-medium">acciones</th>
+                <th className="px-2 py-2 font-medium">{t({ en: "actions", es: "acciones", pt: "acoes" })}</th>
               </tr>
             </thead>
             <tbody>
@@ -87,26 +98,26 @@ export function DistributionsConsole(): ReactElement {
                   <td className="px-2 py-2 text-white">{row.eligibleWallets}</td>
                   <td className="px-2 py-2 text-white">{row.totalAmount}</td>
                   <td className="px-2 py-2">
-                    <span className={`rounded-full px-2 py-1 text-xs ${statusClass(row.status)}`}>{row.status}</span>
+                    <span className={`rounded-full px-2 py-1 text-xs ${statusClass(row.status)}`}>{statusLabel(row.status, t)}</span>
                   </td>
                   <td className="px-2 py-2 text-white">{row.createdAt}</td>
                   <td className="px-2 py-2 text-white">{row.executedAt}</td>
                   <td className="px-2 py-2">
                     <div className="flex flex-wrap gap-1">
                       <Button className="min-h-9 px-3 py-1 text-xs" variant="ghost">
-                        Generar preview
+                        {t({ en: "Generate preview", es: "Generar preview", pt: "Gerar preview" })}
                       </Button>
                       <Button className="min-h-9 px-3 py-1 text-xs" variant="ghost">
-                        Ver elegibles
+                        {t({ en: "View eligible", es: "Ver elegibles", pt: "Ver elegiveis" })}
                       </Button>
                       <Button className="min-h-9 px-3 py-1 text-xs" variant="outline">
-                        Ejecutar lote
+                        {t({ en: "Run batch", es: "Ejecutar lote", pt: "Executar lote" })}
                       </Button>
                       <Button className="min-h-9 px-3 py-1 text-xs" variant="ghost" onClick={() => setSelected(row)}>
-                        Ver detalle
+                        {t({ en: "View detail", es: "Ver detalle", pt: "Ver detalhe" })}
                       </Button>
                       <Button className="min-h-9 px-3 py-1 text-xs" variant="ghost">
-                        Reintentar
+                        {t({ en: "Retry", es: "Reintentar", pt: "Tentar novamente" })}
                       </Button>
                     </div>
                   </td>
@@ -119,32 +130,37 @@ export function DistributionsConsole(): ReactElement {
 
       <Card className="space-y-2">
         <p className="text-sm text-white/75">
-          Integraciones previstas: <span className="font-semibold text-white">Squads</span> (propuestas) y{" "}
-          <span className="font-semibold text-white">Streamflow</span> (streams por wallet).
+          {t({ en: "Planned integrations", es: "Integraciones previstas", pt: "Integracoes previstas" })}: <span className="font-semibold text-white">Squads</span> ({t({ en: "proposals", es: "propuestas", pt: "propostas" })}){" "}
+          {t({ en: "and", es: "y", pt: "e" })} <span className="font-semibold text-white">Streamflow</span> ({t({ en: "streams by wallet", es: "streams por wallet", pt: "streams por wallet" })}).
         </p>
         <Link href="/admin/treasury">
           <Button className="min-h-11" variant="outline">
-            Ir a tesoreria
+            {t({ en: "Go to treasury", es: "Ir a tesoreria", pt: "Ir para tesouraria" })}
           </Button>
         </Link>
       </Card>
 
       {selected && (
         <div className="fixed inset-0 z-50">
-          <button aria-label="Cerrar detalle distribucion" className="absolute inset-0 bg-black/70" onClick={() => setSelected(null)} type="button" />
+          <button
+            aria-label={t({ en: "Close distribution detail", es: "Cerrar detalle distribucion", pt: "Fechar detalhe de distribuicao" })}
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setSelected(null)}
+            type="button"
+          />
           <aside className="relative ml-auto h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-[#070b14] p-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Detalle de lote {selected.distributionId}</h3>
+              <h3 className="text-lg font-semibold text-white">{t({ en: "Batch detail", es: "Detalle de lote", pt: "Detalhe do lote" })} {selected.distributionId}</h3>
               <Button className="min-h-11" variant="ghost" onClick={() => setSelected(null)}>
-                Cerrar
+                {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
               </Button>
             </div>
             <Card className="mt-4 space-y-2 text-sm text-white/80">
-              <p>Resumen del periodo: {selected.period}</p>
-              <p>Wallets elegibles: {selected.eligibleWallets}</p>
-              <p>Monto total: {selected.totalAmount}</p>
-              <p>Estado de streams: ready</p>
-              <p>Errores: ninguno</p>
+              <p>{t({ en: "Period summary", es: "Resumen del periodo", pt: "Resumo do periodo" })}: {selected.period}</p>
+              <p>{t({ en: "Eligible wallets", es: "Wallets elegibles", pt: "Wallets elegiveis" })}: {selected.eligibleWallets}</p>
+              <p>{t({ en: "Total amount", es: "Monto total", pt: "Valor total" })}: {selected.totalAmount}</p>
+              <p>{t({ en: "Stream status", es: "Estado de streams", pt: "Status dos streams" })}: ready</p>
+              <p>{t({ en: "Errors", es: "Errores", pt: "Erros" })}: {t({ en: "none", es: "ninguno", pt: "nenhum" })}</p>
             </Card>
           </aside>
         </div>

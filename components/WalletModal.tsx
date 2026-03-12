@@ -8,7 +8,10 @@ import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
+import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { fetchAuthMe, startSiws, type AuthMeResponse } from "@/lib/auth-client";
 import { getWalletModalAutoClose } from "@/lib/solana";
@@ -24,45 +27,89 @@ type NavEntry = {
   label: string;
 };
 
-const SIGN_IN_STATEMENT = "Sign this message to authenticate with the app.";
+type Translate = (text: LocaleText) => string;
 
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
 }
 
-function getFriendlyWalletErrorMessage(error: unknown): string {
+function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
   if (!(error instanceof Error)) {
-    return "Something went wrong. Please try again.";
+    return t({
+      en: "Something went wrong. Please try again.",
+      es: "Ocurrio un problema. Intentalo de nuevo.",
+      pt: "Algo deu errado. Tente novamente."
+    });
   }
 
   const message = error.message.toLowerCase();
 
   if (message.includes("rejected") || message.includes("cancelled") || message.includes("closed")) {
-    return "Connection cancelled.";
+    return t({
+      en: "Connection cancelled.",
+      es: "Conexion cancelada.",
+      pt: "Conexao cancelada."
+    });
   }
 
   if (message.includes("wallet not found")) {
-    return "Phantom wallet was not found in this browser.";
+    return t({
+      en: "Phantom wallet was not found in this browser.",
+      es: "No se encontro Phantom en este navegador.",
+      pt: "A carteira Phantom nao foi encontrada neste navegador."
+    });
+  }
+
+  if (message.includes("public key is unavailable")) {
+    return t({
+      en: "Wallet connected but public key is unavailable.",
+      es: "La wallet se conecto, pero no hay una clave publica disponible.",
+      pt: "A carteira conectou, mas nao ha chave publica disponivel."
+    });
+  }
+
+  if (message.includes("does not support message signing")) {
+    return t({
+      en: "Current wallet does not support message signing.",
+      es: "La wallet actual no soporta firma de mensajes.",
+      pt: "A carteira atual nao suporta assinatura de mensagens."
+    });
+  }
+
+  if (message.includes("could not check current session")) {
+    return t({
+      en: "Could not check current session.",
+      es: "No se pudo verificar la sesion actual.",
+      pt: "Nao foi possivel verificar a sessao atual."
+    });
+  }
+
+  if (message.includes("could not clear session")) {
+    return t({
+      en: "Could not clear session.",
+      es: "No se pudo cerrar la sesion.",
+      pt: "Nao foi possivel encerrar a sessao."
+    });
   }
 
   return error.message;
 }
 
-function getStatusText(phase: ActionPhase): string | null {
+function getStatusText(phase: ActionPhase, t: Translate): string | null {
   if (phase === "connecting") {
-    return "Connecting...";
+    return t({ en: "Connecting...", es: "Conectando...", pt: "Conectando..." });
   }
 
   if (phase === "signing") {
-    return "Signing...";
+    return t({ en: "Signing...", es: "Firmando...", pt: "Assinando..." });
   }
 
   if (phase === "verifying") {
-    return "Verifying...";
+    return t({ en: "Verifying...", es: "Verificando...", pt: "Verificando..." });
   }
 
   if (phase === "disconnecting") {
-    return "Disconnecting...";
+    return t({ en: "Disconnecting...", es: "Desconectando...", pt: "Desconectando..." });
   }
 
   return null;
@@ -77,6 +124,7 @@ function isActivePath(pathname: string, href: string): boolean {
 }
 
 export function WalletModal({ initialAuth }: WalletModalProps) {
+  const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -92,35 +140,48 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
   const isConnected = connected && Boolean(walletPublicKey);
   const isBusy = phase !== "idle" || connecting || disconnecting;
-  const statusText = getStatusText(phase) ?? (connecting ? "Connecting..." : disconnecting ? "Disconnecting..." : null);
+  const statusText = getStatusText(phase, t)
+    ?? (
+      connecting
+        ? t({ en: "Connecting...", es: "Conectando...", pt: "Conectando..." })
+        : disconnecting
+          ? t({ en: "Disconnecting...", es: "Desconectando...", pt: "Desconectando..." })
+          : null
+    );
 
   const menuEntries = useMemo<NavEntry[]>(() => {
-    const entries: NavEntry[] = [{ href: "/marketplace", label: "Marketplace" }];
+    const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
 
     if (!authState.authenticated) {
       return entries;
     }
 
-    entries.push({ href: "/protected", label: "Profile" });
+    entries.push({ href: "/protected", label: t({ en: "Profile", es: "Perfil", pt: "Perfil" }) });
 
     if (authState.role === "admin") {
-      entries.push({ href: "/admin", label: "Dashboard" });
+      entries.push({ href: "/admin", label: t({ en: "Dashboard", es: "Dashboard", pt: "Dashboard" }) });
     }
 
     return entries;
-  }, [authState.authenticated, authState.role]);
+  }, [authState.authenticated, authState.role, t]);
 
   const primaryLabel = useMemo(() => {
     if (authState.authenticated) {
-      return "Signed in";
+      return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
     }
 
     if (isConnected) {
-      return "Sign in";
+      return t({ en: "Sign in", es: "Iniciar sesion", pt: "Entrar" });
     }
 
-    return "Connect & Sign in";
-  }, [authState.authenticated, isConnected]);
+    return t({ en: "Connect & Sign in", es: "Conectar e iniciar sesion", pt: "Conectar e entrar" });
+  }, [authState.authenticated, isConnected, t]);
+
+  const signInStatement = t({
+    en: "Sign this message to authenticate with the app.",
+    es: "Firma este mensaje para autenticarte en la app.",
+    pt: "Assine esta mensagem para se autenticar no app."
+  });
 
   useEffect(() => {
     setAuthState(initialAuth);
@@ -168,10 +229,16 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         const currentAuth = await fetchAuthMe();
         setAuthState(currentAuth);
       } catch {
-        setLastError("Could not check current session.");
+        setLastError(
+          t({
+            en: "Could not check current session.",
+            es: "No se pudo verificar la sesion actual.",
+            pt: "Nao foi possivel verificar a sessao atual."
+          })
+        );
       }
     })();
-  }, [isOpen]);
+  }, [isOpen, t]);
 
   useEffect(() => {
     const hasConnectedNow = connected && Boolean(walletPublicKey);
@@ -223,7 +290,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       const verifiedPublicKey = await startSiws({
         publicKey: activePublicKey,
         signMessage,
-        statement: SIGN_IN_STATEMENT,
+        statement: signInStatement,
         onStatus: (status) => setPhase(status)
       });
 
@@ -234,7 +301,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         setAuthState({ authenticated: true, pubkey: verifiedPublicKey, role: "user" });
       }
     } catch (error) {
-      setLastError(getFriendlyWalletErrorMessage(error));
+      setLastError(getFriendlyWalletErrorMessage(error, t));
     } finally {
       setPhase("idle");
     }
@@ -253,17 +320,25 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           await disconnect();
         }
       } catch (error) {
-        disconnectError = getFriendlyWalletErrorMessage(error);
+        disconnectError = getFriendlyWalletErrorMessage(error, t);
       }
 
       try {
         const logoutResponse = await fetch("/api/auth/logout", { method: "POST" });
 
         if (!logoutResponse.ok) {
-          logoutError = "Could not clear session.";
+          logoutError = t({
+            en: "Could not clear session.",
+            es: "No se pudo cerrar la sesion.",
+            pt: "Nao foi possivel encerrar a sessao."
+          });
         }
       } catch {
-        logoutError = "Could not clear session.";
+        logoutError = t({
+          en: "Could not clear session.",
+          es: "No se pudo cerrar la sesion.",
+          pt: "Nao foi possivel encerrar a sessao."
+        });
       }
 
       if (disconnectError || logoutError) {
@@ -285,8 +360,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   }
 
   const accountStatusText = authState.authenticated && authState.pubkey
-    ? `${authState.role === "admin" ? "Admin" : "User"}: ${truncatePublicKey(authState.pubkey)}`
-    : "Not signed in";
+    ? `${authState.role === "admin" ? t({ en: "Admin", es: "Admin", pt: "Admin" }) : t({ en: "User", es: "Usuario", pt: "Usuario" })}: ${truncatePublicKey(authState.pubkey)}`
+    : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
 
   return (
     <>
@@ -299,7 +374,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
             <Link
               href="/"
               className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
-              aria-label="Back to home"
+              aria-label={t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar para inicio" })}
             >
               <Image src="/brand/brids-mark.svg" alt="BRIDS mark" width={24} height={24} className="h-6 w-auto sm:hidden" priority />
               <Image src="/brand/brids-logo.svg" alt="BRIDS" width={124} height={41} className="hidden h-7 w-auto sm:block" priority />
@@ -332,15 +407,23 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               type="button"
               className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20 sm:hidden"
               onClick={() => setIsMobileMenuOpen((previous) => !previous)}
-              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-label={
+                isMobileMenuOpen
+                  ? t({ en: "Close navigation menu", es: "Cerrar menu de navegacion", pt: "Fechar menu de navegacao" })
+                  : t({ en: "Open navigation menu", es: "Abrir menu de navegacion", pt: "Abrir menu de navegacao" })
+              }
               aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? "×" : "☰"}
             </button>
 
+            <div className="hidden shrink-0 sm:block">
+              <LanguageSwitcher />
+            </div>
+
             <div className="group relative shrink-0">
               <Button onClick={() => setIsOpen(true)} className="min-h-11 px-4">
-                Wallet
+                {t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
               </Button>
               {authState.authenticated && authState.pubkey ? (
                 <div
@@ -355,6 +438,9 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
           {isMobileMenuOpen ? (
             <nav className="relative z-10 mt-3 flex flex-wrap items-center gap-2 sm:hidden" aria-label="Mobile navigation">
+              <div className="w-full">
+                <LanguageSwitcher />
+              </div>
               {menuEntries.map((entry) => {
                 const active = isActivePath(pathname, entry.href);
 
@@ -394,16 +480,22 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
-                    Wallet Authentication
+                    {t({ en: "Wallet Authentication", es: "Autenticacion de Wallet", pt: "Autenticacao de Wallet" })}
                   </h2>
-                  <p className="text-sm text-white/70">Connect Phantom and sign in with SIWS.</p>
+                  <p className="text-sm text-white/70">
+                    {t({
+                      en: "Connect Phantom and sign in with SIWS.",
+                      es: "Conecta Phantom e inicia sesion con SIWS.",
+                      pt: "Conecte a Phantom e entre com SIWS."
+                    })}
+                  </p>
                 </div>
                 <button
                   ref={closeButtonRef}
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 px-3 text-sm text-white/80 transition hover:bg-white/20"
-                  aria-label="Close wallet modal"
+                  aria-label={t({ en: "Close wallet modal", es: "Cerrar modal de wallet", pt: "Fechar modal da wallet" })}
                 >
                   ×
                 </button>
@@ -418,21 +510,31 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
               {isConnected ? (
                 <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-sm text-white/85">Connected: {truncatePublicKey(walletPublicKey ?? "")}</p>
+                  <p className="text-sm text-white/85">
+                    {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+                  </p>
                 </div>
               ) : (
                 <p className="rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/70">
-                  Connect Phantom to continue with SIWS authentication.
+                  {t({
+                    en: "Connect Phantom to continue with SIWS authentication.",
+                    es: "Conecta Phantom para continuar con la autenticacion SIWS.",
+                    pt: "Conecte a Phantom para continuar com a autenticacao SIWS."
+                  })}
                 </p>
               )}
 
               {!isPhantomInstalled ? (
                 <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                  Phantom is not installed.{" "}
+                  {t({
+                    en: "Phantom is not installed.",
+                    es: "Phantom no esta instalada.",
+                    pt: "A Phantom nao esta instalada."
+                  })}{" "}
                   <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href="https://phantom.app/" target="_blank" rel="noreferrer">
-                    Install Phantom
+                    {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
                   </a>{" "}
-                  and retry.
+                  {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
                 </p>
               ) : null}
 
@@ -442,12 +544,12 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 </Button>
 
                 <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                  Logout & Disconnect
+                  {t({ en: "Logout & Disconnect", es: "Cerrar sesion y desconectar", pt: "Sair e desconectar" })}
                 </Button>
               </div>
 
               <Button variant="ghost" onClick={copyAddress} disabled={!walletPublicKey} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
-                Copy Address
+                {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
               </Button>
 
               {lastError ? (

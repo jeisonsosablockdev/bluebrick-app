@@ -6,9 +6,10 @@ type AdminModulePlaceholderProps = {
   title: string;
   subtitle: string;
   highlights: string[];
+  listTitle: string;
 };
 
-export function AdminModulePlaceholder({ title, subtitle, highlights }: AdminModulePlaceholderProps): ReactElement {
+export function AdminModulePlaceholder({ title, subtitle, highlights, listTitle }: AdminModulePlaceholderProps): ReactElement {
   return (
     <div className="space-y-4">
       <Card className="space-y-2">
@@ -16,7 +17,7 @@ export function AdminModulePlaceholder({ title, subtitle, highlights }: AdminMod
         <p className="text-sm text-white/75">{subtitle}</p>
       </Card>
       <Card className="space-y-2">
-        <p className="text-sm font-medium text-white">Contenido inicial del modulo</p>
+        <p className="text-sm font-medium text-white">{listTitle}</p>
         <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
           {highlights.map((item) => (
             <li key={item}>{item}</li>

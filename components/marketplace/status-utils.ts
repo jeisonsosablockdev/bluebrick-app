@@ -1,15 +1,36 @@
 import type { ListingStatus } from "@/lib/property-service";
+import type { AppLocale } from "@/lib/i18n";
 
-export function listingStatusLabel(status: ListingStatus): string {
+export function listingStatusLabel(status: ListingStatus, locale: AppLocale = "es"): string {
   if (status === "active") {
+    if (locale === "en") {
+      return "Active";
+    }
+
+    if (locale === "pt") {
+      return "Ativo";
+    }
+
     return "Activo";
   }
 
   if (status === "funding") {
+    if (locale === "en") {
+      return "Funding";
+    }
+
+    if (locale === "pt") {
+      return "Captação";
+    }
+
     return "Funding";
   }
 
-  return "Sold out";
+  if (locale === "pt") {
+    return "Esgotado";
+  }
+
+  return locale === "en" ? "Sold out" : "Agotado";
 }
 
 export function listingStatusClasses(status: ListingStatus): string {

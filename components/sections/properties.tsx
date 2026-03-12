@@ -1,19 +1,31 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
+import { useI18n } from "@/components/i18n/locale-provider";
 import { H2, Lead } from "@/components/ui/typography";
 import { listProperties } from "@/lib/property-service";
 
 export function PropertiesSection() {
+  const { locale, t } = useI18n();
   const properties = listProperties({}).slice(0, 3);
 
   return (
     <section className="py-12">
       <div className="mb-8 text-center">
-        <H2 className="text-white">Propiedades Destacadas</H2>
-        <Lead className="mx-auto mt-2 max-w-xl">Descubre oportunidades activas en ubicaciones de alta demanda.</Lead>
+        <H2 className="text-white">
+          {t({ en: "Featured Properties", es: "Propiedades Destacadas", pt: "Imoveis em Destaque" })}
+        </H2>
+        <Lead className="mx-auto mt-2 max-w-xl">
+          {t({
+            en: "Discover active opportunities in high-demand locations.",
+            es: "Descubre oportunidades activas en ubicaciones de alta demanda.",
+            pt: "Descubra oportunidades ativas em localizacoes de alta demanda."
+          })}
+        </Lead>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -24,7 +36,7 @@ export function PropertiesSection() {
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-base font-semibold text-white">{property.title}</h3>
                 <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${listingStatusClasses(property.listingStatus)}`}>
-                  {listingStatusLabel(property.listingStatus)}
+                  {listingStatusLabel(property.listingStatus, locale)}
                 </span>
               </div>
               <p className="text-sm text-slate-400">{property.locationLabel}</p>
@@ -39,7 +51,7 @@ export function PropertiesSection() {
           href="/marketplace"
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95"
         >
-          Ver marketplace
+          {t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })}
         </Link>
       </div>
     </section>

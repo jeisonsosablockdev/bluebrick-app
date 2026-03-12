@@ -1,16 +1,31 @@
-import { features } from "@/app/data";
+"use client";
+
+import { getHomeContent } from "@/app/data";
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { H2, Lead } from "@/components/ui/typography";
 
 export function FeaturesSection() {
+  const { locale, t } = useI18n();
+  const { features } = getHomeContent(locale);
+
   return (
     <section className="py-12">
       <div className="mb-8 text-center">
         <H2 className="text-white">
-          Propiedad fraccionada, <span className="bg-gradientPrimary bg-clip-text text-transparent">inversión multiplicada</span>
+          {t({ en: "Fractional ownership,", es: "Propiedad fraccionada,", pt: "Propriedade fracionada," })}{" "}
+          <span className="bg-gradientPrimary bg-clip-text text-transparent">
+            {t({ en: "multiplied investment", es: "inversion multiplicada", pt: "investimento multiplicado" })}
+          </span>
         </H2>
-        <Lead className="mx-auto mt-3 max-w-2xl">Tres formas de participar en activos premium sin procesos complejos.</Lead>
+        <Lead className="mx-auto mt-3 max-w-2xl">
+          {t({
+            en: "Three ways to enter premium assets without complex processes.",
+            es: "Tres formas de participar en activos premium sin procesos complejos.",
+            pt: "Tres formas de participar de ativos premium sem processos complexos."
+          })}
+        </Lead>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

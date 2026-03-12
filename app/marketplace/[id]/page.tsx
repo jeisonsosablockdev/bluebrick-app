@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { WalletModal } from "@/components/WalletModal";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { getServerLocale } from "@/lib/i18n-server";
+import { localize } from "@/lib/i18n";
 import { getPropertyDetailOrThrowRpc } from "@/lib/property-service";
 import { getRoleForWallet } from "@/lib/rbac";
 import { PropertyDetailContent } from "@/components/marketplace/PropertyDetailContent";
@@ -15,6 +17,7 @@ type MarketplaceDetailPageProps = {
 
 export default async function MarketplaceDetailPage({ params }: MarketplaceDetailPageProps) {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const locale = await getServerLocale();
   const { id } = await params;
   const property = getPropertyDetailOrThrowRpc(id);
 
@@ -34,7 +37,7 @@ export default async function MarketplaceDetailPage({ params }: MarketplaceDetai
 
       <div className="mb-4">
         <Link href="/marketplace" className="text-sm text-cyan-300 underline-offset-4 hover:underline">
-          Volver al marketplace
+          {localize(locale, { en: "Back to marketplace", es: "Volver al marketplace", pt: "Voltar ao marketplace" })}
         </Link>
       </div>
 

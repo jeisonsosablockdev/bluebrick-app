@@ -1,0 +1,59 @@
+{
+  "heroStats": [
+    { "label": "Investors", "value": "15K+" },
+    { "label": "Properties", "value": "120+" },
+    { "label": "Yield", "value": "20%" },
+    { "label": "Capital", "value": "$50M+" }
+  ],
+  "features": [
+    {
+      "title": "Secure Tokenization",
+      "description": "Transform real-world assets into digital fractions with full traceability.",
+      "action": "Explore"
+    },
+    {
+      "title": "Recurring Income",
+      "description": "Receive periodic rental yield payments with a clear tracking dashboard.",
+      "action": "View Flow"
+    },
+    {
+      "title": "Flexible Liquidity",
+      "description": "Buy or sell fractions under transparent market rules.",
+      "action": "Learn More"
+    }
+  ],
+  "properties": [
+    {
+      "title": "Central North Tower",
+      "location": "Bogota, CO",
+      "roi": "12.8% ROI",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Marberia Complex",
+      "location": "Medellin, CO",
+      "roi": "11.4% ROI",
+      "image": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "River Tower",
+      "location": "CDMX, MX",
+      "roi": "13.2% ROI",
+      "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How do I get started with BRIDS?",
+      "answer": "Sign up, complete verification, and select a fractional property from the main dashboard."
+    },
+    {
+      "question": "What is the minimum investment?",
+      "answer": "You can start with low amounts depending on the property, with progressive diversification."
+    },
+    {
+      "question": "How are returns distributed?",
+      "answer": "The platform calculates and distributes passive income according to your fractional participation."
+    }
+  ]
+}

@@ -1,4 +1,8 @@
-import source from "./home.json";
+import sourceEn from "./home.en.json";
+import sourceEs from "./home.json";
+import sourcePt from "./home.pt.json";
+
+import type { AppLocale } from "@/lib/i18n";
 
 export type FeatureItem = {
   title: string;
@@ -23,7 +27,19 @@ export type HeroStat = {
   value: string;
 };
 
-export const heroStats = source.heroStats as HeroStat[];
-export const features = source.features as FeatureItem[];
-export const properties = source.properties as PropertyItem[];
-export const faqs = source.faqs as FaqItem[];
+type HomeContent = {
+  heroStats: HeroStat[];
+  features: FeatureItem[];
+  properties: PropertyItem[];
+  faqs: FaqItem[];
+};
+
+const HOME_CONTENT: Record<AppLocale, HomeContent> = {
+  en: sourceEn as HomeContent,
+  es: sourceEs as HomeContent,
+  pt: sourcePt as HomeContent
+};
+
+export function getHomeContent(locale: AppLocale): HomeContent {
+  return HOME_CONTENT[locale];
+}
