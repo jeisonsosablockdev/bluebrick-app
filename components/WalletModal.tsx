@@ -78,11 +78,15 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
   const menuEntries = useMemo(() => {
     if (!authState.authenticated) {
-      return [{ href: "/", label: "Home" }];
+      return [
+        { href: "/", label: "Home" },
+        { href: "/marketplace", label: "Marketplace" }
+      ];
     }
 
     const entries = [
       { href: "/", label: "Home" },
+      { href: "/marketplace", label: "Marketplace" },
       { href: "/protected", label: "User Area" }
     ];
 
