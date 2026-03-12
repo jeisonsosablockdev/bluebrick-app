@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { ProtectedShell } from "@/components/dashboard/protected-shell";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { getRoleForWallet } from "@/lib/rbac";
 
 type ProtectedLayoutProps = {
   children: ReactNode;
@@ -15,5 +16,9 @@ export default async function ProtectedLayout({ children }: ProtectedLayoutProps
     redirect("/");
   }
 
-  return <ProtectedShell authenticatedPublicKey={authenticatedPublicKey}>{children}</ProtectedShell>;
+  return (
+    <ProtectedShell authenticatedPublicKey={authenticatedPublicKey} authenticatedRole={getRoleForWallet(authenticatedPublicKey)}>
+      {children}
+    </ProtectedShell>
+  );
 }

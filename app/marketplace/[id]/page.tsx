@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { WalletModal } from "@/components/WalletModal";
+import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getPropertyDetailOrThrowRpc } from "@/lib/property-service";
+import { getRoleForWallet } from "@/lib/rbac";
 import { PropertyDetailContent } from "@/components/marketplace/PropertyDetailContent";
 
 type MarketplaceDetailPageProps = {
@@ -11,6 +14,7 @@ type MarketplaceDetailPageProps = {
 };
 
 export default async function MarketplaceDetailPage({ params }: MarketplaceDetailPageProps) {
+  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const { id } = await params;
   const property = getPropertyDetailOrThrowRpc(id);
 
@@ -20,6 +24,14 @@ export default async function MarketplaceDetailPage({ params }: MarketplaceDetai
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      <WalletModal
+        initialAuth={{
+          authenticated: Boolean(authenticatedPublicKey),
+          pubkey: authenticatedPublicKey,
+          role: authenticatedPublicKey ? getRoleForWallet(authenticatedPublicKey) : undefined
+        }}
+      />
+
       <div className="mb-4">
         <Link href="/marketplace" className="text-sm text-cyan-300 underline-offset-4 hover:underline">
           Volver al marketplace

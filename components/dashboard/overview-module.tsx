@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -122,12 +123,15 @@ export function OverviewModule(): ReactElement {
       {isEmpty ? (
         <EmptyState />
       ) : (
-        <Card className="space-y-2">
-          <h2 className="text-lg font-semibold text-white">Estado general</h2>
-          <p className="text-sm text-white/75">
-            Tus activos se encuentran activos y listos para gestionarse desde los modulos de Portfolio, Rentas y Stake.
-          </p>
-        </Card>
+        <>
+          <Card className="space-y-2">
+            <h2 className="text-lg font-semibold text-white">Estado general</h2>
+            <p className="text-sm text-white/75">
+              Tus activos se encuentran activos y listos para gestionarse desde los modulos de Portfolio, Rentas y Stake.
+            </p>
+          </Card>
+          <DashboardCharts context="user" />
+        </>
       )}
     </div>
   );

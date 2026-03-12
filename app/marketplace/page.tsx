@@ -1,8 +1,12 @@
+import { WalletModal } from "@/components/WalletModal";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
+import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { listProperties, PROPERTY_CITIES, type ListingStatus, type PropertyFilters } from "@/lib/property-service";
+import { getRoleForWallet } from "@/lib/rbac";
 
 type MarketplacePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -35,11 +39,20 @@ function parseFilters(raw: Record<string, string | string[] | undefined>): Prope
 }
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
+  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const filters = parseFilters(await searchParams);
   const properties = listProperties(filters);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      <WalletModal
+        initialAuth={{
+          authenticated: Boolean(authenticatedPublicKey),
+          pubkey: authenticatedPublicKey,
+          role: authenticatedPublicKey ? getRoleForWallet(authenticatedPublicKey) : undefined
+        }}
+      />
+
       <section className="space-y-3">
         <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Marketplace</p>
         <H1 className="text-white">Marketplace de propiedades tokenizadas</H1>
@@ -56,6 +69,10 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         {properties.length === 0 ? (
           <Card className="p-4 text-sm text-slate-300">No hay propiedades para los filtros seleccionados.</Card>
         ) : <MarketplaceGridClient properties={properties} />}
+      </section>
+
+      <section className="mt-8">
+        <DashboardCharts context="marketplace" />
       </section>
     </main>
   );

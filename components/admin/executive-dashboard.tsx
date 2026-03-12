@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 
 type KpiStatus = "normal" | "warning" | "critical";
 
@@ -168,7 +169,7 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
       <Card className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Admin Dashboard</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Dashboard</p>
             <h1 className="text-2xl font-semibold text-white">Vista Ejecutiva de Operacion</h1>
           </div>
           <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-white/80">{walletLabel}</span>
@@ -213,6 +214,8 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
           </Card>
         ))}
       </div>
+
+      <DashboardCharts context="admin" />
 
       <div className="grid gap-3 lg:grid-cols-2">
         <Card className="space-y-2">

@@ -5,11 +5,14 @@ import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { useMemo, useState } from "react";
 
+import { WalletModal } from "@/components/WalletModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { UserRole } from "@/lib/rbac";
 
 type ProtectedShellProps = {
   authenticatedPublicKey: string;
+  authenticatedRole: UserRole;
   children: ReactNode;
 };
 
@@ -67,9 +70,8 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function ProtectedShell({ authenticatedPublicKey, children }: ProtectedShellProps): ReactElement {
+export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, children }: ProtectedShellProps): ReactElement {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const currentModule = useMemo<NavItem>(() => {
@@ -77,23 +79,23 @@ export function ProtectedShell({ authenticatedPublicKey, children }: ProtectedSh
     return active ?? DASHBOARD_NAV[0];
   }, [pathname]);
 
-  const wrapperGridClass = isCollapsed ? "lg:grid-cols-[92px,1fr]" : "lg:grid-cols-[260px,1fr]";
-
   return (
     <main className="min-h-screen overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
-      <div className={`mx-auto max-w-7xl lg:grid ${wrapperGridClass} lg:gap-6`}>
+      <div className="mx-auto mb-4 max-w-7xl">
+        <WalletModal
+          initialAuth={{
+            authenticated: true,
+            pubkey: authenticatedPublicKey,
+            role: authenticatedRole
+          }}
+        />
+      </div>
+
+      <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="sticky top-6 h-[calc(100vh-3rem)] space-y-4 p-3">
-            <div className="flex items-center justify-between">
-              {!isCollapsed && <p className="px-2 text-xs uppercase tracking-[0.2em] text-white/50">Navegacion</p>}
-              <Button
-                aria-label={isCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
-                className="min-h-11 min-w-11 px-0"
-                variant="ghost"
-                onClick={() => setIsCollapsed((previous) => !previous)}
-              >
-                {isCollapsed ? ">>" : "<<"}
-              </Button>
+          <Card className="glass-surface sticky top-6 h-[calc(100vh-3rem)] space-y-4 bg-transparent p-3">
+            <div>
+              <p className="px-2 text-xs uppercase tracking-[0.2em] text-white/50">Navegacion</p>
             </div>
             <nav className="space-y-1">
               {DASHBOARD_NAV.map((item) => {
@@ -107,7 +109,7 @@ export function ProtectedShell({ authenticatedPublicKey, children }: ProtectedSh
                     }`}
                     title={item.label}
                   >
-                    <span className="block w-full truncate">{isCollapsed ? item.label.slice(0, 2) : item.label}</span>
+                    <span className="block w-full truncate">{item.label}</span>
                   </Link>
                 );
               })}
@@ -155,7 +157,7 @@ export function ProtectedShell({ authenticatedPublicKey, children }: ProtectedSh
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
-          <aside className="relative h-full w-[84%] max-w-xs border-r border-white/10 bg-[#060b16] p-4">
+          <aside className="glass-surface relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50">Navegacion</p>
               <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>

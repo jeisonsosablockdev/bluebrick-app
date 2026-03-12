@@ -20,5 +20,9 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     return <ForbiddenView description="This section is reserved for administrator wallets." />;
   }
 
-  return <AdminShell walletLabel={`Admin ${truncatePublicKey(pubkey)}`}>{children}</AdminShell>;
+  return (
+    <AdminShell authenticatedPublicKey={pubkey} walletLabel={`Admin ${truncatePublicKey(pubkey)}`}>
+      {children}
+    </AdminShell>
+  );
 }

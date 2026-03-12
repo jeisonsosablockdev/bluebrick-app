@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { useMemo, useState } from "react";
 
+import { WalletModal } from "@/components/WalletModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type AdminShellProps = {
+  authenticatedPublicKey: string;
   walletLabel: string;
   children: ReactNode;
 };
@@ -66,7 +68,7 @@ function resolveCurrentLabel(pathname: string): string {
   return found?.label ?? "Overview";
 }
 
-export function AdminShell({ walletLabel, children }: AdminShellProps): ReactElement {
+export function AdminShell({ authenticatedPublicKey, walletLabel, children }: AdminShellProps): ReactElement {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -74,9 +76,19 @@ export function AdminShell({ walletLabel, children }: AdminShellProps): ReactEle
 
   return (
     <main className="min-h-screen overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto mb-4 max-w-7xl">
+        <WalletModal
+          initialAuth={{
+            authenticated: true,
+            pubkey: authenticatedPublicKey,
+            role: "admin"
+          }}
+        />
+      </div>
+
       <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="sticky top-6 h-[calc(100vh-3rem)] space-y-4 overflow-y-auto p-4">
+          <Card className="glass-surface sticky top-6 h-[calc(100vh-3rem)] space-y-4 overflow-y-auto bg-transparent p-4">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Admin Console</p>
               <p className="mt-1 text-xs text-white/70">{walletLabel}</p>
@@ -145,7 +157,7 @@ export function AdminShell({ walletLabel, children }: AdminShellProps): ReactEle
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button aria-label="Cerrar menu admin" className="absolute inset-0 bg-black/70" onClick={() => setIsDrawerOpen(false)} type="button" />
-          <aside className="relative h-full w-[88%] max-w-sm overflow-y-auto border-r border-white/10 bg-[#070b14] p-4">
+          <aside className="glass-surface relative h-full w-[88%] max-w-sm overflow-y-auto rounded-r-3xl border-l-0 bg-transparent p-4">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Admin Console</p>
               <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
