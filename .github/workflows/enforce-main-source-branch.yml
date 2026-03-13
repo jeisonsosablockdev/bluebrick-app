@@ -1,0 +1,25 @@
+name: Enforce Main Source Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  enforce-main-from-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source branch for main PRs
+        run: |
+          echo "Base branch: ${{ github.base_ref }}"
+          echo "Head branch: ${{ github.head_ref }}"
+
+          if [ "${{ github.base_ref }}" = "main" ] && [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "::error::Policy violation: only PRs from 'develop' can target 'main'."
+            exit 1
+          fi
+
+          echo "Branch policy check passed."
