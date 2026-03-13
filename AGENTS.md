@@ -83,12 +83,36 @@ For NFT Features
 Strict Rule:
 If documentation is missing or outdated → task incomplete.
 
+RFC Workflow by Epic (for architecture debate and decisions)
+- Scope:
+  - Use RFC files for stories/epics that require multi-model discussion, architecture decisions, or significant refactors.
+- Mandatory structure:
+  - Epic folder: `/docs/rfcs/EPIC-<id>-<slug>/`
+  - Epic index: `/docs/rfcs/EPIC-<id>-<slug>/README.md`
+  - Story RFC: `/docs/rfcs/EPIC-<id>-<slug>/STORY-<id>-<slug>.md`
+- Required sections in each story RFC:
+  - `Context`
+  - `Proposal`
+  - `Critique`
+  - `Resolution`
+  - `Decision`
+  - `Status`
+- Allowed `Status` values:
+  - `draft`
+  - `in-review`
+  - `approved`
+  - `implemented`
+- Enforcement rules:
+  - Final implementation code must not be produced until `Decision = approved`.
+  - Every RFC must link related issue(s), PR(s), and final commit hash(es).
+  - If epic/story naming format is not followed, task is incomplete.
+
 ⸻
 
 🌿 BRANCH HANDLING (QUICK GUIDE)
 
 Workflow:
-	1.	Create branch from latest `main`.
+	1.	Create branch from latest `develop`.
 	2.	Use scope-based name:
 	•	`feature/program-<name>`
 	•	`feature/app-<name>`
@@ -99,11 +123,13 @@ Workflow:
 	•	`security/app-<issue>`
 	•	`nft/program-<feature>`
 	•	`refactor/<area>`
-	3.	Do not commit directly to `main`.
-	4.	Open Pull Request to `main`.
-	5.	Squash and merge only after all checks pass.
+	3.	Do not commit directly to `develop` or `main`.
+	4.	Open Pull Request to `develop` (regular work).
+	5.	Only release PRs go from `develop` to `main`.
+	6.	Squash and merge only after all checks pass.
 
 `main` is protected: no direct commits, no force push, no merge commits.
+`develop` is protected for integration: no direct commits.
 Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 
 ⸻

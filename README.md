@@ -36,3 +36,38 @@ Updated: 2026-03-12 13:16:59 UTC
 - `npm test`: run all unit tests with Vitest.
 - `npm run test:watch`: run tests in watch mode.
 - `npm run test:coverage`: run tests with coverage report.
+
+## Git Workflow
+
+- Day-to-day work is `develop`-first.
+- Create feature/fix branches from latest `develop`.
+- Open regular PRs into `develop`.
+- Use `main` only for release PRs from `develop`.
+- CI enforces this rule with `.github/workflows/enforce-main-source-branch.yml` (PRs to `main` must come from `develop`).
+
+Quick start:
+
+- `git checkout develop && git pull origin develop`
+- `./scripts/git-start.sh app admin-asset-form-v3`
+
+## RFC Workflow (Epics)
+
+Start every epic with the RFC scaffold command:
+
+- `npm run rfc:new -- --epic 12 --slug staking`
+
+This creates:
+
+- `docs/rfcs/EPIC-012-staking/README.md`
+- `docs/rfcs/EPIC-012-staking/STORY-012-01-kickoff.md`
+
+Common options:
+
+- `npm run rfc:new -- --epic 12 --slug staking --story-id 02 --story-slug asset-validation`
+- `npm run rfc:new -- --epic 12 --slug staking --owner jay`
+- `npm run rfc:new -- --epic 12 --slug staking --force`
+
+Notes:
+
+- Use `--` before script flags so npm forwards arguments correctly.
+- Naming follows the governance policy in `docs/governance/documentation-policy.md`.

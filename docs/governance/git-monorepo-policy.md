@@ -23,16 +23,36 @@ No business logic outside defined boundaries.
 
 ⸻
 
-🌿 BRANCH STRATEGY (TRUNK-BASED + PROTECTED MAIN)
+🌿 BRANCH STRATEGY (DEVELOP-FIRST + PROTECTED MAIN)
 
 Main Rules
 	1.	main is protected.
-	2.	No direct commits to main.
-	3.	All changes go through Pull Request.
-	4.	Squash and merge only.
-	5.	No merge commits.
-	6.	No force push to main.
-	7.	All CI checks must pass before merge.
+	2.	develop is the default integration branch for day-to-day work.
+	3.	All feature/fix/security/refactor branches MUST start from latest `develop`.
+	4.	No direct commits to main.
+	5.	No direct commits to develop.
+	6.	All changes go through Pull Request.
+	7.	Regular PRs target `develop` (not `main`).
+	8.	Only release PRs may target `main` (source branch: `develop`).
+	9.	Squash and merge only.
+	10.	No merge commits.
+	11.	No force push to main.
+	12.	All CI checks must pass before merge.
+
+GitHub Enforcement (Mandatory)
+	1.	Enable Branch Protection for `main`:
+	•	Require pull request before merging
+	•	Require status checks to pass
+	•	Restrict who can push
+	•	Disallow force pushes
+	•	Disallow deletions
+	2.	Enable Branch Protection for `develop`:
+	•	Require pull request before merging
+	•	Require status checks to pass
+	•	Disallow force pushes
+	3.	Enable required workflow check:
+	•	`.github/workflows/enforce-main-source-branch.yml`
+	•	This check blocks any PR to `main` whose source branch is not `develop`.
 
 ⸻
 
@@ -136,7 +156,7 @@ If any fails → block merge.
 
 🏷 RELEASE TAGGING RULE
 
-After merge to main:
+After release PR merge from `develop` to `main`:
 
 Use semantic versioning:
 
