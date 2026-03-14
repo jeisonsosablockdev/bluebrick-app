@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import Link from "next/link";
 
@@ -8,9 +8,15 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  applyFinancialRule,
+  mapImportRowToFormFields,
+  parseTabularText,
+  parseTextFileToTabularRows,
+  suggestCollectionFromIdentity
+} from "@/lib/admin/asset-form";
 
 type AssetType = "building_new" | "rental_property" | "land_lot" | "";
-type AssetStatus = "draft" | "published" | "paused" | "sold_out" | "closed";
 type FormStatus = "draft" | "saving" | "saved" | "validation-error";
 type TypeFormState = "incomplete" | "valid" | "invalid";
 
@@ -19,7 +25,6 @@ type AssetForm = {
   assetName: string;
   slug: string;
   internalCode: string;
-  status: AssetStatus;
   country: string;
   state: string;
   city: string;
@@ -39,14 +44,13 @@ type AssetForm = {
   propertyImages: string[];
   collectionName: string;
   collectionSymbol: string;
-  metadataBaseName: string;
-  metadataBaseUri: string;
   buildingProjectStage: string;
   buildingDeveloperName: string;
   buildingEstimatedDeliveryDate: string;
   buildingConstructionStartDate: string;
   buildingTotalUnits: string;
   buildingFundingGoal: string;
+  buildingNftCost: string;
   buildingExpectedAnnualReturn: string;
   buildingExitStrategy: string;
   buildingProjectDurationMonths: string;
@@ -114,7 +118,6 @@ const initialForm: AssetForm = {
   assetName: "",
   slug: "",
   internalCode: "",
-  status: "draft",
   country: "",
   state: "",
   city: "",
@@ -134,14 +137,13 @@ const initialForm: AssetForm = {
   propertyImages: [],
   collectionName: "",
   collectionSymbol: "",
-  metadataBaseName: "",
-  metadataBaseUri: "",
   buildingProjectStage: "",
   buildingDeveloperName: "",
   buildingEstimatedDeliveryDate: "",
   buildingConstructionStartDate: "",
   buildingTotalUnits: "",
   buildingFundingGoal: "",
+  buildingNftCost: "",
   buildingExpectedAnnualReturn: "",
   buildingExitStrategy: "",
   buildingProjectDurationMonths: "",
@@ -174,15 +176,27 @@ const initialForm: AssetForm = {
   landRegulatoryStatus: ""
 };
 
-function updateListField(current: string[], fileName: string): string[] {
-  return [fileName, ...current].slice(0, 6);
+function updateListField(current: string[], fileNames: string[]): string[] {
+  const merged = [...fileNames, ...current];
+  const unique = Array.from(new Set(merged.map((name) => name.trim()).filter(Boolean)));
+  return unique.slice(0, 20);
 }
+
+const fileInputClassName =
+  "mt-2 block w-full rounded-lg border border-white/15 bg-slate-900/70 p-1.5 text-xs text-white/80 file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-white/20";
 
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [form, setForm] = useState<AssetForm>(initialForm);
   const [formStatus, setFormStatus] = useState<FormStatus>("draft");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [collectionNameManual, setCollectionNameManual] = useState(false);
+  const [collectionSymbolManual, setCollectionSymbolManual] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importFileName, setImportFileName] = useState("");
+  const [importPreviewCount, setImportPreviewCount] = useState(0);
+  const [importHeaders, setImportHeaders] = useState<string[]>([]);
+  const [importMessage, setImportMessage] = useState<string>("");
 
   const requiredErrors = useMemo(() => {
     const errors: string[] = [];
@@ -227,6 +241,8 @@ export function AssetCreationForm(): ReactElement {
       if (!form.buildingProjectStage.trim()) errors.push(t({ en: "projectStage is required.", es: "projectStage obligatorio.", pt: "projectStage obrigatorio." }));
       if (!form.buildingEstimatedDeliveryDate.trim()) errors.push(t({ en: "estimatedDeliveryDate is required.", es: "estimatedDeliveryDate obligatorio.", pt: "estimatedDeliveryDate obrigatorio." }));
       if (Number(form.buildingFundingGoal || "0") <= 0) errors.push(t({ en: "fundingGoal must be greater than 0.", es: "fundingGoal debe ser mayor a 0.", pt: "fundingGoal deve ser maior que 0." }));
+      if (Number(form.buildingNftCost || "0") <= 0) errors.push(t({ en: "nftCost must be greater than 0.", es: "nftCost debe ser mayor a 0.", pt: "nftCost deve ser maior que 0." }));
+      if (Number(form.buildingTotalUnits || "0") <= 0) errors.push(t({ en: "totalUnits must be greater than 0.", es: "totalUnits debe ser mayor a 0.", pt: "totalUnits deve ser maior que 0." }));
     }
 
     if (form.assetType === "rental_property") {
@@ -254,21 +270,184 @@ export function AssetCreationForm(): ReactElement {
 
   const canContinueToMint = requiredErrors.length === 0 && typeValidation.state === "valid";
 
+  useEffect(() => {
+    const collectionSuggestion = suggestCollectionFromIdentity({
+      internalCode: form.internalCode,
+      slug: form.slug
+    });
+
+    setForm((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      if (!collectionNameManual && prev.collectionName !== collectionSuggestion.collectionName) {
+        next.collectionName = collectionSuggestion.collectionName;
+        changed = true;
+      }
+
+      if (!collectionSymbolManual && prev.collectionSymbol !== collectionSuggestion.collectionSymbol) {
+        next.collectionSymbol = collectionSuggestion.collectionSymbol;
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual]);
+
   const onFileInput = (field: "coverImage" | "galleryImages" | "brochureFile" | "legalDocs" | "financialDocs" | "propertyImages") =>
     (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-
-      if (!file) {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
         return;
       }
 
       if (field === "coverImage" || field === "brochureFile") {
-        setForm((prev) => ({ ...prev, [field]: file.name }));
+        const firstFile = files[0];
+        if (!firstFile) {
+          return;
+        }
+        setForm((prev) => ({ ...prev, [field]: firstFile.name }));
         return;
       }
 
-      setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], file.name) }));
+      const fileNames = Array.from(files).map((file) => file.name);
+      setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], fileNames) }));
     };
+
+  const applyFinancialSource = (source: "totalUnits" | "nftCost", nextValue: string) => {
+    setForm((prev) => {
+      const raw = source === "totalUnits"
+        ? { ...prev, buildingTotalUnits: nextValue }
+        : { ...prev, buildingNftCost: nextValue };
+
+      const result = applyFinancialRule({
+        fundingGoal: raw.buildingFundingGoal,
+        nftCost: raw.buildingNftCost,
+        source,
+        totalUnits: raw.buildingTotalUnits
+      });
+
+      return {
+        ...raw,
+        buildingFundingGoal: result.fundingGoal,
+        buildingNftCost: result.nftCost,
+        buildingTotalUnits: result.totalUnits
+      };
+    });
+  };
+
+  const onFundingGoalChange = (nextFundingGoal: string) => {
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        buildingFundingGoal: nextFundingGoal
+      };
+      const source: "totalUnits" | "nftCost" = next.buildingTotalUnits ? "totalUnits" : "nftCost";
+      const result = applyFinancialRule({
+        fundingGoal: next.buildingFundingGoal,
+        nftCost: next.buildingNftCost,
+        source,
+        totalUnits: next.buildingTotalUnits
+      });
+
+      return {
+        ...next,
+        buildingFundingGoal: result.fundingGoal,
+        buildingNftCost: result.nftCost,
+        buildingTotalUnits: result.totalUnits
+      };
+    });
+  };
+
+  const applyImportedRow = (row: Record<string, string>) => {
+    setForm((prev) => {
+      const next = { ...prev };
+      const mappedRow = mapImportRowToFormFields(row);
+      const arrayFields = new Set<keyof AssetForm>([
+        "galleryImages",
+        "legalDocs",
+        "financialDocs",
+        "propertyImages"
+      ]);
+
+      Object.entries(mappedRow).forEach(([key, value]) => {
+        if (key in next) {
+          const formKey = key as keyof AssetForm;
+          if (arrayFields.has(formKey)) {
+            (next[formKey] as string[]) = value
+              .split("|")
+              .map((item) => item.trim())
+              .filter(Boolean);
+          } else {
+            (next[formKey] as string) = value;
+          }
+        }
+      });
+
+      return next;
+    });
+
+    const normalized = mapImportRowToFormFields(row);
+    if (normalized.collectionName) {
+      setCollectionNameManual(true);
+    }
+    if (normalized.collectionSymbol) {
+      setCollectionSymbolManual(true);
+    }
+  };
+
+  const previewImportFromText = () => {
+    const parsed = parseTabularText(importText);
+    setImportHeaders(parsed.headers);
+    setImportPreviewCount(parsed.rows.length);
+    if (parsed.rows.length > 0) {
+      applyImportedRow(parsed.rows[0] ?? {});
+      setImportMessage(t({
+        en: "Imported preview row into the form.",
+        es: "Se importo la fila de vista previa al formulario.",
+        pt: "Linha de pre-visualizacao importada para o formulario."
+      }));
+    } else {
+      setImportMessage(t({
+        en: "No valid rows found in pasted content.",
+        es: "No se encontraron filas validas en el contenido pegado.",
+        pt: "Nenhuma linha valida encontrada no conteudo colado."
+      }));
+    }
+  };
+
+  const onImportFileInput = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      setImportFileName(file.name);
+      const text = await file.text();
+      const parsed = parseTextFileToTabularRows(file.name, text);
+      setImportHeaders(parsed.headers);
+      setImportPreviewCount(parsed.rows.length);
+
+      if (parsed.rows.length > 0) {
+        applyImportedRow(parsed.rows[0] ?? {});
+        setImportMessage(t({
+          en: "File imported. First row was loaded into the form.",
+          es: "Archivo importado. Se cargo la primera fila en el formulario.",
+          pt: "Arquivo importado. A primeira linha foi carregada no formulario."
+        }));
+      } else {
+        setImportMessage(t({
+          en: "File parsed but no rows were detected.",
+          es: "Se proceso el archivo pero no se detectaron filas.",
+          pt: "Arquivo processado, mas nenhuma linha foi detectada."
+        }));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown import error.";
+      setImportMessage(message);
+    }
+  };
 
   const saveDraft = async () => {
     setFormStatus("saving");
@@ -328,18 +507,14 @@ export function AssetCreationForm(): ReactElement {
           <Input placeholder="assetName" value={form.assetName} onChange={(event) => setForm((prev) => ({ ...prev, assetName: event.target.value }))} />
           <Input placeholder="slug" value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} />
           <Input placeholder="internalCode" value={form.internalCode} onChange={(event) => setForm((prev) => ({ ...prev, internalCode: event.target.value }))} />
-          <select
-            className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100"
-            value={form.status}
-            onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as AssetStatus }))}
-          >
-            <option value="draft">draft</option>
-            <option value="published">published</option>
-            <option value="paused">paused</option>
-            <option value="sold_out">sold_out</option>
-            <option value="closed">closed</option>
-          </select>
         </div>
+        <p className="text-xs text-white/60">
+          {t({
+            en: "Commercial asset status is derived from on-chain state and is not manually selected here.",
+            es: "El estado comercial del activo se deriva del estado on-chain y no se selecciona manualmente aqui.",
+            pt: "O status comercial do ativo e derivado do estado on-chain e nao e selecionado manualmente aqui."
+          })}
+        </p>
       </Card>
 
       <Card className="space-y-3">
@@ -369,46 +544,127 @@ export function AssetCreationForm(): ReactElement {
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             {t({ en: "coverImage (required)", es: "coverImage (obligatoria)", pt: "coverImage (obrigatoria)" })}
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("coverImage")} />
-            <p className="mt-1 text-xs text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
+            <input className={fileInputClassName} type="file" onChange={onFileInput("coverImage")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             galleryImages[]
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("galleryImages")} />
-            <p className="mt-1 text-xs text-white/60">{form.galleryImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("galleryImages")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.galleryImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             brochureFile
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("brochureFile")} />
-            <p className="mt-1 text-xs text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
+            <input className={fileInputClassName} type="file" onChange={onFileInput("brochureFile")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             legalDocs[]
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("legalDocs")} />
-            <p className="mt-1 text-xs text-white/60">{form.legalDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("legalDocs")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.legalDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             financialDocs[]
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("financialDocs")} />
-            <p className="mt-1 text-xs text-white/60">{form.financialDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("financialDocs")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.financialDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             propertyImages[]
-            <input className="mt-2 block w-full text-xs" type="file" onChange={onFileInput("propertyImages")} />
-            <p className="mt-1 text-xs text-white/60">{form.propertyImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("propertyImages")} />
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.propertyImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
           </label>
         </div>
         <Input placeholder={t({ en: "videoUrl optional", es: "videoUrl opcional", pt: "videoUrl opcional" })} value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
       </Card>
 
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })} value={form.collectionName} onChange={(event) => setForm((prev) => ({ ...prev, collectionName: event.target.value }))} />
-          <Input placeholder="collectionSymbol" value={form.collectionSymbol} onChange={(event) => setForm((prev) => ({ ...prev, collectionSymbol: event.target.value }))} />
-          <Input placeholder="metadataBaseName" value={form.metadataBaseName} onChange={(event) => setForm((prev) => ({ ...prev, metadataBaseName: event.target.value }))} />
-          <Input placeholder={t({ en: "metadataBaseUri optional", es: "metadataBaseUri opcional", pt: "metadataBaseUri opcional" })} value={form.metadataBaseUri} onChange={(event) => setForm((prev) => ({ ...prev, metadataBaseUri: event.target.value }))} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
+          <Button
+            className="min-h-11"
+            variant="ghost"
+            onClick={() => {
+              const suggestion = suggestCollectionFromIdentity({
+                internalCode: form.internalCode,
+                slug: form.slug
+              });
+              setCollectionNameManual(false);
+              setCollectionSymbolManual(false);
+              setForm((prev) => ({
+                ...prev,
+                collectionName: suggestion.collectionName,
+                collectionSymbol: suggestion.collectionSymbol
+              }));
+            }}
+          >
+            {t({ en: "Reset suggested values", es: "Resetear valores sugeridos", pt: "Resetar valores sugeridos" })}
+          </Button>
         </div>
+        <p className="text-xs text-white/60">
+          {t({
+            en: "collectionName and collectionSymbol are auto-suggested from slug + internalCode. You can override manually.",
+            es: "collectionName y collectionSymbol se sugieren automaticamente desde slug + internalCode. Puedes sobreescribirlos manualmente.",
+            pt: "collectionName e collectionSymbol sao sugeridos automaticamente por slug + internalCode. Voce pode sobrescrever manualmente."
+          })}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })}
+            value={form.collectionName}
+            onChange={(event) => {
+              setCollectionNameManual(true);
+              setForm((prev) => ({ ...prev, collectionName: event.target.value }));
+            }}
+          />
+          <Input
+            placeholder="collectionSymbol"
+            value={form.collectionSymbol}
+            onChange={(event) => {
+              setCollectionSymbolManual(true);
+              setForm((prev) => ({ ...prev, collectionSymbol: event.target.value }));
+            }}
+          />
+        </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <p className="text-sm font-semibold text-white">{t({ en: "Quick import (CSV or paste from Excel)", es: "Importacion rapida (CSV o pegado desde Excel)", pt: "Importacao rapida (CSV ou colar do Excel)" })}</p>
+        <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
+          <p>{t({ en: "Import file (.csv, .txt, .tsv)", es: "Importar archivo (.csv, .txt, .tsv)", pt: "Importar arquivo (.csv, .txt, .tsv)" })}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <input id="quick-import-file" className="sr-only" type="file" accept=".csv,.txt,.tsv" onChange={onImportFileInput} />
+            <label
+              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
+              htmlFor="quick-import-file"
+            >
+              {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
+            </label>
+            <p className="text-xs text-white/60">
+              {importFileName || t({ en: "No file selected", es: "Sin archivo seleccionado", pt: "Nenhum arquivo selecionado" })}
+            </p>
+          </div>
+        </div>
+        <textarea
+          className="min-h-24 resize-none appearance-none rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white"
+          placeholder={t({
+            en: "Paste cells copied from Excel (tabular content with header row).",
+            es: "Pega celdas copiadas desde Excel (contenido tabular con fila de encabezados).",
+            pt: "Cole celulas copiadas do Excel (conteudo tabular com linha de cabecalho)."
+          })}
+          value={importText}
+          onChange={(event) => setImportText(event.target.value)}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="min-h-11" variant="outline" onClick={previewImportFromText}>
+            {t({ en: "Preview and apply first row", es: "Previsualizar y aplicar primera fila", pt: "Pre-visualizar e aplicar primeira linha" })}
+          </Button>
+          <p className="text-xs text-white/60">
+            {t({ en: "Columns detected", es: "Columnas detectadas", pt: "Colunas detectadas" })}: {importHeaders.length}
+          </p>
+          <p className="text-xs text-white/60">
+            {t({ en: "Rows detected", es: "Filas detectadas", pt: "Linhas detectadas" })}: {importPreviewCount}
+          </p>
+        </div>
+        {importMessage && <p className="text-xs text-cyan-100">{importMessage}</p>}
       </Card>
 
       {form.assetType && (
@@ -429,20 +685,36 @@ export function AssetCreationForm(): ReactElement {
           </div>
 
           {form.assetType === "building_new" && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder="projectStage" value={form.buildingProjectStage} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))} />
-              <Input placeholder="developerName" value={form.buildingDeveloperName} onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))} />
-              <Input placeholder="estimatedDeliveryDate (YYYY-MM-DD)" value={form.buildingEstimatedDeliveryDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))} />
-              <Input placeholder="constructionStartDate" value={form.buildingConstructionStartDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))} />
-              <Input placeholder="totalUnits" value={form.buildingTotalUnits} onChange={(event) => setForm((prev) => ({ ...prev, buildingTotalUnits: event.target.value }))} />
-              <Input placeholder="fundingGoal" value={form.buildingFundingGoal} onChange={(event) => setForm((prev) => ({ ...prev, buildingFundingGoal: event.target.value }))} />
-              <Input placeholder="expectedAnnualReturn" value={form.buildingExpectedAnnualReturn} onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))} />
-              <Input placeholder="exitStrategy" value={form.buildingExitStrategy} onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))} />
-              <Input placeholder="projectDurationMonths" value={form.buildingProjectDurationMonths} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))} />
-              <Input placeholder="licensesStatus (extra)" value={form.buildingLicensesStatus} onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))} />
-              <Input placeholder="fiduciaryStructure (extra)" value={form.buildingFiduciaryStructure} onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))} />
-              <Input placeholder="salesProgressPercent (extra)" value={form.buildingSalesProgressPercent} onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))} />
-            </div>
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input placeholder="projectStage" value={form.buildingProjectStage} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))} />
+                <Input placeholder="developerName" value={form.buildingDeveloperName} onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))} />
+                <div className="space-y-1">
+                  <p className="text-xs text-white/60">estimatedDeliveryDate</p>
+                  <Input type="date" value={form.buildingEstimatedDeliveryDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-white/60">constructionStartDate</p>
+                  <Input type="date" value={form.buildingConstructionStartDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))} />
+                </div>
+                <Input placeholder="fundingGoal (fixed reference)" value={form.buildingFundingGoal} onChange={(event) => onFundingGoalChange(event.target.value)} />
+                <Input placeholder="totalUnits" value={form.buildingTotalUnits} onChange={(event) => applyFinancialSource("totalUnits", event.target.value)} />
+                <Input placeholder="nftCost" value={form.buildingNftCost} onChange={(event) => applyFinancialSource("nftCost", event.target.value)} />
+                <Input placeholder="expectedAnnualReturn (%)" value={form.buildingExpectedAnnualReturn} onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))} />
+                <Input placeholder="exitStrategy" value={form.buildingExitStrategy} onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))} />
+                <Input placeholder="projectDurationMonths" value={form.buildingProjectDurationMonths} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))} />
+                <Input placeholder="licensesStatus (extra)" value={form.buildingLicensesStatus} onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))} />
+                <Input placeholder="fiduciaryStructure (extra)" value={form.buildingFiduciaryStructure} onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))} />
+                <Input placeholder="salesProgressPercent (extra)" value={form.buildingSalesProgressPercent} onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))} />
+              </div>
+              <p className="text-xs text-white/60">
+                {t({
+                  en: "exitStrategy defines how investors recover value at the end of the cycle (sale, refinance, buyback, etc).",
+                  es: "exitStrategy define como recuperan valor los inversionistas al final del ciclo (venta, refinanciacion, recompra, etc).",
+                  pt: "exitStrategy define como os investidores recuperam valor no fim do ciclo (venda, refinanciamento, recompra, etc)."
+                })}
+              </p>
+            </>
           )}
 
           {form.assetType === "rental_property" && (

@@ -303,13 +303,13 @@ function DetailModal({
     <div className="fixed inset-0 z-50">
       <button
         aria-label={t({ en: "Close detail", es: "Cerrar detalle", pt: "Fechar detalhe" })}
-        className="absolute inset-0 bg-black/70"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
         type="button"
       />
 
-      <section className="relative ml-auto h-full w-full overflow-y-auto border-l border-white/10 bg-[#070b14] md:max-w-3xl">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#070b14] px-4 py-3 sm:px-6">
+      <section className="glass-drawer-surface relative ml-auto h-full w-full overflow-y-auto md:max-w-3xl">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#0b1224]/85 px-4 py-3 backdrop-blur-md sm:px-6">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{t({ en: "NFT detail", es: "Detalle NFT", pt: "Detalhe NFT" })}</p>
             <h2 className="text-lg font-semibold text-white">{item.property}</h2>

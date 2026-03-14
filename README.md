@@ -5,17 +5,18 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-03-12 13:16:59 UTC
+Updated: 2026-03-13 22:08:14 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
+| [`STAKE_AUDIT.md`](./docs/STAKE_AUDIT.md) | general | not set | not committed |
 | [`architecture.md`](./docs/architecture.md) | blockchain | 2026-03-09 03:16:27 UTC | 2026-03-10 c654ffa |
-| [`auth-flow.md`](./docs/auth-flow.md) | frontend/auth | 2026-03-12 13:16:59 UTC | 2026-03-12 19c87f8 |
+| [`auth-flow.md`](./docs/auth-flow.md) | frontend/auth | 2026-03-13 22:08:14 UTC | 2026-03-12 792725e |
 | [`authority-model.md`](./docs/authority-model.md) | blockchain | 2026-03-10 07:35:00 UTC | 2026-03-10 c654ffa |
 | [`devnet-proof.md`](./docs/devnet-proof.md) | blockchain | 2026-03-10 12:14:00 UTC | 2026-03-10 c654ffa |
 | [`nft-spec.md`](./docs/nft-spec.md) | nft | 2026-03-09 03:16:27 UTC | 2026-03-10 c654ffa |
 | [`rbac.md`](./docs/rbac.md) | general | 2026-03-03 UTC | 2026-03-03 d7d8bf6 |
-| [`session-model.md`](./docs/session-model.md) | frontend/auth | 2026-03-12 13:16:59 UTC | 2026-03-12 19c87f8 |
+| [`session-model.md`](./docs/session-model.md) | frontend/auth | 2026-03-13 22:08:14 UTC | 2026-03-12 792725e |
 | [`state-machine.md`](./docs/state-machine.md) | blockchain | 2026-03-08 05:40:58 UTC | 2026-03-10 c654ffa |
 | [`threat-model.md`](./docs/threat-model.md) | blockchain | 2026-03-10 07:35:00 UTC | 2026-03-10 c654ffa |
 

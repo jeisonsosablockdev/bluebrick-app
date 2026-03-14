@@ -103,4 +103,4 @@
 | Batch without pending items | `409` | Stop client retries and finalize flow |
 | Admin wallet differs from job `createdBy` | `403` | Use creator wallet for manual mutation endpoints |
 
-Last Updated: 2026-03-12 13:16:59 UTC
+Last Updated: 2026-03-13 22:08:14 UTC

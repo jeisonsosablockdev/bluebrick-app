@@ -8,6 +8,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "db:migrate": "node ./scripts/db-migrate.js",
+    "rfc:new": "node ./scripts/rfc-new.js",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

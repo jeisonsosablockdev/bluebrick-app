@@ -130,12 +130,12 @@ function ConfirmActionModal({
     <div className="fixed inset-0 z-50">
       <button
         aria-label={t({ en: "Close confirmation", es: "Cerrar confirmacion", pt: "Fechar confirmacao" })}
-        className="absolute inset-0 bg-black/70"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
         type="button"
       />
 
-      <section className="relative mx-auto mt-10 w-[92%] max-w-lg rounded-2xl border border-white/10 bg-[#070b14] p-4 sm:p-6">
+      <section className="glass-modal-surface relative mx-auto mt-10 w-[92%] max-w-lg rounded-2xl p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "Confirm action", es: "Confirmar accion", pt: "Confirmar acao" })}: {action}
         </h2>

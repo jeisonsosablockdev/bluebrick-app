@@ -79,7 +79,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           aria-label={t({ en: "Filter by city", es: "Filtrar por ciudad", pt: "Filtrar por cidade" })}
           value={city}
           onChange={(event) => setCity(event.target.value)}
-          className="h-[46px] w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
+          className="glass-control h-[46px] w-full rounded-xl px-4 text-sm text-slate-100 outline-none"
         >
           <option value="">{t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" })}</option>
           {cityOptions.map((city) => (
@@ -93,7 +93,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           aria-label={t({ en: "Filter by status", es: "Filtrar por estado", pt: "Filtrar por status" })}
           value={status}
           onChange={(event) => setStatus(event.target.value as ListingStatus | "")}
-          className="h-[46px] w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
+          className="glass-control h-[46px] w-full rounded-xl px-4 text-sm text-slate-100 outline-none"
         >
           <option value="">{t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" })}</option>
           <option value="active">{t({ en: "Active", es: "Activo", pt: "Ativo" })}</option>

@@ -144,11 +144,11 @@ export function DistributionsConsole(): ReactElement {
         <div className="fixed inset-0 z-50">
           <button
             aria-label={t({ en: "Close distribution detail", es: "Cerrar detalle distribucion", pt: "Fechar detalhe de distribuicao" })}
-            className="absolute inset-0 bg-black/70"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelected(null)}
             type="button"
           />
-          <aside className="relative ml-auto h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-[#070b14] p-4">
+          <aside className="glass-drawer-surface relative ml-auto h-full w-full max-w-xl overflow-y-auto p-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">{t({ en: "Batch detail", es: "Detalle de lote", pt: "Detalhe do lote" })} {selected.distributionId}</h3>
               <Button className="min-h-11" variant="ghost" onClick={() => setSelected(null)}>

@@ -146,9 +146,9 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
       </div>
 
       {selectedId ? (
-        <div className="fixed inset-0 z-50 bg-black/70 p-2 sm:p-4" role="presentation" onClick={closeModal}>
+        <div className="fixed inset-0 z-50 bg-black/70 p-2 backdrop-blur-sm sm:p-4" role="presentation" onClick={closeModal}>
           <div
-            className="mx-auto h-full w-full max-w-5xl overflow-y-auto rounded-2xl border border-white/20 bg-[#0b1021] p-4 sm:p-6"
+            className="glass-modal-surface mx-auto h-full w-full max-w-5xl overflow-y-auto rounded-2xl p-4 sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-label={t({ en: "Property details", es: "Detalle de propiedad", pt: "Detalhes do imovel" })}
