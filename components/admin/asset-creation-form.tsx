@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ChangeEvent, DragEvent, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -15,10 +15,55 @@ import {
   parseTextFileToTabularRows,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
+import {
+  parseCollectionName,
+  parseCollectionSymbol,
+  parseExitStrategy
+} from "@/lib/admin/asset-compatibility-validation";
+import {
+  type AssetUploadCategory,
+  type FinalizeResponse,
+  uploadAssetFileViaSignedUrl
+} from "@/lib/admin/asset-upload-client";
 
 type AssetType = "building_new" | "rental_property" | "land_lot" | "";
 type FormStatus = "draft" | "saving" | "saved" | "validation-error";
 type TypeFormState = "incomplete" | "valid" | "invalid";
+type FileUploadField = "coverImage" | "galleryImages" | "brochureFile" | "legalDocs" | "financialDocs" | "propertyImages";
+type UploadFieldUiState = {
+  uploading: boolean;
+  message: string;
+  error: string;
+};
+
+type ImportJobState =
+  | "queued"
+  | "processing"
+  | "completed"
+  | "completed_with_errors"
+  | "failed"
+  | "delayed";
+
+type ImportJobErrorItem = {
+  row: number | null;
+  column: string | null;
+  code: string;
+  message: string;
+};
+
+type ImportJobTracker = {
+  importJobId: string;
+  statusUrl: string;
+  state: ImportJobState;
+  delayed: boolean;
+  totalRows: number;
+  processedRows: number;
+  failedRows: number;
+  warningsCount: number;
+  errorReportUrl: string | null;
+  errors: ImportJobErrorItem[];
+  error: string;
+};
 
 type AssetForm = {
   assetType: AssetType;
@@ -113,6 +158,32 @@ const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: { en: stri
   }
 ];
 
+const exitStrategyOptions: Array<{
+  value: string;
+  label: { en: string; es: string; pt: string };
+}> = [
+  {
+    value: "sale",
+    label: { en: "Sale", es: "Venta", pt: "Venda" }
+  },
+  {
+    value: "refinance",
+    label: { en: "Refinance", es: "Refinanciacion", pt: "Refinanciamento" }
+  },
+  {
+    value: "buyback",
+    label: { en: "Buyback", es: "Recompra", pt: "Recompra" }
+  },
+  {
+    value: "hold",
+    label: { en: "Hold", es: "Mantener", pt: "Manter" }
+  },
+  {
+    value: "token-redemption",
+    label: { en: "Token redemption", es: "Rescate de token", pt: "Resgate de token" }
+  }
+];
+
 const initialForm: AssetForm = {
   assetType: "",
   assetName: "",
@@ -176,17 +247,116 @@ const initialForm: AssetForm = {
   landRegulatoryStatus: ""
 };
 
+const initialUploadState: Record<FileUploadField, UploadFieldUiState> = {
+  coverImage: { uploading: false, message: "", error: "" },
+  galleryImages: { uploading: false, message: "", error: "" },
+  brochureFile: { uploading: false, message: "", error: "" },
+  legalDocs: { uploading: false, message: "", error: "" },
+  financialDocs: { uploading: false, message: "", error: "" },
+  propertyImages: { uploading: false, message: "", error: "" }
+};
+
+function createDraftId(): string {
+  const cryptoApi = globalThis.crypto;
+
+  if (!cryptoApi) {
+    throw new Error("Browser crypto API is required to initialize draftId.");
+  }
+
+  if (cryptoApi.randomUUID) {
+    return cryptoApi.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  cryptoApi.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, "0"));
+  return [
+    hex.slice(0, 4).join(""),
+    hex.slice(4, 6).join(""),
+    hex.slice(6, 8).join(""),
+    hex.slice(8, 10).join(""),
+    hex.slice(10, 16).join("")
+  ].join("-");
+}
+
+function fieldToUploadCategory(field: FileUploadField): AssetUploadCategory {
+  if (field === "propertyImages") {
+    return "propertyImage";
+  }
+
+  if (field === "brochureFile") {
+    return "brochureFile";
+  }
+
+  if (field === "legalDocs") {
+    return "legalDoc";
+  }
+
+  if (field === "financialDocs") {
+    return "financialDoc";
+  }
+
+  return "galleryImage";
+}
+
 function updateListField(current: string[], fileNames: string[]): string[] {
   const merged = [...fileNames, ...current];
   const unique = Array.from(new Set(merged.map((name) => name.trim()).filter(Boolean)));
   return unique.slice(0, 20);
 }
 
-const fileInputClassName =
-  "mt-2 block w-full rounded-lg border border-white/15 bg-slate-900/70 p-1.5 text-xs text-white/80 file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-white/20";
+function parseImportJobState(value: unknown): ImportJobState {
+  if (
+    value === "queued" ||
+    value === "processing" ||
+    value === "completed" ||
+    value === "completed_with_errors" ||
+    value === "failed" ||
+    value === "delayed"
+  ) {
+    return value;
+  }
+
+  return "queued";
+}
+
+function isTerminalImportJobState(state: ImportJobState): boolean {
+  return state === "completed" || state === "completed_with_errors" || state === "failed";
+}
+
+function toSafeNonNegativeNumber(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+
+  return Math.floor(parsed);
+}
+
+function readApiErrorMessage(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+
+  const maybeError = (payload as { error?: { message?: unknown } }).error;
+  if (!maybeError || typeof maybeError !== "object") {
+    return fallback;
+  }
+
+  const message = maybeError.message;
+  if (typeof message === "string" && message.trim()) {
+    return message.trim();
+  }
+
+  return fallback;
+}
 
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
+  const [draftId] = useState<string>(() => createDraftId());
   const [form, setForm] = useState<AssetForm>(initialForm);
   const [formStatus, setFormStatus] = useState<FormStatus>("draft");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -197,6 +367,18 @@ export function AssetCreationForm(): ReactElement {
   const [importPreviewCount, setImportPreviewCount] = useState(0);
   const [importHeaders, setImportHeaders] = useState<string[]>([]);
   const [importMessage, setImportMessage] = useState<string>("");
+  const [importSubmitting, setImportSubmitting] = useState(false);
+  const [importJob, setImportJob] = useState<ImportJobTracker | null>(null);
+  const [dragTargetField, setDragTargetField] = useState<FileUploadField | null>(null);
+  const [uploadState, setUploadState] = useState<Record<FileUploadField, UploadFieldUiState>>(initialUploadState);
+  const [uploadRefs, setUploadRefs] = useState<Record<FileUploadField, string[]>>({
+    coverImage: [],
+    galleryImages: [],
+    brochureFile: [],
+    legalDocs: [],
+    financialDocs: [],
+    propertyImages: []
+  });
 
   const requiredErrors = useMemo(() => {
     const errors: string[] = [];
@@ -213,10 +395,6 @@ export function AssetCreationForm(): ReactElement {
     if (!form.coverImage.trim()) {
       errors.push(t({ en: "Cover image is required.", es: "Cover image es obligatoria.", pt: "Cover image e obrigatoria." }));
     }
-    if (!form.collectionName.trim()) {
-      errors.push(t({ en: "Collection name is required to continue.", es: "Collection name es obligatorio para continuar.", pt: "Collection name e obrigatorio para continuar." }));
-    }
-
     return errors;
   }, [form, t]);
 
@@ -268,7 +446,89 @@ export function AssetCreationForm(): ReactElement {
     return { state: "valid", errors: [] };
   }, [form, t]);
 
-  const canContinueToMint = requiredErrors.length === 0 && typeValidation.state === "valid";
+  const compatibilityErrors = useMemo<string[]>(() => {
+    const errors: string[] = [];
+
+    const collectionNameResult = parseCollectionName(form.collectionName);
+    if (!collectionNameResult.ok) {
+      errors.push(...collectionNameResult.errors);
+    }
+
+    const collectionSymbolResult = parseCollectionSymbol(form.collectionSymbol);
+    if (!collectionSymbolResult.ok) {
+      errors.push(...collectionSymbolResult.errors);
+    }
+
+    const exitStrategyValue = form.assetType === "building_new"
+      ? form.buildingExitStrategy
+      : form.assetType === "land_lot"
+        ? form.landExitStrategy
+        : null;
+
+    if (exitStrategyValue !== null) {
+      const exitStrategyResult = parseExitStrategy(exitStrategyValue);
+      if (!exitStrategyResult.ok) {
+        errors.push(...exitStrategyResult.errors);
+      }
+    }
+
+    return errors;
+  }, [
+    form.assetType,
+    form.collectionName,
+    form.collectionSymbol,
+    form.buildingExitStrategy,
+    form.landExitStrategy
+  ]);
+
+  const canContinueToMint =
+    requiredErrors.length === 0 &&
+    typeValidation.state === "valid" &&
+    compatibilityErrors.length === 0;
+
+  const continuationTone = useMemo<"ready" | "error" | "pending">(() => {
+    if (canContinueToMint) {
+      return "ready";
+    }
+
+    if (!form.assetType || formStatus === "validation-error") {
+      return "error";
+    }
+
+    return "pending";
+  }, [canContinueToMint, form.assetType, formStatus]);
+
+  const continuationMessage = useMemo(() => {
+    if (canContinueToMint) {
+      return t({
+        en: "Rules: all required fields are valid. You can continue to mint.",
+        es: "Reglas: todos los campos requeridos son validos. Puedes continuar a mint.",
+        pt: "Regras: todos os campos obrigatorios sao validos. Voce pode continuar para mint."
+      });
+    }
+
+    if (!form.assetType) {
+      return t({
+        en: "Rules: select an asset type before continuing.",
+        es: "Reglas: selecciona un tipo de activo antes de continuar.",
+        pt: "Regras: selecione um tipo de ativo antes de continuar."
+      });
+    }
+
+    if (formStatus === "validation-error") {
+      return t({
+        en: "Rules: there are validation errors. Resolve them to continue.",
+        es: "Reglas: hay errores de validacion. Corrigelos para continuar.",
+        pt: "Regras: existem erros de validacao. Corrija-os para continuar."
+      });
+    }
+
+    return t({
+      en: "Rules: complete required fields to continue to mint.",
+      es: "Reglas: completa los campos requeridos para continuar a mint.",
+      pt: "Regras: complete os campos obrigatorios para continuar para mint."
+    });
+  }, [canContinueToMint, form.assetType, formStatus, t]);
 
   useEffect(() => {
     const collectionSuggestion = suggestCollectionFromIdentity({
@@ -294,25 +554,178 @@ export function AssetCreationForm(): ReactElement {
     });
   }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual]);
 
-  const onFileInput = (field: "coverImage" | "galleryImages" | "brochureFile" | "legalDocs" | "financialDocs" | "propertyImages") =>
+  const patchUploadState = (field: FileUploadField, patch: Partial<UploadFieldUiState>) => {
+    setUploadState((prev) => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        ...patch
+      }
+    }));
+  };
+
+  const applySuccessfulUploads = (field: FileUploadField, uploaded: FinalizeResponse[]) => {
+    if (uploaded.length === 0) {
+      return;
+    }
+
+    const cdnUrls = uploaded.map((item) => item.cdnUrl);
+    const fileRefIds = uploaded.map((item) => item.fileRefId);
+
+    setUploadRefs((prev) => ({
+      ...prev,
+      [field]: updateListField(prev[field], fileRefIds)
+    }));
+
+    if (field === "coverImage" || field === "brochureFile") {
+      const firstUrl = cdnUrls[0];
+      if (!firstUrl) {
+        return;
+      }
+
+      setForm((prev) => ({ ...prev, [field]: firstUrl }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], cdnUrls) }));
+  };
+
+  const applyFilesToField = async (field: FileUploadField, files: File[]) => {
+    if (files.length === 0) {
+      return;
+    }
+
+    patchUploadState(field, {
+      uploading: true,
+      error: "",
+      message: t({ en: "Uploading...", es: "Subiendo...", pt: "Enviando..." })
+    });
+
+    const uploaded: FinalizeResponse[] = [];
+    const failed: string[] = [];
+    const category = fieldToUploadCategory(field);
+    const previousSingleFieldCdnUrl = (field === "coverImage" || field === "brochureFile")
+      ? form[field].trim()
+      : "";
+
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      if (!file) {
+        continue;
+      }
+
+      patchUploadState(field, {
+        message: t({
+          en: `Uploading ${index + 1}/${files.length}: ${file.name}`,
+          es: `Subiendo ${index + 1}/${files.length}: ${file.name}`,
+          pt: `Enviando ${index + 1}/${files.length}: ${file.name}`
+        })
+      });
+
+      try {
+        const result = await uploadAssetFileViaSignedUrl({
+          file,
+          category,
+          draftId,
+          previousCdnUrl: previousSingleFieldCdnUrl || null
+        });
+        uploaded.push(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown upload error.";
+        failed.push(`${file.name}: ${message}`);
+      }
+    }
+
+    applySuccessfulUploads(field, uploaded);
+
+    patchUploadState(field, {
+      uploading: false,
+      message: uploaded.length > 0
+        ? t({
+          en: `${uploaded.length} file(s) uploaded.`,
+          es: `${uploaded.length} archivo(s) subidos.`,
+          pt: `${uploaded.length} arquivo(s) enviados.`
+        })
+        : "",
+      error: failed.join(" | ")
+    });
+  };
+
+  const onFileInput = (field: FileUploadField) =>
     (event: ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
       if (!files || files.length === 0) {
         return;
       }
 
-      if (field === "coverImage" || field === "brochureFile") {
-        const firstFile = files[0];
-        if (!firstFile) {
-          return;
-        }
-        setForm((prev) => ({ ...prev, [field]: firstFile.name }));
+      void applyFilesToField(field, Array.from(files));
+      event.target.value = "";
+    };
+
+  const onFileDragOver = (field: FileUploadField) =>
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (dragTargetField !== field) {
+        setDragTargetField(field);
+      }
+    };
+
+  const onFileDragLeave = (field: FileUploadField) =>
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextTarget = event.relatedTarget;
+      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
         return;
       }
-
-      const fileNames = Array.from(files).map((file) => file.name);
-      setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], fileNames) }));
+      if (dragTargetField === field) {
+        setDragTargetField(null);
+      }
     };
+
+  const onFileDrop = (field: FileUploadField) =>
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDragTargetField(null);
+      const files = Array.from(event.dataTransfer.files ?? []);
+      void applyFilesToField(field, files);
+    };
+
+  const uploadFieldValue = (field: FileUploadField): string => {
+    if (field === "coverImage") return form.coverImage;
+    if (field === "brochureFile") return form.brochureFile;
+    if (field === "galleryImages") return form.galleryImages.join(", ");
+    if (field === "legalDocs") return form.legalDocs.join(", ");
+    if (field === "financialDocs") return form.financialDocs.join(", ");
+    return form.propertyImages.join(", ");
+  };
+
+  const renderUploadFieldFeedback = (field: FileUploadField): ReactElement | null => {
+    const state = uploadState[field];
+    const refsCount = uploadRefs[field]?.length ?? 0;
+
+    if (!state.uploading && !state.message && !state.error && refsCount === 0) {
+      return null;
+    }
+
+    return (
+      <div className="mt-1 space-y-1">
+        {state.message && (
+          <p className="text-[11px] leading-relaxed text-cyan-100">{state.message}</p>
+        )}
+        {state.error && (
+          <p className="text-[11px] leading-relaxed text-rose-200">{state.error}</p>
+        )}
+        {refsCount > 0 && (
+          <p className="text-[11px] leading-relaxed text-emerald-200">
+            {t({ en: "fileRefIds", es: "fileRefIds", pt: "fileRefIds" })}: {refsCount}
+          </p>
+        )}
+      </div>
+    );
+  };
 
   const applyFinancialSource = (source: "totalUnits" | "nftCost", nextValue: string) => {
     setForm((prev) => {
@@ -396,6 +809,297 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const setTrackedImportJobFromStatus = useCallback((
+    input: {
+      importJobId: string;
+      statusUrl: string;
+      state: unknown;
+      delayed?: unknown;
+      totalRows?: unknown;
+      processedRows?: unknown;
+      failedRows?: unknown;
+      warningsCount?: unknown;
+      errorReportUrl?: unknown;
+    }
+  ) => {
+    const parsedState = parseImportJobState(input.state);
+    const parsedErrorReportUrl = typeof input.errorReportUrl === "string" ? input.errorReportUrl : null;
+
+    setImportJob((prev) => {
+      if (prev && prev.importJobId === input.importJobId) {
+        return {
+          ...prev,
+          state: parsedState,
+          delayed: Boolean(input.delayed),
+          totalRows: toSafeNonNegativeNumber(input.totalRows),
+          processedRows: toSafeNonNegativeNumber(input.processedRows),
+          failedRows: toSafeNonNegativeNumber(input.failedRows),
+          warningsCount: toSafeNonNegativeNumber(input.warningsCount),
+          errorReportUrl: parsedErrorReportUrl,
+          error: ""
+        };
+      }
+
+      return {
+        importJobId: input.importJobId,
+        statusUrl: input.statusUrl,
+        state: parsedState,
+        delayed: Boolean(input.delayed),
+        totalRows: toSafeNonNegativeNumber(input.totalRows),
+        processedRows: toSafeNonNegativeNumber(input.processedRows),
+        failedRows: toSafeNonNegativeNumber(input.failedRows),
+        warningsCount: toSafeNonNegativeNumber(input.warningsCount),
+        errorReportUrl: parsedErrorReportUrl,
+        errors: [],
+        error: ""
+      };
+    });
+  }, []);
+
+  const fetchImportJobErrors = useCallback(async (input: {
+    importJobId: string;
+    errorReportUrl: string;
+  }) => {
+    try {
+      const separator = input.errorReportUrl.includes("?") ? "&" : "?";
+      const response = await fetch(`${input.errorReportUrl}${separator}limit=10&offset=0`, {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      const payload = await response.json().catch(() => null) as {
+        errors?: Array<{
+          row?: unknown;
+          column?: unknown;
+          code?: unknown;
+          message?: unknown;
+        }>;
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(readApiErrorMessage(payload, "Could not fetch import errors."));
+      }
+
+      const mappedErrors: ImportJobErrorItem[] = Array.isArray(payload?.errors)
+        ? payload.errors.map((item) => ({
+          row: typeof item.row === "number" ? item.row : null,
+          column: typeof item.column === "string" ? item.column : null,
+          code: typeof item.code === "string" ? item.code : "UNKNOWN",
+          message: typeof item.message === "string" ? item.message : "Unknown error"
+        }))
+        : [];
+
+      setImportJob((prev) => {
+        if (!prev || prev.importJobId !== input.importJobId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          errors: mappedErrors
+        };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not fetch import errors.";
+      setImportJob((prev) => {
+        if (!prev || prev.importJobId !== input.importJobId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          error: message
+        };
+      });
+    }
+  }, []);
+
+  const pollImportJobStatus = useCallback(async (input: {
+    importJobId: string;
+    statusUrl: string;
+  }) => {
+    const response = await fetch(input.statusUrl, {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    const payload = await response.json().catch(() => null) as {
+      importJobId?: unknown;
+      state?: unknown;
+      delayed?: unknown;
+      totalRows?: unknown;
+      processedRows?: unknown;
+      failedRows?: unknown;
+      warningsCount?: unknown;
+      errorReportUrl?: unknown;
+      error?: {
+        message?: unknown;
+      };
+    } | null;
+
+    if (!response.ok) {
+      throw new Error(readApiErrorMessage(payload, "Could not fetch import job status."));
+    }
+
+    const responseJobId = typeof payload?.importJobId === "string" ? payload.importJobId : input.importJobId;
+    setTrackedImportJobFromStatus({
+      importJobId: responseJobId,
+      statusUrl: input.statusUrl,
+      state: payload?.state,
+      delayed: payload?.delayed,
+      totalRows: payload?.totalRows,
+      processedRows: payload?.processedRows,
+      failedRows: payload?.failedRows,
+      warningsCount: payload?.warningsCount,
+      errorReportUrl: payload?.errorReportUrl
+    });
+
+    const parsedState = parseImportJobState(payload?.state);
+    const parsedErrorReportUrl = typeof payload?.errorReportUrl === "string" ? payload.errorReportUrl : null;
+
+    if ((parsedState === "completed_with_errors" || parsedState === "failed") && parsedErrorReportUrl) {
+      await fetchImportJobErrors({
+        importJobId: responseJobId,
+        errorReportUrl: parsedErrorReportUrl
+      });
+    }
+  }, [fetchImportJobErrors, setTrackedImportJobFromStatus]);
+
+  const enqueueImportJobRequest = useCallback(async (request: {
+    csvText?: string;
+    file?: File;
+    fileName?: string;
+    mimeType?: string;
+  }) => {
+    setImportSubmitting(true);
+    setImportMessage(
+      t({
+        en: "Creating async import job...",
+        es: "Creando job de importacion asincrona...",
+        pt: "Criando job de importacao assincrona..."
+      })
+    );
+
+    try {
+      let response: Response;
+
+      if (request.file) {
+        const formData = new FormData();
+        formData.set("file", request.file);
+        formData.set("draftId", draftId);
+        formData.set("idempotencyKey", `${draftId}:${request.file.name}:${request.file.size}:${request.file.lastModified}`);
+
+        response = await fetch("/api/admin/assets/import-jobs", {
+          method: "POST",
+          body: formData
+        });
+      } else {
+        response = await fetch("/api/admin/assets/import-jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            draftId,
+            fileName: request.fileName ?? "pasted-import.csv",
+            mimeType: request.mimeType ?? "text/csv",
+            csvText: request.csvText ?? ""
+          })
+        });
+      }
+
+      const payload = await response.json().catch(() => null) as {
+        importJobId?: unknown;
+        statusUrl?: unknown;
+        state?: unknown;
+        error?: {
+          message?: unknown;
+        };
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(readApiErrorMessage(payload, "Could not create import job."));
+      }
+
+      const importJobId = typeof payload?.importJobId === "string" ? payload.importJobId : "";
+      const statusUrl = typeof payload?.statusUrl === "string" ? payload.statusUrl : "";
+
+      if (!importJobId || !statusUrl) {
+        throw new Error("Import job response is missing required fields.");
+      }
+
+      setTrackedImportJobFromStatus({
+        importJobId,
+        statusUrl,
+        state: payload?.state
+      });
+
+      setImportMessage(
+        t({
+          en: "Import job created. Validating rows in background...",
+          es: "Job de importacion creado. Validando filas en segundo plano...",
+          pt: "Job de importacao criado. Validando linhas em segundo plano..."
+        })
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not create import job.";
+      setImportMessage(message);
+    } finally {
+      setImportSubmitting(false);
+    }
+  }, [draftId, setTrackedImportJobFromStatus, t]);
+
+  useEffect(() => {
+    if (!importJob?.importJobId || !importJob.statusUrl) {
+      return;
+    }
+
+    if (isTerminalImportJobState(importJob.state)) {
+      return;
+    }
+
+    const trackedJobId = importJob.importJobId;
+    const trackedStatusUrl = importJob.statusUrl;
+    let active = true;
+
+    const tick = async () => {
+      if (!active) {
+        return;
+      }
+
+      try {
+        await pollImportJobStatus({
+          importJobId: trackedJobId,
+          statusUrl: trackedStatusUrl
+        });
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        const message = error instanceof Error ? error.message : "Could not fetch import job status.";
+        setImportJob((prev) => {
+          if (!prev || prev.importJobId !== trackedJobId) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            error: message
+          };
+        });
+      }
+    };
+
+    void tick();
+    const intervalId = setInterval(() => {
+      void tick();
+    }, 2500);
+
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [importJob?.importJobId, importJob?.statusUrl, importJob?.state, pollImportJobStatus]);
+
   const previewImportFromText = () => {
     const parsed = parseTabularText(importText);
     setImportHeaders(parsed.headers);
@@ -416,6 +1120,28 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const enqueueImportFromText = async () => {
+    const parsed = parseTabularText(importText);
+    setImportHeaders(parsed.headers);
+    setImportPreviewCount(parsed.rows.length);
+
+    if (parsed.rows.length === 0) {
+      setImportMessage(t({
+        en: "No valid rows found in pasted content.",
+        es: "No se encontraron filas validas en el contenido pegado.",
+        pt: "Nenhuma linha valida encontrada no conteudo colado."
+      }));
+      return;
+    }
+
+    applyImportedRow(parsed.rows[0] ?? {});
+    await enqueueImportJobRequest({
+      csvText: importText,
+      fileName: importFileName || "pasted-import.csv",
+      mimeType: "text/csv"
+    });
+  };
+
   const onImportFileInput = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -431,11 +1157,7 @@ export function AssetCreationForm(): ReactElement {
 
       if (parsed.rows.length > 0) {
         applyImportedRow(parsed.rows[0] ?? {});
-        setImportMessage(t({
-          en: "File imported. First row was loaded into the form.",
-          es: "Archivo importado. Se cargo la primera fila en el formulario.",
-          pt: "Arquivo importado. A primeira linha foi carregada no formulario."
-        }));
+        await enqueueImportJobRequest({ file });
       } else {
         setImportMessage(t({
           en: "File parsed but no rows were detected.",
@@ -446,6 +1168,8 @@ export function AssetCreationForm(): ReactElement {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown import error.";
       setImportMessage(message);
+    } finally {
+      event.target.value = "";
     }
   };
 
@@ -458,7 +1182,7 @@ export function AssetCreationForm(): ReactElement {
 
   const continueToMint = async () => {
     if (!canContinueToMint) {
-      setValidationErrors([...requiredErrors, ...typeValidation.errors]);
+      setValidationErrors([...requiredErrors, ...typeValidation.errors, ...compatibilityErrors]);
       setFormStatus("validation-error");
       return;
     }
@@ -544,33 +1268,129 @@ export function AssetCreationForm(): ReactElement {
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             {t({ en: "coverImage (required)", es: "coverImage (obligatoria)", pt: "coverImage (obrigatoria)" })}
-            <input className={fileInputClassName} type="file" onChange={onFileInput("coverImage")} />
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "coverImage"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("coverImage")}
+              onDragLeave={onFileDragLeave("coverImage")}
+              onDrop={onFileDrop("coverImage")}
+            >
+              <input id="upload-coverImage" className="sr-only" type="file" onChange={onFileInput("coverImage")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-coverImage">
+                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
+              </label>
+            </div>
             <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
+            {renderUploadFieldFeedback("coverImage")}
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             galleryImages[]
-            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("galleryImages")} />
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.galleryImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "galleryImages"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("galleryImages")}
+              onDragLeave={onFileDragLeave("galleryImages")}
+              onDrop={onFileDrop("galleryImages")}
+            >
+              <input id="upload-galleryImages" className="sr-only" type="file" multiple onChange={onFileInput("galleryImages")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-galleryImages">
+                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
+              </label>
+            </div>
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("galleryImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            {renderUploadFieldFeedback("galleryImages")}
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             brochureFile
-            <input className={fileInputClassName} type="file" onChange={onFileInput("brochureFile")} />
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "brochureFile"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("brochureFile")}
+              onDragLeave={onFileDragLeave("brochureFile")}
+              onDrop={onFileDrop("brochureFile")}
+            >
+              <input id="upload-brochureFile" className="sr-only" type="file" onChange={onFileInput("brochureFile")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-brochureFile">
+                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
+              </label>
+            </div>
             <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
+            {renderUploadFieldFeedback("brochureFile")}
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             legalDocs[]
-            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("legalDocs")} />
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.legalDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "legalDocs"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("legalDocs")}
+              onDragLeave={onFileDragLeave("legalDocs")}
+              onDrop={onFileDrop("legalDocs")}
+            >
+              <input id="upload-legalDocs" className="sr-only" type="file" multiple onChange={onFileInput("legalDocs")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-legalDocs">
+                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
+              </label>
+            </div>
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("legalDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            {renderUploadFieldFeedback("legalDocs")}
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             financialDocs[]
-            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("financialDocs")} />
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.financialDocs.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "financialDocs"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("financialDocs")}
+              onDragLeave={onFileDragLeave("financialDocs")}
+              onDrop={onFileDrop("financialDocs")}
+            >
+              <input id="upload-financialDocs" className="sr-only" type="file" multiple onChange={onFileInput("financialDocs")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-financialDocs">
+                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
+              </label>
+            </div>
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("financialDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            {renderUploadFieldFeedback("financialDocs")}
           </label>
           <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
             propertyImages[]
-            <input className={fileInputClassName} type="file" multiple onChange={onFileInput("propertyImages")} />
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.propertyImages.join(", ") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            <div
+              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
+                dragTargetField === "propertyImages"
+                  ? "border-cyan-300/70 bg-cyan-500/10"
+                  : "border-white/20 bg-slate-900/50"
+              }`}
+              onDragOver={onFileDragOver("propertyImages")}
+              onDragLeave={onFileDragLeave("propertyImages")}
+              onDrop={onFileDrop("propertyImages")}
+            >
+              <input id="upload-propertyImages" className="sr-only" type="file" multiple onChange={onFileInput("propertyImages")} />
+              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
+              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-propertyImages">
+                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
+              </label>
+            </div>
+            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("propertyImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
+            {renderUploadFieldFeedback("propertyImages")}
           </label>
         </div>
         <Input placeholder={t({ en: "videoUrl optional", es: "videoUrl opcional", pt: "videoUrl opcional" })} value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
@@ -654,8 +1474,13 @@ export function AssetCreationForm(): ReactElement {
           onChange={(event) => setImportText(event.target.value)}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <Button className="min-h-11" variant="outline" onClick={previewImportFromText}>
+          <Button className="min-h-11" disabled={importSubmitting} variant="outline" onClick={previewImportFromText}>
             {t({ en: "Preview and apply first row", es: "Previsualizar y aplicar primera fila", pt: "Pre-visualizar e aplicar primeira linha" })}
+          </Button>
+          <Button className="min-h-11" disabled={importSubmitting} onClick={() => void enqueueImportFromText()}>
+            {importSubmitting
+              ? t({ en: "Queueing import...", es: "Encolando importacion...", pt: "Enfileirando importacao..." })
+              : t({ en: "Queue async import", es: "Encolar importacion async", pt: "Enfileirar importacao async" })}
           </Button>
           <p className="text-xs text-white/60">
             {t({ en: "Columns detected", es: "Columnas detectadas", pt: "Colunas detectadas" })}: {importHeaders.length}
@@ -665,6 +1490,53 @@ export function AssetCreationForm(): ReactElement {
           </p>
         </div>
         {importMessage && <p className="text-xs text-cyan-100">{importMessage}</p>}
+        {importJob && (
+          <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/5 p-3 text-xs text-cyan-100">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold">
+                {t({ en: "Import job", es: "Import job", pt: "Import job" })}: {importJob.importJobId}
+              </p>
+              <span className="rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-1 text-[11px] uppercase tracking-wide">
+                {importJob.state}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cyan-100/90">
+              <p>
+                {t({ en: "processed", es: "procesadas", pt: "processadas" })}: {importJob.processedRows}/{importJob.totalRows}
+              </p>
+              <p>
+                {t({ en: "failed", es: "fallidas", pt: "falhas" })}: {importJob.failedRows}
+              </p>
+              <p>
+                {t({ en: "warnings", es: "advertencias", pt: "avisos" })}: {importJob.warningsCount}
+              </p>
+            </div>
+            {importJob.delayed && (
+              <p className="mt-2 text-[11px] text-amber-200">
+                {t({
+                  en: "Import is delayed. Worker retry is active.",
+                  es: "La importacion esta demorada. El worker sigue reintentando.",
+                  pt: "A importacao esta atrasada. O worker segue tentando."
+                })}
+              </p>
+            )}
+            {importJob.error && (
+              <p className="mt-2 text-[11px] text-rose-200">{importJob.error}</p>
+            )}
+            {importJob.errors.length > 0 && (
+              <div className="mt-2 space-y-1 text-[11px]">
+                <p className="font-semibold text-rose-100">
+                  {t({ en: "Top import errors", es: "Errores principales", pt: "Erros principais" })}
+                </p>
+                {importJob.errors.slice(0, 5).map((error, index) => (
+                  <p key={`${error.code}-${error.row ?? "na"}-${index}`} className="text-rose-100/90">
+                    {error.row !== null ? `#${error.row} ` : ""}{error.column ? `${error.column}: ` : ""}{error.message}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {form.assetType && (
@@ -701,7 +1573,23 @@ export function AssetCreationForm(): ReactElement {
                 <Input placeholder="totalUnits" value={form.buildingTotalUnits} onChange={(event) => applyFinancialSource("totalUnits", event.target.value)} />
                 <Input placeholder="nftCost" value={form.buildingNftCost} onChange={(event) => applyFinancialSource("nftCost", event.target.value)} />
                 <Input placeholder="expectedAnnualReturn (%)" value={form.buildingExpectedAnnualReturn} onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))} />
-                <Input placeholder="exitStrategy" value={form.buildingExitStrategy} onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))} />
+                <div className="space-y-1">
+                  <p className="text-xs text-white/60">exitStrategy</p>
+                  <select
+                    className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
+                    value={form.buildingExitStrategy}
+                    onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))}
+                  >
+                    <option className="bg-slate-900 text-slate-100" value="">
+                      {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+                    </option>
+                    {exitStrategyOptions.map((option) => (
+                      <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
+                        {t(option.label)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <Input placeholder="projectDurationMonths" value={form.buildingProjectDurationMonths} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))} />
                 <Input placeholder="licensesStatus (extra)" value={form.buildingLicensesStatus} onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))} />
                 <Input placeholder="fiduciaryStructure (extra)" value={form.buildingFiduciaryStructure} onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))} />
@@ -743,7 +1631,23 @@ export function AssetCreationForm(): ReactElement {
               <Input placeholder="appreciationHorizonMonths" value={form.landAppreciationHorizonMonths} onChange={(event) => setForm((prev) => ({ ...prev, landAppreciationHorizonMonths: event.target.value }))} />
               <Input placeholder="targetExitValue" value={form.landTargetExitValue} onChange={(event) => setForm((prev) => ({ ...prev, landTargetExitValue: event.target.value }))} />
               <Input placeholder="entryPrice" value={form.landEntryPrice} onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))} />
-              <Input placeholder="exitStrategy" value={form.landExitStrategy} onChange={(event) => setForm((prev) => ({ ...prev, landExitStrategy: event.target.value }))} />
+              <div className="space-y-1">
+                <p className="text-xs text-white/60">exitStrategy</p>
+                <select
+                  className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
+                  value={form.landExitStrategy}
+                  onChange={(event) => setForm((prev) => ({ ...prev, landExitStrategy: event.target.value }))}
+                >
+                  <option className="bg-slate-900 text-slate-100" value="">
+                    {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+                  </option>
+                  {exitStrategyOptions.map((option) => (
+                    <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
+                      {t(option.label)}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Input placeholder="urbanDevelopmentPotential" value={form.landUrbanDevelopmentPotential} onChange={(event) => setForm((prev) => ({ ...prev, landUrbanDevelopmentPotential: event.target.value }))} />
               <Input placeholder="roadAccess (extra)" value={form.landRoadAccess} onChange={(event) => setForm((prev) => ({ ...prev, landRoadAccess: event.target.value }))} />
               <Input placeholder="utilitiesAccess (extra)" value={form.landUtilitiesAccess} onChange={(event) => setForm((prev) => ({ ...prev, landUtilitiesAccess: event.target.value }))} />
@@ -772,14 +1676,36 @@ export function AssetCreationForm(): ReactElement {
         </Card>
       )}
 
-      <Card className="space-y-1 border-cyan-400/30 bg-cyan-500/5">
-        <p className="text-sm text-cyan-100">{t({ en: "Current UI status", es: "Estado UI actual", pt: "Status atual da UI" })}: {formStatus}</p>
-        <p className="text-xs text-cyan-100">
-          {t({
-            en: "Rules: cannot continue without asset type. Cannot advance to mint without defined asset and collection.",
-            es: "Reglas: no se puede continuar sin tipo de activo. No se puede avanzar al mint sin activo y coleccion definidos.",
-            pt: "Regras: nao e possivel continuar sem tipo de ativo. Nao e possivel avancar para mint sem ativo e colecao definidos."
-          })}
+      <Card
+        className={`space-y-1 ${
+          continuationTone === "ready"
+            ? "border-emerald-400/40 bg-emerald-500/10"
+            : continuationTone === "error"
+              ? "border-rose-400/40 bg-rose-500/10"
+              : "border-amber-400/40 bg-amber-500/10"
+        }`}
+      >
+        <p
+          className={`text-sm ${
+            continuationTone === "ready"
+              ? "text-emerald-100"
+              : continuationTone === "error"
+                ? "text-rose-100"
+                : "text-amber-100"
+          }`}
+        >
+          {t({ en: "Current UI status", es: "Estado UI actual", pt: "Status atual da UI" })}: {formStatus}
+        </p>
+        <p
+          className={`text-xs ${
+            continuationTone === "ready"
+              ? "text-emerald-100"
+              : continuationTone === "error"
+                ? "text-rose-100"
+                : "text-amber-100"
+          }`}
+        >
+          {continuationMessage}
         </p>
         {canContinueToMint && (
           <Link className="text-sm text-cyan-200 underline" href="/admin/mint">

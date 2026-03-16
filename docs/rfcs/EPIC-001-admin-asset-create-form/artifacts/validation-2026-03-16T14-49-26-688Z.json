@@ -1,0 +1,350 @@
+{
+  "generatedAt": "2026-03-16T14:49:26.687Z",
+  "environment": {
+    "appBaseUrl": "http://127.0.0.1:3001",
+    "appPort": 3001,
+    "adminPubkey": "FQtrSsERsGsyUVyQ52qyNifStpApDvB73hLNRaTumFAE",
+    "bucketName": "metaplex-nft-dev-admin-assets-1773651938",
+    "cloudCdnUrlMap": "metaplex-admin-assets-map",
+    "cloudCdnBackendBucket": "metaplex-admin-assets-bb"
+  },
+  "gcloud": {
+    "config": "account: jeisonjsosar@icloud.com\nproject: metaplex-nft-dev",
+    "backendBucket": "bucketName: metaplex-nft-dev-admin-assets-1773651938\ncdnPolicy:\n  cacheMode: CACHE_ALL_STATIC\nenableCdn: true\nname: metaplex-admin-assets-bb",
+    "urlMap": "defaultService: https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/backendBuckets/metaplex-admin-assets-bb\nname: metaplex-admin-assets-map",
+    "setupSteps": [
+      {
+        "step": "backend-bucket-exists",
+        "output": "metaplex-admin-assets-bb"
+      },
+      {
+        "step": "url-map-exists",
+        "output": "metaplex-admin-assets-map"
+      }
+    ],
+    "invalidationOperationStatus": [
+      {
+        "operationName": "operation-1773672560083-64d2552e44147-0b4fb362-d16fd746",
+        "describeYaml": "endTime: '2026-03-16T07:49:20.339-07:00'\nname: operation-1773672560083-64d2552e44147-0b4fb362-d16fd746\noperationType: invalidateCache\nstartTime: '2026-03-16T07:49:20.156-07:00'\nstatus: DONE\ntargetLink: https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/urlMaps/metaplex-admin-assets-map"
+      },
+      {
+        "operationName": "operation-1773672561491-64d2552f9bd26-66530611-deb3215d",
+        "describeYaml": "endTime: '2026-03-16T07:49:21.696-07:00'\nname: operation-1773672561491-64d2552f9bd26-66530611-deb3215d\noperationType: invalidateCache\nstartTime: '2026-03-16T07:49:21.552-07:00'\nstatus: DONE\ntargetLink: https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/urlMaps/metaplex-admin-assets-map"
+      }
+    ]
+  },
+  "auth": {
+    "nonceResponse": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "nonce": "Oe9QnKe4LsNqbpTJbAkF5G1u"
+      }
+    },
+    "verifyResponse": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "ok": true,
+        "publicKey": "FQtrSsERsGsyUVyQ52qyNifStpApDvB73hLNRaTumFAE"
+      }
+    },
+    "authMe": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "authenticated": true,
+        "pubkey": "FQtrSsERsGsyUVyQ52qyNifStpApDvB73hLNRaTumFAE",
+        "role": "admin"
+      }
+    }
+  },
+  "uploads": {
+    "firstContract": {
+      "draftId": "fa3abe34-43a2-4f03-a189-6f94077a5b5a",
+      "uploadId": "b8cf643d-5d17-4b4f-85ef-e2409e29219f",
+      "uploadUrl": "https://storage.googleapis.com/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png?GoogleAccessId=asset-upload-signer%40metaplex-nft-dev.iam.gserviceaccount.com&Expires=1773673453&Signature=NocsKIzhFXvsbczPw0ccDim31QKlUmTinHyI3BZipsSDp1zbH5WMjwZbk0%2BhmJkbVi2IVKdDkcnAhCS0Mu0%2BfnisT%2Favuypccht5MZ7jRFPKTwpNNNUjYSYb%2FPuwAdhrw30ihL50GwEonL8%2Fi%2FMMcbAr6HxkPaPzHp4e32rA%2B7d6AialLE7V6IAFwuin6l1lRouIEAppg4IASgt%2BApFj3Wl3Qgd5kD%2FHhW0EkA7vnYgZkU31Qm077FT%2FERoP75auBiGwTXp3MUE9X03SB6m393aMfSqCZf8HAWQzosECC5vZvC%2FGVCEEWViqbC2gBoga597Ck6RiQZY3gJlnATy1JQ%3D%3D",
+      "objectKey": "admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+      "requiredHeaders": {
+        "Content-Type": "image/png",
+        "Content-Length": "35",
+        "Content-MD5": "8i61rF4yYQvi5v5nLfHGJg=="
+      },
+      "md5": "8i61rF4yYQvi5v5nLfHGJg==",
+      "mimeType": "image/png",
+      "sizeBytes": 35
+    },
+    "firstFinalize": {
+      "fileRefId": "e97ecba1-8ae4-4281-a3f9-fdd60b7f9d0d",
+      "bucket": "metaplex-nft-dev-admin-assets-1773651938",
+      "objectKey": "admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+      "cdnUrl": "https://storage.googleapis.com/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+      "uploadedAt": "2026-03-16T14:49:17.705Z",
+      "cdnInvalidationStatus": null,
+      "invalidatedPaths": []
+    },
+    "secondContract": {
+      "draftId": "fa3abe34-43a2-4f03-a189-6f94077a5b5a",
+      "uploadId": "7d200914-a6ff-4ccb-8c00-26f7a9d07647",
+      "uploadUrl": "https://storage.googleapis.com/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144917-0ea55633-validation-2-vcazcnjtuwzy.png?GoogleAccessId=asset-upload-signer%40metaplex-nft-dev.iam.gserviceaccount.com&Expires=1773673457&Signature=RyiQ9NDHOZ1SlPZHgMgxh9m%2B%2FgWUotQeMpomHBuVjFDUCLBlyM2bLExzcQ2FO6F0HozckEbsxeaflMVfxSou3ZSXy4fYkqiadBjP1oXRH7B7f7xJ%2FIY%2Fr2Y5jhrTBPAZebzGQVaCr7p79xJgU4Pn%2BfMJAzij490nl98pXRG8OuD76WJITVuGoZBHojudMTEPA1fmnjWfTSt2RPXKY3wXtCiAcmS56jZ4haTU4SuaAwARs1OZEsTk0MS83UlyGcd5FVLOO3rPl5mQHWo8RkvIgmw4BO8gmybHGabPclNEXEImEP%2Bdgz7WVJr7qyBzY7oLiTXgvJk4j%2FXtOHjAUhMIDA%3D%3D",
+      "objectKey": "admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144917-0ea55633-validation-2-vcazcnjtuwzy.png",
+      "requiredHeaders": {
+        "Content-Type": "image/png",
+        "Content-Length": "35",
+        "Content-MD5": "V/CAzcnjTUWZy2QicsV3BQ=="
+      },
+      "md5": "V/CAzcnjTUWZy2QicsV3BQ==",
+      "mimeType": "image/png",
+      "sizeBytes": 35
+    },
+    "secondFinalize": {
+      "fileRefId": "2615c3c5-0aa7-4fe1-9795-cdda1b1b3cb9",
+      "bucket": "metaplex-nft-dev-admin-assets-1773651938",
+      "objectKey": "admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144917-0ea55633-validation-2-vcazcnjtuwzy.png",
+      "cdnUrl": "https://storage.googleapis.com/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144917-0ea55633-validation-2-vcazcnjtuwzy.png",
+      "uploadedAt": "2026-03-16T14:49:19.095Z",
+      "cdnInvalidationStatus": "success",
+      "invalidatedPaths": [
+        "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+      ]
+    },
+    "manualPurge": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "ok": true,
+        "status": "success",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+        ],
+        "providerRequestId": "aa049478-58a9-4422-830f-7df5ec0e169a"
+      }
+    },
+    "temporaryContract": {
+      "draftId": "24ba59c2-b9e0-4121-aecc-8b9801b102cd",
+      "uploadId": "c321c321-4113-46dc-ace6-bc6435ad0daa",
+      "uploadUrl": "https://storage.googleapis.com/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/24ba59c2-b9e0-4121-aecc-8b9801b102cd/20260316144921-f1f0d9cd-validation-temp-2slt8q0ij5oj.png?GoogleAccessId=asset-upload-signer%40metaplex-nft-dev.iam.gserviceaccount.com&Expires=1773673461&Signature=ZpYGsxR8Vt8C3Aj6LNpbR8vir7maM4LebOVMTHdsovFTjuaof7gIS5JQ0cfpTQyBnPcZ8tu0b1DkMXYJNKflzpt1zjW1kP4i7X2zZ7uPpFY1%2FtCmxRbMRKKpy90LBlHWs9Zs%2BFY0M2wUdF6pn4ZKURpNcVU7JPEDtKADoitzEklUkiBUWEzoa9aX%2Bfl2r8z5Xf0oX631vIXrX7kUrXhA51WhxktjXpSlKTDe0ADxPCgPQRRddd46nDJA03Rp4TRUGBOtnzDzU%2BiXDDpFIPf5a3Ra4o1SH4OMkFK3mF3nvwbAUZiqTcynbkHDMZeDxp3sl6WGbxfJsj0k%2FqCE08yY%2Fg%3D%3D",
+      "objectKey": "admin-assets/galleryImage/24ba59c2-b9e0-4121-aecc-8b9801b102cd/20260316144921-f1f0d9cd-validation-temp-2slt8q0ij5oj.png",
+      "requiredHeaders": {
+        "Content-Type": "image/png",
+        "Content-Length": "38",
+        "Content-MD5": "2Slt8Q0Ij5OJ9GCDlNGV2A=="
+      },
+      "md5": "2Slt8Q0Ij5OJ9GCDlNGV2A==",
+      "mimeType": "image/png",
+      "sizeBytes": 38
+    }
+  },
+  "orphanReconciler": {
+    "dryRun": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "ok": true,
+        "dryRun": true,
+        "temporaryRetentionDays": 36500,
+        "abandonedRetentionDays": 36500,
+        "limit": 20,
+        "candidates": 2,
+        "deleted": 0,
+        "byReason": {
+          "temporary": 1,
+          "abandoned": 1
+        },
+        "sampleUploadIds": [
+          "b8cf643d-5d17-4b4f-85ef-e2409e29219f",
+          "c321c321-4113-46dc-ace6-bc6435ad0daa"
+        ]
+      }
+    },
+    "execute": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "ok": true,
+        "dryRun": false,
+        "temporaryRetentionDays": 36500,
+        "abandonedRetentionDays": 36500,
+        "limit": 20,
+        "candidates": 2,
+        "deleted": 2,
+        "byReason": {
+          "temporary": 1,
+          "abandoned": 1
+        },
+        "sampleUploadIds": [
+          "b8cf643d-5d17-4b4f-85ef-e2409e29219f",
+          "c321c321-4113-46dc-ace6-bc6435ad0daa"
+        ]
+      }
+    }
+  },
+  "importJobs": {
+    "create": {
+      "status": 202,
+      "ok": true,
+      "payload": {
+        "importJobId": "a2d8d23c-09ff-46fe-8249-98954f7662b4",
+        "statusUrl": "/api/admin/assets/import-jobs/a2d8d23c-09ff-46fe-8249-98954f7662b4",
+        "state": "queued"
+      }
+    },
+    "status": {
+      "importJobId": "a2d8d23c-09ff-46fe-8249-98954f7662b4",
+      "state": "completed_with_errors",
+      "delayed": false,
+      "totalRows": 2,
+      "processedRows": 2,
+      "failedRows": 1,
+      "warningsCount": 0,
+      "errorReportUrl": "/api/admin/assets/import-jobs/a2d8d23c-09ff-46fe-8249-98954f7662b4/errors",
+      "createdAt": "2026-03-16T14:49:22.730Z",
+      "updatedAt": "2026-03-16T14:49:22.910Z",
+      "startedAt": "2026-03-16T14:49:22.910Z",
+      "finishedAt": "2026-03-16T14:49:22.910Z"
+    },
+    "errors": {
+      "status": 200,
+      "ok": true,
+      "payload": {
+        "importJobId": "a2d8d23c-09ff-46fe-8249-98954f7662b4",
+        "count": 1,
+        "limit": 50,
+        "offset": 0,
+        "errors": [
+          {
+            "row": 2,
+            "column": "buildingExitStrategy",
+            "code": "EXIT_STRATEGY_INVALID",
+            "message": "exitStrategy is not allowed."
+          }
+        ]
+      }
+    },
+    "dlqRows": []
+  },
+  "audit": {
+    "cdnInvalidationEvents": [
+      {
+        "source": "manual",
+        "status": "success",
+        "provider_request_id": "aa049478-58a9-4422-830f-7df5ec0e169a",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+        ],
+        "created_at": "2026-03-16T14:49:21.721Z"
+      },
+      {
+        "source": "finalize-replace",
+        "status": "success",
+        "provider_request_id": "775bceba-94ca-4bbd-8f54-6c0511dd661e",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+        ],
+        "created_at": "2026-03-16T14:49:20.311Z"
+      },
+      {
+        "source": "manual",
+        "status": "success",
+        "provider_request_id": "82e1192c-6156-4c69-b765-687aaff6dd87",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/12e0ccf9-1810-4218-b006-f843efc7015f/20260316144512-1b938425-validation-1-8i61rf4yyqvi.png"
+        ],
+        "created_at": "2026-03-16T14:45:19.917Z"
+      },
+      {
+        "source": "finalize-replace",
+        "status": "success",
+        "provider_request_id": "e1ae8292-4c66-48b0-a934-17147ff24fab",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/12e0ccf9-1810-4218-b006-f843efc7015f/20260316144512-1b938425-validation-1-8i61rf4yyqvi.png"
+        ],
+        "created_at": "2026-03-16T14:45:18.527Z"
+      },
+      {
+        "source": "finalize-replace",
+        "status": "skipped",
+        "provider_request_id": null,
+        "paths": [],
+        "created_at": "2026-03-16T14:02:59.521Z"
+      }
+    ],
+    "queueAndWebhookEvents": [
+      {
+        "type": "cdn-webhook",
+        "requestedAt": "2026-03-16T14:49:20.309Z",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+        ],
+        "requestId": "775bceba-94ca-4bbd-8f54-6c0511dd661e",
+        "operations": [
+          {
+            "path": "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+            "operation": [
+              {
+                "description": "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+                "id": "655007787299219103",
+                "insertTime": "2026-03-16T07:49:20.151-07:00",
+                "kind": "compute#operation",
+                "name": "operation-1773672560083-64d2552e44147-0b4fb362-d16fd746",
+                "operationType": "invalidateCache",
+                "progress": 0,
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/operations/operation-1773672560083-64d2552e44147-0b4fb362-d16fd746",
+                "startTime": "2026-03-16T07:49:20.156-07:00",
+                "status": "RUNNING",
+                "targetId": "7792025934576855858",
+                "targetLink": "https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/urlMaps/metaplex-admin-assets-map",
+                "user": "jeisonjsosar@icloud.com"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cdn-webhook",
+        "requestedAt": "2026-03-16T14:49:21.720Z",
+        "paths": [
+          "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png"
+        ],
+        "requestId": "aa049478-58a9-4422-830f-7df5ec0e169a",
+        "operations": [
+          {
+            "path": "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+            "operation": [
+              {
+                "description": "/metaplex-nft-dev-admin-assets-1773651938/admin-assets/galleryImage/fa3abe34-43a2-4f03-a189-6f94077a5b5a/20260316144913-429d8749-validation-1-8i61rf4yyqvi.png",
+                "id": "4499890393606104734",
+                "insertTime": "2026-03-16T07:49:21.548-07:00",
+                "kind": "compute#operation",
+                "name": "operation-1773672561491-64d2552f9bd26-66530611-deb3215d",
+                "operationType": "invalidateCache",
+                "progress": 0,
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/operations/operation-1773672561491-64d2552f9bd26-66530611-deb3215d",
+                "startTime": "2026-03-16T07:49:21.552-07:00",
+                "status": "RUNNING",
+                "targetId": "7792025934576855858",
+                "targetLink": "https://www.googleapis.com/compute/v1/projects/metaplex-nft-dev/global/urlMaps/metaplex-admin-assets-map",
+                "user": "jeisonjsosar@icloud.com"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "qstash-publish",
+        "requestedAt": "2026-03-16T14:49:22.920Z",
+        "targetUrl": "http://127.0.0.1:3001/api/admin/assets/import-jobs/process",
+        "workerTokenForwarded": true,
+        "processStatus": 200,
+        "processPayload": {
+          "ok": true,
+          "importJobId": "a2d8d23c-09ff-46fe-8249-98954f7662b4",
+          "state": "completed_with_errors",
+          "processedInBatch": 2,
+          "failedInBatch": 1,
+          "needsRequeue": false
+        }
+      }
+    ]
+  }
+}

@@ -35,13 +35,16 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "^3.8.0",
-    "tweetnacl": "^1.0.3"
+    "spark-md5": "^3.0.2",
+    "tweetnacl": "^1.0.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "22.13.10",
     "@types/pg": "^8.18.0",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
+    "@types/spark-md5": "^3.0.5",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "10.4.20",
     "eslint": "9.21.0",

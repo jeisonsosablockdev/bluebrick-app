@@ -45,7 +45,7 @@ function titleCaseFromSlug(value: string): string {
     .join(" ");
 }
 
-function normalizeHeaderKey(value: string): string {
+export function normalizeHeaderKey(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
@@ -187,7 +187,7 @@ export function parseTextFileToTabularRows(fileName: string, content: string): P
   return parseTabularText(content);
 }
 
-const importKeyAliasMap: Record<string, string> = {
+export const importKeyAliasMap: Record<string, string> = {
   assetname: "assetName",
   slug: "slug",
   internalcode: "internalCode",
