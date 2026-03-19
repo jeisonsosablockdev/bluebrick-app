@@ -8,6 +8,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "db:migrate": "node ./scripts/db-migrate.js",
+    "cm:items": "node ./scripts/check-candy-machine-items.js",
     "rfc:new": "node ./scripts/rfc-new.js",
     "lint": "eslint .",
     "test": "vitest run",
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "@metaplex-foundation/mpl-core": "^1.7.0",
+    "@metaplex-foundation/mpl-core-candy-machine": "^0.3.0",
     "@metaplex-foundation/umi": "^1.5.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
     "@metaplex-foundation/umi-signer-wallet-adapters": "^1.5.1",

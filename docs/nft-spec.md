@@ -12,6 +12,8 @@
   - `/api/admin/metaplex-core/prepare` and `/api/admin/metaplex-core/submit` require `admin` role server-side.
   - Frontend wallet must match authenticated session wallet (`payerPublicKey` check before signing).
   - Only devnet RPC is accepted (`NEXT_PUBLIC_SOLANA_RPC` enforced by `lib/solana.ts`).
+  - Core Candy Machine deploy/mint/submit routes validate all Solana public key inputs explicitly (`payerPublicKey`, `candyMachineAddress`, `collectionAddress`, `expectedAddress`) before building transactions.
+  - Core Candy Machine `collectionName` is capped at 32 chars (on-chain serialization constraint).
 - Rotation/revocation:
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
   - Revoking admin rights is immediate once wallet is removed from allowlist.
@@ -43,10 +45,90 @@
   - H2 creates fresh signer keypairs for collection/assets and unique numbered names per serial.
   - Full idempotency constraints (`job/batch/item/signature/webhook`) are handled in H1/H3.
 
+## Mint Snapshot Persistence + Create Asset Gate (STORY-002-06)
+- Final snapshot endpoint:
+  - `POST /api/admin/core-candy-machine/snapshot/finalize`
+- Persisted datasets:
+  - `asset_mint_snapshots`: form snapshot, blockchain snapshot, verification result, handoff status.
+  - `asset_mint_onchain_proofs`: deploy/mint signatures with confirmation status, slot, and error.
+- Verification policy:
+  - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
+  - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.
+  - `Create Asset` is enabled only when `verificationStatus=verified` and job status is `completed`.
+- Business safety:
+  - `partial` mint state is treated as non-eligible for `Create Asset`.
+  - Marketplace handoff remains `ready` only for fully verified snapshots.
+
+## Metadata URI Provider (Core Candy Machine)
+- Metadata URI generation endpoint:
+  - `POST /api/admin/core-candy-machine/metadata`
+- Provider strategy:
+  - If `PINATA_JWT` is configured:
+    - If `image` arrives as `http(s)`, server downloads it and pins it via Pinata (`pinFileToIPFS`), then uses the resulting `ipfs://` URI in metadata.
+    - Uploaded Pinata image filename uses `internalCode` when available (fallback: `<assetNamePrefix>-image`).
+    - Collection + asset metadata JSON are pinned via Pinata (`pinJSONToIPFS`) and returned as `ipfs://` URIs.
+  - If `image` already arrives as `ipfs://...`, it is reused directly (no re-upload) and metadata JSON is pinned on top.
+  - If `PINATA_JWT` is not configured, flow falls back to local server metadata records (`/api/admin/core-candy-machine/metadata/{id}.json`) to preserve existing mint workflow and keep JSON URI format explicit.
+  - Local metadata retrieval normalizes IDs with optional `.json` suffix to avoid 404 mismatches in JSON-only URI flows.
+- Metadata URI constraints:
+  - Deploy validation still enforces JSON metadata URIs only (`https://...json` or `ipfs://...`).
+  - Image URLs are rejected as `collectionUri`/`assetUri`.
+  - If deploy is triggered with missing or image-like URIs and an uploaded image is available in prefill, the panel attempts automatic URI generation before validation.
+  - `addConfigLines` tx preparation now uses adaptive chunking to avoid transaction serialization overflow (`encoding overruns Uint8Array`) when metadata URIs are long.
+  - Item insertion follows prefix-based strategy for names (`prefixName = "<assetNamePrefix> #"` + numeric suffix in config lines), aligned with Core Candy Machine insert-items guidance.
+- Operational note:
+  - This integration changes metadata URI storage/provider selection and can migrate image hosting to Pinata/IPFS transparently when a public `http(s)` image is provided.
+  - Submit path now uses resilient RPC handling (retry on transient send errors + explicit signature status polling with timeout) and propagates concrete backend errors for easier recovery.
+  - Wallet signing flow and deploy/mint transaction sequencing remain unchanged.
+
 ## Devnet Mint Proof
 | Purpose | Signature | Explorer URL | Metadata Account |
 | --- | --- | --- | --- |
 | Create Core collection | `31iKqrqa7cFn3z2b8Q2oVbD2tazBLUBQ1t1ahgTSeadXxHrjXVSt4zXu3QTzWvXEN77rCXEdV6dhC673SNUxhrDR` | `https://explorer.solana.com/tx/31iKqrqa7cFn3z2b8Q2oVbD2tazBLUBQ1t1ahgTSeadXxHrjXVSt4zXu3QTzWvXEN77rCXEdV6dhC673SNUxhrDR?cluster=devnet` | `6QEWjo18DHmAKFK8WaGkZL78eZE1yY9b9anmb7UVawE1` |
 | Mint Core asset in collection | `2nsk2m6QaWjYipQFcZqN7ZbbnBgAbDYjMisFM4yXgqQ2911deiRZxavon457z8i8wLRHjJSjxfVVH3tDwH3CjNtD` | `https://explorer.solana.com/tx/2nsk2m6QaWjYipQFcZqN7ZbbnBgAbDYjMisFM4yXgqQ2911deiRZxavon457z8i8wLRHjJSjxfVVH3tDwH3CjNtD?cluster=devnet` | `3Z1NK5D9y5kyWdoYD3Z9SpUAVTRUobWQLvKfwcWt3py9` |
 
-Last Updated: 2026-03-09 03:16:27 UTC
+## Devnet Candy Machine Deploy Proof (Pinata Flow)
+| Purpose | Signature | Explorer URL | Account |
+| --- | --- | --- | --- |
+| Create Core Collection | `4VGAgEzcij63XUxJ5TaU3xcH9A1jwHjNzQgxqEveTDmkDmxWDPGiPmXTLhPLJyxesPfxuE3AhUVKibDBwzNNhTim` | `https://explorer.solana.com/tx/4VGAgEzcij63XUxJ5TaU3xcH9A1jwHjNzQgxqEveTDmkDmxWDPGiPmXTLhPLJyxesPfxuE3AhUVKibDBwzNNhTim?cluster=devnet` | `G695Q59UUEoWKGdJvBY2msh1CqDzB91ri1G18VJQGGy5` |
+| Create Core Candy Machine + Guard | `41AXTaKr5q42uX74Uk5UnFBCSEQD31FKjFAkLLusWLGHJ1iUTdFWGj5oUzU3jhXMtkQcKdHcXbqiNwL6ke3bFf6y` | `https://explorer.solana.com/tx/41AXTaKr5q42uX74Uk5UnFBCSEQD31FKjFAkLLusWLGHJ1iUTdFWGj5oUzU3jhXMtkQcKdHcXbqiNwL6ke3bFf6y?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 1-64 | `55haK5so2GVxy3sgBpQYMz1tj1fNSE9p2YQrNPHoijywFENqJkwAqxGCkHwxkgY4Hh3ZeEXyfQcMCpmDuZywWuHw` | `https://explorer.solana.com/tx/55haK5so2GVxy3sgBpQYMz1tj1fNSE9p2YQrNPHoijywFENqJkwAqxGCkHwxkgY4Hh3ZeEXyfQcMCpmDuZywWuHw?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 65-128 | `3UhDAe8MFxL6kejobnpKJgPJkXQDTmjUD72j3anPUTFvCc9Lb66LpACqxDPAUS1dK9YbttWgkvniRvgRY5uTHp2B` | `https://explorer.solana.com/tx/3UhDAe8MFxL6kejobnpKJgPJkXQDTmjUD72j3anPUTFvCc9Lb66LpACqxDPAUS1dK9YbttWgkvniRvgRY5uTHp2B?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 129-192 | `5JSAiYJDyNkNNvnRaNcFUiQcp3fWcu5n1YtwETVKK4aRX99jHQhz5FCZpwYMwMJreQsL9b5mTSy6bHCnbQG8AjAa` | `https://explorer.solana.com/tx/5JSAiYJDyNkNNvnRaNcFUiQcp3fWcu5n1YtwETVKK4aRX99jHQhz5FCZpwYMwMJreQsL9b5mTSy6bHCnbQG8AjAa?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 193-256 | `3VDCqupkCG3xwXAUAubwTA3BAGumFpAoL7nwLGBubH1kDJN11MRPLVUT5LsHmeLJdR8hdwZ9BQtKSxXMBEZeD6bs` | `https://explorer.solana.com/tx/3VDCqupkCG3xwXAUAubwTA3BAGumFpAoL7nwLGBubH1kDJN11MRPLVUT5LsHmeLJdR8hdwZ9BQtKSxXMBEZeD6bs?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 257-320 | `3gfQSTWyozhd789aWC3ijUuM9yC7uytX6wPU6EB8yDbZTvRoBTuH6rs9Psv26PgLs62YSKvzKnftTDT2mSWmZy9r` | `https://explorer.solana.com/tx/3gfQSTWyozhd789aWC3ijUuM9yC7uytX6wPU6EB8yDbZTvRoBTuH6rs9Psv26PgLs62YSKvzKnftTDT2mSWmZy9r?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 321-384 | `295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB` | `https://explorer.solana.com/tx/295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+| Load config lines 385-400 | `5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o` | `https://explorer.solana.com/tx/5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
+
+Last Updated: 2026-03-18 23:45:00 UTC
+
+## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
+- Status: `in-review` (2026-03-16)
+- Scope implemented in this iteration:
+  - Continuous UI flow in `/admin/assets/new`: `Create Asset -> Continue to mint -> Mint Setup` in the same module.
+  - Mint setup prefill wired from form state (`cover/uri`, `name`, `symbol`, `description`, `quantity`).
+  - Relational snapshot persistence integrated for mint orchestrator transitions (`create`, `prepare`, `submit`, `reconcile`, `reconcile/das`) into:
+    - `mint_jobs`
+    - `mint_job_batches`
+    - `mint_job_items`
+    - `mint_item_signatures`
+- Authority model:
+  - Mint-orchestrator routes enforce admin session server-side before any mutation.
+  - Transaction construction/submit flow remains server-mediated through backend API endpoints.
+- Reconciliation:
+  - DAS route (`/reconcile/das`) remains active as primary high-throughput reconciliation path.
+- Pending for full EPIC close:
+  - Complete migration from Core direct mint flow to Core Candy Machine flow (`create+guards+items+mint`) with `startDate + solPayment(0.00001 SOL)`.
+  - Devnet proof update with real signatures for Candy Machine deploy was completed on 2026-03-18; mint batch signatures are still pending for this EPIC.
+
+- Core Candy Machine implementation status:
+  - New backend module: `lib/core-candy-machine-admin.ts`.
+  - New API routes:
+    - `/api/admin/core-candy-machine/deploy/prepare`
+    - `/api/admin/core-candy-machine/mint/prepare`
+    - `/api/admin/core-candy-machine/submit`
+  - New client panel:
+    - `components/admin/core-candy-machine-panel.tsx`
+  - Enforced guards on deploy:
+    - `startDate`
+    - `solPayment = 10,000 lamports (0.00001 SOL)`

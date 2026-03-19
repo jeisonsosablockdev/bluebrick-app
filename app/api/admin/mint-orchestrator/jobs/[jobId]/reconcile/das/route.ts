@@ -10,6 +10,7 @@ import {
   type MintItemRecord,
   type MintJobRecord
 } from "@/lib/mint-orchestrator-store";
+import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 
 type RouteParams = {
   params: Promise<{
@@ -281,6 +282,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
           updatedItems: []
         };
     const updatedJob = reconciliation.job;
+    await syncMintOrchestratorSnapshot(updatedJob);
 
     return NextResponse.json({
       job: updatedJob,

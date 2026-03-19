@@ -161,6 +161,13 @@ const DEFAULT_DAS_FORM: DasReconcileFormState = {
   maxPages: "10"
 };
 
+type MintOrchestratorSigningPanelProps = {
+  prefill?: {
+    totalItems?: number;
+    collectionAddress?: string;
+  };
+};
+
 function truncateValue(value: string, size = 8): string {
   if (value.length <= size * 2 + 3) {
     return value;
@@ -211,12 +218,22 @@ function getApiError(response: Response, payload: MintOrchestratorApiError | nul
   return new Error(fallbackMessage);
 }
 
-export function MintOrchestratorSigningPanel() {
+export function MintOrchestratorSigningPanel({ prefill }: MintOrchestratorSigningPanelProps) {
+  const initialTotalItems = prefill?.totalItems && prefill.totalItems > 0
+    ? String(prefill.totalItems)
+    : DEFAULT_CREATE_JOB_FORM.totalItems;
+  const initialCollectionAddress = typeof prefill?.collectionAddress === "string"
+    ? prefill.collectionAddress
+    : DEFAULT_CREATE_JOB_FORM.collectionAddress;
   const [jobs, setJobs] = useState<MintJobWithProgress[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [activeBatch, setActiveBatch] = useState<{ batch: MintBatchRecord; items: MintItemRecord[] } | null>(null);
   const [submissionDrafts, setSubmissionDrafts] = useState<MintBatchSubmissionDrafts>({});
-  const [createJobForm, setCreateJobForm] = useState<CreateJobFormState>(DEFAULT_CREATE_JOB_FORM);
+  const [createJobForm, setCreateJobForm] = useState<CreateJobFormState>({
+    ...DEFAULT_CREATE_JOB_FORM,
+    totalItems: initialTotalItems,
+    collectionAddress: initialCollectionAddress
+  });
   const [dasForm, setDasForm] = useState<DasReconcileFormState>(DEFAULT_DAS_FORM);
   const [idempotencyKey, setIdempotencyKey] = useState("");
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
@@ -314,6 +331,14 @@ export function MintOrchestratorSigningPanel() {
   useEffect(() => {
     void refreshJobs();
   }, [refreshJobs]);
+
+  useEffect(() => {
+    setCreateJobForm((current) => ({
+      ...current,
+      totalItems: initialTotalItems,
+      collectionAddress: initialCollectionAddress
+    }));
+  }, [initialCollectionAddress, initialTotalItems]);
 
   function updateCreateJobField<Key extends keyof CreateJobFormState>(field: Key, value: CreateJobFormState[Key]): void {
     setCreateJobForm((current) => ({

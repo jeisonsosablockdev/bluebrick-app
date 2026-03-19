@@ -8,6 +8,7 @@ import {
   isMintOrchestratorError,
   reconcileMintJobSignatures
 } from "@/lib/mint-orchestrator-store";
+import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 import { getSolanaRpcUrl } from "@/lib/solana";
 
 type RouteParams = {
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       actorPubkey: adminPubkey,
       resolutions
     });
+    await syncMintOrchestratorSnapshot(job);
 
     return NextResponse.json({
       job,

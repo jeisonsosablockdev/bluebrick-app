@@ -7,6 +7,7 @@ import {
   isMintOrchestratorError,
   listMintJobs
 } from "@/lib/mint-orchestrator-store";
+import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 
 type CreateMintJobBody = {
   totalItems?: unknown;
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       startSerial: body.startSerial === undefined ? 1 : Number(body.startSerial),
       collectionAddress: typeof body.collectionAddress === "string" ? body.collectionAddress : undefined
     });
+    await syncMintOrchestratorSnapshot(job);
 
     return NextResponse.json({
       job,

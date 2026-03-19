@@ -43,6 +43,10 @@
    - Manual mint-orchestrator mutations are bound to the wallet that created the job (`createdBy`).
    - A different admin wallet can read job state, but cannot prepare, submit, or reconcile that job through admin endpoints.
    - Webhook reconciliation remains server-initiated and does not depend on a user wallet session.
+13. Core Candy Machine snapshot finalize (STORY-002-06, server-authoritative):
+   - After mint completion, admin UI calls `/api/admin/core-candy-machine/snapshot/finalize`.
+   - Backend verifies quantity by DAS (`getAssetsByGroup`) and stores immutable snapshot + on-chain proofs.
+   - `Create Asset` gate is enabled only when `verificationStatus=verified` and `mint_jobs.status=completed`.
 
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
@@ -60,6 +64,7 @@
 | `/api/admin/mint-orchestrator/jobs/:jobId/batches/:batchNo/submit` | `POST` | Yes | `admin` | Submits signed item signatures and enforces `createdBy` authority |
 | `/api/admin/mint-orchestrator/jobs/:jobId/reconcile` | `POST` | Yes | `admin` | Reconciles signature confirmations via devnet RPC with `createdBy` authority check |
 | `/api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` | `POST` | Yes | `admin` | Reconciles submitted items via paginated DAS lookup with `createdBy` authority check |
+| `/api/admin/core-candy-machine/snapshot/finalize` | `POST` | Yes | `admin` | Verifies minted quantity (DAS), persists `asset_mint_snapshots` + `asset_mint_onchain_proofs`, computes `Create Asset` gate |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 
 ## Trust Boundaries
@@ -71,6 +76,7 @@
   - Signature verification, nonce replay protection, session issuance.
   - Role calculation, authorization decisions, idempotent batch orchestration, RPC reconciliation, webhook dedupe, DAS reconciliation.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
+  - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
 - External webhook responsibilities:
   - Helius pushes signature lifecycle events.
   - Server never trusts webhook payload blindly: optional secret + dedupe + signature-level state transition checks.
@@ -103,4 +109,4 @@
 | Batch without pending items | `409` | Stop client retries and finalize flow |
 | Admin wallet differs from job `createdBy` | `403` | Use creator wallet for manual mutation endpoints |
 
-Last Updated: 2026-03-13 22:08:14 UTC
+Last Updated: 2026-03-18 23:45:00 UTC

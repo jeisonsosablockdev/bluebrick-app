@@ -6,6 +6,7 @@ import {
   isMintOrchestratorError,
   submitMintBatch
 } from "@/lib/mint-orchestrator-store";
+import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 
 type RouteParams = {
   params: Promise<{
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
         };
       })
     });
+    await syncMintOrchestratorSnapshot(job);
 
     return NextResponse.json({
       job,

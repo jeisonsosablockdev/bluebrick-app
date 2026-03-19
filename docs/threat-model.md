@@ -42,4 +42,4 @@
 - Risk: DAS reconciliation can still require multiple passes when assets are spread across many pages.
 - Acceptance reason: H5 intentionally exposes bounded, repeatable pagination to keep reconciliation predictable and safe.
 
-Last Updated: 2026-03-10 07:35:00 UTC
+Last Updated: 2026-03-18 01:14:38 UTC

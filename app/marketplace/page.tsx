@@ -7,7 +7,8 @@ import { H1, Lead } from "@/components/ui/typography";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getServerLocale } from "@/lib/i18n-server";
 import { localize } from "@/lib/i18n";
-import { listProperties, PROPERTY_CITIES, type ListingStatus, type PropertyFilters } from "@/lib/property-service";
+import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
+import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
 
 type MarketplacePageProps = {
@@ -44,7 +45,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const locale = await getServerLocale();
   const filters = parseFilters(await searchParams);
-  const properties = listProperties(filters);
+  const properties = await listMarketplaceProperties(filters);
+  const cityOptions = await listMarketplacePropertyCities();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
@@ -77,7 +79,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       </section>
 
       <section className="mt-6">
-        <MarketplaceFilters currentFilters={filters} cityOptions={PROPERTY_CITIES} />
+        <MarketplaceFilters currentFilters={filters} cityOptions={cityOptions} />
       </section>
 
       <section className="mt-6">

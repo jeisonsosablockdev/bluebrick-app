@@ -49,6 +49,7 @@
   - `/api/admin/ping` and `app/admin/page.tsx` repeat the role check (defense in depth).
   - `/api/admin/mint-orchestrator/*` is backend-controlled and does not trust client workflow state.
   - Manual mutation endpoints (`next-batch`, `submit`, `reconcile`, `reconcile/das`) require `admin` role and `actorPubkey === job.createdBy`.
+  - `/api/admin/core-candy-machine/snapshot/finalize` requires `admin` role and persists immutable snapshot/proofs after server-side verification.
   - `/admin` signing orchestration UI is an operator surface only; all state transitions are revalidated server-side.
 5. Webhook ingress layer:
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
@@ -56,6 +57,9 @@
 6. DAS read layer:
   - `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` queries devnet DAS with bounded pagination.
   - Endpoint refuses non-devnet DAS URLs and enforces max page/limit guards.
+7. Core Candy Machine snapshot layer:
+  - `POST /api/admin/core-candy-machine/snapshot/finalize` performs DAS verification and stores relational snapshot evidence.
+  - Fallback verification mode (`candy_machine_items_loaded`) is marked `degraded` and never enables `Create Asset`.
 
 ## Security Notes
 - CSRF strategy:
@@ -74,9 +78,10 @@
   - Manual state mutations are denied with `403` when admin actor differs from immutable job authority (`createdBy`).
   - Webhook events are deduplicated by provider event id/fingerprint.
   - DAS reconciliation only confirms submitted items with known `expectedAddress`.
+  - Snapshot persistence is idempotent at DB level via `asset_mint_snapshots.mint_job_id UNIQUE`.
 - Persistence caveat:
   - Session store is currently process-local in-memory.
   - App restart invalidates sessions.
   - Shared store (for example Redis) is required before horizontal scaling.
 
-Last Updated: 2026-03-13 22:08:14 UTC
+Last Updated: 2026-03-18 23:45:00 UTC

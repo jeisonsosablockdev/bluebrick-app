@@ -5,7 +5,7 @@ import { WalletModal } from "@/components/WalletModal";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getServerLocale } from "@/lib/i18n-server";
 import { localize } from "@/lib/i18n";
-import { getPropertyDetailOrThrowRpc } from "@/lib/property-service";
+import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
 import { PropertyDetailContent } from "@/components/marketplace/PropertyDetailContent";
 
@@ -19,7 +19,7 @@ export default async function MarketplaceDetailPage({ params }: MarketplaceDetai
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const locale = await getServerLocale();
   const { id } = await params;
-  const property = getPropertyDetailOrThrowRpc(id);
+  const property = await getMarketplacePropertyDetailOrThrowRpc(id);
 
   if (!property) {
     notFound();

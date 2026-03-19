@@ -56,6 +56,33 @@ export type PropertyFilters = {
   minRoi?: number;
 };
 
+export type CreateMarketplaceEntryInput = {
+  id: string;
+  title: string;
+  city: string;
+  country: string;
+  listingStatus: ListingStatus;
+  image: string;
+  shortDescription: string;
+  detailedLocation: string;
+  highlights: string[];
+  investmentNotes: string;
+  supplyTotal: number;
+  mintedOrSold: number;
+  nftPriceUsd: number;
+  annualRoiPct: number;
+  availabilityLabel: string;
+  documents: Array<{
+    label: string;
+    url: string;
+  }>;
+  collectionAddress: string;
+  assetMintAddress: string;
+  explorerUrl: string;
+  lastOnchainUpdate: string | null;
+  syncStatus: BlockchainSyncStatus;
+};
+
 export class PropertyRpcError extends Error {
   constructor(message = "Blockchain RPC unavailable.") {
     super(message);
@@ -63,7 +90,7 @@ export class PropertyRpcError extends Error {
   }
 }
 
-const PROPERTY_RECORDS: PropertyDetail[] = [
+const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
   {
     id: "central-norte",
     title: "Edificio Central Norte",
@@ -165,12 +192,33 @@ const PROPERTY_RECORDS: PropertyDetail[] = [
   }
 ];
 
-export const PROPERTY_CITIES = Array.from(new Set(PROPERTY_RECORDS.map((property) => property.city))).sort((a, b) => a.localeCompare(b));
+function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
+  return {
+    ...detail,
+    highlights: [...detail.highlights],
+    investment: { ...detail.investment },
+    documents: detail.documents.map((document) => ({ ...document })),
+    blockchain: { ...detail.blockchain }
+  };
+}
 
-export function listProperties(filters: PropertyFilters): PropertyListItem[] {
+function createLocationLabel(city: string, country: string): string {
+  return `${city}, ${country}`;
+}
+
+function toDocumentId(label: string, index: number): string {
+  const normalized = label
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || `document-${index + 1}`;
+}
+
+function filterPropertyDetails(records: PropertyDetail[], filters: PropertyFilters): PropertyDetail[] {
   const normalizedSearch = filters.search?.trim().toLowerCase();
 
-  return PROPERTY_RECORDS.filter((property) => {
+  return records.filter((property) => {
     if (normalizedSearch) {
       const inTitle = property.title.toLowerCase().includes(normalizedSearch);
       const inLocation = property.locationLabel.toLowerCase().includes(normalizedSearch);
@@ -193,7 +241,11 @@ export function listProperties(filters: PropertyFilters): PropertyListItem[] {
     }
 
     return true;
-  }).map((property) => ({
+  });
+}
+
+function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
+  return records.map((property) => ({
     id: property.id,
     title: property.title,
     locationLabel: property.locationLabel,
@@ -204,8 +256,67 @@ export function listProperties(filters: PropertyFilters): PropertyListItem[] {
   }));
 }
 
+const propertyRecordsStore: PropertyDetail[] = PROPERTY_RECORDS_SEED.map(clonePropertyDetail);
+
+export function listPropertyDetailsSnapshot(): PropertyDetail[] {
+  return propertyRecordsStore.map(clonePropertyDetail);
+}
+
+export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInput): PropertyDetail {
+  const alreadyExists = propertyRecordsStore.some((property) => property.id === input.id);
+  if (alreadyExists) {
+    throw new Error("A marketplace entry with this id already exists.");
+  }
+
+  const record: PropertyDetail = {
+    id: input.id,
+    title: input.title,
+    city: input.city,
+    country: input.country,
+    locationLabel: createLocationLabel(input.city, input.country),
+    listingStatus: input.listingStatus,
+    image: input.image,
+    shortDescription: input.shortDescription,
+    detailedLocation: input.detailedLocation,
+    highlights: input.highlights,
+    investmentNotes: input.investmentNotes,
+    investment: {
+      supplyTotal: input.supplyTotal,
+      mintedOrSold: input.mintedOrSold,
+      nftPriceUsd: input.nftPriceUsd,
+      annualRoiPct: input.annualRoiPct,
+      availabilityLabel: input.availabilityLabel
+    },
+    documents: input.documents.map((document, index) => ({
+      id: toDocumentId(document.label, index),
+      label: document.label,
+      url: document.url
+    })),
+    blockchain: {
+      network: "Solana Devnet",
+      collectionAddress: input.collectionAddress,
+      assetMintAddress: input.assetMintAddress,
+      explorerUrl: input.explorerUrl,
+      lastOnchainUpdate: input.lastOnchainUpdate,
+      syncStatus: input.syncStatus
+    }
+  };
+
+  propertyRecordsStore.unshift(record);
+  return clonePropertyDetail(record);
+}
+
+export function listPropertyCities(): string[] {
+  return Array.from(new Set(propertyRecordsStore.map((property) => property.city))).sort((a, b) => a.localeCompare(b));
+}
+
+export function listProperties(filters: PropertyFilters): PropertyListItem[] {
+  return mapListItems(filterPropertyDetails(propertyRecordsStore, filters));
+}
+
 export function getPropertyDetail(id: string): PropertyDetail | null {
-  return PROPERTY_RECORDS.find((property) => property.id === id) ?? null;
+  const found = propertyRecordsStore.find((property) => property.id === id);
+  return found ? clonePropertyDetail(found) : null;
 }
 
 export function getPropertyDetailOrThrowRpc(id: string): PropertyDetail | null {

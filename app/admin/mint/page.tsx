@@ -1,4 +1,4 @@
-import { MetaplexCoreMintPanel } from "@/components/admin/metaplex-core-mint-panel";
+import { CoreCandyMachinePanel } from "@/components/admin/core-candy-machine-panel";
 import { MintOrchestratorSigningPanel } from "@/components/admin/mint-orchestrator-signing-panel";
 import { Card } from "@/components/ui/card";
 import { localize } from "@/lib/i18n";
@@ -21,8 +21,8 @@ export default async function AdminMintPage() {
         </p>
       </Card>
 
+      <CoreCandyMachinePanel />
       <MintOrchestratorSigningPanel />
-      <MetaplexCoreMintPanel />
     </div>
   );
 }

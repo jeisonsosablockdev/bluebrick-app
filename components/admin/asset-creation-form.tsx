@@ -5,6 +5,11 @@ import type { ChangeEvent, DragEvent, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
+import {
+  CoreCandyMachinePanel,
+  type DeployCompletedPayload,
+  type SnapshotFinalizeResponse
+} from "@/components/admin/core-candy-machine-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -308,6 +313,24 @@ function updateListField(current: string[], fileNames: string[]): string[] {
   return unique.slice(0, 20);
 }
 
+function dedupeValidationErrors(errors: string[]): string[] {
+  return Array.from(new Set(errors.map((item) => item.trim()).filter(Boolean)));
+}
+
+function areStringArraysEqual(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function parseImportJobState(value: unknown): ImportJobState {
   if (
     value === "queued" ||
@@ -354,6 +377,103 @@ function readApiErrorMessage(payload: unknown, fallback: string): string {
   return fallback;
 }
 
+function normalizeMarketplaceEntryId(primary: string, fallback: string): string {
+  const candidate = primary.trim() || fallback.trim();
+  const normalized = candidate
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || "marketplace-entry";
+}
+
+function deriveNftPriceUsd(form: AssetForm): number {
+  if (form.assetType === "building_new") {
+    const nftCost = Number(form.buildingNftCost);
+    if (Number.isFinite(nftCost) && nftCost > 0) {
+      return nftCost;
+    }
+  }
+
+  if (form.assetType === "land_lot") {
+    const entryPrice = Number(form.landEntryPrice);
+    if (Number.isFinite(entryPrice) && entryPrice > 0) {
+      return entryPrice;
+    }
+  }
+
+  if (form.assetType === "rental_property") {
+    const monthlyRentEstimate = Number(form.rentalMonthlyRentEstimate);
+    if (Number.isFinite(monthlyRentEstimate) && monthlyRentEstimate > 0) {
+      return monthlyRentEstimate;
+    }
+  }
+
+  return 0;
+}
+
+function deriveAnnualRoiPct(form: AssetForm): number {
+  if (form.assetType === "building_new") {
+    const annualReturn = Number(form.buildingExpectedAnnualReturn);
+    if (Number.isFinite(annualReturn) && annualReturn >= 0) {
+      return annualReturn;
+    }
+  }
+
+  if (form.assetType === "rental_property") {
+    const historicalYield = Number(form.rentalHistoricalYield);
+    if (Number.isFinite(historicalYield) && historicalYield >= 0) {
+      return historicalYield;
+    }
+  }
+
+  return 0;
+}
+
+function buildMarketplaceHighlights(form: AssetForm): string[] {
+  const highlights: string[] = [];
+
+  if (form.assetType === "building_new" && form.buildingProjectStage.trim()) {
+    highlights.push(`Project stage: ${form.buildingProjectStage.trim()}`);
+  }
+
+  if (form.assetType === "building_new" && form.buildingTotalUnits.trim()) {
+    highlights.push(`Total units: ${form.buildingTotalUnits.trim()}`);
+  }
+
+  if (form.assetType === "rental_property" && form.rentalOccupancyRate.trim()) {
+    highlights.push(`Occupancy: ${form.rentalOccupancyRate.trim()}%`);
+  }
+
+  if (form.assetType === "land_lot" && form.landAreaM2.trim()) {
+    highlights.push(`Area: ${form.landAreaM2.trim()} m2`);
+  }
+
+  if (form.city.trim() || form.country.trim()) {
+    highlights.push(`Location: ${[form.city.trim(), form.country.trim()].filter(Boolean).join(", ")}`);
+  }
+
+  return Array.from(new Set(highlights.map((item) => item.trim()).filter(Boolean))).slice(0, 6);
+}
+
+function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url: string }> {
+  const documents: Array<{ label: string; url: string }> = [];
+
+  if (form.brochureFile.trim()) {
+    documents.push({ label: "Brochure", url: form.brochureFile.trim() });
+  }
+
+  for (const [index, url] of form.legalDocs.map((item) => item.trim()).filter(Boolean).slice(0, 4).entries()) {
+    documents.push({ label: `Legal document ${index + 1}`, url });
+  }
+
+  for (const [index, url] of form.financialDocs.map((item) => item.trim()).filter(Boolean).slice(0, 4).entries()) {
+    documents.push({ label: `Financial document ${index + 1}`, url });
+  }
+
+  return documents;
+}
+
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
@@ -379,6 +499,46 @@ export function AssetCreationForm(): ReactElement {
     financialDocs: [],
     propertyImages: []
   });
+  const [mintQuantity, setMintQuantity] = useState<string>("1");
+  const [showMintSetup, setShowMintSetup] = useState(false);
+  const [deployCompletedData, setDeployCompletedData] = useState<DeployCompletedPayload | null>(null);
+  const [snapshotFinalize, setSnapshotFinalize] = useState<SnapshotFinalizeResponse | null>(null);
+  const [createAssetMessage, setCreateAssetMessage] = useState("");
+  const [isCreatingMarketplaceEntry, setIsCreatingMarketplaceEntry] = useState(false);
+  const [createdMarketplaceEntryId, setCreatedMarketplaceEntryId] = useState<string | null>(null);
+
+  const derivedMintQuantityFromType = useMemo(() => {
+    if (form.assetType !== "building_new") {
+      return null;
+    }
+
+    const parsed = Number(form.buildingTotalUnits);
+    if (!Number.isFinite(parsed)) {
+      return null;
+    }
+
+    return Math.floor(parsed);
+  }, [form.assetType, form.buildingTotalUnits]);
+
+  const mintQuantityValue = useMemo(() => {
+    const sourceValue = derivedMintQuantityFromType ?? Number(mintQuantity);
+    const parsed = Number(sourceValue);
+    if (!Number.isFinite(parsed)) {
+      return 0;
+    }
+
+    return Math.floor(parsed);
+  }, [derivedMintQuantityFromType, mintQuantity]);
+
+  const snapshotFormData = useMemo<Record<string, unknown>>(() => {
+    return {
+      ...form,
+      draftId,
+      formStatus,
+      mintQuantity: mintQuantityValue,
+      uploadRefs
+    };
+  }, [draftId, form, formStatus, mintQuantityValue, uploadRefs]);
 
   const requiredErrors = useMemo(() => {
     const errors: string[] = [];
@@ -395,8 +555,19 @@ export function AssetCreationForm(): ReactElement {
     if (!form.coverImage.trim()) {
       errors.push(t({ en: "Cover image is required.", es: "Cover image es obligatoria.", pt: "Cover image e obrigatoria." }));
     }
+    if (!Number.isInteger(mintQuantityValue) || mintQuantityValue < 1) {
+      errors.push(
+        form.assetType === "building_new"
+          ? t({
+              en: "Mint quantity comes from totalUnits and must be at least 1.",
+              es: "La cantidad de mint se toma de totalUnits y debe ser minimo 1.",
+              pt: "A quantidade de mint vem de totalUnits e deve ser no minimo 1."
+            })
+          : t({ en: "Mint quantity must be at least 1.", es: "La cantidad de mint debe ser minimo 1.", pt: "A quantidade de mint deve ser no minimo 1." })
+      );
+    }
     return errors;
-  }, [form, t]);
+  }, [form, mintQuantityValue, t]);
 
   const typeValidation = useMemo<{ state: TypeFormState; errors: string[] }>(() => {
     if (!form.assetType) {
@@ -486,6 +657,14 @@ export function AssetCreationForm(): ReactElement {
     typeValidation.state === "valid" &&
     compatibilityErrors.length === 0;
 
+  const currentValidationErrors = useMemo(() => {
+    return dedupeValidationErrors([
+      ...requiredErrors,
+      ...typeValidation.errors,
+      ...compatibilityErrors
+    ]);
+  }, [requiredErrors, typeValidation.errors, compatibilityErrors]);
+
   const continuationTone = useMemo<"ready" | "error" | "pending">(() => {
     if (canContinueToMint) {
       return "ready";
@@ -529,6 +708,26 @@ export function AssetCreationForm(): ReactElement {
       pt: "Regras: complete os campos obrigatorios para continuar para mint."
     });
   }, [canContinueToMint, form.assetType, formStatus, t]);
+
+  useEffect(() => {
+    if (formStatus !== "validation-error") {
+      return;
+    }
+
+    if (canContinueToMint) {
+      setValidationErrors([]);
+      setFormStatus("draft");
+      return;
+    }
+
+    setValidationErrors((previous) => {
+      if (areStringArraysEqual(previous, currentValidationErrors)) {
+        return previous;
+      }
+
+      return currentValidationErrors;
+    });
+  }, [formStatus, canContinueToMint, currentValidationErrors]);
 
   useEffect(() => {
     const collectionSuggestion = suggestCollectionFromIdentity({
@@ -595,6 +794,8 @@ export function AssetCreationForm(): ReactElement {
       return;
     }
 
+    const filesToUpload = field === "coverImage" ? files.slice(-1) : files;
+
     patchUploadState(field, {
       uploading: true,
       error: "",
@@ -608,17 +809,17 @@ export function AssetCreationForm(): ReactElement {
       ? form[field].trim()
       : "";
 
-    for (let index = 0; index < files.length; index += 1) {
-      const file = files[index];
+    for (let index = 0; index < filesToUpload.length; index += 1) {
+      const file = filesToUpload[index];
       if (!file) {
         continue;
       }
 
       patchUploadState(field, {
         message: t({
-          en: `Uploading ${index + 1}/${files.length}: ${file.name}`,
-          es: `Subiendo ${index + 1}/${files.length}: ${file.name}`,
-          pt: `Enviando ${index + 1}/${files.length}: ${file.name}`
+          en: `Uploading ${index + 1}/${filesToUpload.length}: ${file.name}`,
+          es: `Subiendo ${index + 1}/${filesToUpload.length}: ${file.name}`,
+          pt: `Enviando ${index + 1}/${filesToUpload.length}: ${file.name}`
         })
       });
 
@@ -1182,14 +1383,95 @@ export function AssetCreationForm(): ReactElement {
 
   const continueToMint = async () => {
     if (!canContinueToMint) {
-      setValidationErrors([...requiredErrors, ...typeValidation.errors, ...compatibilityErrors]);
+      setValidationErrors(currentValidationErrors);
       setFormStatus("validation-error");
       return;
     }
 
+    setValidationErrors([]);
     setFormStatus("saving");
     await new Promise((resolve) => setTimeout(resolve, 350));
     setFormStatus("saved");
+    setDeployCompletedData(null);
+    setSnapshotFinalize(null);
+    setCreateAssetMessage("");
+    setCreatedMarketplaceEntryId(null);
+    setShowMintSetup(true);
+  };
+
+  const handleCreateAsset = async () => {
+    if (!deployCompletedData) {
+      return;
+    }
+
+    setIsCreatingMarketplaceEntry(true);
+    setCreateAssetMessage("");
+
+    const nftPriceUsd = deriveNftPriceUsd(form);
+    const annualRoiPct = deriveAnnualRoiPct(form);
+
+    const payload = {
+      entryId: normalizeMarketplaceEntryId(form.slug, form.internalCode || draftId),
+      title: form.assetName.trim(),
+      city: form.city.trim(),
+      country: form.country.trim(),
+      address: form.address.trim() || `${form.city.trim()}, ${form.country.trim()}`,
+      imageUrl: form.coverImage.trim(),
+      shortDescription: (form.shortDescription.trim() || form.longDescription.trim() || form.assetName.trim()),
+      highlights: buildMarketplaceHighlights(form),
+      investmentNotes: (form.investmentThesis.trim() || form.riskNotes.trim() || "").trim(),
+      supplyTotal: mintQuantityValue > 0 ? mintQuantityValue : 1,
+      nftPriceUsd,
+      annualRoiPct,
+      documents: buildMarketplaceDocuments(form),
+      collectionAddress: deployCompletedData.collectionAddress,
+      candyMachineAddress: deployCompletedData.candyMachineAddress,
+      snapshotId: snapshotFinalize?.snapshotId ?? null
+    };
+
+    try {
+      const response = await fetch("/api/admin/marketplace/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const body = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(
+          readApiErrorMessage(
+            body,
+            t({
+              en: "Could not create marketplace entry.",
+              es: "No se pudo crear la entrada del marketplace.",
+              pt: "Nao foi possivel criar a entrada do marketplace."
+            })
+          )
+        );
+      }
+
+      const createdId = typeof body?.data?.id === "string" ? body.data.id : payload.entryId;
+      setCreatedMarketplaceEntryId(createdId);
+      setCreateAssetMessage(
+        t({
+          en: "Marketplace entry created successfully from admin console.",
+          es: "Entrada del marketplace creada correctamente desde la consola admin.",
+          pt: "Entrada do marketplace criada com sucesso no console admin."
+        })
+      );
+    } catch (error) {
+      const fallback = t({
+        en: "Could not create marketplace entry.",
+        es: "No se pudo crear la entrada del marketplace.",
+        pt: "Nao foi possivel criar a entrada do marketplace."
+      });
+      setCreateAssetMessage(error instanceof Error ? error.message : fallback);
+      setCreatedMarketplaceEntryId(null);
+    } finally {
+      setIsCreatingMarketplaceEntry(false);
+    }
   };
 
   return (
@@ -1708,11 +1990,162 @@ export function AssetCreationForm(): ReactElement {
           {continuationMessage}
         </p>
         {canContinueToMint && (
-          <Link className="text-sm text-cyan-200 underline" href="/admin/mint">
-            {t({ en: "Go to mint console", es: "Ir a consola de mint", pt: "Ir para console de mint" })}
-          </Link>
+          <p className="text-sm text-cyan-200">
+            {showMintSetup
+              ? t({ en: "Mint setup enabled below in this same flow.", es: "Mint setup habilitado abajo en este mismo flujo.", pt: "Mint setup habilitado abaixo neste mesmo fluxo." })
+              : t({ en: "Press Continue to mint to open step 2 in this same flow.", es: "Presiona Continuar a mint para abrir el paso 2 en este mismo flujo.", pt: "Pressione Continuar para mint para abrir o passo 2 neste mesmo fluxo." })}
+          </p>
         )}
       </Card>
+
+      <Card className="space-y-3">
+        <p className="text-sm font-semibold text-white">
+          {t({ en: "Mint seed data", es: "Datos semilla de mint", pt: "Dados base de mint" })}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs text-white/70">
+            {t({ en: "Mint quantity", es: "Cantidad de mint", pt: "Quantidade de mint" })}
+            {form.assetType === "building_new" ? (
+              <Input type="number" min={1} value={String(Math.max(0, mintQuantityValue))} readOnly />
+            ) : (
+              <Input
+                type="number"
+                min={1}
+                value={mintQuantity}
+                onChange={(event) => setMintQuantity(event.target.value)}
+              />
+            )}
+          </label>
+          <label className="space-y-1 text-xs text-white/70">
+            {t({ en: "Cover / URI", es: "Cover / URI", pt: "Cover / URI" })}
+            <Input value={form.coverImage} readOnly />
+          </label>
+          <label className="space-y-1 text-xs text-white/70">
+            {t({ en: "Name", es: "Nombre", pt: "Nome" })}
+            <Input value={form.assetName} readOnly />
+          </label>
+          <label className="space-y-1 text-xs text-white/70">
+            {t({ en: "Symbol", es: "Simbolo", pt: "Simbolo" })}
+            <Input value={form.collectionSymbol} readOnly />
+          </label>
+        </div>
+        {form.assetType === "building_new" ? (
+          <p className="text-xs text-cyan-100/80">
+            {t({
+              en: "For building type, mint quantity is derived from totalUnits in Differential fields by type.",
+              es: "Para tipo building, la cantidad de mint se deriva de totalUnits en Differential fields by type.",
+              pt: "Para tipo building, a quantidade de mint e derivada de totalUnits em Differential fields by type."
+            })}
+          </p>
+        ) : null}
+        <label className="space-y-1 text-xs text-white/70">
+          {t({ en: "Description", es: "Descripcion", pt: "Descricao" })}
+          <textarea
+            className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white"
+            value={form.shortDescription || form.longDescription}
+            readOnly
+          />
+        </label>
+      </Card>
+
+      {showMintSetup ? (
+        <Card className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {t({ en: "Step 2: Mint setup", es: "Paso 2: Configuracion de mint", pt: "Passo 2: Configuracao de mint" })}
+              </p>
+              <p className="text-xs text-white/70">
+                {t({ en: "Create Asset -> Continue to mint -> Deploy/Mint/Reconcile in one continuous module.", es: "Create Asset -> Continue to mint -> Deploy/Mint/Reconcile en un solo modulo continuo.", pt: "Create Asset -> Continue to mint -> Deploy/Mint/Reconcile em um unico modulo continuo." })}
+              </p>
+            </div>
+            <Button
+              className="min-h-11"
+              variant="outline"
+              onClick={() => {
+                setShowMintSetup(false);
+                setCreateAssetMessage("");
+                setCreatedMarketplaceEntryId(null);
+              }}
+            >
+              {t({ en: "Back to step 1", es: "Volver al paso 1", pt: "Voltar ao passo 1" })}
+            </Button>
+          </div>
+          <CoreCandyMachinePanel
+            prefill={{
+              collectionName: form.collectionName || form.assetName || "Core CM Collection",
+              assetNamePrefix: form.assetName || "Asset",
+              internalCode: form.internalCode || "",
+              assetUri: "",
+              imageUrl: form.coverImage || "",
+              quantity: mintQuantityValue > 0 ? mintQuantityValue : 1,
+              description: form.shortDescription || form.longDescription || "",
+              symbol: form.collectionSymbol || ""
+            }}
+            snapshotContext={{
+              draftId,
+              formSnapshot: snapshotFormData
+            }}
+            onSnapshotFinalized={(result) => {
+              setSnapshotFinalize(result);
+              setCreateAssetMessage("");
+              setCreatedMarketplaceEntryId(null);
+            }}
+            onDeployCompleted={(result) => {
+              setDeployCompletedData(result);
+              setCreateAssetMessage("");
+              setCreatedMarketplaceEntryId(null);
+            }}
+          />
+          <div
+            className={`space-y-2 rounded-xl border px-3 py-3 text-xs ${
+              deployCompletedData
+                ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                : "border-amber-400/40 bg-amber-500/10 text-amber-100"
+            }`}
+          >
+            <p className="font-semibold uppercase tracking-[0.12em]">
+              {t({ en: "Create Asset Gate", es: "Gate Create Asset", pt: "Gate Create Asset" })}
+            </p>
+            <p>
+              {deployCompletedData
+                ? (
+                  t({
+                    en: "Deploy succeeded. You can continue with Create Asset without minting in this phase.",
+                    es: "El deploy fue exitoso. Ya puedes continuar con Create Asset sin mintear en esta fase.",
+                    pt: "O deploy foi bem-sucedido. Voce ja pode continuar com Create Asset sem mint nesta fase."
+                  })
+                )
+                : t({
+                  en: "Complete deploy to enable Create Asset.",
+                  es: "Completa el deploy para habilitar Create Asset.",
+                  pt: "Conclua o deploy para habilitar Create Asset."
+                })}
+            </p>
+            {snapshotFinalize?.verificationError?.message && !deployCompletedData ? (
+              <p>{snapshotFinalize.verificationError.message}</p>
+            ) : null}
+            {deployCompletedData ? (
+              <p>
+                {t({ en: "Candy Machine:", es: "Candy Machine:", pt: "Candy Machine:" })} {deployCompletedData.candyMachineAddress}
+              </p>
+            ) : null}
+            {deployCompletedData ? (
+              <p>
+                {t({ en: "Collection:", es: "Collection:", pt: "Collection:" })} {deployCompletedData.collectionAddress}
+              </p>
+            ) : null}
+            {createAssetMessage ? (
+              <p className={createdMarketplaceEntryId ? "text-cyan-100" : "text-rose-100"}>{createAssetMessage}</p>
+            ) : null}
+            {createdMarketplaceEntryId ? (
+              <Link className="text-cyan-200 underline underline-offset-2" href={`/marketplace/${createdMarketplaceEntryId}`} target="_blank">
+                {t({ en: "Open marketplace entry", es: "Abrir entrada en marketplace", pt: "Abrir entrada no marketplace" })}
+              </Link>
+            ) : null}
+          </div>
+        </Card>
+      ) : null}
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#070b14]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
@@ -1724,9 +2157,26 @@ export function AssetCreationForm(): ReactElement {
           <Button className="min-h-11" variant="outline" onClick={saveDraft}>
             {t({ en: "Save draft", es: "Guardar borrador", pt: "Salvar rascunho" })}
           </Button>
-          <Button className="min-h-11" onClick={continueToMint}>
-            {t({ en: "Continue to mint", es: "Continuar a mint", pt: "Continuar para mint" })}
-          </Button>
+          {showMintSetup ? (
+            <Button
+              className="min-h-11"
+              onClick={() => {
+                void handleCreateAsset();
+              }}
+              disabled={!deployCompletedData || isCreatingMarketplaceEntry || Boolean(createdMarketplaceEntryId)}
+            >
+              {isCreatingMarketplaceEntry
+                ? t({ en: "Creating...", es: "Creando...", pt: "Criando..." })
+                : createdMarketplaceEntryId
+                  ? t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
+                  : t({ en: "Create Asset", es: "Create Asset", pt: "Create Asset" })}
+            </Button>
+          ) : null}
+          {!showMintSetup ? (
+            <Button className="min-h-11" onClick={continueToMint}>
+              {t({ en: "Continue to mint", es: "Continuar a mint", pt: "Continuar para mint" })}
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>
