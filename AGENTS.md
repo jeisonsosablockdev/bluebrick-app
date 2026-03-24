@@ -363,16 +363,19 @@ Canonical source:
 - https://solana.com/skills
 - https://github.com/solana-foundation/solana-dev-skill
 
-Installed official skill package:
+Installed official skill packages:
 - `solana-dev` (Solana Foundation maintained)
+- `metaplex` (Metaplex Foundation maintained)
 
 Installed locations:
 - Codex: `~/.codex/skills/solana-dev`
+- Codex: `~/.codex/skills/metaplex`
 
 Mandatory usage rule:
 1. For any Solana task (wallet, tx, Anchor, Pinocchio, tokens, payments, testing, security), invoke `solana-dev` as the first contextual skill.
-2. Keep this playbook as governance. `solana-dev` augments implementation guidance but must not bypass governance docs or required macros.
-3. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
+2. For Metaplex tasks (Core, Token Metadata, Bubblegum, Candy Machine, Genesis), invoke `metaplex` after `solana-dev`.
+3. Keep this playbook as governance. Skills augment implementation guidance but must not bypass governance docs or required macros.
+4. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
 
 Official Solana references included via `solana-dev`:
 - common errors and solutions

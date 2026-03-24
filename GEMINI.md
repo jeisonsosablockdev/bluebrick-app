@@ -49,14 +49,16 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 
 ## 🧠 OFFICIAL SOLANA SKILL BASELINE
 -   **Canonical source**: `https://solana.com/skills` and `https://github.com/solana-foundation/solana-dev-skill`
--   **Installed official package**: `solana-dev`
+-   **Installed official packages**: `solana-dev`, `metaplex`
 -   **Installed paths**:
     -   Gemini: `~/.gemini/skills/solana-dev`
+    -   Gemini: `~/.gemini/skills/metaplex`
 
 ### Mandatory usage for Solana tasks
 1.  Invoke `solana-dev` first for any Solana task (wallet, tx flows, Anchor, Pinocchio, payments, testing, security).
-2.  Treat `solana-dev` as implementation context, not governance override.
-3.  Keep enforcing `AGENTS.md` + `/docs/governance` + macro cycles (`@blockchain-cycle`, `@frontend-cycle`, `@nft-cycle`) based on touched paths.
+2.  Invoke `metaplex` for Metaplex-specific work (Core, Token Metadata, Bubblegum, Candy Machine, Genesis).
+3.  Treat these skills as implementation context, not governance override.
+4.  Keep enforcing `AGENTS.md` + `/docs/governance` + macro cycles (`@blockchain-cycle`, `@frontend-cycle`, `@nft-cycle`) based on touched paths.
 
 ### Official Solana topics covered by `solana-dev`
 -   Common errors and fixes
