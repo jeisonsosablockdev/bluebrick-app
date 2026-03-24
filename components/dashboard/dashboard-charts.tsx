@@ -23,6 +23,10 @@ const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
 
 type DashboardChartsProps = {
   context: "user" | "admin" | "marketplace";
+  adminChartsData?: {
+    attemptsByDay: Array<{ day: string; total: number; confirmed: number; failed: number }>;
+    revenueByDay: Array<{ day: string; revenueLamports: number }>;
+  };
 };
 
 type TrendPoint = {
@@ -269,8 +273,43 @@ const TITLE_BY_CONTEXT: Record<DashboardChartsProps["context"], string> = {
   marketplace: "Marketplace Pulse"
 };
 
-export function DashboardCharts({ context }: DashboardChartsProps) {
-  const data = DATA_BY_CONTEXT[context];
+function shortDayLabel(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return `${String(date.getUTCMonth() + 1).padStart(2, "0")}/${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+export function DashboardCharts({ context, adminChartsData }: DashboardChartsProps) {
+  const data = useMemo(() => {
+    if (context !== "admin" || !adminChartsData) {
+      return DATA_BY_CONTEXT[context];
+    }
+
+    const attemptsByDay = adminChartsData.attemptsByDay.slice(-30);
+    const revenueByDay = adminChartsData.revenueByDay;
+    if (!attemptsByDay.length && !revenueByDay.length) {
+      return DATA_BY_CONTEXT[context];
+    }
+
+    const revenueByDayMap = new Map(
+      revenueByDay.map((item) => [item.day, item.revenueLamports])
+    );
+
+    const monthly = attemptsByDay.map((item) => ({
+      month: shortDayLabel(item.day),
+      revenue: Number((revenueByDayMap.get(item.day) ?? 0) / 1_000_000_000),
+      growth: item.confirmed
+    }));
+
+    return {
+      ...DATA_BY_CONTEXT[context],
+      monthly
+    };
+  }, [adminChartsData, context]);
+
   const title = TITLE_BY_CONTEXT[context];
 
   const echartsOption = useMemo(

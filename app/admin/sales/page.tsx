@@ -1,24 +1,26 @@
-import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
-import { localize } from "@/lib/i18n";
-import { getServerLocale } from "@/lib/i18n-server";
+import { SalesOverviewPanel } from "@/components/admin/sales-overview-panel";
+import { getAdminSalesOverview } from "@/lib/purchase-metrics-service";
 
-export default async function AdminSalesPage() {
-  const locale = await getServerLocale();
+type AdminSalesPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-  return (
-    <AdminModulePlaceholder
-      highlights={[
-        localize(locale, { en: "Sales events", es: "Eventos de venta", pt: "Eventos de venda" }),
-        localize(locale, { en: "Buyer wallet", es: "Wallet compradora", pt: "Wallet compradora" }),
-        localize(locale, { en: "Volume and conversion", es: "Volumen y conversion", pt: "Volume e conversao" })
-      ]}
-      listTitle={localize(locale, { en: "Initial module content", es: "Contenido inicial del modulo", pt: "Conteudo inicial do modulo" })}
-      subtitle={localize(locale, {
-        en: "Commercial tracking for NFT sales.",
-        es: "Seguimiento comercial de ventas NFT.",
-        pt: "Acompanhamento comercial de vendas NFT."
-      })}
-      title={localize(locale, { en: "Sales", es: "Ventas", pt: "Vendas" })}
-    />
-  );
+function readValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function parseRange(value: string | undefined): "24h" | "7d" | "30d" {
+  return value === "7d" || value === "30d" ? value : "24h";
+}
+
+export default async function AdminSalesPage({ searchParams }: AdminSalesPageProps) {
+  const params = await searchParams;
+  const range = parseRange(readValue(params.range));
+  const initialData = await getAdminSalesOverview({ range }).catch(() => null);
+
+  return <SalesOverviewPanel initialData={initialData} initialRange={range} />;
 }

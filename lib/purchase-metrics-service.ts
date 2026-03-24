@@ -3,6 +3,8 @@ import {
   type PurchaseAttemptRecord,
   type PurchaseAttemptStatus
 } from "@/lib/purchase-attempts-repository";
+import { withDbClient } from "@/lib/db/pool";
+import { listMarketplaceProperties } from "@/lib/property-marketplace-server";
 import { listPurchaseWebhookEvents } from "@/lib/purchase-webhook-reconciliation";
 
 export type MetricsRange = "24h" | "7d" | "30d";
@@ -33,9 +35,14 @@ export type DashboardOverview = {
   assetSummary: Array<{
     candyMachineAddress: string;
     collectionAddress: string;
+    propertyId: string | null;
+    propertyTitle: string | null;
+    propertyImageUrl: string | null;
+    internalCode: string | null;
     totalAttempts: number;
     confirmedAttempts: number;
     failedAttempts: number;
+    inProgressAttempts: number;
     revenueLamports: number;
     soldQuantity: number;
   }>;
@@ -156,6 +163,37 @@ function latestTimestampIso(values: Array<string | null>): string | null {
   return new Date(Math.max(...timestamps)).toISOString();
 }
 
+async function listInternalCodesByCandyMachine(candyMachineAddresses: string[]): Promise<Map<string, string>> {
+  const uniqueAddresses = Array.from(new Set(candyMachineAddresses.filter(Boolean)));
+  if (!uniqueAddresses.length || !process.env.DATABASE_URL?.trim()) {
+    return new Map();
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<{
+      candy_machine_address: string;
+      internal_code: string | null;
+    }>(
+      `SELECT DISTINCT ON (candy_machine_address)
+         candy_machine_address,
+         NULLIF(TRIM(form_snapshot->>'internalCode'), '') AS internal_code
+       FROM asset_mint_snapshots
+       WHERE candy_machine_address = ANY($1::text[])
+       ORDER BY candy_machine_address, created_at DESC`,
+      [uniqueAddresses]
+    );
+
+    const codes = new Map<string, string>();
+    for (const row of result.rows) {
+      if (row.internal_code) {
+        codes.set(row.candy_machine_address, row.internal_code);
+      }
+    }
+
+    return codes;
+  });
+}
+
 function buildAttemptsByDay(attempts: PurchaseAttemptRecord[]): DashboardOverview["charts"]["attemptsByDay"] {
   const bucket = new Map<string, { total: number; confirmed: number; failed: number }>();
 
@@ -212,20 +250,34 @@ export async function getAdminDashboardOverview(input: {
     ? Number(((confirmedAttempts / totalAttempts) * 100).toFixed(2))
     : 0;
 
-  const assetAccumulator = new Map<string, DashboardOverview["assetSummary"][number]>();
+  type AssetAccumulatorRow = DashboardOverview["assetSummary"][number] & {
+    propertyFrequency: Map<string, number>;
+  };
+
+  const assetAccumulator = new Map<string, AssetAccumulatorRow>();
   for (const attempt of attempts) {
     const key = `${attempt.candyMachineAddress}:${attempt.collectionAddress}`;
     const row = assetAccumulator.get(key) ?? {
       candyMachineAddress: attempt.candyMachineAddress,
       collectionAddress: attempt.collectionAddress,
+      propertyId: null,
+      propertyTitle: null,
+      propertyImageUrl: null,
+      internalCode: null,
       totalAttempts: 0,
       confirmedAttempts: 0,
       failedAttempts: 0,
+      inProgressAttempts: 0,
       revenueLamports: 0,
-      soldQuantity: 0
+      soldQuantity: 0,
+      propertyFrequency: new Map<string, number>()
     };
 
     row.totalAttempts += 1;
+    row.propertyFrequency.set(
+      attempt.propertyId,
+      (row.propertyFrequency.get(attempt.propertyId) ?? 0) + 1
+    );
     if (attempt.status === "confirmed") {
       row.confirmedAttempts += 1;
       row.soldQuantity += attempt.quantity;
@@ -234,11 +286,43 @@ export async function getAdminDashboardOverview(input: {
     if (attempt.status === "failed") {
       row.failedAttempts += 1;
     }
+    if (attempt.status !== "confirmed" && attempt.status !== "failed") {
+      row.inProgressAttempts += 1;
+    }
 
     assetAccumulator.set(key, row);
   }
 
+  const marketplaceProperties = await listMarketplaceProperties({});
+  const marketplaceById = new Map(
+    marketplaceProperties.map((property) => [property.id, property])
+  );
+  const internalCodesByCandyMachine = await listInternalCodesByCandyMachine(
+    Array.from(assetAccumulator.values()).map((row) => row.candyMachineAddress)
+  );
+
   const assetSummary = Array.from(assetAccumulator.values())
+    .map((row) => {
+      const topProperty = Array.from(row.propertyFrequency.entries())
+        .sort((left, right) => right[1] - left[1])[0];
+      const propertyId = topProperty?.[0] ?? null;
+      const property = propertyId ? marketplaceById.get(propertyId) : null;
+
+      return {
+        candyMachineAddress: row.candyMachineAddress,
+        collectionAddress: row.collectionAddress,
+        propertyId,
+        propertyTitle: property?.title ?? null,
+        propertyImageUrl: property?.image ?? null,
+        internalCode: internalCodesByCandyMachine.get(row.candyMachineAddress) ?? null,
+        totalAttempts: row.totalAttempts,
+        confirmedAttempts: row.confirmedAttempts,
+        failedAttempts: row.failedAttempts,
+        inProgressAttempts: row.inProgressAttempts,
+        revenueLamports: row.revenueLamports,
+        soldQuantity: row.soldQuantity
+      };
+    })
     .sort((left, right) => right.revenueLamports - left.revenueLamports)
     .slice(0, 10);
 

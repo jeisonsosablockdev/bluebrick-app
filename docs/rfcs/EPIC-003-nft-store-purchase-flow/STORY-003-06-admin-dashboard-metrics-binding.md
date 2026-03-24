@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-003-nft-store-purchase-flow`
 - Story ID: `STORY-003-06-admin-dashboard-metrics-binding`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-19`
-- Last Updated: `2026-03-19`
+- Last Updated: `2026-03-24`
 
 ## Context
 - Problem:
@@ -118,13 +118,13 @@
   Aprobado. El contrato de API por ruta y el plan de binding sobre los componentes existentes es claro y ejecutable.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar los clientes de API y conectar los componentes de la UI a los datos reales.
+  Validar flujo E2E en UI admin (`dashboard/sales/monitoring`) con eventos reales de compra.
 - Exit criteria:
-- [ ] All critical critique points addressed
+- [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -142,5 +142,5 @@
 
 ## Traceability
 - Related issue(s): `EPIC-003`
-- Related PR(s):
-- Final commit hash(es):
+- Related PR(s): `#52`
+- Final commit hash(es): `2b90d73`, `d61ccc0`, `4cb0f27`, `04af78d`, `f0e6b4d`, `8e636e9`

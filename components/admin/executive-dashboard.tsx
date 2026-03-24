@@ -1,9 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
+import {
+  fetchAdminDashboardOverview,
+  type DashboardOverviewResponse,
+  type MetricsRange
+} from "@/lib/admin-metrics-client";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -24,166 +29,6 @@ type KpiCard = {
   period: LocalizedText;
   status: KpiStatus;
 };
-
-type AlertItem = {
-  id: string;
-  title: LocalizedText;
-  detail: LocalizedText;
-  severity: "warning" | "critical";
-};
-
-type ActivityItem = {
-  date: string;
-  type: LocalizedText;
-  status: LocalizedText;
-  detail: LocalizedText;
-};
-
-const BASE_KPIS: KpiCard[] = [
-  {
-    label: { en: "Assets created", es: "Activos creados", pt: "Ativos criados" },
-    value: "34",
-    delta: "+3",
-    period: { en: "Last 30 days", es: "Ultimos 30 dias", pt: "Ultimos 30 dias" },
-    status: "normal"
-  },
-  {
-    label: { en: "Published assets", es: "Activos publicados", pt: "Ativos publicados" },
-    value: "21",
-    delta: "+2",
-    period: { en: "Last 30 days", es: "Ultimos 30 dias", pt: "Ultimos 30 dias" },
-    status: "normal"
-  },
-  {
-    label: { en: "Active mint batches", es: "Lotes de mint activos", pt: "Lotes de mint ativos" },
-    value: "9",
-    delta: "+1",
-    period: { en: "Today", es: "Hoy", pt: "Hoje" },
-    status: "normal"
-  },
-  {
-    label: { en: "NFTs sold", es: "NFTs vendidos", pt: "NFTs vendidos" },
-    value: "1,248",
-    delta: "+84",
-    period: { en: "Last 30 days", es: "Ultimos 30 dias", pt: "Ultimos 30 dias" },
-    status: "normal"
-  },
-  {
-    label: { en: "Total available supply", es: "Supply disponible total", pt: "Supply disponivel total" },
-    value: "3,912",
-    period: { en: "Live", es: "En vivo", pt: "Ao vivo" },
-    status: "warning"
-  },
-  {
-    label: { en: "Sold volume", es: "Volumen vendido", pt: "Volume vendido" },
-    value: "$482,300",
-    delta: "+6.4%",
-    period: { en: "Last 30 days", es: "Ultimos 30 dias", pt: "Ultimos 30 dias" },
-    status: "normal"
-  },
-  {
-    label: { en: "Failed events", es: "Eventos fallidos", pt: "Eventos com falha" },
-    value: "3",
-    period: { en: "Last 24h", es: "Ultimas 24h", pt: "Ultimas 24h" },
-    status: "critical"
-  }
-];
-
-const ALERTS: AlertItem[] = [
-  {
-    id: "alt-1",
-    title: {
-      en: "Mint webhook failures",
-      es: "Webhook de mint con fallos",
-      pt: "Webhook de mint com falhas"
-    },
-    detail: {
-      en: "3 failed events in the last 24h. Monitoring review required.",
-      es: "3 eventos fallidos en las ultimas 24h. Requiere revision de monitoreo.",
-      pt: "3 eventos com falha nas ultimas 24h. Requer revisao de monitoramento."
-    },
-    severity: "critical"
-  },
-  {
-    id: "alt-2",
-    title: {
-      en: "Low supply in one mint batch",
-      es: "Supply bajo en un lote de mint",
-      pt: "Supply baixo em um lote de mint"
-    },
-    detail: {
-      en: "Batch BAQ-RE-9872 has less than 8% available supply.",
-      es: "Lote BAQ-RE-9872 con menos de 8% de supply disponible.",
-      pt: "Lote BAQ-RE-9872 com menos de 8% de supply disponivel."
-    },
-    severity: "warning"
-  }
-];
-
-const RECENT_ACTIVITY: ActivityItem[] = [
-  {
-    date: "2026-03-06 08:12",
-    type: { en: "Asset created", es: "Activo creado", pt: "Ativo criado" },
-    status: { en: "Completed", es: "Completado", pt: "Concluido" },
-    detail: {
-      en: "Asset MDE-RE-4421 created by admin.",
-      es: "Asset MDE-RE-4421 creado por admin.",
-      pt: "Asset MDE-RE-4421 criado por admin."
-    }
-  },
-  {
-    date: "2026-03-06 08:23",
-    type: { en: "Mint batch published", es: "Lote de mint publicado", pt: "Lote de mint publicado" },
-    status: { en: "Completed", es: "Completado", pt: "Concluido" },
-    detail: {
-      en: "Batch CTG-RE-1040 moved to published.",
-      es: "Lote CTG-RE-1040 paso a published.",
-      pt: "Lote CTG-RE-1040 passou para published."
-    }
-  },
-  {
-    date: "2026-03-06 09:02",
-    type: { en: "NFT sold", es: "NFT vendido", pt: "NFT vendido" },
-    status: { en: "Completed", es: "Completado", pt: "Concluido" },
-    detail: {
-      en: "Wallet 8Fs2...hQ9A bought 2 NFTs.",
-      es: "Wallet 8Fs2...hQ9A compro 2 NFTs.",
-      pt: "Wallet 8Fs2...hQ9A comprou 2 NFTs."
-    }
-  },
-  {
-    date: "2026-03-06 09:14",
-    type: { en: "On-chain event", es: "Evento on-chain", pt: "Evento on-chain" },
-    status: { en: "Failed", es: "Fallido", pt: "Falhou" },
-    detail: {
-      en: "Webhook reconciliation error.",
-      es: "Error en conciliacion de webhook.",
-      pt: "Erro na conciliacao de webhook."
-    }
-  }
-];
-
-const ASSET_SUMMARY: Array<{ label: LocalizedText; value: string }> = [
-  { label: { en: "Building New", es: "Edificio nuevo", pt: "Edificio novo" }, value: "11" },
-  { label: { en: "Rental Property", es: "Propiedad en renta", pt: "Propriedade em renda" }, value: "15" },
-  { label: { en: "Land Lot", es: "Lote de engorde", pt: "Lote de valorizacao" }, value: "8" }
-];
-
-const QUICK_ACTIONS: Array<{ label: LocalizedText; href: string }> = [
-  {
-    label: { en: "Create asset", es: "Crear activo", pt: "Criar ativo" },
-    href: "/admin/assets/new"
-  },
-  { label: { en: "Go to mint", es: "Ir a mint", pt: "Ir para mint" }, href: "/admin/mint" },
-  {
-    label: { en: "Go to monitoring", es: "Ir a monitoreo", pt: "Ir para monitoramento" },
-    href: "/admin/monitoring"
-  },
-  {
-    label: { en: "Go to distribution", es: "Ir a distribucion", pt: "Ir para distribuicao" },
-    href: "/admin/distributions"
-  }
-];
 
 function statusPillClass(status: KpiStatus): string {
   if (status === "critical") {
@@ -207,6 +52,43 @@ function statusLabel(status: KpiStatus, t: ReturnType<typeof useI18n>["t"]): str
   }
 
   return t({ en: "Normal", es: "Normal", pt: "Normal" });
+}
+
+function truncateMiddle(value: string, left = 4, right = 4): string {
+  if (!value || value.length <= left + right + 3) {
+    return value;
+  }
+
+  return `${value.slice(0, left)}...${value.slice(-right)}`;
+}
+
+function shortCodeFromPropertyId(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return value
+    .split("-")
+    .map((part) => part.slice(0, 3).toUpperCase())
+    .join("-");
+}
+
+function formatDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toISOString().replace("T", " ").slice(0, 16);
+}
+
+function formatSolFromLamports(lamports: number): string {
+  const sol = lamports / 1_000_000_000;
+  return `${sol.toLocaleString("en-US", { maximumFractionDigits: 4 })} SOL`;
+}
+
+function parseRange(value: string | null): MetricsRange {
+  return value === "7d" || value === "30d" ? value : "24h";
 }
 
 function LoadingState() {
@@ -233,57 +115,165 @@ function EmptyState({ t }: { t: ReturnType<typeof useI18n>["t"] }) {
     <Card className="space-y-2 border-dashed">
       <h2 className="text-lg font-semibold text-white">{t({ en: "No operational data yet", es: "Sin datos operativos aun", pt: "Sem dados operacionais ainda" })}</h2>
       <p className="text-sm text-white/75">
-        {t({ en: "Once assets, mint batches and sales exist, this executive summary will appear here.", es: "Cuando existan activos, lotes de mint y ventas, aqui veras el resumen ejecutivo de la operacion.", pt: "Quando existirem ativos, lotes de mint e vendas, aqui voce vera o resumo executivo da operacao." })}
+        {t({ en: "Once purchases are confirmed, this executive summary will appear here.", es: "Cuando existan compras confirmadas, aqui veras el resumen ejecutivo de la operacion.", pt: "Quando existirem compras confirmadas, aqui voce vera o resumo executivo da operacao." })}
       </p>
     </Card>
   );
 }
 
-function ErrorState({ t }: { t: ReturnType<typeof useI18n>["t"] }) {
+function ErrorState({
+  t,
+  errorMessage,
+  onRetry
+}: {
+  t: ReturnType<typeof useI18n>["t"];
+  errorMessage: string | null;
+  onRetry: () => void;
+}) {
   return (
     <Card className="space-y-2 border-rose-400/40 bg-rose-500/5">
       <h2 className="text-lg font-semibold text-white">{t({ en: "Error loading executive dashboard", es: "Error al cargar dashboard ejecutivo", pt: "Erro ao carregar dashboard executivo" })}</h2>
-      <p className="text-sm text-white/75">{t({ en: "Backend did not respond fully. Try again.", es: "El backend no respondio completamente. Intenta de nuevo.", pt: "O backend nao respondeu completamente. Tente novamente." })}</p>
-      <Button className="min-h-11 w-full sm:w-auto" variant="outline">
+      <p className="text-sm text-white/75">{errorMessage ?? t({ en: "Backend did not respond fully. Try again.", es: "El backend no respondio completamente. Intenta de nuevo.", pt: "O backend nao respondeu completamente. Tente novamente." })}</p>
+      <Button className="min-h-11 w-full sm:w-auto" variant="outline" onClick={onRetry}>
         {t({ en: "Retry", es: "Reintentar", pt: "Tentar novamente" })}
       </Button>
     </Card>
   );
 }
 
-export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
+export function ExecutiveDashboard({
+  walletLabel,
+  initialOverview
+}: {
+  walletLabel: string;
+  initialOverview: DashboardOverviewResponse | null;
+}) {
   const { t } = useI18n();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const view = searchParams.get("view");
+  const urlRange = parseRange(searchParams.get("range"));
 
-  const isLoading = view === "loading";
-  const isEmpty = view === "empty";
-  const isError = view === "error";
-  const isPartial = view === "partial-data";
+  const [overview, setOverview] = useState<DashboardOverviewResponse | null>(initialOverview);
+  const [isLoading, setIsLoading] = useState(initialOverview === null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [range, setRange] = useState<MetricsRange>(urlRange);
 
-  const criticalAlerts = ALERTS.filter((item) => item.severity === "critical");
+  useEffect(() => {
+    setRange(urlRange);
+  }, [urlRange]);
 
-  const kpis = useMemo<KpiCard[]>(() => {
-    if (!isPartial) {
-      return BASE_KPIS;
+  const setQueryParam = useCallback((key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null || !value.trim()) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const onRangeChange = useCallback((nextRange: MetricsRange) => {
+    setRange(nextRange);
+    setQueryParam("range", nextRange);
+  }, [setQueryParam]);
+
+  const loadOverview = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetchAdminDashboardOverview({ range });
+      setOverview(response);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Could not load dashboard overview.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [range]);
+
+  useEffect(() => {
+    if (initialOverview && initialOverview.meta.range === range && !view) {
+      setOverview(initialOverview);
+      setIsLoading(false);
+      setErrorMessage(null);
+      return;
     }
 
-    return BASE_KPIS.map((kpi) =>
-      kpi.label.en === "Sold volume" ? { ...kpi, value: "N/A", status: "warning" as const } : kpi
-    );
-  }, [isPartial]);
+    if (view === "loading" || view === "error" || view === "empty") {
+      return;
+    }
 
-  if (isLoading) {
+    void loadOverview();
+  }, [initialOverview, loadOverview, range, view]);
+
+  const effectiveOverview = overview;
+  const derivedEmpty = effectiveOverview ? effectiveOverview.kpis.totalAttempts === 0 : false;
+
+  if (view === "loading" || (isLoading && !effectiveOverview)) {
     return <LoadingState />;
   }
 
-  if (isError) {
-    return <ErrorState t={t} />;
+  if (view === "error" || (errorMessage && !effectiveOverview)) {
+    return <ErrorState t={t} errorMessage={errorMessage} onRetry={() => void loadOverview()} />;
   }
 
-  if (isEmpty) {
+  if (view === "empty" || derivedEmpty) {
     return <EmptyState t={t} />;
   }
+
+  if (!effectiveOverview) {
+    return <ErrorState t={t} errorMessage={t({ en: "No data available.", es: "No hay datos disponibles.", pt: "Sem dados disponiveis." })} onRetry={() => void loadOverview()} />;
+  }
+
+  const criticalAlerts = effectiveOverview.alerts.filter((item) => item.level === "critical");
+  const totalSoldQuantity = effectiveOverview.assetSummary.reduce((sum, item) => sum + item.soldQuantity, 0);
+
+  const kpis: KpiCard[] = [
+    {
+      label: { en: "Total attempts", es: "Intentos totales", pt: "Tentativas totais" },
+      value: String(effectiveOverview.kpis.totalAttempts),
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: "normal"
+    },
+    {
+      label: { en: "Confirmed", es: "Confirmadas", pt: "Confirmadas" },
+      value: String(effectiveOverview.kpis.confirmedAttempts),
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: "normal"
+    },
+    {
+      label: { en: "Failed", es: "Fallidas", pt: "Falhas" },
+      value: String(effectiveOverview.kpis.failedAttempts),
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: effectiveOverview.kpis.failedAttempts > 0 ? "critical" : "normal"
+    },
+    {
+      label: { en: "Conversion", es: "Conversion", pt: "Conversao" },
+      value: `${effectiveOverview.kpis.conversionRatePct}%`,
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: effectiveOverview.kpis.conversionRatePct < 30 ? "warning" : "normal"
+    },
+    {
+      label: { en: "Revenue", es: "Ingresos", pt: "Receita" },
+      value: formatSolFromLamports(effectiveOverview.kpis.revenueLamports),
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: "normal"
+    },
+    {
+      label: { en: "Sold quantity", es: "Cantidad vendida", pt: "Quantidade vendida" },
+      value: String(totalSoldQuantity),
+      period: { en: "Selected range", es: "Rango seleccionado", pt: "Intervalo selecionado" },
+      status: "normal"
+    },
+    {
+      label: { en: "Assets tracked", es: "Activos monitoreados", pt: "Ativos monitorados" },
+      value: String(effectiveOverview.assetSummary.length),
+      period: { en: "Live", es: "En vivo", pt: "Ao vivo" },
+      status: "normal"
+    }
+  ];
 
   return (
     <div className="space-y-4">
@@ -295,7 +285,37 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
           </div>
           <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-white/80">{walletLabel}</span>
         </div>
-        <p className="text-sm text-white/75">{t({ en: "Summary of assets, mint, and system operational status.", es: "Resumen de activos, mint y estado operativo del sistema.", pt: "Resumo de ativos, mint e status operacional do sistema." })}</p>
+        <p className="text-sm text-white/75">{t({ en: "Summary of purchase operations and webhook reconciliation health.", es: "Resumen de operaciones de compra y salud de reconciliacion por webhook.", pt: "Resumo de operacoes de compra e saude de reconciliacao por webhook." })}</p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <label className="space-y-1 text-xs text-white/70">
+            <span>{t({ en: "Timeframe", es: "Ventana de tiempo", pt: "Janela de tempo" })}</span>
+            <select
+              className="glass-control min-h-11 w-full rounded-xl px-3 py-2 text-sm text-white"
+              value={range}
+              onChange={(event) => onRangeChange(parseRange(event.target.value))}
+            >
+              <option value="24h">24h</option>
+              <option value="7d">7d</option>
+              <option value="30d">30d</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-white/70 sm:col-span-2">
+            <span>{t({ en: "Filter options", es: "Opciones de filtro", pt: "Opcoes de filtro" })}</span>
+            <div className="glass-control min-h-11 rounded-xl px-3 py-2 text-sm text-white/80">
+              {t({
+                en: "Dashboard supports range. Sales supports range/status/wallet/candyMachine. Monitoring supports eventType/status/wallet/asset/signature/paging.",
+                es: "Dashboard soporta rango. Ventas soporta rango/estado/wallet/candyMachine. Monitoreo soporta eventType/estado/wallet/asset/signature/paginacion.",
+                pt: "Dashboard suporta intervalo. Vendas suporta intervalo/status/wallet/candyMachine. Monitoramento suporta eventType/status/wallet/asset/signature/paginacao."
+              })}
+            </div>
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
+          <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">{`range: ${effectiveOverview.meta.range}`}</span>
+          <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">{`freshness: ${effectiveOverview.meta.dataFreshness}`}</span>
+          <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">{`source: ${effectiveOverview.meta.source}`}</span>
+          <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">{`lastSync: ${effectiveOverview.meta.lastSyncedAt ?? "n/a"}`}</span>
+        </div>
       </Card>
 
       {criticalAlerts.length > 0 && (
@@ -303,22 +323,20 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
           <p className="text-sm font-semibold text-rose-100">{t({ en: "Critical alerts", es: "Alertas criticas", pt: "Alertas criticos" })}</p>
           <ul className="space-y-1 text-sm text-rose-100">
             {criticalAlerts.map((alert) => (
-              <li key={alert.id}>
-                <span className="font-medium">{t(alert.title)}:</span> {t(alert.detail)}
-              </li>
+              <li key={alert.id}>{alert.message}</li>
             ))}
           </ul>
         </Card>
       )}
 
-      {isPartial && (
+      {view === "partial-data" && (
         <Card className="space-y-1 border-amber-400/30 bg-amber-500/5">
           <p className="text-sm font-semibold text-amber-100">{t({ en: "Partial data", es: "Datos parciales", pt: "Dados parciais" })}</p>
           <p className="text-sm text-amber-100">
             {t({
-              en: "Some sources did not respond (for example sold volume). Best available data is shown.",
-              es: "Algunas fuentes no respondieron (por ejemplo volumen vendido). Se muestra la mejor data disponible.",
-              pt: "Algumas fontes nao responderam (por exemplo volume vendido). A melhor informacao disponivel esta sendo exibida."
+              en: "QA override is active (view=partial-data).",
+              es: "El override de QA esta activo (view=partial-data).",
+              pt: "O override de QA esta ativo (view=partial-data)."
             })}
           </p>
         </Card>
@@ -340,34 +358,44 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
         ))}
       </div>
 
-      <DashboardCharts context="admin" />
+      <DashboardCharts context="admin" adminChartsData={effectiveOverview.charts} />
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-white">{t({ en: "Asset summary", es: "Resumen de activos", pt: "Resumo de ativos" })}</h2>
-          <ul className="space-y-2">
-            {ASSET_SUMMARY.map((item) => (
-              <li key={item.label.en} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
-                <span className="text-white/80">{t(item.label)}</span>
-                <span className="font-semibold text-white">{item.value}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-white">{t({ en: "Quick actions", es: "Acciones rapidas", pt: "Acoes rapidas" })}</h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {QUICK_ACTIONS.map((action) => (
-              <Link key={action.label.en} href={action.href}>
-                <Button className="min-h-11 w-full" variant="outline">
-                  {t(action.label)}
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </Card>
-      </div>
+      <Card className="space-y-2">
+        <h2 className="text-base font-semibold text-white">{t({ en: "Asset summary", es: "Resumen de activos", pt: "Resumo de ativos" })}</h2>
+        <ul className="space-y-2">
+          {effectiveOverview.assetSummary.map((item) => (
+            <li key={`${item.candyMachineAddress}-${item.collectionAddress}`} className="space-y-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="relative h-10 w-10 overflow-hidden rounded-md border border-white/10 bg-white/5">
+                  {item.propertyImageUrl ? (
+                    <Image
+                      alt={item.propertyTitle ?? item.propertyId ?? "project"}
+                      className="h-full w-full object-cover"
+                      fill
+                      sizes="40px"
+                      src={item.propertyImageUrl}
+                    />
+                  ) : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-white">
+                    {item.propertyTitle ?? item.propertyId ?? truncateMiddle(item.candyMachineAddress, 6, 6)}
+                  </p>
+                  <p className="truncate text-xs text-white/60">
+                    {item.internalCode
+                      ? `code: ${item.internalCode}`
+                      : item.propertyId
+                        ? `id: ${item.propertyId} · ref: ${shortCodeFromPropertyId(item.propertyId) ?? "n/a"}`
+                        : `cm: ${truncateMiddle(item.candyMachineAddress, 6, 6)}`}
+                  </p>
+                </div>
+                <span className="font-semibold text-white">{item.confirmedAttempts}/{item.totalAttempts}</span>
+              </div>
+              <p className="text-xs text-white/60">{`sold=${item.soldQuantity} · inProgress=${item.inProgressAttempts} · revenue=${formatSolFromLamports(item.revenueLamports)}`}</p>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       <Card className="space-y-2">
         <h2 className="text-base font-semibold text-white">{t({ en: "Recent activity", es: "Actividad reciente", pt: "Atividade recente" })}</h2>
@@ -376,18 +404,18 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
             <thead>
               <tr className="border-b border-white/10 text-white/60">
                 <th className="px-2 py-2 font-medium">{t({ en: "Date", es: "Fecha", pt: "Data" })}</th>
-                <th className="px-2 py-2 font-medium">{t({ en: "Event", es: "Evento", pt: "Evento" })}</th>
+                <th className="px-2 py-2 font-medium">{t({ en: "Property", es: "Propiedad", pt: "Propriedade" })}</th>
                 <th className="px-2 py-2 font-medium">{t({ en: "Status", es: "Estado", pt: "Status" })}</th>
-                <th className="px-2 py-2 font-medium">{t({ en: "Detail", es: "Detalle", pt: "Detalhe" })}</th>
+                <th className="px-2 py-2 font-medium">{t({ en: "Signature", es: "Firma", pt: "Assinatura" })}</th>
               </tr>
             </thead>
             <tbody>
-              {RECENT_ACTIVITY.map((item) => (
-                <tr key={`${item.date}-${item.type.en}`} className="border-b border-white/10">
-                  <td className="px-2 py-2 text-white">{item.date}</td>
-                  <td className="px-2 py-2 text-white">{t(item.type)}</td>
-                  <td className="px-2 py-2 text-white">{t(item.status)}</td>
-                  <td className="px-2 py-2 text-white/80">{t(item.detail)}</td>
+              {effectiveOverview.recentActivity.map((item) => (
+                <tr key={item.attemptId} className="border-b border-white/10">
+                  <td className="px-2 py-2 text-white">{formatDate(item.createdAt)}</td>
+                  <td className="px-2 py-2 text-white">{item.propertyId}</td>
+                  <td className="px-2 py-2 text-white">{item.status}</td>
+                  <td className="px-2 py-2 text-cyan-200">{item.txSignature ? truncateMiddle(item.txSignature, 6, 6) : "-"}</td>
                 </tr>
               ))}
             </tbody>
@@ -398,12 +426,12 @@ export function ExecutiveDashboard({ walletLabel }: { walletLabel: string }) {
       <Card className="space-y-2">
         <h2 className="text-base font-semibold text-white">{t({ en: "Operational alerts", es: "Alertas operativas", pt: "Alertas operacionais" })}</h2>
         <ul className="space-y-2">
-          {ALERTS.map((alert) => (
-            <li key={`ops-${alert.id}`} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
-              <p className="font-medium text-white">{t(alert.title)}</p>
-              <p className="text-white/70">{t(alert.detail)}</p>
+          {effectiveOverview.alerts.map((alert) => (
+            <li key={`ops-${alert.id}`} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">
+              {alert.message}
             </li>
           ))}
+          {effectiveOverview.alerts.length === 0 ? <li className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">{t({ en: "No active alerts.", es: "No hay alertas activas.", pt: "Sem alertas ativas." })}</li> : null}
         </ul>
       </Card>
     </div>

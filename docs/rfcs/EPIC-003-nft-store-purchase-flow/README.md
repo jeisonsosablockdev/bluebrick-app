@@ -35,7 +35,7 @@
 | STORY-003-03 | Transaction Integrity and Idempotency | `STORY-003-03-transaction-integrity-and-idempotency.md` | `implemented` | `#45` | UUIDv7 + TTL server-side, lock transaccional en submit y dedupe por (`wallet`, `idempotency_key`) + replay validado (`flowId`: `76943968-9cc5-4a53-b929-e9b2af3b2ed5`) |
 | STORY-003-04 | Quantity Foundation and Multi-Quantity Rollout | `STORY-003-04-quantity-foundation-and-multi-quantity-rollout.md` | `implemented` | `#49` | Contrato `quantity` en `quote/challenge/prepare`, rollout multi (`MULTI_ENABLED` por defecto con límites), error `INVALID_QUANTITY`, persistencia de `quantity` en `purchase_attempts` |
 | STORY-003-05 | Purchase Traceability and Metrics Backend | `STORY-003-05-purchase-traceability-and-metrics-backend.md` | `implemented` | `#51` | Persistencia + reconciliación webhook-first + cache invalidation (sin dashboard) |
-| STORY-003-06 | Admin Dashboard Metrics Binding | `STORY-003-06-admin-dashboard-metrics-binding.md` | `approved` | `TBD` | Binding de placeholders + contrato de estados UI y frescura de datos |
+| STORY-003-06 | Admin Dashboard Metrics Binding | `STORY-003-06-admin-dashboard-metrics-binding.md` | `implemented` | `#52` | Binding de placeholders + contrato de estados UI y frescura de datos |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |

@@ -476,3 +476,76 @@ export async function processPurchaseHeliusWebhookPayload(payload: unknown): Pro
 
   return result;
 }
+
+export async function reprocessPurchaseWebhookEventById(input: {
+  eventId: string;
+}): Promise<{
+  eventId: string;
+  signature: string;
+  eventType: string;
+  status: PurchaseWebhookStatus;
+  reconciled: boolean;
+}> {
+  const eventId = input.eventId.trim();
+  if (!eventId) {
+    throw new Error("eventId is required.");
+  }
+
+  const event = await (async () => {
+    if (!isDatabaseConfigured()) {
+      return Array.from(inMemoryEventsByFingerprint.values()).find((item) => item.id === eventId) ?? null;
+    }
+
+    return withDbClient(async (client) => {
+      const result = await client.query<PurchaseWebhookEventRow>(
+        `SELECT *
+         FROM purchase_webhook_events
+         WHERE id = $1
+         LIMIT 1`,
+        [eventId]
+      );
+
+      if ((result.rowCount ?? 0) === 0) {
+        return null;
+      }
+
+      return mapRow(result.rows[0] as PurchaseWebhookEventRow);
+    });
+  })();
+
+  if (!event) {
+    throw new Error("Webhook event not found.");
+  }
+
+  if (event.status === "confirmed") {
+    const updated = await markPurchaseAttemptConfirmed({ signature: event.signature });
+    if (updated) {
+      invalidatePurchaseQuoteCache(updated.candyMachineAddress);
+    }
+
+    return {
+      eventId: event.id,
+      signature: event.signature,
+      eventType: event.eventType,
+      status: event.status,
+      reconciled: Boolean(updated)
+    };
+  }
+
+  const updated = await markPurchaseAttemptFailedBySignature({
+    signature: event.signature,
+    errorCode: "ONCHAIN_FAILED",
+    errorMessage: event.errorMessage ?? "Helius reported on-chain failure."
+  });
+  if (updated) {
+    invalidatePurchaseQuoteCache(updated.candyMachineAddress);
+  }
+
+  return {
+    eventId: event.id,
+    signature: event.signature,
+    eventType: event.eventType,
+    status: event.status,
+    reconciled: Boolean(updated)
+  };
+}
