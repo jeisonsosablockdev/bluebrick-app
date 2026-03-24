@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestRole } from "@/lib/auth-session";
 import {
   isCoreCandyMachineAdminInputError,
+  isCoreCandyMachineSubmitRecoverableError,
   submitCoreCandyMachineSignedTransactions,
   type SubmitSignedCandyMachineTransactionsInput
 } from "@/lib/core-candy-machine-admin";
@@ -35,6 +36,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     if (isCoreCandyMachineAdminInputError(error)) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    if (isCoreCandyMachineSubmitRecoverableError(error)) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+          recoverable: true
+        },
+        { status: error.status }
+      );
     }
 
     const message = error instanceof Error && error.message

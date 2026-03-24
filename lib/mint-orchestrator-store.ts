@@ -403,6 +403,21 @@ export function recordMintWebhookEvent(input: RecordMintWebhookEventInput): { ev
   };
 }
 
+export function getWebhookEventsBySignatures(
+  provider: MintWebhookProvider,
+  signatures: string[]
+): Record<string, MintWebhookEventRecord | null> {
+  const result: Record<string, MintWebhookEventRecord | null> = {};
+  
+  for (const signature of signatures) {
+    const key = buildWebhookLookupKey(provider, signature);
+    const event = webhookByProviderFingerprint.get(key);
+    result[signature] = event ? cloneWebhookEvent(event) : null;
+  }
+  
+  return result;
+}
+
 export function getMintJob(jobId: string): MintJobRecord {
   return cloneJob(getJobOrThrow(jobId));
 }

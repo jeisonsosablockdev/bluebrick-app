@@ -47,6 +47,14 @@
    - After mint completion, admin UI calls `/api/admin/core-candy-machine/snapshot/finalize`.
    - Backend verifies quantity by DAS (`getAssetsByGroup`) and stores immutable snapshot + on-chain proofs.
    - `Create Asset` gate is enabled only when `verificationStatus=verified` and `mint_jobs.status=completed`.
+14. Marketplace purchase flow (STORY-003-04, multi-quantity + anti-bot + idempotent submit):
+   - `POST /api/purchase/quote` exposes cached Candy Guard quote (`solPayment`, `startDate`, `itemsRemaining`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`).
+   - `POST /api/purchase/challenge` requires SIWS session and returns short-lived challenge payload (`challengeId`, `nonce`, `message`, `expiresAt`) bound to requested `quantity`.
+   - User signs challenge message via `signMessage()`.
+   - `POST /api/purchase/prepare` requires SIWS session + valid challenge signature, revalidates guard on-chain, applies anti-replay/rate-limit, validates quantity policy (`PURCHASE_QUANTITY_MODE`) and returns one pre-signed transaction (multi-mint when `quantity > 1` fits tx size) plus `idempotencyKey` (UUIDv7, TTL corto).
+   - User signs with Phantom and submits via `POST /api/purchase/submit` including `attemptId + idempotencyKey`.
+   - Submit locks attempt state (`FOR UPDATE`), deduplicates retries by (`wallet_public_key`, `idempotency_key`) and returns existing `submitted` state without re-send when aplica.
+   - UI and backend exchange optional `x-flow-id` to correlate full request timeline in `purchase_flow_events`.
 
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
@@ -56,6 +64,10 @@
 | `/api/auth/me` | `GET` | Optional | None | Returns current auth payload and server-computed role |
 | `/api/auth/logout` | `POST` | Optional | None | Revokes session token and clears cookie |
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
+| `/api/purchase/quote` | `POST` | No | None | Returns cached quote from guard state (`price`, `startDate`, `remaining`) + quantity contract (`quantityMode`, `quantity`, `totalPriceLamports`) |
+| `/api/purchase/challenge` | `POST` | Yes | `user` or `admin` | Issues one-time purchase challenge (`challengeId`, canonical message, TTL) bound to `quantity` |
+| `/api/purchase/prepare` | `POST` | Yes | `user` or `admin` | Verifies challenge signature + anti-replay/rate-limit, validates quantity policy, revalidates guard on-chain, returns pre-signed transaction + `attemptId` + `idempotencyKey` |
+| `/api/purchase/submit` | `POST` | Yes | `user` or `admin` | Requires `attemptId + idempotencyKey`, validates signed tx payer/message, locks attempt row and persists `submitted` idempotently |
 | `/api/admin/ping` | `GET` | Yes | `admin` | Returns `403` unless wallet is allowlisted |
 | `/api/admin/mint-orchestrator/jobs` | `POST` | Yes | `admin` | Creates a server-side mint job (`job_id`) |
 | `/api/admin/mint-orchestrator/jobs` | `GET` | Yes | `admin` | Lists recent mint jobs with server progress |
@@ -67,14 +79,19 @@
 | `/api/admin/core-candy-machine/snapshot/finalize` | `POST` | Yes | `admin` | Verifies minted quantity (DAS), persists `asset_mint_snapshots` + `asset_mint_onchain_proofs`, computes `Create Asset` gate |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 
+See reusable tracing playbook: `docs/purchase-tracing.md`.
+
 ## Trust Boundaries
 - Client responsibilities:
   - Request nonce, sign SIWS message, submit signature.
+  - Request purchase challenge, sign canonical challenge message, and attach signature in prepare request.
   - Request next batch, sign tx payloads, send signed payloads back, render progress.
   - In H6 console, collect signatures and optional expected addresses per batch item before submit.
 - Server responsibilities:
   - Signature verification, nonce replay protection, session issuance.
   - Role calculation, authorization decisions, idempotent batch orchestration, RPC reconciliation, webhook dedupe, DAS reconciliation.
+  - In purchase flow, quote cache delivery + challenge issuance + challenge signature verification + rate-limiting + on-chain revalidation in prepare + submit ownership checks.
+  - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
   - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
 - External webhook responsibilities:
@@ -88,6 +105,12 @@
 - Nonce invalidation: nonce consumed after successful verification.
 - Reuse handling: consumed nonce returns `409`.
 - Issued-at freshness: SIWS `issuedAt` must be within a 5-minute window.
+- Purchase challenge TTL: configurable (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
+- Purchase challenge replay protection: challenge is single-use and transitions to `consumed`; replays return `409`.
+- Purchase quantity policy: resolved server-side via `PURCHASE_QUANTITY_MODE` (`MULTI_ENABLED` default) and `PURCHASE_MAX_QUANTITY_PER_ORDER` (default `10`). Invalid/out-of-policy values return `INVALID_QUANTITY`.
+- Purchase rate limiting: configurable window/caps (`PURCHASE_RATE_LIMIT_WINDOW_SECONDS`, `PURCHASE_RATE_LIMIT_MAX_BY_WALLET`, `PURCHASE_RATE_LIMIT_MAX_BY_IP`).
+- Purchase submit idempotency: `prepare` emite `idempotencyKey` server-side (UUIDv7) con TTL de 5 minutos y dedupe en DB por (`wallet_public_key`, `idempotency_key`).
+- Purchase flow correlation: backend persists `purchase_flow_events` (`request/success/error`) indexed by `flow_id` for UI-driven E2E tracing.
 - Webhook dedupe:
   - Exactly one webhook event ingestion per `(provider, eventId)` or `(provider, eventFingerprint)` in orchestrator memory.
   - Duplicate retries do not trigger repeated reconciliation side effects.
@@ -108,5 +131,14 @@
 | Duplicate signature across items | `409` | Prevent inconsistent state |
 | Batch without pending items | `409` | Stop client retries and finalize flow |
 | Admin wallet differs from job `createdBy` | `403` | Use creator wallet for manual mutation endpoints |
+| Prepare/submit without wallet session | `401` | User must sign in via SIWS |
+| Prepare without valid challenge signature | `401/409` + `INVALID_CHALLENGE` | Request new challenge, sign again, retry |
+| Challenge/prepare rate limit exceeded | `429` + `RATE_LIMITED` | Wait for window and retry |
+| Submit with expired idempotency key | `409` + `TRANSACTION_FAILED` | Run `prepare` again to obtain a fresh key |
+| Quantity invalid for current mode/limits | `400/409` + `INVALID_QUANTITY` | Use integer quantity within configured limits |
+| Price changed between quote and prepare | `409` + `PRICE_CHANGED` | Refresh quote and retry |
+| Mint not started (`startDate` future) | `409` + `MINT_NOT_STARTED` | Disable CTA / show countdown |
+| Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
+| Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-18 23:45:00 UTC
+Last Updated: 2026-03-20 19:27:57 UTC

@@ -109,7 +109,7 @@ describe("api/admin/core-candy-machine/metadata", () => {
     expect(routeMocks.resolveImageForPinata).toHaveBeenCalledWith(
       expect.objectContaining({
         imageUri: "https://cdn.example.com/image.png",
-        name: "BLD-001"
+        name: "cm-image-bld-001-e724846245"
       })
     );
     expect(routeMocks.createCoreCandyMachinePinataMetadataUris).toHaveBeenCalledWith(

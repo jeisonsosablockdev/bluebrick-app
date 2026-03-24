@@ -2,28 +2,35 @@ import { randomUUID } from "node:crypto";
 
 import { createCollectionV2, mplCore } from "@metaplex-foundation/mpl-core";
 import { addConfigLines, create, fetchCandyMachine, findCandyGuardPda, mintV1, mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
-import { createAmount, createNoopSigner, createSignerFromKeypair, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
+import { createAmount, createNoopSigner, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 import { Connection, PublicKey as Web3PublicKey, VersionedTransaction } from "@solana/web3.js";
 
+import {
+  CORE_CANDY_MACHINE_LIMITS,
+  buildConfigLinePrefixName,
+  deriveCoreCandyMachineNames,
+  utf8ByteLength
+} from "@/lib/core-candy-machine-naming";
+import { createPurchaseThirdPartySigner, getPurchaseThirdPartySignerAddress } from "@/lib/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/solana";
 
 const MAX_TOTAL_ITEMS = 1000;
 const MAX_MINT_PREPARE_ITEMS = 100;
 const MAX_SUBMIT_TRANSACTIONS = 150;
 const MIN_CONFIG_LINES_PER_TX = 8;
-const SIGNATURE_CONFIRM_TIMEOUT_MS = 90_000;
-const SIGNATURE_CONFIRM_POLL_MS = 1_000;
+const MAX_CONFIG_LINES_PER_TX_SAFE = 48;
+const SIGNATURE_CONFIRM_TIMEOUT_MS = 180_000;
+const SIGNATURE_CONFIRM_POLL_MS = 1_500;
 const RATE_LIMIT_BACKOFF_INITIAL_MS = 750;
 const RATE_LIMIT_BACKOFF_MAX_MS = 8_000;
 const SEND_TX_MAX_RETRIES = 4;
 const SEND_TX_RETRY_INITIAL_MS = 500;
 const SEND_TX_RETRY_MAX_MS = 4_000;
-const MAX_URI_LENGTH = 512;
-const MAX_CONFIG_LINE_NAME_LENGTH = 32;
-const MAX_COLLECTION_NAME_LENGTH = 32;
+const MAX_URI_INPUT_LENGTH = 512;
 const DEVNET_MINT_PRICE_LAMPORTS = 10_000;
+const MAX_SOLANA_TX_RAW_BYTES = 1232;
 
 type PreparedTransactionKind = "create-collection" | "create-candy-machine" | "add-config-lines" | "mint";
 
@@ -97,6 +104,8 @@ export type SubmittedCandyMachineTransaction = {
   signature: string;
 };
 
+export type CoreCandyMachineSubmitRecoverableErrorCode = "BLOCKHASH_EXPIRED" | "CONFIRMATION_TIMEOUT";
+
 export class CoreCandyMachineAdminInputError extends Error {
   readonly status: number;
 
@@ -107,8 +116,24 @@ export class CoreCandyMachineAdminInputError extends Error {
   }
 }
 
+export class CoreCandyMachineSubmitRecoverableError extends Error {
+  readonly status: number;
+  readonly code: CoreCandyMachineSubmitRecoverableErrorCode;
+
+  constructor(message: string, code: CoreCandyMachineSubmitRecoverableErrorCode, status = 409) {
+    super(message);
+    this.name = "CoreCandyMachineSubmitRecoverableError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export function isCoreCandyMachineAdminInputError(error: unknown): error is CoreCandyMachineAdminInputError {
   return error instanceof CoreCandyMachineAdminInputError;
+}
+
+export function isCoreCandyMachineSubmitRecoverableError(error: unknown): error is CoreCandyMachineSubmitRecoverableError {
+  return error instanceof CoreCandyMachineSubmitRecoverableError;
 }
 
 function assertNonEmptyString(value: unknown, fieldName: string, maxLength: number): string {
@@ -140,7 +165,7 @@ function assertPublicKeyString(value: unknown, fieldName: string): string {
 }
 
 function assertUri(value: unknown, fieldName: string): string {
-  const uri = assertNonEmptyString(value, fieldName, MAX_URI_LENGTH);
+  const uri = assertNonEmptyString(value, fieldName, MAX_URI_INPUT_LENGTH);
 
   try {
     const parsed = new URL(uri);
@@ -157,6 +182,14 @@ function assertUri(value: unknown, fieldName: string): string {
   }
 
   return uri;
+}
+
+function assertMaxUtf8Bytes(value: string, fieldName: string, maxBytes: number): string {
+  if (utf8ByteLength(value) > maxBytes) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} exceeds max UTF-8 byte length (${maxBytes}).`);
+  }
+
+  return value;
 }
 
 function normalizeMetadataUri(uri: string): string {
@@ -226,19 +259,34 @@ function buildConfigLineOptimization(input: {
   buildUri: (serial: number) => string;
 } {
   const maxSerial = input.startSerial + input.quantity - 1;
-  const serialWidth = String(maxSerial).length;
-  const nameLength = Math.min(MAX_CONFIG_LINE_NAME_LENGTH, Math.max(1, serialWidth));
-  const prefixName = `${input.assetNamePrefix} #`;
+  const nameLength = Math.max(1, String(maxSerial).length);
+  const prefixName = buildConfigLinePrefixName(input.assetNamePrefix);
+  const nameWindowBytes = utf8ByteLength(prefixName) + nameLength;
+
+  if (nameWindowBytes > CORE_CANDY_MACHINE_LIMITS.maxConfigLineTotalNameBytes) {
+    throw new CoreCandyMachineAdminInputError(
+      `assetNamePrefix is too long for serial range (max ${CORE_CANDY_MACHINE_LIMITS.maxConfigLineTotalNameBytes} UTF-8 bytes including suffix).`
+    );
+  }
+
   const uriTemplate = extractUriTemplate(input.assetUri);
 
   if (uriTemplate) {
-    const uriLength = Math.min(MAX_URI_LENGTH, serialWidth + uriTemplate.suffix.length);
+    const uriLength = Math.max(1, utf8ByteLength(`${maxSerial}${uriTemplate.suffix}`));
+    const totalUriBytes = utf8ByteLength(uriTemplate.prefixUri) + uriLength;
+
+    if (totalUriBytes > CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes) {
+      throw new CoreCandyMachineAdminInputError(
+        `assetUri exceeds max config line URI byte window (${CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes}).`
+      );
+    }
+
     return {
       configLineSettings: {
         prefixName,
         nameLength,
         prefixUri: uriTemplate.prefixUri,
-        uriLength: Math.max(1, uriLength),
+        uriLength,
         isSequential: true
       },
       buildName: (serial) => buildConfigLineSuffix(serial),
@@ -248,6 +296,12 @@ function buildConfigLineOptimization(input: {
 
   // Most metadata providers (including Pinata) use one stable JSON URI template for all mints.
   // Packing the full URI into prefixUri and keeping per-line URI suffix empty drastically reduces tx size.
+  if (utf8ByteLength(input.assetUri) > CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes) {
+    throw new CoreCandyMachineAdminInputError(
+      `assetUri exceeds max config line URI byte window (${CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes}).`
+    );
+  }
+
   return {
     configLineSettings: {
       prefixName,
@@ -266,18 +320,22 @@ function determineConfigLinesPerTx(config: {
   uriLength: number;
 }): number {
   if (config.uriLength === 0 && config.nameLength <= 4) {
-    return 128;
+    return 220;
   }
 
   if (config.uriLength <= 8 && config.nameLength <= 6) {
-    return 96;
+    return 160;
   }
 
   if (config.uriLength <= 16 && config.nameLength <= 8) {
-    return 64;
+    return 112;
   }
 
-  return 24;
+  if (config.uriLength <= 24 && config.nameLength <= 10) {
+    return 72;
+  }
+
+  return 32;
 }
 
 function isConfigLineChunkTooLargeError(error: unknown): boolean {
@@ -312,6 +370,10 @@ function fromBase64(base64Value: string): Buffer {
   }
 }
 
+function isTransactionWithinSizeLimit(transactionBase64: string): boolean {
+  return fromBase64(transactionBase64).length <= MAX_SOLANA_TX_RAW_BYTES;
+}
+
 async function serializeSignedBuilderTransaction(umi: Umi, buildPromise: Promise<{ buildAndSign: (umi: Umi) => Promise<unknown> }> | { buildAndSign: (umi: Umi) => Promise<unknown> }): Promise<string> {
   const builder = await Promise.resolve(buildPromise);
   const umiTransaction = await builder.buildAndSign(umi);
@@ -340,6 +402,14 @@ function isTransientRpcError(error: unknown): boolean {
     || message.includes("etimedout");
 }
 
+function isBlockhashExpiredRpcError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return error.message.toLowerCase().includes("blockhash not found");
+}
+
 async function sendRawTransactionWithRetry(connection: Connection, serializedTransaction: Uint8Array): Promise<string> {
   let attempt = 0;
   let delayMs = SEND_TX_RETRY_INITIAL_MS;
@@ -347,10 +417,17 @@ async function sendRawTransactionWithRetry(connection: Connection, serializedTra
   while (attempt <= SEND_TX_MAX_RETRIES) {
     try {
       return await connection.sendRawTransaction(serializedTransaction, {
-        skipPreflight: false,
+        skipPreflight: true,
         maxRetries: 3
       });
     } catch (error) {
+      if (isBlockhashExpiredRpcError(error)) {
+        throw new CoreCandyMachineSubmitRecoverableError(
+          "Transaction blockhash expired before submission. Prepare and sign fresh transactions.",
+          "BLOCKHASH_EXPIRED"
+        );
+      }
+
       if (!isTransientRpcError(error) || attempt === SEND_TX_MAX_RETRIES) {
         throw error;
       }
@@ -366,12 +443,26 @@ async function sendRawTransactionWithRetry(connection: Connection, serializedTra
 
 function validateDeployInput(input: PrepareCandyMachineDeployInput): PrepareCandyMachineDeployInput {
   const payerPublicKey = assertPublicKeyString(input.payerPublicKey, "payerPublicKey");
-  const collectionName = assertNonEmptyString(input.collectionName, "collectionName", MAX_COLLECTION_NAME_LENGTH);
-  const collectionUri = normalizeMetadataUri(assertUri(input.collectionUri, "collectionUri"));
-  const assetNamePrefix = assertNonEmptyString(input.assetNamePrefix, "assetNamePrefix", 48);
-  const assetUri = normalizeMetadataUri(assertUri(input.assetUri, "assetUri"));
+  const candidateCollectionName = assertNonEmptyString(input.collectionName, "collectionName", 256);
+  const candidateAssetNamePrefix = assertNonEmptyString(input.assetNamePrefix, "assetNamePrefix", 256);
   const quantity = assertPositiveInteger(input.quantity, "quantity", MAX_TOTAL_ITEMS);
   const startSerial = input.startSerial === undefined ? 1 : assertPositiveInteger(input.startSerial, "startSerial", 1_000_000);
+  const collectionUri = assertMaxUtf8Bytes(
+    normalizeMetadataUri(assertUri(input.collectionUri, "collectionUri")),
+    "collectionUri",
+    CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes
+  );
+  const assetUri = assertMaxUtf8Bytes(
+    normalizeMetadataUri(assertUri(input.assetUri, "assetUri")),
+    "assetUri",
+    CORE_CANDY_MACHINE_LIMITS.maxConfigLineUriBytes
+  );
+  const derivedNames = deriveCoreCandyMachineNames({
+    collectionSource: candidateCollectionName,
+    assetPrefixSource: candidateAssetNamePrefix,
+    quantity,
+    startSerial
+  });
 
   if (typeof input.startDate !== "string" || !input.startDate.trim()) {
     throw new CoreCandyMachineAdminInputError("startDate is required and must be an ISO date string.");
@@ -384,9 +475,9 @@ function validateDeployInput(input: PrepareCandyMachineDeployInput): PrepareCand
 
   return {
     payerPublicKey,
-    collectionName,
+    collectionName: derivedNames.collectionName,
     collectionUri,
-    assetNamePrefix,
+    assetNamePrefix: derivedNames.assetNamePrefix,
     assetUri,
     quantity,
     startDate: parsedStartDate.toISOString(),
@@ -460,6 +551,7 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
 export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachineDeployInput): Promise<PreparedCandyMachineDeploy> {
   const input = validateDeployInput(rawInput);
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
+  const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
   const configLineOptimization = buildConfigLineOptimization({
     assetNamePrefix: input.assetNamePrefix,
     assetUri: input.assetUri,
@@ -471,7 +563,10 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
   const candyMachineSigner = generateSigner(umi);
   const deployId = randomUUID();
   const transactions: PreparedCandyMachineTransaction[] = [];
-  const configLinesPerTx = Math.max(MIN_CONFIG_LINES_PER_TX, determineConfigLinesPerTx(configLineOptimization.configLineSettings));
+  const configLinesPerTx = Math.min(
+    MAX_CONFIG_LINES_PER_TX_SAFE,
+    Math.max(MIN_CONFIG_LINES_PER_TX, determineConfigLinesPerTx(configLineOptimization.configLineSettings))
+  );
 
   const createCollectionBuilder = createCollectionV2(umi, {
     collection: collectionSigner,
@@ -502,6 +597,9 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
       solPayment: {
         lamports: createAmount(BigInt(DEVNET_MINT_PRICE_LAMPORTS), "SOL", 9),
         destination: payerSigner.publicKey
+      },
+      thirdPartySigner: {
+        signerKey: publicKey(thirdPartySignerAddress)
       }
     },
     groups: []
@@ -519,11 +617,15 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
   let chunkTarget = configLinesPerTx;
 
   while (offset < input.quantity) {
-    let chunkCount = Math.min(chunkTarget, input.quantity - offset);
+    const maxChunkCandidate = Math.min(chunkTarget, input.quantity - offset);
+    let low = 1;
+    let high = maxChunkCandidate;
+    let selectedChunkCount = 0;
     let serializedTransactionBase64: string | null = null;
     let lastError: unknown = null;
 
-    while (chunkCount >= 1) {
+    while (low <= high) {
+      const chunkCount = Math.floor((low + high) / 2);
       const configLines = Array.from({ length: chunkCount }, (_, index) => {
         const serial = (input.startSerial ?? 1) + offset + index;
         return {
@@ -540,16 +642,22 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
       });
 
       try {
-        serializedTransactionBase64 = await serializeSignedBuilderTransaction(umi, addConfigLinesBuilder);
-        break;
+        const serialized = await serializeSignedBuilderTransaction(umi, addConfigLinesBuilder);
+        if (!isTransactionWithinSizeLimit(serialized)) {
+          high = chunkCount - 1;
+          continue;
+        }
+
+        serializedTransactionBase64 = serialized;
+        selectedChunkCount = chunkCount;
+        low = chunkCount + 1;
       } catch (error) {
         lastError = error;
-        if (!isConfigLineChunkTooLargeError(error) || chunkCount === 1) {
+        if (!isConfigLineChunkTooLargeError(error)) {
           throw error;
         }
 
-        // Discover a safe payload size when tx serialization reaches byte limits.
-        chunkCount = Math.max(1, Math.floor(chunkCount / 2));
+        high = chunkCount - 1;
       }
     }
 
@@ -563,14 +671,14 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
 
     transactions.push({
       kind: "add-config-lines",
-      label: `Load config lines ${offset + 1}-${offset + chunkCount}`,
+      label: `Load config lines ${offset + 1}-${offset + selectedChunkCount}`,
       serial: null,
       expectedAddress: candyMachineSigner.publicKey,
       transactionBase64: serializedTransactionBase64
     });
 
-    chunkTarget = chunkCount;
-    offset += chunkCount;
+    chunkTarget = selectedChunkCount;
+    offset += selectedChunkCount;
   }
 
   return {
@@ -592,6 +700,7 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const candyMachineAddress = publicKey(input.candyMachineAddress);
   const collectionAddress = publicKey(input.collectionAddress);
+  const thirdPartySigner = createPurchaseThirdPartySigner(umi);
   const candyMachineAccount = await fetchCandyMachine(umi, candyMachineAddress);
   const candyMachineAuthority = String(candyMachineAccount.authority ?? "");
 
@@ -621,6 +730,9 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
       mintArgs: {
         solPayment: {
           destination: payerSigner.publicKey
+        },
+        thirdPartySigner: {
+          signer: thirdPartySigner
         }
       }
     });
@@ -704,28 +816,92 @@ async function waitForConfirmedSignature(connection: Connection, signature: stri
     await sleep(SIGNATURE_CONFIRM_POLL_MS);
   }
 
-  throw new Error(`Timed out waiting for signature confirmation: ${signature}`);
+  let finalStatus: Awaited<ReturnType<Connection["getSignatureStatuses"]>>["value"][number] | null = null;
+  try {
+    const statuses = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
+    finalStatus = statuses.value[0];
+  } catch (error) {
+    if (!isTransientRpcError(error)) {
+      throw error;
+    }
+  }
+
+  if (finalStatus?.err) {
+    throw new Error(`Transaction failed: ${JSON.stringify(finalStatus.err)}`);
+  }
+
+  if (finalStatus?.confirmationStatus === "confirmed" || finalStatus?.confirmationStatus === "finalized") {
+    return;
+  }
+
+  try {
+    const transaction = await connection.getTransaction(signature, {
+      commitment: "confirmed",
+      maxSupportedTransactionVersion: 0
+    });
+
+    if (transaction?.meta?.err) {
+      throw new Error(`Transaction failed: ${JSON.stringify(transaction.meta.err)}`);
+    }
+
+    if (transaction) {
+      return;
+    }
+  } catch (error) {
+    if (!isTransientRpcError(error)) {
+      throw error;
+    }
+  }
+
+  throw new CoreCandyMachineSubmitRecoverableError(
+    `Timed out waiting for signature confirmation: ${signature}. The network may still confirm it; verify the signature and retry only pending transactions.`,
+    "CONFIRMATION_TIMEOUT",
+    409
+  );
 }
 
 export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitSignedCandyMachineTransactionsInput): Promise<SubmittedCandyMachineTransaction[]> {
   const input = validateSubmitInput(rawInput);
   const connection = new Connection(getSolanaRpcUrl(), "confirmed");
   const results: SubmittedCandyMachineTransaction[] = [];
+  const deferredConfirmations: string[] = [];
 
-  for (const signed of input.signedTransactions) {
-    const transaction = parseSignedTransaction(signed.transactionBase64);
-    assertPayerMatches(transaction, input.expectedPayerPublicKey);
-    const serializedTransaction = transaction.serialize();
+  for (const [index, signed] of input.signedTransactions.entries()) {
+    try {
+      const transaction = parseSignedTransaction(signed.transactionBase64);
+      assertPayerMatches(transaction, input.expectedPayerPublicKey);
+      const serializedTransaction = transaction.serialize();
 
-    const signature = await sendRawTransactionWithRetry(connection, serializedTransaction);
+      const signature = await sendRawTransactionWithRetry(connection, serializedTransaction);
+      const mustConfirmImmediately = signed.kind === "create-collection" || signed.kind === "create-candy-machine";
+
+      if (mustConfirmImmediately) {
+        await waitForConfirmedSignature(connection, signature);
+      } else {
+        deferredConfirmations.push(signature);
+      }
+
+      results.push({
+        kind: signed.kind,
+        serial: signed.serial,
+        expectedAddress: signed.expectedAddress,
+        signature
+      });
+    } catch (error) {
+      if (isCoreCandyMachineSubmitRecoverableError(error)) {
+        throw new CoreCandyMachineSubmitRecoverableError(
+          `${error.message} Failed on transaction ${index + 1}/${input.signedTransactions.length}.`,
+          error.code,
+          error.status
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  for (const signature of deferredConfirmations) {
     await waitForConfirmedSignature(connection, signature);
-
-    results.push({
-      kind: signed.kind,
-      serial: signed.serial,
-      expectedAddress: signed.expectedAddress,
-      signature
-    });
   }
 
   return results;

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 const PINATA_PIN_JSON_ENDPOINT = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
 const PINATA_PIN_FILE_ENDPOINT = "https://api.pinata.cloud/pinning/pinFileToIPFS";
 const DEFAULT_PINATA_GATEWAY_BASE_URL = "https://gateway.pinata.cloud/ipfs";
@@ -167,6 +169,23 @@ function sanitizeFileName(value: string): string {
     .replace(/^-+|-+$/g, "");
 
   return normalized || "image";
+}
+
+function sanitizeNameToken(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+}
+
+function buildTechnicalObjectName(input: {
+  kind: "collection-meta" | "asset-meta";
+  seed: string;
+}): string {
+  const token = sanitizeNameToken(input.seed) || "item";
+  const digest = createHash("sha256").update(input.seed).digest("hex").slice(0, 10);
+  return `cm-${input.kind}-${token}-${digest}`;
 }
 
 function fileExtensionForContentType(contentType: string): string {
@@ -374,10 +393,18 @@ export async function createCoreCandyMachinePinataMetadataUris(
 ): Promise<CoreCandyMachinePinataMetadataOutput> {
   const collectionName = asTrimmedString(input.collectionName) || "Collection";
   const assetNamePrefix = asTrimmedString(input.assetNamePrefix) || "Asset";
+  const collectionObjectName = buildTechnicalObjectName({
+    kind: "collection-meta",
+    seed: `${collectionName}|collection`
+  });
+  const assetObjectName = buildTechnicalObjectName({
+    kind: "asset-meta",
+    seed: `${assetNamePrefix}|asset`
+  });
 
   const [collectionPinned, assetPinned] = await Promise.all([
     pinJsonToPinata({
-      name: `${collectionName}-collection-metadata`,
+      name: collectionObjectName,
       json: input.collectionMetadata,
       keyValues: {
         app: "solana-test-1",
@@ -386,7 +413,7 @@ export async function createCoreCandyMachinePinataMetadataUris(
       }
     }),
     pinJsonToPinata({
-      name: `${assetNamePrefix}-asset-metadata-template`,
+      name: assetObjectName,
       json: input.assetMetadata,
       keyValues: {
         app: "solana-test-1",

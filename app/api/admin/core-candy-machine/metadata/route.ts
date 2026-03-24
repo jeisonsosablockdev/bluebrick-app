@@ -1,5 +1,8 @@
+import { createHash } from "node:crypto";
+
 import { NextRequest, NextResponse } from "next/server";
 
+import { deriveCoreCandyMachineNames } from "@/lib/core-candy-machine-naming";
 import { createCoreMetadataRecord } from "@/lib/core-candy-machine-metadata-store";
 import {
   createCoreCandyMachinePinataMetadataUris,
@@ -15,10 +18,39 @@ type MetadataBody = {
   symbol?: unknown;
   description?: unknown;
   image?: unknown;
+  quantity?: unknown;
+  startSerial?: unknown;
 };
 
 function asTrimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function parsePositiveInteger(value: unknown, fallback: number): number {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) {
+    return fallback;
+  }
+
+  return numeric;
+}
+
+function sanitizeFileToken(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+}
+
+function buildTechnicalImageFileName(input: {
+  internalCode: string;
+  assetNamePrefix: string;
+  imageUri: string;
+}): string {
+  const hint = sanitizeFileToken(input.internalCode || input.assetNamePrefix) || "asset";
+  const digest = createHash("sha256").update(input.imageUri).digest("hex").slice(0, 10);
+  return `cm-image-${hint}-${digest}`;
 }
 
 function imageMimeTypeFromUri(imageUri: string): string {
@@ -89,8 +121,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const collectionName = asTrimmedString(body.collectionName) || "Collection";
-  const assetNamePrefix = asTrimmedString(body.assetNamePrefix) || "Asset";
+  const quantity = parsePositiveInteger(body.quantity, 1);
+  const startSerial = parsePositiveInteger(body.startSerial, 1);
+  const derivedNames = deriveCoreCandyMachineNames({
+    collectionSource: asTrimmedString(body.collectionName) || "Collection",
+    assetPrefixSource: asTrimmedString(body.assetNamePrefix) || "Asset",
+    quantity,
+    startSerial
+  });
+  const collectionName = derivedNames.collectionName;
+  const assetNamePrefix = derivedNames.assetNamePrefix;
   const internalCode = asTrimmedString(body.internalCode);
   const symbol = asTrimmedString(body.symbol) || "NFT";
   const description = asTrimmedString(body.description) || "Core Candy Machine metadata";
@@ -104,7 +144,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       const resolvedImage = await resolveImageForPinata({
         imageUri: image,
-        name: internalCode || `${assetNamePrefix}-image`,
+        name: buildTechnicalImageFileName({
+          internalCode,
+          assetNamePrefix,
+          imageUri: image
+        }),
         keyValues: {
           app: "solana-test-1",
           scope: "core-candy-machine",
@@ -131,6 +175,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       return NextResponse.json({
         provider: "pinata",
+        resolvedCollectionName: collectionName,
+        resolvedAssetNamePrefix: assetNamePrefix,
         collectionUri: pinned.collectionUri,
         assetUri: pinned.assetUri,
         collectionGatewayUrl: pinned.collectionGatewayUrl,
@@ -171,6 +217,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({
     provider: "local",
+    resolvedCollectionName: collectionName,
+    resolvedAssetNamePrefix: assetNamePrefix,
     collectionUri: `${base}/api/admin/core-candy-machine/metadata/${collectionRecord.id}.json`,
     assetUri: `${base}/api/admin/core-candy-machine/metadata/${assetRecord.id}.json`
   });

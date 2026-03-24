@@ -9,6 +9,7 @@
     "start": "next start",
     "db:migrate": "node ./scripts/db-migrate.js",
     "cm:items": "node ./scripts/check-candy-machine-items.js",
+    "purchase:trace": "node ./scripts/purchase-trace.js",
     "rfc:new": "node ./scripts/rfc-new.js",
     "lint": "eslint .",
     "test": "vitest run",

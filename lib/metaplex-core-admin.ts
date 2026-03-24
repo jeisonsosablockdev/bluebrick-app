@@ -330,7 +330,7 @@ export async function submitMetaplexCoreTransactions(rawInput: SubmitSignedTrans
   for (const item of signedTransactions) {
     const transaction = parseSignedTransaction(item.transactionBase64);
     const signature = await connection.sendRawTransaction(transaction.serialize(), {
-      skipPreflight: false,
+      skipPreflight: true,
       maxRetries: 3
     });
     const confirmation = await connection.confirmTransaction(signature, "confirmed");

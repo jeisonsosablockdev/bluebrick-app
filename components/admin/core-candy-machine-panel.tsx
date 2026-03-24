@@ -38,6 +38,8 @@ type SubmitResponse = {
 
 type ErrorResponse = {
   error?: string;
+  code?: string;
+  recoverable?: boolean;
 };
 
 export type SnapshotFinalizeResponse = {
@@ -109,6 +111,8 @@ type RunState = {
 type GeneratedMetadataUris = {
   collectionUri: string;
   assetUri: string;
+  resolvedCollectionName?: string;
+  resolvedAssetNamePrefix?: string;
 };
 
 const DEFAULT_START_DATE = () => new Date(Date.now() + 60_000).toISOString();
@@ -183,7 +187,7 @@ export function CoreCandyMachinePanel({
   onSnapshotFinalized,
   onDeployCompleted
 }: CoreCandyMachinePanelProps) {
-  const { connected, publicKey, signTransaction } = useWallet();
+  const { connected, publicKey, signTransaction, signAllTransactions } = useWallet();
   const [form, setForm] = useState<PanelFormState>({
     collectionName: prefill?.collectionName?.trim() || "Core CM Collection",
     collectionUri: "",
@@ -219,22 +223,37 @@ export function CoreCandyMachinePanel({
         internalCode: prefill.internalCode ?? "",
         symbol: prefill.symbol ?? "NFT",
         description: prefill.description ?? "",
-        image: prefill.imageUrl
+        image: prefill.imageUrl,
+        quantity: parsePositiveInt(form.quantity) ?? 1,
+        startSerial: 1
       })
     });
 
-    const payload = await parseJson<{ collectionUri?: string; assetUri?: string; error?: string }>(response);
+    const payload = await parseJson<{
+      collectionUri?: string;
+      assetUri?: string;
+      resolvedCollectionName?: string;
+      resolvedAssetNamePrefix?: string;
+      error?: string;
+    }>(response);
     if (!response.ok || !payload.collectionUri || !payload.assetUri) {
       throw new Error(payload.error ?? "Could not generate metadata URIs.");
     }
 
     return {
       collectionUri: payload.collectionUri.trim(),
-      assetUri: payload.assetUri.trim()
+      assetUri: payload.assetUri.trim(),
+      resolvedCollectionName: typeof payload.resolvedCollectionName === "string"
+        ? payload.resolvedCollectionName.trim()
+        : undefined,
+      resolvedAssetNamePrefix: typeof payload.resolvedAssetNamePrefix === "string"
+        ? payload.resolvedAssetNamePrefix.trim()
+        : undefined
     };
   }, [
     form.assetNamePrefix,
     form.collectionName,
+    form.quantity,
     prefill?.assetNamePrefix,
     prefill?.collectionName,
     prefill?.description,
@@ -249,7 +268,9 @@ export function CoreCandyMachinePanel({
       const generated = await requestGeneratedMetadataUris();
       setForm((current) => ({
         ...current,
+        collectionName: generated.resolvedCollectionName || current.collectionName,
         collectionUri: generated.collectionUri,
+        assetNamePrefix: generated.resolvedAssetNamePrefix || current.assetNamePrefix,
         assetUri: generated.assetUri
       }));
       setErrorMessage(null);
@@ -313,7 +334,10 @@ export function CoreCandyMachinePanel({
 
     return Math.round((runState.deployProgress.current / runState.deployProgress.total) * 100);
   }, [runState.deployProgress]);
-  async function submitSignedSingleTransaction(transaction: PreparedTransaction, signedTransactionBase64: string): Promise<string> {
+  async function submitSignedTransactionsBatch(
+    preparedTransactions: PreparedTransaction[],
+    signedTransactionsBase64: string[]
+  ): Promise<SubmitResponse["transactions"]> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
@@ -325,34 +349,57 @@ export function CoreCandyMachinePanel({
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
-          signedTransactions: [
-            {
-              kind: transaction.kind,
-              serial: transaction.serial,
-              expectedAddress: transaction.expectedAddress,
-              transactionBase64: signedTransactionBase64
-            }
-          ]
+          signedTransactions: preparedTransactions.map((transaction, index) => ({
+            kind: transaction.kind,
+            serial: transaction.serial,
+            expectedAddress: transaction.expectedAddress,
+            transactionBase64: signedTransactionsBase64[index]
+          }))
         })
       });
 
       const payload = await parseJson<SubmitResponse & ErrorResponse>(response);
-      const signature = payload.transactions?.[0]?.signature;
-
-      if (!response.ok || !signature) {
-        throw new Error(payload.error ?? `Could not submit transaction ${transaction.label}.`);
+      if (!response.ok || !Array.isArray(payload.transactions)) {
+        throw new Error(payload.error ?? "Could not submit deploy transactions.");
       }
 
-      return signature;
+      return payload.transactions;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        throw new Error(`Timed out submitting transaction ${transaction.label}.`);
+        throw new Error("Timed out submitting deploy transactions. The backend did not respond in time.");
       }
 
       throw error;
     } finally {
       clearTimeout(timeoutId);
     }
+  }
+
+  async function signPreparedTransactions(
+    preparedTransactions: PreparedTransaction[],
+    signSingle: NonNullable<ReturnType<typeof useWallet>["signTransaction"]>
+  ): Promise<string[]> {
+    if (signAllTransactions) {
+      const unsignedTransactions = preparedTransactions.map((transaction) =>
+        VersionedTransaction.deserialize(fromBase64(transaction.transactionBase64))
+      );
+      const signedTransactions = await signAllTransactions(unsignedTransactions);
+      return signedTransactions.map((signedTransaction) => toBase64(signedTransaction.serialize()));
+    }
+
+    const signedTransactionsBase64: string[] = [];
+
+    for (const [index, transaction] of preparedTransactions.entries()) {
+      const signedBase64 = await signPreparedTransaction(signSingle, transaction.transactionBase64);
+      signedTransactionsBase64.push(signedBase64);
+
+      setRunState((current) => ({
+        ...current,
+        status: `Signing (${index + 1}/${preparedTransactions.length})`
+      }));
+    }
+
+    return signedTransactionsBase64;
   }
 
   async function finalizeSnapshot(
@@ -478,8 +525,6 @@ export function CoreCandyMachinePanel({
         throw new Error(prepared.error ?? "Could not prepare deploy transactions.");
       }
 
-      const collectedSignatures: RunSignatureEntry[] = [];
-
       setRunState((current) => ({
         ...current,
         status: "Deploy prepared. Signing transactions...",
@@ -489,28 +534,62 @@ export function CoreCandyMachinePanel({
         signatures: []
       }));
 
-      for (const [index, transaction] of prepared.transactions.entries()) {
-        const signedBase64 = await signPreparedTransaction(signTransaction, transaction.transactionBase64);
-        const signature = await submitSignedSingleTransaction(transaction, signedBase64);
-        const entry: RunSignatureEntry = {
-          signature,
-          kind: transaction.kind,
-          label: transaction.label,
-          expectedAddress: transaction.expectedAddress
-        };
-        collectedSignatures.push(entry);
-
-        setRunState((current) => ({
-          ...current,
-          status: `Deploying (${index + 1}/${prepared.transactions.length})`,
-          deployProgress: { current: index + 1, total: prepared.transactions.length },
-          signatures: [...collectedSignatures]
-        }));
-      }
+      const signedTransactionsBase64 = await signPreparedTransactions(prepared.transactions, signTransaction);
 
       setRunState((current) => ({
         ...current,
-        status: "Deploy complete. Candy Machine ready to mint."
+        status: `Submitting ${prepared.transactions.length} transactions...`
+      }));
+
+      const submittedTransactions = await submitSignedTransactionsBatch(prepared.transactions, signedTransactionsBase64);
+      const collectedSignatures: RunSignatureEntry[] = submittedTransactions.map((submitted, index) => ({
+        signature: submitted.signature,
+        kind: submitted.kind,
+        label: prepared.transactions[index]?.label ?? submitted.kind,
+        expectedAddress: submitted.expectedAddress
+      }));
+
+      setRunState((current) => ({
+        ...current,
+        deployProgress: { current: prepared.transactions.length, total: prepared.transactions.length },
+        signatures: [...collectedSignatures],
+        status: "Waiting for network confirmation via webhook..."
+      }));
+
+      // --- SMART POLLING (Local Backend) ---
+      const signaturesToPoll = collectedSignatures.map(s => s.signature);
+      let allConfirmed = false;
+      let attempts = 0;
+      const maxAttempts = 30; // Max 60 seconds (30 attempts * 2s)
+
+      while (!allConfirmed && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const statusRes = await fetch("/api/admin/core-candy-machine/status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ signatures: signaturesToPoll })
+          });
+
+          if (statusRes.ok) {
+            const { statuses } = await statusRes.json();
+            // Si todas las firmas tienen un registro (no son null), se confirmó todo
+            allConfirmed = signaturesToPoll.every(sig => statuses[sig] !== null);
+          }
+        } catch (err) {
+          // Ignorar errores de red temporales para seguir intentando
+        }
+        attempts++;
+      }
+
+      if (!allConfirmed) {
+         setErrorMessage("Deploy transactions were submitted, but confirmation took too long. They might still succeed in the background. Check Solscan.");
+      }
+      // -------------------------------------
+
+      setRunState((current) => ({
+        ...current,
+        status: allConfirmed ? "Deploy complete. Candy Machine ready to mint." : "Deploy submitted (pending background confirmation)."
       }));
 
       onDeployCompleted?.({
@@ -544,6 +623,9 @@ export function CoreCandyMachinePanel({
         <p className="text-xs text-amber-200/90">
           `collectionUri` and `assetUri` must point to JSON metadata, not image URLs.
         </p>
+        <p className="text-xs text-sky-200/85">
+          Collection name and asset prefix are auto-generated and server-normalized to avoid Candy Machine length failures.
+        </p>
         {isGeneratingUri ? <p className="text-xs text-cyan-200/90">Generating metadata URIs from uploaded image...</p> : null}
         {!isGeneratingUri && canGenerateMetadataFromPrefill ? (
           <button
@@ -568,7 +650,7 @@ export function CoreCandyMachinePanel({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-xs text-white/70">
           Collection name
-          <Input value={form.collectionName} onChange={(event) => setForm((current) => ({ ...current, collectionName: event.target.value }))} />
+          <Input readOnly value={form.collectionName} />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Collection URI
@@ -576,7 +658,7 @@ export function CoreCandyMachinePanel({
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset name prefix
-          <Input value={form.assetNamePrefix} onChange={(event) => setForm((current) => ({ ...current, assetNamePrefix: event.target.value }))} />
+          <Input readOnly value={form.assetNamePrefix} />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset URI

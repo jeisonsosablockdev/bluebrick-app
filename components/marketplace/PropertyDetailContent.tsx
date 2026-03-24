@@ -3,9 +3,9 @@
 import Image from "next/image";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { H2, Lead } from "@/components/ui/typography";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { PurchaseCta } from "@/components/marketplace/PurchaseCta";
 import type { AppLocale } from "@/lib/i18n";
 import type { PropertyDetail } from "@/lib/property-service";
 import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
@@ -52,7 +52,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             <h1 className="text-3xl font-bold tracking-tight text-white">{property.title}</h1>
             <Lead>{property.locationLabel}</Lead>
             <p className="text-sm text-slate-300">{property.shortDescription}</p>
-            <Button className="min-h-11">{t({ en: "Buy NFTs", es: "Comprar NFTs", pt: "Comprar NFTs" })}</Button>
+            <PurchaseCta propertyId={property.id} />
           </div>
         </div>
       </section>

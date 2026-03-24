@@ -3,6 +3,43 @@
 ## Scope
 - Feature: Admin-driven batch minting on Solana devnet using Metaplex Core.
 - Collection: One Core collection per mint run. Assets are minted as numbered fractions under that collection.
+- Marketplace purchase (STORY-003-04): user-facing `quote -> challenge -> prepare -> submit` flow for minting NFT fractions from Candy Machine listings, with multi-quantity contract (`MULTI_ENABLED` default, server-limited), anti-bot controls and transaction-integrity/idempotency in submit.
+
+## Marketplace Purchase Flow (STORY-003-04)
+- Price source of truth:
+  - Mint price is never configured at purchase time.
+  - UI price comes from backend quote cache that reads Candy Guard `solPayment`.
+- Guard cache + revalidation:
+  - `POST /api/purchase/quote` serves cached guard snapshot (`priceLamports`, `startDate`, `itemsRemaining`, `cacheUpdatedAt`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`).
+  - `POST /api/purchase/prepare` always revalidates against fresh on-chain guard state before building transaction.
+  - If quote and fresh guard diverge, backend returns `PRICE_CHANGED`.
+- Quantity contract:
+  - Backend enforces `quantity` as positive integer.
+  - Mode and limits are server-controlled (`PURCHASE_QUANTITY_MODE`, `PURCHASE_MAX_QUANTITY_PER_ORDER`).
+  - Current default mode is `MULTI_ENABLED` with max quantity per order default `10`.
+  - Invalid/out-of-policy quantity returns semantic error `INVALID_QUANTITY`.
+  - If requested quantity does not fit in one transaction payload, `prepare` returns `INVALID_QUANTITY` and client must reduce quantity.
+- Anti-bot transactional layer:
+  - `POST /api/purchase/challenge` issues short-lived one-time challenge payload tied to wallet + property + candy machine + `quantity`.
+  - Wallet signs challenge message via `signMessage()`.
+  - `POST /api/purchase/prepare` verifies challenge signature server-side, enforces anti-replay, validates challenge quantity context, and applies per-window rate limits (`wallet` + `ip`).
+  - No cumulative wallet cap is enforced (`mintLimit` intentionally out of scope for this story).
+- User signing model:
+  - Backend prepares mint transaction pre-signed by mandatory Candy Guard `thirdPartySigner`.
+  - User signs with Phantom wallet client-side.
+  - Backend validates payer + prepared message match before sending transaction on devnet.
+- Error contract exposed to UI:
+  - `MINT_NOT_STARTED`, `SOLD_OUT`, `PRICE_CHANGED`, `INVALID_QUANTITY`, `INSUFFICIENT_FUNDS`, `INVALID_CHALLENGE`, `RATE_LIMITED`, `TRANSACTION_FAILED`.
+- Traceability persistence:
+  - `purchase_attempts` stores wallet, candy machine, challenge linkage (`challenge_id`), client IP, idempotency fields (`idempotency_key`, `idempotency_expires_at`), tx signature, status, and error code/message.
+  - `purchase_flow_events` stores request timeline (`quote/challenge/prepare/submit`, `request/success/error`) correlated by `flow_id` for UI E2E debugging.
+  - State machine: `created -> prepared -> submitted -> confirmed | failed`.
+  - Prepare emits server-side `idempotencyKey` (UUIDv7, TTL 5 min).
+  - Submit requires `attemptId + idempotencyKey`, enforces DB dedupe (`wallet_public_key + idempotency_key`) and uses row lock to prevent duplicate sends under retry/double-click races.
+  - `purchase_challenges` stores challenge nonce/message/TTL and consumption/failure state.
+  - `purchase_rate_limit_events` stores rolling rate-limit event evidence by endpoint + wallet + IP.
+  - Submit returns initial `submitted` state; final confirmation/reconciliation is handled server-side in later EPIC stories.
+  - Reusable implementation playbook: `docs/purchase-tracing.md`.
 
 ## Mint Authority Model
 - Mint authority:
@@ -11,8 +48,10 @@
 - Validation logic:
   - `/api/admin/metaplex-core/prepare` and `/api/admin/metaplex-core/submit` require `admin` role server-side.
   - Frontend wallet must match authenticated session wallet (`payerPublicKey` check before signing).
-  - Only devnet RPC is accepted (`NEXT_PUBLIC_SOLANA_RPC` enforced by `lib/solana.ts`).
+  - Only devnet RPC is accepted (`SOLANA_RPC_URL` preferred on server; `NEXT_PUBLIC_SOLANA_RPC` fallback, both enforced by `lib/solana.ts`).
   - Core Candy Machine deploy/mint/submit routes validate all Solana public key inputs explicitly (`payerPublicKey`, `candyMachineAddress`, `collectionAddress`, `expectedAddress`) before building transactions.
+  - Candy Machine deploy sets `thirdPartySigner` guard to backend signer address from `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY`.
+  - Purchase prepare enforces on-chain `thirdPartySigner` match with backend signer configuration before mint transaction assembly.
   - Core Candy Machine `collectionName` is capped at 32 chars (on-chain serialization constraint).
 - Rotation/revocation:
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
@@ -74,12 +113,16 @@
   - Deploy validation still enforces JSON metadata URIs only (`https://...json` or `ipfs://...`).
   - Image URLs are rejected as `collectionUri`/`assetUri`.
   - If deploy is triggered with missing or image-like URIs and an uploaded image is available in prefill, the panel attempts automatic URI generation before validation.
-  - `addConfigLines` tx preparation now uses adaptive chunking to avoid transaction serialization overflow (`encoding overruns Uint8Array`) when metadata URIs are long.
+  - `collectionName` and `assetNamePrefix` are now treated as server-authoritative derived values (normalized/truncated by byte-length rules before deploy prepare).
+  - Deploy panel keeps these critical naming fields read-only to avoid user-side drift from server constraints.
+  - Deploy input enforces strict URI byte windows for Candy Machine config lines (`<= 200` UTF-8 bytes effective window).
+  - Pinata upload object names are technical and normalized before pinning (user-provided filenames are not used as final object names).
+  - `addConfigLines` tx preparation uses adaptive chunking with aggressive-first sizing and automatic fallback (`chunk/2`) to reduce deploy tx count while avoiding serialization overflow (`encoding overruns Uint8Array`).
   - Item insertion follows prefix-based strategy for names (`prefixName = "<assetNamePrefix> #"` + numeric suffix in config lines), aligned with Core Candy Machine insert-items guidance.
 - Operational note:
   - This integration changes metadata URI storage/provider selection and can migrate image hosting to Pinata/IPFS transparently when a public `http(s)` image is provided.
-  - Submit path now uses resilient RPC handling (retry on transient send errors + explicit signature status polling with timeout) and propagates concrete backend errors for easier recovery.
-  - Wallet signing flow and deploy/mint transaction sequencing remain unchanged.
+  - Submit path uses resilient RPC handling (retry on transient send errors + explicit signature status polling with timeout + final on-chain double-check), returns recoverable `BLOCKHASH_EXPIRED` or `CONFIRMATION_TIMEOUT` metadata (`409`) when submission/confirmation is stale, and confirms structural txs first (`create-collection`, `create-candy-machine`) before batching confirmation of remaining txs.
+  - Admin panel signs deploy txs in batch (`signAllTransactions` when available, sequential fallback otherwise) and submits them in a single backend call to reduce end-to-end latency and stale-blockhash risk.
 
 ## Devnet Mint Proof
 | Purpose | Signature | Explorer URL | Metadata Account |
@@ -100,7 +143,7 @@
 | Load config lines 321-384 | `295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB` | `https://explorer.solana.com/tx/295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 | Load config lines 385-400 | `5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o` | `https://explorer.solana.com/tx/5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 
-Last Updated: 2026-03-18 23:45:00 UTC
+Last Updated: 2026-03-20 19:27:57 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)
@@ -132,3 +175,4 @@ Last Updated: 2026-03-18 23:45:00 UTC
   - Enforced guards on deploy:
     - `startDate`
     - `solPayment = 10,000 lamports (0.00001 SOL)`
+    - `thirdPartySigner` (backend signer, mandatory for public purchase flow)
