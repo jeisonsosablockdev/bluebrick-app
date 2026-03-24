@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getPropertyDetailOrThrowRpc, PropertyRpcError } from "@/lib/property-service";
+import { PropertyRpcError } from "@/lib/property-service";
+import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 
 type RouteContext = {
   params: Promise<{
@@ -11,7 +12,7 @@ type RouteContext = {
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const property = getPropertyDetailOrThrowRpc(id);
+    const property = await getMarketplacePropertyDetailOrThrowRpc(id);
 
     if (!property) {
       return NextResponse.json({ error: "Property not found." }, { status: 404 });

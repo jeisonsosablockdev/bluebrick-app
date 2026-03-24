@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com"
+      },
+      {
+        protocol: "https",
+        hostname: "gateway.pinata.cloud"
+      },
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com"
       }
     ]
   }

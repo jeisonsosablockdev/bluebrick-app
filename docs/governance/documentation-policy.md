@@ -62,3 +62,33 @@ Must document:
 Strict Rule
 
 If documentation is missing or outdated → task incomplete.
+
+⸻
+
+RFC Workflow by Epic
+
+Use RFCs to document architecture debate, multi-model review, and final technical decisions for epics/stories with relevant complexity.
+
+Mandatory directory and file convention:
+	•	`/docs/rfcs/EPIC-<id>-<slug>/`
+	•	`/docs/rfcs/EPIC-<id>-<slug>/README.md`
+	•	`/docs/rfcs/EPIC-<id>-<slug>/STORY-<id>-<slug>.md`
+
+Mandatory sections per story RFC:
+	•	`Context`
+	•	`Proposal`
+	•	`Critique`
+	•	`Resolution`
+	•	`Decision`
+	•	`Status`
+
+Allowed status values:
+	•	`draft`
+	•	`in-review`
+	•	`approved`
+	•	`implemented`
+
+Enforcement:
+	•	Final implementation code must not be produced until `Decision = approved`.
+	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
+	•	If naming convention or required sections are missing, documentation is considered incomplete.

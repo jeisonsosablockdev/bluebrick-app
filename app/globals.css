@@ -60,4 +60,72 @@ a {
     background: rgba(255, 255, 255, 0.3);
     pointer-events: none;
   }
+
+  .glass-interactive-card {
+    transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .glass-interactive-card:focus-within {
+    border-color: rgba(103, 232, 249, 0.35);
+    background: linear-gradient(172deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+    backdrop-filter: blur(16px) saturate(145%);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .glass-modal-surface {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(172deg, rgba(20, 28, 52, 0.78), rgba(9, 14, 28, 0.9));
+    backdrop-filter: blur(18px) saturate(145%);
+    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .glass-drawer-surface {
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(175deg, rgba(15, 22, 40, 0.92), rgba(7, 11, 20, 0.96));
+    backdrop-filter: blur(20px) saturate(145%);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.28), inset 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-control {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(170deg, rgba(23, 33, 60, 0.78), rgba(11, 18, 35, 0.92));
+    backdrop-filter: blur(12px) saturate(140%);
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  }
+
+  .glass-control:focus,
+  .glass-control:focus-visible {
+    outline: none;
+    border-color: rgba(103, 232, 249, 0.48);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+  }
+
+  select.glass-control {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.72) 50%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.72) 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 14px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 2.25rem;
+  }
+
+  select.glass-control option {
+    background: #0b1124;
+    color: #e2e8f0;
+  }
+
+  input[type="date"].glass-control {
+    color-scheme: dark;
+  }
+
+  input[type="date"].glass-control::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: brightness(1.35) contrast(1.05);
+    opacity: 0.86;
+  }
+
+  input[type="date"].glass-control::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
 }

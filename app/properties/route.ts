@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { PROPERTY_CITIES, listProperties, type ListingStatus, type PropertyFilters } from "@/lib/property-service";
+import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
+import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
 
 const LISTING_STATUSES: ListingStatus[] = ["active", "funding", "sold-out"];
 
@@ -43,14 +44,15 @@ export async function GET(request: Request) {
       minRoi: parseMinRoi(searchParams.get("minRoi"))
     };
 
-    const properties = listProperties(filters);
+    const properties = await listMarketplaceProperties(filters);
+    const availableCities = await listMarketplacePropertyCities();
 
     return NextResponse.json({
       data: properties,
       meta: {
         total: properties.length,
         filters,
-        availableCities: PROPERTY_CITIES,
+        availableCities,
         availableStatuses: LISTING_STATUSES
       }
     });

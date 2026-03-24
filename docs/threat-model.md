@@ -15,6 +15,7 @@
 | Frontend tampering on batch identity | forged batch token/fingerprint | Cross-batch contamination and wrong state updates | Medium | High |
 | Non-admin creation/read of jobs | `/api/admin/mint-jobs*` | Unauthorized operational control/visibility | Medium | High |
 | Cross-admin mutation attempt | Manual admin mutation endpoints on someone else’s job | Unauthorized state transition on immutable job authority | Medium | High |
+| Client-side request timeout during batch submission | Frontend waits for synchronous confirmation of all transactions from the backend `submit` endpoint. | Poor UX, perceived failure, encourages unsafe retries leading to duplicate submits. | High | High |
 | Server restart during confirming | process crash/redeploy | Lost transient in-memory state | High | High |
 
 ## Mitigations
@@ -28,6 +29,7 @@
 | Frontend tampering on batch identity | Batch row revalidation for token/fingerprint invariants | `createOrGetMintBatch` repository guard | Submit mismatched token/fingerprint and expect rejection |
 | Non-admin creation/read of jobs | Role check on every admin mint route | `app/api/admin/mint-jobs/**` | Request with non-admin session returns `403` |
 | Cross-admin mutation attempt | Manual mutations require `actorPubkey === job.createdBy` | `prepareNextMintBatch`, `submitMintBatch`, `reconcileMintJobSignatures` + admin route pubkey pass-through | Different admin wallet attempt returns `403` |
+| Client-side request timeout during batch submission | 1. Frontend uses `signAllTransactions` to minimize user signing time. 2. Backend `submit` endpoint sends all transactions with `sendRawTransaction` without awaiting confirmation, returning signatures immediately. 3. Client polls for confirmation status asynchronously. | `components/admin/core-candy-machine-panel.tsx` (client), `app/api/admin/core-candy-machine/submit/route.ts` (server) | The `submit` API call returns in <2s for a large batch. UI shows "Submitting..." then updates progress based on polling. |
 | Server restart during confirming | Durable backend state in PostgreSQL | `mint_jobs`, `mint_job_batches`, `mint_job_items` | Restart process and continue from persisted statuses |
 
 ## Security Checks
@@ -42,4 +44,4 @@
 - Risk: DAS reconciliation can still require multiple passes when assets are spread across many pages.
 - Acceptance reason: H5 intentionally exposes bounded, repeatable pagination to keep reconciliation predictable and safe.
 
-Last Updated: 2026-03-10 07:35:00 UTC
+Last Updated: 2026-03-18 01:14:38 UTC

@@ -6,14 +6,33 @@ const SOLSCAN_BASE_URL = "https://solscan.io";
 const SOLSCAN_DEVNET_QUERY = "cluster=devnet";
 export const METAPLEX_CORE_PROGRAM_ID = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d";
 
+function pickConfiguredRpc(): { url: string | null; source: "SOLANA_RPC_URL" | "NEXT_PUBLIC_SOLANA_RPC" | null } {
+  const serverRpc = process.env.SOLANA_RPC_URL?.trim();
+  if (serverRpc) {
+    return { url: serverRpc, source: "SOLANA_RPC_URL" };
+  }
+
+  const publicRpc = process.env.NEXT_PUBLIC_SOLANA_RPC?.trim();
+  if (publicRpc) {
+    return { url: publicRpc, source: "NEXT_PUBLIC_SOLANA_RPC" };
+  }
+
+  return { url: null, source: null };
+}
+
 export function getSolanaRpcUrl(): string {
-  const configuredUrl = process.env.NEXT_PUBLIC_SOLANA_RPC?.trim();
+  const configured = pickConfiguredRpc();
+  const configuredUrl = configured.url;
 
   if (!configuredUrl) {
     return DEFAULT_DEVNET_RPC;
   }
 
   if (!configuredUrl.toLowerCase().includes("devnet")) {
+    if (configured.source === "SOLANA_RPC_URL") {
+      throw new Error("SOLANA_RPC_URL must target devnet.");
+    }
+
     throw new Error("NEXT_PUBLIC_SOLANA_RPC must target devnet.");
   }
 

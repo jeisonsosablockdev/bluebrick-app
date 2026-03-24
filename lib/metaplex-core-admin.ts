@@ -4,6 +4,7 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 import { Connection, VersionedTransaction } from "@solana/web3.js";
 
+import { parseCollectionName } from "@/lib/admin/asset-compatibility-validation";
 import { getSolanaRpcUrl } from "@/lib/solana";
 
 const MAX_TOTAL_ITEMS = 25;
@@ -136,7 +137,14 @@ function assertPositiveInteger(value: unknown, fieldName: string, maxValue: numb
 
 function validatePrepareInput(input: PrepareMetaplexCoreBatchInput): ValidatedPrepareInput {
   const payerPublicKey = assertNonEmptyString(input.payerPublicKey, "payerPublicKey", 60);
-  const collectionName = assertNonEmptyString(input.collectionName, "collectionName", MAX_NAME_LENGTH);
+  const candidateCollectionName = assertNonEmptyString(input.collectionName, "collectionName", MAX_NAME_LENGTH);
+  const parsedCollectionName = parseCollectionName(candidateCollectionName);
+
+  if (!parsedCollectionName.ok) {
+    throw new MetaplexCoreAdminInputError(parsedCollectionName.errors[0] || "collectionName is invalid.");
+  }
+
+  const collectionName = parsedCollectionName.value;
   const collectionUri = assertUri(input.collectionUri, "collectionUri");
   const assetNamePrefix = assertNonEmptyString(input.assetNamePrefix, "assetNamePrefix", MAX_NAME_LENGTH - 6);
   const assetUri = assertUri(input.assetUri, "assetUri");
@@ -322,7 +330,7 @@ export async function submitMetaplexCoreTransactions(rawInput: SubmitSignedTrans
   for (const item of signedTransactions) {
     const transaction = parseSignedTransaction(item.transactionBase64);
     const signature = await connection.sendRawTransaction(transaction.serialize(), {
-      skipPreflight: false,
+      skipPreflight: true,
       maxRetries: 3
     });
     const confirmation = await connection.confirmTransaction(signature, "confirmed");

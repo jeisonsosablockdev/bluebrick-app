@@ -47,4 +47,21 @@
   - `@metaplex-foundation/mpl-core`
   - `@solana/web3.js`
 
-Last Updated: 2026-03-09 03:16:27 UTC
+## Admin Marketplace Entry Handoff
+- Scope:
+  - `components/admin/asset-creation-form.tsx`
+  - `app/api/admin/marketplace/entries/route.ts`
+  - `lib/property-marketplace-server.ts`
+  - `lib/property-service.ts`
+  - `db/migrations/006_marketplace_entries.sql`
+- Flow:
+  1. Admin completes deploy in `CoreCandyMachinePanel`.
+  2. `Create Asset` triggers `POST /api/admin/marketplace/entries`.
+  3. Server validates admin role and payload.
+  4. A marketplace entry is persisted in Postgres (`marketplace_entries`) with `listingStatus = funding` and `syncStatus = unavailable`.
+  5. Marketplace list/detail APIs read persisted entries from DB and merge with seed records.
+- Notes:
+  - This handoff is intentionally deploy-first (no mint required).
+  - Explorer link is derived from collection address using devnet cluster.
+  - If `DATABASE_URL` is not configured, create-entry returns an explicit failure.
+Last Updated: 2026-03-18 16:24:39 UTC
