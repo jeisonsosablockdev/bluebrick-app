@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-003-nft-store-purchase-flow`
 - Story ID: `STORY-003-05-purchase-traceability-and-metrics-backend`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-19`
-- Last Updated: `2026-03-19`
+- Last Updated: `2026-03-24`
 
 ## Context
 - Problem:
@@ -80,13 +80,13 @@
 - Approval notes:
   Aprobado. La arquitectura webhook-first con Helius es la correcta y cumple con las directivas del proyecto. La capa de caché es esencial para la escalabilidad.
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar el endpoint para recibir webhooks de Helius, la lógica de caché y los endpoints de métricas.
+  Implementar los endpoints de métricas para el dashboard de admin (`STORY-003-06`).
 - Exit criteria:
 - [ ] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -104,5 +104,5 @@
 
 ## Traceability
 - Related issue(s): `EPIC-003`
-- Related PR(s):
-- Final commit hash(es):
+- Related PR(s): `#51`
+- Final commit hash(es): `777895b`, `e29f07b`

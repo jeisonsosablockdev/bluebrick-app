@@ -222,6 +222,21 @@ async function getPurchaseAttemptByWalletAndIdempotencyWithClient(
   );
 }
 
+async function getPurchaseAttemptBySignatureWithClient(
+  client: PoolClient,
+  input: { signature: string; forUpdate?: boolean }
+): Promise<PurchaseAttemptRecord | null> {
+  return queryWithClient<PurchaseAttemptRecord>(
+    client,
+    `SELECT ${PURCHASE_ATTEMPT_SELECT_COLUMNS}
+     FROM purchase_attempts
+     WHERE tx_signature = $1
+     LIMIT 1
+     ${input.forUpdate ? "FOR UPDATE" : ""}`,
+    [input.signature]
+  );
+}
+
 export async function createPurchaseAttempt(input: CreatePurchaseAttemptInput): Promise<PurchaseAttemptRecord> {
   const now = new Date().toISOString();
   const quantity = Number.isInteger(input.quantity) && Number(input.quantity) > 0 ? Number(input.quantity) : 1;
@@ -419,6 +434,39 @@ export async function getPurchaseAttemptByWalletAndIdempotency(input: {
   return withDbClient(run);
 }
 
+export async function getPurchaseAttemptBySignature(input: {
+  signature: string;
+}, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
+  const signature = typeof input.signature === "string" ? input.signature.trim() : "";
+  if (!signature) {
+    return null;
+  }
+
+  if (!isPurchaseAttemptsDatabaseConfigured()) {
+    for (const attempt of inMemoryAttempts.values()) {
+      if (attempt.txSignature === signature) {
+        return { ...attempt };
+      }
+    }
+
+    return null;
+  }
+
+  const run = async (client: PoolClient) => getPurchaseAttemptBySignatureWithClient(
+    client,
+    {
+      signature,
+      forUpdate: options?.forUpdate
+    }
+  );
+
+  if (options?.client) {
+    return run(options.client);
+  }
+
+  return withDbClient(run);
+}
+
 export async function markPurchaseAttemptSubmitted(input: {
   id: string;
   signature: string;
@@ -528,4 +576,229 @@ export async function markPurchaseAttemptFailed(input: {
   }
 
   return withDbClient(run);
+}
+
+export async function markPurchaseAttemptConfirmed(input: {
+  signature: string;
+}, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
+  const signature = typeof input.signature === "string" ? input.signature.trim() : "";
+  if (!signature) {
+    return null;
+  }
+
+  if (!isPurchaseAttemptsDatabaseConfigured()) {
+    const found = await getPurchaseAttemptBySignature({ signature });
+    if (!found) {
+      return null;
+    }
+
+    if (found.status === "failed") {
+      return found;
+    }
+
+    const updated: PurchaseAttemptRecord = {
+      ...found,
+      status: "confirmed",
+      confirmedAt: found.confirmedAt ?? new Date().toISOString(),
+      errorCode: null,
+      errorMessage: null,
+      updatedAt: new Date().toISOString()
+    };
+    setInMemoryAttempt(updated);
+    return { ...updated };
+  }
+
+  const run = async (client: PoolClient) => {
+    const updated = await queryWithClient<PurchaseAttemptRecord>(
+      client,
+      `UPDATE purchase_attempts
+       SET
+         status = 'confirmed',
+         confirmed_at = COALESCE(confirmed_at, NOW()),
+         error_code = NULL,
+         error_message = NULL
+       WHERE tx_signature = $1
+         AND status IN ('submitted', 'confirmed')
+       RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
+      [signature]
+    );
+
+    if (updated) {
+      return updated;
+    }
+
+    return getPurchaseAttemptBySignatureWithClient(
+      client,
+      {
+        signature,
+        forUpdate: false
+      }
+    );
+  };
+
+  if (options?.client) {
+    return run(options.client);
+  }
+
+  return withDbClient(run);
+}
+
+export async function markPurchaseAttemptFailedBySignature(input: {
+  signature: string;
+  errorCode: string;
+  errorMessage: string;
+}, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
+  const signature = typeof input.signature === "string" ? input.signature.trim() : "";
+  if (!signature) {
+    return null;
+  }
+
+  if (!isPurchaseAttemptsDatabaseConfigured()) {
+    const found = await getPurchaseAttemptBySignature({ signature });
+    if (!found) {
+      return null;
+    }
+
+    if (found.status === "confirmed") {
+      return found;
+    }
+
+    const updated: PurchaseAttemptRecord = {
+      ...found,
+      status: "failed",
+      errorCode: input.errorCode,
+      errorMessage: input.errorMessage,
+      updatedAt: new Date().toISOString()
+    };
+    setInMemoryAttempt(updated);
+    return { ...updated };
+  }
+
+  const run = async (client: PoolClient) => {
+    const updated = await queryWithClient<PurchaseAttemptRecord>(
+      client,
+      `UPDATE purchase_attempts
+       SET
+         status = 'failed',
+         error_code = $2,
+         error_message = $3
+       WHERE tx_signature = $1
+         AND status IN ('submitted', 'failed')
+       RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
+      [signature, input.errorCode, input.errorMessage]
+    );
+
+    if (updated) {
+      return updated;
+    }
+
+    return getPurchaseAttemptBySignatureWithClient(
+      client,
+      {
+        signature,
+        forUpdate: false
+      }
+    );
+  };
+
+  if (options?.client) {
+    return run(options.client);
+  }
+
+  return withDbClient(run);
+}
+
+export async function listPurchaseAttempts(input?: {
+  fromIso?: string | null;
+  toIso?: string | null;
+  status?: PurchaseAttemptStatus | null;
+  walletPublicKey?: string | null;
+  candyMachineAddress?: string | null;
+  limit?: number;
+}): Promise<PurchaseAttemptRecord[]> {
+  const fromIso = typeof input?.fromIso === "string" ? input.fromIso.trim() : "";
+  const toIso = typeof input?.toIso === "string" ? input.toIso.trim() : "";
+  const status = input?.status ?? null;
+  const walletPublicKey = typeof input?.walletPublicKey === "string" ? input.walletPublicKey.trim() : "";
+  const candyMachineAddress = typeof input?.candyMachineAddress === "string" ? input.candyMachineAddress.trim() : "";
+  const limit = Number.isInteger(input?.limit) && Number(input?.limit) > 0
+    ? Number(input?.limit)
+    : 100;
+
+  if (!isPurchaseAttemptsDatabaseConfigured()) {
+    let rows = Array.from(inMemoryAttempts.values()).map((item) => ({ ...item }));
+
+    if (fromIso) {
+      const fromTime = new Date(fromIso).getTime();
+      if (Number.isFinite(fromTime)) {
+        rows = rows.filter((item) => new Date(item.createdAt).getTime() >= fromTime);
+      }
+    }
+
+    if (toIso) {
+      const toTime = new Date(toIso).getTime();
+      if (Number.isFinite(toTime)) {
+        rows = rows.filter((item) => new Date(item.createdAt).getTime() <= toTime);
+      }
+    }
+
+    if (status) {
+      rows = rows.filter((item) => item.status === status);
+    }
+
+    if (walletPublicKey) {
+      rows = rows.filter((item) => item.walletPublicKey === walletPublicKey);
+    }
+
+    if (candyMachineAddress) {
+      rows = rows.filter((item) => item.candyMachineAddress === candyMachineAddress);
+    }
+
+    rows.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+    return rows.slice(0, limit);
+  }
+
+  return withDbClient(async (client) => {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (fromIso) {
+      values.push(fromIso);
+      whereClauses.push(`created_at >= $${values.length}::timestamptz`);
+    }
+
+    if (toIso) {
+      values.push(toIso);
+      whereClauses.push(`created_at <= $${values.length}::timestamptz`);
+    }
+
+    if (status) {
+      values.push(status);
+      whereClauses.push(`status = $${values.length}`);
+    }
+
+    if (walletPublicKey) {
+      values.push(walletPublicKey);
+      whereClauses.push(`wallet_public_key = $${values.length}`);
+    }
+
+    if (candyMachineAddress) {
+      values.push(candyMachineAddress);
+      whereClauses.push(`candy_machine_address = $${values.length}`);
+    }
+
+    values.push(limit);
+    const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+    const result = await client.query<PurchaseAttemptRow>(
+      `SELECT ${PURCHASE_ATTEMPT_SELECT_COLUMNS}
+       FROM purchase_attempts
+       ${whereSql}
+       ORDER BY created_at DESC
+       LIMIT $${values.length}`,
+      values
+    );
+
+    return result.rows.map((row) => mapRow(row));
+  });
 }

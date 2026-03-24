@@ -164,6 +164,19 @@ const DEFAULT_MAX_PURCHASE_QUANTITY = 10;
 const quoteCache = new Map<string, QuoteCacheEntry>();
 const quoteInFlight = new Map<string, Promise<GuardSnapshot>>();
 
+export function invalidatePurchaseQuoteCache(candyMachineAddress?: string): void {
+  const normalized = typeof candyMachineAddress === "string" ? candyMachineAddress.trim() : "";
+
+  if (!normalized) {
+    quoteCache.clear();
+    quoteInFlight.clear();
+    return;
+  }
+
+  quoteCache.delete(normalized);
+  quoteInFlight.delete(normalized);
+}
+
 function nowUnixSeconds(): number {
   return Math.floor(Date.now() / 1_000);
 }
