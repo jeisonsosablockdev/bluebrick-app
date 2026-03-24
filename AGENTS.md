@@ -357,6 +357,41 @@ If any viewport fails or checklist is missing in PR → task incomplete.
 
 ⸻
 
+🧠 OFFICIAL SOLANA SKILLS BASELINE (CODEX)
+
+Canonical source:
+- https://solana.com/skills
+- https://github.com/solana-foundation/solana-dev-skill
+
+Installed official skill package:
+- `solana-dev` (Solana Foundation maintained)
+
+Installed locations:
+- Codex: `~/.codex/skills/solana-dev`
+
+Mandatory usage rule:
+1. For any Solana task (wallet, tx, Anchor, Pinocchio, tokens, payments, testing, security), invoke `solana-dev` as the first contextual skill.
+2. Keep this playbook as governance. `solana-dev` augments implementation guidance but must not bypass governance docs or required macros.
+3. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
+
+Official Solana references included via `solana-dev`:
+- common errors and solutions
+- version compatibility matrix
+- confidential transfers
+- frontend with framework-kit
+- IDL and client code generation
+- `@solana/kit` ↔ `@solana/web3.js` interop
+- payments and commerce
+- programs with Anchor
+- programs with Pinocchio
+- curated resources
+- security checklist
+- Surfpool cheatcodes
+- Surfpool guide
+- testing strategy
+
+⸻
+
 🔥 FINAL ENFORCEMENT RULE
 
 Before marking ANY task complete:

@@ -47,6 +47,33 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 -   DO NOT leave `console.log` in production code.
 -   DO NOT skip unit tests (TDD is mandatory).
 
+## 🧠 OFFICIAL SOLANA SKILL BASELINE
+-   **Canonical source**: `https://solana.com/skills` and `https://github.com/solana-foundation/solana-dev-skill`
+-   **Installed official package**: `solana-dev`
+-   **Installed paths**:
+    -   Gemini: `~/.gemini/skills/solana-dev`
+
+### Mandatory usage for Solana tasks
+1.  Invoke `solana-dev` first for any Solana task (wallet, tx flows, Anchor, Pinocchio, payments, testing, security).
+2.  Treat `solana-dev` as implementation context, not governance override.
+3.  Keep enforcing `AGENTS.md` + `/docs/governance` + macro cycles (`@blockchain-cycle`, `@frontend-cycle`, `@nft-cycle`) based on touched paths.
+
+### Official Solana topics covered by `solana-dev`
+-   Common errors and fixes
+-   Toolchain compatibility matrix
+-   Confidential transfers (Token-2022)
+-   Frontend with framework-kit
+-   IDL and client code generation
+-   `@solana/kit` ↔ `@solana/web3.js` interop
+-   Payments and commerce
+-   Programs with Anchor
+-   Programs with Pinocchio
+-   Curated resources
+-   Security checklist
+-   Surfpool cheatcodes
+-   Surfpool guide
+-   Testing strategy
+
 ---
 ## 🧱 SOLANA STACK ENFORCEMENT
 When reviewing architecture or code, enforce these specific integrations:
