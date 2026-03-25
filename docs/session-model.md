@@ -30,6 +30,9 @@
 - Server-side checks per request:
   - `GET /api/auth/me` exposes `{ authenticated, pubkey, role }`.
   - `GET /api/protected/me` requires a valid session and returns `401` otherwise.
+  - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session and always bind writes to session wallet.
+  - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
+  - `POST /api/protected/kyc/stripe/session` requires valid SIWS session and applies wallet/IP rate limit before creating provider session.
   - `/admin/**` middleware redirects unauthorized requests to `/403`.
   - Admin pages and `/api/admin/*` handlers perform explicit role re-checks.
   - Purchase challenge endpoint (`/api/purchase/challenge`) requires valid SIWS session.
@@ -39,6 +42,7 @@
   - H7 permanent-authority gate freezes manual job mutations to the creator wallet (`createdBy`).
   - `/api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` is admin-only and never trusts client reconciliation state.
   - `/api/webhooks/helius/mint-orchestrator` does not use SIWS session; it validates optional shared secret and event dedupe.
+  - `/api/webhooks/stripe/identity` does not use SIWS session; it validates `Stripe-Signature` and deduplicates by `provider_event_id`.
 
 ## Authorization Layers
 1. Session layer:
@@ -49,6 +53,7 @@
    - `/admin/**` blocked early unless role resolves to `admin`.
 4. Handler/page layer:
   - `/api/admin/ping` and `app/admin/page.tsx` repeat the role check (defense in depth).
+  - `/api/protected/profile`, `/api/protected/kyc/status`, and `/api/protected/kyc/stripe/session` require authenticated wallet and never trust wallet identity from client payload.
   - `/api/purchase/challenge`, `/api/purchase/prepare`, and `/api/purchase/submit` require authenticated wallet and never trust client-provided payer identity.
   - `/api/purchase/prepare` requires valid purchase challenge signature and backend-side anti-replay/rate-limit checks, including quantity context match from challenge payload.
   - `/api/admin/mint-orchestrator/*` is backend-controlled and does not trust client workflow state.
@@ -58,6 +63,7 @@
 5. Webhook ingress layer:
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
   - Replay retries are deduplicated before signature reconciliation.
+  - `POST /api/webhooks/stripe/identity` requires valid Stripe signature and idempotent event ingestion by `provider_event_id`.
 6. DAS read layer:
   - `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` queries devnet DAS with bounded pagination.
   - Endpoint refuses non-devnet DAS URLs and enforces max page/limit guards.
@@ -72,10 +78,12 @@
   - Single-use nonce with 5-minute TTL.
   - Purchase challenges are single-use with short TTL (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
   - Purchase challenge replay attempts are rejected once consumed/expired.
+  - Stripe KYC bootstrap is rate-limited by wallet/IP (`STRIPE_IDENTITY_RATE_LIMIT_WINDOW_SECONDS`, `STRIPE_IDENTITY_RATE_LIMIT_MAX_ATTEMPTS`).
   - Purchase quantity policy is server-enforced via `PURCHASE_QUANTITY_MODE` and `PURCHASE_MAX_QUANTITY_PER_ORDER`; invalid quantities are rejected with `INVALID_QUANTITY`.
 - Webhook authenticity:
   - If `HELIUS_WEBHOOK_SECRET` is set, webhook request must include matching secret in
     `x-helius-webhook-secret` or `Authorization: Bearer <secret>`.
+  - Stripe webhook requests must include a valid `Stripe-Signature` header generated from `STRIPE_IDENTITY_WEBHOOK_SECRET`.
 - DAS endpoint policy:
   - DAS client accepts `SOLANA_DAS_URL` (devnet-only) or derives devnet Helius URL from `HELIUS_API_KEY`.
   - If no explicit DAS endpoint is set, backend falls back to configured devnet RPC URL.
@@ -92,6 +100,7 @@
   - `signature` uniqueness is enforced per submitted item to prevent duplicate assignment.
   - Manual state mutations are denied with `403` when admin actor differs from immutable job authority (`createdBy`).
   - Webhook events are deduplicated by provider event id/fingerprint.
+  - Stripe KYC events are deduplicated by `provider_event_id` and do not store raw payload PII fields.
   - DAS reconciliation only confirms submitted items with known `expectedAddress`.
   - Snapshot persistence is idempotent at DB level via `asset_mint_snapshots.mint_job_id UNIQUE`.
 - Persistence caveat:
@@ -102,4 +111,4 @@
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-03-20 19:27:57 UTC
+Last Updated: 2026-03-24 18:00:00 UTC

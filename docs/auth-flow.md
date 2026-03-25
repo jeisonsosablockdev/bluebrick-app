@@ -55,6 +55,11 @@
    - User signs with Phantom and submits via `POST /api/purchase/submit` including `attemptId + idempotencyKey`.
    - Submit locks attempt state (`FOR UPDATE`), deduplicates retries by (`wallet_public_key`, `idempotency_key`) and returns existing `submitted` state without re-send when aplica.
    - UI and backend exchange optional `x-flow-id` to correlate full request timeline in `purchase_flow_events`.
+15. Profile + KYC bootstrap flow (STORY-004-02/003):
+   - `GET /api/protected/profile` and `PUT /api/protected/profile` require SIWS session and are wallet-bound server-side.
+   - `POST /api/protected/kyc/stripe/session` requires SIWS session, applies wallet/IP rate-limit, and creates Stripe Identity verification session.
+   - Identity documents are captured by Stripe; this app stores only provider metadata and status fields.
+   - `POST /api/webhooks/stripe/identity` validates Stripe signature header and applies idempotent status projection into `compliance_status`.
 
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
@@ -64,6 +69,10 @@
 | `/api/auth/me` | `GET` | Optional | None | Returns current auth payload and server-computed role |
 | `/api/auth/logout` | `POST` | Optional | None | Revokes session token and clears cookie |
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
+| `/api/protected/profile` | `GET` | Yes | `user` or `admin` | Returns wallet-bound profile + KYC/compliance summary |
+| `/api/protected/profile` | `PUT` | Yes | `user` or `admin` | Updates wallet-bound `username`, `bio`, and `avatarUrl` |
+| `/api/protected/kyc/status` | `GET` | Yes | `user` or `admin` | Returns KYC status + denormalized compliance status |
+| `/api/protected/kyc/stripe/session` | `POST` | Yes | `user` or `admin` | Creates Stripe Identity verification session server-side |
 | `/api/purchase/quote` | `POST` | No | None | Returns cached quote from guard state (`price`, `startDate`, `remaining`) + quantity contract (`quantityMode`, `quantity`, `totalPriceLamports`) |
 | `/api/purchase/challenge` | `POST` | Yes | `user` or `admin` | Issues one-time purchase challenge (`challengeId`, canonical message, TTL) bound to `quantity` |
 | `/api/purchase/prepare` | `POST` | Yes | `user` or `admin` | Verifies challenge signature + anti-replay/rate-limit, validates quantity policy, revalidates guard on-chain, returns pre-signed transaction + `attemptId` + `idempotencyKey` |
@@ -78,6 +87,7 @@
 | `/api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` | `POST` | Yes | `admin` | Reconciles submitted items via paginated DAS lookup with `createdBy` authority check |
 | `/api/admin/core-candy-machine/snapshot/finalize` | `POST` | Yes | `admin` | Verifies minted quantity (DAS), persists `asset_mint_snapshots` + `asset_mint_onchain_proofs`, computes `Create Asset` gate |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
+| `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
 See reusable tracing playbook: `docs/purchase-tracing.md`.
 
@@ -85,11 +95,16 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Client responsibilities:
   - Request nonce, sign SIWS message, submit signature.
   - Request purchase challenge, sign canonical challenge message, and attach signature in prepare request.
+  - Edit profile fields from UI, while ownership and validation remain server-enforced.
+  - Trigger Stripe-hosted verification flow using server-issued session URL.
   - Request next batch, sign tx payloads, send signed payloads back, render progress.
   - In H6 console, collect signatures and optional expected addresses per batch item before submit.
 - Server responsibilities:
   - Signature verification, nonce replay protection, session issuance.
   - Role calculation, authorization decisions, idempotent batch orchestration, RPC reconciliation, webhook dedupe, DAS reconciliation.
+  - Enforce wallet-bound profile updates and server-side validation for `username/bio/avatarUrl`.
+  - Create Stripe Identity sessions server-side and persist only provider metadata (`session_id`, `report_id`, statuses).
+  - Validate Stripe webhook signatures and process events idempotently by provider event id.
   - In purchase flow, quote cache delivery + challenge issuance + challenge signature verification + rate-limiting + on-chain revalidation in prepare + submit ownership checks.
   - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
@@ -107,6 +122,7 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Issued-at freshness: SIWS `issuedAt` must be within a 5-minute window.
 - Purchase challenge TTL: configurable (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
 - Purchase challenge replay protection: challenge is single-use and transitions to `consumed`; replays return `409`.
+- Stripe KYC bootstrap rate limit: wallet/IP window via `STRIPE_IDENTITY_RATE_LIMIT_WINDOW_SECONDS` and `STRIPE_IDENTITY_RATE_LIMIT_MAX_ATTEMPTS`.
 - Purchase quantity policy: resolved server-side via `PURCHASE_QUANTITY_MODE` (`MULTI_ENABLED` default) and `PURCHASE_MAX_QUANTITY_PER_ORDER` (default `10`). Invalid/out-of-policy values return `INVALID_QUANTITY`.
 - Purchase rate limiting: configurable window/caps (`PURCHASE_RATE_LIMIT_WINDOW_SECONDS`, `PURCHASE_RATE_LIMIT_MAX_BY_WALLET`, `PURCHASE_RATE_LIMIT_MAX_BY_IP`).
 - Purchase submit idempotency: `prepare` emite `idempotencyKey` server-side (UUIDv7) con TTL de 5 minutos y dedupe en DB por (`wallet_public_key`, `idempotency_key`).
@@ -114,6 +130,7 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Webhook dedupe:
   - Exactly one webhook event ingestion per `(provider, eventId)` or `(provider, eventFingerprint)` in orchestrator memory.
   - Duplicate retries do not trigger repeated reconciliation side effects.
+  - Stripe webhook processing is idempotent by `provider_event_id` and signed with `Stripe-Signature`.
 
 ## Error Cases
 | Case | Server Response | Client Handling |
@@ -141,4 +158,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-20 19:27:57 UTC
+Last Updated: 2026-03-24 18:00:00 UTC
