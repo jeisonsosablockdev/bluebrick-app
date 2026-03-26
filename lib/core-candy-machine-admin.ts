@@ -374,9 +374,21 @@ function isTransactionWithinSizeLimit(transactionBase64: string): boolean {
   return fromBase64(transactionBase64).length <= MAX_SOLANA_TX_RAW_BYTES;
 }
 
-async function serializeSignedBuilderTransaction(umi: Umi, buildPromise: Promise<{ buildAndSign: (umi: Umi) => Promise<unknown> }> | { buildAndSign: (umi: Umi) => Promise<unknown> }): Promise<string> {
+type TransactionBuilderLike = {
+  buildAndSign: (umi: Umi) => Promise<unknown>;
+  setBlockhash?: (blockhash: any) => TransactionBuilderLike;
+};
+
+async function serializeSignedBuilderTransaction(
+  umi: Umi,
+  buildPromise: Promise<TransactionBuilderLike> | TransactionBuilderLike,
+  blockhash?: any
+): Promise<string> {
   const builder = await Promise.resolve(buildPromise);
-  const umiTransaction = await builder.buildAndSign(umi);
+  const builderWithBlockhash = blockhash && typeof builder.setBlockhash === "function"
+    ? builder.setBlockhash(blockhash)
+    : builder;
+  const umiTransaction = await builderWithBlockhash.buildAndSign(umi);
   const web3Transaction = toWeb3JsTransaction(umiTransaction as never);
   return toBase64(web3Transaction.serialize());
 }
@@ -551,6 +563,7 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
 export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachineDeployInput): Promise<PreparedCandyMachineDeploy> {
   const input = validateDeployInput(rawInput);
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
+  const latestBlockhash = await umi.rpc.getLatestBlockhash();
   const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
   const configLineOptimization = buildConfigLineOptimization({
     assetNamePrefix: input.assetNamePrefix,
@@ -581,7 +594,7 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     label: "Create Core Collection",
     serial: null,
     expectedAddress: collectionSigner.publicKey,
-    transactionBase64: await serializeSignedBuilderTransaction(umi, createCollectionBuilder)
+    transactionBase64: await serializeSignedBuilderTransaction(umi, createCollectionBuilder, latestBlockhash)
   });
 
   const createCandyMachineBuilder = create(umi, {
@@ -610,7 +623,7 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     label: "Create Core Candy Machine + Guard",
     serial: null,
     expectedAddress: candyMachineSigner.publicKey,
-    transactionBase64: await serializeSignedBuilderTransaction(umi, createCandyMachineBuilder)
+    transactionBase64: await serializeSignedBuilderTransaction(umi, createCandyMachineBuilder, latestBlockhash)
   });
 
   let offset = 0;
@@ -642,7 +655,7 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
       });
 
       try {
-        const serialized = await serializeSignedBuilderTransaction(umi, addConfigLinesBuilder);
+        const serialized = await serializeSignedBuilderTransaction(umi, addConfigLinesBuilder, latestBlockhash);
         if (!isTransactionWithinSizeLimit(serialized)) {
           high = chunkCount - 1;
           continue;
@@ -698,6 +711,7 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
 export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineMintInput): Promise<PreparedCandyMachineMint> {
   const input = validateMintPrepareInput(rawInput);
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
+  const latestBlockhash = await umi.rpc.getLatestBlockhash();
   const candyMachineAddress = publicKey(input.candyMachineAddress);
   const collectionAddress = publicKey(input.collectionAddress);
   const thirdPartySigner = createPurchaseThirdPartySigner(umi);
@@ -742,7 +756,7 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
       label: `Mint NFT #${serial}`,
       serial,
       expectedAddress: assetSigner.publicKey,
-      transactionBase64: await serializeSignedBuilderTransaction(umi, mintBuilder)
+      transactionBase64: await serializeSignedBuilderTransaction(umi, mintBuilder, latestBlockhash)
     });
   }
 

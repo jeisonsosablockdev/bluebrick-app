@@ -33,6 +33,7 @@
   - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session and always bind writes to session wallet.
   - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
   - `POST /api/protected/kyc/stripe/session` requires valid SIWS session and applies wallet/IP rate limit before creating provider session.
+  - `POST /api/protected/kyc/stripe/session` also triggers AML screening (`kyc_session_started`) server-side.
   - `/admin/**` middleware redirects unauthorized requests to `/403`.
   - Admin pages and `/api/admin/*` handlers perform explicit role re-checks.
   - Purchase challenge endpoint (`/api/purchase/challenge`) requires valid SIWS session.
@@ -43,6 +44,9 @@
   - `/api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` is admin-only and never trusts client reconciliation state.
   - `/api/webhooks/helius/mint-orchestrator` does not use SIWS session; it validates optional shared secret and event dedupe.
   - `/api/webhooks/stripe/identity` does not use SIWS session; it validates `Stripe-Signature` and deduplicates by `provider_event_id`.
+  - `/api/webhooks/stripe/identity` triggers AML screening (`kyc_verified_webhook`) when KYC becomes `verified`.
+  - `/api/internal/compliance/aml/screen` allows admin SIWS or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
+  - `/api/admin/compliance/cases/:walletPublicKey/aml` is admin-only and returns AML case detail for review.
 
 ## Authorization Layers
 1. Session layer:
@@ -64,6 +68,7 @@
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
   - Replay retries are deduplicated before signature reconciliation.
   - `POST /api/webhooks/stripe/identity` requires valid Stripe signature and idempotent event ingestion by `provider_event_id`.
+  - Internal AML route accepts either SIWS-admin or internal service token and never trusts client role payload.
 6. DAS read layer:
   - `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` queries devnet DAS with bounded pagination.
   - Endpoint refuses non-devnet DAS URLs and enforces max page/limit guards.
@@ -111,4 +116,4 @@
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-03-24 18:00:00 UTC
+Last Updated: 2026-03-25 06:55:00 UTC

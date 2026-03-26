@@ -58,8 +58,13 @@
 15. Profile + KYC bootstrap flow (STORY-004-02/003):
    - `GET /api/protected/profile` and `PUT /api/protected/profile` require SIWS session and are wallet-bound server-side.
    - `POST /api/protected/kyc/stripe/session` requires SIWS session, applies wallet/IP rate-limit, and creates Stripe Identity verification session.
+   - KYC bootstrap also triggers AML screening (`kyc_session_started`) to keep compliance evaluation warm from session kickoff.
    - Identity documents are captured by Stripe; this app stores only provider metadata and status fields.
    - `POST /api/webhooks/stripe/identity` validates Stripe signature header and applies idempotent status projection into `compliance_status`.
+   - Stripe `identity.verification_session.verified` triggers AML screening (`kyc_verified_webhook`) before returning webhook processing result.
+16. AML operational endpoints (STORY-004-04):
+   - `POST /api/internal/compliance/aml/screen` accepts admin SIWS session or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
+   - `GET /api/admin/compliance/cases/:walletPublicKey/aml` returns AML snapshot + recent screenings for admin review.
 
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
@@ -73,6 +78,8 @@
 | `/api/protected/profile` | `PUT` | Yes | `user` or `admin` | Updates wallet-bound `username`, `bio`, and `avatarUrl` |
 | `/api/protected/kyc/status` | `GET` | Yes | `user` or `admin` | Returns KYC status + denormalized compliance status |
 | `/api/protected/kyc/stripe/session` | `POST` | Yes | `user` or `admin` | Creates Stripe Identity verification session server-side |
+| `/api/internal/compliance/aml/screen` | `POST` | SIWS admin or internal token | `admin` (session mode) | Executes AML screening pipeline for a wallet and persists projection |
+| `/api/admin/compliance/cases/:walletPublicKey/aml` | `GET` | Yes | `admin` | Returns AML case snapshot and recent screening history |
 | `/api/purchase/quote` | `POST` | No | None | Returns cached quote from guard state (`price`, `startDate`, `remaining`) + quantity contract (`quantityMode`, `quantity`, `totalPriceLamports`) |
 | `/api/purchase/challenge` | `POST` | Yes | `user` or `admin` | Issues one-time purchase challenge (`challengeId`, canonical message, TTL) bound to `quantity` |
 | `/api/purchase/prepare` | `POST` | Yes | `user` or `admin` | Verifies challenge signature + anti-replay/rate-limit, validates quantity policy, revalidates guard on-chain, returns pre-signed transaction + `attemptId` + `idempotencyKey` |
@@ -105,6 +112,8 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Enforce wallet-bound profile updates and server-side validation for `username/bio/avatarUrl`.
   - Create Stripe Identity sessions server-side and persist only provider metadata (`session_id`, `report_id`, statuses).
   - Validate Stripe webhook signatures and process events idempotently by provider event id.
+  - Trigger AML screening on KYC kickoff and on Stripe verified webhooks.
+  - Gate internal AML execution route with admin SIWS or `COMPLIANCE_INTERNAL_TOKEN`.
   - In purchase flow, quote cache delivery + challenge issuance + challenge signature verification + rate-limiting + on-chain revalidation in prepare + submit ownership checks.
   - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
@@ -158,4 +167,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-24 18:00:00 UTC
+Last Updated: 2026-03-25 06:55:00 UTC

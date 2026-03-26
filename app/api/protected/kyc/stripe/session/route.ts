@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
 import { markKycSessionPending } from "@/lib/compliance/profile-repository";
+import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
 import {
   consumeStripeSessionRateLimit,
   createStripeIdentityVerificationSession,
@@ -88,6 +89,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       walletPublicKey,
       provider: "stripe_identity",
       providerSessionId: session.id
+    });
+
+    await runWalletAmlScreening({
+      walletPublicKey,
+      trigger: "kyc_session_started",
+      actorType: "user",
+      actorId: walletPublicKey
     });
 
     return NextResponse.json({

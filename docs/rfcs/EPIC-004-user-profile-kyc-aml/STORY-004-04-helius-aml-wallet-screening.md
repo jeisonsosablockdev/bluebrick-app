@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-004-user-profile-kyc-aml`
 - Story ID: `STORY-004-04-helius-aml-wallet-screening`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-24`
-- Last Updated: `2026-03-24`
+- Last Updated: `2026-03-25`
 
 ## Context
 - Problem:
@@ -35,8 +35,9 @@
     - Al iniciar KYC.
     - Al recibir `kyc_status=verified` desde webhook Stripe.
     - Re-screening programado (cron) para usuarios activos.
-  - Modelo AML:
-    - `aml_status`: `clear | review_required | flagged | unavailable`
+  - Modelo AML (implementado):
+    - `aml_status` interno: `not_started | pending | clear | flagged`
+    - `provider_classification` (tabla `aml_screenings`): `clear | review_required | flagged | unavailable`
     - `aml_risk_score`
     - `aml_flags_json`
     - `aml_provider = helius`
@@ -93,13 +94,13 @@
   Aprobado para cerrar el gap AML del epic y simplificar la logica de negocio con estado unificado.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar adaptador Helius, pipeline de screening y proyeccion de estado.
+  Monitoreo operativo y ajuste de thresholds por riesgo.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -115,5 +116,5 @@
 
 ## Traceability
 - Related issue(s): `EPIC-004`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related PR(s): `pending`
+- Final commit hash(es): `pending`

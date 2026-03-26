@@ -6,6 +6,7 @@ import {
   registerKycWebhookEvent,
   updateKycStatusFromProvider
 } from "@/lib/compliance/profile-repository";
+import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
 import { type KycStatus } from "@/lib/compliance/compliance-status-projector";
 
 export class InvalidStripeWebhookSignatureError extends Error {}
@@ -287,6 +288,15 @@ export async function processStripeIdentityWebhook(
       kycStatus: mappedStatus
     }
   });
+
+  if (mappedStatus === "verified") {
+    await runWalletAmlScreening({
+      walletPublicKey,
+      trigger: "kyc_verified_webhook",
+      actorType: "provider",
+      actorId: "stripe_identity"
+    });
+  }
 
   return {
     duplicate: false,

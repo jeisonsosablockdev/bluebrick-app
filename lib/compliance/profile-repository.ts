@@ -9,6 +9,10 @@ import {
   type ComplianceStatus,
   type KycStatus
 } from "@/lib/compliance/compliance-status-projector";
+import {
+  type AmlFlag,
+  type AmlProviderClassification
+} from "@/lib/compliance/aml-helius";
 
 export type ProfileBundle = {
   walletPublicKey: string;
@@ -49,6 +53,40 @@ export type UpdateKycStatusFromProviderInput = {
   rejectionReasonCode?: string | null;
 };
 
+export type UpdateAmlStatusFromProviderInput = {
+  walletPublicKey: string;
+  provider: string;
+  providerClassification: AmlProviderClassification;
+  amlStatus: AmlStatus;
+  amlRiskScore: number | null;
+  amlFlags: AmlFlag[];
+  ruleVersion: string | null;
+  triggerSource: string;
+};
+
+export type AmlCaseSnapshotForAdmin = {
+  walletPublicKey: string;
+  kycStatus: KycStatus;
+  amlStatus: AmlStatus;
+  amlRiskScore: number | null;
+  amlFlags: AmlFlag[];
+  amlProvider: string | null;
+  amlRuleVersion: string | null;
+  amlLastCheckedAt: string | null;
+  complianceStatus: ComplianceStatus;
+  screenings: Array<{
+    id: number;
+    provider: string;
+    providerClassification: AmlProviderClassification;
+    amlStatus: AmlStatus;
+    amlRiskScore: number | null;
+    amlFlags: AmlFlag[];
+    ruleVersion: string | null;
+    triggerSource: string;
+    createdAt: string;
+  }>;
+};
+
 export type RegisterKycWebhookEventInput = {
   providerEventId: string;
   provider: string;
@@ -84,6 +122,11 @@ type ProfileBundleRow = {
   avatar_url: string;
   kyc_status: KycStatus;
   aml_status: AmlStatus;
+  aml_risk_score: number | null;
+  aml_flags_json: unknown;
+  aml_provider: string | null;
+  aml_rule_version: string | null;
+  aml_last_checked_at: string | Date | null;
   compliance_status: ComplianceStatus;
   rejection_reason_code: string | null;
   kyc_provider_session_id: string | null;
@@ -101,6 +144,11 @@ type InMemoryProfileState = {
   avatarUrl: string;
   kycStatus: KycStatus;
   amlStatus: AmlStatus;
+  amlRiskScore: number | null;
+  amlFlags: AmlFlag[];
+  amlProvider: string | null;
+  amlRuleVersion: string | null;
+  amlLastCheckedAt: string | null;
   rejectionReasonCode: string | null;
   kycProviderSessionId: string | null;
   kycProviderReportId: string | null;
@@ -127,6 +175,48 @@ function normalizeIso(value: string | Date): string {
   return new Date(value).toISOString();
 }
 
+function normalizeOptionalIso(value: string | Date | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return normalizeIso(value);
+}
+
+function sanitizeAmlFlags(value: unknown): AmlFlag[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const result: AmlFlag[] = [];
+
+  for (const item of value) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+
+    const record = item as Record<string, unknown>;
+    const code = typeof record.code === "string" ? record.code.trim() : "";
+    if (!code) {
+      continue;
+    }
+
+    const severityValue =
+      record.severity === "low" || record.severity === "medium" || record.severity === "high"
+        ? record.severity
+        : "unknown";
+    const label = typeof record.label === "string" && record.label.trim() ? record.label.trim() : undefined;
+
+    result.push({
+      code,
+      severity: severityValue,
+      label
+    });
+  }
+
+  return result.slice(0, 50);
+}
+
 function isProfileErrorCode(error: unknown, code: string): boolean {
   return Boolean(
     error &&
@@ -145,6 +235,11 @@ function buildDefaultInMemoryProfile(walletPublicKey: string): InMemoryProfileSt
     avatarUrl: "",
     kycStatus: "not_started",
     amlStatus: "not_started",
+    amlRiskScore: null,
+    amlFlags: [],
+    amlProvider: null,
+    amlRuleVersion: null,
+    amlLastCheckedAt: null,
     rejectionReasonCode: null,
     kycProviderSessionId: null,
     kycProviderReportId: null,
@@ -249,6 +344,11 @@ async function getProfileBundleWithClient(
        p.avatar_url,
        k.kyc_status,
        p.aml_status,
+       p.aml_risk_score,
+       p.aml_flags_json,
+       p.aml_provider,
+       p.aml_rule_version,
+       p.aml_last_checked_at,
        p.compliance_status,
        k.rejection_reason_code,
        p.kyc_provider_session_id,
@@ -569,6 +669,221 @@ export async function updateKycStatusFromProvider(
     }
 
     return updated;
+  });
+}
+
+type AmlSnapshotRow = {
+  wallet_public_key: string;
+  kyc_status: KycStatus;
+  aml_status: AmlStatus;
+  aml_risk_score: number | null;
+  aml_flags_json: unknown;
+  aml_provider: string | null;
+  aml_rule_version: string | null;
+  aml_last_checked_at: string | Date | null;
+  compliance_status: ComplianceStatus;
+};
+
+type AmlScreeningRow = {
+  id: number;
+  provider: string;
+  provider_classification: AmlProviderClassification;
+  aml_status: AmlStatus;
+  aml_risk_score: number | null;
+  aml_flags_json: unknown;
+  rule_version: string | null;
+  trigger_source: string;
+  created_at: string | Date;
+};
+
+function mapAmlCaseSnapshot(
+  snapshot: AmlSnapshotRow,
+  screenings: AmlScreeningRow[]
+): AmlCaseSnapshotForAdmin {
+  return {
+    walletPublicKey: snapshot.wallet_public_key,
+    kycStatus: snapshot.kyc_status,
+    amlStatus: snapshot.aml_status,
+    amlRiskScore: snapshot.aml_risk_score,
+    amlFlags: sanitizeAmlFlags(snapshot.aml_flags_json),
+    amlProvider: snapshot.aml_provider,
+    amlRuleVersion: snapshot.aml_rule_version,
+    amlLastCheckedAt: normalizeOptionalIso(snapshot.aml_last_checked_at),
+    complianceStatus: snapshot.compliance_status,
+    screenings: screenings.map((screening) => ({
+      id: screening.id,
+      provider: screening.provider,
+      providerClassification: screening.provider_classification,
+      amlStatus: screening.aml_status,
+      amlRiskScore: screening.aml_risk_score,
+      amlFlags: sanitizeAmlFlags(screening.aml_flags_json),
+      ruleVersion: screening.rule_version,
+      triggerSource: screening.trigger_source,
+      createdAt: normalizeIso(screening.created_at)
+    }))
+  };
+}
+
+export async function updateAmlStatusFromProvider(
+  input: UpdateAmlStatusFromProviderInput
+): Promise<ProfileBundle> {
+  const normalizedFlags = sanitizeAmlFlags(input.amlFlags);
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = getOrCreateInMemoryProfile(input.walletPublicKey);
+    const updatedAt = nowIso();
+
+    profile.amlStatus = input.amlStatus;
+    profile.amlRiskScore = input.amlRiskScore;
+    profile.amlFlags = normalizedFlags;
+    profile.amlProvider = input.provider;
+    profile.amlRuleVersion = input.ruleVersion;
+    profile.amlLastCheckedAt = updatedAt;
+    profile.complianceStatus = projectComplianceStatus({
+      kycStatus: profile.kycStatus,
+      amlStatus: profile.amlStatus,
+      isSuspended: profile.isSuspended
+    });
+    profile.complianceStatusUpdatedAt = updatedAt;
+    profile.updatedAt = updatedAt;
+
+    inMemoryProfiles.set(input.walletPublicKey, profile);
+    return mapInMemoryToBundle(profile);
+  }
+
+  return withDbClient(async (client) => {
+    await ensureProfileExistsWithClient(client, input.walletPublicKey);
+
+    const current = await getProfileBundleWithClient(client, input.walletPublicKey, true);
+    if (!current) {
+      throw new Error("Could not load profile for AML update.");
+    }
+
+    const complianceStatus = projectComplianceStatus({
+      kycStatus: current.kycStatus,
+      amlStatus: input.amlStatus,
+      isSuspended: current.isSuspended
+    });
+
+    await client.query(
+      `UPDATE user_profiles
+       SET aml_status = $2,
+           aml_risk_score = $3,
+           aml_flags_json = $4::jsonb,
+           aml_provider = $5,
+           aml_rule_version = $6,
+           aml_last_checked_at = NOW(),
+           compliance_status = $7,
+           compliance_status_updated_at = NOW(),
+           updated_at = NOW()
+       WHERE wallet_public_key = $1`,
+      [
+        input.walletPublicKey,
+        input.amlStatus,
+        input.amlRiskScore,
+        JSON.stringify(normalizedFlags),
+        input.provider,
+        input.ruleVersion,
+        complianceStatus
+      ]
+    );
+
+    await client.query(
+      `INSERT INTO aml_screenings (
+         wallet_public_key,
+         provider,
+         provider_classification,
+         aml_status,
+         aml_risk_score,
+         aml_flags_json,
+         rule_version,
+         trigger_source
+       ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+      [
+        input.walletPublicKey,
+        input.provider,
+        input.providerClassification,
+        input.amlStatus,
+        input.amlRiskScore,
+        JSON.stringify(normalizedFlags),
+        input.ruleVersion,
+        input.triggerSource
+      ]
+    );
+
+    const updated = await getProfileBundleWithClient(client, input.walletPublicKey);
+    if (!updated) {
+      throw new Error("Could not load profile after AML update.");
+    }
+
+    return updated;
+  });
+}
+
+export async function getAmlCaseSnapshotForAdmin(walletPublicKey: string): Promise<AmlCaseSnapshotForAdmin | null> {
+  if (!isProfileDatabaseConfigured()) {
+    const profile = inMemoryProfiles.get(walletPublicKey);
+    if (!profile) {
+      return null;
+    }
+
+    return {
+      walletPublicKey: profile.walletPublicKey,
+      kycStatus: profile.kycStatus,
+      amlStatus: profile.amlStatus,
+      amlRiskScore: profile.amlRiskScore,
+      amlFlags: profile.amlFlags,
+      amlProvider: profile.amlProvider,
+      amlRuleVersion: profile.amlRuleVersion,
+      amlLastCheckedAt: profile.amlLastCheckedAt,
+      complianceStatus: profile.complianceStatus,
+      screenings: []
+    };
+  }
+
+  return withDbClient(async (client) => {
+    const snapshotResult = await client.query<AmlSnapshotRow>(
+      `SELECT
+         p.wallet_public_key,
+         k.kyc_status,
+         p.aml_status,
+         p.aml_risk_score,
+         p.aml_flags_json,
+         p.aml_provider,
+         p.aml_rule_version,
+         p.aml_last_checked_at,
+         p.compliance_status
+       FROM user_profiles p
+       JOIN kyc_cases k ON k.wallet_public_key = p.wallet_public_key
+       WHERE p.wallet_public_key = $1
+       LIMIT 1`,
+      [walletPublicKey]
+    );
+
+    const snapshot = snapshotResult.rows[0];
+    if (!snapshot) {
+      return null;
+    }
+
+    const screeningsResult = await client.query<AmlScreeningRow>(
+      `SELECT
+         id,
+         provider,
+         provider_classification,
+         aml_status,
+         aml_risk_score,
+         aml_flags_json,
+         rule_version,
+         trigger_source,
+         created_at
+       FROM aml_screenings
+       WHERE wallet_public_key = $1
+       ORDER BY created_at DESC
+       LIMIT 25`,
+      [walletPublicKey]
+    );
+
+    return mapAmlCaseSnapshot(snapshot, screeningsResult.rows);
   });
 }
 
