@@ -23,6 +23,7 @@ If any conflict exists, governance documents take precedence over summaries.
 | --- | --- |
 | `/programs` | `@blockchain-cycle` |
 | `/app` | `@frontend-cycle` |
+| E2E browser + wallet QA (frontend/auth flows) | `@frontend-cycle` + `@responsive-qa` with Playwright + Synpress + MCP evidence |
 | `/packages` | strict shared validation (`typescript-expert` + `clean-code` + `lint-and-validate`) |
 | NFT logic (mint/metadata/collection/royalties) | `@nft-cycle` (in addition to path macro) |
 | Major release / pre-mainnet | `@mainnet-hardening` |
@@ -166,6 +167,9 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 	15.	Explicit error handling required everywhere.
 	16.	Every story starts by defining/updating unit tests (TDD RED first).
 	17.	No story is complete unless unit tests pass at final verification.
+	18.	For frontend/auth stories, Playwright E2E must pass before completion.
+	19.	For wallet-connected UI flows, Synpress E2E must pass before completion.
+	20.	For critical UI flows, MCP browser evidence (snapshot/screenshot/log) is mandatory.
 
 ⸻
 
@@ -191,6 +195,30 @@ Requirements:
 	8.	Provide a short “Responsive QA checklist” result in the PR description.
 
 If UI breaks at any of the widths above → task incomplete.
+
+⸻
+
+🧪 E2E TOOLING POLICY (PLAYWRIGHT + SYNPRESS + MCP)
+
+Scope:
+- Applies to frontend/auth/wallet flows and any user-critical browser journey.
+
+Mandatory Toolchain:
+1. Use `playwright-skill` for E2E design/execution guidance.
+2. Run Playwright suite (`npx playwright test` or project-equivalent command).
+3. Run Synpress wallet suite (`npx synpress run` or project-equivalent command).
+4. Use MCP Playwright tools to capture deterministic evidence for critical flows:
+   - `mcp__playwright__browser_snapshot`
+   - `mcp__playwright__browser_navigate`
+   - `mcp__playwright__browser_click`
+   - `mcp__playwright__browser_fill_form`
+   - `mcp__playwright__browser_wait_for`
+   - `mcp__playwright__browser_take_screenshot`
+
+Strict Rules:
+- No mocked wallet provider for wallet E2E.
+- No mocked signature validation in UI auth flows.
+- If Playwright or Synpress gate fails, task is incomplete.
 
 ⸻
 
@@ -257,20 +285,26 @@ Mandatory Execution Order
 	4.	frontend-developer
 	5.	react-best-practices
 	6.	typescript-expert
-	7.	Implement SSR-first architecture
-	8.	Wallet interaction in client-only components
-	9.	Server-side signature verification
-	10.	clean-code
-	11.	lint-and-validate
-	12.	web-performance-optimization
-	13.	verification-before-completion
-	14.	requesting-code-review
+	7.	playwright-skill
+	8.	e2e-testing
+	9.	Implement SSR-first architecture
+	10.	Wallet interaction in client-only components
+	11.	Server-side signature verification
+	12.	Run Playwright E2E suite
+	13.	Run Synpress wallet E2E suite (if wallet/auth/browser extension flow is in scope)
+	14.	Collect MCP browser evidence for critical path
+	15.	clean-code
+	16.	lint-and-validate
+	17.	web-performance-optimization
+	18.	verification-before-completion
+	19.	requesting-code-review
 
 Strict Rules
 	•	No client-side authority validation
 	•	No trusting wallet state from frontend
 	•	All signatures verified server-side
 	•	No mock Phantom provider
+	•	No mocked E2E assertions for critical flows
 	•	Devnet RPC only
 
 ⸻
@@ -366,16 +400,19 @@ Canonical source:
 Installed official skill packages:
 - `solana-dev` (Solana Foundation maintained)
 - `metaplex` (Metaplex Foundation maintained)
+- `playwright-skill` (browser E2E automation and QA evidence)
 
 Installed locations:
 - Codex: `~/.codex/skills/solana-dev`
 - Codex: `~/.codex/skills/metaplex`
+- Codex: `~/.codex/skills/playwright-skill`
 
 Mandatory usage rule:
 1. For any Solana task (wallet, tx, Anchor, Pinocchio, tokens, payments, testing, security), invoke `solana-dev` as the first contextual skill.
 2. For Metaplex tasks (Core, Token Metadata, Bubblegum, Candy Machine, Genesis), invoke `metaplex` after `solana-dev`.
 3. Keep this playbook as governance. Skills augment implementation guidance but must not bypass governance docs or required macros.
 4. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
+5. For frontend/auth/browser-critical tasks, invoke `playwright-skill` and execute MCP Playwright tooling for verification evidence.
 
 Official Solana references included via `solana-dev`:
 - common errors and solutions
@@ -403,5 +440,8 @@ Before marking ANY task complete:
 	3.	Run verification-before-completion
 	4.	Confirm blockchain interaction happened on devnet
 	5.	Confirm no mocks were used
+	6.	For frontend/auth changes, confirm Playwright E2E passed
+	7.	For wallet-connected frontend flows, confirm Synpress E2E passed
+	8.	For critical browser flows, confirm MCP evidence was captured
 
 If any fail → task is not complete.
