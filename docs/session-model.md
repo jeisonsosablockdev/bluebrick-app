@@ -47,6 +47,7 @@
   - `/api/webhooks/stripe/identity` triggers AML screening (`kyc_verified_webhook`) when KYC becomes `verified`.
   - `/api/internal/compliance/aml/screen` allows admin SIWS or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
   - `/api/admin/compliance/cases/:walletPublicKey/aml` is admin-only and returns AML case detail for review.
+  - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
 
 ## Authorization Layers
 1. Session layer:
@@ -113,7 +114,11 @@
   - App restart invalidates sessions.
   - Shared store (for example Redis) is required before horizontal scaling.
 
+- Wallet modal UX safety:
+  - Progress and error feedback are rendered in the same top visual slot to avoid ambiguous state perception.
+  - Modal auto-close after inactivity requires explicit user re-open and never skips SIWS verification steps.
+
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-03-25 06:55:00 UTC
+Last Updated: 2026-03-27 07:40:00 UTC

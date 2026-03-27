@@ -66,6 +66,12 @@
    - `POST /api/internal/compliance/aml/screen` accepts admin SIWS session or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
    - `GET /api/admin/compliance/cases/:walletPublicKey/aml` returns AML snapshot + recent screenings for admin review.
 
+## Wallet Modal UX Guardrails
+- The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
+- The wallet modal closes automatically after 30 seconds without user interaction (`pointerdown`, `keydown`, `touchstart`, `wheel`).
+- Any interaction while the modal is open resets the 30-second inactivity timer.
+- This UX timeout never bypasses SIWS rules: nonce validation, signature verification, and role resolution remain server-side.
+
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |
@@ -167,4 +173,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-25 06:55:00 UTC
+Last Updated: 2026-03-27 07:40:00 UTC
