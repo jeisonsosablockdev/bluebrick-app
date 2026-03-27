@@ -58,7 +58,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       statusCode: 200,
       metadata: {
         itemsRemaining: quote.itemsRemaining,
-        priceLamports: quote.priceLamports
+        paymentCurrency: quote.paymentCurrency,
+        priceLamports: quote.priceLamports,
+        priceUsdcAtomic: quote.priceUsdcAtomic
       }
     });
 

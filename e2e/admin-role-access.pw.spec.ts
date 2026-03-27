@@ -13,8 +13,9 @@ test.describe("admin vs user access control", () => {
     expect(me.role).toBe("admin");
 
     await page.goto("/admin");
+    await expect(page).toHaveURL(/\/admin\/dashboard$/);
 
-    await expect(page.getByText(/Admin Console|Consola Admin|Console Admin/)).toBeVisible();
+    await expect(page.getByRole("navigation", { name: /breadcrumb/i })).toContainText(/Admin/i);
     await expect(page.getByText(/Access denied|Acceso denegado|Acesso negado/)).toHaveCount(0);
   });
 

@@ -37,6 +37,7 @@
 | STORY-002-04 | Mint Execution and Progress | `STORY-002-04-mint-execution-and-progress.md` | `implemented` | `#22, #24` | Ejecución mint/progreso/reconciliación cerrada sin batch mint obligatorio |
 | STORY-002-05 | On-chain Reconciliation and Minimal Job Persistence | `STORY-002-05-onchain-reconciliation-and-job-persistence.md` | `implemented` | `#17, #22, #24` | Persistencia relacional mínima + reconciliación RPC/DAS |
 | STORY-002-06 | Mint Snapshot Persistence + Create Asset Gate | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` | `implemented` | `#40` | Snapshot final + gate `Create Asset` con verificación DAS (`getAssetsByGroup`) |
+| STORY-002-07 | USDC tokenPayment + Temporary Recipient (Treasury Bridge) | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` | `approved` | `TBD` | Migración de `solPayment` a `tokenPayment` con receptor temporal hardcoded y plan de treasury |
 
 
 ## Decision Log
@@ -51,6 +52,8 @@
 | 2026-03-18 | STORY-002-06 | Refinamiento técnico incorporado: FK+UNIQUE con `mint_jobs`, política strict para `partial`, error estructurado y verificación DAS principal | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
 | 2026-03-18 | STORY-002-06 | RFC aprobado para implementación en rama stacked | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
 | 2026-03-18 | STORY-002-06 | Implementado snapshot final persistente + verificación DAS/fallback + gate `Create Asset` en `/admin/assets/new` | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
+| 2026-03-27 | STORY-002-07 | RFC draft creada para migración de pricing a USDC `tokenPayment` con fase puente de receptor temporal | jaymusicmachine | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` |
+| 2026-03-27 | STORY-002-07 | RFC aprobado: migración de guard de precio a USDC `tokenPayment` con estrategia de 3 commits y deuda técnica Treasury explícita | jaymusicmachine | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` |
 | 2026-03-27 | EPIC-002 | Decisión de producto: batch mint deja de ser requisito de cierre; epic se cierra con mint operativo en devnet + reconciliación | jaymusicmachine | `README.md` |
 
 ## Risks and Dependencies

@@ -15,7 +15,7 @@ test("capture critical-path evidence across required responsive widths", async (
 
   for (const viewport of responsiveViewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.locator("main")).toBeVisible();
 

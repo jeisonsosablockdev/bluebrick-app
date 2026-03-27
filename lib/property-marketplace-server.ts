@@ -1,6 +1,9 @@
 import "server-only";
 
+import { Connection, PublicKey } from "@solana/web3.js";
+
 import { withDbClient } from "@/lib/db/pool";
+import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   createMarketplacePropertyEntry as createMarketplacePropertyEntryInMemory,
   listPropertyDetailsSnapshot,
@@ -51,6 +54,75 @@ type PersistedMarketplaceDocument = {
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+function toIsoOrNull(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+async function persistPropertySyncStatus(input: {
+  id: string;
+  syncStatus: BlockchainSyncStatus;
+  lastOnchainUpdate: string | null;
+}): Promise<void> {
+  if (!isDatabaseConfigured()) {
+    return;
+  }
+
+  try {
+    await withDbClient(async (client) => {
+      await client.query(
+        `UPDATE marketplace_entries
+         SET sync_status = $2,
+             last_onchain_update = $3
+         WHERE id = $1`,
+        [input.id, input.syncStatus, input.lastOnchainUpdate]
+      );
+    });
+  } catch {
+    // Best effort persistence: view rendering must not fail because sync metadata update failed.
+  }
+}
+
+async function resolveRealtimeSyncStatus(property: PropertyDetail): Promise<{
+  syncStatus: BlockchainSyncStatus;
+  lastOnchainUpdate: string | null;
+}> {
+  try {
+    const collectionAddress = new PublicKey(property.blockchain.collectionAddress);
+    const candyMachineAddress = new PublicKey(property.blockchain.assetMintAddress);
+    const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+    const [collectionAccount, candyMachineAccount] = await connection.getMultipleAccountsInfo(
+      [collectionAddress, candyMachineAddress],
+      "confirmed"
+    );
+
+    if (collectionAccount && candyMachineAccount) {
+      return {
+        syncStatus: "available",
+        lastOnchainUpdate: new Date().toISOString()
+      };
+    }
+
+    return {
+      syncStatus: "unavailable",
+      lastOnchainUpdate: toIsoOrNull(property.blockchain.lastOnchainUpdate)
+    };
+  } catch {
+    return {
+      syncStatus: "rpc_error",
+      lastOnchainUpdate: toIsoOrNull(property.blockchain.lastOnchainUpdate)
+    };
+  }
 }
 
 function toJsonbValue(value: unknown): string {
@@ -378,9 +450,30 @@ export async function getMarketplacePropertyDetailOrThrowRpc(id: string): Promis
     return null;
   }
 
-  if (property.blockchain.syncStatus === "rpc_error") {
+  const realtime = await resolveRealtimeSyncStatus(property);
+  const updatedProperty: PropertyDetail = {
+    ...property,
+    blockchain: {
+      ...property.blockchain,
+      syncStatus: realtime.syncStatus,
+      lastOnchainUpdate: realtime.lastOnchainUpdate
+    }
+  };
+
+  if (
+    realtime.syncStatus !== property.blockchain.syncStatus
+    || realtime.lastOnchainUpdate !== property.blockchain.lastOnchainUpdate
+  ) {
+    await persistPropertySyncStatus({
+      id: property.id,
+      syncStatus: realtime.syncStatus,
+      lastOnchainUpdate: realtime.lastOnchainUpdate
+    });
+  }
+
+  if (updatedProperty.blockchain.syncStatus === "rpc_error") {
     throw new PropertyRpcError("No se pudo sincronizar la informacion blockchain. Intenta nuevamente.");
   }
 
-  return property;
+  return updatedProperty;
 }

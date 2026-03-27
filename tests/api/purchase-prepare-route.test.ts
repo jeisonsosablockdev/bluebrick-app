@@ -129,7 +129,9 @@ describe("POST /api/purchase/prepare", () => {
 
   it("returns business error code when service throws PurchaseFlowError", async () => {
     routeMocks.preparePurchase.mockRejectedValueOnce(
-      new routeMocks.MockPurchaseFlowError("PRICE_CHANGED", "Price changed.", 409)
+      new routeMocks.MockPurchaseFlowError("INVALID_QUANTITY", "Quantity too large.", 409, {
+        suggestedMaxQuantity: 4
+      })
     );
 
     const response = await POST(
@@ -143,6 +145,7 @@ describe("POST /api/purchase/prepare", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(409);
-    expect(payload.error.code).toBe("PRICE_CHANGED");
+    expect(payload.error.code).toBe("INVALID_QUANTITY");
+    expect(payload.error.details?.suggestedMaxQuantity).toBe(4);
   });
 });

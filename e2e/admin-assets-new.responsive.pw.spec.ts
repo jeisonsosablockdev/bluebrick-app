@@ -26,7 +26,7 @@ test("admin /admin/assets/new responsive QA checklist", async ({ page }, testInf
 
   for (const viewport of responsiveViewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForLoadState("domcontentloaded");
     await expect(page).toHaveURL(/\/admin\/assets\/new$/);
 
     await expect(page.locator("main")).toBeVisible();

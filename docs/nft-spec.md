@@ -8,9 +8,10 @@
 ## Marketplace Purchase Flow (STORY-003-04)
 - Price source of truth:
   - Mint price is never configured at purchase time.
-  - UI price comes from backend quote cache that reads Candy Guard `solPayment`.
+  - UI price comes from backend quote cache that reads Candy Guard payment guard (`tokenPayment` USDC preferred, `solPayment` as legacy fallback).
+  - Guard payment mode is USDC-only by policy for new deploys (`tokenPayment` on devnet USDC mint).
 - Guard cache + revalidation:
-  - `POST /api/purchase/quote` serves cached guard snapshot (`priceLamports`, `startDate`, `itemsRemaining`, `cacheUpdatedAt`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`).
+  - `POST /api/purchase/quote` serves cached guard snapshot (`paymentCurrency`, `priceLamports`, `priceUsdcAtomic`, `startDate`, `itemsRemaining`, `cacheUpdatedAt`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`, `totalPriceUsdcAtomic`).
   - `POST /api/purchase/prepare` always revalidates against fresh on-chain guard state before building transaction.
   - If quote and fresh guard diverge, backend returns `PRICE_CHANGED`.
 - Quantity contract:
@@ -161,7 +162,7 @@ Last Updated: 2026-03-20 19:27:57 UTC
 - Reconciliation:
   - DAS route (`/reconcile/das`) remains active as primary high-throughput reconciliation path.
 - Pending for full EPIC close:
-  - Complete migration from Core direct mint flow to Core Candy Machine flow (`create+guards+items+mint`) with `startDate + solPayment(0.00001 SOL)`.
+  - Complete migration from Core direct mint flow to Core Candy Machine flow (`create+guards+items+mint`) with `startDate + tokenPayment(USDC)` as canonical pricing guard.
   - Devnet proof update with real signatures for Candy Machine deploy was completed on 2026-03-18; mint batch signatures are still pending for this EPIC.
 
 - Core Candy Machine implementation status:
@@ -174,5 +175,5 @@ Last Updated: 2026-03-20 19:27:57 UTC
     - `components/admin/core-candy-machine-panel.tsx`
   - Enforced guards on deploy:
     - `startDate`
-    - `solPayment = 10,000 lamports (0.00001 SOL)`
+    - `tokenPayment = amountUsdcAtomic` (unit price derived from admin form `Costo por NFT`)
     - `thirdPartySigner` (backend signer, mandatory for public purchase flow)

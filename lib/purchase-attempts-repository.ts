@@ -328,7 +328,7 @@ export async function createPurchaseAttempt(input: CreatePurchaseAttemptInput): 
 
 export async function markPurchaseAttemptPrepared(input: {
   id: string;
-  preparedPriceLamports: number;
+  preparedPriceLamports: number | null;
   cacheUpdatedAt: string;
   preparedTxMessageBase64: string;
 }, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {

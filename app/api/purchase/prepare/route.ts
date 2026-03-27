@@ -10,6 +10,7 @@ type PrepareBody = {
   propertyId?: unknown;
   quantity?: unknown;
   quotedPriceLamports?: unknown;
+  quotedPriceUsdcAtomic?: unknown;
   challengeId?: unknown;
   challengeSignatureBase64?: unknown;
 };
@@ -18,6 +19,7 @@ function normalizeBody(raw: unknown): {
   propertyId: string;
   quantity: number;
   quotedPriceLamports?: number;
+  quotedPriceUsdcAtomic?: number;
   challengeId: string;
   challengeSignatureBase64: string;
 } {
@@ -50,6 +52,16 @@ function normalizeBody(raw: unknown): {
     quotedPriceLamports = Math.floor(parsed);
   }
 
+  let quotedPriceUsdcAtomic: number | undefined;
+  if (typeof body.quotedPriceUsdcAtomic !== "undefined") {
+    const parsed = Number(body.quotedPriceUsdcAtomic);
+    if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0) {
+      throw new PurchaseFlowError("TRANSACTION_FAILED", "quotedPriceUsdcAtomic must be a non-negative integer.", 400);
+    }
+
+    quotedPriceUsdcAtomic = parsed;
+  }
+
   if (typeof body.challengeId !== "string" || !body.challengeId.trim()) {
     throw new PurchaseFlowError("INVALID_CHALLENGE", "challengeId is required.", 400);
   }
@@ -62,6 +74,7 @@ function normalizeBody(raw: unknown): {
     propertyId: body.propertyId.trim(),
     quantity,
     quotedPriceLamports,
+    quotedPriceUsdcAtomic,
     challengeId: body.challengeId.trim(),
     challengeSignatureBase64: body.challengeSignatureBase64.trim()
   };
@@ -132,6 +145,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       metadata: {
         quantity: body.quantity,
         quotedPriceLamports: body.quotedPriceLamports ?? null,
+        quotedPriceUsdcAtomic: body.quotedPriceUsdcAtomic ?? null,
         challengeId: body.challengeId
       }
     });
@@ -141,6 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       buyerPublicKey: roleResult.pubkey,
       quantity: body.quantity,
       quotedPriceLamports: body.quotedPriceLamports,
+      quotedPriceUsdcAtomic: body.quotedPriceUsdcAtomic,
       challengeId: body.challengeId,
       challengeSignatureBase64: body.challengeSignatureBase64,
       clientIp: getClientIp(request)
@@ -156,7 +171,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       idempotencyKey: prepared.idempotencyKey,
       statusCode: 200,
       metadata: {
-        priceLamports: prepared.priceLamports
+        paymentCurrency: prepared.paymentCurrency,
+        priceLamports: prepared.priceLamports,
+        priceUsdcAtomic: prepared.priceUsdcAtomic
       }
     });
 

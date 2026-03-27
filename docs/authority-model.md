@@ -10,6 +10,7 @@
 | Mint authority | Wallet-connected signer (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
 | Update authority | Collection/update signer (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
 | Collection authority | Core collection authority (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
+| Candy Guard payment destination (STORY-002-07) | On-chain `tokenPayment.destinationAta` owner (`TEMP_USDC_PAYMENT_RECIPIENT` bridge phase) | Deploy/prepare derives ATA from configured recipient + USDC mint and purchase flow revalidates on-chain guard before mint | Future migration to `TREASURY_USDC_OWNER` per environment |
 | Admin authority | SIWS session + `ADMIN_WALLETS` allowlist | Every `/api/admin/mint-jobs*` request checks `getRequestRole()` | Remove wallet from allowlist or revoke SIWS session |
 | Job mutation authority (H7) | Immutable `mint_jobs.created_by` per job | Manual mutation endpoints require `actorPubkey === createdBy` | New job under a different admin wallet |
 | Webhook ingestion authority | Helius sender + optional `HELIUS_WEBHOOK_SECRET` | `/api/webhooks/helius/mint-orchestrator` checks secret before processing | Rotate `HELIUS_WEBHOOK_SECRET` in runtime environment |
@@ -23,6 +24,7 @@
 | Mutate existing mint job manually (prepare/submit/reconcile) | SIWS admin session + same wallet as `createdBy` | Freeze operational authority to original job owner and block cross-admin state mutation |
 | Submit Helius webhook event | Webhook secret (if configured) | Prevent unauthenticated third-party webhook mutation attempts |
 | Trigger DAS reconciliation | SIWS admin session | Restrict bulk reconciliation scans to authorized operators |
+| Prepare public purchase transaction | Buyer wallet signer + backend Candy Guard third-party signer | Backend validates guard payment mode (`tokenPayment`/`solPayment`) and guard signer match before returning transaction to user | Rotate backend signer secret / update Candy Guard signer key |
 
 ## Explicit Invariants
 - [x] Exactly one `mint_jobs` row per `emission_id`.

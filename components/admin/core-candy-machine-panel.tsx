@@ -7,6 +7,7 @@ import { VersionedTransaction } from "@solana/web3.js";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { convertUsdToSol, usdToUsdcAtomic } from "@/lib/admin/pricing";
 import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
 
 type PreparedTransaction = {
@@ -22,7 +23,9 @@ type DeployPrepareResponse = {
   candyMachineAddress: string;
   collectionAddress: string;
   quantity: number;
-  priceLamports: number;
+  paymentMode: "USDC";
+  priceUsdcAtomic: number | null;
+  priceLamports: null;
   startDate: string;
   transactions: PreparedTransaction[];
 };
@@ -82,6 +85,9 @@ type CoreCandyMachinePanelProps = {
     quantity?: number;
     description?: string;
     symbol?: string;
+    nftPriceUsd?: number;
+    nftPriceInputCurrency?: "USD" | "SOL";
+    solUsdRate?: number | null;
   };
   snapshotContext?: {
     draftId: string;
@@ -146,6 +152,17 @@ function parsePositiveInt(value: string): number | null {
   }
 
   return numeric;
+}
+
+function formatUsdAmount(value: number): string {
+  return `$${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6
+  })}`;
+}
+
+function formatSolAmount(value: number): string {
+  return `${value.toLocaleString("en-US", { maximumFractionDigits: 8 })} SOL`;
 }
 
 function looksLikeImageUri(uri: string): boolean {
@@ -334,6 +351,36 @@ export function CoreCandyMachinePanel({
 
     return Math.round((runState.deployProgress.current / runState.deployProgress.total) * 100);
   }, [runState.deployProgress]);
+  const configuredNftPriceUsd = useMemo(() => {
+    const value = prefill?.nftPriceUsd;
+    if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+      return null;
+    }
+
+    return value;
+  }, [prefill?.nftPriceUsd]);
+  const configuredNftPriceUsdcAtomic = useMemo(() => {
+    if (!configuredNftPriceUsd) {
+      return null;
+    }
+
+    try {
+      return usdToUsdcAtomic(configuredNftPriceUsd);
+    } catch {
+      return null;
+    }
+  }, [configuredNftPriceUsd]);
+  const configuredNftPriceSol = useMemo(() => {
+    if (!configuredNftPriceUsd || typeof prefill?.solUsdRate !== "number" || prefill.solUsdRate <= 0) {
+      return null;
+    }
+
+    try {
+      return convertUsdToSol(configuredNftPriceUsd, prefill.solUsdRate);
+    } catch {
+      return null;
+    }
+  }, [configuredNftPriceUsd, prefill?.solUsdRate]);
   async function submitSignedTransactionsBatch(
     preparedTransactions: PreparedTransaction[],
     signedTransactionsBase64: string[]
@@ -466,6 +513,19 @@ export function CoreCandyMachinePanel({
       return;
     }
 
+    if (!configuredNftPriceUsd) {
+      setErrorMessage("NFT cost from form is missing or invalid. Set Costo por NFT before deploy.");
+      return;
+    }
+
+    let priceUsdcAtomic: number;
+    try {
+      priceUsdcAtomic = usdToUsdcAtomic(configuredNftPriceUsd);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Could not derive USDC atomic price from form value.");
+      return;
+    }
+
     let collectionUri = form.collectionUri.trim();
     let assetUri = form.assetUri.trim();
 
@@ -516,6 +576,7 @@ export function CoreCandyMachinePanel({
           assetNamePrefix: form.assetNamePrefix,
           assetUri,
           quantity,
+          priceUsdcAtomic,
           startDate: form.startDate
         })
       });
@@ -618,8 +679,22 @@ export function CoreCandyMachinePanel({
       <div className="space-y-1">
         <h3 className="text-base font-semibold text-white">Core Candy Machine Mint</h3>
         <p className="text-xs text-white/70">
-          Deploy uses guards <code>startDate</code> + <code>solPayment(0.00001 SOL)</code>. Wallet only signs server-built transactions.
+          Deploy uses guards <code>startDate</code> + <code>tokenPayment(USDC)</code>. Wallet only signs server-built transactions.
         </p>
+        {configuredNftPriceUsd && configuredNftPriceUsdcAtomic ? (
+          <p className="text-xs text-emerald-200/90">
+            Guard price from <code>Costo por NFT</code>: {formatUsdAmount(configuredNftPriceUsd)} ({configuredNftPriceUsdcAtomic.toLocaleString("en-US")} atomic USDC).
+          </p>
+        ) : (
+          <p className="text-xs text-amber-200/90">
+            Missing <code>Costo por NFT</code> from step 1. Deploy will stay blocked until the field has a positive value.
+          </p>
+        )}
+        {prefill?.nftPriceInputCurrency === "SOL" && configuredNftPriceSol ? (
+          <p className="text-xs text-cyan-200/90">
+            Input equivalence: ~{formatSolAmount(configuredNftPriceSol)}.
+          </p>
+        ) : null}
         <p className="text-xs text-amber-200/90">
           `collectionUri` and `assetUri` must point to JSON metadata, not image URLs.
         </p>

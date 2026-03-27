@@ -52,7 +52,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             <h1 className="text-3xl font-bold tracking-tight text-white">{property.title}</h1>
             <Lead>{property.locationLabel}</Lead>
             <p className="text-sm text-slate-300">{property.shortDescription}</p>
-            <PurchaseCta propertyId={property.id} />
+            <PurchaseCta propertyId={property.id} nftPriceUsd={property.investment.nftPriceUsd} />
           </div>
         </div>
       </section>

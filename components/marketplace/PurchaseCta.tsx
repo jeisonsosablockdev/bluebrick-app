@@ -10,18 +10,22 @@ import { getSolscanTransactionUrl } from "@/lib/solana";
 
 type PurchaseCtaProps = {
   propertyId: string;
+  nftPriceUsd?: number;
 };
 
 type QuoteResponse = {
   ok?: boolean;
   data?: {
     cacheUpdatedAt: string;
-    priceLamports: number;
+    paymentCurrency: "SOL" | "USDC";
+    priceLamports: number | null;
+    priceUsdcAtomic: number | null;
     startDateIso: string | null;
     itemsRemaining: number;
     quantityMode?: "SINGLE_ONLY" | "MULTI_ENABLED";
     quantity?: number;
-    totalPriceLamports?: number;
+    totalPriceLamports?: number | null;
+    totalPriceUsdcAtomic?: number | null;
   };
   error?: {
     code?: string;
@@ -35,8 +39,11 @@ type PrepareResponse = {
     attemptId: string;
     idempotencyKey: string;
     transactionBase64: string;
-    priceLamports: number;
-    totalPriceLamports?: number;
+    paymentCurrency: "SOL" | "USDC";
+    priceLamports: number | null;
+    totalPriceLamports?: number | null;
+    priceUsdcAtomic: number | null;
+    totalPriceUsdcAtomic?: number | null;
     quantityMode?: "SINGLE_ONLY" | "MULTI_ENABLED";
     quantity?: number;
     cacheUpdatedAt: string;
@@ -44,6 +51,10 @@ type PrepareResponse = {
   error?: {
     code?: string;
     message?: string;
+    details?: {
+      suggestedMaxQuantity?: number;
+      [key: string]: unknown;
+    } | null;
   };
 };
 
@@ -89,12 +100,15 @@ type PurchaseErrorCode =
 
 type QuoteState = {
   cacheUpdatedAt: string;
-  priceLamports: number;
+  paymentCurrency: "SOL" | "USDC";
+  priceLamports: number | null;
+  priceUsdcAtomic: number | null;
   startDateIso: string | null;
   itemsRemaining: number;
   quantityMode: "SINGLE_ONLY" | "MULTI_ENABLED";
   quantity: number;
-  totalPriceLamports: number;
+  totalPriceLamports: number | null;
+  totalPriceUsdcAtomic: number | null;
 };
 
 function parseBooleanEnv(rawValue: string | undefined, defaultValue: boolean): boolean {
@@ -150,6 +164,19 @@ function lamportsToSol(lamports: number): string {
   return (lamports / 1_000_000_000).toFixed(5);
 }
 
+function usdcAtomicToUsdc(amountAtomic: number): string {
+  return (amountAtomic / 1_000_000).toFixed(6).replace(/\.?0+$/, "");
+}
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
 
@@ -184,7 +211,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return (await response.json().catch(() => null)) as T;
 }
 
-export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
+export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
   const { t, locale } = useI18n();
   const { connected, publicKey, signMessage, signTransaction } = useWallet();
   const [quote, setQuote] = useState<QuoteState | null>(null);
@@ -216,19 +243,47 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
       return "--";
     }
 
-    return `${lamportsToSol(quote.priceLamports)} SOL`;
-  }, [quote]);
+    if (typeof nftPriceUsd === "number" && Number.isFinite(nftPriceUsd) && nftPriceUsd > 0) {
+      return `${formatUsd(nftPriceUsd)} USD`;
+    }
+
+    if (quote.paymentCurrency === "USDC" && typeof quote.priceUsdcAtomic === "number") {
+      return `${usdcAtomicToUsdc(quote.priceUsdcAtomic)} USDC`;
+    }
+
+    if (quote.paymentCurrency === "SOL" && typeof quote.priceLamports === "number") {
+      return `${lamportsToSol(quote.priceLamports)} SOL`;
+    }
+
+    return "--";
+  }, [nftPriceUsd, quote]);
 
   const totalPriceLabel = useMemo(() => {
     if (!quote) {
       return "--";
     }
 
-    const total = Number.isFinite(quote.totalPriceLamports)
+    if (typeof nftPriceUsd === "number" && Number.isFinite(nftPriceUsd) && nftPriceUsd > 0) {
+      return `${formatUsd(nftPriceUsd * requestedQuantity)} USD`;
+    }
+
+    if (quote.paymentCurrency === "USDC") {
+      const totalAtomic = Number.isFinite(quote.totalPriceUsdcAtomic)
+        ? quote.totalPriceUsdcAtomic
+        : (Number.isFinite(quote.priceUsdcAtomic) ? (quote.priceUsdcAtomic as number) * requestedQuantity : null);
+
+      return typeof totalAtomic === "number"
+        ? `${usdcAtomicToUsdc(totalAtomic)} USDC`
+        : "--";
+    }
+
+    const totalLamports = Number.isFinite(quote.totalPriceLamports)
       ? quote.totalPriceLamports
-      : quote.priceLamports * requestedQuantity;
-    return `${lamportsToSol(total)} SOL`;
-  }, [quote, requestedQuantity]);
+      : (Number.isFinite(quote.priceLamports) ? (quote.priceLamports as number) * requestedQuantity : null);
+    return typeof totalLamports === "number"
+      ? `${lamportsToSol(totalLamports)} SOL`
+      : "--";
+  }, [nftPriceUsd, quote, requestedQuantity]);
 
   const refreshQuote = useCallback(async (flowId?: string | null) => {
     setIsLoadingQuote(true);
@@ -259,12 +314,23 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
 
       setQuote({
         cacheUpdatedAt: payload.data.cacheUpdatedAt,
+        paymentCurrency: payload.data.paymentCurrency,
         priceLamports: payload.data.priceLamports,
+        priceUsdcAtomic: payload.data.priceUsdcAtomic,
         startDateIso: payload.data.startDateIso,
         itemsRemaining: payload.data.itemsRemaining,
         quantityMode: payload.data.quantityMode ?? "SINGLE_ONLY",
         quantity: payload.data.quantity ?? requestedQuantity,
-        totalPriceLamports: payload.data.totalPriceLamports ?? (payload.data.priceLamports * requestedQuantity)
+        totalPriceLamports: payload.data.totalPriceLamports ?? (
+          typeof payload.data.priceLamports === "number"
+            ? payload.data.priceLamports * requestedQuantity
+            : null
+        ),
+        totalPriceUsdcAtomic: payload.data.totalPriceUsdcAtomic ?? (
+          typeof payload.data.priceUsdcAtomic === "number"
+            ? payload.data.priceUsdcAtomic * requestedQuantity
+            : null
+        )
       });
     } catch (error) {
       setQuote(null);
@@ -297,7 +363,11 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
     }
   }, [maxSelectableQuantity, requestedQuantity]);
 
-  function toBusinessMessage(code: string | undefined, fallback: string | undefined): string {
+  function toBusinessMessage(
+    code: string | undefined,
+    fallback: string | undefined,
+    details?: { suggestedMaxQuantity?: number } | null
+  ): string {
     const normalizedCode = (code ?? "") as PurchaseErrorCode;
 
     if (normalizedCode === "MINT_NOT_STARTED") {
@@ -325,18 +395,27 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
     }
 
     if (normalizedCode === "INVALID_QUANTITY") {
-      return t({
-        en: "Requested quantity is not available for this listing.",
-        es: "La cantidad solicitada no esta disponible para este listing.",
-        pt: "A quantidade solicitada nao esta disponivel para este anuncio."
-      });
+      if (typeof details?.suggestedMaxQuantity === "number" && details.suggestedMaxQuantity >= 1) {
+        return t({
+          en: `Requested quantity is too large for one transaction. Suggested max: ${details.suggestedMaxQuantity}.`,
+          es: `La cantidad solicitada es demasiado grande para una sola transaccion. Maximo sugerido: ${details.suggestedMaxQuantity}.`,
+          pt: `A quantidade solicitada e grande demais para uma unica transacao. Maximo sugerido: ${details.suggestedMaxQuantity}.`
+        });
+      }
+
+      return fallback
+        ?? t({
+          en: "Requested quantity is too large for a single transaction. Reduce quantity and retry.",
+          es: "La cantidad solicitada es demasiado grande para una sola transaccion. Reduce la cantidad y vuelve a intentar.",
+          pt: "A quantidade solicitada e grande demais para uma unica transacao. Reduza a quantidade e tente novamente."
+        });
     }
 
     if (normalizedCode === "INSUFFICIENT_FUNDS") {
       return t({
-        en: "Insufficient SOL balance for mint and network fees.",
-        es: "Saldo SOL insuficiente para el mint y fees de red.",
-        pt: "Saldo SOL insuficiente para mint e taxas de rede."
+        en: "Insufficient balance for mint and network fees.",
+        es: "Saldo insuficiente para el mint y fees de red.",
+        pt: "Saldo insuficiente para mint e taxas de rede."
       });
     }
 
@@ -436,6 +515,10 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
       const challengeSignature = await signMessage(challengeMessageBytes);
       const challengeSignatureBase64 = toBase64(challengeSignature);
 
+      const quotedPricePayload = quote.paymentCurrency === "USDC"
+        ? { quotedPriceUsdcAtomic: quote.priceUsdcAtomic ?? undefined }
+        : { quotedPriceLamports: quote.priceLamports ?? undefined };
+
       const prepareResponse = await fetch("/api/purchase/prepare", {
         method: "POST",
         headers: {
@@ -445,7 +528,7 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
         body: JSON.stringify({
           propertyId,
           quantity: quantityToBuy,
-          quotedPriceLamports: quote.priceLamports,
+          ...quotedPricePayload,
           challengeId: challenge.data.challengeId,
           challengeSignatureBase64
         })
@@ -453,7 +536,15 @@ export function PurchaseCta({ propertyId }: PurchaseCtaProps) {
       const prepared = await parseResponse<PrepareResponse>(prepareResponse);
 
       if (!prepareResponse.ok || !prepared.data) {
-        throw new Error(toBusinessMessage(prepared.error?.code, prepared.error?.message));
+        if (
+          prepared.error?.code === "INVALID_QUANTITY"
+          && typeof prepared.error?.details?.suggestedMaxQuantity === "number"
+          && prepared.error.details.suggestedMaxQuantity >= 1
+        ) {
+          setRequestedQuantity(prepared.error.details.suggestedMaxQuantity);
+        }
+
+        throw new Error(toBusinessMessage(prepared.error?.code, prepared.error?.message, prepared.error?.details));
       }
 
       const unsignedTx = VersionedTransaction.deserialize(fromBase64(prepared.data.transactionBase64));

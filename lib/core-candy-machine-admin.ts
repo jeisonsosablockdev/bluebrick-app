@@ -2,10 +2,15 @@ import { randomUUID } from "node:crypto";
 
 import { createCollectionV2, mplCore } from "@metaplex-foundation/mpl-core";
 import { addConfigLines, create, fetchCandyMachine, findCandyGuardPda, mintV1, mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
-import { createAmount, createNoopSigner, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
+import { createNoopSigner, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 import { Connection, PublicKey as Web3PublicKey, VersionedTransaction } from "@solana/web3.js";
+import {
+  deriveAssociatedTokenAddress,
+  resolveUsdcMintAddress,
+  resolveUsdcPaymentRecipient
+} from "@/lib/candy-guard-payment-config";
 
 import {
   CORE_CANDY_MACHINE_LIMITS,
@@ -29,7 +34,7 @@ const SEND_TX_MAX_RETRIES = 4;
 const SEND_TX_RETRY_INITIAL_MS = 500;
 const SEND_TX_RETRY_MAX_MS = 4_000;
 const MAX_URI_INPUT_LENGTH = 512;
-const DEVNET_MINT_PRICE_LAMPORTS = 10_000;
+const MAX_USDC_ATOMIC = 1_000_000_000_000;
 const MAX_SOLANA_TX_RAW_BYTES = 1232;
 
 type PreparedTransactionKind = "create-collection" | "create-candy-machine" | "add-config-lines" | "mint";
@@ -41,6 +46,7 @@ export type PrepareCandyMachineDeployInput = {
   assetNamePrefix: string;
   assetUri: string;
   quantity: number;
+  priceUsdcAtomic?: number;
   startDate: string;
   startSerial?: number;
 };
@@ -68,7 +74,9 @@ export type PreparedCandyMachineDeploy = {
   candyMachineAddress: string;
   collectionAddress: string;
   quantity: number;
-  priceLamports: number;
+  paymentMode: "USDC";
+  priceUsdcAtomic: number | null;
+  priceLamports: null;
   startDate: string;
   preparedAt: string;
   transactions: PreparedCandyMachineTransaction[];
@@ -422,6 +430,22 @@ function isBlockhashExpiredRpcError(error: unknown): boolean {
   return error.message.toLowerCase().includes("blockhash not found");
 }
 
+function resolveDeployPriceUsdcAtomic(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    throw new CoreCandyMachineAdminInputError("priceUsdcAtomic must be an integer.");
+  }
+
+  if (value < 1) {
+    throw new CoreCandyMachineAdminInputError("priceUsdcAtomic must be greater than zero.");
+  }
+
+  if (value > MAX_USDC_ATOMIC) {
+    throw new CoreCandyMachineAdminInputError(`priceUsdcAtomic exceeds max value (${MAX_USDC_ATOMIC}).`);
+  }
+
+  return value;
+}
+
 async function sendRawTransactionWithRetry(connection: Connection, serializedTransaction: Uint8Array): Promise<string> {
   let attempt = 0;
   let delayMs = SEND_TX_RETRY_INITIAL_MS;
@@ -485,6 +509,8 @@ function validateDeployInput(input: PrepareCandyMachineDeployInput): PrepareCand
     throw new CoreCandyMachineAdminInputError("startDate must be a valid ISO date string.");
   }
 
+  const priceUsdcAtomic = resolveDeployPriceUsdcAtomic(input.priceUsdcAtomic);
+
   return {
     payerPublicKey,
     collectionName: derivedNames.collectionName,
@@ -492,6 +518,7 @@ function validateDeployInput(input: PrepareCandyMachineDeployInput): PrepareCand
     assetNamePrefix: derivedNames.assetNamePrefix,
     assetUri,
     quantity,
+    priceUsdcAtomic,
     startDate: parsedStartDate.toISOString(),
     startSerial
   };
@@ -565,6 +592,9 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const latestBlockhash = await umi.rpc.getLatestBlockhash();
   const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
+  const usdcMintAddress = resolveUsdcMintAddress();
+  const usdcRecipient = resolveUsdcPaymentRecipient();
+  const usdcDestinationAta = deriveAssociatedTokenAddress(usdcRecipient, usdcMintAddress);
   const configLineOptimization = buildConfigLineOptimization({
     assetNamePrefix: input.assetNamePrefix,
     assetUri: input.assetUri,
@@ -597,24 +627,27 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     transactionBase64: await serializeSignedBuilderTransaction(umi, createCollectionBuilder, latestBlockhash)
   });
 
+  const guardSet = {
+    startDate: {
+      date: dateTime(input.startDate)
+    },
+    tokenPayment: {
+      amount: BigInt(input.priceUsdcAtomic ?? 0),
+      mint: publicKey(usdcMintAddress),
+      destinationAta: publicKey(usdcDestinationAta)
+    },
+    thirdPartySigner: {
+      signerKey: publicKey(thirdPartySignerAddress)
+    }
+  };
+
   const createCandyMachineBuilder = create(umi, {
     candyMachine: candyMachineSigner,
     collection: collectionSigner.publicKey,
     collectionUpdateAuthority: payerSigner,
     itemsAvailable: BigInt(input.quantity),
     configLineSettings: configLineOptimization.configLineSettings,
-    guards: {
-      startDate: {
-        date: dateTime(input.startDate)
-      },
-      solPayment: {
-        lamports: createAmount(BigInt(DEVNET_MINT_PRICE_LAMPORTS), "SOL", 9),
-        destination: payerSigner.publicKey
-      },
-      thirdPartySigner: {
-        signerKey: publicKey(thirdPartySignerAddress)
-      }
-    },
+    guards: guardSet,
     groups: []
   });
 
@@ -701,7 +734,9 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     candyMachineAddress: candyMachineSigner.publicKey,
     collectionAddress: collectionSigner.publicKey,
     quantity: input.quantity,
-    priceLamports: DEVNET_MINT_PRICE_LAMPORTS,
+    paymentMode: "USDC",
+    priceUsdcAtomic: input.priceUsdcAtomic ?? null,
+    priceLamports: null,
     startDate: input.startDate,
     preparedAt: new Date().toISOString(),
     transactions
@@ -712,6 +747,9 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
   const input = validateMintPrepareInput(rawInput);
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const latestBlockhash = await umi.rpc.getLatestBlockhash();
+  const usdcMintAddress = resolveUsdcMintAddress();
+  const usdcRecipient = resolveUsdcPaymentRecipient();
+  const usdcDestinationAta = deriveAssociatedTokenAddress(usdcRecipient, usdcMintAddress);
   const candyMachineAddress = publicKey(input.candyMachineAddress);
   const collectionAddress = publicKey(input.collectionAddress);
   const thirdPartySigner = createPurchaseThirdPartySigner(umi);
@@ -742,8 +780,9 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
       owner: payerSigner.publicKey,
       asset: assetSigner,
       mintArgs: {
-        solPayment: {
-          destination: payerSigner.publicKey
+        tokenPayment: {
+          mint: publicKey(usdcMintAddress),
+          destinationAta: publicKey(usdcDestinationAta)
         },
         thirdPartySigner: {
           signer: thirdPartySigner

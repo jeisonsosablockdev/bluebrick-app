@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { InputHTMLAttributes, ReactElement } from "react";
 import Link from "next/link";
 
@@ -29,6 +29,12 @@ import {
   mapImportRowToFormFields,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
+import {
+  convertSolToUsd,
+  convertUsdToSol,
+  formatPriceInput,
+  parsePositiveDecimalInput
+} from "@/lib/admin/pricing";
 import {
   parseCollectionName,
   parseCollectionSymbol,
@@ -311,6 +317,14 @@ function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: stri
   return String(months);
 }
 
+type PriceInputCurrency = "USD" | "SOL";
+
+type SolUsdQuoteResponse = {
+  solUsd?: number;
+  updatedAt?: string;
+  error?: string;
+};
+
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
@@ -360,6 +374,67 @@ export function AssetCreationForm(): ReactElement {
     setIsCreatingMarketplaceEntry,
     setCreatedMarketplaceEntryId
   } = useAssetCreationFormState(draftId);
+  const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
+  const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
+  const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
+  const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [solUsdQuoteError, setSolUsdQuoteError] = useState<string | null>(null);
+
+  const refreshSolUsdQuote = useCallback(async () => {
+    setSolUsdQuoteStatus((previous) => (previous === "ready" ? "ready" : "loading"));
+    setSolUsdQuoteError(null);
+
+    try {
+      const response = await fetch("/api/admin/pricing/sol-usd", {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        },
+        cache: "no-store"
+      });
+
+      const payload = await response.json().catch(() => null) as SolUsdQuoteResponse | null;
+      if (!response.ok || typeof payload?.solUsd !== "number" || !Number.isFinite(payload.solUsd) || payload.solUsd <= 0) {
+        throw new Error(payload?.error ?? "Could not fetch SOL/USD quote.");
+      }
+
+      setSolUsdRate(payload.solUsd);
+      setSolUsdUpdatedAt(typeof payload.updatedAt === "string" ? payload.updatedAt : null);
+      setSolUsdQuoteStatus("ready");
+    } catch (error) {
+      setSolUsdQuoteStatus("error");
+      setSolUsdQuoteError(error instanceof Error ? error.message : "Could not fetch SOL/USD quote.");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (form.assetType !== "building_new") {
+      setPriceInputCurrency("USD");
+      return;
+    }
+
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const loadQuote = async () => {
+      if (cancelled) {
+        return;
+      }
+      await refreshSolUsdQuote();
+    };
+
+    void loadQuote();
+    intervalId = setInterval(() => {
+      void loadQuote();
+    }, 90_000);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [form.assetType, refreshSolUsdQuote]);
 
   const derivedMintQuantityFromType = useMemo(() => {
     if (form.assetType !== "building_new") {
@@ -672,7 +747,7 @@ export function AssetCreationForm(): ReactElement {
     );
   };
 
-  const applyFinancialSource = (source: "totalUnits" | "nftCost", nextValue: string) => {
+  const applyFinancialSource = useCallback((source: "totalUnits" | "nftCost", nextValue: string) => {
     setForm((prev) => {
       const raw = source === "totalUnits"
         ? { ...prev, buildingTotalUnits: nextValue }
@@ -692,7 +767,68 @@ export function AssetCreationForm(): ReactElement {
         buildingTotalUnits: result.totalUnits
       };
     });
-  };
+  }, [setForm]);
+
+  const buildingNftCostUsd = useMemo(() => parsePositiveDecimalInput(form.buildingNftCost), [form.buildingNftCost]);
+  const buildingNftCostSol = useMemo(() => {
+    if (!buildingNftCostUsd || !solUsdRate) {
+      return null;
+    }
+
+    return convertUsdToSol(buildingNftCostUsd, solUsdRate);
+  }, [buildingNftCostUsd, solUsdRate]);
+
+  const displayedBuildingNftCostInput = useMemo(() => {
+    if (priceInputCurrency === "USD") {
+      return form.buildingNftCost;
+    }
+
+    if (!buildingNftCostUsd || !solUsdRate) {
+      return "";
+    }
+
+    return formatPriceInput(buildingNftCostSol ?? 0, 8);
+  }, [buildingNftCostSol, buildingNftCostUsd, form.buildingNftCost, priceInputCurrency, solUsdRate]);
+
+  const onBuildingNftCostChange = useCallback((nextValue: string) => {
+    if (priceInputCurrency === "USD") {
+      applyFinancialSource("nftCost", nextValue);
+      return;
+    }
+
+    const parsedSol = parsePositiveDecimalInput(nextValue);
+    if (!parsedSol || !solUsdRate) {
+      applyFinancialSource("nftCost", "");
+      return;
+    }
+
+    const convertedUsd = convertSolToUsd(parsedSol, solUsdRate);
+    applyFinancialSource("nftCost", formatPriceInput(convertedUsd, 8));
+  }, [applyFinancialSource, priceInputCurrency, solUsdRate]);
+
+  const nftCostConversionSummary = useMemo(() => {
+    if (!buildingNftCostUsd) {
+      return t({
+        en: "Define a positive NFT cost to lock deploy price.",
+        es: "Define un costo por NFT positivo para fijar el precio del deploy.",
+        pt: "Defina um custo por NFT positivo para fixar o preco do deploy."
+      });
+    }
+
+    if (!solUsdRate || !buildingNftCostSol) {
+      return t({
+        en: "SOL/USD quote unavailable. Keep pricing input in USD for now.",
+        es: "No hay cotizacion SOL/USD disponible. Mantenga el ingreso en USD por ahora.",
+        pt: "Cotacao SOL/USD indisponivel. Mantenha o valor em USD por enquanto."
+      });
+    }
+
+    return t({
+      en: `Canonical deploy price: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`,
+      es: `Precio canonico para deploy: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`,
+      pt: `Preco canonico para deploy: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`
+    });
+  }, [buildingNftCostSol, buildingNftCostUsd, solUsdRate, t]);
 
   const onFundingGoalChange = (nextFundingGoal: string) => {
     setForm((prev) => {
@@ -983,7 +1119,7 @@ export function AssetCreationForm(): ReactElement {
                 />
                 <GuidedInputField
                   label={t({ en: "Funding goal", es: "Meta de fondeo", pt: "Meta de captacao" })}
-                  hint={t({ en: "Reference value for total units and NFT cost.", es: "Valor de referencia para unidades y costo NFT.", pt: "Valor de referencia para unidades e custo do NFT." })}
+                  hint={t({ en: "Reference value in USD for total units and NFT cost.", es: "Valor de referencia en USD para unidades y costo NFT.", pt: "Valor de referencia em USD para unidades e custo do NFT." })}
                   tooltip={t({ en: "Core financial target used for consistency checks.", es: "Objetivo financiero base para validaciones de consistencia.", pt: "Meta financeira base para validacoes de consistencia." })}
                   placeholder="fundingGoal"
                   prefix="$"
@@ -998,15 +1134,57 @@ export function AssetCreationForm(): ReactElement {
                   value={form.buildingTotalUnits}
                   onChange={(event) => applyFinancialSource("totalUnits", event.target.value)}
                 />
-                <GuidedInputField
-                  label={t({ en: "NFT cost", es: "Costo por NFT", pt: "Custo por NFT" })}
-                  hint={t({ en: "Unit price per NFT share.", es: "Precio unitario por fraccion NFT.", pt: "Preco unitario por fracao NFT." })}
-                  tooltip={t({ en: "Auto-adjusted with funding goal and total units.", es: "Se autoajusta con meta de fondeo y total de unidades.", pt: "Autoajustado com meta de captacao e total de unidades." })}
-                  placeholder="nftCost"
-                  prefix="$"
-                  value={form.buildingNftCost}
-                  onChange={(event) => applyFinancialSource("nftCost", event.target.value)}
-                />
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-white/70">{t({ en: "Pricing input currency", es: "Moneda de entrada", pt: "Moeda de entrada" })}</p>
+                    <div className="inline-flex rounded-xl border border-white/20 bg-slate-900/50 p-1">
+                      {(["USD", "SOL"] as const).map((currency) => (
+                        <button
+                          key={currency}
+                          className={cn(
+                            "rounded-lg px-3 py-1 text-xs font-semibold transition-colors",
+                            priceInputCurrency === currency
+                              ? "bg-cyan-400/25 text-cyan-100"
+                              : "text-white/70 hover:text-white"
+                          )}
+                          onClick={() => {
+                            setPriceInputCurrency(currency);
+                            if (currency === "SOL" && !solUsdRate) {
+                              void refreshSolUsdQuote();
+                            }
+                          }}
+                          type="button"
+                        >
+                          {currency}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <GuidedInputField
+                    label={t({ en: "NFT cost", es: "Costo por NFT", pt: "Custo por NFT" })}
+                    hint={t({ en: "Unit price per NFT share. Canonical value is stored in USD.", es: "Precio unitario por fraccion NFT. El valor canonico se guarda en USD.", pt: "Preco unitario por fracao NFT. O valor canonico e salvo em USD." })}
+                    tooltip={t({ en: "Auto-adjusted with funding goal and total units.", es: "Se autoajusta con meta de fondeo y total de unidades.", pt: "Autoajustado com meta de captacao e total de unidades." })}
+                    placeholder="nftCost"
+                    prefix={priceInputCurrency === "SOL" ? "◎" : "$"}
+                    value={displayedBuildingNftCostInput}
+                    disabled={priceInputCurrency === "SOL" && !solUsdRate}
+                    onChange={(event) => onBuildingNftCostChange(event.target.value)}
+                  />
+                  <p className="text-[11px] text-white/60">{nftCostConversionSummary}</p>
+                  {solUsdQuoteStatus === "loading" ? (
+                    <p className="text-[11px] text-cyan-100/80">
+                      {t({ en: "Refreshing SOL/USD quote...", es: "Actualizando cotizacion SOL/USD...", pt: "Atualizando cotacao SOL/USD..." })}
+                    </p>
+                  ) : null}
+                  {solUsdUpdatedAt ? (
+                    <p className="text-[11px] text-white/50">
+                      {t({ en: "SOL/USD updated at", es: "SOL/USD actualizado a las", pt: "SOL/USD atualizado em" })}: {new Date(solUsdUpdatedAt).toLocaleString()}
+                    </p>
+                  ) : null}
+                  {solUsdQuoteError ? (
+                    <p className="text-[11px] text-rose-200">{solUsdQuoteError}</p>
+                  ) : null}
+                </div>
                 <GuidedInputField
                   label={t({ en: "Expected annual return", es: "Retorno anual esperado", pt: "Retorno anual esperado" })}
                   hint={t({ en: "Projected percentage return for investors.", es: "Porcentaje proyectado de retorno para inversionistas.", pt: "Percentual projetado de retorno para investidores." })}
@@ -1465,7 +1643,10 @@ export function AssetCreationForm(): ReactElement {
               imageUrl: form.coverImage || "",
               quantity: mintQuantityValue > 0 ? mintQuantityValue : 1,
               description: form.shortDescription || form.longDescription || "",
-              symbol: form.collectionSymbol || ""
+              symbol: form.collectionSymbol || "",
+              nftPriceUsd: deriveNftPriceUsd(form),
+              nftPriceInputCurrency: priceInputCurrency,
+              solUsdRate
             }}
             snapshotContext={{
               draftId,

@@ -56,6 +56,7 @@ export type PurchaseErrorCode =
   | "COMPLIANCE_RESTRICTED";
 
 export type PurchaseQuantityMode = "SINGLE_ONLY" | "MULTI_ENABLED";
+export type PurchasePaymentCurrency = "SOL" | "USDC";
 
 type GuardSnapshot = {
   candyMachineAddress: string;
@@ -64,8 +65,12 @@ type GuardSnapshot = {
   thirdPartySignerKey: string | null;
   startDateUnix: number | null;
   startDateIso: string | null;
+  paymentCurrency: PurchasePaymentCurrency | null;
   priceLamports: number | null;
+  priceUsdcAtomic: number | null;
   solPaymentDestination: string | null;
+  tokenPaymentDestinationAta: string | null;
+  tokenPaymentMint: string | null;
   itemsAvailable: number;
   itemsRedeemed: number;
   itemsRemaining: number;
@@ -82,6 +87,7 @@ type PreparePurchaseInput = {
   buyerPublicKey: string;
   quantity?: number;
   quotedPriceLamports?: number;
+  quotedPriceUsdcAtomic?: number;
   challengeId: string;
   challengeSignatureBase64: string;
   clientIp: string;
@@ -98,11 +104,14 @@ export type PurchaseQuoteResult = {
   propertyId: string;
   quantityMode: PurchaseQuantityMode;
   quantity: number;
-  totalPriceLamports: number;
+  paymentCurrency: PurchasePaymentCurrency;
+  totalPriceLamports: number | null;
+  totalPriceUsdcAtomic: number | null;
   candyMachineAddress: string;
   collectionAddress: string;
   cacheUpdatedAt: string;
-  priceLamports: number;
+  priceLamports: number | null;
+  priceUsdcAtomic: number | null;
   startDateIso: string | null;
   itemsRemaining: number;
   itemsAvailable: number;
@@ -116,10 +125,13 @@ export type PurchasePrepareResult = {
   quantityMode: PurchaseQuantityMode;
   quantity: number;
   network: "devnet";
+  paymentCurrency: PurchasePaymentCurrency;
   candyMachineAddress: string;
   collectionAddress: string;
-  priceLamports: number;
-  totalPriceLamports: number;
+  priceLamports: number | null;
+  totalPriceLamports: number | null;
+  priceUsdcAtomic: number | null;
+  totalPriceUsdcAtomic: number | null;
   cacheUpdatedAt: string;
   preparedAt: string;
   transactionBase64: string;
@@ -273,7 +285,7 @@ export function mapSubmitErrorToPurchaseError(error: unknown): PurchaseFlowError
   const normalized = message.toLowerCase();
 
   if (normalized.includes("insufficient funds")) {
-    return new PurchaseFlowError("INSUFFICIENT_FUNDS", "Insufficient SOL balance for mint and fees.", 409);
+    return new PurchaseFlowError("INSUFFICIENT_FUNDS", "Insufficient balance for mint and network fees.", 409);
   }
 
   return new PurchaseFlowError("TRANSACTION_FAILED", message, 500);
@@ -290,10 +302,19 @@ async function fetchGuardSnapshot(candyMachineAddressRaw: string, fallbackCollec
   const startDateGuard = unwrapOption<{ date?: unknown }>(candyGuard?.guards?.startDate);
   const startDateUnix = startDateGuard ? toInteger(startDateGuard.date) : null;
   const solPayment = unwrapOption<{ lamports?: unknown; destination?: unknown }>(candyGuard?.guards?.solPayment);
+  const tokenPayment = unwrapOption<{ amount?: unknown; destinationAta?: unknown; mint?: unknown }>(candyGuard?.guards?.tokenPayment);
   const thirdPartySigner = unwrapOption<{ signerKey?: unknown }>(candyGuard?.guards?.thirdPartySigner);
   const priceLamports = solPayment ? amountToLamports(solPayment.lamports) : null;
+  const priceUsdcAtomic = tokenPayment ? amountToLamports(tokenPayment.amount) : null;
   const solPaymentDestination = solPayment?.destination ? String(solPayment.destination) : null;
+  const tokenPaymentDestinationAta = tokenPayment?.destinationAta ? String(tokenPayment.destinationAta) : null;
+  const tokenPaymentMint = tokenPayment?.mint ? String(tokenPayment.mint) : null;
   const thirdPartySignerKey = thirdPartySigner?.signerKey ? String(thirdPartySigner.signerKey) : null;
+  const paymentCurrency: PurchasePaymentCurrency | null = priceUsdcAtomic && tokenPaymentDestinationAta && tokenPaymentMint
+    ? "USDC"
+    : priceLamports && solPaymentDestination
+      ? "SOL"
+      : null;
 
   const itemsAvailable = toInteger(candyMachine.data?.itemsAvailable);
   const itemsRedeemed = toInteger(candyMachine.itemsRedeemed);
@@ -306,8 +327,12 @@ async function fetchGuardSnapshot(candyMachineAddressRaw: string, fallbackCollec
     thirdPartySignerKey,
     startDateUnix,
     startDateIso: startDateUnix ? new Date(startDateUnix * 1_000).toISOString() : null,
+    paymentCurrency,
     priceLamports,
+    priceUsdcAtomic,
     solPaymentDestination,
+    tokenPaymentDestinationAta,
+    tokenPaymentMint,
     itemsAvailable,
     itemsRedeemed,
     itemsRemaining,
@@ -429,11 +454,11 @@ function resolveRequestedQuantity(requestedQuantity: number | undefined, quantit
   return normalizedQuantity;
 }
 
-function calculateTotalPriceLamports(priceLamports: number, quantity: number): number {
-  const total = priceLamports * quantity;
+function calculateTotalPriceAtomic(priceAtomic: number, quantity: number, fieldName: string): number {
+  const total = priceAtomic * quantity;
   if (!Number.isSafeInteger(total) || total <= 0) {
-    throw new PurchaseFlowError("TRANSACTION_FAILED", "Could not calculate total price for requested quantity.", 500, {
-      priceLamports,
+    throw new PurchaseFlowError("TRANSACTION_FAILED", `Could not calculate total ${fieldName} for requested quantity.`, 500, {
+      priceAtomic,
       quantity
     });
   }
@@ -572,8 +597,8 @@ export async function quotePurchaseForProperty(propertyId: string, quantity = 1)
     throw availabilityError;
   }
 
-  if (snapshot.priceLamports === null) {
-    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard solPayment is not configured.", 409);
+  if (!snapshot.paymentCurrency) {
+    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard payment guard is not configured.", 409);
   }
 
   if (snapshot.itemsRemaining < requestedQuantity) {
@@ -583,15 +608,33 @@ export async function quotePurchaseForProperty(propertyId: string, quantity = 1)
     });
   }
 
+  const totalPriceLamports = snapshot.paymentCurrency === "SOL" && snapshot.priceLamports !== null
+    ? calculateTotalPriceAtomic(snapshot.priceLamports, requestedQuantity, "priceLamports")
+    : null;
+  const totalPriceUsdcAtomic = snapshot.paymentCurrency === "USDC" && snapshot.priceUsdcAtomic !== null
+    ? calculateTotalPriceAtomic(snapshot.priceUsdcAtomic, requestedQuantity, "priceUsdcAtomic")
+    : null;
+
+  if (snapshot.paymentCurrency === "SOL" && totalPriceLamports === null) {
+    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard solPayment is not configured.", 409);
+  }
+
+  if (snapshot.paymentCurrency === "USDC" && totalPriceUsdcAtomic === null) {
+    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard tokenPayment is not configured.", 409);
+  }
+
   return {
     propertyId: propertyContext.propertyId,
     quantityMode,
     quantity: requestedQuantity,
-    totalPriceLamports: calculateTotalPriceLamports(snapshot.priceLamports, requestedQuantity),
+    paymentCurrency: snapshot.paymentCurrency,
+    totalPriceLamports,
+    totalPriceUsdcAtomic,
     candyMachineAddress: snapshot.candyMachineAddress,
     collectionAddress: snapshot.collectionAddress,
     cacheUpdatedAt: snapshot.fetchedAt,
     priceLamports: snapshot.priceLamports,
+    priceUsdcAtomic: snapshot.priceUsdcAtomic,
     startDateIso: snapshot.startDateIso,
     itemsRemaining: snapshot.itemsRemaining,
     itemsAvailable: snapshot.itemsAvailable,
@@ -669,8 +712,23 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     throw availabilityError;
   }
 
-  if (freshSnapshot.priceLamports === null || !freshSnapshot.solPaymentDestination) {
+  if (!freshSnapshot.paymentCurrency) {
+    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard payment guard is not configured.", 409);
+  }
+
+  if (freshSnapshot.paymentCurrency === "SOL" && (freshSnapshot.priceLamports === null || !freshSnapshot.solPaymentDestination)) {
     throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard solPayment is not configured.", 409);
+  }
+
+  if (
+    freshSnapshot.paymentCurrency === "USDC"
+    && (
+      freshSnapshot.priceUsdcAtomic === null
+      || !freshSnapshot.tokenPaymentDestinationAta
+      || !freshSnapshot.tokenPaymentMint
+    )
+  ) {
+    throw new PurchaseFlowError("TRANSACTION_FAILED", "Candy Guard tokenPayment is not configured.", 409);
   }
 
   if (freshSnapshot.itemsRemaining < requestedQuantity) {
@@ -680,18 +738,34 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     });
   }
 
-  if (
-    typeof input.quotedPriceLamports === "number"
-    && input.quotedPriceLamports > 0
-    && input.quotedPriceLamports !== freshSnapshot.priceLamports
+  if (freshSnapshot.paymentCurrency === "SOL") {
+    if (
+      typeof input.quotedPriceLamports === "number"
+      && input.quotedPriceLamports > 0
+      && input.quotedPriceLamports !== freshSnapshot.priceLamports
+    ) {
+      throw new PurchaseFlowError(
+        "PRICE_CHANGED",
+        "Mint price changed since quote.",
+        409,
+        {
+          quotedPriceLamports: input.quotedPriceLamports,
+          currentPriceLamports: freshSnapshot.priceLamports
+        }
+      );
+    }
+  } else if (
+    typeof input.quotedPriceUsdcAtomic === "number"
+    && input.quotedPriceUsdcAtomic > 0
+    && input.quotedPriceUsdcAtomic !== freshSnapshot.priceUsdcAtomic
   ) {
     throw new PurchaseFlowError(
       "PRICE_CHANGED",
       "Mint price changed since quote.",
       409,
       {
-        quotedPriceLamports: input.quotedPriceLamports,
-        currentPriceLamports: freshSnapshot.priceLamports
+        quotedPriceUsdcAtomic: input.quotedPriceUsdcAtomic,
+        currentPriceUsdcAtomic: freshSnapshot.priceUsdcAtomic
       }
     );
   }
@@ -737,7 +811,9 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     challengeId,
     clientIp,
     quantity: requestedQuantity,
-    quotedPriceLamports: typeof input.quotedPriceLamports === "number" ? input.quotedPriceLamports : null,
+    quotedPriceLamports: freshSnapshot.paymentCurrency === "SOL" && typeof input.quotedPriceLamports === "number"
+      ? input.quotedPriceLamports
+      : null,
     idempotencyKey,
     idempotencyExpiresAt
   });
@@ -762,36 +838,67 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
       );
     }
 
+    const buildMintBatch = (quantity: number): {
+      expectedAssetAddresses: string[];
+      builder: ReturnType<typeof transactionBuilder>;
+    } => {
+      const expectedAssetAddresses: string[] = [];
+      let builder = transactionBuilder();
+
+      for (let index = 0; index < quantity; index += 1) {
+        const assetSigner = generateSigner(umi);
+        expectedAssetAddresses.push(String(assetSigner.publicKey));
+
+        const mintArgs = freshSnapshot.paymentCurrency === "USDC"
+          ? {
+              tokenPayment: {
+                destinationAta: publicKey(freshSnapshot.tokenPaymentDestinationAta as string),
+                mint: publicKey(freshSnapshot.tokenPaymentMint as string)
+              },
+              thirdPartySigner: {
+                signer: thirdPartySigner
+              }
+            }
+          : {
+              solPayment: {
+                destination: publicKey(freshSnapshot.solPaymentDestination as string)
+              },
+              thirdPartySigner: {
+                signer: thirdPartySigner
+              }
+            };
+
+        builder = builder.add(mintV1(umi, {
+          candyMachine: candyMachineAddress,
+          candyGuard,
+          collection: collectionAddress,
+          payer: buyerSigner,
+          minter: buyerSigner,
+          owner: buyerSigner.publicKey,
+          asset: assetSigner,
+          mintArgs
+        }));
+      }
+
+      return { expectedAssetAddresses, builder };
+    };
+
     const candyMachineAddress = publicKey(freshSnapshot.candyMachineAddress);
     const collectionAddress = publicKey(freshSnapshot.collectionAddress);
     const candyGuard = findCandyGuardPda(umi, { base: candyMachineAddress });
-    const expectedAssetAddresses: string[] = [];
-    let mintBatchBuilder = transactionBuilder();
-
-    for (let index = 0; index < requestedQuantity; index += 1) {
-      const assetSigner = generateSigner(umi);
-      expectedAssetAddresses.push(String(assetSigner.publicKey));
-
-      mintBatchBuilder = mintBatchBuilder.add(mintV1(umi, {
-        candyMachine: candyMachineAddress,
-        candyGuard,
-        collection: collectionAddress,
-        payer: buyerSigner,
-        minter: buyerSigner,
-        owner: buyerSigner.publicKey,
-        asset: assetSigner,
-        mintArgs: {
-          solPayment: {
-            destination: publicKey(freshSnapshot.solPaymentDestination)
-          },
-          thirdPartySigner: {
-            signer: thirdPartySigner
-          }
-        }
-      }));
-    }
+    const { expectedAssetAddresses, builder: mintBatchBuilder } = buildMintBatch(requestedQuantity);
 
     if (!mintBatchBuilder.fitsInOneTransaction(umi)) {
+      let suggestedMaxQuantity = 1;
+
+      for (let candidate = requestedQuantity - 1; candidate >= 1; candidate -= 1) {
+        const { builder } = buildMintBatch(candidate);
+        if (builder.fitsInOneTransaction(umi)) {
+          suggestedMaxQuantity = candidate;
+          break;
+        }
+      }
+
       throw new PurchaseFlowError(
         "INVALID_QUANTITY",
         "Requested quantity is too large for a single transaction. Reduce quantity and retry.",
@@ -799,7 +906,8 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
         {
           requestedQuantity,
           quantityMode,
-          maxQuantityPerOrder: resolvePurchaseMaxQuantity()
+          maxQuantityPerOrder: resolvePurchaseMaxQuantity(),
+          suggestedMaxQuantity
         }
       );
     }
@@ -811,7 +919,7 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     const preparedTxMessageBase64 = toBase64(web3Tx.message.serialize());
     const prepared = await markPurchaseAttemptPrepared({
       id: attempt.id,
-      preparedPriceLamports: freshSnapshot.priceLamports,
+      preparedPriceLamports: freshSnapshot.paymentCurrency === "SOL" ? freshSnapshot.priceLamports : null,
       cacheUpdatedAt: freshSnapshot.fetchedAt,
       preparedTxMessageBase64
     });
@@ -820,6 +928,13 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
       throw new PurchaseFlowError("TRANSACTION_FAILED", "Purchase attempt is not in a preparable state.", 409);
     }
 
+    const totalPriceLamports = freshSnapshot.paymentCurrency === "SOL" && freshSnapshot.priceLamports !== null
+      ? calculateTotalPriceAtomic(freshSnapshot.priceLamports, requestedQuantity, "priceLamports")
+      : null;
+    const totalPriceUsdcAtomic = freshSnapshot.paymentCurrency === "USDC" && freshSnapshot.priceUsdcAtomic !== null
+      ? calculateTotalPriceAtomic(freshSnapshot.priceUsdcAtomic, requestedQuantity, "priceUsdcAtomic")
+      : null;
+
     return {
       attemptId: prepared.id,
       idempotencyKey: prepared.idempotencyKey,
@@ -827,10 +942,13 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
       quantityMode,
       quantity: requestedQuantity,
       network: "devnet",
+      paymentCurrency: freshSnapshot.paymentCurrency,
       candyMachineAddress: freshSnapshot.candyMachineAddress,
       collectionAddress: freshSnapshot.collectionAddress,
       priceLamports: freshSnapshot.priceLamports,
-      totalPriceLamports: calculateTotalPriceLamports(freshSnapshot.priceLamports, requestedQuantity),
+      totalPriceLamports,
+      priceUsdcAtomic: freshSnapshot.priceUsdcAtomic,
+      totalPriceUsdcAtomic,
       cacheUpdatedAt: freshSnapshot.fetchedAt,
       preparedAt: prepared.preparedAt ?? new Date().toISOString(),
       transactionBase64,
