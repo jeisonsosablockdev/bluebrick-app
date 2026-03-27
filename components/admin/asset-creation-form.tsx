@@ -1,23 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, DragEvent, ReactElement } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
-  CoreCandyMachinePanel,
-  type DeployCompletedPayload,
-  type SnapshotFinalizeResponse
+  CoreCandyMachinePanel
 } from "@/components/admin/core-candy-machine-panel";
+import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
+import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
+import {
+  AssetCollectionSection,
+  AssetCommercialDescriptionSection,
+  AssetCreationIntroSection,
+  AssetIdentificationSection,
+  AssetImportSection,
+  AssetLocationSection,
+  AssetMediaSection,
+  AssetTypeSelectionSection
+} from "@/components/admin/asset-creation/sections";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   applyFinancialRule,
   mapImportRowToFormFields,
-  parseTabularText,
-  parseTextFileToTabularRows,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
 import {
@@ -25,113 +33,6 @@ import {
   parseCollectionSymbol,
   parseExitStrategy
 } from "@/lib/admin/asset-compatibility-validation";
-import {
-  type AssetUploadCategory,
-  type FinalizeResponse,
-  uploadAssetFileViaSignedUrl
-} from "@/lib/admin/asset-upload-client";
-
-type AssetType = "building_new" | "rental_property" | "land_lot" | "";
-type FormStatus = "draft" | "saving" | "saved" | "validation-error";
-type TypeFormState = "incomplete" | "valid" | "invalid";
-type FileUploadField = "coverImage" | "galleryImages" | "brochureFile" | "legalDocs" | "financialDocs" | "propertyImages";
-type UploadFieldUiState = {
-  uploading: boolean;
-  message: string;
-  error: string;
-};
-
-type ImportJobState =
-  | "queued"
-  | "processing"
-  | "completed"
-  | "completed_with_errors"
-  | "failed"
-  | "delayed";
-
-type ImportJobErrorItem = {
-  row: number | null;
-  column: string | null;
-  code: string;
-  message: string;
-};
-
-type ImportJobTracker = {
-  importJobId: string;
-  statusUrl: string;
-  state: ImportJobState;
-  delayed: boolean;
-  totalRows: number;
-  processedRows: number;
-  failedRows: number;
-  warningsCount: number;
-  errorReportUrl: string | null;
-  errors: ImportJobErrorItem[];
-  error: string;
-};
-
-type AssetForm = {
-  assetType: AssetType;
-  assetName: string;
-  slug: string;
-  internalCode: string;
-  country: string;
-  state: string;
-  city: string;
-  address: string;
-  geoLat: string;
-  geoLng: string;
-  shortDescription: string;
-  longDescription: string;
-  investmentThesis: string;
-  riskNotes: string;
-  coverImage: string;
-  galleryImages: string[];
-  videoUrl: string;
-  brochureFile: string;
-  legalDocs: string[];
-  financialDocs: string[];
-  propertyImages: string[];
-  collectionName: string;
-  collectionSymbol: string;
-  buildingProjectStage: string;
-  buildingDeveloperName: string;
-  buildingEstimatedDeliveryDate: string;
-  buildingConstructionStartDate: string;
-  buildingTotalUnits: string;
-  buildingFundingGoal: string;
-  buildingNftCost: string;
-  buildingExpectedAnnualReturn: string;
-  buildingExitStrategy: string;
-  buildingProjectDurationMonths: string;
-  buildingLicensesStatus: string;
-  buildingFiduciaryStructure: string;
-  buildingSalesProgressPercent: string;
-  rentalMonthlyRentEstimate: string;
-  rentalAnnualGrossIncome: string;
-  rentalOccupancyRate: string;
-  rentalLeaseStartDate: string;
-  rentalLeaseEndDate: string;
-  rentalTenantType: string;
-  rentalPropertyManager: string;
-  rentalHistoricalYield: string;
-  rentalMaintenanceReserve: string;
-  rentalCurrentTenant: string;
-  rentalContractStatus: string;
-  rentalPaymentFrequency: string;
-  landCadastralNumber: string;
-  landAreaM2: string;
-  landUse: string;
-  landZoningClassification: string;
-  landAppreciationHorizonMonths: string;
-  landTargetExitValue: string;
-  landEntryPrice: string;
-  landExitStrategy: string;
-  landUrbanDevelopmentPotential: string;
-  landRoadAccess: string;
-  landUtilitiesAccess: string;
-  landRegulatoryStatus: string;
-};
 
 const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: { en: string; es: string; pt: string }; subtitle: { en: string; es: string; pt: string } }> = [
   {
@@ -189,78 +90,6 @@ const exitStrategyOptions: Array<{
   }
 ];
 
-const initialForm: AssetForm = {
-  assetType: "",
-  assetName: "",
-  slug: "",
-  internalCode: "",
-  country: "",
-  state: "",
-  city: "",
-  address: "",
-  geoLat: "",
-  geoLng: "",
-  shortDescription: "",
-  longDescription: "",
-  investmentThesis: "",
-  riskNotes: "",
-  coverImage: "",
-  galleryImages: [],
-  videoUrl: "",
-  brochureFile: "",
-  legalDocs: [],
-  financialDocs: [],
-  propertyImages: [],
-  collectionName: "",
-  collectionSymbol: "",
-  buildingProjectStage: "",
-  buildingDeveloperName: "",
-  buildingEstimatedDeliveryDate: "",
-  buildingConstructionStartDate: "",
-  buildingTotalUnits: "",
-  buildingFundingGoal: "",
-  buildingNftCost: "",
-  buildingExpectedAnnualReturn: "",
-  buildingExitStrategy: "",
-  buildingProjectDurationMonths: "",
-  buildingLicensesStatus: "",
-  buildingFiduciaryStructure: "",
-  buildingSalesProgressPercent: "",
-  rentalMonthlyRentEstimate: "",
-  rentalAnnualGrossIncome: "",
-  rentalOccupancyRate: "",
-  rentalLeaseStartDate: "",
-  rentalLeaseEndDate: "",
-  rentalTenantType: "",
-  rentalPropertyManager: "",
-  rentalHistoricalYield: "",
-  rentalMaintenanceReserve: "",
-  rentalCurrentTenant: "",
-  rentalContractStatus: "",
-  rentalPaymentFrequency: "",
-  landCadastralNumber: "",
-  landAreaM2: "",
-  landUse: "",
-  landZoningClassification: "",
-  landAppreciationHorizonMonths: "",
-  landTargetExitValue: "",
-  landEntryPrice: "",
-  landExitStrategy: "",
-  landUrbanDevelopmentPotential: "",
-  landRoadAccess: "",
-  landUtilitiesAccess: "",
-  landRegulatoryStatus: ""
-};
-
-const initialUploadState: Record<FileUploadField, UploadFieldUiState> = {
-  coverImage: { uploading: false, message: "", error: "" },
-  galleryImages: { uploading: false, message: "", error: "" },
-  brochureFile: { uploading: false, message: "", error: "" },
-  legalDocs: { uploading: false, message: "", error: "" },
-  financialDocs: { uploading: false, message: "", error: "" },
-  propertyImages: { uploading: false, message: "", error: "" }
-};
-
 function createDraftId(): string {
   const cryptoApi = globalThis.crypto;
 
@@ -287,32 +116,6 @@ function createDraftId(): string {
   ].join("-");
 }
 
-function fieldToUploadCategory(field: FileUploadField): AssetUploadCategory {
-  if (field === "propertyImages") {
-    return "propertyImage";
-  }
-
-  if (field === "brochureFile") {
-    return "brochureFile";
-  }
-
-  if (field === "legalDocs") {
-    return "legalDoc";
-  }
-
-  if (field === "financialDocs") {
-    return "financialDoc";
-  }
-
-  return "galleryImage";
-}
-
-function updateListField(current: string[], fileNames: string[]): string[] {
-  const merged = [...fileNames, ...current];
-  const unique = Array.from(new Set(merged.map((name) => name.trim()).filter(Boolean)));
-  return unique.slice(0, 20);
-}
-
 function dedupeValidationErrors(errors: string[]): string[] {
   return Array.from(new Set(errors.map((item) => item.trim()).filter(Boolean)));
 }
@@ -329,34 +132,6 @@ function areStringArraysEqual(left: string[], right: string[]): boolean {
   }
 
   return true;
-}
-
-function parseImportJobState(value: unknown): ImportJobState {
-  if (
-    value === "queued" ||
-    value === "processing" ||
-    value === "completed" ||
-    value === "completed_with_errors" ||
-    value === "failed" ||
-    value === "delayed"
-  ) {
-    return value;
-  }
-
-  return "queued";
-}
-
-function isTerminalImportJobState(state: ImportJobState): boolean {
-  return state === "completed" || state === "completed_with_errors" || state === "failed";
-}
-
-function toSafeNonNegativeNumber(value: unknown): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return 0;
-  }
-
-  return Math.floor(parsed);
 }
 
 function readApiErrorMessage(payload: unknown, fallback: string): string {
@@ -477,35 +252,52 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
-  const [form, setForm] = useState<AssetForm>(initialForm);
-  const [formStatus, setFormStatus] = useState<FormStatus>("draft");
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [collectionNameManual, setCollectionNameManual] = useState(false);
-  const [collectionSymbolManual, setCollectionSymbolManual] = useState(false);
-  const [importText, setImportText] = useState("");
-  const [importFileName, setImportFileName] = useState("");
-  const [importPreviewCount, setImportPreviewCount] = useState(0);
-  const [importHeaders, setImportHeaders] = useState<string[]>([]);
-  const [importMessage, setImportMessage] = useState<string>("");
-  const [importSubmitting, setImportSubmitting] = useState(false);
-  const [importJob, setImportJob] = useState<ImportJobTracker | null>(null);
-  const [dragTargetField, setDragTargetField] = useState<FileUploadField | null>(null);
-  const [uploadState, setUploadState] = useState<Record<FileUploadField, UploadFieldUiState>>(initialUploadState);
-  const [uploadRefs, setUploadRefs] = useState<Record<FileUploadField, string[]>>({
-    coverImage: [],
-    galleryImages: [],
-    brochureFile: [],
-    legalDocs: [],
-    financialDocs: [],
-    propertyImages: []
-  });
-  const [mintQuantity, setMintQuantity] = useState<string>("1");
-  const [showMintSetup, setShowMintSetup] = useState(false);
-  const [deployCompletedData, setDeployCompletedData] = useState<DeployCompletedPayload | null>(null);
-  const [snapshotFinalize, setSnapshotFinalize] = useState<SnapshotFinalizeResponse | null>(null);
-  const [createAssetMessage, setCreateAssetMessage] = useState("");
-  const [isCreatingMarketplaceEntry, setIsCreatingMarketplaceEntry] = useState(false);
-  const [createdMarketplaceEntryId, setCreatedMarketplaceEntryId] = useState<string | null>(null);
+  const {
+    form,
+    formStatus,
+    validationErrors,
+    collectionNameManual,
+    collectionSymbolManual,
+    importText,
+    importFileName,
+    importPreviewCount,
+    importHeaders,
+    importMessage,
+    importSubmitting,
+    importJob,
+    dragTargetField,
+    uploadState,
+    uploadRefs,
+    mintQuantity,
+    showMintSetup,
+    deployCompletedData,
+    snapshotFinalize,
+    createAssetMessage,
+    isCreatingMarketplaceEntry,
+    createdMarketplaceEntryId,
+    setForm,
+    setFormStatus,
+    setValidationErrors,
+    setCollectionNameManual,
+    setCollectionSymbolManual,
+    setImportText,
+    setImportFileName,
+    setImportPreviewCount,
+    setImportHeaders,
+    setImportMessage,
+    setImportSubmitting,
+    setImportJob,
+    setDragTargetField,
+    setUploadState,
+    setUploadRefs,
+    setMintQuantity,
+    setShowMintSetup,
+    setDeployCompletedData,
+    setSnapshotFinalize,
+    setCreateAssetMessage,
+    setIsCreatingMarketplaceEntry,
+    setCreatedMarketplaceEntryId
+  } = useAssetCreationFormState(draftId);
 
   const derivedMintQuantityFromType = useMemo(() => {
     if (form.assetType !== "building_new") {
@@ -727,7 +519,7 @@ export function AssetCreationForm(): ReactElement {
 
       return currentValidationErrors;
     });
-  }, [formStatus, canContinueToMint, currentValidationErrors]);
+  }, [formStatus, canContinueToMint, currentValidationErrors, setFormStatus, setValidationErrors]);
 
   useEffect(() => {
     const collectionSuggestion = suggestCollectionFromIdentity({
@@ -751,157 +543,24 @@ export function AssetCreationForm(): ReactElement {
 
       return changed ? next : prev;
     });
-  }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual]);
+  }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual, setForm]);
 
-  const patchUploadState = (field: FileUploadField, patch: Partial<UploadFieldUiState>) => {
-    setUploadState((prev) => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        ...patch
-      }
-    }));
-  };
-
-  const applySuccessfulUploads = (field: FileUploadField, uploaded: FinalizeResponse[]) => {
-    if (uploaded.length === 0) {
-      return;
-    }
-
-    const cdnUrls = uploaded.map((item) => item.cdnUrl);
-    const fileRefIds = uploaded.map((item) => item.fileRefId);
-
-    setUploadRefs((prev) => ({
-      ...prev,
-      [field]: updateListField(prev[field], fileRefIds)
-    }));
-
-    if (field === "coverImage" || field === "brochureFile") {
-      const firstUrl = cdnUrls[0];
-      if (!firstUrl) {
-        return;
-      }
-
-      setForm((prev) => ({ ...prev, [field]: firstUrl }));
-      return;
-    }
-
-    setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], cdnUrls) }));
-  };
-
-  const applyFilesToField = async (field: FileUploadField, files: File[]) => {
-    if (files.length === 0) {
-      return;
-    }
-
-    const filesToUpload = field === "coverImage" ? files.slice(-1) : files;
-
-    patchUploadState(field, {
-      uploading: true,
-      error: "",
-      message: t({ en: "Uploading...", es: "Subiendo...", pt: "Enviando..." })
-    });
-
-    const uploaded: FinalizeResponse[] = [];
-    const failed: string[] = [];
-    const category = fieldToUploadCategory(field);
-    const previousSingleFieldCdnUrl = (field === "coverImage" || field === "brochureFile")
-      ? form[field].trim()
-      : "";
-
-    for (let index = 0; index < filesToUpload.length; index += 1) {
-      const file = filesToUpload[index];
-      if (!file) {
-        continue;
-      }
-
-      patchUploadState(field, {
-        message: t({
-          en: `Uploading ${index + 1}/${filesToUpload.length}: ${file.name}`,
-          es: `Subiendo ${index + 1}/${filesToUpload.length}: ${file.name}`,
-          pt: `Enviando ${index + 1}/${filesToUpload.length}: ${file.name}`
-        })
-      });
-
-      try {
-        const result = await uploadAssetFileViaSignedUrl({
-          file,
-          category,
-          draftId,
-          previousCdnUrl: previousSingleFieldCdnUrl || null
-        });
-        uploaded.push(result);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown upload error.";
-        failed.push(`${file.name}: ${message}`);
-      }
-    }
-
-    applySuccessfulUploads(field, uploaded);
-
-    patchUploadState(field, {
-      uploading: false,
-      message: uploaded.length > 0
-        ? t({
-          en: `${uploaded.length} file(s) uploaded.`,
-          es: `${uploaded.length} archivo(s) subidos.`,
-          pt: `${uploaded.length} arquivo(s) enviados.`
-        })
-        : "",
-      error: failed.join(" | ")
-    });
-  };
-
-  const onFileInput = (field: FileUploadField) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files || files.length === 0) {
-        return;
-      }
-
-      void applyFilesToField(field, Array.from(files));
-      event.target.value = "";
-    };
-
-  const onFileDragOver = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (dragTargetField !== field) {
-        setDragTargetField(field);
-      }
-    };
-
-  const onFileDragLeave = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const nextTarget = event.relatedTarget;
-      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
-        return;
-      }
-      if (dragTargetField === field) {
-        setDragTargetField(null);
-      }
-    };
-
-  const onFileDrop = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setDragTargetField(null);
-      const files = Array.from(event.dataTransfer.files ?? []);
-      void applyFilesToField(field, files);
-    };
-
-  const uploadFieldValue = (field: FileUploadField): string => {
-    if (field === "coverImage") return form.coverImage;
-    if (field === "brochureFile") return form.brochureFile;
-    if (field === "galleryImages") return form.galleryImages.join(", ");
-    if (field === "legalDocs") return form.legalDocs.join(", ");
-    if (field === "financialDocs") return form.financialDocs.join(", ");
-    return form.propertyImages.join(", ");
-  };
+  const {
+    onFileInput,
+    onFileDragOver,
+    onFileDragLeave,
+    onFileDrop,
+    uploadFieldValue
+  } = useAssetUploadWorkflow({
+    draftId,
+    form,
+    dragTargetField,
+    setForm,
+    setUploadState,
+    setUploadRefs,
+    setDragTargetField,
+    t
+  });
 
   const renderUploadFieldFeedback = (field: FileUploadField): ReactElement | null => {
     const state = uploadState[field];
@@ -1010,369 +669,24 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
-  const setTrackedImportJobFromStatus = useCallback((
-    input: {
-      importJobId: string;
-      statusUrl: string;
-      state: unknown;
-      delayed?: unknown;
-      totalRows?: unknown;
-      processedRows?: unknown;
-      failedRows?: unknown;
-      warningsCount?: unknown;
-      errorReportUrl?: unknown;
-    }
-  ) => {
-    const parsedState = parseImportJobState(input.state);
-    const parsedErrorReportUrl = typeof input.errorReportUrl === "string" ? input.errorReportUrl : null;
-
-    setImportJob((prev) => {
-      if (prev && prev.importJobId === input.importJobId) {
-        return {
-          ...prev,
-          state: parsedState,
-          delayed: Boolean(input.delayed),
-          totalRows: toSafeNonNegativeNumber(input.totalRows),
-          processedRows: toSafeNonNegativeNumber(input.processedRows),
-          failedRows: toSafeNonNegativeNumber(input.failedRows),
-          warningsCount: toSafeNonNegativeNumber(input.warningsCount),
-          errorReportUrl: parsedErrorReportUrl,
-          error: ""
-        };
-      }
-
-      return {
-        importJobId: input.importJobId,
-        statusUrl: input.statusUrl,
-        state: parsedState,
-        delayed: Boolean(input.delayed),
-        totalRows: toSafeNonNegativeNumber(input.totalRows),
-        processedRows: toSafeNonNegativeNumber(input.processedRows),
-        failedRows: toSafeNonNegativeNumber(input.failedRows),
-        warningsCount: toSafeNonNegativeNumber(input.warningsCount),
-        errorReportUrl: parsedErrorReportUrl,
-        errors: [],
-        error: ""
-      };
-    });
-  }, []);
-
-  const fetchImportJobErrors = useCallback(async (input: {
-    importJobId: string;
-    errorReportUrl: string;
-  }) => {
-    try {
-      const separator = input.errorReportUrl.includes("?") ? "&" : "?";
-      const response = await fetch(`${input.errorReportUrl}${separator}limit=10&offset=0`, {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      const payload = await response.json().catch(() => null) as {
-        errors?: Array<{
-          row?: unknown;
-          column?: unknown;
-          code?: unknown;
-          message?: unknown;
-        }>;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(readApiErrorMessage(payload, "Could not fetch import errors."));
-      }
-
-      const mappedErrors: ImportJobErrorItem[] = Array.isArray(payload?.errors)
-        ? payload.errors.map((item) => ({
-          row: typeof item.row === "number" ? item.row : null,
-          column: typeof item.column === "string" ? item.column : null,
-          code: typeof item.code === "string" ? item.code : "UNKNOWN",
-          message: typeof item.message === "string" ? item.message : "Unknown error"
-        }))
-        : [];
-
-      setImportJob((prev) => {
-        if (!prev || prev.importJobId !== input.importJobId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          errors: mappedErrors
-        };
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not fetch import errors.";
-      setImportJob((prev) => {
-        if (!prev || prev.importJobId !== input.importJobId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          error: message
-        };
-      });
-    }
-  }, []);
-
-  const pollImportJobStatus = useCallback(async (input: {
-    importJobId: string;
-    statusUrl: string;
-  }) => {
-    const response = await fetch(input.statusUrl, {
-      method: "GET",
-      cache: "no-store"
-    });
-
-    const payload = await response.json().catch(() => null) as {
-      importJobId?: unknown;
-      state?: unknown;
-      delayed?: unknown;
-      totalRows?: unknown;
-      processedRows?: unknown;
-      failedRows?: unknown;
-      warningsCount?: unknown;
-      errorReportUrl?: unknown;
-      error?: {
-        message?: unknown;
-      };
-    } | null;
-
-    if (!response.ok) {
-      throw new Error(readApiErrorMessage(payload, "Could not fetch import job status."));
-    }
-
-    const responseJobId = typeof payload?.importJobId === "string" ? payload.importJobId : input.importJobId;
-    setTrackedImportJobFromStatus({
-      importJobId: responseJobId,
-      statusUrl: input.statusUrl,
-      state: payload?.state,
-      delayed: payload?.delayed,
-      totalRows: payload?.totalRows,
-      processedRows: payload?.processedRows,
-      failedRows: payload?.failedRows,
-      warningsCount: payload?.warningsCount,
-      errorReportUrl: payload?.errorReportUrl
-    });
-
-    const parsedState = parseImportJobState(payload?.state);
-    const parsedErrorReportUrl = typeof payload?.errorReportUrl === "string" ? payload.errorReportUrl : null;
-
-    if ((parsedState === "completed_with_errors" || parsedState === "failed") && parsedErrorReportUrl) {
-      await fetchImportJobErrors({
-        importJobId: responseJobId,
-        errorReportUrl: parsedErrorReportUrl
-      });
-    }
-  }, [fetchImportJobErrors, setTrackedImportJobFromStatus]);
-
-  const enqueueImportJobRequest = useCallback(async (request: {
-    csvText?: string;
-    file?: File;
-    fileName?: string;
-    mimeType?: string;
-  }) => {
-    setImportSubmitting(true);
-    setImportMessage(
-      t({
-        en: "Creating async import job...",
-        es: "Creando job de importacion asincrona...",
-        pt: "Criando job de importacao assincrona..."
-      })
-    );
-
-    try {
-      let response: Response;
-
-      if (request.file) {
-        const formData = new FormData();
-        formData.set("file", request.file);
-        formData.set("draftId", draftId);
-        formData.set("idempotencyKey", `${draftId}:${request.file.name}:${request.file.size}:${request.file.lastModified}`);
-
-        response = await fetch("/api/admin/assets/import-jobs", {
-          method: "POST",
-          body: formData
-        });
-      } else {
-        response = await fetch("/api/admin/assets/import-jobs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            draftId,
-            fileName: request.fileName ?? "pasted-import.csv",
-            mimeType: request.mimeType ?? "text/csv",
-            csvText: request.csvText ?? ""
-          })
-        });
-      }
-
-      const payload = await response.json().catch(() => null) as {
-        importJobId?: unknown;
-        statusUrl?: unknown;
-        state?: unknown;
-        error?: {
-          message?: unknown;
-        };
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(readApiErrorMessage(payload, "Could not create import job."));
-      }
-
-      const importJobId = typeof payload?.importJobId === "string" ? payload.importJobId : "";
-      const statusUrl = typeof payload?.statusUrl === "string" ? payload.statusUrl : "";
-
-      if (!importJobId || !statusUrl) {
-        throw new Error("Import job response is missing required fields.");
-      }
-
-      setTrackedImportJobFromStatus({
-        importJobId,
-        statusUrl,
-        state: payload?.state
-      });
-
-      setImportMessage(
-        t({
-          en: "Import job created. Validating rows in background...",
-          es: "Job de importacion creado. Validando filas en segundo plano...",
-          pt: "Job de importacao criado. Validando linhas em segundo plano..."
-        })
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not create import job.";
-      setImportMessage(message);
-    } finally {
-      setImportSubmitting(false);
-    }
-  }, [draftId, setTrackedImportJobFromStatus, t]);
-
-  useEffect(() => {
-    if (!importJob?.importJobId || !importJob.statusUrl) {
-      return;
-    }
-
-    if (isTerminalImportJobState(importJob.state)) {
-      return;
-    }
-
-    const trackedJobId = importJob.importJobId;
-    const trackedStatusUrl = importJob.statusUrl;
-    let active = true;
-
-    const tick = async () => {
-      if (!active) {
-        return;
-      }
-
-      try {
-        await pollImportJobStatus({
-          importJobId: trackedJobId,
-          statusUrl: trackedStatusUrl
-        });
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-
-        const message = error instanceof Error ? error.message : "Could not fetch import job status.";
-        setImportJob((prev) => {
-          if (!prev || prev.importJobId !== trackedJobId) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            error: message
-          };
-        });
-      }
-    };
-
-    void tick();
-    const intervalId = setInterval(() => {
-      void tick();
-    }, 2500);
-
-    return () => {
-      active = false;
-      clearInterval(intervalId);
-    };
-  }, [importJob?.importJobId, importJob?.statusUrl, importJob?.state, pollImportJobStatus]);
-
-  const previewImportFromText = () => {
-    const parsed = parseTabularText(importText);
-    setImportHeaders(parsed.headers);
-    setImportPreviewCount(parsed.rows.length);
-    if (parsed.rows.length > 0) {
-      applyImportedRow(parsed.rows[0] ?? {});
-      setImportMessage(t({
-        en: "Imported preview row into the form.",
-        es: "Se importo la fila de vista previa al formulario.",
-        pt: "Linha de pre-visualizacao importada para o formulario."
-      }));
-    } else {
-      setImportMessage(t({
-        en: "No valid rows found in pasted content.",
-        es: "No se encontraron filas validas en el contenido pegado.",
-        pt: "Nenhuma linha valida encontrada no conteudo colado."
-      }));
-    }
-  };
-
-  const enqueueImportFromText = async () => {
-    const parsed = parseTabularText(importText);
-    setImportHeaders(parsed.headers);
-    setImportPreviewCount(parsed.rows.length);
-
-    if (parsed.rows.length === 0) {
-      setImportMessage(t({
-        en: "No valid rows found in pasted content.",
-        es: "No se encontraron filas validas en el contenido pegado.",
-        pt: "Nenhuma linha valida encontrada no conteudo colado."
-      }));
-      return;
-    }
-
-    applyImportedRow(parsed.rows[0] ?? {});
-    await enqueueImportJobRequest({
-      csvText: importText,
-      fileName: importFileName || "pasted-import.csv",
-      mimeType: "text/csv"
-    });
-  };
-
-  const onImportFileInput = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    try {
-      setImportFileName(file.name);
-      const text = await file.text();
-      const parsed = parseTextFileToTabularRows(file.name, text);
-      setImportHeaders(parsed.headers);
-      setImportPreviewCount(parsed.rows.length);
-
-      if (parsed.rows.length > 0) {
-        applyImportedRow(parsed.rows[0] ?? {});
-        await enqueueImportJobRequest({ file });
-      } else {
-        setImportMessage(t({
-          en: "File parsed but no rows were detected.",
-          es: "Se proceso el archivo pero no se detectaron filas.",
-          pt: "Arquivo processado, mas nenhuma linha foi detectada."
-        }));
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown import error.";
-      setImportMessage(message);
-    } finally {
-      event.target.value = "";
-    }
-  };
+  const {
+    previewImportFromText,
+    enqueueImportFromText,
+    onImportFileInput
+  } = useAssetImportJobs({
+    draftId,
+    importText,
+    importFileName,
+    importJob,
+    setImportSubmitting,
+    setImportMessage,
+    setImportJob,
+    setImportHeaders,
+    setImportPreviewCount,
+    setImportFileName,
+    t,
+    onApplyImportedRow: applyImportedRow
+  });
 
   const saveDraft = async () => {
     setFormStatus("saving");
@@ -1474,352 +788,61 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const handleResetSuggestedCollectionValues = () => {
+    const suggestion = suggestCollectionFromIdentity({
+      internalCode: form.internalCode,
+      slug: form.slug
+    });
+    setCollectionNameManual(false);
+    setCollectionSymbolManual(false);
+    setForm((prev) => ({
+      ...prev,
+      collectionName: suggestion.collectionName,
+      collectionSymbol: suggestion.collectionSymbol
+    }));
+  };
+
   return (
     <div className="space-y-4 pb-24">
-      <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">{t({ en: "Create tokenizable asset", es: "Crear activo tokenizable", pt: "Criar ativo tokenizavel" })}</h2>
-        <p className="text-sm text-white/75">
-          {t({
-            en: "Create the master asset record. Rule: one collection per asset, and mint cannot be enabled without a defined asset.",
-            es: "Crea el registro maestro del activo. Regla: una coleccion por activo y no se habilita mint sin activo definido.",
-            pt: "Crie o registro mestre do ativo. Regra: uma colecao por ativo, e o mint nao e habilitado sem ativo definido."
-          })}
-        </p>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Initial step: type selection", es: "Paso inicial: seleccion de tipo", pt: "Passo inicial: selecao de tipo" })}</p>
-        <div className="grid gap-3 md:grid-cols-3">
-          {assetTypeOptions.map((option) => {
-            const active = form.assetType === option.value;
-            return (
-              <button
-                key={option.value}
-                className={`rounded-xl border p-3 text-left ${active ? "border-cyan-400/50 bg-cyan-500/10" : "border-white/10 bg-white/5"}`}
-                onClick={() => setForm((prev) => ({ ...prev, assetType: option.value }))}
-                type="button"
-              >
-                <p className="font-medium text-white">{t(option.title)}</p>
-                <p className="text-xs text-white/70">{t(option.subtitle)}</p>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Identification", es: "Identificacion", pt: "Identificacao" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="assetName" value={form.assetName} onChange={(event) => setForm((prev) => ({ ...prev, assetName: event.target.value }))} />
-          <Input placeholder="slug" value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} />
-          <Input placeholder="internalCode" value={form.internalCode} onChange={(event) => setForm((prev) => ({ ...prev, internalCode: event.target.value }))} />
-        </div>
-        <p className="text-xs text-white/60">
-          {t({
-            en: "Commercial asset status is derived from on-chain state and is not manually selected here.",
-            es: "El estado comercial del activo se deriva del estado on-chain y no se selecciona manualmente aqui.",
-            pt: "O status comercial do ativo e derivado do estado on-chain e nao e selecionado manualmente aqui."
-          })}
-        </p>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Location", es: "Ubicacion", pt: "Localizacao" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="country" value={form.country} onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))} />
-          <Input placeholder="state" value={form.state} onChange={(event) => setForm((prev) => ({ ...prev, state: event.target.value }))} />
-          <Input placeholder="city" value={form.city} onChange={(event) => setForm((prev) => ({ ...prev, city: event.target.value }))} />
-          <Input placeholder="address" value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
-          <Input placeholder="geoLat (opcional)" value={form.geoLat} onChange={(event) => setForm((prev) => ({ ...prev, geoLat: event.target.value }))} />
-          <Input placeholder="geoLng (opcional)" value={form.geoLng} onChange={(event) => setForm((prev) => ({ ...prev, geoLng: event.target.value }))} />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Commercial description", es: "Descripcion comercial", pt: "Descricao comercial" })}</p>
-        <div className="grid gap-3">
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="shortDescription" value={form.shortDescription} onChange={(event) => setForm((prev) => ({ ...prev, shortDescription: event.target.value }))} />
-          <textarea className="min-h-24 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="longDescription" value={form.longDescription} onChange={(event) => setForm((prev) => ({ ...prev, longDescription: event.target.value }))} />
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="investmentThesis" value={form.investmentThesis} onChange={(event) => setForm((prev) => ({ ...prev, investmentThesis: event.target.value }))} />
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="riskNotes" value={form.riskNotes} onChange={(event) => setForm((prev) => ({ ...prev, riskNotes: event.target.value }))} />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Media and documents", es: "Media y documentos", pt: "Midia e documentos" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            {t({ en: "coverImage (required)", es: "coverImage (obligatoria)", pt: "coverImage (obrigatoria)" })}
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "coverImage"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("coverImage")}
-              onDragLeave={onFileDragLeave("coverImage")}
-              onDrop={onFileDrop("coverImage")}
-            >
-              <input id="upload-coverImage" className="sr-only" type="file" onChange={onFileInput("coverImage")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-coverImage">
-                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
-            {renderUploadFieldFeedback("coverImage")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            galleryImages[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "galleryImages"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("galleryImages")}
-              onDragLeave={onFileDragLeave("galleryImages")}
-              onDrop={onFileDrop("galleryImages")}
-            >
-              <input id="upload-galleryImages" className="sr-only" type="file" multiple onChange={onFileInput("galleryImages")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-galleryImages">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("galleryImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("galleryImages")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            brochureFile
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "brochureFile"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("brochureFile")}
-              onDragLeave={onFileDragLeave("brochureFile")}
-              onDrop={onFileDrop("brochureFile")}
-            >
-              <input id="upload-brochureFile" className="sr-only" type="file" onChange={onFileInput("brochureFile")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-brochureFile">
-                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
-            {renderUploadFieldFeedback("brochureFile")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            legalDocs[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "legalDocs"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("legalDocs")}
-              onDragLeave={onFileDragLeave("legalDocs")}
-              onDrop={onFileDrop("legalDocs")}
-            >
-              <input id="upload-legalDocs" className="sr-only" type="file" multiple onChange={onFileInput("legalDocs")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-legalDocs">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("legalDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("legalDocs")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            financialDocs[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "financialDocs"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("financialDocs")}
-              onDragLeave={onFileDragLeave("financialDocs")}
-              onDrop={onFileDrop("financialDocs")}
-            >
-              <input id="upload-financialDocs" className="sr-only" type="file" multiple onChange={onFileInput("financialDocs")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-financialDocs">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("financialDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("financialDocs")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            propertyImages[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "propertyImages"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("propertyImages")}
-              onDragLeave={onFileDragLeave("propertyImages")}
-              onDrop={onFileDrop("propertyImages")}
-            >
-              <input id="upload-propertyImages" className="sr-only" type="file" multiple onChange={onFileInput("propertyImages")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-propertyImages">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("propertyImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("propertyImages")}
-          </label>
-        </div>
-        <Input placeholder={t({ en: "videoUrl optional", es: "videoUrl opcional", pt: "videoUrl opcional" })} value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
-      </Card>
-
-      <Card className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
-          <Button
-            className="min-h-11"
-            variant="ghost"
-            onClick={() => {
-              const suggestion = suggestCollectionFromIdentity({
-                internalCode: form.internalCode,
-                slug: form.slug
-              });
-              setCollectionNameManual(false);
-              setCollectionSymbolManual(false);
-              setForm((prev) => ({
-                ...prev,
-                collectionName: suggestion.collectionName,
-                collectionSymbol: suggestion.collectionSymbol
-              }));
-            }}
-          >
-            {t({ en: "Reset suggested values", es: "Resetear valores sugeridos", pt: "Resetar valores sugeridos" })}
-          </Button>
-        </div>
-        <p className="text-xs text-white/60">
-          {t({
-            en: "collectionName and collectionSymbol are auto-suggested from slug + internalCode. You can override manually.",
-            es: "collectionName y collectionSymbol se sugieren automaticamente desde slug + internalCode. Puedes sobreescribirlos manualmente.",
-            pt: "collectionName e collectionSymbol sao sugeridos automaticamente por slug + internalCode. Voce pode sobrescrever manualmente."
-          })}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input
-            placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })}
-            value={form.collectionName}
-            onChange={(event) => {
-              setCollectionNameManual(true);
-              setForm((prev) => ({ ...prev, collectionName: event.target.value }));
-            }}
-          />
-          <Input
-            placeholder="collectionSymbol"
-            value={form.collectionSymbol}
-            onChange={(event) => {
-              setCollectionSymbolManual(true);
-              setForm((prev) => ({ ...prev, collectionSymbol: event.target.value }));
-            }}
-          />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Quick import (CSV or paste from Excel)", es: "Importacion rapida (CSV o pegado desde Excel)", pt: "Importacao rapida (CSV ou colar do Excel)" })}</p>
-        <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-          <p>{t({ en: "Import file (.csv, .txt, .tsv)", es: "Importar archivo (.csv, .txt, .tsv)", pt: "Importar arquivo (.csv, .txt, .tsv)" })}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <input id="quick-import-file" className="sr-only" type="file" accept=".csv,.txt,.tsv" onChange={onImportFileInput} />
-            <label
-              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
-              htmlFor="quick-import-file"
-            >
-              {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-            </label>
-            <p className="text-xs text-white/60">
-              {importFileName || t({ en: "No file selected", es: "Sin archivo seleccionado", pt: "Nenhum arquivo selecionado" })}
-            </p>
-          </div>
-        </div>
-        <textarea
-          className="min-h-24 resize-none appearance-none rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white"
-          placeholder={t({
-            en: "Paste cells copied from Excel (tabular content with header row).",
-            es: "Pega celdas copiadas desde Excel (contenido tabular con fila de encabezados).",
-            pt: "Cole celulas copiadas do Excel (conteudo tabular com linha de cabecalho)."
-          })}
-          value={importText}
-          onChange={(event) => setImportText(event.target.value)}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button className="min-h-11" disabled={importSubmitting} variant="outline" onClick={previewImportFromText}>
-            {t({ en: "Preview and apply first row", es: "Previsualizar y aplicar primera fila", pt: "Pre-visualizar e aplicar primeira linha" })}
-          </Button>
-          <Button className="min-h-11" disabled={importSubmitting} onClick={() => void enqueueImportFromText()}>
-            {importSubmitting
-              ? t({ en: "Queueing import...", es: "Encolando importacion...", pt: "Enfileirando importacao..." })
-              : t({ en: "Queue async import", es: "Encolar importacion async", pt: "Enfileirar importacao async" })}
-          </Button>
-          <p className="text-xs text-white/60">
-            {t({ en: "Columns detected", es: "Columnas detectadas", pt: "Colunas detectadas" })}: {importHeaders.length}
-          </p>
-          <p className="text-xs text-white/60">
-            {t({ en: "Rows detected", es: "Filas detectadas", pt: "Linhas detectadas" })}: {importPreviewCount}
-          </p>
-        </div>
-        {importMessage && <p className="text-xs text-cyan-100">{importMessage}</p>}
-        {importJob && (
-          <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/5 p-3 text-xs text-cyan-100">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold">
-                {t({ en: "Import job", es: "Import job", pt: "Import job" })}: {importJob.importJobId}
-              </p>
-              <span className="rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-1 text-[11px] uppercase tracking-wide">
-                {importJob.state}
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cyan-100/90">
-              <p>
-                {t({ en: "processed", es: "procesadas", pt: "processadas" })}: {importJob.processedRows}/{importJob.totalRows}
-              </p>
-              <p>
-                {t({ en: "failed", es: "fallidas", pt: "falhas" })}: {importJob.failedRows}
-              </p>
-              <p>
-                {t({ en: "warnings", es: "advertencias", pt: "avisos" })}: {importJob.warningsCount}
-              </p>
-            </div>
-            {importJob.delayed && (
-              <p className="mt-2 text-[11px] text-amber-200">
-                {t({
-                  en: "Import is delayed. Worker retry is active.",
-                  es: "La importacion esta demorada. El worker sigue reintentando.",
-                  pt: "A importacao esta atrasada. O worker segue tentando."
-                })}
-              </p>
-            )}
-            {importJob.error && (
-              <p className="mt-2 text-[11px] text-rose-200">{importJob.error}</p>
-            )}
-            {importJob.errors.length > 0 && (
-              <div className="mt-2 space-y-1 text-[11px]">
-                <p className="font-semibold text-rose-100">
-                  {t({ en: "Top import errors", es: "Errores principales", pt: "Erros principais" })}
-                </p>
-                {importJob.errors.slice(0, 5).map((error, index) => (
-                  <p key={`${error.code}-${error.row ?? "na"}-${index}`} className="text-rose-100/90">
-                    {error.row !== null ? `#${error.row} ` : ""}{error.column ? `${error.column}: ` : ""}{error.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </Card>
+      <AssetCreationIntroSection t={t} />
+      <AssetTypeSelectionSection t={t} form={form} setForm={setForm} options={assetTypeOptions} />
+      <AssetIdentificationSection t={t} form={form} setForm={setForm} />
+      <AssetLocationSection t={t} form={form} setForm={setForm} />
+      <AssetCommercialDescriptionSection t={t} form={form} setForm={setForm} />
+      <AssetMediaSection
+        t={t}
+        form={form}
+        dragTargetField={dragTargetField}
+        setForm={setForm}
+        onFileDragOver={onFileDragOver}
+        onFileDragLeave={onFileDragLeave}
+        onFileDrop={onFileDrop}
+        onFileInput={onFileInput}
+        uploadFieldValue={uploadFieldValue}
+        renderUploadFieldFeedback={renderUploadFieldFeedback}
+      />
+      <AssetCollectionSection
+        t={t}
+        form={form}
+        setForm={setForm}
+        setCollectionNameManual={setCollectionNameManual}
+        setCollectionSymbolManual={setCollectionSymbolManual}
+        onResetSuggestedValues={handleResetSuggestedCollectionValues}
+      />
+      <AssetImportSection
+        t={t}
+        importFileName={importFileName}
+        importText={importText}
+        importPreviewCount={importPreviewCount}
+        importHeaders={importHeaders}
+        importMessage={importMessage}
+        importSubmitting={importSubmitting}
+        importJob={importJob}
+        setImportText={setImportText}
+        previewImportFromText={previewImportFromText}
+        enqueueImportFromText={enqueueImportFromText}
+        onImportFileInput={onImportFileInput}
+      />
 
       {form.assetType && (
         <Card className="space-y-3">

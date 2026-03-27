@@ -6,7 +6,7 @@
 - Status: `in-review`
 - Owner: `jaymusicmachine`
 - Created: `2026-03-13`
-- Last Updated: `2026-03-16`
+- Last Updated: `2026-03-24`
 
 ## Scope
 - Problem statement:
@@ -69,6 +69,7 @@
 | STORY-001-01 | Marketplace Entry Off-chain | `STORY-001-01-kickoff.md` | `approved` | `#33, #35` | Evidencia staging adjunta; pendiente cierre de persistencia en producción y responsive QA |
 | STORY-001-02 | Signed URL API Contract | `STORY-001-02-signed-url-contract.md` | `implemented` | `#35` | Flujo real `signed-url -> upload -> finalize` validado con reemplazo e invalidación CDN |
 | STORY-001-03 | CSV Async Pipeline | `STORY-001-03-csv-async-pipeline.md` | `in-review` | `#35` | Caso staging de éxito/error validado; pendiente evidencia operativa dedicada de DLQ/retry |
+| STORY-001-04 | Asset Creation Form Structural Refactor | `STORY-001-04-asset-creation-form-structural-refactor.md` | `in-review` | `TBD` | Fase 1-2 completadas (estado + side-effects en hooks); siguiente paso Fase 3 (modularizacion UI) |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
