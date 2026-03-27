@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-19`
-- Last Updated: `2026-03-24`
+- Last Updated: `2026-03-27`
 
 ## Context
 - Problem:
@@ -82,9 +82,9 @@
 ## Status
 - Current status: `implemented`
 - Next action:
-  Implementar los endpoints de métricas para el dashboard de admin (`STORY-003-06`).
+  Documentación consolidada con trazabilidad completa en el README de `EPIC-003`.
 - Exit criteria:
-- [ ] All critical critique points addressed
+- [x] All critical critique points addressed
 - [x] Decision is `approved`
 - [x] Implementation completed (if in scope)
 

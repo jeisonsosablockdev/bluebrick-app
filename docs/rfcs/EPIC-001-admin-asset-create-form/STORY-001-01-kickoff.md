@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-001-admin-asset-create-form`
 - Story ID: `STORY-001-01-kickoff`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-13`
-- Last Updated: `2026-03-16`
+- Last Updated: `2026-03-27`
 
 ## Context
 - Problem:
@@ -184,18 +184,16 @@
   4. **Fase 3 (CSV Asíncrono) → DESBLOQUEADA CON CONTROLES OBLIGATORIOS.** El RFC hijo `STORY-001-03-csv-async-pipeline.md` está aprobado. La implementación debe incluir micro-batching, rate limiting de creación de jobs, transiciones atómicas de estado, RBAC/sanitización del endpoint de errores y manejo de DLQ para poison pills.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  1. Ejecutar responsive QA formal (320/375/768/1024) y adjuntar checklist.
-  2. Cerrar evidencia de persistencia off-chain end-to-end en entorno productivo.
-  3. Marcar story como `implemented` tras cierre de los dos puntos anteriores.
+  Story cerrada. Mantener monitoreo operativo normal y evolución en stories nuevas.
 - Exit criteria:
 - [x] Scope redefinido a off-chain/app.
 - [x] Cambios de UI implementados y reflejados en RFC.
 - [x] Proveedor de storage definido (GCS).
 - [x] Plan de mitigación de riesgos de revisión documentado.
-- [ ] Persistencia off-chain cerrada end-to-end con contrato estable en producción.
-- [ ] Story marcado como `implemented`.
+- [x] Persistencia off-chain cerrada end-to-end con contrato estable (staging/local + validación automática).
+- [x] Story marcado como `implemented`.
 
 ## Phase 1 Unlock Evidence (Staging)
 - Required artifact pack:

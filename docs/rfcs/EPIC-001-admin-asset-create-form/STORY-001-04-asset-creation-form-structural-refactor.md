@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-001-admin-asset-create-form`
 - Story ID: `STORY-001-04-asset-creation-form-structural-refactor`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-24`
-- Last Updated: `2026-03-24`
+- Last Updated: `2026-03-27`
 
 ## Context
 - Problema:
@@ -121,15 +121,15 @@
   - Confirmación explícita en PR: “legacy path removed”.
 
 ## Criterios de aceptación
-- [ ] `asset-creation-form.tsx` deja de ser monolito y no contiene lógica legacy de negocio.
-- [ ] Se crean componentes especializados por dominio funcional (mínimo 5 secciones).
-- [ ] Se centralizan side-effects en hooks dedicados.
-- [ ] No hay cambios de contrato en endpoints admin existentes.
-- [ ] Flujo de upload/import/submit conserva comportamiento.
-- [ ] `npm run validate` y suite de tests relevante en verde.
-- [ ] Sin regresión visual crítica en `320/375/768/1024`.
-- [ ] No hay fallback runtime al formulario legacy en producción.
-- [ ] Código legacy eliminado o reducido a wrapper sin lógica previa.
+- [x] `asset-creation-form.tsx` deja de ser monolito y no contiene lógica legacy de negocio.
+- [x] Se crean componentes especializados por dominio funcional (mínimo 5 secciones).
+- [x] Se centralizan side-effects en hooks dedicados.
+- [x] No hay cambios de contrato en endpoints admin existentes.
+- [x] Flujo de upload/import/submit conserva comportamiento.
+- [x] `npm run validate` y suite de tests relevante en verde.
+- [x] Sin regresión visual crítica en `320/375/768/1024`.
+- [x] No hay fallback runtime al formulario legacy en producción.
+- [x] Código legacy eliminado o reducido a wrapper sin lógica previa.
 
 ## Critique (pre-implementación)
 ### Critique (post-revision)
@@ -176,14 +176,15 @@ The plan is now solid, detailed, and executable. The defined contracts and phase
   Aprobado. El plan es sólido y ejecutable. La implementación debe respetar estrictamente los contratos definidos, incluyendo eliminación del legacy sin dual runtime en producción.
 
 ## Status
-- Current status: `in-review`
+- Current status: `implemented`
 - Next action:
-  Ejecutar Fase 4 (hardening + limpieza) y Fase 5 (verificacion final + responsive QA) antes de marcar `implemented`.
+  Story cerrada. Continuar con mantenimiento evolutivo en stories nuevas.
 
 ## Traceability
 - Related issue(s): `EPIC-001`
-- Related PR(s): `TBD`
+- Related PR(s): `#54`
 - Final commit hash(es): `e741486`, `f36704d`, `e558c8d`, `9c7c0e3`, `02e0f55`
 - Phase artifacts:
   - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase1-inventory.md`
   - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase2-state-hook.md`
+  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-27.md`

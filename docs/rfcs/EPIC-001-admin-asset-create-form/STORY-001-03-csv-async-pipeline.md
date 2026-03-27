@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-001-admin-asset-create-form`
 - Story ID: `STORY-001-03-csv-async-pipeline`
-- Status: `in-review` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-15`
-- Last Updated: `2026-03-16`
+- Last Updated: `2026-03-26`
 
 ## Context
 - Problema:
@@ -94,10 +94,10 @@
   Aprobado. La arquitectura es sólida. La implementación debe incorporar las mitigaciones de la sección `Critique` para garantizar la escalabilidad y seguridad del pipeline. Con esta aprobación, la **Fase 3** del `STORY-001-01` queda formalmente desbloqueada.
 
 ## Status
-- Current status: `in-review`
+- Current status: `implemented`
 - Next action:
-  1. Ejecutar una corrida dedicada de staging para forzar `retry -> failed -> DLQ` y adjuntar evidencia.
-  2. Adjuntar reporte final de Fase 3 y mover status a `implemented`.
+  1. Mantener monitoreo de cola (`failed` + crecimiento DLQ) como control operativo.
+  2. Consolidar evidencia en el RFC del epic para cierre global.
 
 ## Validation Evidence (2026-03-16)
 - Caso asíncrono validado end-to-end:
@@ -112,6 +112,17 @@
 - Evidencia completa:
   - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
   - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
+
+## Validation Evidence (2026-03-26)
+- Cobertura dedicada `retry -> failed -> DLQ` agregada:
+  - `tests/lib/import-jobs-processing-failure.test.ts`
+    - Reintento transitorio mantiene estado `queued`.
+    - Agotamiento de intentos inserta en `asset_import_job_dlq` y registra `POISON_PILL`.
+  - `tests/api/admin-import-jobs-routes.test.ts`
+    - Error worker terminal (`failedPermanently=true`) no re-encola el job.
+- Corrida ejecutada:
+  - `npm run test -- tests/lib/import-jobs.test.ts tests/lib/import-jobs-processing-failure.test.ts tests/api/admin-import-jobs-routes.test.ts`
+  - Resultado: `24 passed`.
 
 ## Traceability
 - Related issue(s): `EPIC-001`

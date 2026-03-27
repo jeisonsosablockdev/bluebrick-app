@@ -3,10 +3,10 @@
 ## Metadata
 - Epic ID: `EPIC-001`
 - Title: `Admin Asset Create Form`
-- Status: `in-review`
+- Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-03-13`
-- Last Updated: `2026-03-24`
+- Last Updated: `2026-03-27`
 
 ## Scope
 - Problem statement:
@@ -36,7 +36,7 @@
 - [x] Importación CSV asíncrona (chunking/job) para evitar timeouts HTTP.
 - [x] Feedback asíncrono de CSV visible en UI (`importJobId` + estados de proceso).
 - [x] Validaciones hardening (MIME/tamaño/sanitización CSV) cerradas y verificadas por tests.
-- [ ] Persistencia off-chain de media/documentos cerrada end-to-end en producción.
+- [x] Persistencia off-chain de media/documentos cerrada end-to-end con evidencia en staging/local y suites automatizadas.
 
 ## Execution Roadmap
 - Milestone 1: Storage contract (GCS)
@@ -66,10 +66,10 @@
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-001-01 | Marketplace Entry Off-chain | `STORY-001-01-kickoff.md` | `approved` | `#33, #35` | Evidencia staging adjunta; pendiente cierre de persistencia en producción y responsive QA |
+| STORY-001-01 | Marketplace Entry Off-chain | `STORY-001-01-kickoff.md` | `implemented` | `#33, #35` | Evidencia de staging + responsive QA formal cerradas; sin gate adicional de validación por decisión de producto |
 | STORY-001-02 | Signed URL API Contract | `STORY-001-02-signed-url-contract.md` | `implemented` | `#35` | Flujo real `signed-url -> upload -> finalize` validado con reemplazo e invalidación CDN |
-| STORY-001-03 | CSV Async Pipeline | `STORY-001-03-csv-async-pipeline.md` | `in-review` | `#35` | Caso staging de éxito/error validado; pendiente evidencia operativa dedicada de DLQ/retry |
-| STORY-001-04 | Asset Creation Form Structural Refactor | `STORY-001-04-asset-creation-form-structural-refactor.md` | `in-review` | `TBD` | Fase 1-2 completadas (estado + side-effects en hooks); siguiente paso Fase 3 (modularizacion UI) |
+| STORY-001-03 | CSV Async Pipeline | `STORY-001-03-csv-async-pipeline.md` | `implemented` | `#35` | Caso staging validado + cobertura automática dedicada `retry -> failed -> DLQ` |
+| STORY-001-04 | Asset Creation Form Structural Refactor | `STORY-001-04-asset-creation-form-structural-refactor.md` | `implemented` | `#54` | Refactor estructural cerrado con hooks de dominio + secciones modulares + responsive QA formal |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
@@ -86,6 +86,9 @@
 | 2026-03-15 | STORY-001-03 | RFC hijo creado para definir pipeline CSV asíncrono y desbloquear Fase 3 | jaymusicmachine | `STORY-001-03-csv-async-pipeline.md` |
 | 2026-03-15 | STORY-001-03 | Aprobado con cambios: micro-batching, rate limit, transiciones atómicas, RBAC/sanitización y DLQ obligatorios | gemini-review | `STORY-001-03-csv-async-pipeline.md` |
 | 2026-03-16 | STORY-001-01/02/03 | Evidence pack de staging ejecutado (GCS real, invalidación CDN, orphan-reconciler y CSV async) | jaymusicmachine | `artifacts/latest-validation.json` |
+| 2026-03-26 | STORY-001-03 | Cobertura dedicada de `retry -> failed -> DLQ` validada (unit + route) y story movida a `implemented` | jaymusicmachine | `STORY-001-03-csv-async-pipeline.md` |
+| 2026-03-27 | EPIC-001 | Se retira del cierre el gate adicional de validación; la validación final queda en staging/local + suites automatizadas | jaymusicmachine | `artifacts/VALIDATION-2026-03-26.md` |
+| 2026-03-27 | STORY-001-04 | Story cerrada con PR `#54` mergeado y validación final (state tests + validate + responsive QA) | jaymusicmachine | `artifacts/VALIDATION-2026-03-27.md` |
 
 ## Risks and Dependencies
 - Risks:
@@ -115,6 +118,6 @@
 
 ## Traceability
 - Issue(s): `EPIC-001` (pendiente normalizar en tracker)
-- PR(s): `#33`, `#35`
-- Final commit hash(es): `f95d1d3`, `b2daf88`, `953e3b3`, `614c0e9`, `c597f43`, `8d0a940`, `c01953e`, `d51a871`, `d659948`
-- Validation artifacts: `artifacts/latest-validation.json`, `artifacts/VALIDATION-2026-03-16.md`
+- PR(s): `#33`, `#35`, `#54`
+- Final commit hash(es): `f95d1d3`, `b2daf88`, `953e3b3`, `614c0e9`, `c597f43`, `8d0a940`, `c01953e`, `d51a871`, `d659948`, `e741486`, `f36704d`, `e558c8d`, `9c7c0e3`, `02e0f55`
+- Validation artifacts: `artifacts/latest-validation.json`, `artifacts/VALIDATION-2026-03-16.md`, `artifacts/VALIDATION-2026-03-26.md`, `artifacts/VALIDATION-2026-03-27.md`

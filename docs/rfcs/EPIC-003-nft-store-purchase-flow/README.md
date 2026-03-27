@@ -3,10 +3,10 @@
 ## Metadata
 - Epic ID: `EPIC-003`
 - Title: `NFT Store Purchase Flow`
-- Status: `approved`
+- Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-03-19`
-- Last Updated: `2026-03-20`
+- Last Updated: `2026-03-27`
 
 ## Scope
 - Problem statement:
@@ -21,11 +21,11 @@
   - Limite acumulado de mints por wallet (`mintLimit`).
 
 ## Success Criteria
-- [ ] Usuario puede comprar 1 NFT end-to-end desde tienda (listing/detail) en devnet con firma y confirmacion `confirmed`.
-- [ ] Precio mostrado en UI se obtiene desde cache backend de guard y se revalida con fuente on-chain antes del `prepare`.
-- [ ] Intentos/resultados quedan persistidos por `candyMachineAddress` para metricas operativas y trazabilidad.
-- [ ] Dashboard admin consume metricas reales reutilizando placeholders existentes (sin rediseno estructural).
-- [ ] Reconciliacion final de compra usa Helius Webhooks como fuente de verdad para estado `confirmed | failed`.
+- [x] Usuario puede comprar 1 NFT end-to-end desde tienda (listing/detail) en devnet con firma y confirmacion `confirmed`.
+- [x] Precio mostrado en UI se obtiene desde cache backend de guard y se revalida con fuente on-chain antes del `prepare`.
+- [x] Intentos/resultados quedan persistidos por `candyMachineAddress` para metricas operativas y trazabilidad.
+- [x] Dashboard admin consume metricas reales reutilizando placeholders existentes (sin rediseno estructural).
+- [x] Reconciliacion final de compra usa Helius Webhooks como fuente de verdad para estado `confirmed | failed`.
 
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
@@ -55,6 +55,8 @@
 | 2026-03-20 | STORY-003-03 | Implementación completada: `idempotencyKey` server-side + state machine (`created/prepared/submitted/confirmed/failed`) + lock `FOR UPDATE` en submit | jaymusicmachine | `STORY-003-03-transaction-integrity-and-idempotency.md` |
 | 2026-03-20 | STORY-003-03 | Evidencia operativa validada en devnet: submit `200`, replay idempotente con misma firma y transacción `finalized` (`faUD...Lz4`) | jaymusicmachine | `STORY-003-03-transaction-integrity-and-idempotency.md` |
 | 2026-03-20 | STORY-003-04 | Implementación completada: contrato de cantidad en APIs de compra + rollout multi con límites server-side + error `INVALID_QUANTITY` + quantity-bound challenge + persistencia de `quantity` | jaymusicmachine | `STORY-003-04-quantity-foundation-and-multi-quantity-rollout.md` |
+| 2026-03-24 | STORY-003-05 | Implementación completada: trazabilidad backend + reconciliación webhook-first + métricas por candy machine | jaymusicmachine | `STORY-003-05-purchase-traceability-and-metrics-backend.md` |
+| 2026-03-20 | STORY-003-06 | Implementación completada: binding de métricas reales en dashboard admin y contrato de estados UI | jaymusicmachine | `STORY-003-06-admin-dashboard-metrics-binding.md` |
 
 ## Critique (Staff Engineer Review)
 - **3 Critical Weaknesses**:
@@ -125,11 +127,14 @@
   - Reconciliación webhook-first para corregir estados inciertos.
 
 ## Open Questions
-- [ ] ¿`thirdPartySigner` se activa en todos los nuevos deploys de candy machine o solo en colecciones de venta publica?
-- [ ] ¿Cuantos mints por minuto por wallet/IP son aceptables para anti-bot sin afectar UX?
-- [ ] ¿En que momento de roadmap se habilita `quantity > 1` en frontend?
+- [x] ¿`thirdPartySigner` se activa en todos los nuevos deploys de candy machine o solo en colecciones de venta publica?  
+  Resuelto: obligatorio para colecciones de venta pública.
+- [x] ¿Cuantos mints por minuto por wallet/IP son aceptables para anti-bot sin afectar UX?  
+  Resuelto: ventana de `60s`, con tope de `8` intentos por wallet y `20` por IP (`PURCHASE_RATE_LIMIT_WINDOW_SECONDS=60`, `PURCHASE_RATE_LIMIT_MAX_BY_WALLET=8`, `PURCHASE_RATE_LIMIT_MAX_BY_IP=20`).
+- [x] ¿En que momento de roadmap se habilita `quantity > 1` en frontend?  
+  Resuelto: habilitado en el rollout de `STORY-003-04` bajo límites server-side.
 
 ## Traceability
 - Issue(s): `EPIC-003`
-- PR(s): `#42` (base), `#43` (story-01), `#44` (story-02), `#45` (story-03), `#49` (story-04)
-- Final commit hash(es): `7dbd4ac`, `edeebaa`, `8906c7d`, `b0f8ae9`, `43d15e3`, `0ae1fa7`, `faf8100`, `39dfc00`
+- PR(s): `#42` (base), `#43` (story-01), `#44` (story-02), `#45` (story-03), `#49` (story-04), `#51` (story-05), `#52` (story-06)
+- Final commit hash(es): `7dbd4ac`, `edeebaa`, `8906c7d`, `b0f8ae9`, `43d15e3`, `0ae1fa7`, `faf8100`, `39dfc00`, `777895b`, `e29f07b`, `2b90d73`, `d61ccc0`, `4cb0f27`, `04af78d`, `f0e6b4d`, `8e636e9`
