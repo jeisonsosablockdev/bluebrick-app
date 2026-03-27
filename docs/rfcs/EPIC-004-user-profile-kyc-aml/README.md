@@ -3,10 +3,10 @@
 ## Metadata
 - Epic ID: `EPIC-004`
 - Title: `Perfil de Usuario y Verificacion (KYC/AML)`
-- Status: `approved`
+- Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-03-24`
-- Last Updated: `2026-03-25`
+- Last Updated: `2026-03-27`
 
 ## Scope
 - Problem statement:
@@ -36,17 +36,17 @@
 - [x] Lista del panel admin consulta por `compliance_status` (sin JOIN pesado en tiempo real).
 - [x] Admin dispone de acciones: `suspend`, `unsuspend`, `add internal note`, `kyc decision`, `aml decision`.
 - [x] Todo el flujo queda trazado con timestamps y eventos auditables (usuario/admin/proveedor).
-- [ ] Existe prueba automatizada que valida no existencia de columnas/tablas de PII sensible en DB.
+- [x] Existe prueba automatizada que valida no existencia de columnas/tablas de PII sensible en DB.
 
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-004-01 | Modelo de datos y wallet binding estricto | `STORY-004-01-profile-data-model-and-wallet-binding.md` | `implemented` | `TBD` | 1 wallet vinculable por perfil, sin reasignacion |
-| STORY-004-02 | Integracion Stripe Identity: Inicio de Verificacion | `STORY-004-02-stripe-identity-integration-kickoff.md` | `implemented` | `TBD` | Usuario inicia KYC sin cargar PII en nuestra app |
-| STORY-004-03 | Integracion Stripe Identity: Webhook Handler | `STORY-004-03-stripe-webhook-handler.md` | `implemented` | `TBD` | Actualiza KYC y proyecta compliance status |
-| STORY-004-04 | Integracion Helius: Screening AML de Wallet | `STORY-004-04-helius-aml-wallet-screening.md` | `implemented` | `TBD` | Riesgo AML y proyeccion a compliance status |
-| STORY-004-05 | Panel de Cumplimiento y Auditoria | `STORY-004-05-compliance-dashboard-and-audit.md` | `implemented` | `TBD` | Cola unificada performante + acciones de incidente |
-| STORY-004-06 | Staff Review and Verdict (Architectural Pivot) | `STORY-004-06-staff-review-and-verdict.md` | `approved` | `TBD` | Veredicto formal: rechazar build y adoptar buy |
+| STORY-004-01 | Modelo de datos y wallet binding estricto | `STORY-004-01-profile-data-model-and-wallet-binding.md` | `implemented` | `#55` | 1 wallet vinculable por perfil, sin reasignacion |
+| STORY-004-02 | Integracion Stripe Identity: Inicio de Verificacion | `STORY-004-02-stripe-identity-integration-kickoff.md` | `implemented` | `#55` | Usuario inicia KYC sin cargar PII en nuestra app |
+| STORY-004-03 | Integracion Stripe Identity: Webhook Handler | `STORY-004-03-stripe-webhook-handler.md` | `implemented` | `#55` | Actualiza KYC y proyecta compliance status |
+| STORY-004-04 | Integracion Helius: Screening AML de Wallet | `STORY-004-04-helius-aml-wallet-screening.md` | `implemented` | `#56` | Riesgo AML y proyeccion a compliance status |
+| STORY-004-05 | Panel de Cumplimiento y Auditoria | `STORY-004-05-compliance-dashboard-and-audit.md` | `implemented` | `#58` | Cola unificada performante + acciones de incidente |
+| STORY-004-06 | Staff Review and Verdict (Architectural Pivot) | `STORY-004-06-staff-review-and-verdict.md` | `implemented` | `#55,#56,#58` | Veredicto formal aplicado y ejecutado en entregables posteriores |
 
 ## Compliance State Model
 - Campo canónico para operación: `user_profiles.compliance_status`.
@@ -93,11 +93,19 @@
   - Indices en `user_profiles(compliance_status, compliance_status_updated_at)`.
 
 ## Open Questions
-- [ ] Definir threshold operativo de `aml_risk_score` para pasar de `pending_review` a `restricted_aml`.
-- [ ] Definir politica de re-screening AML para usuarios `fully_verified` (ejemplo: diario vs semanal).
-- [ ] Definir SLA operativo para casos `restricted_aml` y `pending_review`.
+- [x] Threshold operativo de `aml_risk_score` definido:
+  - `aml_risk_score >= 70` -> `restricted_aml`
+  - `aml_risk_score 40..69` -> `pending_review`
+  - `aml_risk_score < 40` -> `clear` (si proveedor no marca riesgo alto)
+  - Clasificaciones `flagged`/sanciones del proveedor mantienen prioridad sobre score.
+- [x] Politica de re-screening AML para usuarios `fully_verified` definida:
+  - Re-screening semanal (cada 7 dias).
+  - Re-screening inmediato en eventos de riesgo (kyc verified, incidente manual, alerta proveedor).
+- [x] SLA operativo para casos `restricted_aml` y `pending_review` definido:
+  - `restricted_aml`: triage en <= 4 horas, decision final en <= 24 horas.
+  - `pending_review`: decision en <= 24 horas.
 
 ## Traceability
 - Issue(s): `EPIC-004`
-- PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- PR(s): `#55`, `#56`, `#58`
+- Final commit hash(es): `467ee31`, `8986aed`, `0ff7653`

@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-004-user-profile-kyc-aml`
 - Story ID: `STORY-004-06-staff-review-and-verdict`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `staff-review`
 - Created: `2026-03-24`
-- Last Updated: `2026-03-24`
+- Last Updated: `2026-03-27`
 
 ## Context
 - Problem:
@@ -61,16 +61,16 @@
   Se aprueba el veredicto de staff review y se adopta oficialmente el pivot de arquitectura a `Buy`.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Continuar implementacion de stories 004-02..004-05 bajo estrategia Stripe + Helius.
+  Mantener monitoreo operativo de Stripe/Helius y ajustar umbrales AML por telemetria real.
 - Exit criteria:
 - [x] Critique formal registrada
 - [x] Veredicto aceptado por owner
 - [x] RFCs impactados reescritos al nuevo enfoque
-- [ ] Implementacion completada (fuera de este RFC)
+- [x] Implementacion completada (fuera de este RFC)
 
 ## Traceability
 - Related issue(s): `EPIC-004`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related PR(s): `#55`, `#56`, `#58`
+- Final commit hash(es): `467ee31`, `8986aed`, `0ff7653`
