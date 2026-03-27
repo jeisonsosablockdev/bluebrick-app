@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { ReactElement } from "react";
+import type { InputHTMLAttributes, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   applyFinancialRule,
   mapImportRowToFormFields,
@@ -247,6 +248,67 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
   }
 
   return documents;
+}
+
+type GuidedInputFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "className"> & {
+  label: string;
+  hint: string;
+  tooltip: string;
+  prefix?: string;
+  suffix?: string;
+  className?: string;
+};
+
+function GuidedInputField({
+  label,
+  hint,
+  tooltip,
+  prefix,
+  suffix,
+  className,
+  ...inputProps
+}: GuidedInputFieldProps): ReactElement {
+  return (
+    <label className="space-y-1 text-xs text-white/70">
+      <span className="inline-flex items-center gap-1">
+        <span>{label}</span>
+        <span
+          className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+          title={tooltip}
+          aria-label={tooltip}
+        >
+          ?
+        </span>
+      </span>
+      <div className="relative">
+        {prefix ? <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{prefix}</span> : null}
+        <Input
+          className={cn(prefix ? "pl-7" : "", suffix ? "pr-12" : "", className)}
+          {...inputProps}
+        />
+        {suffix ? <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{suffix}</span> : null}
+      </div>
+      <span className="text-[11px] text-white/50">{hint}</span>
+    </label>
+  );
+}
+
+function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
+  if (!startDateRaw || !deliveryDateRaw) {
+    return "";
+  }
+
+  const startDate = Date.parse(`${startDateRaw}T00:00:00Z`);
+  const deliveryDate = Date.parse(`${deliveryDateRaw}T00:00:00Z`);
+  if (!Number.isFinite(startDate) || !Number.isFinite(deliveryDate) || deliveryDate < startDate) {
+    return "";
+  }
+
+  const DAY_IN_MS = 1000 * 60 * 60 * 24;
+  const averageMonthInDays = 30.4375;
+  const diffDays = (deliveryDate - startDate) / DAY_IN_MS;
+  const months = Math.max(1, Math.ceil(diffDays / averageMonthInDays));
+  return String(months);
 }
 
 export function AssetCreationForm(): ReactElement {
@@ -544,6 +606,29 @@ export function AssetCreationForm(): ReactElement {
       return changed ? next : prev;
     });
   }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual, setForm]);
+
+  useEffect(() => {
+    if (form.assetType !== "building_new") {
+      return;
+    }
+
+    const autoDuration = deriveProjectDurationMonths(form.buildingConstructionStartDate, form.buildingEstimatedDeliveryDate);
+    setForm((prev) => {
+      if (prev.buildingProjectDurationMonths === autoDuration) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        buildingProjectDurationMonths: autoDuration
+      };
+    });
+  }, [
+    form.assetType,
+    form.buildingConstructionStartDate,
+    form.buildingEstimatedDeliveryDate,
+    setForm
+  ]);
 
   const {
     onFileInput,
@@ -864,22 +949,84 @@ export function AssetCreationForm(): ReactElement {
           {form.assetType === "building_new" && (
             <>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input placeholder="projectStage" value={form.buildingProjectStage} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))} />
-                <Input placeholder="developerName" value={form.buildingDeveloperName} onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))} />
+                <GuidedInputField
+                  label={t({ en: "Project stage", es: "Etapa del proyecto", pt: "Etapa do projeto" })}
+                  hint={t({ en: "Example: pre-sale, construction, delivery.", es: "Ejemplo: preventa, construccion, entrega.", pt: "Exemplo: pre-venda, construcao, entrega." })}
+                  tooltip={t({ en: "Current lifecycle status used in investor communications.", es: "Estado del ciclo de vida usado en comunicacion al inversionista.", pt: "Status do ciclo de vida usado na comunicacao ao investidor." })}
+                  placeholder="projectStage"
+                  value={form.buildingProjectStage}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Developer name", es: "Nombre del desarrollador", pt: "Nome da incorporadora" })}
+                  hint={t({ en: "Legal entity or brand in charge of execution.", es: "Entidad legal o marca a cargo de la ejecucion.", pt: "Entidade legal ou marca responsavel pela execucao." })}
+                  tooltip={t({ en: "Displayed in admin traceability and listings.", es: "Se muestra en trazabilidad admin y listados.", pt: "Exibido na rastreabilidade admin e listagens." })}
+                  placeholder="developerName"
+                  value={form.buildingDeveloperName}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
+                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
+                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
+                  type="date"
+                  value={form.buildingEstimatedDeliveryDate}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Construction start date", es: "Fecha de inicio de construccion", pt: "Data de inicio da construcao" })}
+                  hint={t({ en: "Together with delivery date defines project months.", es: "Junto con la fecha de entrega define meses del proyecto.", pt: "Junto com a data de entrega define os meses do projeto." })}
+                  tooltip={t({ en: "Initial date for timeline and progress baseline.", es: "Fecha inicial para linea de tiempo y progreso.", pt: "Data inicial para linha do tempo e progresso." })}
+                  type="date"
+                  value={form.buildingConstructionStartDate}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Funding goal", es: "Meta de fondeo", pt: "Meta de captacao" })}
+                  hint={t({ en: "Reference value for total units and NFT cost.", es: "Valor de referencia para unidades y costo NFT.", pt: "Valor de referencia para unidades e custo do NFT." })}
+                  tooltip={t({ en: "Core financial target used for consistency checks.", es: "Objetivo financiero base para validaciones de consistencia.", pt: "Meta financeira base para validacoes de consistencia." })}
+                  placeholder="fundingGoal"
+                  prefix="$"
+                  value={form.buildingFundingGoal}
+                  onChange={(event) => onFundingGoalChange(event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "Total units", es: "Total de unidades", pt: "Total de unidades" })}
+                  hint={t({ en: "Defines mint quantity for building assets.", es: "Define la cantidad de mint para activos building.", pt: "Define a quantidade de mint para ativos building." })}
+                  tooltip={t({ en: "Must be an integer greater than zero.", es: "Debe ser un entero mayor a cero.", pt: "Deve ser um inteiro maior que zero." })}
+                  placeholder="totalUnits"
+                  value={form.buildingTotalUnits}
+                  onChange={(event) => applyFinancialSource("totalUnits", event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "NFT cost", es: "Costo por NFT", pt: "Custo por NFT" })}
+                  hint={t({ en: "Unit price per NFT share.", es: "Precio unitario por fraccion NFT.", pt: "Preco unitario por fracao NFT." })}
+                  tooltip={t({ en: "Auto-adjusted with funding goal and total units.", es: "Se autoajusta con meta de fondeo y total de unidades.", pt: "Autoajustado com meta de captacao e total de unidades." })}
+                  placeholder="nftCost"
+                  prefix="$"
+                  value={form.buildingNftCost}
+                  onChange={(event) => applyFinancialSource("nftCost", event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "Expected annual return", es: "Retorno anual esperado", pt: "Retorno anual esperado" })}
+                  hint={t({ en: "Projected percentage return for investors.", es: "Porcentaje proyectado de retorno para inversionistas.", pt: "Percentual projetado de retorno para investidores." })}
+                  tooltip={t({ en: "Displayed in marketplace ROI summary.", es: "Se muestra en el resumen ROI del marketplace.", pt: "Exibido no resumo de ROI do marketplace." })}
+                  placeholder="expectedAnnualReturn"
+                  suffix="%"
+                  value={form.buildingExpectedAnnualReturn}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))}
+                />
                 <div className="space-y-1">
-                  <p className="text-xs text-white/60">estimatedDeliveryDate</p>
-                  <Input type="date" value={form.buildingEstimatedDeliveryDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-white/60">constructionStartDate</p>
-                  <Input type="date" value={form.buildingConstructionStartDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))} />
-                </div>
-                <Input placeholder="fundingGoal (fixed reference)" value={form.buildingFundingGoal} onChange={(event) => onFundingGoalChange(event.target.value)} />
-                <Input placeholder="totalUnits" value={form.buildingTotalUnits} onChange={(event) => applyFinancialSource("totalUnits", event.target.value)} />
-                <Input placeholder="nftCost" value={form.buildingNftCost} onChange={(event) => applyFinancialSource("nftCost", event.target.value)} />
-                <Input placeholder="expectedAnnualReturn (%)" value={form.buildingExpectedAnnualReturn} onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))} />
-                <div className="space-y-1">
-                  <p className="text-xs text-white/60">exitStrategy</p>
+                  <p className="inline-flex items-center gap-1 text-xs text-white/70">
+                    <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
+                    <span
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+                      title={t({ en: "How investor capital is recovered at the end of cycle.", es: "Como se recupera el capital del inversionista al cierre del ciclo.", pt: "Como o capital do investidor e recuperado no fim do ciclo." })}
+                      aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                    >
+                      ?
+                    </span>
+                  </p>
                   <select
                     className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
                     value={form.buildingExitStrategy}
@@ -894,11 +1041,44 @@ export function AssetCreationForm(): ReactElement {
                       </option>
                     ))}
                   </select>
+                  <p className="text-[11px] text-white/50">
+                    {t({ en: "Choose the expected liquidation path for the project.", es: "Selecciona la via esperada de liquidacion del proyecto.", pt: "Selecione a via esperada de liquidacao do projeto." })}
+                  </p>
                 </div>
-                <Input placeholder="projectDurationMonths" value={form.buildingProjectDurationMonths} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))} />
-                <Input placeholder="licensesStatus (extra)" value={form.buildingLicensesStatus} onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))} />
-                <Input placeholder="fiduciaryStructure (extra)" value={form.buildingFiduciaryStructure} onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))} />
-                <Input placeholder="salesProgressPercent (extra)" value={form.buildingSalesProgressPercent} onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))} />
+                <GuidedInputField
+                  label={t({ en: "Project duration", es: "Duracion del proyecto", pt: "Duracao do projeto" })}
+                  hint={t({ en: "Calculated automatically from start and delivery dates.", es: "Se calcula automaticamente con inicio y entrega.", pt: "Calculado automaticamente a partir de inicio e entrega." })}
+                  tooltip={t({ en: "Read-only field to prevent manual inconsistency.", es: "Campo solo lectura para evitar inconsistencias manuales.", pt: "Campo somente leitura para evitar inconsistencias manuais." })}
+                  placeholder={t({ en: "Auto", es: "Auto", pt: "Auto" })}
+                  suffix={t({ en: "mo", es: "meses", pt: "meses" })}
+                  value={form.buildingProjectDurationMonths}
+                  readOnly
+                />
+                <GuidedInputField
+                  label={t({ en: "Licenses status", es: "Estado de licencias", pt: "Status das licencas" })}
+                  hint={t({ en: "Use short status like approved, in-process, pending.", es: "Usa estado corto como aprobado, en tramite, pendiente.", pt: "Use status curto como aprovado, em tramitacao, pendente." })}
+                  tooltip={t({ en: "Administrative status of permits and municipal approvals.", es: "Estado administrativo de permisos y aprobaciones municipales.", pt: "Status administrativo de permissoes e aprovacoes municipais." })}
+                  placeholder="licensesStatus"
+                  value={form.buildingLicensesStatus}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Fiduciary structure", es: "Estructura fiduciaria", pt: "Estrutura fiduciaria" })}
+                  hint={t({ en: "Describe trust/fiduciary setup in one line.", es: "Describe en una linea la estructura fiduciaria.", pt: "Descreva em uma linha a estrutura fiduciaria." })}
+                  tooltip={t({ en: "Useful for legal and governance context.", es: "Util para contexto legal y de gobernanza.", pt: "Util para contexto legal e de governanca." })}
+                  placeholder="fiduciaryStructure"
+                  value={form.buildingFiduciaryStructure}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Sales progress", es: "Progreso de ventas", pt: "Progresso de vendas" })}
+                  hint={t({ en: "Approximate pre-sale/commercialization progress.", es: "Progreso aproximado de preventa/comercializacion.", pt: "Progresso aproximado de pre-venda/comercializacao." })}
+                  tooltip={t({ en: "Operational indicator for commercial stage.", es: "Indicador operativo del estado comercial.", pt: "Indicador operacional do estado comercial." })}
+                  placeholder="salesProgressPercent"
+                  suffix="%"
+                  value={form.buildingSalesProgressPercent}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))}
+                />
               </div>
               <p className="text-xs text-white/60">
                 {t({
@@ -912,32 +1092,183 @@ export function AssetCreationForm(): ReactElement {
 
           {form.assetType === "rental_property" && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder="monthlyRentEstimate" value={form.rentalMonthlyRentEstimate} onChange={(event) => setForm((prev) => ({ ...prev, rentalMonthlyRentEstimate: event.target.value }))} />
-              <Input placeholder="annualGrossIncome" value={form.rentalAnnualGrossIncome} onChange={(event) => setForm((prev) => ({ ...prev, rentalAnnualGrossIncome: event.target.value }))} />
-              <Input placeholder="occupancyRate (0-100)" value={form.rentalOccupancyRate} onChange={(event) => setForm((prev) => ({ ...prev, rentalOccupancyRate: event.target.value }))} />
-              <Input placeholder="leaseStartDate (YYYY-MM-DD)" value={form.rentalLeaseStartDate} onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseStartDate: event.target.value }))} />
-              <Input placeholder="leaseEndDate (YYYY-MM-DD)" value={form.rentalLeaseEndDate} onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseEndDate: event.target.value }))} />
-              <Input placeholder="tenantType" value={form.rentalTenantType} onChange={(event) => setForm((prev) => ({ ...prev, rentalTenantType: event.target.value }))} />
-              <Input placeholder="propertyManager" value={form.rentalPropertyManager} onChange={(event) => setForm((prev) => ({ ...prev, rentalPropertyManager: event.target.value }))} />
-              <Input placeholder="historicalYield" value={form.rentalHistoricalYield} onChange={(event) => setForm((prev) => ({ ...prev, rentalHistoricalYield: event.target.value }))} />
-              <Input placeholder="maintenanceReserve" value={form.rentalMaintenanceReserve} onChange={(event) => setForm((prev) => ({ ...prev, rentalMaintenanceReserve: event.target.value }))} />
-              <Input placeholder="currentTenant (extra)" value={form.rentalCurrentTenant} onChange={(event) => setForm((prev) => ({ ...prev, rentalCurrentTenant: event.target.value }))} />
-              <Input placeholder="contractStatus (extra)" value={form.rentalContractStatus} onChange={(event) => setForm((prev) => ({ ...prev, rentalContractStatus: event.target.value }))} />
-              <Input placeholder="paymentFrequency (extra)" value={form.rentalPaymentFrequency} onChange={(event) => setForm((prev) => ({ ...prev, rentalPaymentFrequency: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Monthly rent estimate", es: "Renta mensual estimada", pt: "Renda mensal estimada" })}
+                hint={t({ en: "Base rent amount before expenses.", es: "Monto base de renta antes de gastos.", pt: "Valor base de renda antes de despesas." })}
+                tooltip={t({ en: "Primary input used for revenue projections.", es: "Input principal para proyecciones de ingresos.", pt: "Input principal para projecoes de receita." })}
+                placeholder="monthlyRentEstimate"
+                prefix="$"
+                value={form.rentalMonthlyRentEstimate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalMonthlyRentEstimate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Annual gross income", es: "Ingreso bruto anual", pt: "Receita bruta anual" })}
+                hint={t({ en: "Total yearly income before deductions.", es: "Ingreso total anual antes de deducciones.", pt: "Receita total anual antes de deducoes." })}
+                tooltip={t({ en: "Used for ROI and treasury planning.", es: "Se usa para ROI y planificacion financiera.", pt: "Usado para ROI e planejamento financeiro." })}
+                placeholder="annualGrossIncome"
+                prefix="$"
+                value={form.rentalAnnualGrossIncome}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalAnnualGrossIncome: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Occupancy rate", es: "Tasa de ocupacion", pt: "Taxa de ocupacao" })}
+                hint={t({ en: "Value between 0 and 100.", es: "Valor entre 0 y 100.", pt: "Valor entre 0 e 100." })}
+                tooltip={t({ en: "Operational occupancy of the property.", es: "Nivel de ocupacion operativa del inmueble.", pt: "Nivel de ocupacao operacional do imovel." })}
+                placeholder="occupancyRate"
+                suffix="%"
+                value={form.rentalOccupancyRate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalOccupancyRate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Lease start date", es: "Inicio del contrato", pt: "Inicio do contrato" })}
+                hint={t({ en: "Date the lease period starts.", es: "Fecha en la que inicia la vigencia del contrato.", pt: "Data em que inicia a vigencia do contrato." })}
+                tooltip={t({ en: "Must be earlier than lease end date.", es: "Debe ser anterior a la fecha de fin del contrato.", pt: "Deve ser anterior a data de fim do contrato." })}
+                type="date"
+                value={form.rentalLeaseStartDate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseStartDate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Lease end date", es: "Fin del contrato", pt: "Fim do contrato" })}
+                hint={t({ en: "Date the current lease ends.", es: "Fecha en la que termina el contrato actual.", pt: "Data em que termina o contrato atual." })}
+                tooltip={t({ en: "Used to validate lease timeline consistency.", es: "Se usa para validar consistencia del periodo contractual.", pt: "Usado para validar consistencia do periodo contratual." })}
+                type="date"
+                value={form.rentalLeaseEndDate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseEndDate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Tenant type", es: "Tipo de inquilino", pt: "Tipo de inquilino" })}
+                hint={t({ en: "Example: residential, corporate, mixed.", es: "Ejemplo: residencial, corporativo, mixto.", pt: "Exemplo: residencial, corporativo, misto." })}
+                tooltip={t({ en: "Helps classify tenant profile and risk.", es: "Ayuda a clasificar perfil y riesgo del arrendatario.", pt: "Ajuda a classificar perfil e risco do locatario." })}
+                placeholder="tenantType"
+                value={form.rentalTenantType}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalTenantType: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Property manager", es: "Administrador del inmueble", pt: "Administrador do imovel" })}
+                hint={t({ en: "Person or company managing operations.", es: "Persona o empresa que opera el activo.", pt: "Pessoa ou empresa que opera o ativo." })}
+                tooltip={t({ en: "Operational owner for maintenance and tenant service.", es: "Responsable operativo de mantenimiento y servicio al inquilino.", pt: "Responsavel operacional por manutencao e atendimento ao inquilino." })}
+                placeholder="propertyManager"
+                value={form.rentalPropertyManager}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalPropertyManager: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Historical yield", es: "Yield historico", pt: "Yield historico" })}
+                hint={t({ en: "Past observed rental return.", es: "Retorno historico observado por renta.", pt: "Retorno historico observado por renda." })}
+                tooltip={t({ en: "Reference metric for expectations and risk.", es: "Metrica de referencia para expectativas y riesgo.", pt: "Metrica de referencia para expectativas e risco." })}
+                placeholder="historicalYield"
+                suffix="%"
+                value={form.rentalHistoricalYield}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalHistoricalYield: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Maintenance reserve", es: "Reserva de mantenimiento", pt: "Reserva de manutencao" })}
+                hint={t({ en: "Planned reserve for upkeep and contingencies.", es: "Reserva planificada para mantenimiento y contingencias.", pt: "Reserva planejada para manutencao e contingencias." })}
+                tooltip={t({ en: "Protects yield projections from operational shocks.", es: "Protege proyecciones de yield frente a eventos operativos.", pt: "Protege projecoes de yield contra eventos operacionais." })}
+                placeholder="maintenanceReserve"
+                prefix="$"
+                value={form.rentalMaintenanceReserve}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalMaintenanceReserve: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Current tenant", es: "Inquilino actual", pt: "Inquilino atual" })}
+                hint={t({ en: "Optional descriptive reference.", es: "Referencia descriptiva opcional.", pt: "Referencia descritiva opcional." })}
+                tooltip={t({ en: "Extra context field for operational follow-up.", es: "Campo extra para seguimiento operativo.", pt: "Campo extra para acompanhamento operacional." })}
+                placeholder="currentTenant"
+                value={form.rentalCurrentTenant}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalCurrentTenant: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Contract status", es: "Estado del contrato", pt: "Status do contrato" })}
+                hint={t({ en: "Optional legal/admin status.", es: "Estado legal/admin opcional.", pt: "Status legal/admin opcional." })}
+                tooltip={t({ en: "Extra context field for admin operations.", es: "Campo de contexto adicional para operacion admin.", pt: "Campo de contexto adicional para operacao admin." })}
+                placeholder="contractStatus"
+                value={form.rentalContractStatus}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalContractStatus: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Payment frequency", es: "Frecuencia de pago", pt: "Frequencia de pagamento" })}
+                hint={t({ en: "Example: monthly, quarterly.", es: "Ejemplo: mensual, trimestral.", pt: "Exemplo: mensal, trimestral." })}
+                tooltip={t({ en: "Optional field to detail rent payment cadence.", es: "Campo opcional para detallar la cadencia de pago.", pt: "Campo opcional para detalhar a cadencia de pagamento." })}
+                placeholder="paymentFrequency"
+                value={form.rentalPaymentFrequency}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalPaymentFrequency: event.target.value }))}
+              />
             </div>
           )}
 
           {form.assetType === "land_lot" && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder="cadastralNumber" value={form.landCadastralNumber} onChange={(event) => setForm((prev) => ({ ...prev, landCadastralNumber: event.target.value }))} />
-              <Input placeholder="landAreaM2" value={form.landAreaM2} onChange={(event) => setForm((prev) => ({ ...prev, landAreaM2: event.target.value }))} />
-              <Input placeholder="landUse" value={form.landUse} onChange={(event) => setForm((prev) => ({ ...prev, landUse: event.target.value }))} />
-              <Input placeholder="zoningClassification" value={form.landZoningClassification} onChange={(event) => setForm((prev) => ({ ...prev, landZoningClassification: event.target.value }))} />
-              <Input placeholder="appreciationHorizonMonths" value={form.landAppreciationHorizonMonths} onChange={(event) => setForm((prev) => ({ ...prev, landAppreciationHorizonMonths: event.target.value }))} />
-              <Input placeholder="targetExitValue" value={form.landTargetExitValue} onChange={(event) => setForm((prev) => ({ ...prev, landTargetExitValue: event.target.value }))} />
-              <Input placeholder="entryPrice" value={form.landEntryPrice} onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Cadastral number", es: "Numero catastral", pt: "Numero cadastral" })}
+                hint={t({ en: "Official property registry identifier.", es: "Identificador oficial del registro del predio.", pt: "Identificador oficial do registro do terreno." })}
+                tooltip={t({ en: "Used for legal traceability and due diligence.", es: "Se usa para trazabilidad legal y due diligence.", pt: "Usado para rastreabilidade legal e due diligence." })}
+                placeholder="cadastralNumber"
+                value={form.landCadastralNumber}
+                onChange={(event) => setForm((prev) => ({ ...prev, landCadastralNumber: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Land area", es: "Area del lote", pt: "Area do lote" })}
+                hint={t({ en: "Total area available for development.", es: "Area total disponible para desarrollo.", pt: "Area total disponivel para desenvolvimento." })}
+                tooltip={t({ en: "Supports valuation and zoning feasibility.", es: "Soporta valuacion y factibilidad de uso de suelo.", pt: "Suporta avaliacao e viabilidade de uso do solo." })}
+                placeholder="landAreaM2"
+                suffix="m²"
+                value={form.landAreaM2}
+                onChange={(event) => setForm((prev) => ({ ...prev, landAreaM2: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Land use", es: "Uso del suelo", pt: "Uso do terreno" })}
+                hint={t({ en: "Primary intended use for the lot.", es: "Uso principal previsto para el lote.", pt: "Uso principal previsto para o terreno." })}
+                tooltip={t({ en: "Example: residential, industrial, mixed use.", es: "Ejemplo: residencial, industrial, uso mixto.", pt: "Exemplo: residencial, industrial, uso misto." })}
+                placeholder="landUse"
+                value={form.landUse}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUse: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Zoning classification", es: "Clasificacion de zonificacion", pt: "Classificacao de zoneamento" })}
+                hint={t({ en: "Municipal zoning code or category.", es: "Codigo o categoria de zonificacion municipal.", pt: "Codigo ou categoria de zoneamento municipal." })}
+                tooltip={t({ en: "Key legal input for permitted development.", es: "Input legal clave para desarrollo permitido.", pt: "Input legal chave para desenvolvimento permitido." })}
+                placeholder="zoningClassification"
+                value={form.landZoningClassification}
+                onChange={(event) => setForm((prev) => ({ ...prev, landZoningClassification: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Appreciation horizon", es: "Horizonte de valorizacion", pt: "Horizonte de valorizacao" })}
+                hint={t({ en: "Planned months until expected exit.", es: "Meses planificados hasta la salida esperada.", pt: "Meses planejados ate a saida esperada." })}
+                tooltip={t({ en: "Defines expected investment timeline.", es: "Define la linea de tiempo esperada de la inversion.", pt: "Define a linha do tempo esperada do investimento." })}
+                placeholder="appreciationHorizonMonths"
+                suffix={t({ en: "mo", es: "meses", pt: "meses" })}
+                value={form.landAppreciationHorizonMonths}
+                onChange={(event) => setForm((prev) => ({ ...prev, landAppreciationHorizonMonths: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Target exit value", es: "Valor objetivo de salida", pt: "Valor alvo de saida" })}
+                hint={t({ en: "Projected valuation at disposal time.", es: "Valuacion proyectada al momento de salida.", pt: "Avaliacao projetada no momento da saida." })}
+                tooltip={t({ en: "Financial target for upside scenario.", es: "Objetivo financiero para escenario de valorizacion.", pt: "Meta financeira para cenario de valorizacao." })}
+                placeholder="targetExitValue"
+                prefix="$"
+                value={form.landTargetExitValue}
+                onChange={(event) => setForm((prev) => ({ ...prev, landTargetExitValue: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Entry price", es: "Precio de entrada", pt: "Preco de entrada" })}
+                hint={t({ en: "Acquisition reference value.", es: "Valor de referencia de adquisicion.", pt: "Valor de referencia de aquisicao." })}
+                tooltip={t({ en: "Base price used for return calculations.", es: "Precio base usado para calculos de retorno.", pt: "Preco base usado nos calculos de retorno." })}
+                placeholder="entryPrice"
+                prefix="$"
+                value={form.landEntryPrice}
+                onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))}
+              />
               <div className="space-y-1">
-                <p className="text-xs text-white/60">exitStrategy</p>
+                <p className="inline-flex items-center gap-1 text-xs text-white/70">
+                  <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
+                  <span
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+                    title={t({ en: "Expected monetization route at exit.", es: "Ruta esperada de monetizacion en la salida.", pt: "Rota esperada de monetizacao na saida." })}
+                    aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                  >
+                    ?
+                  </span>
+                </p>
                 <select
                   className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
                   value={form.landExitStrategy}
@@ -950,13 +1281,44 @@ export function AssetCreationForm(): ReactElement {
                     <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
                       {t(option.label)}
                     </option>
-                  ))}
-                </select>
+                    ))}
+                  </select>
+                <p className="text-[11px] text-white/50">
+                  {t({ en: "Choose disposal strategy at investment maturity.", es: "Selecciona la estrategia de salida al madurar la inversion.", pt: "Selecione a estrategia de saida na maturidade do investimento." })}
+                </p>
               </div>
-              <Input placeholder="urbanDevelopmentPotential" value={form.landUrbanDevelopmentPotential} onChange={(event) => setForm((prev) => ({ ...prev, landUrbanDevelopmentPotential: event.target.value }))} />
-              <Input placeholder="roadAccess (extra)" value={form.landRoadAccess} onChange={(event) => setForm((prev) => ({ ...prev, landRoadAccess: event.target.value }))} />
-              <Input placeholder="utilitiesAccess (extra)" value={form.landUtilitiesAccess} onChange={(event) => setForm((prev) => ({ ...prev, landUtilitiesAccess: event.target.value }))} />
-              <Input placeholder="regulatoryStatus (extra)" value={form.landRegulatoryStatus} onChange={(event) => setForm((prev) => ({ ...prev, landRegulatoryStatus: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Urban development potential", es: "Potencial urbanistico", pt: "Potencial urbanistico" })}
+                hint={t({ en: "Short thesis on future development upside.", es: "Tesis corta sobre potencial de desarrollo futuro.", pt: "Tese curta sobre potencial de desenvolvimento futuro." })}
+                tooltip={t({ en: "Supports qualitative valuation narrative.", es: "Soporta narrativa cualitativa de valorizacion.", pt: "Suporta narrativa qualitativa de valorizacao." })}
+                placeholder="urbanDevelopmentPotential"
+                value={form.landUrbanDevelopmentPotential}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUrbanDevelopmentPotential: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Road access", es: "Acceso vial", pt: "Acesso viario" })}
+                hint={t({ en: "Optional road connectivity notes.", es: "Notas opcionales sobre conectividad vial.", pt: "Notas opcionais sobre conectividade viaria." })}
+                tooltip={t({ en: "Extra operational context for development feasibility.", es: "Contexto operativo adicional para factibilidad de desarrollo.", pt: "Contexto operacional adicional para viabilidade de desenvolvimento." })}
+                placeholder="roadAccess"
+                value={form.landRoadAccess}
+                onChange={(event) => setForm((prev) => ({ ...prev, landRoadAccess: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Utilities access", es: "Acceso a servicios", pt: "Acesso a servicos" })}
+                hint={t({ en: "Optional notes on water, energy, sewage, telecom.", es: "Notas opcionales sobre agua, energia, alcantarillado, telecom.", pt: "Notas opcionais sobre agua, energia, esgoto, telecom." })}
+                tooltip={t({ en: "Operational readiness indicator for land projects.", es: "Indicador de preparacion operativa para proyectos de lote.", pt: "Indicador de prontidao operacional para projetos de terreno." })}
+                placeholder="utilitiesAccess"
+                value={form.landUtilitiesAccess}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUtilitiesAccess: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Regulatory status", es: "Estado regulatorio", pt: "Status regulatorio" })}
+                hint={t({ en: "Optional legal/regulatory checkpoint.", es: "Checkpoint legal/regulatorio opcional.", pt: "Checkpoint legal/regulatorio opcional." })}
+                tooltip={t({ en: "Additional compliance context for admin review.", es: "Contexto adicional de cumplimiento para revision admin.", pt: "Contexto adicional de compliance para revisao admin." })}
+                placeholder="regulatoryStatus"
+                value={form.landRegulatoryStatus}
+                onChange={(event) => setForm((prev) => ({ ...prev, landRegulatoryStatus: event.target.value }))}
+              />
             </div>
           )}
 
