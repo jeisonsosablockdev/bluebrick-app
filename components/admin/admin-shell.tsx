@@ -82,8 +82,8 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
   const currentLabel = useMemo(() => resolveCurrentLabel(pathname, adminNav), [adminNav, pathname]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-6 md:py-8">
-      <div className="mx-auto mb-4 max-w-6xl">
+    <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
+      <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <WalletModal
           initialAuth={{
             authenticated: true,
@@ -93,19 +93,19 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
         />
       </div>
 
-      <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="glass-surface sticky top-6 h-[calc(100vh-3rem)] space-y-4 overflow-y-auto bg-transparent p-4">
+          <Card className="glass-surface admin-sidebar sticky top-6 h-[calc(100vh-3rem)] space-y-4 overflow-y-auto bg-transparent p-4">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
                 {t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
               </p>
-              <p className="mt-1 text-xs text-white/70">{walletLabel}</p>
+              <p className="admin-sidebar-wallet mt-1 text-xs">{walletLabel}</p>
             </div>
 
             {adminNav.map((section) => (
               <div key={section.section} className="space-y-2">
-                <p className="px-2 text-xs uppercase tracking-[0.15em] text-white/40">{section.section}</p>
+                <p className="admin-sidebar-section px-2 text-xs uppercase tracking-[0.15em]">{section.section}</p>
                 <nav className="space-y-1">
                   {section.items
                     .filter((item) => item.isEnabled)
@@ -116,15 +116,15 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
                           key={item.route}
                           href={item.route}
                           className={`flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm ${
-                            active ? "bg-cyan-500/20 text-cyan-200" : "text-white/75 hover:bg-white/5 hover:text-white"
+                            active ? "admin-sidebar-link-active" : "admin-sidebar-link"
                           }`}
                         >
                           <span className="flex items-center gap-2">
-                            <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px]">{item.icon}</span>
+                            <span className="admin-sidebar-icon rounded-md px-1.5 py-0.5 text-[10px]">{item.icon}</span>
                             {item.label}
                           </span>
                           {item.badgeCount ? (
-                            <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-xs text-rose-200">{item.badgeCount}</span>
+                            <span className="admin-sidebar-badge rounded-full px-2 py-0.5 text-xs">{item.badgeCount}</span>
                           ) : null}
                         </Link>
                       );
@@ -173,7 +173,7 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
-          <aside className="glass-surface relative h-full w-[88%] max-w-sm overflow-y-auto rounded-r-3xl border-l-0 bg-transparent p-4">
+          <aside className="glass-surface admin-sidebar relative h-full w-[88%] max-w-sm overflow-y-auto rounded-r-3xl border-l-0 bg-transparent p-4">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
                 {t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
@@ -185,7 +185,7 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
 
             {adminNav.map((section) => (
               <div key={`mobile-${section.section}`} className="mb-4 space-y-2">
-                <p className="px-2 text-xs uppercase tracking-[0.15em] text-white/40">{section.section}</p>
+                <p className="admin-sidebar-section px-2 text-xs uppercase tracking-[0.15em]">{section.section}</p>
                 <nav className="space-y-1">
                   {section.items
                     .filter((item) => item.isEnabled)
@@ -196,16 +196,16 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
                           key={`mobile-${item.route}`}
                           href={item.route}
                           className={`flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm ${
-                            active ? "bg-cyan-500/20 text-cyan-200" : "text-white/75 hover:bg-white/5 hover:text-white"
+                            active ? "admin-sidebar-link-active" : "admin-sidebar-link"
                           }`}
                           onClick={() => setIsDrawerOpen(false)}
                         >
                           <span className="flex items-center gap-2">
-                            <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px]">{item.icon}</span>
+                            <span className="admin-sidebar-icon rounded-md px-1.5 py-0.5 text-[10px]">{item.icon}</span>
                             {item.label}
                           </span>
                           {item.badgeCount ? (
-                            <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-xs text-rose-200">{item.badgeCount}</span>
+                            <span className="admin-sidebar-badge rounded-full px-2 py-0.5 text-xs">{item.badgeCount}</span>
                           ) : null}
                         </Link>
                       );

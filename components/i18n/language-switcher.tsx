@@ -14,17 +14,17 @@ export function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
 
   return (
-    <div className="inline-flex min-h-11 items-center rounded-full border border-white/15 bg-white/5 p-1" role="group" aria-label="Language selector">
+    <div className="language-switcher inline-flex min-h-11 items-center rounded-full border border-white/15 bg-white/5 p-1" role="group" aria-label="Language selector">
       {LANGUAGE_OPTIONS.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => setLocale(option.value)}
           className={cn(
-            "min-h-9 rounded-full px-3 text-xs font-semibold transition",
+            "min-h-9 rounded-full px-3 text-xs font-semibold transition language-option",
             locale === option.value
-              ? "bg-gradientPrimary text-white shadow-[0_8px_24px_rgba(59,130,246,0.35)]"
-              : "text-white/75 hover:bg-white/10 hover:text-white"
+              ? "language-option-active bg-gradientPrimary text-white shadow-[0_8px_24px_rgba(59,130,246,0.35)]"
+              : "language-option-idle text-white/75 hover:bg-white/10 hover:text-white"
           )}
           aria-pressed={locale === option.value}
         >

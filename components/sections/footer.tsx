@@ -8,7 +8,7 @@ export function FooterSection() {
   const { t } = useI18n();
 
   return (
-    <footer className="mt-10 rounded-t-3xl border border-white/10 bg-slate-900/80 px-6 py-10 md:px-10">
+    <footer className="app-footer mt-10 rounded-t-3xl border border-white/10 bg-slate-900/80 px-6 py-10 md:px-10">
       <div className="grid gap-8 text-sm text-slate-300 md:grid-cols-4">
         <div>
           <h4 className="mb-2 text-base font-semibold text-white">BRIDS</h4>

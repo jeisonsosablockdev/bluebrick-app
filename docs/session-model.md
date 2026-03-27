@@ -118,7 +118,12 @@
   - Progress and error feedback are rendered in the same top visual slot to avoid ambiguous state perception.
   - Modal auto-close after inactivity requires explicit user re-open and never skips SIWS verification steps.
 
+- Theme toggle UX safety:
+  - Theme preference is stored in browser `localStorage` (`brids-ui-theme`) and restored at startup.
+  - Theme switching is strictly client-side presentation state and never mutates server session/token data.
+  - Authorization and trust boundaries remain unchanged across both dark and light themes.
+
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-03-27 07:40:00 UTC
+Last Updated: 2026-03-27 08:35:00 UTC

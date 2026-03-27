@@ -72,6 +72,11 @@
 - Any interaction while the modal is open resets the 30-second inactivity timer.
 - This UX timeout never bypasses SIWS rules: nonce validation, signature verification, and role resolution remain server-side.
 
+## Theme Selector UX Guardrails
+- UI exposes a global client-side toggle to switch between dark and light theme modes.
+- Selected theme is persisted in browser `localStorage` (`brids-ui-theme`) and restored on app load.
+- Theme mode is presentation-only and does not change SIWS flows, cookie/session logic, nonce policy, or role authorization.
+
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |
@@ -173,4 +178,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-27 07:40:00 UTC
+Last Updated: 2026-03-27 08:35:00 UTC

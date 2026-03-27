@@ -109,8 +109,8 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
   }, [dashboardNav, pathname]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-6 md:py-8">
-      <div className="mx-auto mb-4 max-w-6xl">
+    <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
+      <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <WalletModal
           initialAuth={{
             authenticated: true,
@@ -120,11 +120,11 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
         />
       </div>
 
-      <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="glass-surface sticky top-6 h-[calc(100vh-3rem)] space-y-4 bg-transparent p-3">
+          <Card className="glass-surface dashboard-sidebar sticky top-6 h-[calc(100vh-3rem)] space-y-4 bg-transparent p-3">
             <div>
-              <p className="px-2 text-xs uppercase tracking-[0.2em] text-white/50">
+              <p className="dashboard-sidebar-title px-2 text-xs uppercase tracking-[0.2em]">
                 {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
               </p>
             </div>
@@ -136,7 +136,7 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
                     key={item.href}
                     href={item.href}
                     className={`flex min-h-11 items-center rounded-xl px-3 py-2 text-sm transition-colors ${
-                      active ? "bg-cyan-500/20 text-cyan-200" : "text-white/70 hover:bg-white/5 hover:text-white"
+                      active ? "dashboard-sidebar-link-active" : "dashboard-sidebar-link"
                     }`}
                     title={item.label}
                   >
@@ -190,9 +190,9 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
-          <aside className="glass-surface relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4">
+          <aside className="glass-surface dashboard-sidebar relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4">
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+              <p className="dashboard-sidebar-title text-xs uppercase tracking-[0.2em]">
                 {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
               </p>
               <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
@@ -207,7 +207,7 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
                     key={`mobile-${item.href}`}
                     href={item.href}
                     className={`flex min-h-11 items-center rounded-xl px-3 py-2 text-sm ${
-                      active ? "bg-cyan-500/20 text-cyan-200" : "text-white/80 hover:bg-white/5"
+                      active ? "dashboard-sidebar-link-active" : "dashboard-sidebar-link"
                     }`}
                     onClick={() => setIsDrawerOpen(false)}
                   >

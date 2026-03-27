@@ -10,6 +10,7 @@ import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -415,7 +416,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           <div className="relative z-10 flex items-center gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
+              className="brand-pill inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
               aria-label={t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar para inicio" })}
             >
               <Image src="/brand/brids-mark.svg" alt="BRIDS mark" width={24} height={24} className="h-6 w-auto sm:hidden" priority />
@@ -460,6 +461,10 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
             </button>
 
             <div className="hidden shrink-0 sm:block">
+              <ThemeToggle />
+            </div>
+
+            <div className="hidden shrink-0 sm:block">
               <LanguageSwitcher />
             </div>
 
@@ -480,6 +485,9 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
           {isMobileMenuOpen ? (
             <nav className="relative z-10 mt-3 flex flex-wrap items-center gap-2 sm:hidden" aria-label="Mobile navigation">
+              <div className="w-full">
+                <ThemeToggle />
+              </div>
               <div className="w-full">
                 <LanguageSwitcher />
               </div>
