@@ -87,6 +87,90 @@ export type AmlCaseSnapshotForAdmin = {
   }>;
 };
 
+export type ComplianceAuditEventRecord = {
+  id: string;
+  walletPublicKey: string;
+  actorType: ComplianceAuditActorType;
+  actorId: string;
+  eventName: string;
+  eventPayload: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type ComplianceNoteRecord = {
+  id: string;
+  walletPublicKey: string;
+  noteText: string;
+  actorId: string;
+  createdAt: string;
+};
+
+export type ComplianceCaseListItem = {
+  walletPublicKey: string;
+  username: string;
+  kycStatus: KycStatus;
+  amlStatus: AmlStatus;
+  amlRiskScore: number | null;
+  complianceStatus: ComplianceStatus;
+  isSuspended: boolean;
+  complianceStatusUpdatedAt: string;
+};
+
+export type ListComplianceCasesInput = {
+  status?: ComplianceStatus;
+  cursor?: string | null;
+  limit?: number;
+};
+
+export type ListComplianceCasesResult = {
+  items: ComplianceCaseListItem[];
+  nextCursor: string | null;
+};
+
+export type ComplianceCaseDetailForAdmin = ProfileBundle & {
+  amlRiskScore: number | null;
+  amlFlags: AmlFlag[];
+  amlProvider: string | null;
+  amlRuleVersion: string | null;
+  amlLastCheckedAt: string | null;
+  recentAuditEvents: ComplianceAuditEventRecord[];
+  recentNotes: ComplianceNoteRecord[];
+};
+
+export type SetKycDecisionByAdminInput = {
+  walletPublicKey: string;
+  adminActorId: string;
+  decision: "verified" | "rejected";
+  reason?: string | null;
+};
+
+export type SetAmlDecisionByAdminInput = {
+  walletPublicKey: string;
+  adminActorId: string;
+  decision: "clear" | "flagged";
+  reason: string;
+  amlRiskScore?: number | null;
+  amlFlags?: AmlFlag[];
+};
+
+export type SetSuspensionByAdminInput = {
+  walletPublicKey: string;
+  adminActorId: string;
+  suspended: boolean;
+  reason?: string | null;
+};
+
+export type AddComplianceNoteInput = {
+  walletPublicKey: string;
+  actorId: string;
+  noteText: string;
+};
+
+export type AdminCaseMutationResult = {
+  profile: ProfileBundle;
+  idempotent: boolean;
+};
+
 export type RegisterKycWebhookEventInput = {
   providerEventId: string;
   provider: string;
@@ -162,6 +246,7 @@ type InMemoryProfileState = {
 const inMemoryProfiles = new Map<string, InMemoryProfileState>();
 const inMemoryWebhookEventIds = new Set<string>();
 const inMemoryAuditEvents: Array<RecordComplianceAuditEventInput & { id: string; createdAt: string }> = [];
+const inMemoryNotes = new Map<string, ComplianceNoteRecord[]>();
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -215,6 +300,78 @@ function sanitizeAmlFlags(value: unknown): AmlFlag[] {
   }
 
   return result.slice(0, 50);
+}
+
+function sanitizeEventPayload(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function normalizeDecisionReason(value: string | null | undefined): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, 500) : null;
+}
+
+function encodeComplianceCursor(input: { updatedAt: string; walletPublicKey: string }): string {
+  return Buffer.from(JSON.stringify({ u: input.updatedAt, w: input.walletPublicKey }), "utf8").toString("base64url");
+}
+
+function decodeComplianceCursor(cursor: string | null | undefined): { updatedAt: string; walletPublicKey: string } | null {
+  if (!cursor || !cursor.trim()) {
+    return null;
+  }
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8")) as {
+      u?: unknown;
+      w?: unknown;
+    };
+    const updatedAt = typeof decoded.u === "string" ? decoded.u.trim() : "";
+    const walletPublicKey = typeof decoded.w === "string" ? decoded.w.trim() : "";
+
+    if (!updatedAt || !walletPublicKey) {
+      throw new Error("Cursor fields are missing.");
+    }
+
+    const asDate = new Date(updatedAt);
+    if (Number.isNaN(asDate.getTime())) {
+      throw new Error("Cursor date is invalid.");
+    }
+
+    return {
+      updatedAt: asDate.toISOString(),
+      walletPublicKey
+    };
+  } catch {
+    throw new ProfileRepositoryError("INVALID_CURSOR", "Cursor is invalid.");
+  }
+}
+
+function normalizeListLimit(limit: number | undefined): number {
+  if (!Number.isInteger(limit) || Number(limit) < 1) {
+    return 20;
+  }
+
+  return Math.min(Number(limit), 100);
+}
+
+function sortCasesByCursorOrder<T extends { complianceStatusUpdatedAt: string; walletPublicKey: string }>(cases: T[]): T[] {
+  return [...cases].sort((left, right) => {
+    const leftTime = new Date(left.complianceStatusUpdatedAt).getTime();
+    const rightTime = new Date(right.complianceStatusUpdatedAt).getTime();
+    if (leftTime !== rightTime) {
+      return rightTime - leftTime;
+    }
+
+    return right.walletPublicKey.localeCompare(left.walletPublicKey);
+  });
 }
 
 function isProfileErrorCode(error: unknown, code: string): boolean {
@@ -684,6 +841,35 @@ type AmlSnapshotRow = {
   compliance_status: ComplianceStatus;
 };
 
+type ComplianceCaseListRow = {
+  wallet_public_key: string;
+  username: string;
+  kyc_status: KycStatus;
+  aml_status: AmlStatus;
+  aml_risk_score: number | null;
+  compliance_status: ComplianceStatus;
+  is_suspended: boolean;
+  compliance_status_updated_at: string | Date;
+};
+
+type ComplianceAuditEventRow = {
+  id: number | string;
+  wallet_public_key: string;
+  actor_type: ComplianceAuditActorType;
+  actor_id: string;
+  event_name: string;
+  event_payload: unknown;
+  created_at: string | Date;
+};
+
+type ComplianceNoteRow = {
+  id: number | string;
+  wallet_public_key: string;
+  note_text: string;
+  actor_id: string;
+  created_at: string | Date;
+};
+
 type AmlScreeningRow = {
   id: number;
   provider: string;
@@ -695,6 +881,41 @@ type AmlScreeningRow = {
   trigger_source: string;
   created_at: string | Date;
 };
+
+function mapComplianceCaseRow(row: ComplianceCaseListRow): ComplianceCaseListItem {
+  return {
+    walletPublicKey: row.wallet_public_key,
+    username: row.username,
+    kycStatus: row.kyc_status,
+    amlStatus: row.aml_status,
+    amlRiskScore: row.aml_risk_score,
+    complianceStatus: row.compliance_status,
+    isSuspended: Boolean(row.is_suspended),
+    complianceStatusUpdatedAt: normalizeIso(row.compliance_status_updated_at)
+  };
+}
+
+function mapComplianceAuditEventRow(row: ComplianceAuditEventRow): ComplianceAuditEventRecord {
+  return {
+    id: String(row.id),
+    walletPublicKey: row.wallet_public_key,
+    actorType: row.actor_type,
+    actorId: row.actor_id,
+    eventName: row.event_name,
+    eventPayload: sanitizeEventPayload(row.event_payload),
+    createdAt: normalizeIso(row.created_at)
+  };
+}
+
+function mapComplianceNoteRow(row: ComplianceNoteRow): ComplianceNoteRecord {
+  return {
+    id: String(row.id),
+    walletPublicKey: row.wallet_public_key,
+    noteText: row.note_text,
+    actorId: row.actor_id,
+    createdAt: normalizeIso(row.created_at)
+  };
+}
 
 function mapAmlCaseSnapshot(
   snapshot: AmlSnapshotRow,
@@ -722,6 +943,111 @@ function mapAmlCaseSnapshot(
       createdAt: normalizeIso(screening.created_at)
     }))
   };
+}
+
+type MutableComplianceState = {
+  walletPublicKey: string;
+  kycStatus: KycStatus;
+  amlStatus: AmlStatus;
+  amlRiskScore: number | null;
+  amlFlags: AmlFlag[];
+  isSuspended: boolean;
+  complianceStatus: ComplianceStatus;
+  rejectionReasonCode: string | null;
+};
+
+async function getMutableComplianceStateWithClient(
+  client: PoolClient,
+  walletPublicKey: string,
+  forUpdate = false
+): Promise<MutableComplianceState | null> {
+  const result = await client.query<{
+    wallet_public_key: string;
+    kyc_status: KycStatus;
+    aml_status: AmlStatus;
+    aml_risk_score: number | null;
+    aml_flags_json: unknown;
+    is_suspended: boolean;
+    compliance_status: ComplianceStatus;
+    rejection_reason_code: string | null;
+  }>(
+    `SELECT
+       p.wallet_public_key,
+       k.kyc_status,
+       p.aml_status,
+       p.aml_risk_score,
+       p.aml_flags_json,
+       p.is_suspended,
+       p.compliance_status,
+       k.rejection_reason_code
+     FROM user_profiles p
+     JOIN kyc_cases k ON k.wallet_public_key = p.wallet_public_key
+     WHERE p.wallet_public_key = $1
+     ${forUpdate ? "FOR UPDATE OF p, k" : ""}`,
+    [walletPublicKey]
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    return null;
+  }
+
+  return {
+    walletPublicKey: row.wallet_public_key,
+    kycStatus: row.kyc_status,
+    amlStatus: row.aml_status,
+    amlRiskScore: row.aml_risk_score,
+    amlFlags: sanitizeAmlFlags(row.aml_flags_json),
+    isSuspended: Boolean(row.is_suspended),
+    complianceStatus: row.compliance_status,
+    rejectionReasonCode: row.rejection_reason_code
+  };
+}
+
+async function getRecentComplianceAuditEventsWithClient(
+  client: PoolClient,
+  walletPublicKey: string,
+  limit = 50
+): Promise<ComplianceAuditEventRecord[]> {
+  const result = await client.query<ComplianceAuditEventRow>(
+    `SELECT
+       id,
+       wallet_public_key,
+       actor_type,
+       actor_id,
+       event_name,
+       event_payload,
+       created_at
+     FROM compliance_audit_events
+     WHERE wallet_public_key = $1
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [walletPublicKey, Math.max(1, Math.min(limit, 200))]
+  );
+
+  return result.rows.map(mapComplianceAuditEventRow);
+}
+
+async function getRecentComplianceNotesWithClient(
+  client: PoolClient,
+  walletPublicKey: string,
+  limit = 50
+): Promise<ComplianceNoteRecord[]> {
+  const result = await client.query<ComplianceNoteRow>(
+    `SELECT
+       id,
+       wallet_public_key,
+       note_text,
+       actor_id,
+       created_at
+     FROM compliance_notes
+     WHERE wallet_public_key = $1
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [walletPublicKey, Math.max(1, Math.min(limit, 200))]
+  );
+
+  return result.rows.map(mapComplianceNoteRow);
 }
 
 export async function updateAmlStatusFromProvider(
@@ -884,6 +1210,652 @@ export async function getAmlCaseSnapshotForAdmin(walletPublicKey: string): Promi
     );
 
     return mapAmlCaseSnapshot(snapshot, screeningsResult.rows);
+  });
+}
+
+export async function listComplianceCasesForAdmin(input: ListComplianceCasesInput): Promise<ListComplianceCasesResult> {
+  const normalizedLimit = normalizeListLimit(input.limit);
+  const parsedCursor = decodeComplianceCursor(input.cursor ?? null);
+
+  if (!isProfileDatabaseConfigured()) {
+    let cases = sortCasesByCursorOrder(
+      Array.from(inMemoryProfiles.values())
+        .filter((profile) => (input.status ? profile.complianceStatus === input.status : true))
+        .map((profile) => ({
+          walletPublicKey: profile.walletPublicKey,
+          username: profile.username,
+          kycStatus: profile.kycStatus,
+          amlStatus: profile.amlStatus,
+          amlRiskScore: profile.amlRiskScore,
+          complianceStatus: profile.complianceStatus,
+          isSuspended: profile.isSuspended,
+          complianceStatusUpdatedAt: profile.complianceStatusUpdatedAt
+        }))
+    );
+
+    if (parsedCursor) {
+      const cursorTime = new Date(parsedCursor.updatedAt).getTime();
+      cases = cases.filter((item) => {
+        const itemTime = new Date(item.complianceStatusUpdatedAt).getTime();
+        if (itemTime < cursorTime) {
+          return true;
+        }
+
+        if (itemTime > cursorTime) {
+          return false;
+        }
+
+        return item.walletPublicKey < parsedCursor.walletPublicKey;
+      });
+    }
+
+    const pageSlice = cases.slice(0, normalizedLimit + 1);
+    const hasMore = pageSlice.length > normalizedLimit;
+    const items = hasMore ? pageSlice.slice(0, normalizedLimit) : pageSlice;
+    const last = items[items.length - 1];
+
+    return {
+      items,
+      nextCursor: hasMore && last
+        ? encodeComplianceCursor({
+          updatedAt: last.complianceStatusUpdatedAt,
+          walletPublicKey: last.walletPublicKey
+        })
+        : null
+    };
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<ComplianceCaseListRow>(
+      `SELECT
+         p.wallet_public_key,
+         p.username,
+         k.kyc_status,
+         p.aml_status,
+         p.aml_risk_score,
+         p.compliance_status,
+         p.is_suspended,
+         p.compliance_status_updated_at
+       FROM user_profiles p
+       JOIN kyc_cases k ON k.wallet_public_key = p.wallet_public_key
+       WHERE ($1::text IS NULL OR p.compliance_status = $1::text)
+         AND (
+           $2::timestamptz IS NULL
+           OR p.compliance_status_updated_at < $2::timestamptz
+           OR (p.compliance_status_updated_at = $2::timestamptz AND p.wallet_public_key < $3::text)
+         )
+       ORDER BY p.compliance_status_updated_at DESC, p.wallet_public_key DESC
+       LIMIT $4`,
+      [
+        input.status ?? null,
+        parsedCursor?.updatedAt ?? null,
+        parsedCursor?.walletPublicKey ?? null,
+        normalizedLimit + 1
+      ]
+    );
+
+    const mapped = result.rows.map(mapComplianceCaseRow);
+    const hasMore = mapped.length > normalizedLimit;
+    const items = hasMore ? mapped.slice(0, normalizedLimit) : mapped;
+    const last = items[items.length - 1];
+
+    return {
+      items,
+      nextCursor: hasMore && last
+        ? encodeComplianceCursor({
+          updatedAt: last.complianceStatusUpdatedAt,
+          walletPublicKey: last.walletPublicKey
+        })
+        : null
+    };
+  });
+}
+
+export async function getComplianceCaseDetailForAdmin(
+  walletPublicKey: string
+): Promise<ComplianceCaseDetailForAdmin | null> {
+  if (!isProfileDatabaseConfigured()) {
+    const profile = inMemoryProfiles.get(walletPublicKey);
+    if (!profile) {
+      return null;
+    }
+
+    const recentAuditEvents = [...inMemoryAuditEvents]
+      .filter((event) => event.walletPublicKey === walletPublicKey)
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(0, 50)
+      .map((event) => ({
+        id: event.id,
+        walletPublicKey: event.walletPublicKey,
+        actorType: event.actorType,
+        actorId: event.actorId,
+        eventName: event.eventName,
+        eventPayload: sanitizeEventPayload(event.eventPayload),
+        createdAt: event.createdAt
+      }));
+
+    const recentNotes = [...(inMemoryNotes.get(walletPublicKey) ?? [])]
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(0, 50);
+
+    return {
+      ...mapInMemoryToBundle(profile),
+      amlRiskScore: profile.amlRiskScore,
+      amlFlags: profile.amlFlags,
+      amlProvider: profile.amlProvider,
+      amlRuleVersion: profile.amlRuleVersion,
+      amlLastCheckedAt: profile.amlLastCheckedAt,
+      recentAuditEvents,
+      recentNotes
+    };
+  }
+
+  return withDbClient(async (client) => {
+    const snapshotResult = await client.query<ProfileBundleRow>(
+      `SELECT
+         p.wallet_public_key,
+         p.username,
+         p.bio,
+         p.avatar_url,
+         k.kyc_status,
+         p.aml_status,
+         p.aml_risk_score,
+         p.aml_flags_json,
+         p.aml_provider,
+         p.aml_rule_version,
+         p.aml_last_checked_at,
+         p.compliance_status,
+         k.rejection_reason_code,
+         p.kyc_provider_session_id,
+         p.kyc_provider_report_id,
+         p.is_suspended,
+         p.compliance_status_updated_at,
+         p.created_at,
+         p.updated_at
+       FROM user_profiles p
+       JOIN kyc_cases k ON k.wallet_public_key = p.wallet_public_key
+       WHERE p.wallet_public_key = $1
+       LIMIT 1`,
+      [walletPublicKey]
+    );
+
+    const row = snapshotResult.rows[0];
+    if (!row) {
+      return null;
+    }
+
+    const [recentAuditEvents, recentNotes] = await Promise.all([
+      getRecentComplianceAuditEventsWithClient(client, walletPublicKey, 50),
+      getRecentComplianceNotesWithClient(client, walletPublicKey, 50)
+    ]);
+
+    return {
+      ...toBundle(row),
+      amlRiskScore: row.aml_risk_score,
+      amlFlags: sanitizeAmlFlags(row.aml_flags_json),
+      amlProvider: row.aml_provider,
+      amlRuleVersion: row.aml_rule_version,
+      amlLastCheckedAt: normalizeOptionalIso(row.aml_last_checked_at),
+      recentAuditEvents,
+      recentNotes
+    };
+  });
+}
+
+export async function listComplianceNotesForAdmin(
+  walletPublicKey: string,
+  limit = 50
+): Promise<ComplianceNoteRecord[]> {
+  if (!isProfileDatabaseConfigured()) {
+    return [...(inMemoryNotes.get(walletPublicKey) ?? [])]
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(0, Math.max(1, Math.min(limit, 200)));
+  }
+
+  return withDbClient(async (client) => getRecentComplianceNotesWithClient(client, walletPublicKey, limit));
+}
+
+export async function addComplianceNoteForAdmin(input: AddComplianceNoteInput): Promise<ComplianceNoteRecord> {
+  const noteText = input.noteText.trim();
+  if (!noteText) {
+    throw new ProfileRepositoryError("INVALID_NOTE", "Note text is required.");
+  }
+
+  if (noteText.length > 2000) {
+    throw new ProfileRepositoryError("INVALID_NOTE", "Note text cannot exceed 2000 characters.");
+  }
+
+  if (!isProfileDatabaseConfigured()) {
+    const existingProfile = inMemoryProfiles.get(input.walletPublicKey);
+    if (!existingProfile) {
+      throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+    }
+
+    const created: ComplianceNoteRecord = {
+      id: randomUUID(),
+      walletPublicKey: input.walletPublicKey,
+      noteText,
+      actorId: input.actorId,
+      createdAt: nowIso()
+    };
+
+    const existingNotes = inMemoryNotes.get(input.walletPublicKey) ?? [];
+    inMemoryNotes.set(input.walletPublicKey, [created, ...existingNotes]);
+
+    await recordComplianceAuditEvent({
+      walletPublicKey: input.walletPublicKey,
+      actorType: "admin",
+      actorId: input.actorId,
+      eventName: "compliance.note_added",
+      eventPayload: {
+        noteId: created.id
+      }
+    });
+
+    return created;
+  }
+
+  return withDbClient(async (client) => {
+    const current = await getProfileBundleWithClient(client, input.walletPublicKey);
+    if (!current) {
+      throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+    }
+
+    const result = await client.query<ComplianceNoteRow>(
+      `INSERT INTO compliance_notes (wallet_public_key, note_text, actor_id)
+       VALUES ($1, $2, $3)
+       RETURNING id, wallet_public_key, note_text, actor_id, created_at`,
+      [input.walletPublicKey, noteText, input.actorId]
+    );
+    const created = mapComplianceNoteRow(result.rows[0]);
+
+    await insertComplianceAuditEventWithClient(client, {
+      walletPublicKey: input.walletPublicKey,
+      actorType: "admin",
+      actorId: input.actorId,
+      eventName: "compliance.note_added",
+      eventPayload: {
+        noteId: created.id
+      }
+    });
+
+    return created;
+  });
+}
+
+export async function setKycDecisionByAdmin(input: SetKycDecisionByAdminInput): Promise<AdminCaseMutationResult> {
+  const normalizedReason = normalizeDecisionReason(input.reason);
+  if (input.decision === "rejected" && !normalizedReason) {
+    throw new ProfileRepositoryError("REASON_REQUIRED", "Reason is required for rejected KYC decisions.");
+  }
+
+  const rejectionReasonCode = input.decision === "rejected" ? normalizedReason : null;
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = inMemoryProfiles.get(input.walletPublicKey);
+    if (!profile) {
+      throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+    }
+
+    const projectedStatus = projectComplianceStatus({
+      kycStatus: input.decision,
+      amlStatus: profile.amlStatus,
+      isSuspended: profile.isSuspended
+    });
+
+    const idempotent = profile.kycStatus === input.decision
+      && profile.rejectionReasonCode === rejectionReasonCode
+      && profile.complianceStatus === projectedStatus;
+
+    if (!idempotent) {
+      const updatedAt = nowIso();
+      const previousKycStatus = profile.kycStatus;
+      const previousComplianceStatus = profile.complianceStatus;
+
+      profile.kycStatus = input.decision;
+      profile.rejectionReasonCode = rejectionReasonCode;
+      profile.complianceStatus = projectedStatus;
+      profile.complianceStatusUpdatedAt = updatedAt;
+      profile.updatedAt = updatedAt;
+      inMemoryProfiles.set(profile.walletPublicKey, profile);
+
+      await recordComplianceAuditEvent({
+        walletPublicKey: input.walletPublicKey,
+        actorType: "admin",
+        actorId: input.adminActorId,
+        eventName: "kyc.admin_decision_applied",
+        eventPayload: {
+          decision: input.decision,
+          reason: rejectionReasonCode,
+          previousKycStatus,
+          previousComplianceStatus,
+          complianceStatus: projectedStatus
+        }
+      });
+    }
+
+    return {
+      profile: mapInMemoryToBundle(profile),
+      idempotent
+    };
+  }
+
+  return withDbClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      const current = await getProfileBundleWithClient(client, input.walletPublicKey, true);
+      if (!current) {
+        throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+      }
+
+      const projectedStatus = projectComplianceStatus({
+        kycStatus: input.decision,
+        amlStatus: current.amlStatus,
+        isSuspended: current.isSuspended
+      });
+
+      const idempotent = current.kycStatus === input.decision
+        && current.rejectionReasonCode === rejectionReasonCode
+        && current.complianceStatus === projectedStatus;
+
+      if (!idempotent) {
+        await client.query(
+          `UPDATE kyc_cases
+           SET kyc_status = $2,
+               rejection_reason_code = $3,
+               reviewed_at = NOW(),
+               updated_at = NOW()
+           WHERE wallet_public_key = $1`,
+          [input.walletPublicKey, input.decision, rejectionReasonCode]
+        );
+
+        await client.query(
+          `UPDATE user_profiles
+           SET compliance_status = $2,
+               compliance_status_updated_at = NOW(),
+               updated_at = NOW()
+           WHERE wallet_public_key = $1`,
+          [input.walletPublicKey, projectedStatus]
+        );
+
+        await insertComplianceAuditEventWithClient(client, {
+          walletPublicKey: input.walletPublicKey,
+          actorType: "admin",
+          actorId: input.adminActorId,
+          eventName: "kyc.admin_decision_applied",
+          eventPayload: {
+            decision: input.decision,
+            reason: rejectionReasonCode,
+            previousKycStatus: current.kycStatus,
+            previousComplianceStatus: current.complianceStatus,
+            complianceStatus: projectedStatus
+          }
+        });
+      }
+
+      const updated = await getProfileBundleWithClient(client, input.walletPublicKey);
+      if (!updated) {
+        throw new Error("Could not load profile after KYC admin decision.");
+      }
+
+      await client.query("COMMIT");
+      return { profile: updated, idempotent };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  });
+}
+
+export async function setAmlDecisionByAdmin(input: SetAmlDecisionByAdminInput): Promise<AdminCaseMutationResult> {
+  const normalizedReason = normalizeDecisionReason(input.reason);
+  if (!normalizedReason) {
+    throw new ProfileRepositoryError("REASON_REQUIRED", "Reason is required for AML admin decision.");
+  }
+
+  const normalizedInputFlags = Array.isArray(input.amlFlags) ? sanitizeAmlFlags(input.amlFlags) : null;
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = inMemoryProfiles.get(input.walletPublicKey);
+    if (!profile) {
+      throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+    }
+
+    const projectedStatus = projectComplianceStatus({
+      kycStatus: profile.kycStatus,
+      amlStatus: input.decision,
+      isSuspended: profile.isSuspended
+    });
+
+    const idempotent = profile.amlStatus === input.decision
+      && typeof input.amlRiskScore === "undefined"
+      && normalizedInputFlags === null
+      && profile.complianceStatus === projectedStatus;
+
+    if (!idempotent) {
+      const updatedAt = nowIso();
+      const previousAmlStatus = profile.amlStatus;
+      const previousComplianceStatus = profile.complianceStatus;
+
+      profile.amlStatus = input.decision;
+      profile.amlRiskScore = typeof input.amlRiskScore === "undefined" ? profile.amlRiskScore : input.amlRiskScore;
+      profile.amlFlags = normalizedInputFlags ?? profile.amlFlags;
+      profile.amlProvider = "admin_override";
+      profile.amlRuleVersion = "admin_override";
+      profile.amlLastCheckedAt = updatedAt;
+      profile.complianceStatus = projectedStatus;
+      profile.complianceStatusUpdatedAt = updatedAt;
+      profile.updatedAt = updatedAt;
+      inMemoryProfiles.set(profile.walletPublicKey, profile);
+
+      await recordComplianceAuditEvent({
+        walletPublicKey: input.walletPublicKey,
+        actorType: "admin",
+        actorId: input.adminActorId,
+        eventName: "aml.admin_decision_applied",
+        eventPayload: {
+          decision: input.decision,
+          reason: normalizedReason,
+          previousAmlStatus,
+          previousComplianceStatus,
+          complianceStatus: projectedStatus,
+          amlRiskScore: profile.amlRiskScore
+        }
+      });
+    }
+
+    return {
+      profile: mapInMemoryToBundle(profile),
+      idempotent
+    };
+  }
+
+  return withDbClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      const current = await getMutableComplianceStateWithClient(client, input.walletPublicKey, true);
+      if (!current) {
+        throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+      }
+
+      const projectedStatus = projectComplianceStatus({
+        kycStatus: current.kycStatus,
+        amlStatus: input.decision,
+        isSuspended: current.isSuspended
+      });
+
+      const idempotent = current.amlStatus === input.decision
+        && typeof input.amlRiskScore === "undefined"
+        && normalizedInputFlags === null
+        && current.complianceStatus === projectedStatus;
+
+      if (!idempotent) {
+        const nextRiskScore = typeof input.amlRiskScore === "undefined" ? current.amlRiskScore : input.amlRiskScore;
+        const nextFlags = normalizedInputFlags ?? current.amlFlags;
+        const providerClassification: AmlProviderClassification = input.decision === "clear" ? "clear" : "flagged";
+
+        await client.query(
+          `UPDATE user_profiles
+           SET aml_status = $2,
+               aml_risk_score = $3,
+               aml_flags_json = $4::jsonb,
+               aml_provider = 'admin_override',
+               aml_rule_version = 'admin_override',
+               aml_last_checked_at = NOW(),
+               compliance_status = $5,
+               compliance_status_updated_at = NOW(),
+               updated_at = NOW()
+           WHERE wallet_public_key = $1`,
+          [input.walletPublicKey, input.decision, nextRiskScore, JSON.stringify(nextFlags), projectedStatus]
+        );
+
+        await client.query(
+          `INSERT INTO aml_screenings (
+             wallet_public_key,
+             provider,
+             provider_classification,
+             aml_status,
+             aml_risk_score,
+             aml_flags_json,
+             rule_version,
+             trigger_source
+           ) VALUES ($1, 'admin_override', $2, $3, $4, $5::jsonb, 'admin_override', 'admin_override')`,
+          [input.walletPublicKey, providerClassification, input.decision, nextRiskScore, JSON.stringify(nextFlags)]
+        );
+
+        await insertComplianceAuditEventWithClient(client, {
+          walletPublicKey: input.walletPublicKey,
+          actorType: "admin",
+          actorId: input.adminActorId,
+          eventName: "aml.admin_decision_applied",
+          eventPayload: {
+            decision: input.decision,
+            reason: normalizedReason,
+            previousAmlStatus: current.amlStatus,
+            previousComplianceStatus: current.complianceStatus,
+            complianceStatus: projectedStatus,
+            amlRiskScore: nextRiskScore
+          }
+        });
+      }
+
+      const updated = await getProfileBundleWithClient(client, input.walletPublicKey);
+      if (!updated) {
+        throw new Error("Could not load profile after AML admin decision.");
+      }
+
+      await client.query("COMMIT");
+      return { profile: updated, idempotent };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  });
+}
+
+export async function setSuspensionByAdmin(input: SetSuspensionByAdminInput): Promise<AdminCaseMutationResult> {
+  const normalizedReason = normalizeDecisionReason(input.reason);
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = inMemoryProfiles.get(input.walletPublicKey);
+    if (!profile) {
+      throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+    }
+
+    const projectedStatus = projectComplianceStatus({
+      kycStatus: profile.kycStatus,
+      amlStatus: profile.amlStatus,
+      isSuspended: input.suspended
+    });
+
+    const idempotent = profile.isSuspended === input.suspended && profile.complianceStatus === projectedStatus;
+
+    if (!idempotent) {
+      const updatedAt = nowIso();
+      const previousSuspended = profile.isSuspended;
+      const previousComplianceStatus = profile.complianceStatus;
+
+      profile.isSuspended = input.suspended;
+      profile.complianceStatus = projectedStatus;
+      profile.complianceStatusUpdatedAt = updatedAt;
+      profile.updatedAt = updatedAt;
+      inMemoryProfiles.set(profile.walletPublicKey, profile);
+
+      await recordComplianceAuditEvent({
+        walletPublicKey: input.walletPublicKey,
+        actorType: "admin",
+        actorId: input.adminActorId,
+        eventName: input.suspended ? "compliance.suspended" : "compliance.unsuspended",
+        eventPayload: {
+          reason: normalizedReason,
+          previousSuspended,
+          previousComplianceStatus,
+          complianceStatus: projectedStatus
+        }
+      });
+    }
+
+    return {
+      profile: mapInMemoryToBundle(profile),
+      idempotent
+    };
+  }
+
+  return withDbClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      const current = await getProfileBundleWithClient(client, input.walletPublicKey, true);
+      if (!current) {
+        throw new ProfileRepositoryError("CASE_NOT_FOUND", "Compliance case was not found for this wallet.");
+      }
+
+      const projectedStatus = projectComplianceStatus({
+        kycStatus: current.kycStatus,
+        amlStatus: current.amlStatus,
+        isSuspended: input.suspended
+      });
+
+      const idempotent = current.isSuspended === input.suspended && current.complianceStatus === projectedStatus;
+
+      if (!idempotent) {
+        await client.query(
+          `UPDATE user_profiles
+           SET is_suspended = $2,
+               compliance_status = $3,
+               compliance_status_updated_at = NOW(),
+               updated_at = NOW()
+           WHERE wallet_public_key = $1`,
+          [input.walletPublicKey, input.suspended, projectedStatus]
+        );
+
+        await insertComplianceAuditEventWithClient(client, {
+          walletPublicKey: input.walletPublicKey,
+          actorType: "admin",
+          actorId: input.adminActorId,
+          eventName: input.suspended ? "compliance.suspended" : "compliance.unsuspended",
+          eventPayload: {
+            reason: normalizedReason,
+            previousSuspended: current.isSuspended,
+            previousComplianceStatus: current.complianceStatus,
+            complianceStatus: projectedStatus
+          }
+        });
+      }
+
+      const updated = await getProfileBundleWithClient(client, input.walletPublicKey);
+      if (!updated) {
+        throw new Error("Could not load profile after suspension update.");
+      }
+
+      await client.query("COMMIT");
+      return { profile: updated, idempotent };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
   });
 }
 

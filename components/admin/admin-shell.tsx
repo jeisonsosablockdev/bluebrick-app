@@ -63,6 +63,7 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
         section: t({ en: "Operations", es: "Operacion", pt: "Operacao" }),
         items: [
           { label: "Mint", route: "/admin/mint", icon: "MI", isEnabled: true },
+          { label: t({ en: "Compliance", es: "Cumplimiento", pt: "Compliance" }), route: "/admin/compliance", icon: "CP", isEnabled: true },
           { label: t({ en: "Collections", es: "Colecciones", pt: "Colecoes" }), route: "/admin/collections", icon: "CO", isEnabled: true },
           { label: t({ en: "Sales", es: "Ventas", pt: "Vendas" }), route: "/admin/sales", icon: "VE", isEnabled: true },
           { label: t({ en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }), route: "/admin/treasury", icon: "TE", isEnabled: true },

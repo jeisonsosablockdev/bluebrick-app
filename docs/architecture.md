@@ -64,4 +64,28 @@
   - This handoff is intentionally deploy-first (no mint required).
   - Explorer link is derived from collection address using devnet cluster.
   - If `DATABASE_URL` is not configured, create-entry returns an explicit failure.
-Last Updated: 2026-03-18 16:24:39 UTC
+
+## Compliance Dashboard and Audit (EPIC-004 STORY-005)
+- Scope:
+  - `app/admin/compliance/page.tsx`
+  - `components/admin/compliance-console.tsx`
+  - `app/api/admin/compliance/cases/*`
+  - `lib/compliance/case-service.ts`
+  - `lib/compliance/profile-repository.ts`
+  - `db/migrations/014_compliance_notes.sql`
+- Queue data model:
+  - Operational queue reads from denormalized `user_profiles.compliance_status`.
+  - Cursor pagination ordered by `compliance_status_updated_at DESC, wallet_public_key DESC`.
+- Admin actions:
+  - `kyc-decision`: `verified` or `rejected` (reason required for rejected).
+  - `aml-decision`: `clear` or `flagged` (reason required).
+  - `suspend` and `unsuspend`: toggles `is_suspended`, then recomputes projected status.
+  - `notes`: internal notes persisted in `compliance_notes`.
+- Audit model:
+  - Every admin mutation writes to `compliance_audit_events` with actor, event name, payload and UTC timestamp.
+  - Notes also produce dedicated audit events (`compliance.note_added`).
+- Financial guardrail:
+  - Financial routes enforce compliance blocking for `restricted_aml` and `suspended`.
+  - Applied to `/api/purchase/challenge`, `/api/purchase/prepare`, `/api/purchase/submit`.
+
+Last Updated: 2026-03-26 16:45:00 UTC

@@ -44,4 +44,16 @@
 - Risk: DAS reconciliation can still require multiple passes when assets are spread across many pages.
 - Acceptance reason: H5 intentionally exposes bounded, repeatable pagination to keep reconciliation predictable and safe.
 
-Last Updated: 2026-03-18 01:14:38 UTC
+## Compliance Admin Operations Addendum (EPIC-004 STORY-005)
+- New threat vectors:
+  - Unauthorized admin mutations on compliance cases.
+  - Missing justification on reject/override decisions.
+  - Loss of incident context due to missing notes/audit linkage.
+  - Financial actions executed by wallets marked as `restricted_aml` or `suspended`.
+- Mitigations:
+  - Admin-only guards on every `/api/admin/compliance/cases/*` mutation route.
+  - Service-level validation for mandatory reasons in rejected KYC and AML override decisions.
+  - Dedicated `compliance_notes` table + `compliance_audit_events` trail per mutation.
+  - Runtime compliance gate in purchase flows (`challenge`, `prepare`, `submit`) for blocked statuses.
+
+Last Updated: 2026-03-26 16:45:00 UTC

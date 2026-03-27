@@ -52,7 +52,8 @@ export type PurchaseErrorCode =
   | "INVALID_CHALLENGE"
   | "RATE_LIMITED"
   | "TRANSACTION_FAILED"
-  | "UNAUTHORIZED";
+  | "UNAUTHORIZED"
+  | "COMPLIANCE_RESTRICTED";
 
 export type PurchaseQuantityMode = "SINGLE_ONLY" | "MULTI_ENABLED";
 

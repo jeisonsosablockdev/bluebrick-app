@@ -33,9 +33,9 @@
 - [x] Sistema actualiza `kyc_status` por webhook firmado de Stripe (sin procesamiento de PII en nuestra app).
 - [x] Sistema ejecuta screening AML de wallet con Helius y persiste solo resultados de riesgo (`aml_status`, `aml_risk_score`, flags).
 - [x] Existe `compliance_status` unificado y denormalizado en `user_profiles`.
-- [ ] Lista del panel admin consulta por `compliance_status` (sin JOIN pesado en tiempo real).
-- [ ] Admin dispone de acciones: `suspend`, `unsuspend`, `add internal note`, `kyc decision`, `aml decision`.
-- [ ] Todo el flujo queda trazado con timestamps y eventos auditables (usuario/admin/proveedor).
+- [x] Lista del panel admin consulta por `compliance_status` (sin JOIN pesado en tiempo real).
+- [x] Admin dispone de acciones: `suspend`, `unsuspend`, `add internal note`, `kyc decision`, `aml decision`.
+- [x] Todo el flujo queda trazado con timestamps y eventos auditables (usuario/admin/proveedor).
 - [ ] Existe prueba automatizada que valida no existencia de columnas/tablas de PII sensible en DB.
 
 ## Story Index
@@ -45,7 +45,7 @@
 | STORY-004-02 | Integracion Stripe Identity: Inicio de Verificacion | `STORY-004-02-stripe-identity-integration-kickoff.md` | `implemented` | `TBD` | Usuario inicia KYC sin cargar PII en nuestra app |
 | STORY-004-03 | Integracion Stripe Identity: Webhook Handler | `STORY-004-03-stripe-webhook-handler.md` | `implemented` | `TBD` | Actualiza KYC y proyecta compliance status |
 | STORY-004-04 | Integracion Helius: Screening AML de Wallet | `STORY-004-04-helius-aml-wallet-screening.md` | `implemented` | `TBD` | Riesgo AML y proyeccion a compliance status |
-| STORY-004-05 | Panel de Cumplimiento y Auditoria | `STORY-004-05-compliance-dashboard-and-audit.md` | `approved` | `TBD` | Cola unificada performante + acciones de incidente |
+| STORY-004-05 | Panel de Cumplimiento y Auditoria | `STORY-004-05-compliance-dashboard-and-audit.md` | `implemented` | `TBD` | Cola unificada performante + acciones de incidente |
 | STORY-004-06 | Staff Review and Verdict (Architectural Pivot) | `STORY-004-06-staff-review-and-verdict.md` | `approved` | `TBD` | Veredicto formal: rechazar build y adoptar buy |
 
 ## Compliance State Model
