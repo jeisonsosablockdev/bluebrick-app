@@ -38,6 +38,30 @@ Updated: 2026-03-20 19:27:57 UTC
 - `npm test`: run all unit tests with Vitest.
 - `npm run test:watch`: run tests in watch mode.
 - `npm run test:coverage`: run tests with coverage report.
+- `npm run e2e:install`: install Playwright Chromium (one-time setup).
+- `npm run e2e:playwright`: run Playwright smoke gate.
+- `npm run e2e:synpress`: build Synpress Phantom cache and run wallet E2E gate.
+- `npm run e2e:synpress:user`: run Synpress gate with non-admin wallet profile.
+- `npm run e2e:synpress:admin`: run Synpress gate with admin wallet profile.
+- `npm run e2e:roles`: validate `/admin` access control with SIWS signatures from local admin/non-admin keypairs.
+- `npm run e2e:evidence`: capture responsive critical-path evidence (320/375/768/1024) and build `test-results/evidence-index.json`.
+- `npm run e2e`: run Playwright + Synpress gates in sequence.
+
+E2E env vars:
+
+- `E2E_BASE_URL` (default: `http://127.0.0.1:3000`)
+- `E2E_PHANTOM_PASSWORD` (optional; defaults to a local test password in setup file)
+- `E2E_PHANTOM_SEED_PHRASE` (optional; defaults to test mnemonic only for local/devnet use)
+- `E2E_ADMIN_KEYPAIR_PATH` (optional; default: `$HOME/my-solana-wallet.json`)
+- `E2E_USER_KEYPAIR_PATH` (optional; default: `.keys/purchase-third-party-signer.json`)
+- `E2E_SYNPRESS_WALLET_ROLE` (`admin` or `user`, default: `user`)
+- `SYNPRESS_PHANTOM_CRX_URL` (optional override to download Phantom extension if default mirror is unavailable)
+
+Evidence workflow:
+
+- Run `npm run e2e:evidence`.
+- Collect artifacts from `test-results/` (PNG/JSON/trace/video).
+- Use `test-results/evidence-index.json` as the deterministic manifest to attach in PR review/MCP evidence checkpoints.
 
 ## Git Workflow
 
