@@ -28,6 +28,10 @@ fi
 
 "$(dirname "$0")/git-start.sh" "$SCOPE" "$NAME"
 
+if [[ "$SCOPE" == "program" || "$SCOPE" == "nft" ]]; then
+  "$(dirname "$0")/program-test-stack.sh"
+fi
+
 if [[ -n "$DOC_SCOPES" ]]; then
   "$(dirname "$0")/docs-sync.sh" "$DOC_SCOPES"
 else

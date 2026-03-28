@@ -143,9 +143,16 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
   - Example: `./scripts/docs-sync.sh app,nft`
 
 - `./scripts/full-cycle.sh <scope> <name> "mensaje" [docs]`
-  - Runs: start branch → docs sync → commit → push.
+  - Runs: start branch → program test stack bootstrap (program/nft) → docs sync → commit → push.
   - Example: `./scripts/full-cycle.sh app initial-ui "initial UI scaffold"`
   - Example: `./scripts/full-cycle.sh program nft-mint "add nft mint flow" program,nft`
+
+- `./scripts/program-test-stack.sh`
+  - Ensures Rust test stack for Solana programs in `/programs`:
+    - `litesvm`
+    - `mollusk-svm`
+    - `mollusk-svm-programs-token`
+    - `proptest`
 
 ⸻
 
@@ -248,20 +255,21 @@ Run @blockchain-cycle
 
 Mandatory Execution Order
 	1.	concise-planning
-	2.	architecture-patterns
-	3.	blockchain-developer
+	2.	solana-dev
+	3.	metaplex (only when NFT/asset scope applies)
 	4.	test-driven-development
 	5.	tdd-workflow
-	6.	Deploy program to devnet
-	7.	Execute real on-chain transactions
-	8.	Confirm transaction signatures
-	9.	Fetch and validate real account state
-	10.	clean-code
-	11.	lint-and-validate
-	12.	verification-before-completion
-	13.	production-code-audit
-	14.	requesting-code-review
-	15.	create-pr
+	6.	Bootstrap program test stack (`cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`)
+	7.	Deploy program to devnet
+	8.	Execute real on-chain transactions
+	9.	Confirm transaction signatures
+	10.	Fetch and validate real account state
+	11.	clean-code
+	12.	lint-and-validate
+	13.	verification-before-completion
+	14.	production-code-audit
+	15.	requesting-code-review
+	16.	create-pr
 
 Strict Rules
 	•	Devnet only
@@ -315,19 +323,20 @@ Run @nft-cycle
 
 Mandatory Execution Order
 	1.	concise-planning
-	2.	nft-standards
-	3.	blockchain-developer
+	2.	solana-dev
+	3.	metaplex
 	4.	Design mint authority model
 	5.	Define PDA seeds explicitly
 	6.	test-driven-development
-	7.	Deploy to devnet
-	8.	Execute real mint on devnet
-	9.	Validate metadata on-chain
-	10.	Validate royalty configuration
-	11.	clean-code
-	12.	lint-and-validate
-	13.	security-audit
-	14.	production-code-audit
+	7.	Bootstrap program test stack (`cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`)
+	8.	Deploy to devnet
+	9.	Execute real mint on devnet
+	10.	Validate metadata on-chain
+	11.	Validate royalty configuration
+	12.	clean-code
+	13.	lint-and-validate
+	14.	security-audit
+	15.	production-code-audit
 
 Strict Rules
 	•	Devnet only
@@ -413,6 +422,7 @@ Mandatory usage rule:
 3. Keep this playbook as governance. Skills augment implementation guidance but must not bypass governance docs or required macros.
 4. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
 5. For frontend/auth/browser-critical tasks, invoke `playwright-skill` and execute MCP Playwright tooling for verification evidence.
+6. Blockchain workflow in Codex is Solana-only: do not invoke Ethereum/EVM-oriented skills (including Solidity/Hardhat/Foundry/ethers/viem/web3.js-EVM toolchains) unless the user explicitly requests cross-chain work.
 
 Official Solana references included via `solana-dev`:
 - common errors and solutions

@@ -51,6 +51,8 @@ If change affects /programs:
 	•	Validate authority model
 	•	Validate signer checks
 	•	Validate PDA derivations
+	•	Ensure test stack is present in program manifests:
+	  `cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`
 	•	No unchecked CPIs
 	•	No floating point arithmetic
 	•	Must provide real devnet tx proof
