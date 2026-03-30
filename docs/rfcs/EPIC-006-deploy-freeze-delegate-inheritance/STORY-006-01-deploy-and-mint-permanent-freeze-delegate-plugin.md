@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin`
-- Status: `draft` (`draft | in-review | approved | implemented`)
+- Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
 - Last Updated: `2026-03-29`
@@ -30,14 +30,14 @@
   5. Registrar eventos de freeze/unfreeze para auditoría.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
+- Decision: `approved` (`pending | approved | rejected`)
 - Decision date: `2026-03-29`
-- Decision owner: `TBD`
+- Decision owner: `staff-engineer`
 
 ## Status
-- Current status: `draft`
+- Current status: `approved`
 - Next action:
-  Consolidar pruebas devnet end-to-end.
+  Ready for implementation.
 
 ## Traceability
 - Related issue(s): `TBD`

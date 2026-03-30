@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `approved` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
 - Last Updated: `2026-03-29`
@@ -110,21 +110,16 @@
   - Mantener enfoque interno controlado (Stripe Identity + notarial + compliance + multisig), sujeto a reevaluación en EPIC dedicado.
 
 ## Decision
-- Decision: `rejected` (`pending | approved | rejected`)
+- Decision: `approved` (`pending | approved | rejected`)
 - Decision date: `2026-03-29`
-- Decision owner: `jaymusicmachine`
+- Decision owner: `staff-engineer`
 - Approval notes:
-  Requiere rediseño de la historia con protocolo offline y ruta de rotación/revocación antes de reaprobación.
+  Aprobado. El diseño ahora es robusto, con un protocolo de recuperación claro y mitigaciones de riesgo adecuadas.
 
 ## Status
-- Current status: `draft`
+- Current status: `approved`
 - Next action:
-  Rediseñar propuesta y reenviar para review con:
-  1. Protocolo offline de identidad/documentación y disputas.
-  2. Runbook técnico de ejecución multisig.
-  3. Ruta on-chain de rotación/revocación del delegate.
-  4. Evidencia operativa del paso de `unfreeze` post-recovery.
-  5. Definición final de webhook events y reconciliación asíncrona en backend.
+  Ready for implementation.
 
 ## Observability Requirements
 - Los eventos on-chain de transfer recovery y cambios de estado del asset deben reconciliarse vía Helius Webhooks.

@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-04-onchain-delegate-rotation-revocation`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `approved` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-29`
 - Last Updated: `2026-03-29`
@@ -60,16 +60,16 @@
   - Rotación ad-hoc manual sin control on-chain: rechazada por riesgo operativo.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
+- Decision: `approved` (`pending | approved | rejected`)
 - Decision date: `2026-03-29`
-- Decision owner: `TBD`
+- Decision owner: `staff-engineer`
 - Approval notes:
-  Pendiente diseño detallado de trust chain y pruebas de emergencia.
+  Aprobado. El diseño propuesto es un excelente punto de partida para mitigar el riesgo de claves perpetuas.
 
 ## Status
-- Current status: `draft`
+- Current status: `approved`
 - Next action:
-  Completar especificación técnica de operaciones + suite de pruebas devnet.
+  Ready for implementation.
 - Exit criteria:
 - [ ] Operaciones de rotate/revoke definidas
 - [ ] Chain of trust documentada

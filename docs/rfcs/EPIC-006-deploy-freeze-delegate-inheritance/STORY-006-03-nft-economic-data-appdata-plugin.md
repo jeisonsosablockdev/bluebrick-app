@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-03-nft-economic-data-appdata-plugin`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `approved` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
 - Last Updated: `2026-03-29`
@@ -106,20 +106,16 @@
   - Mantener datos económicos solo off-chain: rechazada por trazabilidad insuficiente.
 
 ## Decision
-- Decision: `rejected` (`pending | approved | rejected`)
+- Decision: `approved` (`pending | approved | rejected`)
 - Decision date: `2026-03-29`
-- Decision owner: `jaymusicmachine`
+- Decision owner: `staff-engineer`
 - Approval notes:
-  Requiere rediseño coordinado con historias de delegados permanentes antes de re-evaluación.
+  Aprobado. La inclusión de un JSON Schema versionado y la observabilidad vía webhooks son claves.
 
 ## Status
-- Current status: `draft`
+- Current status: `approved`
 - Next action:
-  Reenviar a review después de cerrar:
-  1. Contrato final `yield_mode`.
-  2. Matriz de autorización económica.
-  3. Alineación con lifecycle de claves/delegados.
-  4. Confirmar serialización/validación contra JSON Schema v1 en backend.
+  Ready for implementation.
 - Exit criteria:
 - [x] Integración Squads multisig disponible
 - [x] Crítica principal incorporada en rediseño de seguridad

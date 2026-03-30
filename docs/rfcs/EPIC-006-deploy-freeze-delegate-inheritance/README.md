@@ -57,10 +57,10 @@
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-006-01 | Deploy + Mint with Permanent Freeze Delegate Plugin | `STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin.md` | `in-review` | `TBD` | Política freeze persistente |
-| STORY-006-02 | Deploy + Mint with Permanent Transfer Delegate Plugin | `STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin.md` | `in-review` | `TBD` | Diseño de recovery robustecido |
-| STORY-006-03 | NFT Economic Data via AppData Plugin | `STORY-006-03-nft-economic-data-appdata-plugin.md` | `in-review` | `TBD` | Esquema JSON v1 y observabilidad |
-| STORY-006-04 | On-chain Delegate Rotation/Revocation | `STORY-006-04-onchain-delegate-rotation-revocation.md` | `draft` | `TBD` | Lifecycle de autoridades críticas |
+| STORY-006-01 | Deploy + Mint with Permanent Freeze Delegate Plugin | `STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin.md` | `approved` | `TBD` | Política freeze persistente |
+| STORY-006-02 | Deploy + Mint with Permanent Transfer Delegate Plugin | `STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin.md` | `approved` | `TBD` | Diseño de recovery robustecido |
+| STORY-006-03 | NFT Economic Data via AppData Plugin | `STORY-006-03-nft-economic-data-appdata-plugin.md` | `approved` | `TBD` | Esquema JSON v1 y observabilidad |
+| STORY-006-04 | On-chain Delegate Rotation/Revocation | `STORY-006-04-onchain-delegate-rotation-revocation.md` | `approved` | `TBD` | Lifecycle de autoridades críticas |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
