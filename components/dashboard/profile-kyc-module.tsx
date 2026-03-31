@@ -8,6 +8,7 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/lib/countries";
+import { TOUR_STEP_IDS } from "@/components/dashboard/quick-tour-overlay";
 
 type KycStatus = "not_started" | "pending" | "verified" | "rejected";
 type ComplianceStatus =
@@ -642,7 +643,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               ) : null}
             </label>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div id={TOUR_STEP_IDS.NAME_EMAIL} className="grid gap-3 sm:grid-cols-2 scroll-mt-28">
               <label className="space-y-1 text-sm text-white/85">
                 <span>{t({ en: "First name", es: "Nombre", pt: "Nome" })}</span>
                 <input
@@ -668,7 +669,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               </label>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div id={TOUR_STEP_IDS.PHONE} className="grid gap-3 sm:grid-cols-2 scroll-mt-28">
               <label className="space-y-1 text-sm text-white/85">
                 <span>{t({ en: "Email", es: "Correo electronico", pt: "E-mail" })}</span>
                 <input
@@ -782,7 +783,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               })()}
             </div>
 
-            <label className="space-y-1 text-sm text-white/85">
+            <label id={TOUR_STEP_IDS.ADDRESS} className="space-y-1 text-sm text-white/85 scroll-mt-28">
               <span>{t({ en: "Address", es: "Direccion", pt: "Endereco" })}</span>
               <input
                 className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
@@ -794,7 +795,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               />
             </label>
 
-            <label className="space-y-1 text-sm text-white/85">
+            <label id={TOUR_STEP_IDS.BIO} className="space-y-1 text-sm text-white/85 scroll-mt-28">
               <span>{t({ en: "Bio", es: "Bio", pt: "Bio" })}</span>
               <textarea
                 className={`min-h-24 w-full rounded-xl px-3 py-2 text-sm outline-none ring-offset-2 transition ${isEditing
@@ -922,7 +923,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
         {saveError && <p className="text-sm text-rose-200">{saveError}</p>}
         {saveSuccess && <p className="text-sm text-emerald-200">{saveSuccess}</p>}
 
-        <div className="flex flex-wrap gap-2">
+        <div id={TOUR_STEP_IDS.EDIT_BUTTON} className="flex flex-wrap gap-2 scroll-mt-28">
           {isEditing ? (
             <>
               <Button className="min-h-11 w-full sm:w-auto" disabled={isSaving} onClick={handleCancelEditing} variant="ghost">
@@ -935,14 +936,14 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               </Button>
             </>
           ) : (
-            <Button className="min-h-11 w-full sm:w-auto" onClick={handleStartEditing} variant="outline">
+            <Button id="profile-edit-button" className="min-h-11 w-full sm:w-auto" onClick={handleStartEditing} variant="outline">
               {t({ en: "Edit profile", es: "Editar perfil", pt: "Editar perfil" })}
             </Button>
           )}
         </div>
       </Card>
 
-      <Card className="space-y-3">
+      <Card id={TOUR_STEP_IDS.KYC} className="space-y-3 scroll-mt-28">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold text-white">{t({ en: "Compliance", es: "Cumplimiento", pt: "Compliance" })}</h3>
           <div className="flex flex-wrap gap-2">

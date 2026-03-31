@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { WalletModal } from "@/components/WalletModal";
+import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";
@@ -219,6 +220,7 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
           </aside>
         </div>
       )}
+      <QuickTourOverlay />
     </main>
   );
 }
