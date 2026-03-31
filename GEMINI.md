@@ -45,6 +45,11 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 | `/packages` | Shared logic (`typescript-expert`) |
 | `/docs` | **Source of Truth** for governance |
 
+## 🛂 GITFLOW & PR WORKFLOW (STRICT)
+- **Wait for Authorization**: NEVER automatically merge Pull Requests or finish a branch without explicit user authorization (e.g., "merge", "finish", "approve").
+- **Iterative Check-in**: After creating a branch, pushing code, and opening a PR, pause and report back to the user with the PR link. Wait for feedback or approval.
+- **Additional Commits**: The user might add or request additional commits on the active branch. Do not mark the gitflow as completed until told so.
+
 ## 🚫 NEGATIVE CONSTRAINTS (DO NOT DO)
 -   DO NOT mock RPC calls.
 -   DO NOT simulate transactions (always execute).
