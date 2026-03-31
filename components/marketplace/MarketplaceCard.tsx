@@ -34,7 +34,7 @@ export function MarketplaceCard({ property, onOpenDetail }: MarketplaceCardProps
         </div>
         <p className="text-sm text-slate-400">{property.locationLabel}</p>
         <p className="text-sm text-cyan-200">
-          {t({ en: "NFT price", es: "Precio NFT", pt: "Preco NFT" })}: ${property.nftPriceUsd.toFixed(2)}
+          {t({ en: "Fraction price", es: "Precio Fracción", pt: "Preco Fração" })}: ${property.nftPriceUsd.toFixed(2)}
         </p>
         <p className="text-sm font-semibold text-cyan-300">
           {t({ en: "Estimated ROI", es: "ROI estimado", pt: "ROI estimado" })}: {property.annualRoiPct.toFixed(1)}%

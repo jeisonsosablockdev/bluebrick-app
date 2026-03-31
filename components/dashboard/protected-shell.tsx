@@ -54,9 +54,9 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
         label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
         title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
         description: t({
-          en: "Review your NFTs, valuation and position status.",
-          es: "Consulta tus NFTs, valor y estado de posiciones.",
-          pt: "Consulte seus NFTs, valor e estado das posicoes."
+          en: "Review your Fractions, valuation and position status.",
+          es: "Consulta tus Fracciones, valor y estado de posiciones.",
+          pt: "Consulte seus Frações, valor e estado das posicoes."
         })
       },
       {

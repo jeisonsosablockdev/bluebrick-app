@@ -29,7 +29,7 @@ export function AssetCollectionSection({
   return (
     <Card className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
+        <p className="text-sm font-semibold text-white">{t({ en: "Fraction / Collection relationship", es: "Relacion Fracción / Coleccion", pt: "Relacao Fração / Colecao" })}</p>
         <Button className="min-h-11" variant="ghost" onClick={onResetSuggestedValues}>
           {t({ en: "Reset suggested values", es: "Resetear valores sugeridos", pt: "Resetar valores sugeridos" })}
         </Button>

@@ -185,9 +185,9 @@ export function SalesOverviewPanel({ initialData, initialRange }: SalesOverviewP
       <AdminModulePlaceholder
         title={t({ en: "Sales", es: "Ventas", pt: "Vendas" })}
         subtitle={t({
-          en: "Commercial tracking for NFT sales.",
-          es: "Seguimiento comercial de ventas NFT.",
-          pt: "Acompanhamento comercial de vendas NFT."
+          en: "Commercial tracking for Fraction sales.",
+          es: "Seguimiento comercial de ventas Fracción.",
+          pt: "Acompanhamento comercial de vendas Fração."
         })}
         highlights={highlights}
         listTitle={listTitle}

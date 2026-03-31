@@ -14,9 +14,9 @@ export default async function AdminCollectionsPage() {
       ]}
       listTitle={localize(locale, { en: "Initial module content", es: "Contenido inicial del modulo", pt: "Conteudo inicial do modulo" })}
       subtitle={localize(locale, {
-        en: "NFT collection management per asset.",
-        es: "Gestion de colecciones NFT por activo.",
-        pt: "Gestao de colecoes NFT por ativo."
+        en: "Fraction collection management per asset.",
+        es: "Gestion de colecciones Fracción por activo.",
+        pt: "Gestao de colecoes Fração por ativo."
       })}
       title={localize(locale, { en: "Collections", es: "Colecciones", pt: "Colecoes" })}
     />

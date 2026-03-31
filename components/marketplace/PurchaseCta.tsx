@@ -728,9 +728,9 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
           {isSubmitting
             ? t({ en: "Processing...", es: "Procesando...", pt: "Processando..." })
             : t({
-              en: `Buy ${requestedQuantity} NFT`,
-              es: `Comprar ${requestedQuantity} NFT`,
-              pt: `Comprar ${requestedQuantity} NFT`
+              en: `Buy ${requestedQuantity} ${requestedQuantity === 1 ? 'Fraction' : 'Fractions'}`,
+              es: `Comprar ${requestedQuantity} ${requestedQuantity === 1 ? 'Fracción' : 'Fracciones'}`,
+              pt: `Comprar ${requestedQuantity} ${requestedQuantity === 1 ? 'Fração' : 'Frações'}`
             })}
         </Button>
         <Button

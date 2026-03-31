@@ -809,9 +809,9 @@ export function AssetCreationForm(): ReactElement {
   const nftCostConversionSummary = useMemo(() => {
     if (!buildingNftCostUsd) {
       return t({
-        en: "Define a positive NFT cost to lock deploy price.",
-        es: "Define un costo por NFT positivo para fijar el precio del deploy.",
-        pt: "Defina um custo por NFT positivo para fixar o preco do deploy."
+        en: "Define a positive Fraction cost to lock deploy price.",
+        es: "Define un costo por Fracción positivo para fijar el precio del deploy.",
+        pt: "Defina um custo por Fração positivo para fixar o preco do deploy."
       });
     }
 
@@ -1119,7 +1119,7 @@ export function AssetCreationForm(): ReactElement {
                 />
                 <GuidedInputField
                   label={t({ en: "Funding goal", es: "Meta de fondeo", pt: "Meta de captacao" })}
-                  hint={t({ en: "Reference value in USD for total units and NFT cost.", es: "Valor de referencia en USD para unidades y costo NFT.", pt: "Valor de referencia em USD para unidades e custo do NFT." })}
+                  hint={t({ en: "Reference value in USD for total units and Fraction cost.", es: "Valor de referencia en USD para unidades y costo Fracción.", pt: "Valor de referencia em USD para unidades e custo do Fração." })}
                   tooltip={t({ en: "Core financial target used for consistency checks.", es: "Objetivo financiero base para validaciones de consistencia.", pt: "Meta financeira base para validacoes de consistencia." })}
                   placeholder="fundingGoal"
                   prefix="$"
@@ -1161,8 +1161,8 @@ export function AssetCreationForm(): ReactElement {
                     </div>
                   </div>
                   <GuidedInputField
-                    label={t({ en: "NFT cost", es: "Costo por NFT", pt: "Custo por NFT" })}
-                    hint={t({ en: "Unit price per NFT share. Canonical value is stored in USD.", es: "Precio unitario por fraccion NFT. El valor canonico se guarda en USD.", pt: "Preco unitario por fracao NFT. O valor canonico e salvo em USD." })}
+                    label={t({ en: "Fraction cost", es: "Costo por Fracción", pt: "Custo por Fração" })}
+                    hint={t({ en: "Unit price per Fraction share. Canonical value is stored in USD.", es: "Precio unitario por fraccion Fracción. El valor canonico se guarda en USD.", pt: "Preco unitario por fracao Fração. O valor canonico e salvo em USD." })}
                     tooltip={t({ en: "Auto-adjusted with funding goal and total units.", es: "Se autoajusta con meta de fondeo y total de unidades.", pt: "Autoajustado com meta de captacao e total de unidades." })}
                     placeholder="nftCost"
                     prefix={priceInputCurrency === "SOL" ? "◎" : "$"}

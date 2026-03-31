@@ -71,9 +71,9 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         </H1>
         <Lead className="max-w-3xl">
           {localize(locale, {
-            en: "Review availability, supply and investment data before purchasing NFT fractions.",
-            es: "Revisa disponibilidad, supply y datos relevantes de inversion antes de comprar fracciones NFT.",
-            pt: "Revise disponibilidade, supply e dados relevantes de investimento antes de comprar fracoes NFT."
+            en: "Review availability, supply and investment data before purchasing Fraction fractions.",
+            es: "Revisa disponibilidad, supply y datos relevantes de inversion antes de comprar fracciones Fracción.",
+            pt: "Revise disponibilidade, supply e dados relevantes de investimento antes de comprar fracoes Fração."
           })}
         </Lead>
       </section>

@@ -67,13 +67,13 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             })}
           </H2>
           <p className="text-sm text-slate-300">
-            {t({ en: "Total NFT supply", es: "Supply total NFTs", pt: "Supply total de NFTs" })}: {property.investment.supplyTotal.toLocaleString("en-US")}
+            {t({ en: "Total Fraction supply", es: "Supply total Fracciones", pt: "Supply total de Frações" })}: {property.investment.supplyTotal.toLocaleString("en-US")}
           </p>
           <p className="text-sm text-slate-300">
-            {t({ en: "Minted/sold NFTs", es: "NFTs emitidos/vendidos", pt: "NFTs emitidos/vendidos" })}: {property.investment.mintedOrSold.toLocaleString("en-US")}
+            {t({ en: "Minted/sold Fractions", es: "Fracciones emitidos/vendidos", pt: "Frações emitidos/vendidos" })}: {property.investment.mintedOrSold.toLocaleString("en-US")}
           </p>
           <p className="text-sm text-slate-300">
-            {t({ en: "Price per NFT", es: "Precio por NFT", pt: "Preco por NFT" })}: ${property.investment.nftPriceUsd.toFixed(2)}
+            {t({ en: "Price per Fraction", es: "Precio por Fracción", pt: "Preco por Fração" })}: ${property.investment.nftPriceUsd.toFixed(2)}
           </p>
           <p className="text-sm text-slate-300">
             {t({ en: "Estimated yearly ROI", es: "ROI anual estimado", pt: "ROI anual estimado" })}: {property.investment.annualRoiPct.toFixed(1)}%

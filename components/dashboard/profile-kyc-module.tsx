@@ -831,9 +831,9 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               <p className="text-xs text-white/70">
                 {isEditing
                   ? t({
-                    en: "Choose an NFT image from your connected wallet or use the default avatar.",
-                    es: "Elige una imagen NFT de tu wallet conectada o usa el avatar por defecto.",
-                    pt: "Escolha uma imagem NFT da wallet conectada ou use o avatar padrao."
+                    en: "Choose an Fraction image from your connected wallet or use the default avatar.",
+                    es: "Elige una imagen Fracción de tu wallet conectada o usa el avatar por defecto.",
+                    pt: "Escolha uma imagem Fração da wallet conectada ou use o avatar padrao."
                   })
                   : t({
                     en: "Click edit profile to change your avatar.",
@@ -857,8 +857,8 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                 variant="ghost"
               >
                 {isLoadingWalletAvatars
-                  ? t({ en: "Loading NFT avatars...", es: "Cargando avatares NFT...", pt: "Carregando avatares NFT..." })
-                  : t({ en: "Reload wallet NFTs", es: "Recargar NFTs de wallet", pt: "Recarregar NFTs da wallet" })}
+                  ? t({ en: "Loading Fraction avatars...", es: "Cargando avatares Fracción...", pt: "Carregando avatares Fração..." })
+                  : t({ en: "Reload wallet Fractions", es: "Recargar Fracciones de wallet", pt: "Recarregar Frações da wallet" })}
               </Button>
 
               <Button
@@ -875,9 +875,9 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
             {!isLoadingWalletAvatars && walletAvatarOptions.length === 0 ? (
               <p className="text-sm text-white/70">
                 {t({
-                  en: "No NFT images were found in your wallet.",
-                  es: "No se encontraron imagenes NFT en tu wallet.",
-                  pt: "Nenhuma imagem NFT foi encontrada na sua wallet."
+                  en: "No Fraction images were found in your wallet.",
+                  es: "No se encontraron imagenes Fracción en tu wallet.",
+                  pt: "Nenhuma imagem Fração foi encontrada na sua wallet."
                 })}
               </p>
             ) : null}
