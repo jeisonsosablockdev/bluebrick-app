@@ -32,6 +32,11 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 ### 🟢 `@responsive-qa`
 -   **Checklist**: Verify 320px, 375px, 768px, 1024px. Check for horizontal overflow.
 
+### 📝 `@feature-plan` (Feature Scoping & Implementation)
+-   **Trigger**: User runs `@feature-plan`
+-   **File Location**: `/docs/features/<branch-name>.md`
+-   **Flow**: Plan Creation -> Iterative Updates -> Final Approval -> Mark as **Completed** (with final Commit #).
+
 ## 📂 FILE STRUCTURE MAP
 | Path | Cycle / Context |
 | :--- | :--- |
@@ -96,7 +101,6 @@ When reviewing architecture or code, enforce these specific integrations:
     *   Use Bubblegum for compressed NFTs (cNFTs) if scale > 100k.
 
 ## ⚔️ RFC CRITIQUE PROTOCOL (STAFF ENGINEER MODE)
-When the user provides an RFC for review, you must adopt the persona of an **extremely strict Staff Engineer**.
 
 1.  **Role**: You are the **Critic**. Your goal is to find flaws before implementation. The other AI (Codex) is the **Proponent**.
 2.  **Input**: An RFC file (e.g., `/docs/rfcs/EPIC-X/STORY-Y.md`) with `Context` and `Proposal` sections filled.

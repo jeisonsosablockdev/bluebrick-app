@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,11 @@ export function FooterSection() {
             <li>{t({ en: "Terms", es: "Terminos", pt: "Termos" })}</li>
             <li>{t({ en: "Privacy", es: "Privacidad", pt: "Privacidade" })}</li>
             <li>{t({ en: "Risks", es: "Riesgos", pt: "Riscos" })}</li>
+            <li>
+              <Link href="/transparencia" className="transition hover:text-white">
+                {t({ en: "Transparency", es: "Transparencia", pt: "Transparencia" })}
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

@@ -17,5 +17,5 @@ El objetivo de este feature es interceptar el flujo de autenticación justo desp
 - La variable existente `verifiedResult.isNewUser` cubrirá los casos puramente nuevos en base al auth, pero a esto se le sumaran los casos de perfil incompleto recurrente.
 
 ---
-**Commit #**: `1d7925d`
+**Commit #**: `d194007`
 **Status**: Completed
