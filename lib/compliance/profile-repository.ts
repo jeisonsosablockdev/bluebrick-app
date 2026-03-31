@@ -19,6 +19,13 @@ export type ProfileBundle = {
   username: string;
   bio: string;
   avatarUrl: string;
+  firstName: string | null;
+  lastName: string | null;
+  country: string | null;
+  stateProvince: string | null;
+  email: string | null;
+  address: string | null;
+  phone: string | null;
   kycStatus: KycStatus;
   amlStatus: AmlStatus;
   complianceStatus: ComplianceStatus;
@@ -36,6 +43,13 @@ export type UpdateProfileBasicsInput = {
   username: string;
   bio: string;
   avatarUrl: string;
+  firstName: string | null;
+  lastName: string | null;
+  country: string | null;
+  stateProvince: string | null;
+  email: string | null;
+  address: string | null;
+  phone: string | null;
 };
 
 export type MarkKycSessionPendingInput = {
@@ -204,6 +218,13 @@ type ProfileBundleRow = {
   username: string;
   bio: string;
   avatar_url: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  country: string | null;
+  state_province: string | null;
+  address: string | null;
+  phone: string | null;
   kyc_status: KycStatus;
   aml_status: AmlStatus;
   aml_risk_score: number | null;
@@ -226,6 +247,13 @@ type InMemoryProfileState = {
   username: string;
   bio: string;
   avatarUrl: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  country: string | null;
+  stateProvince: string | null;
+  address: string | null;
+  phone: string | null;
   kycStatus: KycStatus;
   amlStatus: AmlStatus;
   amlRiskScore: number | null;
@@ -390,6 +418,13 @@ function buildDefaultInMemoryProfile(walletPublicKey: string): InMemoryProfileSt
     username: "",
     bio: "",
     avatarUrl: "",
+    firstName: null,
+    lastName: null,
+    email: null,
+    country: null,
+    stateProvince: null,
+    address: null,
+    phone: null,
     kycStatus: "not_started",
     amlStatus: "not_started",
     amlRiskScore: null,
@@ -418,6 +453,13 @@ function mapInMemoryToBundle(profile: InMemoryProfileState): ProfileBundle {
     username: profile.username,
     bio: profile.bio,
     avatarUrl: profile.avatarUrl,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    country: profile.country,
+    stateProvince: profile.stateProvince,
+    email: profile.email,
+    address: profile.address,
+    phone: profile.phone,
     kycStatus: profile.kycStatus,
     amlStatus: profile.amlStatus,
     complianceStatus: profile.complianceStatus,
@@ -449,6 +491,13 @@ function toBundle(row: ProfileBundleRow): ProfileBundle {
     username: row.username,
     bio: row.bio,
     avatarUrl: row.avatar_url,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    country: row.country,
+    stateProvince: row.state_province,
+    email: row.email,
+    address: row.address,
+    phone: row.phone,
     kycStatus: row.kyc_status,
     amlStatus: row.aml_status,
     complianceStatus: row.compliance_status,
@@ -499,6 +548,13 @@ async function getProfileBundleWithClient(
        p.username,
        p.bio,
        p.avatar_url,
+       p.first_name,
+       p.last_name,
+       p.email,
+       p.country,
+       p.state_province,
+       p.address,
+       p.phone,
        k.kyc_status,
        p.aml_status,
        p.aml_risk_score,
@@ -575,6 +631,13 @@ export async function updateProfileBasics(input: UpdateProfileBasicsInput): Prom
     profile.username = input.username;
     profile.bio = input.bio;
     profile.avatarUrl = input.avatarUrl;
+    profile.firstName = input.firstName;
+    profile.lastName = input.lastName;
+    profile.country = input.country;
+    profile.stateProvince = input.stateProvince;
+    profile.email = input.email;
+    profile.address = input.address;
+    profile.phone = input.phone;
     profile.updatedAt = updatedAt;
 
     inMemoryProfiles.set(profile.walletPublicKey, profile);
@@ -590,9 +653,16 @@ export async function updateProfileBasics(input: UpdateProfileBasicsInput): Prom
          SET username = $2,
              bio = $3,
              avatar_url = $4,
+             first_name = $5,
+             last_name = $6,
+             email = $7,
+             country = $8,
+             state_province = $9,
+             address = $10,
+             phone = $11,
              updated_at = NOW()
          WHERE wallet_public_key = $1`,
-        [input.walletPublicKey, input.username, input.bio, input.avatarUrl]
+        [input.walletPublicKey, input.username, input.bio, input.avatarUrl, input.firstName, input.lastName, input.email, input.country, input.stateProvince, input.address, input.phone]
       );
 
       const updated = await getProfileBundleWithClient(client, input.walletPublicKey);

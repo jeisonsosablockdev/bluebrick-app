@@ -6,17 +6,32 @@ import {
   ProfileRepositoryError,
   updateProfileBasics
 } from "@/lib/compliance/profile-repository";
+import { COUNTRIES } from "@/lib/countries";
 
 type ProfileRequestBody = {
   username?: unknown;
   bio?: unknown;
   avatarUrl?: unknown;
+  firstName?: unknown;
+  lastName?: unknown;
+  country?: unknown;
+  stateProvince?: unknown;
+  email?: unknown;
+  address?: unknown;
+  phone?: unknown;
 };
 
 type NormalizedProfileInput = {
   username: string;
   bio: string;
   avatarUrl: string;
+  firstName: string | null;
+  lastName: string | null;
+  country: string | null;
+  stateProvince: string | null;
+  email: string | null;
+  address: string | null;
+  phone: string | null;
 };
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]{3,32}$/;
@@ -56,6 +71,45 @@ function normalizeProfileInput(raw: unknown): NormalizedProfileInput {
   const bio = typeof body.bio === "string" ? body.bio.trim() : "";
   const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl.trim() : "";
 
+  const firstName = typeof body.firstName === "string" ? body.firstName.trim().substring(0, 100) : null;
+  const lastName = typeof body.lastName === "string" ? body.lastName.trim().substring(0, 100) : null;
+  const country = typeof body.country === "string" ? body.country.trim().toUpperCase() : null;
+  const stateProvince = typeof body.stateProvince === "string" ? body.stateProvince.trim().toUpperCase() : null;
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : null;
+  const address = typeof body.address === "string" ? body.address.trim().substring(0, 500) : null;
+  
+  let phone = typeof body.phone === "string" ? body.phone.trim() : null;
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Email has an invalid format.");
+  }
+
+  if (country && country.length !== 2) {
+    throw new Error("Invalid country format. Expected a 2-letter ISO code.");
+  }
+
+  if (stateProvince) {
+    if (stateProvince.length > 100) {
+      throw new Error("Invalid state/province. Maximum 100 characters allowed.");
+    }
+    if (country) {
+      const matchedCountry = COUNTRIES.find((c) => c.code === country);
+      if (matchedCountry && matchedCountry.divisions) {
+        const matchedDiv = matchedCountry.divisions.find((d) => d.code === stateProvince);
+        if (!matchedDiv) {
+          throw new Error(`Invalid state/province for ${country}. Please select a valid option.`);
+        }
+      }
+    }
+  }
+
+  if (phone) {
+    phone = phone.replace(/[\s\-\(\)\.]/g, "");
+    if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
+      throw new Error("Invalid phone format. Ensure you include the country code and valid digits.");
+    }
+  }
+
   if (!USERNAME_PATTERN.test(username)) {
     throw new Error("username must be 3-32 characters and use only letters, numbers, _, -, or .");
   }
@@ -75,7 +129,14 @@ function normalizeProfileInput(raw: unknown): NormalizedProfileInput {
   return {
     username,
     bio,
-    avatarUrl
+    avatarUrl,
+    firstName: firstName || null,
+    lastName: lastName || null,
+    country: country || null,
+    stateProvince: stateProvince || null,
+    email: email || null,
+    address: address || null,
+    phone: phone || null
   };
 }
 
@@ -129,7 +190,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       walletPublicKey,
       username: normalizedInput.username,
       bio: normalizedInput.bio,
-      avatarUrl: normalizedInput.avatarUrl
+      avatarUrl: normalizedInput.avatarUrl,
+      firstName: normalizedInput.firstName,
+      lastName: normalizedInput.lastName,
+      country: normalizedInput.country,
+      stateProvince: normalizedInput.stateProvince,
+      email: normalizedInput.email,
+      address: normalizedInput.address,
+      phone: normalizedInput.phone
     });
 
     return NextResponse.json({

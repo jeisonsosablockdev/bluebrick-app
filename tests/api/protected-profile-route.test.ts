@@ -144,7 +144,14 @@ describe("/api/protected/profile route", () => {
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       username: "valid_user",
       bio: "Updated bio",
-      avatarUrl: "https://example.com/new-avatar.png"
+      avatarUrl: "https://example.com/new-avatar.png",
+      firstName: null,
+      lastName: null,
+      country: null,
+      stateProvince: null,
+      email: null,
+      address: null,
+      phone: null
     });
   });
 });

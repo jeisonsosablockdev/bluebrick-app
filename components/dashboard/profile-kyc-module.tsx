@@ -7,6 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { COUNTRIES } from "@/lib/countries";
 
 type KycStatus = "not_started" | "pending" | "verified" | "rejected";
 type ComplianceStatus =
@@ -22,6 +23,13 @@ type ProfileBundle = {
   username: string;
   bio: string;
   avatarUrl: string;
+  firstName: string | null;
+  lastName: string | null;
+  country: string | null;
+  stateProvince: string | null;
+  email: string | null;
+  address: string | null;
+  phone: string | null;
   kycStatus: KycStatus;
   complianceStatus: ComplianceStatus;
   rejectionReasonCode: string | null;
@@ -38,6 +46,13 @@ type ProfileApiPayload = {
     username: string;
     bio: string;
     avatarUrl: string;
+    firstName: string | null;
+    lastName: string | null;
+    country: string | null;
+    stateProvince: string | null;
+    email: string | null;
+    address: string | null;
+    phone: string | null;
     kycStatus: KycStatus;
     complianceStatus: ComplianceStatus;
     rejectionReasonCode: string | null;
@@ -238,6 +253,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [country, setCountry] = useState("");
+  const [stateProvince, setStateProvince] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -267,8 +289,19 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
       return false;
     }
 
-    return username !== profile.username || bio !== profile.bio || avatarUrl !== profile.avatarUrl;
-  }, [avatarUrl, bio, profile, username]);
+    return (
+      username !== profile.username ||
+      bio !== profile.bio ||
+      avatarUrl !== profile.avatarUrl ||
+      firstName !== (profile.firstName || "") ||
+      lastName !== (profile.lastName || "") ||
+      country !== (profile.country || "") ||
+      stateProvince !== (profile.stateProvince || "") ||
+      email !== (profile.email || "") ||
+      address !== (profile.address || "") ||
+      phone !== (profile.phone || "")
+    );
+  }, [avatarUrl, bio, profile, username, firstName, lastName, country, stateProvince, email, address, phone]);
 
   const selectedAvatarPreviewUrl = useMemo(() => resolveAvatarPreviewUrl(avatarUrl), [avatarUrl]);
   const walletProviderName = wallet?.adapter?.name ?? null;
@@ -344,6 +377,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           username: profilePayload.data.username,
           bio: profilePayload.data.bio,
           avatarUrl: profilePayload.data.avatarUrl,
+          firstName: profilePayload.data.firstName,
+          lastName: profilePayload.data.lastName,
+          country: profilePayload.data.country,
+          stateProvince: profilePayload.data.stateProvince,
+          email: profilePayload.data.email,
+          address: profilePayload.data.address,
+          phone: profilePayload.data.phone,
           kycStatus,
           complianceStatus,
           rejectionReasonCode
@@ -353,6 +393,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
         setUsername(nextProfile.username);
         setBio(nextProfile.bio);
         setAvatarUrl(nextProfile.avatarUrl);
+        setFirstName(nextProfile.firstName || "");
+        setLastName(nextProfile.lastName || "");
+        setCountry(nextProfile.country || "");
+        setStateProvince(nextProfile.stateProvince || "");
+        setEmail(nextProfile.email || "");
+        setAddress(nextProfile.address || "");
+        setPhone(nextProfile.phone || "");
         setIsEditing(false);
       } catch (error) {
         if (!cancelled) {
@@ -398,7 +445,14 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
         body: JSON.stringify({
           username,
           bio,
-          avatarUrl
+          avatarUrl,
+          firstName,
+          lastName,
+          country,
+          stateProvince,
+          email,
+          address,
+          phone
         })
       });
 
@@ -418,6 +472,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           username: payload.data?.username ?? current.username,
           bio: payload.data?.bio ?? current.bio,
           avatarUrl: payload.data?.avatarUrl ?? current.avatarUrl,
+          firstName: payload.data?.firstName ?? current.firstName,
+          lastName: payload.data?.lastName ?? current.lastName,
+          country: payload.data?.country ?? current.country,
+          stateProvince: payload.data?.stateProvince ?? current.stateProvince,
+          email: payload.data?.email ?? current.email,
+          address: payload.data?.address ?? current.address,
+          phone: payload.data?.phone ?? current.phone,
           kycStatus: payload.data?.kycStatus ?? current.kycStatus,
           complianceStatus: payload.data?.complianceStatus ?? current.complianceStatus,
           rejectionReasonCode: payload.data?.rejectionReasonCode ?? null
@@ -455,6 +516,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
     setUsername(profile.username);
     setBio(profile.bio);
     setAvatarUrl(profile.avatarUrl);
+    setFirstName(profile.firstName || "");
+    setLastName(profile.lastName || "");
+    setCountry(profile.country || "");
+    setStateProvince(profile.stateProvince || "");
+    setEmail(profile.email || "");
+    setAddress(profile.address || "");
+    setPhone(profile.phone || "");
     setSaveError(null);
     setSaveSuccess(null);
     setIsEditing(false);
@@ -572,6 +640,158 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                     })}
                 </p>
               ) : null}
+            </label>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1 text-sm text-white/85">
+                <span>{t({ en: "First name", es: "Nombre", pt: "Nome" })}</span>
+                <input
+                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                  maxLength={100}
+                  readOnly={!isEditing}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  placeholder={t({ en: "John", es: "Juan", pt: "Joao" })}
+                  value={firstName}
+                />
+              </label>
+
+              <label className="space-y-1 text-sm text-white/85">
+                <span>{t({ en: "Last name", es: "Apellido", pt: "Sobrenome" })}</span>
+                <input
+                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                  maxLength={100}
+                  readOnly={!isEditing}
+                  onChange={(event) => setLastName(event.target.value)}
+                  placeholder={t({ en: "Doe", es: "Perez", pt: "Silva" })}
+                  value={lastName}
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1 text-sm text-white/85">
+                <span>{t({ en: "Email", es: "Correo electronico", pt: "E-mail" })}</span>
+                <input
+                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                  maxLength={255}
+                  type="email"
+                  readOnly={!isEditing}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="name@example.com"
+                  value={email}
+                />
+              </label>
+
+              <label className="space-y-1 text-sm text-white/85">
+                <span>{t({ en: "Phone", es: "Telefono", pt: "Telefone" })}</span>
+                <div className="flex w-full items-center">
+                  <select
+                    className={`min-h-11 w-[110px] rounded-l-xl border-r-0 px-2 text-sm outline-none transition focus:z-10 focus:ring-1 focus:ring-white/35 ${isEditing ? "border border-white/15 bg-black/30 text-white" : "border border-white/10 bg-black/20 text-white/70"}`}
+                    disabled={!isEditing}
+                    onChange={(event) => {
+                      const newCode = event.target.value;
+                      const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
+                      const numberPart = oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone.trim();
+                      setPhone(newCode + " " + numberPart);
+                    }}
+                    value={COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1"}
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.dialCode}>
+                        {c.dialCode} {c.code}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className={`min-h-11 w-full rounded-r-xl px-3 text-sm outline-none transition focus:z-10 focus:ring-1 focus:ring-white/35 ${isEditing ? "border border-l-white/10 border-white/15 bg-black/30 text-white" : "border border-l-white/5 border-white/10 bg-black/20 text-white/70"}`}
+                    maxLength={30}
+                    readOnly={!isEditing}
+                    onChange={(event) => {
+                      const currentDialCode = COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1";
+                      setPhone(currentDialCode + " " + event.target.value);
+                    }}
+                    placeholder="(555) 000-0000"
+                    value={(() => {
+                      const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
+                      return oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone;
+                    })()}
+                  />
+                </div>
+              </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1 text-sm text-white/85">
+                <span>{t({ en: "Country", es: "Pais", pt: "Pais" })}</span>
+                <select
+                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                  disabled={!isEditing}
+                  onChange={(event) => {
+                    const newCountry = event.target.value;
+                    setCountry(newCountry);
+                    setStateProvince("");
+                    const info = COUNTRIES.find((c) => c.code === newCountry);
+                    if (info && (!phone || phone.trim() === "")) setPhone(info.dialCode + " ");
+                  }}
+                  value={country}
+                >
+                  <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {t({ en: c.nameEn, es: c.nameEs, pt: c.namePt })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {(() => {
+                const selectedCountryInfo = COUNTRIES.find((c) => c.code === country);
+                if (selectedCountryInfo?.divisions) {
+                  return (
+                    <label className="space-y-1 text-sm text-white/85">
+                      <span>{selectedCountryInfo.divisionLabel ? t(selectedCountryInfo.divisionLabel) : t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}</span>
+                      <select
+                        className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                        disabled={!isEditing}
+                        onChange={(event) => setStateProvince(event.target.value)}
+                        value={stateProvince}
+                      >
+                        <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
+                        {selectedCountryInfo.divisions.map((d) => (
+                          <option key={d.code} value={d.code}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  );
+                }
+                return (
+                  <label className="space-y-1 text-sm text-white/85">
+                    <span>{t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}</span>
+                    <input
+                      className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                      maxLength={100}
+                      readOnly={!isEditing}
+                      onChange={(event) => setStateProvince(event.target.value)}
+                      placeholder={t({ en: "Optional", es: "Opcional", pt: "Opcional" })}
+                      value={stateProvince}
+                    />
+                  </label>
+                );
+              })()}
+            </div>
+
+            <label className="space-y-1 text-sm text-white/85">
+              <span>{t({ en: "Address", es: "Direccion", pt: "Endereco" })}</span>
+              <input
+                className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
+                maxLength={500}
+                readOnly={!isEditing}
+                onChange={(event) => setAddress(event.target.value)}
+                placeholder={t({ en: "123 Street Ave.", es: "Calle 123", pt: "Rua 123" })}
+                value={address}
+              />
             </label>
 
             <label className="space-y-1 text-sm text-white/85">
