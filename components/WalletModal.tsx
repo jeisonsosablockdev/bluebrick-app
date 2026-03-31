@@ -343,6 +343,24 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
       }
 
+      try {
+        const profileRes = await fetch("/api/protected/profile");
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (!profileData.firstName || !profileData.email || !profileData.phone) {
+            setIsOpen(false);
+            router.push("/protected/perfil");
+            return;
+          }
+        } else if (profileRes.status === 404) {
+          setIsOpen(false);
+          router.push("/protected/perfil");
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to check profile completion during auth", err);
+      }
+
       if (verifiedResult.isNewUser) {
         setIsOpen(false);
         router.push("/protected/perfil");
