@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -130,6 +130,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
@@ -340,6 +341,21 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         setAuthState(currentAuth);
       } catch {
         setAuthState({ authenticated: true, pubkey: verifiedPublicKey, role: "user" });
+      }
+
+      try {
+        const profileResponse = await fetch("/api/protected/profile", { method: "GET" });
+        if (profileResponse.ok) {
+          const profilePayload = await profileResponse.json();
+          const p = profilePayload?.data;
+          
+          if (p && (!p.firstName || !p.email || !p.country)) {
+            setIsOpen(false);
+            router.push("/protected/perfil");
+          }
+        }
+      } catch (profileFetchError) {
+        // Ignore redirect fetch failures quietly 
       }
     } catch (error) {
       setLastError(getFriendlyWalletErrorMessage(error, t));
