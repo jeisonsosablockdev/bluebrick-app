@@ -606,6 +606,20 @@ async function insertComplianceAuditEventWithClient(
   );
 }
 
+export async function isWalletRegistered(walletPublicKey: string): Promise<boolean> {
+  if (!isProfileDatabaseConfigured()) {
+    return inMemoryProfiles.has(walletPublicKey);
+  }
+
+  return withDbClient(async (client) => {
+    const res = await client.query<{ exists: boolean }>(
+      "SELECT EXISTS(SELECT 1 FROM user_profiles WHERE wallet_public_key = $1) as exists",
+      [walletPublicKey]
+    );
+    return res.rows[0]?.exists ?? false;
+  });
+}
+
 export async function getOrCreateProfileBundle(walletPublicKey: string): Promise<ProfileBundle> {
   if (!isProfileDatabaseConfigured()) {
     return mapInMemoryToBundle(getOrCreateInMemoryProfile(walletPublicKey));

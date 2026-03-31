@@ -329,7 +329,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Current wallet does not support message signing.");
       }
 
-      const verifiedPublicKey = await startSiws({
+      const verifiedResult = await startSiws({
         publicKey: activePublicKey,
         signMessage,
         statement: signInStatement,
@@ -340,22 +340,12 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         const currentAuth = await fetchAuthMe();
         setAuthState(currentAuth);
       } catch {
-        setAuthState({ authenticated: true, pubkey: verifiedPublicKey, role: "user" });
+        setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
       }
 
-      try {
-        const profileResponse = await fetch("/api/protected/profile", { method: "GET" });
-        if (profileResponse.ok) {
-          const profilePayload = await profileResponse.json();
-          const p = profilePayload?.data;
-          
-          if (p && (!p.firstName || !p.email || !p.country)) {
-            setIsOpen(false);
-            router.push("/protected/perfil");
-          }
-        }
-      } catch (profileFetchError) {
-        // Ignore redirect fetch failures quietly 
+      if (verifiedResult.isNewUser) {
+        setIsOpen(false);
+        router.push("/protected/perfil");
       }
     } catch (error) {
       setLastError(getFriendlyWalletErrorMessage(error, t));
