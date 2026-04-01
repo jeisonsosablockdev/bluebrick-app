@@ -8,7 +8,7 @@
 | Authority | Source | Validation Logic | Revocation/Rotation |
 | --- | --- | --- | --- |
 | Mint authority | Wallet-connected signer (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
-| Update authority | Collection/update signer (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
+| Update authority | Deploy signer wallet in Core collection flow (current devnet operation) | Server-side admin/session checks + on-chain signer requirement for `UpdateAuthority`-gated writes | Pending governance decision: migrate to dedicated multisig or keep deploy signer model |
 | Collection authority | Core collection authority (planned in H2+) | Not executed in H1 | Defined in NFT milestone when on-chain mint starts |
 | Candy Guard payment destination (STORY-002-07) | On-chain `tokenPayment.destinationAta` owner (`TEMP_USDC_PAYMENT_RECIPIENT` bridge phase) | Deploy/prepare derives ATA from configured recipient + USDC mint and purchase flow revalidates on-chain guard before mint | Future migration to `TREASURY_USDC_OWNER` per environment |
 | Admin authority | SIWS session + `ADMIN_WALLETS` allowlist | Every `/api/admin/mint-jobs*` request checks `getRequestRole()` | Remove wallet from allowlist or revoke SIWS session |
@@ -52,4 +52,39 @@
 - Case: Admin wallet differs from immutable job authority (`createdBy`) and attempts `prepare/submit/reconcile`.
 - Expected error: HTTP `403` with authority mismatch.
 
-Last Updated: 2026-03-18 01:14:38 UTC
+## EPIC-006 STORY-006-03 Addendum (AppData Economic Authority)
+### Authority Matrix
+| Operation | Required Authority | Enforcement |
+| --- | --- | --- |
+| Attach `AppData` plugin on freshly minted asset | Admin wallet authenticated in SIWS admin session | `/api/admin/core-candy-machine/mint/prepare` enforces `admin` role and binds payer to authenticated pubkey |
+| Write initial economic payload (`v1`) | Admin wallet signer + `UpdateAuthority` key for `AppData` | Transaction built server-side via `writeData` with `key.type = AppData` and `dataAuthority = UpdateAuthority` |
+| Update economic payload (`v1`) | Same authority model as initial write | On-chain write path requires valid signer for the configured app-data authority |
+
+### Current Metadata Privilege Scope (Decision Pending)
+- Current state:
+  - The deploy signer wallet is the collection `updateAuthority` in the active devnet deployment.
+  - This is intentional and temporary while authority governance is being finalized.
+- Privileges granted by `updateAuthority` in this flow:
+  - Update collection-level metadata fields.
+  - Authorize/update `UpdateAuthority`-gated AppData economic payload writes.
+  - Reassign `updateAuthority` to another wallet/multisig.
+- Privileges not granted by `updateAuthority` alone:
+  - Spending SOL from other wallets.
+  - Taking ownership/custody of assets owned by third parties.
+
+### Sensitive Fields
+- Classified as sensitive:
+  - `revenue_share_bps`
+  - `yield_bps`
+  - `yield_mode`
+  - `distribution_enabled`
+- Constraints:
+  - All sensitive fields are validated server-side before transaction construction.
+  - Invalid catalog/version/shape values are rejected before signing.
+
+### Invariants Added
+- [x] `AppData` economic payload always includes `economic_version`.
+- [x] `AppData` updates are audit-ready (`last_updated_at`, `updated_by` required).
+- [x] Unknown payload keys are rejected to avoid silent schema drift.
+
+Last Updated: 2026-04-01 14:15:57 UTC

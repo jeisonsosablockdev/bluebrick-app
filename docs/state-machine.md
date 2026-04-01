@@ -44,4 +44,25 @@
 - No floating point arithmetic used: [x]
 - Transition outputs are deterministic: [x]
 
-Last Updated: 2026-03-18 01:14:38 UTC
+## EPIC-006 STORY-006-03 Addendum (Economic AppData Lifecycle)
+### AppData States
+| State | Description | Entry Condition | Exit Condition |
+| --- | --- | --- | --- |
+| `appdata_unset` | Asset exists without economic adapter data | Asset minted (`CreateV2`) | External adapter created |
+| `appdata_adapter_ready` | `AppData` external adapter attached | `AddExternalPluginAdapter` confirmed | Economic payload written |
+| `appdata_v1_written` | Initial economic payload persisted (`v1`) | First `WriteExternalPluginAdapterDataV1` confirmed | Economic update applied |
+| `appdata_v1_updated` | Updated payload persisted (`v1`) | Subsequent `WriteExternalPluginAdapterDataV1` confirmed | Terminal for this story |
+
+### Allowed Transitions
+| From | Action | To | Validation |
+| --- | --- | --- | --- |
+| `appdata_unset` | add adapter | `appdata_adapter_ready` | Admin signer + `UpdateAuthority` key |
+| `appdata_adapter_ready` | write initial payload | `appdata_v1_written` | `AppData v1` schema validation |
+| `appdata_v1_written` | write updated payload | `appdata_v1_updated` | Same schema + authority constraints |
+
+### Illegal Transitions
+- [x] `appdata_unset -> appdata_v1_written` without adapter attach.
+- [x] Any state -> update with invalid `yield_mode`.
+- [x] Any state -> write with unsupported payload keys.
+
+Last Updated: 2026-04-01 08:20:33 UTC

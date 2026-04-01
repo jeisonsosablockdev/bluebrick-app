@@ -70,6 +70,41 @@
 - Update authority validation:
   - Collection is created with `updateAuthority = admin wallet`.
   - Assets minted into a collection do not set per-asset `updateAuthority` (Core rejects setting both collection + update authority).
+  - Current operational decision (pending final governance decision):
+    - The deploy signer wallet keeps `updateAuthority` on the collection so metadata/economic fields remain editable during the decision window.
+    - Metadata updates are therefore performed by the wallet that executed deploy when it is also the current `updateAuthority`.
+    - This authority does not grant custody rights over third-party assets or SOL balances by itself.
+
+## Economic AppData (EPIC-006 STORY-006-03)
+- Objective:
+  - Persist auditable economic parameters per NFT directly on-chain via Core `AppData`.
+- Adapter model:
+  - External adapter type: `AppData`.
+  - Schema: `ExternalPluginAdapterSchema.Json`.
+  - Data authority: `UpdateAuthority`.
+- `AppData v1` contract:
+  - Required:
+    - `revenue_share_bps` (`0..10000`)
+    - `yield_bps` (`0..10000`)
+    - `yield_mode` (`cap | linear`)
+    - `distribution_enabled` (`boolean`)
+    - `economic_version` (`^v[0-9]+$`, currently `v1`)
+    - `last_updated_at` (`unix seconds`)
+    - `updated_by` (`string`, min practical length enforced)
+  - Optional:
+    - `locked_at`
+    - `eligible_from`
+    - `earning_start_ts`
+- Mint pipeline behavior:
+  1. Mint asset.
+  2. Attach `AppData` adapter.
+  3. Write initial payload `v1`.
+  4. Permit controlled subsequent writes under same authority model.
+- Validation behavior:
+  - Rejects unsupported keys to avoid schema drift.
+  - Rejects unsupported `yield_mode`.
+  - Rejects unsupported `economic_version` values.
+  - Enforces audit fields in every write.
 
 ## Royalty Model
 - Seller fee basis points:
@@ -148,7 +183,16 @@
 | Load config lines 321-384 | `295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB` | `https://explorer.solana.com/tx/295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 | Load config lines 385-400 | `5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o` | `https://explorer.solana.com/tx/5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 
-Last Updated: 2026-03-20 19:27:57 UTC
+## Devnet AppData Proof (STORY-006-03)
+| Purpose | Signature | Explorer URL | Account |
+| --- | --- | --- | --- |
+| Create Core collection (`CreateCollectionV2`) | `3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N` | `https://explorer.solana.com/tx/3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N?cluster=devnet` | `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi` |
+| Mint asset (`CreateV2`) | `39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek` | `https://explorer.solana.com/tx/39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Attach AppData (`AddExternalPluginAdapter`) | `2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3` | `https://explorer.solana.com/tx/2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Write initial AppData | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Update AppData | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+
+Last Updated: 2026-04-01 08:20:33 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)

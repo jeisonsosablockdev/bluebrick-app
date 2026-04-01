@@ -121,8 +121,52 @@ NODE
 - [x] Evidence is obtained through real RPC calls against devnet (`https://api.devnet.solana.com`).
 - [x] No simulated transactions and no mocked RPC data are used in this proof.
 
+## EPIC-006 STORY-006-03 Proof (Economic AppData Plugin)
+- Verification run date: 2026-04-01 08:13:30 UTC
+- Cluster: devnet
+- RPC endpoint: `https://api.devnet.solana.com`
+- Wallet: `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
+- Collection: `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi`
+- Asset: `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK`
+
+| Purpose | Signature | Slot | Block Time (UTC) | Confirmation | Error | Explorer |
+| --- | --- | --- | --- | --- | --- | --- |
+| Create Core collection (`CreateCollectionV2`) | `3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N` | `452479862` | `2026-04-01 08:12:30 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N?cluster=devnet` |
+| Mint Core asset (`CreateV2`) | `39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek` | `452479864` | `2026-04-01 08:12:30 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek?cluster=devnet` |
+| Add `AppData` adapter (`AddExternalPluginAdapter`) | `2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3` | `452479898` | `2026-04-01 08:12:44 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3?cluster=devnet` |
+| Write initial economic payload (`WriteExternalPluginAdapterDataV1`) | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `452479932` | `2026-04-01 08:12:57 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` |
+| Update economic payload (`WriteExternalPluginAdapterDataV1`) | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `452479966` | `2026-04-01 08:13:10 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` |
+
+### Account State Validation (Story-006-03)
+| Account | Exists | Owner | Executable | Data Length | Lamports | Match |
+| --- | --- | --- | --- | --- | --- | --- |
+| Collection `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi` | `true` | `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d` | `false` | `138` | `1851360` | Yes |
+| Asset `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` | `true` | `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d` | `false` | `466` | `5634240` | Yes |
+
+### Final AppData Payload (on-chain)
+```json
+{
+  "revenue_share_bps": 2500,
+  "yield_bps": 1300,
+  "yield_mode": "linear",
+  "locked_at": 1775031177,
+  "eligible_from": 1775031177,
+  "earning_start_ts": 1775031177,
+  "distribution_enabled": false,
+  "economic_version": "v1",
+  "last_updated_at": 1775031297,
+  "updated_by": "story-006-03-admin-update"
+}
+```
+
 ## Notes
 - `createV2` in collection flow must not set per-asset `updateAuthority` (Core rejects `collection + updateAuthority` together).
 - This proof validates the on-chain mint baseline used by later orchestration stories (H3-H7). Those stories add server-side state controls and reconciliation logic on top of the same devnet mint primitives.
+- Additional devnet verification (operator-provided flow):
+  - Candy Machine: `9MxpBtK5aTSCEhJzMkiqkSZL1RWLS9gFNHykfirWaTZC`
+  - Collection: `GAWSU9zhE62dx5BzGmLz1gQABgsHPnPb1WXbtich9s7x`
+  - Mint tx: `4XftJVJji2TN3pdySJtDf7qt55U2dGe1T9EanFV8CCYRvkn5kQ8mW97yU7Pp46erCjx3Jku4DdskJDME7PC5XK1j`
+  - Observed state: collection `updateAuthority` resolves to deploy signer wallet `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`.
+  - Operational decision remains open: keep deploy signer as `updateAuthority` during evaluation window, then decide rotation target (for example, multisig).
 
-Last Updated: 2026-03-20 16:49:21 UTC
+Last Updated: 2026-04-01 14:15:57 UTC

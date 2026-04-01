@@ -44,6 +44,21 @@
 - Risk: DAS reconciliation can still require multiple passes when assets are spread across many pages.
 - Acceptance reason: H5 intentionally exposes bounded, repeatable pagination to keep reconciliation predictable and safe.
 
+## EPIC-006 STORY-006-03 Addendum (Economic AppData)
+### Additional Attack Vectors
+| Threat | Entry Point | Impact | Likelihood | Severity |
+| --- | --- | --- | --- | --- |
+| Schema drift via unknown JSON fields | Admin economic payload assembly | Silent interpretation mismatch in distribution service | Medium | High |
+| Invalid economic mode injection | `yield_mode` user/admin input | Incorrect accrual logic execution | Medium | High |
+| Unauthorized economic update attempt | AppData write path | Tampering of payout parameters | Medium | High |
+
+### Additional Mitigations
+| Threat | Mitigation | Where Implemented | Verification |
+| --- | --- | --- | --- |
+| Schema drift via unknown JSON fields | Reject non-whitelisted keys (`additionalProperties` behavior) | `validateAppDataEconomicV1` in `lib/core-candy-machine-admin.ts` | Unit test: unsupported key rejected |
+| Invalid economic mode injection | Strict catalog (`cap`, `linear`) | `validateAppDataEconomicV1` | Unit test: invalid mode rejected |
+| Unauthorized economic update attempt | Server-side admin gate + signer-based on-chain authority | `/api/admin/core-candy-machine/mint/prepare` + `writeData` with `UpdateAuthority` | Devnet evidence: only authorized signer writes accepted |
+
 ## Compliance Admin Operations Addendum (EPIC-004 STORY-005)
 - New threat vectors:
   - Unauthorized admin mutations on compliance cases.
@@ -56,4 +71,4 @@
   - Dedicated `compliance_notes` table + `compliance_audit_events` trail per mutation.
   - Runtime compliance gate in purchase flows (`challenge`, `prepare`, `submit`) for blocked statuses.
 
-Last Updated: 2026-03-26 16:45:00 UTC
+Last Updated: 2026-04-01 08:20:33 UTC

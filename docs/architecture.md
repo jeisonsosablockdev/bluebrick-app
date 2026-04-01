@@ -88,4 +88,29 @@
   - Financial routes enforce compliance blocking for `restricted_aml` and `suspended`.
   - Applied to `/api/purchase/challenge`, `/api/purchase/prepare`, `/api/purchase/submit`.
 
-Last Updated: 2026-03-26 16:45:00 UTC
+## EPIC-006 STORY-006-03: Economic AppData Plugin
+- Scope:
+  - `lib/core-candy-machine-admin.ts`
+  - `components/admin/core-candy-machine-panel.tsx`
+  - `tests/lib/core-candy-machine-admin-validation.test.ts`
+- Runtime flow (mint pipeline):
+  1. `mint` transaction creates the asset from Core Candy Machine.
+  2. `add-app-data-plugin` attaches `AppData` with `ExternalPluginAdapterSchema.Json` and `UpdateAuthority`.
+  3. `write-app-data` writes economic payload `v1` immediately after mint.
+- Canonical payload fields:
+  - `revenue_share_bps`, `yield_bps`, `yield_mode`
+  - `locked_at`, `eligible_from`, `earning_start_ts`
+  - `distribution_enabled`, `economic_version`
+  - `last_updated_at`, `updated_by`
+- Validation guarantees:
+  - Catalog-only `yield_mode` (`cap | linear`).
+  - `bps` range in `[0, 10000]`.
+  - `economic_version` format gate + explicit support for `v1`.
+  - Unsupported keys rejected (`additionalProperties=false` behavior).
+  - Optional lifecycle timestamps accepted when omitted.
+- Devnet proof anchor:
+  - Collection: `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi`
+  - Asset: `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK`
+  - Final on-chain `AppData` confirms updated economic payload (`yield_mode=linear`, `yield_bps=1300`, `distribution_enabled=false`).
+
+Last Updated: 2026-04-01 08:20:33 UTC

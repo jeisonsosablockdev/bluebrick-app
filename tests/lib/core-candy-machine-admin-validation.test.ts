@@ -1,12 +1,129 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildDefaultAppDataEconomicV1,
   isCoreCandyMachineAdminInputError,
   prepareCoreCandyMachineDeploy,
-  prepareCoreCandyMachineMint
+  prepareCoreCandyMachineMint,
+  validateAppDataEconomicV1
 } from "@/lib/core-candy-machine-admin";
 
 describe("lib/core-candy-machine-admin validation", () => {
+  it("validates AppData economic payload v1", () => {
+    const payload = validateAppDataEconomicV1({
+      revenue_share_bps: 2500,
+      yield_bps: 1200,
+      yield_mode: "cap",
+      locked_at: 1711584000,
+      eligible_from: 1714176000,
+      earning_start_ts: 1714176000,
+      distribution_enabled: true,
+      economic_version: "v1",
+      last_updated_at: 1714177000,
+      updated_by: "admin_or_program"
+    });
+
+    expect(payload.economic_version).toBe("v1");
+    expect(payload.yield_mode).toBe("cap");
+  });
+
+  it("rejects AppData economic payload when yield_mode is invalid", () => {
+    let captured: unknown = null;
+
+    try {
+      validateAppDataEconomicV1({
+        revenue_share_bps: 2500,
+        yield_bps: 1200,
+        yield_mode: "unknown",
+        locked_at: 1711584000,
+        eligible_from: 1714176000,
+        earning_start_ts: 1714176000,
+        distribution_enabled: true,
+        economic_version: "v1",
+        last_updated_at: 1714177000,
+        updated_by: "admin_or_program"
+      });
+    } catch (error) {
+      captured = error;
+    }
+
+    expect(isCoreCandyMachineAdminInputError(captured)).toBe(true);
+    expect((captured as Error).message).toBe("appDataEconomic.yield_mode must be one of: cap, linear.");
+  });
+
+  it("rejects AppData economic payload when unknown keys are included", () => {
+    let captured: unknown = null;
+
+    try {
+      validateAppDataEconomicV1({
+        revenue_share_bps: 2500,
+        yield_bps: 1200,
+        yield_mode: "cap",
+        distribution_enabled: true,
+        economic_version: "v1",
+        last_updated_at: 1714177000,
+        updated_by: "admin_or_program",
+        malicious_field: "unexpected"
+      });
+    } catch (error) {
+      captured = error;
+    }
+
+    expect(isCoreCandyMachineAdminInputError(captured)).toBe(true);
+    expect((captured as Error).message).toContain("appDataEconomic contains unsupported keys");
+  });
+
+  it("accepts AppData economic payload when optional lifecycle timestamps are omitted", () => {
+    const payload = validateAppDataEconomicV1({
+      revenue_share_bps: 2500,
+      yield_bps: 1200,
+      yield_mode: "cap",
+      distribution_enabled: true,
+      economic_version: "v1",
+      last_updated_at: 1714177000,
+      updated_by: "admin_or_program"
+    });
+
+    expect(payload.locked_at).toBeUndefined();
+    expect(payload.eligible_from).toBeUndefined();
+    expect(payload.earning_start_ts).toBeUndefined();
+  });
+
+  it("builds default AppData payload from env overrides", () => {
+    const previousRevenueShare = process.env.APPDATA_ECON_REVENUE_SHARE_BPS;
+    const previousYieldMode = process.env.APPDATA_ECON_YIELD_MODE;
+    const previousDistributionEnabled = process.env.APPDATA_ECON_DISTRIBUTION_ENABLED;
+    process.env.APPDATA_ECON_REVENUE_SHARE_BPS = "3000";
+    process.env.APPDATA_ECON_YIELD_MODE = "linear";
+    process.env.APPDATA_ECON_DISTRIBUTION_ENABLED = "false";
+
+    try {
+      const payload = buildDefaultAppDataEconomicV1("admin");
+      expect(payload.revenue_share_bps).toBe(3000);
+      expect(payload.yield_mode).toBe("linear");
+      expect(payload.distribution_enabled).toBe(false);
+      expect(payload.economic_version).toBe("v1");
+    } finally {
+      if (previousRevenueShare === undefined) {
+        delete process.env.APPDATA_ECON_REVENUE_SHARE_BPS;
+      } else {
+        process.env.APPDATA_ECON_REVENUE_SHARE_BPS = previousRevenueShare;
+      }
+
+      if (previousYieldMode === undefined) {
+        delete process.env.APPDATA_ECON_YIELD_MODE;
+      } else {
+        process.env.APPDATA_ECON_YIELD_MODE = previousYieldMode;
+      }
+
+      if (previousDistributionEnabled === undefined) {
+        delete process.env.APPDATA_ECON_DISTRIBUTION_ENABLED;
+      } else {
+        process.env.APPDATA_ECON_DISTRIBUTION_ENABLED = previousDistributionEnabled;
+      }
+    }
+  });
+
   it("fails deploy prepare with a clear input error when payerPublicKey is invalid", async () => {
     let captured: unknown = null;
 

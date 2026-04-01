@@ -5,21 +5,21 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-03-20 19:27:57 UTC
+Updated: 2026-04-01 08:20:34 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
-| [`STAKE_AUDIT.md`](./docs/STAKE_AUDIT.md) | general | not set | 2026-03-13 b6182dd |
-| [`architecture.md`](./docs/architecture.md) | blockchain | 2026-03-18 16:24:39 UTC | 2026-03-19 039cfcb |
-| [`auth-flow.md`](./docs/auth-flow.md) | frontend/auth | 2026-03-20 19:27:57 UTC | 2026-03-20 39dfc00 |
-| [`authority-model.md`](./docs/authority-model.md) | blockchain | 2026-03-18 01:14:38 UTC | 2026-03-19 039cfcb |
-| [`devnet-proof.md`](./docs/devnet-proof.md) | blockchain | 2026-03-20 16:49:21 UTC | 2026-03-20 0ae1fa7 |
-| [`nft-spec.md`](./docs/nft-spec.md) | nft | 2026-03-20 19:27:57 UTC | 2026-03-20 39dfc00 |
-| [`purchase-tracing.md`](./docs/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-03-20 39dfc00 |
-| [`rbac.md`](./docs/rbac.md) | general | 2026-03-03 UTC | 2026-03-03 d7d8bf6 |
-| [`session-model.md`](./docs/session-model.md) | frontend/auth | 2026-03-20 19:27:57 UTC | 2026-03-20 39dfc00 |
-| [`state-machine.md`](./docs/state-machine.md) | blockchain | 2026-03-18 01:14:38 UTC | 2026-03-19 039cfcb |
-| [`threat-model.md`](./docs/threat-model.md) | blockchain | 2026-03-18 01:14:38 UTC | 2026-03-20 0ae1fa7 |
+| [`STAKE_AUDIT.md`](./docs/STAKE_AUDIT.md) | general | not set | 2026-04-01 d0c0f7d |
+| [`architecture.md`](./docs/architecture.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
+| [`auth-flow.md`](./docs/auth-flow.md) | frontend/auth | 2026-03-27 08:35:00 UTC | 2026-04-01 d0c0f7d |
+| [`authority-model.md`](./docs/authority-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
+| [`devnet-proof.md`](./docs/devnet-proof.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
+| [`nft-spec.md`](./docs/nft-spec.md) | nft | 2026-04-01 08:20:33 UTC | 2026-04-01 3e89303 |
+| [`purchase-tracing.md`](./docs/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-04-01 d0c0f7d |
+| [`rbac.md`](./docs/rbac.md) | general | 2026-03-03 UTC | 2026-04-01 d0c0f7d |
+| [`session-model.md`](./docs/session-model.md) | frontend/auth | 2026-03-27 08:35:00 UTC | 2026-04-01 d0c0f7d |
+| [`state-machine.md`](./docs/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
+| [`threat-model.md`](./docs/threat-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
 
 ### Required Docs by Change Type
 - Blockchain (/programs): `architecture.md`, `authority-model.md`, `state-machine.md`, `threat-model.md`, `devnet-proof.md`

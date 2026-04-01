@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-03-nft-economic-data-appdata-plugin`
-- Status: `approved` (`draft | in-review | approved | implemented | rejected`)
+- Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
-- Last Updated: `2026-03-29`
+- Last Updated: `2026-04-01`
 
 ## Context
 - Problem:
@@ -113,14 +113,14 @@
   Aprobado. La inclusión de un JSON Schema versionado y la observabilidad vía webhooks son claves.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Ready for implementation.
+  Integrar en release train del EPIC-006 y continuar con STORY-006-04.
 - Exit criteria:
 - [x] Integración Squads multisig disponible
 - [x] Crítica principal incorporada en rediseño de seguridad
-- [ ] Implementación completada en código
-- [ ] Validación devnet con evidencia de transacciones
+- [x] Implementación completada en código
+- [x] Validación devnet con evidencia de transacciones
 
 ## Test and Validation Plan
 - Unit tests:
@@ -145,7 +145,7 @@
 
 ## Traceability
 - Related issue(s): `TBD`
-- Related PR(s): `TBD`
+- Related PR(s): `feature/shared-epic-006-story-03-appdata-economic-plugin -> develop` (pending/open)
 - Final commit hash(es): `TBD`
 
 ## Official Sources

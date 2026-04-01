@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { addPlugin, createCollection, mplCore } from "@metaplex-foundation/mpl-core";
+import { ExternalPluginAdapterSchema, addPlugin, createCollection, mplCore, writeData } from "@metaplex-foundation/mpl-core";
 import { addConfigLines, create, fetchCandyMachine, findCandyGuardPda, mintV1, mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createNoopSigner, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
@@ -36,8 +36,47 @@ const SEND_TX_RETRY_MAX_MS = 4_000;
 const MAX_URI_INPUT_LENGTH = 512;
 const MAX_USDC_ATOMIC = 1_000_000_000_000;
 const MAX_SOLANA_TX_RAW_BYTES = 1232;
+const DEFAULT_APPDATA_REVENUE_SHARE_BPS = 2500;
+const DEFAULT_APPDATA_YIELD_BPS = 1200;
+const DEFAULT_APPDATA_YIELD_MODE = "cap";
+const DEFAULT_APPDATA_DISTRIBUTION_ENABLED = true;
+const APPDATA_ECONOMIC_VERSION = "v1";
+const APPDATA_ECONOMIC_ALLOWED_KEYS = new Set([
+  "revenue_share_bps",
+  "yield_bps",
+  "yield_mode",
+  "locked_at",
+  "eligible_from",
+  "earning_start_ts",
+  "distribution_enabled",
+  "economic_version",
+  "last_updated_at",
+  "updated_by"
+]);
 
-type PreparedTransactionKind = "create-collection" | "create-candy-machine" | "add-config-lines" | "mint" | "add-owner-freeze-plugin";
+type PreparedTransactionKind =
+  | "create-collection"
+  | "create-candy-machine"
+  | "add-config-lines"
+  | "mint"
+  | "add-owner-freeze-plugin"
+  | "add-app-data-plugin"
+  | "write-app-data";
+
+export type AppDataYieldMode = "cap" | "linear";
+
+export type AppDataEconomicV1 = {
+  revenue_share_bps: number;
+  yield_bps: number;
+  yield_mode: AppDataYieldMode;
+  locked_at?: number;
+  eligible_from?: number;
+  earning_start_ts?: number;
+  distribution_enabled: boolean;
+  economic_version: "v1";
+  last_updated_at: number;
+  updated_by: string;
+};
 
 export type PrepareCandyMachineDeployInput = {
   payerPublicKey: string;
@@ -242,6 +281,163 @@ function assertBoolean(value: unknown, fieldName: string): boolean {
   }
 
   return value;
+}
+
+function assertBpsRange(value: unknown, fieldName: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} must be an integer.`);
+  }
+
+  if (value < 0 || value > 10_000) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} must be between 0 and 10000.`);
+  }
+
+  return value;
+}
+
+function assertNonNegativeUnixTimestamp(value: unknown, fieldName: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} must be an integer unix timestamp.`);
+  }
+
+  if (value < 0) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} must be >= 0.`);
+  }
+
+  return value;
+}
+
+function assertOptionalNonNegativeUnixTimestamp(value: unknown, fieldName: string): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return assertNonNegativeUnixTimestamp(value, fieldName);
+}
+
+function assertNoUnknownObjectKeys(payload: Record<string, unknown>, allowedKeys: Set<string>, fieldName: string): void {
+  const unknownKeys = Object.keys(payload).filter((key) => !allowedKeys.has(key));
+  if (unknownKeys.length > 0) {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} contains unsupported keys: ${unknownKeys.join(", ")}.`);
+  }
+}
+
+function parseOptionalIntegerEnv(name: string): number | undefined {
+  const raw = process.env[name];
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) {
+    throw new CoreCandyMachineAdminInputError(`${name} must be an integer.`);
+  }
+
+  return parsed;
+}
+
+function parseOptionalBooleanEnv(name: string): boolean | undefined {
+  const raw = process.env[name];
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  const trimmed = raw.trim().toLowerCase();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed === "true" || trimmed === "1") {
+    return true;
+  }
+
+  if (trimmed === "false" || trimmed === "0") {
+    return false;
+  }
+
+  throw new CoreCandyMachineAdminInputError(`${name} must be a boolean (true|false|1|0).`);
+}
+
+function parseOptionalYieldModeEnv(name: string): AppDataYieldMode | undefined {
+  const raw = process.env[name];
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  const trimmed = raw.trim().toLowerCase();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed === "cap" || trimmed === "linear") {
+    return trimmed;
+  }
+
+  throw new CoreCandyMachineAdminInputError(`${name} must be one of: cap, linear.`);
+}
+
+export function validateAppDataEconomicV1(raw: unknown): AppDataEconomicV1 {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new CoreCandyMachineAdminInputError("appDataEconomic must be an object.");
+  }
+
+  const payload = raw as Record<string, unknown>;
+  assertNoUnknownObjectKeys(payload, APPDATA_ECONOMIC_ALLOWED_KEYS, "appDataEconomic");
+
+  const yieldMode = payload.yield_mode;
+  if (yieldMode !== "cap" && yieldMode !== "linear") {
+    throw new CoreCandyMachineAdminInputError("appDataEconomic.yield_mode must be one of: cap, linear.");
+  }
+
+  const economicVersion = payload.economic_version;
+  if (typeof economicVersion !== "string" || !/^v[0-9]+$/.test(economicVersion)) {
+    throw new CoreCandyMachineAdminInputError("appDataEconomic.economic_version must match pattern ^v[0-9]+$.");
+  }
+
+  if (economicVersion !== APPDATA_ECONOMIC_VERSION) {
+    throw new CoreCandyMachineAdminInputError("appDataEconomic.economic_version must be v1.");
+  }
+
+  const updatedBy = assertNonEmptyString(payload.updated_by, "appDataEconomic.updated_by", 128);
+  if (updatedBy.length < 3) {
+    throw new CoreCandyMachineAdminInputError("appDataEconomic.updated_by must contain at least 3 characters.");
+  }
+
+  return {
+    revenue_share_bps: assertBpsRange(payload.revenue_share_bps, "appDataEconomic.revenue_share_bps"),
+    yield_bps: assertBpsRange(payload.yield_bps, "appDataEconomic.yield_bps"),
+    yield_mode: yieldMode,
+    locked_at: assertOptionalNonNegativeUnixTimestamp(payload.locked_at, "appDataEconomic.locked_at"),
+    eligible_from: assertOptionalNonNegativeUnixTimestamp(payload.eligible_from, "appDataEconomic.eligible_from"),
+    earning_start_ts: assertOptionalNonNegativeUnixTimestamp(payload.earning_start_ts, "appDataEconomic.earning_start_ts"),
+    distribution_enabled: assertBoolean(payload.distribution_enabled, "appDataEconomic.distribution_enabled"),
+    economic_version: APPDATA_ECONOMIC_VERSION,
+    last_updated_at: assertNonNegativeUnixTimestamp(payload.last_updated_at, "appDataEconomic.last_updated_at"),
+    updated_by: updatedBy
+  };
+}
+
+export function buildDefaultAppDataEconomicV1(updatedBy: string): AppDataEconomicV1 {
+  const now = Math.floor(Date.now() / 1000);
+  const payload: AppDataEconomicV1 = {
+    revenue_share_bps: parseOptionalIntegerEnv("APPDATA_ECON_REVENUE_SHARE_BPS") ?? DEFAULT_APPDATA_REVENUE_SHARE_BPS,
+    yield_bps: parseOptionalIntegerEnv("APPDATA_ECON_YIELD_BPS") ?? DEFAULT_APPDATA_YIELD_BPS,
+    yield_mode: parseOptionalYieldModeEnv("APPDATA_ECON_YIELD_MODE") ?? DEFAULT_APPDATA_YIELD_MODE,
+    locked_at: parseOptionalIntegerEnv("APPDATA_ECON_LOCKED_AT") ?? now,
+    eligible_from: parseOptionalIntegerEnv("APPDATA_ECON_ELIGIBLE_FROM") ?? now,
+    earning_start_ts: parseOptionalIntegerEnv("APPDATA_ECON_EARNING_START_TS") ?? now,
+    distribution_enabled: parseOptionalBooleanEnv("APPDATA_ECON_DISTRIBUTION_ENABLED") ?? DEFAULT_APPDATA_DISTRIBUTION_ENABLED,
+    economic_version: APPDATA_ECONOMIC_VERSION,
+    last_updated_at: now,
+    updated_by: assertNonEmptyString(updatedBy, "updatedBy", 128)
+  };
+
+  return validateAppDataEconomicV1(payload);
 }
 
 function buildConfigLineSuffix(serial: number): string {
@@ -580,7 +776,9 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
       entry.kind !== "create-candy-machine" &&
       entry.kind !== "add-config-lines" &&
       entry.kind !== "mint" &&
-      entry.kind !== "add-owner-freeze-plugin"
+      entry.kind !== "add-owner-freeze-plugin" &&
+      entry.kind !== "add-app-data-plugin" &&
+      entry.kind !== "write-app-data"
     ) {
       throw new CoreCandyMachineAdminInputError(`signedTransactions[${index}].kind is invalid.`);
     }
@@ -828,6 +1026,8 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
   for (let index = 0; index < input.quantity; index += 1) {
     const serial = serialOffset + index + 1;
     const assetSigner = generateSigner(umi);
+    const appDataEconomic = buildDefaultAppDataEconomicV1(`core-candy-machine-admin:${input.payerPublicKey}`);
+    const appDataBytes = new TextEncoder().encode(JSON.stringify(appDataEconomic));
 
     const mintBuilder = mintV1(umi, {
       candyMachine: candyMachineAddress,
@@ -856,6 +1056,47 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
       serial,
       expectedAddress: assetSigner.publicKey,
       transactionBase64: mintSerializedTransaction
+    });
+
+    const addAppDataPluginBuilder = addPlugin(umi, {
+      asset: publicKey(assetSigner.publicKey),
+      authority: payerSigner,
+      plugin: {
+        type: "AppData",
+        schema: ExternalPluginAdapterSchema.Json,
+        dataAuthority: {
+          type: "UpdateAuthority"
+        }
+      }
+    });
+
+    transactions.push({
+      kind: "add-app-data-plugin",
+      label: `Enable AppData economic plugin for NFT #${serial}`,
+      serial,
+      expectedAddress: assetSigner.publicKey,
+      transactionBase64: await serializeSignedBuilderTransaction(umi, addAppDataPluginBuilder, latestBlockhash)
+    });
+
+    const writeAppDataBuilder = writeData(umi, {
+      asset: publicKey(assetSigner.publicKey),
+      payer: payerSigner,
+      authority: payerSigner,
+      key: {
+        type: "AppData",
+        dataAuthority: {
+          type: "UpdateAuthority"
+        }
+      },
+      data: appDataBytes
+    });
+
+    transactions.push({
+      kind: "write-app-data",
+      label: `Write economic AppData v1 for NFT #${serial}`,
+      serial,
+      expectedAddress: assetSigner.publicKey,
+      transactionBase64: await serializeSignedBuilderTransaction(umi, writeAppDataBuilder, latestBlockhash)
     });
 
     if (input.enableOwnerFreezeDelegate !== false) {
