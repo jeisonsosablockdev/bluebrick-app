@@ -108,3 +108,11 @@ Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
+
+Automated enforcement in project flow:
+	•	`npm run validate` now includes docs governance validation (`scripts/ci/validate-doc-governance.sh`).
+	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with `epic-<id>-story-<id>` when product code is touched:
+		•	Story RFC file and EPIC `README.md` must both be updated in the same PR.
+		•	Required story sections must exist.
+		•	If story status is `implemented`, traceability cannot remain in `TBD` or `pending/open`.
+		•	Story status in EPIC Story Index must match story RFC status.

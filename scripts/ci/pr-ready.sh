@@ -23,15 +23,11 @@ if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then
 fi
 
 echo
-echo "1) Running validate gate..."
+echo "1) Running validate gate (lint + typecheck + docs governance)..."
 npm run validate
 
 echo
-echo "2) Running required docs scope check..."
-BASE_REF="${BASE_REF}" HEAD_REF=HEAD bash ./scripts/ci/check-required-docs.sh
-
-echo
-echo "3) Checking commit convention for branch commits..."
+echo "2) Checking commit convention for branch commits..."
 MERGE_BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"
 COMMITS="$(git log --format='%H%x09%s' "${MERGE_BASE}..HEAD")"
 
@@ -56,7 +52,7 @@ fi
 echo "✅ Commit convention check passed."
 
 echo
-echo "4) Checking PR-size discipline..."
+echo "3) Checking PR-size discipline..."
 ADDITIONS="$(git diff --numstat "${MERGE_BASE}..HEAD" | awk '{a+=$1} END {print a+0}')"
 echo "Added lines vs origin/${BASE_REF}: ${ADDITIONS}"
 if (( ADDITIONS > 400 )); then
@@ -70,7 +66,7 @@ else
 fi
 
 echo
-echo "5) Checking branch-age discipline..."
+echo "4) Checking branch-age discipline..."
 FIRST_COMMIT_EPOCH="$(git log --reverse --format='%ct' "${MERGE_BASE}..HEAD" | head -n1)"
 NOW_EPOCH="$(date +%s)"
 AGE_DAYS="$(awk -v now="${NOW_EPOCH}" -v first="${FIRST_COMMIT_EPOCH}" 'BEGIN {printf "%.2f", (now-first)/86400}')"
@@ -87,7 +83,7 @@ else
 fi
 
 echo
-echo "6) PR metadata checklist (manual before opening PR):"
+echo "5) PR metadata checklist (manual before opening PR):"
 echo "- Add exactly one scope label (scope:*)"
 echo "- Add exactly one type label (type:*)"
 echo "- Add exactly one risk label (risk:*)"

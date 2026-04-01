@@ -30,6 +30,7 @@
 ## Quality Gates
 - [ ] `npm run validate` passed
 - [ ] Required docs were updated for touched scopes
+- [ ] If this is an epic story branch (`epic-XXX-story-YY`) touching product code: RFC story + EPIC README were updated and traceability is not `TBD`
 - [ ] If wallet/frontend critical path changed: Playwright/Synpress evidence attached
 
 ## PR Size Discipline
