@@ -33,6 +33,38 @@ Updated: 2026-03-20 19:27:57 UTC
 - Current session storage is in-memory (process-local), so sessions are lost on server restart.
 - Before production or horizontal scaling, migrate session storage to a shared persistent backend (for example Redis).
 
+## Solana + Helius MCP Integration
+
+This repo includes MCP configuration for Solana + Helius workflows:
+
+- Claude Code project scope: [`/.mcp.json`](./.mcp.json)
+- Cursor workspace scope: [`/.cursor/mcp.json`](./.cursor/mcp.json)
+
+Endpoints and transport:
+
+- Solana MCP URL: `https://mcp.solana.com/mcp` (HTTP/mcp-remote)
+- Helius MCP package: `helius-mcp@latest` (via `npx`)
+
+Quick verify (Claude Code):
+
+- `claude mcp list`
+- `claude mcp get solana-mcp-server`
+- `claude mcp get helius`
+
+Expected behavior:
+
+- Ask: `How are events implemented in Anchor 0.31?`
+- You should see an MCP tool call such as `Ask_Solana_Anchor_Framework_Expert`.
+- Ask: `Parse this transaction signature with Helius`
+- You should see a Helius MCP tool call for transaction parsing/query.
+
+Important for this project (Devnet-only policy):
+
+- Helius MCP defaults to `mainnet-beta`.
+- Before Helius MCP usage, set:
+  - `export HELIUS_NETWORK=devnet`
+  - `export HELIUS_API_KEY=YOUR_API_KEY`
+
 ## Testing
 
 - `npm test`: run all unit tests with Vitest.

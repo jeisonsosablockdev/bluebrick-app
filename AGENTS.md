@@ -442,6 +442,92 @@ Official Solana references included via `solana-dev`:
 
 ⸻
 
+🛰️ SOLANA MCP OPERATIONAL POLICY (`mcp.solana.com`)
+
+Project integration files:
+- Claude/Codex project scope: `/.mcp.json`
+- Cursor workspace scope: `/.cursor/mcp.json`
+
+Primary endpoint:
+- `https://mcp.solana.com/mcp`
+
+When MCP usage is mandatory:
+1. Anchor design/API questions (accounts, constraints, CPI, events, IDL patterns).
+2. Solana runtime/debugging questions (transaction errors, account model, PDA derivation mistakes, signer/authority mismatches).
+3. Token/NFT implementation decisions where current Solana guidance matters.
+4. Security-sensitive Solana decisions before final implementation.
+
+Recommended MCP query order:
+1. Solana Documentation Search → gather canonical docs context.
+2. Ask Solana Anchor Framework Expert → resolve Anchor-specific design details.
+3. Solana Expert: Ask For Help → resolve cross-cutting issues (runtime + SDK + architecture).
+
+Required query context (always include):
+- Target cluster: `devnet`
+- Solana/Anchor versions in use
+- Relevant code snippet (minimal reproducible excerpt)
+- Exact error logs / transaction signature (when debugging)
+- Current expected vs actual behavior
+
+Verification and evidence rule:
+1. Summarize key MCP conclusions in the task notes/PR description.
+2. Map each conclusion to concrete code/test changes.
+3. Validate changes with real devnet execution and project test gates.
+4. Never mark complete based only on MCP guidance; implementation proof is mandatory.
+
+Strict safeguards:
+- MCP guidance does not override governance docs in `/docs/governance`.
+- For conflicts: governance docs + official Solana docs + real devnet behavior take precedence.
+- Do not use Ethereum/EVM recommendations unless user explicitly requests cross-chain work.
+- If MCP is unavailable, fallback to `solana-dev` skill references and continue with explicit uncertainty notes.
+
+⸻
+
+🛰️ HELIUS MCP OPERATIONAL POLICY (`helius-mcp@latest`)
+
+Project integration files:
+- Claude/Codex project scope: `/.mcp.json`
+- Cursor workspace scope: `/.cursor/mcp.json`
+
+Server runtime:
+- `npx helius-mcp@latest`
+
+Credential and network requirements:
+1. `HELIUS_API_KEY` must be configured (or use `setHeliusApiKey` tool).
+2. Project policy is devnet-only, so Helius MCP must run on devnet:
+   - `HELIUS_NETWORK=devnet` or call `setNetwork` to `devnet` at session start.
+3. If network is not devnet, task is blocked until corrected.
+
+When Helius MCP usage is mandatory:
+1. DAS/NFT ownership lookups, metadata reads, and asset inventory queries.
+2. Enhanced transaction parsing/inspection from real signatures.
+3. Webhook/streaming setup or event-delivery debugging.
+4. Priority fee, balance, transfer history, and wallet analytics investigations.
+
+Recommended Helius session start sequence:
+1. Confirm API key availability (`HELIUS_API_KEY` or `setHeliusApiKey`).
+2. Explicitly set/confirm network = `devnet`.
+3. Run a lightweight sanity query (`getBalance` / equivalent) before critical actions.
+
+Required Helius query context:
+- Target network: `devnet`
+- Wallet/account/signature under investigation
+- Relevant snippet + observed error/log
+- Expected vs actual behavior
+
+Verification and evidence rule:
+1. Include Helius tool outputs used for decisions in task notes/PR summary.
+2. Record real signatures/accounts used for validation (no placeholders).
+3. Cross-check Helius output with on-chain state and project tests.
+4. Never complete a task from Helius output alone without repo-level verification.
+
+Strict safeguards:
+- Do not run autonomous signup flows unless explicitly requested by user (billing-sensitive).
+- No mocked signatures, mocked RPC, or simulated-only conclusions.
+- Helius MCP guidance must follow governance docs and devnet execution policy.
+
+⸻
+
 🔥 FINAL ENFORCEMENT RULE
 
 Before marking ANY task complete:
