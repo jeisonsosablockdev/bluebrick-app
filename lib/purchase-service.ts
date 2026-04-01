@@ -215,7 +215,21 @@ function unwrapOption<T>(value: unknown): T | null {
   return null;
 }
 
-function amountToLamports(value: unknown): number | null {
+export function amountToLamports(value: unknown): number | null {
+  if (typeof value === "bigint") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.floor(parsed) : null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.floor(value) : null;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.floor(parsed) : null;
+  }
+
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -225,12 +239,22 @@ function amountToLamports(value: unknown): number | null {
     return null;
   }
 
-  const parsed = Number(basisPoints);
-  if (!Number.isFinite(parsed)) {
-    return null;
+  return amountToLamports(basisPoints);
+}
+
+export function resolvePreparedPriceLamports(
+  paymentCurrency: PurchasePaymentCurrency,
+  priceLamports: number | null
+): number {
+  if (paymentCurrency !== "SOL") {
+    return 0;
   }
 
-  return Math.floor(parsed);
+  if (typeof priceLamports !== "number" || !Number.isFinite(priceLamports) || priceLamports < 0) {
+    return 0;
+  }
+
+  return Math.floor(priceLamports);
 }
 
 function parsePublicKey(raw: string, fieldName: string): string {
@@ -919,7 +943,10 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     const preparedTxMessageBase64 = toBase64(web3Tx.message.serialize());
     const prepared = await markPurchaseAttemptPrepared({
       id: attempt.id,
-      preparedPriceLamports: freshSnapshot.paymentCurrency === "SOL" ? freshSnapshot.priceLamports : null,
+      preparedPriceLamports: resolvePreparedPriceLamports(
+        freshSnapshot.paymentCurrency,
+        freshSnapshot.priceLamports
+      ),
       cacheUpdatedAt: freshSnapshot.fetchedAt,
       preparedTxMessageBase64
     });

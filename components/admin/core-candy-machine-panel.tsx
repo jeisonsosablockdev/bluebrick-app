@@ -11,7 +11,7 @@ import { convertUsdToSol, usdToUsdcAtomic } from "@/lib/admin/pricing";
 import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
 
 type PreparedTransaction = {
-  kind: "create-collection" | "create-candy-machine" | "add-config-lines" | "mint";
+  kind: "create-collection" | "create-candy-machine" | "add-config-lines" | "mint" | "add-owner-freeze-plugin";
   label: string;
   serial: number | null;
   expectedAddress: string | null;

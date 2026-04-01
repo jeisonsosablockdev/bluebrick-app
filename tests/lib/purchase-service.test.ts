@@ -5,9 +5,11 @@ vi.mock("@/lib/property-marketplace-server", () => ({
 }));
 
 import {
+  amountToLamports,
   evaluateMintAvailability,
   evaluatePurchaseQuantity,
-  mapSubmitErrorToPurchaseError
+  mapSubmitErrorToPurchaseError,
+  resolvePreparedPriceLamports
 } from "@/lib/purchase-service";
 
 describe("lib/purchase-service", () => {
@@ -93,5 +95,27 @@ describe("lib/purchase-service", () => {
   it("maps unknown submit errors to TRANSACTION_FAILED", () => {
     const error = mapSubmitErrorToPurchaseError(new Error("blockhash not found"));
     expect(error.code).toBe("TRANSACTION_FAILED");
+  });
+
+  it("parses bigint guard amounts", () => {
+    expect(amountToLamports(1_000_000n)).toBe(1_000_000);
+  });
+
+  it("parses object guard amounts with basisPoints", () => {
+    expect(amountToLamports({ basisPoints: 2_500_000n })).toBe(2_500_000);
+  });
+
+  it("returns null for unsupported guard amount values", () => {
+    expect(amountToLamports({ invalid: true })).toBeNull();
+  });
+
+  it("returns 0 prepared price for USDC payment currency", () => {
+    expect(resolvePreparedPriceLamports("USDC", null)).toBe(0);
+    expect(resolvePreparedPriceLamports("USDC", 100_000)).toBe(0);
+  });
+
+  it("returns SOL prepared price when payment currency is SOL", () => {
+    expect(resolvePreparedPriceLamports("SOL", 100_000)).toBe(100_000);
+    expect(resolvePreparedPriceLamports("SOL", null)).toBe(0);
   });
 });

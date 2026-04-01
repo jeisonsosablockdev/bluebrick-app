@@ -163,6 +163,14 @@ function mapRow(row: PurchaseAttemptRow): PurchaseAttemptRecord {
   };
 }
 
+function normalizePreparedPriceLamports(value: number | null): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+
+  return Math.floor(value);
+}
+
 const inMemoryAttempts = new Map<string, PurchaseAttemptRecord>();
 const inMemoryAttemptsByWalletAndIdempotency = new Map<string, string>();
 
@@ -332,6 +340,8 @@ export async function markPurchaseAttemptPrepared(input: {
   cacheUpdatedAt: string;
   preparedTxMessageBase64: string;
 }, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
+  const normalizedPreparedPriceLamports = normalizePreparedPriceLamports(input.preparedPriceLamports);
+
   if (!isPurchaseAttemptsDatabaseConfigured()) {
     const found = inMemoryAttempts.get(input.id);
     if (!found) {
@@ -344,7 +354,7 @@ export async function markPurchaseAttemptPrepared(input: {
 
     const updated: PurchaseAttemptRecord = {
       ...found,
-      preparedPriceLamports: input.preparedPriceLamports,
+      preparedPriceLamports: normalizedPreparedPriceLamports,
       cacheUpdatedAt: input.cacheUpdatedAt,
       preparedTxMessageBase64: input.preparedTxMessageBase64,
       preparedAt: new Date().toISOString(),
@@ -360,7 +370,7 @@ export async function markPurchaseAttemptPrepared(input: {
   const run = async (client: PoolClient) => {
     const updated = await queryWithClient<PurchaseAttemptRecord>(
       client,
-      `UPDATE purchase_attempts
+       `UPDATE purchase_attempts
        SET
          prepared_price_lamports = $2,
          cache_updated_at = $3,
@@ -372,7 +382,7 @@ export async function markPurchaseAttemptPrepared(input: {
        WHERE id = $1
          AND status = 'created'
        RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
-      [input.id, input.preparedPriceLamports, input.cacheUpdatedAt, input.preparedTxMessageBase64]
+      [input.id, normalizedPreparedPriceLamports, input.cacheUpdatedAt, input.preparedTxMessageBase64]
     );
 
     if (updated) {

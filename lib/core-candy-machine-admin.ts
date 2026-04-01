@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { createCollectionV2, mplCore } from "@metaplex-foundation/mpl-core";
+import { addPlugin, createCollection, mplCore } from "@metaplex-foundation/mpl-core";
 import { addConfigLines, create, fetchCandyMachine, findCandyGuardPda, mintV1, mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createNoopSigner, dateTime, generateSigner, publicKey, signerIdentity, type Signer, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
@@ -37,7 +37,7 @@ const MAX_URI_INPUT_LENGTH = 512;
 const MAX_USDC_ATOMIC = 1_000_000_000_000;
 const MAX_SOLANA_TX_RAW_BYTES = 1232;
 
-type PreparedTransactionKind = "create-collection" | "create-candy-machine" | "add-config-lines" | "mint";
+type PreparedTransactionKind = "create-collection" | "create-candy-machine" | "add-config-lines" | "mint" | "add-owner-freeze-plugin";
 
 export type PrepareCandyMachineDeployInput = {
   payerPublicKey: string;
@@ -57,6 +57,7 @@ export type PrepareCandyMachineMintInput = {
   collectionAddress: string;
   quantity: number;
   serialOffset?: number;
+  enableOwnerFreezeDelegate?: boolean;
 };
 
 export type PreparedCandyMachineTransaction = {
@@ -77,6 +78,10 @@ export type PreparedCandyMachineDeploy = {
   paymentMode: "USDC";
   priceUsdcAtomic: number | null;
   priceLamports: null;
+  freezePolicy: {
+    permanentFreezeDelegateAuthority: string;
+    ownerFreezeDelegateEnabled: boolean;
+  };
   startDate: string;
   preparedAt: string;
   transactions: PreparedCandyMachineTransaction[];
@@ -89,6 +94,7 @@ export type PreparedCandyMachineMint = {
   collectionAddress: string;
   quantity: number;
   serialOffset: number;
+  ownerFreezeDelegateEnabled: boolean;
   preparedAt: string;
   transactions: PreparedCandyMachineTransaction[];
 };
@@ -224,6 +230,14 @@ function assertPositiveInteger(value: unknown, fieldName: string, maxValue: numb
 
   if (value > maxValue) {
     throw new CoreCandyMachineAdminInputError(`${fieldName} exceeds max value (${maxValue}).`);
+  }
+
+  return value;
+}
+
+function assertBoolean(value: unknown, fieldName: string): boolean {
+  if (typeof value !== "boolean") {
+    throw new CoreCandyMachineAdminInputError(`${fieldName} must be a boolean.`);
   }
 
   return value;
@@ -530,13 +544,17 @@ function validateMintPrepareInput(input: PrepareCandyMachineMintInput): PrepareC
   const collectionAddress = assertPublicKeyString(input.collectionAddress, "collectionAddress");
   const quantity = assertPositiveInteger(input.quantity, "quantity", MAX_MINT_PREPARE_ITEMS);
   const serialOffset = input.serialOffset === undefined ? 0 : assertPositiveInteger(input.serialOffset + 1, "serialOffset+1", 1_000_000) - 1;
+  const enableOwnerFreezeDelegate = input.enableOwnerFreezeDelegate === undefined
+    ? true
+    : assertBoolean(input.enableOwnerFreezeDelegate, "enableOwnerFreezeDelegate");
 
   return {
     payerPublicKey,
     candyMachineAddress,
     collectionAddress,
     quantity,
-    serialOffset
+    serialOffset,
+    enableOwnerFreezeDelegate
   };
 }
 
@@ -560,7 +578,8 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
       entry.kind !== "create-collection" &&
       entry.kind !== "create-candy-machine" &&
       entry.kind !== "add-config-lines" &&
-      entry.kind !== "mint"
+      entry.kind !== "mint" &&
+      entry.kind !== "add-owner-freeze-plugin"
     ) {
       throw new CoreCandyMachineAdminInputError(`signedTransactions[${index}].kind is invalid.`);
     }
@@ -589,6 +608,14 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
 
 export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachineDeployInput): Promise<PreparedCandyMachineDeploy> {
   const input = validateDeployInput(rawInput);
+  const envPermanentFreezeAuthority = process.env.SQUADS_FREEZE_AUTHORITY?.trim();
+  if (!envPermanentFreezeAuthority) {
+    throw new CoreCandyMachineAdminInputError("SQUADS_FREEZE_AUTHORITY is required.");
+  }
+  const permanentFreezeDelegateAuthority = assertPublicKeyString(
+    envPermanentFreezeAuthority,
+    "SQUADS_FREEZE_AUTHORITY"
+  );
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const latestBlockhash = await umi.rpc.getLatestBlockhash();
   const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
@@ -611,12 +638,22 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     Math.max(MIN_CONFIG_LINES_PER_TX, determineConfigLinesPerTx(configLineOptimization.configLineSettings))
   );
 
-  const createCollectionBuilder = createCollectionV2(umi, {
+  const createCollectionBuilder = createCollection(umi, {
     collection: collectionSigner,
     updateAuthority: payerSigner.publicKey,
     payer: payerSigner,
     name: input.collectionName,
-    uri: input.collectionUri
+    uri: input.collectionUri,
+    plugins: [
+      {
+        type: "PermanentFreezeDelegate",
+        frozen: false,
+        authority: {
+          type: "Address",
+          address: publicKey(permanentFreezeDelegateAuthority)
+        }
+      }
+    ]
   });
 
   transactions.push({
@@ -737,6 +774,10 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     paymentMode: "USDC",
     priceUsdcAtomic: input.priceUsdcAtomic ?? null,
     priceLamports: null,
+    freezePolicy: {
+      permanentFreezeDelegateAuthority,
+      ownerFreezeDelegateEnabled: true
+    },
     startDate: input.startDate,
     preparedAt: new Date().toISOString(),
     transactions
@@ -790,13 +831,37 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
       }
     });
 
+    const mintSerializedTransaction = await serializeSignedBuilderTransaction(umi, mintBuilder, latestBlockhash);
+
     transactions.push({
       kind: "mint",
       label: `Mint NFT #${serial}`,
       serial,
       expectedAddress: assetSigner.publicKey,
-      transactionBase64: await serializeSignedBuilderTransaction(umi, mintBuilder, latestBlockhash)
+      transactionBase64: mintSerializedTransaction
     });
+
+    if (input.enableOwnerFreezeDelegate !== false) {
+      const ownerFreezePluginBuilder = addPlugin(umi, {
+        asset: publicKey(assetSigner.publicKey),
+        authority: payerSigner,
+        plugin: {
+          type: "FreezeDelegate",
+          frozen: false,
+          authority: {
+            type: "Owner"
+          }
+        }
+      });
+
+      transactions.push({
+        kind: "add-owner-freeze-plugin",
+        label: `Enable owner freeze/unfreeze for NFT #${serial}`,
+        serial,
+        expectedAddress: assetSigner.publicKey,
+        transactionBase64: await serializeSignedBuilderTransaction(umi, ownerFreezePluginBuilder, latestBlockhash)
+      });
+    }
   }
 
   return {
@@ -806,6 +871,7 @@ export async function prepareCoreCandyMachineMint(rawInput: PrepareCandyMachineM
     collectionAddress: input.collectionAddress,
     quantity: input.quantity,
     serialOffset,
+    ownerFreezeDelegateEnabled: input.enableOwnerFreezeDelegate !== false,
     preparedAt: new Date().toISOString(),
     transactions
   };
@@ -926,7 +992,9 @@ export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitS
       const serializedTransaction = transaction.serialize();
 
       const signature = await sendRawTransactionWithRetry(connection, serializedTransaction);
-      const mustConfirmImmediately = signed.kind === "create-collection" || signed.kind === "create-candy-machine";
+      const mustConfirmImmediately = signed.kind === "create-collection"
+        || signed.kind === "create-candy-machine"
+        || signed.kind === "mint";
 
       if (mustConfirmImmediately) {
         await waitForConfirmedSignature(connection, signature);

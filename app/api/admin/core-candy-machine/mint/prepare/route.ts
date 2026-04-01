@@ -28,7 +28,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       candyMachineAddress: body.candyMachineAddress ?? "",
       collectionAddress: body.collectionAddress ?? "",
       quantity: typeof body.quantity === "number" ? body.quantity : 0,
-      serialOffset: body.serialOffset
+      serialOffset: body.serialOffset,
+      enableOwnerFreezeDelegate: typeof body.enableOwnerFreezeDelegate === "boolean"
+        ? body.enableOwnerFreezeDelegate
+        : undefined
     });
 
     return NextResponse.json(prepared);

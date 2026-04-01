@@ -77,6 +77,32 @@ describe("lib/purchase-attempts-repository (in-memory)", () => {
     expect(submitted?.txSignature).toBe("sig-123");
   });
 
+  it("normalizes prepared price to zero when null is provided", async () => {
+    const walletPublicKey = `wallet-${randomUUID()}`;
+    const idempotencyKey = `idem-${randomUUID()}`;
+    const created = await createPurchaseAttempt({
+      propertyId: "central-norte",
+      walletPublicKey,
+      candyMachineAddress: "CM11111111111111111111111111111111111111111",
+      collectionAddress: "COL1111111111111111111111111111111111111111",
+      challengeId: "challenge-null-price",
+      clientIp: "127.0.0.1",
+      quotedPriceLamports: null,
+      idempotencyKey,
+      idempotencyExpiresAt: "2026-03-20T12:05:00.000Z"
+    });
+
+    const prepared = await markPurchaseAttemptPrepared({
+      id: created.id,
+      preparedPriceLamports: null,
+      cacheUpdatedAt: "2026-03-20T12:00:00.000Z",
+      preparedTxMessageBase64: "AQ=="
+    });
+
+    expect(prepared?.status).toBe("prepared");
+    expect(prepared?.preparedPriceLamports).toBe(0);
+  });
+
   it("allows marking attempts as failed", async () => {
     const walletPublicKey = `wallet-${randomUUID()}`;
     const idempotencyKey = `idem-${randomUUID()}`;
