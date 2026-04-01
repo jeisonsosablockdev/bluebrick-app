@@ -123,7 +123,19 @@
   - Theme switching is strictly client-side presentation state and never mutates server session/token data.
   - Authorization and trust boundaries remain unchanged across both dark and light themes.
 
+## STORY-006-04 Session Enforcement Notes
+- Added admin authority-lifecycle endpoints:
+  - `POST /api/admin/core-candy-machine/authorities/prepare`
+  - `POST /api/admin/core-candy-machine/authorities/submit`
+- Session and role enforcement:
+  - Both endpoints require authenticated SIWS admin session and reject non-admin callers with `403`.
+  - Submitted transactions are validated to ensure payer equals authenticated session wallet.
+- Additional server-side gates:
+  - Operation must exist in prepared state (`operationId` server-tracked).
+  - Multisig evidence and quorum are validated on prepare before transaction leaves backend.
+  - `authority_version` monotonic update is enforced on submit to avoid stale concurrent writes.
+
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-03-27 08:35:00 UTC
+Last Updated: 2026-04-01 10:45:00 UTC

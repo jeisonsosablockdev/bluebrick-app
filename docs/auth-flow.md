@@ -178,4 +178,18 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
 
-Last Updated: 2026-03-27 08:35:00 UTC
+## STORY-006-04 Admin Authority Lifecycle
+- New admin-only routes for delegate lifecycle:
+  - `POST /api/admin/core-candy-machine/authorities/prepare`
+  - `POST /api/admin/core-candy-machine/authorities/submit`
+- Auth model:
+  - Same SIWS admin gate as other `/api/admin/*` routes.
+  - `payerPublicKey` is always server-bound to authenticated admin session wallet.
+- Trust boundary:
+  - Client can propose lifecycle metadata, but server validates role, operation, multisig evidence, quorum, cooldown, and signer/payer consistency before any submit.
+- Replay/risk controls:
+  - `operationId` generated server-side during prepare, then required on submit.
+  - Submit validates operation state is `prepared` before sending to devnet.
+  - Recovery-oriented failures return recoverable metadata (`BLOCKHASH_EXPIRED`, `CONFIRMATION_TIMEOUT`) for safe retry behavior.
+
+Last Updated: 2026-04-01 10:45:00 UTC

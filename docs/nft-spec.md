@@ -106,6 +106,40 @@
   - Rejects unsupported `economic_version` values.
   - Enforces audit fields in every write.
 
+## Delegate Authority Lifecycle (EPIC-006 STORY-006-04)
+- Scope:
+  - Add backend-admin lifecycle for critical collection authorities on devnet.
+  - Applies to `transfer_delegate` (`PermanentTransferDelegate`) and `appdata_authority` (collection `updateAuthority` used by AppData writes).
+- Admin endpoints:
+  - `POST /api/admin/core-candy-machine/authorities/prepare`
+  - `POST /api/admin/core-candy-machine/authorities/submit`
+- Supported operations:
+  - `rotate(role, new_authority)`
+  - `revoke(role)` (moves to sentinel `11111111111111111111111111111111`)
+  - `emergency_rotate(role, new_authority)`
+- Security and trust-chain enforcement (server-side):
+  - Mandatory multisig evidence in request (`proposalId`, `proposer`, `executor`, `approverSigners`).
+  - Regular threshold: `SQUADS_MULTISIG_THRESHOLD` (default `2`).
+  - Emergency threshold: `SQUADS_EMERGENCY_MULTISIG_THRESHOLD` (default `max(regular+1, 3)`).
+  - Optional allowlists:
+    - `SQUADS_PROPOSER_ALLOWLIST`
+    - `SQUADS_APPROVER_ALLOWLIST`
+    - `SQUADS_EXECUTOR_ALLOWLIST`
+  - Cooldown for non-emergency ops:
+    - `AUTHORITY_ROTATION_COOLDOWN_SECONDS` (default `21600`).
+  - No null-authority window on rotation:
+    - Rotate executes as a direct authority swap in one on-chain transaction.
+- Audit + versioning:
+  - `authority_version` is monotonic (`+1` per accepted operation).
+  - Audit trail persists operation intent and outcome:
+    - status (`prepared` -> `submitted`)
+    - proposal/executor/approvers
+    - previous/new authority + previous/new version
+    - confirmed on-chain signature.
+  - Persistence tables:
+    - `authority_registry`
+    - `authority_audit_events`
+
 ## Royalty Model
 - Seller fee basis points:
   - Not configured in H2 (Metaplex Core default, no royalty plugin attached yet).
@@ -192,7 +226,7 @@
 | Write initial AppData | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 | Update AppData | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 
-Last Updated: 2026-04-01 08:20:33 UTC
+Last Updated: 2026-04-01 10:45:00 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)

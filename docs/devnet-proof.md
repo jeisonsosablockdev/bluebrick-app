@@ -159,6 +159,41 @@ NODE
 }
 ```
 
+## EPIC-006 STORY-006-04 Proof (On-chain Authority Lifecycle)
+- Verification run date: 2026-04-01 16:04:33 UTC
+- Cluster: devnet
+- RPC endpoint: `https://solana-devnet.g.alchemy.com/v2/0yIenKKNLWTTAWxKRcUvB`
+- Payer/admin wallet: `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
+- Temporary authority wallet: `C3BPpco9S6DWgTVMtCn3DufqQGG79pNcysffQkczEy8R`
+- Collection (proof-only): `DZ7sRMPFCPm5SFeEAc7JN8LQPRtcfi1JFor4QuWRvR1F`
+
+| Purpose | Signature | Slot | Block Time (UTC) | Confirmation | Error | Explorer |
+| --- | --- | --- | --- | --- | --- | --- |
+| Create proof collection (`CreateCollectionV2`) | `3mHGgtnoDyzzS89fGEpaKgY6oWPEruniRffBn6VkbfADU5L6i7YyTVj3ArHbKBZBsWKp5ZPrfYiFGpCGxsBHwxxi` | `452554355` | `2026-04-01 16:04:12 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/3mHGgtnoDyzzS89fGEpaKgY6oWPEruniRffBn6VkbfADU5L6i7YyTVj3ArHbKBZBsWKp5ZPrfYiFGpCGxsBHwxxi?cluster=devnet` |
+| `emergency_rotate` `appdata_authority` (payer -> temp) | `DWJkjKQeaeXUXAJdXHmWtZjmsHdqmRcTyGRSHZ5wWyA7Aa1EnNZMwq3kWMmYebfQE8BQxQzZZz2e6QbBcZWcsXg` | `452554359` | `2026-04-01 16:04:14 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/DWJkjKQeaeXUXAJdXHmWtZjmsHdqmRcTyGRSHZ5wWyA7Aa1EnNZMwq3kWMmYebfQE8BQxQzZZz2e6QbBcZWcsXg?cluster=devnet` |
+| Fund temporary authority (payer -> temp) | `5gKJwVDA7Z81p95uY2fW5rQWjKx3oazoSYMzXPqkZXqDB5Y3Xwiq7Xq8QJSxw3ux9Qvw8noLutaVzYqvbuRZHDNF` | `452554364` | `2026-04-01 16:04:16 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/5gKJwVDA7Z81p95uY2fW5rQWjKx3oazoSYMzXPqkZXqDB5Y3Xwiq7Xq8QJSxw3ux9Qvw8noLutaVzYqvbuRZHDNF?cluster=devnet` |
+| `rotate` `appdata_authority` (temp -> payer) | `38enfrc4UXg3s7WEBzoeAsx29tRChFmuVZhvWGGEibnbs7k6Nw1tERv8imma9iDgh4idFEe7xJcN4SznFDzsDBy` | `452554374` | `2026-04-01 16:04:19 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/38enfrc4UXg3s7WEBzoeAsx29tRChFmuVZhvWGGEibnbs7k6Nw1tERv8imma9iDgh4idFEe7xJcN4SznFDzsDBy?cluster=devnet` |
+
+### Backend Audit Evidence (Story-006-04)
+| operationId | operation | status | proposalId | approverSigners | signature | submittedAt (UTC) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `ccedf55f-7f75-4088-8e81-7faaf2220da1` | `emergency_rotate` | `submitted` | `story-006-04-emergency-2026-04-01T16-04-12-416Z` | `3` | `DWJkjKQeaeXUXAJdXHmWtZjmsHdqmRcTyGRSHZ5wWyA7Aa1EnNZMwq3kWMmYebfQE8BQxQzZZz2e6QbBcZWcsXg` | `2026-04-01T16:04:16.487Z` |
+| `817d5ef3-10a0-4c87-b1f5-21052a7232b4` | `rotate` | `submitted` | `story-006-04-rotate-back-2026-04-01T16-04-12-416Z` | `2` | `38enfrc4UXg3s7WEBzoeAsx29tRChFmuVZhvWGGEibnbs7k6Nw1tERv8imma9iDgh4idFEe7xJcN4SznFDzsDBy` | `2026-04-01T16:04:21.835Z` |
+
+### Authority Registry Validation (Story-006-04)
+| Field | Value |
+| --- | --- |
+| role | `appdata_authority` |
+| collection_address | `DZ7sRMPFCPm5SFeEAc7JN8LQPRtcfi1JFor4QuWRvR1F` |
+| authority_pubkey (final) | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` |
+| authority_version (final) | `3` |
+| last_operation_id | `817d5ef3-10a0-4c87-b1f5-21052a7232b4` |
+
+### Account State Validation (Story-006-04)
+| Account | Exists | Owner | Executable | Data Length | Lamports | Match |
+| --- | --- | --- | --- | --- | --- | --- |
+| Collection `DZ7sRMPFCPm5SFeEAc7JN8LQPRtcfi1JFor4QuWRvR1F` | `true` | `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d` | `false` | `124` | `1753920` | Yes |
+
 ## Notes
 - `createV2` in collection flow must not set per-asset `updateAuthority` (Core rejects `collection + updateAuthority` together).
 - This proof validates the on-chain mint baseline used by later orchestration stories (H3-H7). Those stories add server-side state controls and reconciliation logic on top of the same devnet mint primitives.
@@ -169,4 +204,4 @@ NODE
   - Observed state: collection `updateAuthority` resolves to deploy signer wallet `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`.
   - Operational decision remains open: keep deploy signer as `updateAuthority` during evaluation window, then decide rotation target (for example, multisig).
 
-Last Updated: 2026-04-01 14:15:57 UTC
+Last Updated: 2026-04-01 16:05:30 UTC

@@ -87,4 +87,31 @@
 - [x] `AppData` updates are audit-ready (`last_updated_at`, `updated_by` required).
 - [x] Unknown payload keys are rejected to avoid silent schema drift.
 
-Last Updated: 2026-04-01 14:15:57 UTC
+## EPIC-006 STORY-006-04 Addendum (Delegate Rotation/Revocation Lifecycle)
+### Role Registry Model
+| Role | On-chain target | Registry key |
+| --- | --- | --- |
+| `transfer_delegate` | Collection `PermanentTransferDelegate` plugin authority | (`role`, `collection_address`) |
+| `appdata_authority` | Collection `updateAuthority` used by AppData writes | (`role`, `collection_address`) |
+
+### Allowed Operations
+- `rotate(role, new_authority)`
+- `revoke(role)` (sentinel authority: `11111111111111111111111111111111`)
+- `emergency_rotate(role, new_authority)`
+
+### Chain of Trust
+- `proposer` identity is validated from request evidence and optional env allowlist (`SQUADS_PROPOSER_ALLOWLIST`).
+- `approverSigners[]` are validated public keys and optionally restricted by `SQUADS_APPROVER_ALLOWLIST`.
+- `executor` must be included in approvers and optionally restricted by `SQUADS_EXECUTOR_ALLOWLIST`.
+- Quorum rules:
+  - Regular ops: `SQUADS_MULTISIG_THRESHOLD` (default `2`).
+  - Emergency ops: `SQUADS_EMERGENCY_MULTISIG_THRESHOLD` (default `max(regular+1, 3)`).
+
+### Invariants Added
+- [x] `authority_version` is strictly monotonic (`n -> n+1`).
+- [x] Non-emergency cooldown enforced via `AUTHORITY_ROTATION_COOLDOWN_SECONDS`.
+- [x] Emergency operations bypass cooldown only with elevated quorum.
+- [x] Every prepared/submit operation emits auditable record (`authority_audit_events`) with proposal metadata and final signature.
+- [x] Registry state changes are collection-scoped and conflict-checked on submit.
+
+Last Updated: 2026-04-01 10:45:00 UTC

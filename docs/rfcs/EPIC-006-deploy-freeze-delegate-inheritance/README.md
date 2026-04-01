@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
-- Last Updated: `2026-03-29`
+- Last Updated: `2026-04-01`
 
 ## Scope
 - Problem statement:
@@ -60,7 +60,7 @@
 | STORY-006-01 | Deploy + Mint with Permanent Freeze Delegate Plugin | `STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin.md` | `approved` | `TBD` | Política freeze persistente |
 | STORY-006-02 | Deploy + Mint with Permanent Transfer Delegate Plugin | `STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin.md` | `approved` | `TBD` | Diseño de recovery robustecido |
 | STORY-006-03 | NFT Economic Data via AppData Plugin | `STORY-006-03-nft-economic-data-appdata-plugin.md` | `implemented` | `feature/shared-epic-006-story-03-appdata-economic-plugin` | Esquema JSON v1 y observabilidad |
-| STORY-006-04 | On-chain Delegate Rotation/Revocation | `STORY-006-04-onchain-delegate-rotation-revocation.md` | `approved` | `TBD` | Lifecycle de autoridades críticas |
+| STORY-006-04 | On-chain Delegate Rotation/Revocation | `STORY-006-04-onchain-delegate-rotation-revocation.md` | `implemented` | `nft/program-delegate-rotation-revocation` | Lifecycle de autoridades críticas + evidencia devnet |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
@@ -71,6 +71,7 @@
 | 2026-03-29 | EPIC-006 | Review de seguridad emite `rejected`; se exige rediseño de recovery offline y plan de rotación/revocación on-chain | jaymusicmachine | `README.md` |
 | 2026-03-29 | EPIC-006 | Aprobado por Staff Engineer tras robustecer el protocolo de recovery (EPIC-007) y añadir plan de rotación de autoridades (STORY-006-04). | staff-engineer | `README.md` |
 | 2026-04-01 | STORY-006-03 | Implementado `AppData v1` en mint flow con evidencia devnet de create/mint/add/write/update | jaymusicmachine | `STORY-006-03-nft-economic-data-appdata-plugin.md` |
+| 2026-04-01 | STORY-006-04 | Implementado lifecycle de autoridad (`prepare/submit`) con evidencia devnet real en Alchemy (`emergency_rotate` + `rotate`), auditoría backend y reconciliación de registry | jaymusicmachine | `STORY-006-04-onchain-delegate-rotation-revocation.md` |
 
 ## Risks and Dependencies
 - Risks:
