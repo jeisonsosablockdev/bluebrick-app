@@ -107,6 +107,82 @@ describe("lib/core-candy-machine-admin validation", () => {
     expect((captured as Error).message).toBe("SQUADS_FREEZE_AUTHORITY is required.");
   });
 
+  it("fails deploy prepare when SQUADS_TRANSFER_AUTHORITY is not a valid public key", async () => {
+    const previousSquadsFreezeAuthority = process.env.SQUADS_FREEZE_AUTHORITY;
+    const previousSquadsTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY;
+    process.env.SQUADS_FREEZE_AUTHORITY = "11111111111111111111111111111111";
+    process.env.SQUADS_TRANSFER_AUTHORITY = "invalid-transfer-delegate";
+    let captured: unknown = null;
+
+    try {
+      await prepareCoreCandyMachineDeploy({
+        payerPublicKey: "11111111111111111111111111111111",
+        collectionName: "Collection",
+        collectionUri: "ipfs://collection-cid",
+        assetNamePrefix: "Asset",
+        assetUri: "ipfs://asset-cid",
+        quantity: 1,
+        priceUsdcAtomic: 1_000_000,
+        startDate: "2026-03-17T20:00:00.000Z"
+      });
+    } catch (error) {
+      captured = error;
+    } finally {
+      if (previousSquadsFreezeAuthority === undefined) {
+        delete process.env.SQUADS_FREEZE_AUTHORITY;
+      } else {
+        process.env.SQUADS_FREEZE_AUTHORITY = previousSquadsFreezeAuthority;
+      }
+
+      if (previousSquadsTransferAuthority === undefined) {
+        delete process.env.SQUADS_TRANSFER_AUTHORITY;
+      } else {
+        process.env.SQUADS_TRANSFER_AUTHORITY = previousSquadsTransferAuthority;
+      }
+    }
+
+    expect(isCoreCandyMachineAdminInputError(captured)).toBe(true);
+    expect((captured as Error).message).toBe("SQUADS_TRANSFER_AUTHORITY must be a valid Solana public key.");
+  });
+
+  it("fails deploy prepare when SQUADS_TRANSFER_AUTHORITY is missing", async () => {
+    const previousSquadsFreezeAuthority = process.env.SQUADS_FREEZE_AUTHORITY;
+    const previousSquadsTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY;
+    process.env.SQUADS_FREEZE_AUTHORITY = "11111111111111111111111111111111";
+    delete process.env.SQUADS_TRANSFER_AUTHORITY;
+    let captured: unknown = null;
+
+    try {
+      await prepareCoreCandyMachineDeploy({
+        payerPublicKey: "11111111111111111111111111111111",
+        collectionName: "Collection",
+        collectionUri: "ipfs://collection-cid",
+        assetNamePrefix: "Asset",
+        assetUri: "ipfs://asset-cid",
+        quantity: 1,
+        priceUsdcAtomic: 1_000_000,
+        startDate: "2026-03-17T20:00:00.000Z"
+      });
+    } catch (error) {
+      captured = error;
+    } finally {
+      if (previousSquadsFreezeAuthority === undefined) {
+        delete process.env.SQUADS_FREEZE_AUTHORITY;
+      } else {
+        process.env.SQUADS_FREEZE_AUTHORITY = previousSquadsFreezeAuthority;
+      }
+
+      if (previousSquadsTransferAuthority === undefined) {
+        delete process.env.SQUADS_TRANSFER_AUTHORITY;
+      } else {
+        process.env.SQUADS_TRANSFER_AUTHORITY = previousSquadsTransferAuthority;
+      }
+    }
+
+    expect(isCoreCandyMachineAdminInputError(captured)).toBe(true);
+    expect((captured as Error).message).toBe("SQUADS_TRANSFER_AUTHORITY is required.");
+  });
+
   it("fails mint prepare when enableOwnerFreezeDelegate is not a boolean", async () => {
     let captured: unknown = null;
 
@@ -128,7 +204,9 @@ describe("lib/core-candy-machine-admin validation", () => {
 
   it("auto-normalizes long source names instead of failing by length", async () => {
     const previousSquadsAuthority = process.env.SQUADS_FREEZE_AUTHORITY;
+    const previousSquadsTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY;
     process.env.SQUADS_FREEZE_AUTHORITY = "11111111111111111111111111111111";
+    process.env.SQUADS_TRANSFER_AUTHORITY = "11111111111111111111111111111111";
     try {
       const prepared = await prepareCoreCandyMachineDeploy({
         payerPublicKey: "11111111111111111111111111111111",
@@ -143,6 +221,7 @@ describe("lib/core-candy-machine-admin validation", () => {
 
       expect(prepared.transactions.length).toBeGreaterThan(0);
       expect(prepared.freezePolicy.permanentFreezeDelegateAuthority).toBe("11111111111111111111111111111111");
+      expect(prepared.freezePolicy.permanentTransferDelegateAuthority).toBe("11111111111111111111111111111111");
       expect(prepared.freezePolicy.ownerFreezeDelegateEnabled).toBe(true);
     } finally {
       if (previousSquadsAuthority === undefined) {
@@ -150,12 +229,20 @@ describe("lib/core-candy-machine-admin validation", () => {
       } else {
         process.env.SQUADS_FREEZE_AUTHORITY = previousSquadsAuthority;
       }
+
+      if (previousSquadsTransferAuthority === undefined) {
+        delete process.env.SQUADS_TRANSFER_AUTHORITY;
+      } else {
+        process.env.SQUADS_TRANSFER_AUTHORITY = previousSquadsTransferAuthority;
+      }
     }
   }, 30_000);
 
   it("fails deploy prepare when assetUri exceeds strict config-line byte limit", async () => {
     const previousSquadsAuthority = process.env.SQUADS_FREEZE_AUTHORITY;
+    const previousSquadsTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY;
     process.env.SQUADS_FREEZE_AUTHORITY = "11111111111111111111111111111111";
+    process.env.SQUADS_TRANSFER_AUTHORITY = "11111111111111111111111111111111";
     const longUri = `https://example.com/${"a".repeat(260)}.json`;
     let captured: unknown = null;
 
@@ -178,6 +265,12 @@ describe("lib/core-candy-machine-admin validation", () => {
       } else {
         process.env.SQUADS_FREEZE_AUTHORITY = previousSquadsAuthority;
       }
+
+      if (previousSquadsTransferAuthority === undefined) {
+        delete process.env.SQUADS_TRANSFER_AUTHORITY;
+      } else {
+        process.env.SQUADS_TRANSFER_AUTHORITY = previousSquadsTransferAuthority;
+      }
     }
 
     expect(isCoreCandyMachineAdminInputError(captured)).toBe(true);
@@ -186,7 +279,9 @@ describe("lib/core-candy-machine-admin validation", () => {
 
   it("packs add-config-lines aggressively for constant asset metadata URIs", async () => {
     const previousSquadsAuthority = process.env.SQUADS_FREEZE_AUTHORITY;
+    const previousSquadsTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY;
     process.env.SQUADS_FREEZE_AUTHORITY = "11111111111111111111111111111111";
+    process.env.SQUADS_TRANSFER_AUTHORITY = "11111111111111111111111111111111";
     try {
       const prepared = await prepareCoreCandyMachineDeploy({
         payerPublicKey: "11111111111111111111111111111111",
@@ -206,6 +301,12 @@ describe("lib/core-candy-machine-admin validation", () => {
         delete process.env.SQUADS_FREEZE_AUTHORITY;
       } else {
         process.env.SQUADS_FREEZE_AUTHORITY = previousSquadsAuthority;
+      }
+
+      if (previousSquadsTransferAuthority === undefined) {
+        delete process.env.SQUADS_TRANSFER_AUTHORITY;
+      } else {
+        process.env.SQUADS_TRANSFER_AUTHORITY = previousSquadsTransferAuthority;
       }
     }
   }, 30_000);

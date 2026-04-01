@@ -54,6 +54,10 @@
   - Candy Machine deploy sets `thirdPartySigner` guard to backend signer address from `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY`.
   - Purchase prepare enforces on-chain `thirdPartySigner` match with backend signer configuration before mint transaction assembly.
   - Core Candy Machine `collectionName` is capped at 32 chars (on-chain serialization constraint).
+  - Core Candy Machine deploy requires both delegate authorities from environment:
+    - `SQUADS_FREEZE_AUTHORITY` for `PermanentFreezeDelegate`.
+    - `SQUADS_TRANSFER_AUTHORITY` for `PermanentTransferDelegate`.
+  - Collection creation now attaches both permanent delegates on-chain (`PermanentFreezeDelegate` + `PermanentTransferDelegate`) with explicit authority address validation server-side.
 - Rotation/revocation:
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
   - Revoking admin rights is immediate once wallet is removed from allowlist.

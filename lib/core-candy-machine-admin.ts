@@ -80,6 +80,7 @@ export type PreparedCandyMachineDeploy = {
   priceLamports: null;
   freezePolicy: {
     permanentFreezeDelegateAuthority: string;
+    permanentTransferDelegateAuthority: string;
     ownerFreezeDelegateEnabled: boolean;
   };
   startDate: string;
@@ -616,6 +617,14 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     envPermanentFreezeAuthority,
     "SQUADS_FREEZE_AUTHORITY"
   );
+  const envPermanentTransferAuthority = process.env.SQUADS_TRANSFER_AUTHORITY?.trim();
+  if (!envPermanentTransferAuthority) {
+    throw new CoreCandyMachineAdminInputError("SQUADS_TRANSFER_AUTHORITY is required.");
+  }
+  const permanentTransferDelegateAuthority = assertPublicKeyString(
+    envPermanentTransferAuthority,
+    "SQUADS_TRANSFER_AUTHORITY"
+  );
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const latestBlockhash = await umi.rpc.getLatestBlockhash();
   const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
@@ -651,6 +660,13 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
         authority: {
           type: "Address",
           address: publicKey(permanentFreezeDelegateAuthority)
+        }
+      },
+      {
+        type: "PermanentTransferDelegate",
+        authority: {
+          type: "Address",
+          address: publicKey(permanentTransferDelegateAuthority)
         }
       }
     ]
@@ -776,6 +792,7 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     priceLamports: null,
     freezePolicy: {
       permanentFreezeDelegateAuthority,
+      permanentTransferDelegateAuthority,
       ownerFreezeDelegateEnabled: true
     },
     startDate: input.startDate,
