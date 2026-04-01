@@ -1,0 +1,70 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+template: |
+  ## Changes
+  $CHANGES
+
+  ## Contributors
+  $CONTRIBUTORS
+
+categories:
+  - title: "🚀 Features"
+    labels:
+      - "type:feature"
+      - "feature"
+  - title: "🐞 Fixes"
+    labels:
+      - "type:fix"
+      - "bug"
+  - title: "🔐 Security"
+    labels:
+      - "type:security"
+      - "security"
+  - title: "♻️ Refactors"
+    labels:
+      - "type:refactor"
+      - "refactor"
+  - title: "📝 Docs"
+    labels:
+      - "type:docs"
+      - "documentation"
+  - title: "🧰 Chores"
+    labels:
+      - "type:chore"
+      - "chore"
+
+exclude-labels:
+  - "skip-release-notes"
+
+version-resolver:
+  major:
+    labels:
+      - "semver:major"
+  minor:
+    labels:
+      - "semver:minor"
+  patch:
+    labels:
+      - "semver:patch"
+      - "type:fix"
+      - "type:docs"
+      - "type:chore"
+      - "type:refactor"
+  default: patch
+
+autolabeler:
+  - label: "semver:major"
+    title:
+      - "/^feat!\\(.*\\):/"
+      - "/BREAKING CHANGE/i"
+  - label: "semver:minor"
+    label:
+      - "type:feature"
+  - label: "semver:patch"
+    label:
+      - "type:fix"
+      - "type:docs"
+      - "type:chore"
+      - "type:refactor"

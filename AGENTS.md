@@ -84,6 +84,10 @@ For NFT Features
 Strict Rule:
 If documentation is missing or outdated → task incomplete.
 
+Feature Notes Rule (small/iterative features):
+- For branch types `feature/*`, `fix/*`, `nft/*`, or `refactor/*` that touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), update at least one file under `/docs/features/*.md`.
+- If missing, task is incomplete.
+
 RFC Workflow by Epic (for architecture debate and decisions)
 - Scope:
   - Use RFC files for stories/epics that require multi-model discussion, architecture decisions, or significant refactors.
@@ -132,6 +136,36 @@ Workflow:
 `main` is protected: no direct commits, no force push, no merge commits.
 `develop` is protected for integration: no direct commits.
 Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
+
+⸻
+
+🔒 PR GOVERNANCE BASELINE (MANDATORY)
+
+Applies to every PR targeting `develop`:
+1. Required CI check: `npm run validate` must pass.
+2. Required docs check: missing scope docs must block merge (non-mutating docs-sync policy check).
+3. Required local preflight before opening PR: `npm run pr:ready` (or `bash ./scripts/ci/pr-ready.sh`).
+4. Branch lifetime policy: short-lived branches only (target 1-3 days).
+5. PR size policy: <= 400 added lines preferred; if exceeded, split into sequential PRs with feature flags.
+6. Commit convention (strict): `type(scope): summary`
+   - Examples: `feat(app): ...`, `fix(program): ...`
+7. Required labels:
+   - one `scope:*` label (`scope:app|scope:program|scope:shared|scope:docs|scope:infra|scope:nft`)
+   - one `type:*` label (`type:feature|type:fix|type:security|type:refactor|type:chore|type:docs`)
+   - one `risk:*` label (`risk:low|risk:medium|risk:high`)
+8. PR template sections are mandatory:
+   - `Issue`
+   - `RFC`
+   - `Riesgos`
+   - `Rollback Plan`
+    - `Prueba Devnet`
+9. Feature-note section is mandatory for feature/fix/refactor/nft product changes:
+   - `Feature Note (/docs/features/*.md)` path must be included in PR body.
+10. Automatic release notes policy:
+   - Release draft is generated from labels and merged PRs.
+   - Semver labels (`semver:major|semver:minor|semver:patch`) drive version bump resolution.
+
+If any required governance gate fails, merge is blocked.
 
 ⸻
 

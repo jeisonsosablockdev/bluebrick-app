@@ -10,6 +10,8 @@ fi
 SCOPE="$1"
 MSG="$2"
 
+CURRENT_BRANCH="$(git branch --show-current)"
+
 has_npm_script() {
   local script_name="$1"
 
@@ -46,7 +48,38 @@ run_quality_gates() {
 
 run_quality_gates
 
+if [[ ! "${SCOPE}" =~ ^(app|program|shared|docs|infra|security|nft)$ ]]; then
+  echo "❌ Scope inválido para commit convencional: ${SCOPE}"
+  echo "Scopes válidos: app, program, shared, docs, infra, security, nft"
+  exit 1
+fi
+
+COMMIT_TYPE="feat"
+case "${CURRENT_BRANCH}" in
+  feature/*)
+    COMMIT_TYPE="feat"
+    ;;
+  fix/*)
+    COMMIT_TYPE="fix"
+    ;;
+  security/*)
+    COMMIT_TYPE="security"
+    ;;
+  refactor/*)
+    COMMIT_TYPE="refactor"
+    ;;
+  nft/*)
+    COMMIT_TYPE="nft"
+    ;;
+  docs/*)
+    COMMIT_TYPE="docs"
+    ;;
+  chore/*)
+    COMMIT_TYPE="chore"
+    ;;
+esac
+
 git add .
 git status
-git commit -m "feat(${SCOPE}): ${MSG}"
+git commit -m "${COMMIT_TYPE}(${SCOPE}): ${MSG}"
 echo "✅ Commit creado"

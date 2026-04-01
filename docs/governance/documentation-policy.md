@@ -65,6 +65,22 @@ If documentation is missing or outdated → task incomplete.
 
 ⸻
 
+Feature Notes for Small/Iterative Work
+
+For branch types:
+	•	`feature/*`
+	•	`fix/*`
+	•	`nft/*`
+	•	`refactor/*`
+
+If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), the PR must update at least one Markdown file under:
+	•	`/docs/features/*.md`
+
+Enforcement:
+	•	If no `/docs/features/*.md` file is updated for qualifying changes, documentation is considered incomplete.
+
+⸻
+
 RFC Workflow by Epic
 
 Use RFCs to document architecture debate, multi-model review, and final technical decisions for epics/stories with relevant complexity.

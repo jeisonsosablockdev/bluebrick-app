@@ -70,6 +70,8 @@ Important for this project (Devnet-only policy):
 - `npm test`: run all unit tests with Vitest.
 - `npm run test:watch`: run tests in watch mode.
 - `npm run test:coverage`: run tests with coverage report.
+- `npm run pr:ready`: run local PR governance preflight (`validate` + required docs + commit convention + PR-size + branch-age checks).
+  - Includes feature-note enforcement: qualifying feature/fix/refactor/nft product changes must update `docs/features/*.md`.
 - `npm run e2e:install`: install Playwright Chromium (one-time setup).
 - `npm run e2e:playwright`: run Playwright smoke gate.
 - `npm run e2e:synpress`: build Synpress Phantom cache and run wallet E2E gate.
