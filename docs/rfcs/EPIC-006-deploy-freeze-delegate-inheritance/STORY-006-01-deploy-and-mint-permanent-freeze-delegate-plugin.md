@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
-- Last Updated: `2026-03-29`
+- Last Updated: `2026-04-02`
 
 ## Context
 - Problem:
@@ -35,11 +35,19 @@
 - Decision owner: `staff-engineer`
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Ready for implementation.
+  Cierre documental y seguimiento operativo en EPIC-007 para casos de recovery.
+
+## Devnet Evidence
+- Referencia de prueba compartida con STORY-006-02 (el deploy fija ambos delegados permanentes):
+  - `docs/features/feature-nft-permanent-transfer-delegate.md`
+  - Transaction: `i5JG91SZbgU9YBdJMpT3y5oDhWFPVaJhseg71bsDnGM81bXk9WVCGNwyafnbCX9tgpFdiQems4XLNZLipjyMgeJ`
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `EPIC-006 / STORY-006-01`
+- Related PR(s):
+  - `#81` (mergeado; integración en flujo de deploy/mint con freeze delegate permanente)
+  - `#67` y `#85` (cerrados/supersedidos)
+- Final commit hash(es):
+  - `3e893036692459219ad46853c63d0f1d1acc9e95` (merge commit PR #81)

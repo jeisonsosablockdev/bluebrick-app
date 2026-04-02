@@ -355,17 +355,15 @@ Sprint 2:
 
 ## 10. Commit Hashes y Trazabilidad Git
 
-Estado actual:
-- Branch: `nft/program-delegate-rotation-revocation`
-- Base HEAD (antes de consolidar commits de story):  
-  - short: `e9c0dc3`
-  - full: `e9c0dc3583c206188df33fcca033afd454319767`
+Estado final:
+- PR: `#86` (`feat(nft): authority lifecycle rotation/revocation + devnet evidence`)
+- Branch origen: `nft/program-delegate-rotation-revocation`
+- Base branch destino: `develop`
 
 Commits story:
-- Aún no consolidados en este momento (hay cambios locales sin commit).
-- Hashes a capturar al consolidar (recomendado):
-  - `<commit-hash-1>` backend + migration + tests
-  - `<commit-hash-2>` docs + RFC + devnet proof
+- Branch commit principal: `154377a` (`feat(nft): implement authority lifecycle rotation and revocation`)
+- Recheck commit (empty): `3742822` (`chore(nft): trigger pr policy recheck`)
+- Merge commit final en `develop`: `3943c72b001fb4d49c9f6306090deaf584112e9b` (squash merge PR #86)
 
 Comandos de trazabilidad (usar al cerrar commits):
 ```bash

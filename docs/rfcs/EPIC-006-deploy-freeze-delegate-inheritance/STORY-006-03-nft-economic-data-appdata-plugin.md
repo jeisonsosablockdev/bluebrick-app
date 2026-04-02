@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
-- Last Updated: `2026-04-01`
+- Last Updated: `2026-04-02`
 
 ## Context
 - Problem:
@@ -144,9 +144,11 @@
 - Registrar evidencia de conciliación (event_id, signature, processed_at, result).
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `feature/shared-epic-006-story-03-appdata-economic-plugin -> develop` (pending/open)
-- Final commit hash(es): `TBD`
+- Related issue(s): `EPIC-006 / STORY-006-03`
+- Related PR(s):
+  - `#82` `feat(shared): implement STORY-006-03 economic appdata plugin flow`
+- Final commit hash(es):
+  - `d179106114aa614c860c96c9b067137e5f076210` (merge commit PR #82)
 
 ## Official Sources
 - Metaplex Core: https://developers.metaplex.com/core

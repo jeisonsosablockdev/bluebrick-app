@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-29`
-- Last Updated: `2026-04-01`
+- Last Updated: `2026-04-02`
 
 ## Context
 - Problem:
@@ -69,7 +69,7 @@
 ## Status
 - Current status: `implemented`
 - Next action:
-  Cerrar commit final de historia y abrir PR a `develop` con evidencia devnet enlazada.
+  Mantenimiento evolutivo (endpoints GET + validación on-chain de proposal Squads + UI admin).
 - Exit criteria:
 - [x] Operaciones de rotate/revoke definidas
 - [x] Chain of trust documentada
@@ -108,5 +108,7 @@
 
 ## Traceability
 - Related issue(s): `EPIC-006 / STORY-006-04`
-- Related PR(s): `nft/program-delegate-rotation-revocation` (pending open PR to `develop`)
-- Final commit hash(es): `TBD`
+- Related PR(s):
+  - `#86` `feat(nft): authority lifecycle rotation/revocation + devnet evidence`
+- Final commit hash(es):
+  - `3943c72b001fb4d49c9f6306090deaf584112e9b` (merge commit PR #86)

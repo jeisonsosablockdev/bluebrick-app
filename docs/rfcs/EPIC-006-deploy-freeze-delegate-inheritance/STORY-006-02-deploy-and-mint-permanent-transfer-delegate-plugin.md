@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-006-deploy-freeze-delegate-inheritance`
 - Story ID: `STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin`
-- Status: `approved` (`draft | in-review | approved | implemented | rejected`)
+- Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-03-28`
-- Last Updated: `2026-03-29`
+- Last Updated: `2026-04-02`
 
 ## Context
 - Problem:
@@ -117,9 +117,9 @@
   Aprobado. El diseño ahora es robusto, con un protocolo de recuperación claro y mitigaciones de riesgo adecuadas.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Ready for implementation.
+  Mantener verificación de casos de recovery en ciclo operativo de EPIC-007.
 
 ## Observability Requirements
 - Los eventos on-chain de transfer recovery y cambios de estado del asset deben reconciliarse vía Helius Webhooks.
@@ -127,6 +127,8 @@
 - Prohibido depender únicamente de polling para estado final del recovery.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `EPIC-006 / STORY-006-02`
+- Related PR(s):
+  - `#81` `feat(nft): add permanent transfer delegate support for core collection deploy`
+- Final commit hash(es):
+  - `3e893036692459219ad46853c63d0f1d1acc9e95` (merge commit PR #81)
