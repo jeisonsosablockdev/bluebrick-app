@@ -77,6 +77,15 @@
 - Selected theme is persisted in browser `localStorage` (`brids-ui-theme`) and restored on app load.
 - Theme mode is presentation-only and does not change SIWS flows, cookie/session logic, nonce policy, or role authorization.
 
+## Guided Tour Visual Redesign (Profile)
+- Scope limited to presentation layer in `components/dashboard/quick-tour-overlay.tsx`.
+- Existing onboarding trigger logic from PR #77 remains unchanged:
+  - checks incomplete profile (`firstName`, `country`, `email`)
+  - persists dismiss state in `sessionStorage`
+  - routes users to `/protected/perfil` when needed
+- The tour moved from fixed top banner to anchored glass-effect floating card.
+- No changes to SIWS verification, nonce lifecycle, cookie/session boundaries, replay controls, or role checks.
+
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |
@@ -192,4 +201,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Submit validates operation state is `prepared` before sending to devnet.
   - Recovery-oriented failures return recoverable metadata (`BLOCKHASH_EXPIRED`, `CONFIRMATION_TIMEOUT`) for safe retry behavior.
 
-Last Updated: 2026-04-01 10:45:00 UTC
+Last Updated: 2026-04-03 21:05:00 UTC

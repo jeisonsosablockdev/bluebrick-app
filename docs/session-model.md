@@ -119,9 +119,15 @@
   - Modal auto-close after inactivity requires explicit user re-open and never skips SIWS verification steps.
 
 - Theme toggle UX safety:
-  - Theme preference is stored in browser `localStorage` (`brids-ui-theme`) and restored at startup.
-  - Theme switching is strictly client-side presentation state and never mutates server session/token data.
-  - Authorization and trust boundaries remain unchanged across both dark and light themes.
+- Theme preference is stored in browser `localStorage` (`brids-ui-theme`) and restored at startup.
+- Theme switching is strictly client-side presentation state and never mutates server session/token data.
+- Authorization and trust boundaries remain unchanged across both dark and light themes.
+
+- Guided tour redesign safety notes:
+  - Profile onboarding tour is visually redesigned as anchored glass card.
+  - Session gate for tour visibility remains server-backed profile fetch + client-only display state.
+  - No mutation to `siws_session` cookie behavior, TTL, refresh/revoke model, or role derivation.
+  - No new auth/session API surface introduced by the redesign.
 
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:
@@ -138,4 +144,4 @@
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-04-01 10:45:00 UTC
+Last Updated: 2026-04-03 21:05:00 UTC

@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 
-// Tour step IDs — these match anchor IDs we add to the profile module
 export const TOUR_STEP_IDS = {
   EDIT_BUTTON: "tour-anchor-edit-button",
+  SAVE_CHANGES: "tour-anchor-edit-button",
   NAME_EMAIL: "tour-anchor-name-email",
   PHONE: "tour-anchor-phone",
   BIO: "tour-anchor-bio",
@@ -25,6 +25,18 @@ type TourStep = {
   isLast?: boolean;
 };
 
+type CardPlacement = "center" | "anchored";
+type PointerSide = "none" | "top" | "bottom";
+
+type TourCardPosition = {
+  top: number;
+  left: number;
+  width: number;
+  placement: CardPlacement;
+  pointerSide: PointerSide;
+  pointerOffset: number;
+};
+
 const TOUR_STEPS: TourStep[] = [
   {
     id: 1,
@@ -40,7 +52,7 @@ const TOUR_STEPS: TourStep[] = [
       es: "Aquí puedes gestionar toda tu información personal. Presiona 'Editar perfil' para comenzar — solo tendrás que hacerlo esta primera vez.",
       pt: "Aqui você pode gerenciar todos os seus dados pessoais. Pressione 'Editar perfil' para comenzar — você só precisará fazer isso uma vez.",
     },
-    cta: { en: "Got it, show me what to fill →", es: "Entendido, muéstrame qué llenar →", pt: "Entendido, mostre-me o que preencher →" },
+    cta: { en: "Got it, show me what to fill", es: "Entendido, muéstrame qué llenar", pt: "Entendido, mostre-me o que preencher" },
   },
   {
     id: 2,
@@ -56,7 +68,7 @@ const TOUR_STEPS: TourStep[] = [
       es: "Llena tus campos de nombre y apellido, y tu correo electrónico. Nos ayudará a tenerte actualizado sobre tus inversiones.",
       pt: "Preencha seus campos de nome e sobrenome, e seu e-mail. Isso nos ajuda a mantê-lo atualizado sobre seus investimentos.",
     },
-    cta: { en: "Next: phone →", es: "Siguiente: teléfono →", pt: "Próximo: telefone →" },
+    cta: { en: "Next: phone", es: "Siguiente: teléfono", pt: "Próximo: telefone" },
   },
   {
     id: 3,
@@ -72,7 +84,7 @@ const TOUR_STEPS: TourStep[] = [
       es: "Agrega un número de contacto en el cual deseas recibir información sobre proyectos e inversiones. Tu número se mantiene seguro y privado.",
       pt: "Adicione um número de contato para receber atualizações de projetos e informações de investimentos. Seu número é mantido seguro e privado.",
     },
-    cta: { en: "Next: your bio →", es: "Siguiente: tu biografía →", pt: "Próximo: sua bio →" },
+    cta: { en: "Next: your bio", es: "Siguiente: tu biografía", pt: "Próximo: sua bio" },
   },
   {
     id: 4,
@@ -88,7 +100,7 @@ const TOUR_STEPS: TourStep[] = [
       es: "En tu biografía, cuéntanos un poco de quién eres. Nos encantaría conocerte — qué te motiva a invertir, tus intereses, o lo que desees compartir.",
       pt: "Em sua bio, conte-nos um pouco sobre quem você é. Adoraríamos conhecê-lo — o que o motiva a investir, seus interesses ou o que desejar compartilhar.",
     },
-    cta: { en: "Next: address →", es: "Siguiente: dirección →", pt: "Próximo: endereço →" },
+    cta: { en: "Next: address", es: "Siguiente: dirección", pt: "Próximo: endereço" },
   },
   {
     id: 5,
@@ -104,10 +116,26 @@ const TOUR_STEPS: TourStep[] = [
       es: "Agregar tu dirección es opcional, pero nos ayudará a encontrar y mostrarte proyectos inmobiliarios cerca de donde vives. Entre más específica, mejores recomendaciones.",
       pt: "Adicionar seu endereço é opcional, mas nos ajudará a encontrar e mostrar projetos imobiliários perto de onde você mora. Quanto mais específico, melhores as recomendações.",
     },
-    cta: { en: "Last step: verify identity →", es: "Último paso: verificar identidad →", pt: "Último passo: verificar identidade →" },
+    cta: { en: "Next: save your profile", es: "Siguiente: guarda tu perfil", pt: "Próximo: salve seu perfil" },
   },
   {
     id: 6,
+    anchorId: TOUR_STEP_IDS.SAVE_CHANGES,
+    icon: "💾",
+    title: {
+      en: "Save your profile data",
+      es: "Guarda los datos de tu perfil",
+      pt: "Salve os dados do seu perfil",
+    },
+    description: {
+      en: "To keep your profile information up to date, press Save changes.",
+      es: "Para dejar tus datos de perfil actualizados presiona Guardar cambios.",
+      pt: "Para manter seus dados de perfil atualizados, pressione Salvar alterações.",
+    },
+    cta: { en: "Last step: verify identity", es: "Último paso: verificar identidad", pt: "Último passo: verificar identidade" },
+  },
+  {
+    id: 7,
     anchorId: TOUR_STEP_IDS.KYC,
     icon: "🔐",
     title: {
@@ -120,33 +148,111 @@ const TOUR_STEPS: TourStep[] = [
       es: "Para cumplir con las regulaciones de inversión y desbloquear todas las funciones de la plataforma, por favor inicia tu verificación de identidad. Si no puedes terminarla ahora, no te preocupes — puedes volver en cualquier momento a completarla desde esta misma sección.",
       pt: "Para cumprir com os regulamentos de investimento e desbloquear todos os recursos da plataforma, por favor inicie sua verificação de identidade. Se não puder terminar agora, não se preocupe — você pode voltar a qualquer momento para completá-la nesta mesma seção.",
     },
-    cta: { en: "Finish tour 🎉", es: "Finalizar tour 🎉", pt: "Finalizar tour 🎉" },
+    cta: { en: "Finish tour", es: "Finalizar tour", pt: "Finalizar tour" },
     isLast: true,
   },
 ];
 
 const TOUR_DISMISSED_KEY = "bb_quick_tour_v2_dismissed";
+const HORIZONTAL_MARGIN = 12;
+const VERTICAL_GAP = 14;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
 
 function scrollToAnchor(anchorId: string) {
-  // Small delay to let the DOM settle before scrolling
   setTimeout(() => {
     const el = document.getElementById(anchorId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Highlight pulse animation
       el.classList.add("tour-highlight-pulse");
-      setTimeout(() => el.classList.remove("tour-highlight-pulse"), 2000);
+      setTimeout(() => el.classList.remove("tour-highlight-pulse"), 5400);
     }
-  }, 150);
+  }, 110);
 }
 
 export function QuickTourOverlay() {
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
   const [showTour, setShowTour] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+  const [cardPosition, setCardPosition] = useState<TourCardPosition>({
+    top: 92,
+    left: 16,
+    width: 360,
+    placement: "center",
+    pointerSide: "none",
+    pointerOffset: 180,
+  });
+
+  const step = TOUR_STEPS[currentStep];
+
+  const calculateCardPosition = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const cardWidth = clamp(Math.min(360, viewportWidth - 24), 280, 360);
+    const cardHeight = Math.max(210, cardRef.current?.offsetHeight ?? 230);
+
+    if (!step?.anchorId || pathname !== "/protected/perfil") {
+      setCardPosition({
+        top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
+        left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
+        width: cardWidth,
+        placement: "center",
+        pointerSide: "none",
+        pointerOffset: cardWidth / 2,
+      });
+      return;
+    }
+
+    const anchorEl = document.getElementById(step.anchorId);
+    if (!anchorEl) {
+      setCardPosition({
+        top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
+        left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
+        width: cardWidth,
+        placement: "center",
+        pointerSide: "none",
+        pointerOffset: cardWidth / 2,
+      });
+      return;
+    }
+
+    const rect = anchorEl.getBoundingClientRect();
+    const spaceAbove = rect.top;
+    const spaceBelow = viewportHeight - rect.bottom;
+    const shouldPlaceBelow = spaceBelow >= cardHeight + VERTICAL_GAP || spaceBelow >= spaceAbove;
+
+    const top = shouldPlaceBelow
+      ? clamp(rect.bottom + VERTICAL_GAP, 16, viewportHeight - cardHeight - 16)
+      : clamp(rect.top - cardHeight - VERTICAL_GAP, 16, viewportHeight - cardHeight - 16);
+
+    const left = clamp(
+      rect.left + rect.width / 2 - cardWidth / 2,
+      HORIZONTAL_MARGIN,
+      viewportWidth - cardWidth - HORIZONTAL_MARGIN,
+    );
+
+    const pointerOffset = clamp(rect.left + rect.width / 2 - left, 24, cardWidth - 24);
+
+    setCardPosition({
+      top,
+      left,
+      width: cardWidth,
+      placement: "anchored",
+      pointerSide: shouldPlaceBelow ? "top" : "bottom",
+      pointerOffset,
+    });
+  }, [pathname, step?.anchorId]);
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem(TOUR_DISMISSED_KEY);
@@ -157,9 +263,15 @@ export function QuickTourOverlay() {
 
     async function checkProfile() {
       try {
-        const res = await fetch("/api/protected/profile");
-        if (!res.ok) return;
-        const payload = await res.json();
+        const res = await fetch("/api/protected/profile", { cache: "no-store" });
+        if (!res.ok) {
+          return;
+        }
+
+        const payload = (await res.json()) as {
+          data?: { firstName?: string | null; country?: string | null; email?: string | null };
+        };
+
         if (payload.data) {
           const { firstName, country, email } = payload.data;
           if (!firstName || !country || !email) {
@@ -167,147 +279,166 @@ export function QuickTourOverlay() {
           }
         }
       } catch {
-        // silently skip tour if we can't check
+        // silently skip tour when profile cannot be checked
       } finally {
         setIsCheckingProfile(false);
       }
     }
 
-    checkProfile();
+    void checkProfile();
   }, []);
 
-  // When a step has an anchor, scroll to it
   useEffect(() => {
-    if (!showTour) return;
-    const step = TOUR_STEPS[currentStep];
+    if (!showTour) {
+      return;
+    }
+
     if (step?.anchorId && pathname === "/protected/perfil") {
       scrollToAnchor(step.anchorId);
     }
-  }, [currentStep, showTour, pathname]);
+  }, [pathname, showTour, step?.anchorId]);
+
+  useEffect(() => {
+    if (!showTour) {
+      return;
+    }
+
+    calculateCardPosition();
+    const onViewportChange = () => calculateCardPosition();
+
+    window.addEventListener("resize", onViewportChange);
+    window.addEventListener("scroll", onViewportChange, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", onViewportChange);
+      window.removeEventListener("scroll", onViewportChange);
+    };
+  }, [calculateCardPosition, showTour, currentStep, pathname]);
 
   const handleDismiss = useCallback(() => {
     sessionStorage.setItem(TOUR_DISMISSED_KEY, "true");
     setShowTour(false);
   }, []);
 
+  const handlePrevious = useCallback(() => {
+    setCurrentStep((index) => Math.max(0, index - 1));
+  }, []);
+
   const handleNext = useCallback(() => {
-    const step = TOUR_STEPS[currentStep];
     if (step?.isLast) {
       handleDismiss();
       return;
     }
 
-    const nextIndex = currentStep + 1;
-    setCurrentStep(nextIndex);
+    setCurrentStep((index) => Math.min(index + 1, TOUR_STEPS.length - 1));
 
-    // If we're not yet on the profile page, navigate there on step 2+
     if (pathname !== "/protected/perfil") {
       router.push("/protected/perfil");
     }
-  }, [currentStep, handleDismiss, pathname, router]);
+  }, [handleDismiss, pathname, router, step?.isLast]);
 
-  if (isCheckingProfile || !showTour) return null;
+  const progressPercent = useMemo(() => Math.round(((currentStep + 1) / TOUR_STEPS.length) * 100), [currentStep]);
 
-  const step = TOUR_STEPS[currentStep];
-  const progressPercent = Math.round(((currentStep + 1) / TOUR_STEPS.length) * 100);
+  if (isCheckingProfile || !showTour) {
+    return null;
+  }
 
   return (
     <>
-      {/* Global styles for the tour highlight pulse effect */}
       <style>{`
         @keyframes tourPulse {
-          0%, 100% { box-shadow: 0 0 0 0px rgba(34, 211, 238, 0.6); }
-          50% { box-shadow: 0 0 0 8px rgba(34, 211, 238, 0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45); }
+          50% { box-shadow: 0 0 0 10px rgba(34, 211, 238, 0); }
         }
         .tour-highlight-pulse {
-          animation: tourPulse 1.5s ease-out 2;
-          border-radius: 0.75rem;
+          animation: tourPulse 1.8s ease-out 3;
+          border-radius: 0.9rem;
         }
       `}</style>
 
-      {/* Fixed top banner — visible on all protected pages */}
-      <div className="fixed left-0 right-0 top-0 z-[200] pointer-events-none">
-        <div
-          className="pointer-events-auto mx-auto w-full bg-gradient-to-r from-slate-900/98 via-cyan-950/98 to-slate-900/98 backdrop-blur-md border-b border-cyan-500/30 shadow-lg shadow-cyan-500/10"
-          style={{ animation: "slideDown 0.4s ease-out" }}
-        >
-          <style>{`
-            @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-          `}</style>
+      <div className="quick-tour-backdrop" aria-hidden="true" />
 
-          <div className="mx-auto max-w-4xl px-4 py-3">
-            {/* Progress bar */}
-            <div className="mb-3 flex items-center gap-3">
-              <div className="flex gap-1">
-                {TOUR_STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i <= currentStep ? "bg-cyan-400" : "bg-white/20"
-                    }`}
-                    style={{ width: i === currentStep ? "24px" : "12px" }}
+      <section
+        aria-live="polite"
+        className="quick-tour-layer"
+      >
+        <div
+          ref={cardRef}
+          className="quick-tour-card glass-modal-surface"
+          style={{
+            top: `${cardPosition.top}px`,
+            left: `${cardPosition.left}px`,
+            width: `${cardPosition.width}px`,
+          }}
+          role="dialog"
+          aria-label={t({ en: "Quick onboarding tour", es: "Tour de onboarding", pt: "Tour de onboarding" })}
+        >
+          {cardPosition.pointerSide !== "none" && cardPosition.placement === "anchored" ? (
+            <span
+              className={`quick-tour-pointer quick-tour-pointer-${cardPosition.pointerSide}`}
+              style={{ left: `${cardPosition.pointerOffset}px` }}
+              aria-hidden="true"
+            />
+          ) : null}
+
+          <div className="quick-tour-header">
+            <div className="quick-tour-title-wrap">
+              <span className="quick-tour-icon" aria-hidden="true">{step.icon}</span>
+              <p className="quick-tour-title">{t(step.title)}</p>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="quick-tour-close"
+              aria-label={t({ en: "Skip tour", es: "Saltar tour", pt: "Pular tour" })}
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="quick-tour-description">{t(step.description)}</p>
+
+          <div className="quick-tour-footer">
+            <div className="quick-tour-progress-group">
+              <div className="quick-tour-dots" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent}>
+                {TOUR_STEPS.map((tourStep, index) => (
+                  <span
+                    key={tourStep.id}
+                    className={`quick-tour-dot ${index <= currentStep ? "quick-tour-dot-active" : ""}`}
                   />
                 ))}
               </div>
-              <span className="ml-auto text-xs text-white/50">
-                {currentStep + 1} / {TOUR_STEPS.length}
-              </span>
-              <button
-                onClick={handleDismiss}
-                className="text-white/40 hover:text-white/70 transition-colors text-xs"
-                aria-label={t({ en: "Skip tour", es: "Saltar tour", pt: "Pular tour" })}
-              >
-                {t({ en: "Skip", es: "Saltar", pt: "Pular" })} ✕
-              </button>
+              <span className="quick-tour-count">{currentStep + 1}/{TOUR_STEPS.length}</span>
             </div>
 
-            {/* Step content */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <span
-                  className="text-2xl shrink-0 mt-0.5"
-                  role="img"
-                  aria-hidden="true"
-                >
-                  {step.icon}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white leading-snug">
-                    {t(step.title)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-cyan-100/80 leading-relaxed">
-                    {t(step.description)}
-                  </p>
-                </div>
-              </div>
+            <div className="quick-tour-actions">
+              <Button
+                variant="ghost"
+                className="quick-tour-prev-btn"
+                onClick={handlePrevious}
+                disabled={currentStep === 0}
+              >
+                {t({ en: "Back", es: "Atrás", pt: "Voltar" })}
+              </Button>
 
-              <div className="flex shrink-0 gap-2">
-                {pathname !== "/protected/perfil" && currentStep === 0 ? (
-                  <Button
-                    className="h-9 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4"
-                    onClick={() => {
-                      router.push("/protected/perfil");
-                      setCurrentStep(0);
-                    }}
-                  >
-                    {t({ en: "Go to profile →", es: "Ir a mi perfil →", pt: "Ir ao perfil →" })}
-                  </Button>
-                ) : (
-                  <Button
-                    className="h-9 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4"
-                    onClick={handleNext}
-                  >
-                    {t(step.cta)}
-                  </Button>
-                )}
-              </div>
+              {pathname !== "/protected/perfil" && currentStep === 0 ? (
+                <Button
+                  className="quick-tour-pill"
+                  onClick={() => {
+                    router.push("/protected/perfil");
+                    setCurrentStep(0);
+                  }}
+                >
+                  {t({ en: "Go to profile", es: "Ir a mi perfil", pt: "Ir ao perfil" })} →
+                </Button>
+              ) : (
+                <Button className="quick-tour-pill" onClick={handleNext}>
+                  {t(step.cta)} →
+                </Button>
+              )}
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Spacer to prevent content being hidden under the fixed banner */}
-      <div className="h-[88px] sm:h-[76px]" aria-hidden="true" />
+      </section>
     </>
   );
 }
