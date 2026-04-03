@@ -45,13 +45,17 @@ Documentation must be created and updated alongside development.
 No feature is complete without documentation.
 
 For Blockchain Changes (`/programs`)
-- Must update/create:
-  - `/docs/architecture.md`
-  - `/docs/authority-model.md`
-  - `/docs/state-machine.md`
-  - `/docs/threat-model.md`
-  - `/docs/devnet-proof.md`
-- Must document:
+- Impact-based requirement:
+  - Structural/high-risk changes (account model, PDA seeds, authority transitions, CPI/security constraints, state-machine invariants) must update/create:
+    - `/docs/architecture.md`
+    - `/docs/authority-model.md`
+    - `/docs/state-machine.md`
+    - `/docs/threat-model.md`
+    - `/docs/devnet-proof.md`
+  - Bounded low-risk changes (localized fix/refactor with no architecture/authority/security impact) must update:
+    - at least one `/docs/features/*.md`
+    - only the directly affected section(s) in canonical docs
+- Must document when applicable:
   - Account architecture
   - PDA seeds
   - Authority validation logic
@@ -61,10 +65,14 @@ For Blockchain Changes (`/programs`)
   - Devnet transaction proof (real signature)
 
 For Frontend/Auth Changes (`/app`)
-- Must update/create:
-  - `/docs/auth-flow.md`
-  - `/docs/session-model.md`
-- Must document:
+- Impact-based requirement:
+  - Structural/auth-model changes (SIWS/session lifecycle/cookie trust boundaries/replay protection) must update/create:
+    - `/docs/auth-flow.md`
+    - `/docs/session-model.md`
+  - Bounded UI-only changes must update:
+    - at least one `/docs/features/*.md`
+    - only affected auth/session sections (if any)
+- Must document when applicable:
   - SIWS flow
   - Nonce lifecycle
   - Cookie strategy
@@ -72,9 +80,13 @@ For Frontend/Auth Changes (`/app`)
   - Trust boundaries
 
 For NFT Features
-- Must update:
-  - `/docs/nft-spec.md`
-- Must document:
+- Impact-based requirement:
+  - Structural NFT changes (mint authority, collection/metadata rules, royalty logic, supply semantics) must update:
+    - `/docs/nft-spec.md`
+  - Bounded NFT fixes must update:
+    - at least one `/docs/features/*.md`
+    - only affected section(s) in `/docs/nft-spec.md`
+- Must document when applicable:
   - Mint authority model
   - Metadata ownership
   - Royalty model
@@ -82,11 +94,11 @@ For NFT Features
   - Devnet mint proof
 
 Strict Rule:
-If documentation is missing or outdated → task incomplete.
+If required documentation for the detected impact tier is missing or outdated → Definition of Done fails.
 
 Feature Notes Rule (small/iterative features):
 - For branch types `feature/*`, `fix/*`, `nft/*`, or `refactor/*` that touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), update at least one file under `/docs/features/*.md`.
-- If missing, task is incomplete.
+- If missing, Definition of Done fails.
 
 RFC Workflow by Epic (for architecture debate and decisions)
 - Scope:
@@ -164,8 +176,34 @@ Applies to every PR targeting `develop`:
 10. Automatic release notes policy:
    - Release draft is generated from labels and merged PRs.
    - Semver labels (`semver:major|semver:minor|semver:patch`) drive version bump resolution.
+11. Required automation checks in CI:
+   - Docs governance check must run and pass (for example `validate-doc-governance`).
+   - PR governance check must enforce required labels/template sections and block invalid PR metadata.
 
 If any required governance gate fails, merge is blocked.
+
+⸻
+
+🚨 CONTROLLED EXCEPTIONS POLICY (HOTFIX / INCIDENT)
+
+Scope:
+- Only for urgent production incidents or security emergencies.
+
+Mandatory requirements:
+1. PR must include `Exception Waiver` section with:
+   - reason
+   - risk accepted
+   - approver(s)
+   - expiration date
+2. Open follow-up issue/PR to restore full compliance immediately after stabilization.
+3. Exception must be time-bounded and auditable.
+
+Non-waivable controls:
+- No fake signatures.
+- No mocked RPC as final blockchain evidence.
+- No skipping on-chain confirmation requirements for final acceptance.
+
+If waiver data is missing or expired, merge is blocked.
 
 ⸻
 
@@ -193,9 +231,9 @@ If any required governance gate fails, merge is blocked.
 🧠 GLOBAL NON-NEGOTIABLE RULES
 	1.	Always start with concise-planning.
 	2.	Always enforce clean-code in every task.
-	3.	No task is complete without lint-and-validate.
-	4.	No task is complete without verification-before-completion.
-	5.	Never merge without production-code-audit.
+	3.	No task is complete without lint-and-validate (as enforced by Definition of Done).
+	4.	No task is complete without verification-before-completion (as enforced by Definition of Done).
+	5.	Never merge without production-code-audit (as enforced by Definition of Done).
 	6.	Prefer server-side logic over client-side logic.
 	7.	Never trust client state.
 	8.	No duplicated logic.
@@ -211,6 +249,7 @@ If any required governance gate fails, merge is blocked.
 	18.	For frontend/auth stories, Playwright E2E must pass before completion.
 	19.	For wallet-connected UI flows, Synpress E2E must pass before completion.
 	20.	For critical UI flows, MCP browser evidence (snapshot/screenshot/log) is mandatory.
+	21.	Definition of Done is the single completion gate for any task.
 
 ⸻
 
@@ -259,14 +298,14 @@ Mandatory Toolchain:
 Strict Rules:
 - No mocked wallet provider for wallet E2E.
 - No mocked signature validation in UI auth flows.
-- If Playwright or Synpress gate fails, task is incomplete.
+- If Playwright or Synpress gate fails, Definition of Done fails.
 
 ⸻
 
 🌐 DEVNET EXECUTION POLICY (ABSOLUTE)
 	1.	Default cluster is devnet.
 	2.	Never use localnet.
-	3.	Never simulate transactions.
+	3.	Never use simulation as final acceptance evidence.
 	4.	Never mock RPC.
 	5.	Never stub smart contract calls.
 	6.	Never fake transaction signatures.
@@ -277,7 +316,11 @@ Strict Rules:
 	11.	Always confirm transactions on-chain.
 	12.	Always fetch real on-chain account state.
 	13.	Wallet signatures must be real cryptographic signatures.
-	14.	If RPC fails → stop execution. Do not fallback to simulation.
+	14.	If RPC fails → stop execution. Do not fallback to simulation for final proof.
+
+Allowed preflight/testing usage (non-acceptance phase only):
+- Local deterministic simulation (for example LiteSVM/Mollusk) is allowed for TDD RED/GREEN and debugging.
+- Final acceptance still requires real devnet transactions, real signatures, on-chain confirmation, and fetched account state.
 
 ⸻
 
@@ -307,7 +350,7 @@ Mandatory Execution Order
 
 Strict Rules
 	•	Devnet only
-	•	No simulation
+	•	No simulation-only acceptance
 	•	No mocked RPC
 	•	No fake accounts
 	•	No fake signatures
@@ -562,16 +605,17 @@ Strict safeguards:
 
 ⸻
 
-🔥 FINAL ENFORCEMENT RULE
+🔥 DEFINITION OF DONE (SINGLE COMPLETION GATE)
 
 Before marking ANY task complete:
 	1.	Run clean-code
 	2.	Run lint-and-validate
 	3.	Run verification-before-completion
-	4.	Confirm blockchain interaction happened on devnet
-	5.	Confirm no mocks were used
-	6.	For frontend/auth changes, confirm Playwright E2E passed
-	7.	For wallet-connected frontend flows, confirm Synpress E2E passed
-	8.	For critical browser flows, confirm MCP evidence was captured
+	4.	Confirm required docs for the detected impact tier were updated
+	5.	Confirm blockchain interaction happened on devnet
+	6.	Confirm no mocks were used as final acceptance evidence
+	7.	For frontend/auth changes, confirm Playwright E2E passed
+	8.	For wallet-connected frontend flows, confirm Synpress E2E passed
+	9.	For critical browser flows, confirm MCP evidence was captured
 
 If any fail → task is not complete.
