@@ -152,4 +152,11 @@ Implementation guide for request correlation and timeline tracing:
   - Wallet and auth trust boundaries continue to be enforced on server handlers.
 - New CTA destinations (`/marketplace`, `/transparencia`, `/protected/perfil`) do not introduce new auth state transitions.
 
-Last Updated: 2026-04-04 17:35:00 UTC
+## BRI-39 Follow-up: Feature Icons + Copy
+- Emoji/icon rendering in home feature cards is a client-side presentation change sourced from locale data.
+- Session model remains unchanged:
+  - no cookie contract changes,
+  - no role derivation changes,
+  - no auth endpoint contract changes.
+
+Last Updated: 2026-04-04 18:25:00 UTC

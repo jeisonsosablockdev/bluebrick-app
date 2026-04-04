@@ -214,4 +214,8 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Transparency CTAs point to `/transparencia`.
   - Wallet onboarding CTA points to `/protected/perfil`.
 
-Last Updated: 2026-04-04 17:35:00 UTC
+## BRI-39 Follow-up: Feature Icons
+- Home `Features` cards now read icon values from locale data (`app/data/home*.json`) instead of a static bullet marker.
+- Change is presentational only and does not alter auth/session boundaries, SIWS flow, nonce lifecycle, or signature verification.
+
+Last Updated: 2026-04-04 18:25:00 UTC

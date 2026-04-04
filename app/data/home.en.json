@@ -10,19 +10,22 @@
       "title": "Secure Fractionalization",
       "description": "Real assets split into digital fractions with complete traceability.",
       "action": "Explore",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "🧩"
     },
     {
       "title": "Recurring Income",
       "description": "Review distribution status and project-related updates from the platform dashboard.",
       "action": "View Flow",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "📈"
     },
     {
-      "title": "Flexible Liquidity",
-      "description": "Buy or sell fractions under transparent market rules. In this phase we only enable fraction sales.",
+      "title": "Flexible Investment",
+      "description": "Buy fractions under transparent market rules.",
       "action": "Learn More",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "⚡"
     }
   ],
   "properties": [

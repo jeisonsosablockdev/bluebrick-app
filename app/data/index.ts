@@ -9,6 +9,7 @@ export type FeatureItem = {
   description: string;
   action: string;
   actionHref?: string;
+  icon?: string;
 };
 
 export type PropertyItem = {

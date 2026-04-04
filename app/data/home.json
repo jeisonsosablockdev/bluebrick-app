@@ -10,19 +10,22 @@
       "title": "Fraccionamiento Seguro",
       "description": "Activos reales divididos en fracciones digitales con trazabilidad completa.",
       "action": "Explorar",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "🧩"
     },
     {
       "title": "Ingresos Recurrentes",
       "description": "Consulta el estado de distribuciones y actualizaciones asociadas a cada proyecto publicado.",
       "action": "Ver Flujo",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "📈"
     },
     {
-      "title": "Liquidez Flexible",
-      "description": "Compra o vende fracciones con reglas de mercado transparentes. En la fase actual solo habilitamos venta de fracciones.",
+      "title": "Inversion Flexible",
+      "description": "Compra fracciones con reglas de mercado transparentes.",
       "action": "Conocer Más",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "⚡"
     }
   ],
   "properties": [

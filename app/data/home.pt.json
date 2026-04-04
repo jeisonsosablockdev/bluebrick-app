@@ -10,19 +10,22 @@
       "title": "Fracionamento Seguro",
       "description": "Ativos reais divididos em fracoes digitais com rastreabilidade completa.",
       "action": "Explorar",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "🧩"
     },
     {
       "title": "Renda Recorrente",
       "description": "Consulte o estado de distribuicoes e atualizacoes associadas a cada projeto publicado.",
       "action": "Ver Fluxo",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "📈"
     },
     {
-      "title": "Liquidez Flexivel",
-      "description": "Compre ou venda fracoes com regras de mercado transparentes. Nesta fase habilitamos apenas venda de fracoes.",
+      "title": "Investimento Flexivel",
+      "description": "Compre fracoes com regras de mercado transparentes.",
       "action": "Saiba Mais",
-      "actionHref": "/transparencia"
+      "actionHref": "/transparencia",
+      "icon": "⚡"
     }
   ],
   "properties": [

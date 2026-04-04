@@ -34,7 +34,9 @@ export function FeaturesSection() {
         {features.map((feature) => (
           <Card key={feature.title} className="flex h-full flex-col justify-between gap-4">
             <div>
-              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradientPrimary text-white">•</div>
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradientPrimary text-lg text-white">
+                {feature.icon ?? "•"}
+              </div>
               <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
               <p className="mt-2 text-sm text-slate-300">{feature.description}</p>
             </div>
