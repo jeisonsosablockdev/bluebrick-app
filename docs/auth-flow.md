@@ -201,4 +201,17 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Submit validates operation state is `prepared` before sending to devnet.
   - Recovery-oriented failures return recoverable metadata (`BLOCKHASH_EXPIRED`, `CONFIRMATION_TIMEOUT`) for safe retry behavior.
 
-Last Updated: 2026-04-03 21:05:00 UTC
+## BRI-39 Home Copy + CTA Alignment
+- Scope:
+  - Home UX copy and CTA routing updates for `Hero`, `Features`, `Promo`, `First investment`, `How to start`, and `FAQ` context chips.
+  - New informational sections for tokenization process and app overview.
+- Auth/session impact:
+  - No change in SIWS challenge/nonce/session lifecycle.
+  - No change in cookie trust boundaries.
+  - No change in signature verification path (still server-side only).
+- Navigation alignment:
+  - Marketplace CTAs point to `/marketplace`.
+  - Transparency CTAs point to `/transparencia`.
+  - Wallet onboarding CTA points to `/protected/perfil`.
+
+Last Updated: 2026-04-04 17:35:00 UTC

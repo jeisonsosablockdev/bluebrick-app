@@ -31,9 +31,9 @@ export function ContactFormSection() {
         </h2>
         <p className="mb-10 text-slate-300 text-center">
           {t({
-            en: "Leave your details below and an advisor will contact you shortly to review our models and the investment process.",
-            es: "Deja tus datos a continuación y un asesor se pondrá en contacto contigo en breve para revisar nuestros modelos y el proceso de inversión.",
-            pt: "Deixe seus dados abaixo e um consultor entrará em contato em breve para revisar nossos modelos e o processo de investimento."
+            en: "Leave your details and our team will contact you to guide your platform and process questions.",
+            es: "Deja tus datos y nuestro equipo te contactara para orientarte sobre la plataforma y sus procesos.",
+            pt: "Deixe seus dados e nossa equipe entrara em contato para orientar sobre a plataforma e seus processos."
           })}
         </p>
 

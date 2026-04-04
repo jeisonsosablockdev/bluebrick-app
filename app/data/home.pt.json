@@ -7,19 +7,22 @@
   ],
   "features": [
     {
-      "title": "Tokenizacao Segura",
-      "description": "Transforme ativos reais em fracoes digitais com rastreabilidade completa.",
-      "action": "Explorar"
+      "title": "Fracionamento Seguro",
+      "description": "Ativos reais divididos em fracoes digitais com rastreabilidade completa.",
+      "action": "Explorar",
+      "actionHref": "/transparencia"
     },
     {
       "title": "Renda Recorrente",
-      "description": "Receba pagamentos periodicos de rendimento com painel claro de acompanhamento.",
-      "action": "Ver Fluxo"
+      "description": "Consulte o estado de distribuicoes e atualizacoes associadas a cada projeto publicado.",
+      "action": "Ver Fluxo",
+      "actionHref": "/transparencia"
     },
     {
       "title": "Liquidez Flexivel",
-      "description": "Compre ou venda fracoes com regras de mercado transparentes.",
-      "action": "Saiba Mais"
+      "description": "Compre ou venda fracoes com regras de mercado transparentes. Nesta fase habilitamos apenas venda de fracoes.",
+      "action": "Saiba Mais",
+      "actionHref": "/transparencia"
     }
   ],
   "properties": [
@@ -45,15 +48,18 @@
   "faqs": [
     {
       "question": "Como comeco na BRIDS?",
-      "answer": "Cadastre-se, conclua a verificacao e selecione um imovel fracionado no painel principal."
+      "answer": "Cadastre-se, conclua a verificacao e selecione um imovel fracionado no painel principal.",
+      "topic": "WALLET"
     },
     {
       "question": "Qual e o investimento minimo?",
-      "answer": "Voce pode comecar com valores baixos dependendo do imovel, com diversificacao progressiva."
+      "answer": "Voce pode comecar com valores baixos dependendo do imovel, com diversificacao progressiva.",
+      "topic": "Transparencia"
     },
     {
       "question": "Como os retornos sao distribuidos?",
-      "answer": "A plataforma calcula e distribui renda passiva de acordo com sua participacao fracionada."
+      "answer": "A distribuicao depende da estrutura de cada projeto e de processos operados por terceiros. A BRIDS mostra status e rastreabilidade disponiveis.",
+      "topic": "Transparencia"
     }
   ]
 }

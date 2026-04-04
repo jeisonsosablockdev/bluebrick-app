@@ -15,9 +15,9 @@ export function FooterSection() {
           <h4 className="mb-2 text-base font-semibold text-white">BRIDS</h4>
           <p>
             {t({
-              en: "Tokenized real estate investment platform. SSR-first UI demo for Next.js App Router.",
-              es: "Plataforma de inversion inmobiliaria tokenizada. UI demo SSR-first para Next.js App Router.",
-              pt: "Plataforma de investimento imobiliario tokenizado. UI demo SSR-first para Next.js App Router."
+              en: "Technology platform for project visualization, documentation and third-party integrations.",
+              es: "Plataforma tecnologica para visualizacion de proyectos inmobiliarios fraccionados.",
+              pt: "Plataforma tecnologica para visualizacao de projetos, documentacao e integracoes de terceiros."
             })}
           </p>
           <div className="mt-4 space-y-2">

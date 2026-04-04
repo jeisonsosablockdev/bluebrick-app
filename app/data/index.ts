@@ -8,6 +8,7 @@ export type FeatureItem = {
   title: string;
   description: string;
   action: string;
+  actionHref?: string;
 };
 
 export type PropertyItem = {
@@ -20,6 +21,7 @@ export type PropertyItem = {
 export type FaqItem = {
   question: string;
   answer: string;
+  topic?: string;
 };
 
 export type HeroStat = {

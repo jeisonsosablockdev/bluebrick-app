@@ -7,19 +7,22 @@
   ],
   "features": [
     {
-      "title": "Secure Tokenization",
-      "description": "Transform real-world assets into digital fractions with full traceability.",
-      "action": "Explore"
+      "title": "Secure Fractionalization",
+      "description": "Real assets split into digital fractions with complete traceability.",
+      "action": "Explore",
+      "actionHref": "/transparencia"
     },
     {
       "title": "Recurring Income",
-      "description": "Receive periodic rental yield payments with a clear tracking dashboard.",
-      "action": "View Flow"
+      "description": "Review distribution status and project-related updates from the platform dashboard.",
+      "action": "View Flow",
+      "actionHref": "/transparencia"
     },
     {
       "title": "Flexible Liquidity",
-      "description": "Buy or sell fractions under transparent market rules.",
-      "action": "Learn More"
+      "description": "Buy or sell fractions under transparent market rules. In this phase we only enable fraction sales.",
+      "action": "Learn More",
+      "actionHref": "/transparencia"
     }
   ],
   "properties": [
@@ -45,15 +48,18 @@
   "faqs": [
     {
       "question": "How do I get started with BRIDS?",
-      "answer": "Sign up, complete verification, and select a fractional property from the main dashboard."
+      "answer": "Sign up, complete verification, and select a fractional property from the main dashboard.",
+      "topic": "WALLET"
     },
     {
       "question": "What is the minimum investment?",
-      "answer": "You can start with low amounts depending on the property, with progressive diversification."
+      "answer": "You can start with low amounts depending on the property, with progressive diversification.",
+      "topic": "Transparency"
     },
     {
       "question": "How are returns distributed?",
-      "answer": "The platform calculates and distributes passive income according to your fractional participation."
+      "answer": "Distribution depends on each project structure and third-party operated processes. BRIDS displays available status and traceability.",
+      "topic": "Transparency"
     }
   ]
 }

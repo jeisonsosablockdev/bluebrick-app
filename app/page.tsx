@@ -1,4 +1,5 @@
 import { WalletModal } from "@/components/WalletModal";
+import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
 import { FeaturesSection } from "@/components/sections/features";
 import { FirstInvestmentSection } from "@/components/sections/first-investment";
@@ -7,6 +8,7 @@ import { HeroSection } from "@/components/sections/hero";
 import { ProcessSection } from "@/components/sections/process";
 import { PromoBannerSection } from "@/components/sections/promo-banner";
 import { PropertiesSection } from "@/components/sections/properties";
+import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
 import { UiStatesSection } from "@/components/sections/ui-states";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
@@ -27,6 +29,8 @@ export default async function HomePage() {
       <HeroSection />
       <WelcomeSection />
       <FeaturesSection />
+      <TokenizationProcessSection />
+      <AppOverviewSection />
       <PromoBannerSection />
       <PropertiesSection />
       <FirstInvestmentSection />

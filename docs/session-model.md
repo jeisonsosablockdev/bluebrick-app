@@ -144,4 +144,12 @@
 Implementation guide for request correlation and timeline tracing:
 - `docs/purchase-tracing.md`
 
-Last Updated: 2026-04-03 21:05:00 UTC
+## BRI-39 Session Boundary Confirmation
+- Home copy and section additions in `/app` are presentation-only changes.
+- Session boundary remains unchanged:
+  - `siws_session` cookie lifecycle is unchanged.
+  - Role derivation remains wallet-based and server-calculated.
+  - Wallet and auth trust boundaries continue to be enforced on server handlers.
+- New CTA destinations (`/marketplace`, `/transparencia`, `/protected/perfil`) do not introduce new auth state transitions.
+
+Last Updated: 2026-04-04 17:35:00 UTC
