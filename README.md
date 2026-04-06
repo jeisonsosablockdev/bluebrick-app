@@ -65,6 +65,19 @@ Important for this project (Devnet-only policy):
   - `export HELIUS_NETWORK=devnet`
   - `export HELIUS_API_KEY=YOUR_API_KEY`
 
+## Nix Dev Environment
+
+This repository includes a reproducible Nix development shell:
+
+- Enter shell: `nix develop`
+- If flakes are not enabled globally yet: `nix --extra-experimental-features 'nix-command flakes' develop`
+- Install dependencies: `npm ci`
+- Run baseline validation: `npm run validate`
+
+Toolchain governance for maintenance/update cadence is defined in:
+
+- [`docs/toolchain-policy.md`](./docs/toolchain-policy.md)
+
 ## Testing
 
 - `npm test`: run all unit tests with Vitest.

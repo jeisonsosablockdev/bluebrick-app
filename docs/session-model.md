@@ -38,6 +38,7 @@
   - Admin pages and `/api/admin/*` handlers perform explicit role re-checks.
   - Purchase challenge endpoint (`/api/purchase/challenge`) requires valid SIWS session.
   - Purchase mutation endpoints (`/api/purchase/prepare`, `/api/purchase/submit`) require valid SIWS session, challenge verification, and wallet ownership checks.
+  - Checkout endpoints (`/api/checkout/cart`, `/api/checkout/order`, `/api/checkout/order/:orderId`, `/api/checkout/payment/start`) require valid SIWS session and wallet ownership checks.
   - H6 signing console in `/admin` orchestrates batch signature submission, but never bypasses backend checks.
   - Mint orchestrator endpoints enforce `admin` role at handler level before any state transition.
   - H7 permanent-authority gate freezes manual job mutations to the creator wallet (`createdBy`).
@@ -60,6 +61,7 @@
   - `/api/admin/ping` and `app/admin/page.tsx` repeat the role check (defense in depth).
   - `/api/protected/profile`, `/api/protected/kyc/status`, and `/api/protected/kyc/stripe/session` require authenticated wallet and never trust wallet identity from client payload.
   - `/api/purchase/challenge`, `/api/purchase/prepare`, and `/api/purchase/submit` require authenticated wallet and never trust client-provided payer identity.
+  - `/api/checkout/cart`, `/api/checkout/order`, `/api/checkout/order/:orderId`, and `/api/checkout/payment/start` require authenticated wallet and never trust client-provided wallet identity.
   - `/api/purchase/prepare` requires valid purchase challenge signature and backend-side anti-replay/rate-limit checks, including quantity context match from challenge payload.
   - `/api/admin/mint-orchestrator/*` is backend-controlled and does not trust client workflow state.
   - Manual mutation endpoints (`next-batch`, `submit`, `reconcile`, `reconcile/das`) require `admin` role and `actorPubkey === job.createdBy`.
@@ -69,6 +71,7 @@
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
   - Replay retries are deduplicated before signature reconciliation.
   - `POST /api/webhooks/stripe/identity` requires valid Stripe signature and idempotent event ingestion by `provider_event_id`.
+  - `POST /api/webhooks/airwallex` requires `x-timestamp` + `x-signature`, validates `HMAC_SHA256(timestamp + rawBody)` with `AIRWALLEX_WEBHOOK_SECRET`, enforces freshness tolerance, and deduplicates provider event ids.
   - Internal AML route accepts either SIWS-admin or internal service token and never trusts client role payload.
 6. DAS read layer:
   - `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` queries devnet DAS with bounded pagination.
@@ -90,6 +93,7 @@
   - If `HELIUS_WEBHOOK_SECRET` is set, webhook request must include matching secret in
     `x-helius-webhook-secret` or `Authorization: Bearer <secret>`.
   - Stripe webhook requests must include a valid `Stripe-Signature` header generated from `STRIPE_IDENTITY_WEBHOOK_SECRET`.
+  - Airwallex webhook requests must include valid `x-timestamp` and `x-signature` headers generated with `AIRWALLEX_WEBHOOK_SECRET`.
 - DAS endpoint policy:
   - DAS client accepts `SOLANA_DAS_URL` (devnet-only) or derives devnet Helius URL from `HELIUS_API_KEY`.
   - If no explicit DAS endpoint is set, backend falls back to configured devnet RPC URL.
@@ -159,4 +163,14 @@ Implementation guide for request correlation and timeline tracing:
   - no role derivation changes,
   - no auth endpoint contract changes.
 
-Last Updated: 2026-04-04 18:25:00 UTC
+## BRI-42 Checkout Dual (Crypto + Airwallex) Session Notes
+- `/checkout` uses SIWS session as mandatory gate for cart/order/payment API calls.
+- Checkout ownership is server-side only:
+  - active cart is resolved by session wallet,
+  - order reads and payment starts require `order.walletPublicKey === session wallet`.
+- Airwallex trust boundaries:
+  - backend creates/retrieves PaymentIntents with server credentials,
+  - frontend receives only redirect-safe fields (`intentId`, `clientSecret`, `env`, `successUrl`),
+  - final payment/order transition is webhook-driven and signature-validated server-side.
+
+Last Updated: 2026-04-05 03:40:00 UTC

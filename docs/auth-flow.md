@@ -104,6 +104,13 @@
 | `/api/purchase/challenge` | `POST` | Yes | `user` or `admin` | Issues one-time purchase challenge (`challengeId`, canonical message, TTL) bound to `quantity` |
 | `/api/purchase/prepare` | `POST` | Yes | `user` or `admin` | Verifies challenge signature + anti-replay/rate-limit, validates quantity policy, revalidates guard on-chain, returns pre-signed transaction + `attemptId` + `idempotencyKey` |
 | `/api/purchase/submit` | `POST` | Yes | `user` or `admin` | Requires `attemptId + idempotencyKey`, validates signed tx payer/message, locks attempt row and persists `submitted` idempotently |
+| `/api/checkout/cart` | `GET` | Yes | `user` or `admin` | Returns current wallet active cart with normalized totals |
+| `/api/checkout/cart` | `POST/PATCH` | Yes | `user` or `admin` | Upserts item quantity in wallet active cart (server validates property + quantity) |
+| `/api/checkout/cart` | `DELETE` | Yes | `user` or `admin` | Removes item from wallet active cart |
+| `/api/checkout/order` | `POST` | Yes | `user` or `admin` | Converts active cart into order (`pending_payment`) with selected payment method |
+| `/api/checkout/order/:orderId` | `GET` | Yes | `user` or `admin` | Returns wallet-owned order snapshot |
+| `/api/checkout/payment/start` | `POST` | Yes | `user` or `admin` | Starts payment attempt (crypto existing flow or Airwallex PaymentIntent) |
+| `/api/webhooks/airwallex` | `POST` | No (SIWS) | None | Validates Airwallex HMAC signature + timestamp, dedupes event, reconciles payment/order status |
 | `/api/admin/ping` | `GET` | Yes | `admin` | Returns `403` unless wallet is allowlisted |
 | `/api/admin/mint-orchestrator/jobs` | `POST` | Yes | `admin` | Creates a server-side mint job (`job_id`) |
 | `/api/admin/mint-orchestrator/jobs` | `GET` | Yes | `admin` | Lists recent mint jobs with server progress |
@@ -135,6 +142,8 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Trigger AML screening on KYC kickoff and on Stripe verified webhooks.
   - Gate internal AML execution route with admin SIWS or `COMPLIANCE_INTERNAL_TOKEN`.
   - In purchase flow, quote cache delivery + challenge issuance + challenge signature verification + rate-limiting + on-chain revalidation in prepare + submit ownership checks.
+  - In checkout flow, cart/order/payment APIs are wallet-bound server-side and never trust client-provided authority.
+  - Airwallex session is server-to-server (`client_id/api_key` -> bearer token), and webhook outcomes are only accepted after HMAC signature verification.
   - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
   - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
@@ -183,6 +192,9 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 | Submit with expired idempotency key | `409` + `TRANSACTION_FAILED` | Run `prepare` again to obtain a fresh key |
 | Quantity invalid for current mode/limits | `400/409` + `INVALID_QUANTITY` | Use integer quantity within configured limits |
 | Price changed between quote and prepare | `409` + `PRICE_CHANGED` | Refresh quote and retry |
+| Checkout cart/order without SIWS session | `401` + `UNAUTHORIZED` | User must connect wallet and authenticate |
+| Airwallex webhook missing/invalid signature | `400` + `INVALID_SIGNATURE` | Reject event, no state transition |
+| Airwallex event duplicated | `200` with `duplicate_event` reason | Keep idempotent state, no repeated side effects |
 | Mint not started (`startDate` future) | `409` + `MINT_NOT_STARTED` | Disable CTA / show countdown |
 | Sold out (`itemsRemaining=0`) | `409` + `SOLD_OUT` | Show sold out |
 | Wallet funds are insufficient | `409` + `INSUFFICIENT_FUNDS` | Inform user to fund wallet |
@@ -218,4 +230,4 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Home `Features` cards now read icon values from locale data (`app/data/home*.json`) instead of a static bullet marker.
 - Change is presentational only and does not alter auth/session boundaries, SIWS flow, nonce lifecycle, or signature verification.
 
-Last Updated: 2026-04-04 18:25:00 UTC
+Last Updated: 2026-04-05 03:40:00 UTC

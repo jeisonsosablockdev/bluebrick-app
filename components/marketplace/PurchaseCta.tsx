@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 
@@ -212,6 +213,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
+  const router = useRouter();
   const { t, locale } = useI18n();
   const { connected, publicKey, signMessage, signTransaction } = useWallet();
   const [quote, setQuote] = useState<QuoteState | null>(null);
@@ -220,6 +222,8 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [submittedSignature, setSubmittedSignature] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
   const [activeFlowId, setActiveFlowId] = useState<string | null>(() => (
     PURCHASE_TRACE_UI_ENABLED ? generateClientFlowId() : null
   ));
@@ -350,6 +354,16 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
 
   useEffect(() => {
     void refreshQuote();
+  }, [refreshQuote]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void refreshQuote();
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [refreshQuote]);
 
   useEffect(() => {
@@ -597,6 +611,43 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
     }
   }
 
+  async function handleAddToCart(): Promise<void> {
+    setAddToCartError(null);
+    setIsAddingToCart(true);
+
+    try {
+      const response = await fetch("/api/checkout/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          propertyId,
+          quantity: requestedQuantity
+        })
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+        throw new Error(payload?.error?.message ?? "Could not add item to cart.");
+      }
+
+      router.push("/checkout");
+    } catch (error) {
+      setAddToCartError(
+        error instanceof Error
+          ? error.message
+          : t({
+            en: "Could not start card checkout.",
+            es: "No se pudo iniciar la compra con tarjeta.",
+            pt: "Nao foi possivel iniciar a compra com cartao."
+          })
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
+  }
+
   return (
     <div className="space-y-3">
       <div className="rounded-xl border border-white/15 bg-white/[0.02] p-3">
@@ -638,6 +689,10 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
 
       {purchaseError ? (
         <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-sm text-rose-100">{purchaseError}</p>
+      ) : null}
+
+      {addToCartError ? (
+        <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-sm text-rose-100">{addToCartError}</p>
       ) : null}
 
       {submittedSignature ? (
@@ -728,22 +783,22 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
           {isSubmitting
             ? t({ en: "Processing...", es: "Procesando...", pt: "Processando..." })
             : t({
-              en: `Buy ${requestedQuantity} ${requestedQuantity === 1 ? 'Fraction' : 'Fractions'}`,
-              es: `Comprar ${requestedQuantity} ${requestedQuantity === 1 ? 'Fracción' : 'Fracciones'}`,
-              pt: `Comprar ${requestedQuantity} ${requestedQuantity === 1 ? 'Fração' : 'Frações'}`
+              en: "Buy with crypto",
+              es: "Comprar con crypto",
+              pt: "Comprar com crypto"
             })}
         </Button>
         <Button
           className="min-h-11"
           variant="outline"
-          disabled={isLoadingQuote || isSubmitting}
+          disabled={isLoadingQuote || isSubmitting || isAddingToCart || !canAttemptPurchase}
           onClick={() => {
-            void refreshQuote();
+            void handleAddToCart();
           }}
         >
-          {isLoadingQuote
-            ? t({ en: "Refreshing...", es: "Actualizando...", pt: "Atualizando..." })
-            : t({ en: "Refresh quote", es: "Actualizar quote", pt: "Atualizar cotacao" })}
+          {isAddingToCart
+            ? t({ en: "Starting...", es: "Iniciando...", pt: "Iniciando..." })
+            : t({ en: "Buy with card", es: "Comprar con tarjeta", pt: "Comprar com cartão" })}
         </Button>
       </div>
     </div>
