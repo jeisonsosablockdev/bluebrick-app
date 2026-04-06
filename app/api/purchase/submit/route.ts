@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
+import { assertFinancialAccessByComplianceStatus, ComplianceCaseServiceError } from "@/lib/compliance/case-service";
+import { getOrCreateProfileBundle } from "@/lib/compliance/profile-repository";
 import { getFlowId, recordPurchaseFlowEvent, withFlowIdHeader } from "@/lib/purchase-flow-trace";
 import { PurchaseFlowError, submitPurchase } from "@/lib/purchase-service";
 
@@ -60,6 +62,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    const profile = await getOrCreateProfileBundle(roleResult.pubkey);
+    try {
+      assertFinancialAccessByComplianceStatus(profile.complianceStatus);
+    } catch (error) {
+      if (error instanceof ComplianceCaseServiceError) {
+        throw new PurchaseFlowError("COMPLIANCE_RESTRICTED", error.message, error.status, {
+          complianceStatus: profile.complianceStatus
+        });
+      }
+
+      throw error;
+    }
+
     const body = normalizeBody(await request.json().catch(() => null));
     await recordPurchaseFlowEvent({
       flowId,

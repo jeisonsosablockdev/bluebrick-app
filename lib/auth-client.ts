@@ -7,6 +7,7 @@ type NonceResponse = {
 type VerifyResponse = {
   error?: string;
   publicKey?: string;
+  isNewUser?: boolean;
 };
 
 export type AuthMeResponse = {
@@ -47,7 +48,7 @@ export async function fetchNonce(): Promise<string> {
   return payload.nonce;
 }
 
-export async function verifySiwsMessage(input: { message: string; signature: string; publicKey: string }): Promise<string> {
+export async function verifySiwsMessage(input: { message: string; signature: string; publicKey: string }): Promise<{ publicKey: string; isNewUser: boolean }> {
   const response = await fetch("/api/auth/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -63,10 +64,10 @@ export async function verifySiwsMessage(input: { message: string; signature: str
     throw new Error("Auth response did not include public key.");
   }
 
-  return payload.publicKey;
+  return { publicKey: payload.publicKey, isNewUser: payload.isNewUser ?? false };
 }
 
-export async function startSiws(args: StartSiwsArgs): Promise<string> {
+export async function startSiws(args: StartSiwsArgs): Promise<{ publicKey: string; isNewUser: boolean }> {
   const nonce = await fetchNonce();
   const message = buildSiwsMessage({
     domain: window.location.host,

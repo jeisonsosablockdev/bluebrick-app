@@ -124,7 +124,7 @@ async function fetchCandyMachineStats(input) {
   const itemsLoaded = asNumber(account.itemsLoaded);
   const itemsAvailable = asNumber(account.data?.itemsAvailable);
   const itemsRedeemed = asNumber(account.itemsRedeemed);
-  const itemsRemaining = Math.max(0, itemsAvailable - itemsLoaded);
+  const itemsRemaining = Math.max(0, itemsAvailable - itemsRedeemed);
   const progressPercent = itemsAvailable > 0 ? Number(((itemsLoaded / itemsAvailable) * 100).toFixed(2)) : 0;
 
   return {

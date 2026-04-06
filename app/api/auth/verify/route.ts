@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestHost, setSessionCookie, verifySiwsPayload } from "@/lib/auth";
+import { isWalletRegistered } from "@/lib/compliance/profile-repository";
 
 type VerifyRequestBody = {
   message?: unknown;
@@ -28,7 +29,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: verification.error }, { status: verification.status });
   }
 
-  const response = NextResponse.json({ ok: true, publicKey: verification.publicKey });
+  const isNewUser = !(await isWalletRegistered(verification.publicKey));
+
+  const response = NextResponse.json({ ok: true, publicKey: verification.publicKey, isNewUser });
   setSessionCookie(response, verification.sessionToken);
   return response;
 }

@@ -301,7 +301,7 @@ async function fetchOnchainCandyMachineState(candyMachineAddress: string): Promi
   const itemsAvailable = toInteger(candyMachine.data?.itemsAvailable);
   const itemsLoaded = toInteger(candyMachine.itemsLoaded);
   const itemsRedeemed = toInteger(candyMachine.itemsRedeemed);
-  const itemsRemaining = Math.max(0, itemsAvailable - itemsLoaded);
+  const itemsRemaining = Math.max(0, itemsAvailable - itemsRedeemed);
   const configLineSettings = unwrapOption<Record<string, unknown>>(candyMachine.data?.configLineSettings);
 
   const startDate = unwrapOption<{ date?: unknown }>(candyGuard?.guards?.startDate);

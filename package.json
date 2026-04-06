@@ -17,7 +17,18 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "typegen": "next typegen",
-    "validate": "npm run lint && npm run typecheck"
+    "validate": "npm run lint && npm run typecheck && npm run validate:docs-governance",
+    "validate:docs-governance": "bash ./scripts/ci/validate-doc-governance.sh",
+    "pr:ready": "bash ./scripts/ci/pr-ready.sh",
+    "e2e:install": "playwright install chromium",
+    "e2e:playwright": "playwright test --project=playwright-smoke",
+    "e2e:synpress:cache": "node ./scripts/synpress-prepare-phantom-extension.js && synpress --phantom --headless test/wallet-setup",
+    "e2e:synpress": "npm run e2e:synpress:cache && playwright test --project=synpress-phantom",
+    "e2e:synpress:user": "E2E_SYNPRESS_WALLET_ROLE=user npm run e2e:synpress",
+    "e2e:synpress:admin": "E2E_SYNPRESS_WALLET_ROLE=admin npm run e2e:synpress",
+    "e2e:roles": "playwright test e2e/admin-role-access.pw.spec.ts --project=playwright-smoke",
+    "e2e:evidence": "playwright test e2e/critical-path.evidence.pw.spec.ts --project=playwright-smoke && node ./scripts/e2e-evidence-index.js",
+    "e2e": "npm run e2e:playwright && npm run e2e:synpress"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-core": "^1.7.0",
@@ -44,6 +55,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "1.48.2",
+    "@synthetixio/synpress": "^4.1.2",
     "@types/node": "22.13.10",
     "@types/pg": "^8.18.0",
     "@types/react": "19.0.10",

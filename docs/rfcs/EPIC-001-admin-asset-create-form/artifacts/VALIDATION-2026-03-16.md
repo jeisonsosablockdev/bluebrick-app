@@ -59,5 +59,10 @@
 
 ## 6) Open Items After Validation
 - Responsive QA formal (320/375/768/1024) no quedó adjunta en este run.
-- Evidence pack de producción para “persistencia off-chain end-to-end en producción” sigue pendiente.
 - Validación dedicada de `retry -> DLQ` para import jobs sigue pendiente como cierre de STORY-001-03.
+
+## 7) Follow-up (2026-03-26)
+- Responsive QA formal y validación dedicada `retry -> failed -> DLQ` quedaron cerradas en:
+  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-26.md`
+- Nota de gobierno actual:
+  - El gate adicional de validación fue retirado del cierre del epic por decisión de producto (2026-03-27).

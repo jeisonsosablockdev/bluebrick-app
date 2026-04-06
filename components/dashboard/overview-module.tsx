@@ -42,9 +42,9 @@ function EmptyState({ t }: { t: TranslateFn }): ReactElement {
       <p className="text-sm font-medium text-white">{t({ en: "You do not have assets in your account yet.", es: "Aun no tienes activos en tu cuenta.", pt: "Voce ainda nao tem ativos na sua conta." })}</p>
       <p className="text-sm text-white/70">
         {t({
-          en: "When you complete your first investment, your NFTs, accumulated yield and recent events will appear here.",
-          es: "Cuando completes tu primera inversion, aqui veras tus NFTs, rentas acumuladas y eventos recientes.",
-          pt: "Quando voce concluir seu primeiro investimento, aqui voce vera seus NFTs, rendas acumuladas e eventos recentes."
+          en: "When you complete your first investment, your Fractions, accumulated yield and recent events will appear here.",
+          es: "Cuando completes tu primera inversion, aqui veras tus Fracciones, rentas acumuladas y eventos recientes.",
+          pt: "Quando voce concluir seu primeiro investimento, aqui voce vera seus Frações, rendas acumuladas e eventos recentes."
         })}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -99,7 +99,7 @@ export function OverviewModule(): ReactElement {
     if (isEmpty) {
       return [
         { label: t({ en: "Invested value", es: "Valor invertido", pt: "Valor investido" }), value: "$0.00" },
-        { label: t({ en: "Number of NFTs", es: "Numero de NFTs", pt: "Numero de NFTs" }), value: "0" },
+        { label: t({ en: "Number of Fractions", es: "Numero de Fracciones", pt: "Numero de Frações" }), value: "0" },
         { label: t({ en: "Accumulated yield", es: "Rentas acumuladas", pt: "Rendas acumuladas" }), value: "$0.00" },
         { label: t({ en: "Claimable yield", es: "Rentas claimables", pt: "Rendas disponiveis" }), value: "$0.00" }
       ];
@@ -107,7 +107,7 @@ export function OverviewModule(): ReactElement {
 
     return [
       { label: t({ en: "Invested value", es: "Valor invertido", pt: "Valor investido" }), value: "$48,500.00" },
-      { label: t({ en: "Number of NFTs", es: "Numero de NFTs", pt: "Numero de NFTs" }), value: "7" },
+      { label: t({ en: "Number of Fractions", es: "Numero de Fracciones", pt: "Numero de Frações" }), value: "7" },
       { label: t({ en: "Accumulated yield", es: "Rentas acumuladas", pt: "Rendas acumuladas" }), value: "$2,140.20" },
       { label: t({ en: "Claimable yield", es: "Rentas claimables", pt: "Rendas disponiveis" }), value: "$365.10" }
     ];

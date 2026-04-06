@@ -23,6 +23,7 @@ If any conflict exists, governance documents take precedence over summaries.
 | --- | --- |
 | `/programs` | `@blockchain-cycle` |
 | `/app` | `@frontend-cycle` |
+| E2E browser + wallet QA (frontend/auth flows) | `@frontend-cycle` + `@responsive-qa` with Playwright + Synpress + MCP evidence |
 | `/packages` | strict shared validation (`typescript-expert` + `clean-code` + `lint-and-validate`) |
 | NFT logic (mint/metadata/collection/royalties) | `@nft-cycle` (in addition to path macro) |
 | Major release / pre-mainnet | `@mainnet-hardening` |
@@ -44,13 +45,17 @@ Documentation must be created and updated alongside development.
 No feature is complete without documentation.
 
 For Blockchain Changes (`/programs`)
-- Must update/create:
-  - `/docs/architecture.md`
-  - `/docs/authority-model.md`
-  - `/docs/state-machine.md`
-  - `/docs/threat-model.md`
-  - `/docs/devnet-proof.md`
-- Must document:
+- Impact-based requirement:
+  - Structural/high-risk changes (account model, PDA seeds, authority transitions, CPI/security constraints, state-machine invariants) must update/create:
+    - `/docs/architecture.md`
+    - `/docs/authority-model.md`
+    - `/docs/state-machine.md`
+    - `/docs/threat-model.md`
+    - `/docs/devnet-proof.md`
+  - Bounded low-risk changes (localized fix/refactor with no architecture/authority/security impact) must update:
+    - at least one `/docs/features/*.md`
+    - only the directly affected section(s) in canonical docs
+- Must document when applicable:
   - Account architecture
   - PDA seeds
   - Authority validation logic
@@ -60,10 +65,14 @@ For Blockchain Changes (`/programs`)
   - Devnet transaction proof (real signature)
 
 For Frontend/Auth Changes (`/app`)
-- Must update/create:
-  - `/docs/auth-flow.md`
-  - `/docs/session-model.md`
-- Must document:
+- Impact-based requirement:
+  - Structural/auth-model changes (SIWS/session lifecycle/cookie trust boundaries/replay protection) must update/create:
+    - `/docs/auth-flow.md`
+    - `/docs/session-model.md`
+  - Bounded UI-only changes must update:
+    - at least one `/docs/features/*.md`
+    - only affected auth/session sections (if any)
+- Must document when applicable:
   - SIWS flow
   - Nonce lifecycle
   - Cookie strategy
@@ -71,9 +80,13 @@ For Frontend/Auth Changes (`/app`)
   - Trust boundaries
 
 For NFT Features
-- Must update:
-  - `/docs/nft-spec.md`
-- Must document:
+- Impact-based requirement:
+  - Structural NFT changes (mint authority, collection/metadata rules, royalty logic, supply semantics) must update:
+    - `/docs/nft-spec.md`
+  - Bounded NFT fixes must update:
+    - at least one `/docs/features/*.md`
+    - only affected section(s) in `/docs/nft-spec.md`
+- Must document when applicable:
   - Mint authority model
   - Metadata ownership
   - Royalty model
@@ -81,7 +94,11 @@ For NFT Features
   - Devnet mint proof
 
 Strict Rule:
-If documentation is missing or outdated → task incomplete.
+If required documentation for the detected impact tier is missing or outdated → Definition of Done fails.
+
+Feature Notes Rule (small/iterative features):
+- For branch types `feature/*`, `fix/*`, `nft/*`, or `refactor/*` that touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), update at least one file under `/docs/features/*.md`.
+- If missing, Definition of Done fails.
 
 RFC Workflow by Epic (for architecture debate and decisions)
 - Scope:
@@ -134,6 +151,62 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 
 ⸻
 
+🔒 PR GOVERNANCE BASELINE (MANDATORY)
+
+Applies to every PR targeting `develop`:
+1. Required CI check: `npm run validate` must pass.
+2. Required docs check: missing scope docs must block merge (non-mutating docs-sync policy check).
+3. Required local preflight before opening PR: `npm run pr:ready` (or `bash ./scripts/ci/pr-ready.sh`).
+4. Branch lifetime policy: short-lived branches only (target 1-3 days).
+5. PR size policy: <= 400 added lines preferred; if exceeded, split into sequential PRs with feature flags.
+6. Commit convention (strict): `type(scope): summary`
+   - Examples: `feat(app): ...`, `fix(program): ...`
+7. Required labels:
+   - one `scope:*` label (`scope:app|scope:program|scope:shared|scope:docs|scope:infra|scope:nft`)
+   - one `type:*` label (`type:feature|type:fix|type:security|type:refactor|type:chore|type:docs`)
+   - one `risk:*` label (`risk:low|risk:medium|risk:high`)
+8. PR template sections are mandatory:
+   - `Issue`
+   - `RFC`
+   - `Riesgos`
+   - `Rollback Plan`
+    - `Prueba Devnet`
+9. Feature-note section is mandatory for feature/fix/refactor/nft product changes:
+   - `Feature Note (/docs/features/*.md)` path must be included in PR body.
+10. Automatic release notes policy:
+   - Release draft is generated from labels and merged PRs.
+   - Semver labels (`semver:major|semver:minor|semver:patch`) drive version bump resolution.
+11. Required automation checks in CI:
+   - Docs governance check must run and pass (for example `validate-doc-governance`).
+   - PR governance check must enforce required labels/template sections and block invalid PR metadata.
+
+If any required governance gate fails, merge is blocked.
+
+⸻
+
+🚨 CONTROLLED EXCEPTIONS POLICY (HOTFIX / INCIDENT)
+
+Scope:
+- Only for urgent production incidents or security emergencies.
+
+Mandatory requirements:
+1. PR must include `Exception Waiver` section with:
+   - reason
+   - risk accepted
+   - approver(s)
+   - expiration date
+2. Open follow-up issue/PR to restore full compliance immediately after stabilization.
+3. Exception must be time-bounded and auditable.
+
+Non-waivable controls:
+- No fake signatures.
+- No mocked RPC as final blockchain evidence.
+- No skipping on-chain confirmation requirements for final acceptance.
+
+If waiver data is missing or expired, merge is blocked.
+
+⸻
+
 ⚙️ AUTOMATION SCRIPTS (QUICK USE)
 
 - `./scripts/docs-sync.sh <scope-list>`
@@ -142,18 +215,25 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
   - Example: `./scripts/docs-sync.sh app,nft`
 
 - `./scripts/full-cycle.sh <scope> <name> "mensaje" [docs]`
-  - Runs: start branch → docs sync → commit → push.
+  - Runs: start branch → program test stack bootstrap (program/nft) → docs sync → commit → push.
   - Example: `./scripts/full-cycle.sh app initial-ui "initial UI scaffold"`
   - Example: `./scripts/full-cycle.sh program nft-mint "add nft mint flow" program,nft`
+
+- `./scripts/program-test-stack.sh`
+  - Ensures Rust test stack for Solana programs in `/programs`:
+    - `litesvm`
+    - `mollusk-svm`
+    - `mollusk-svm-programs-token`
+    - `proptest`
 
 ⸻
 
 🧠 GLOBAL NON-NEGOTIABLE RULES
 	1.	Always start with concise-planning.
 	2.	Always enforce clean-code in every task.
-	3.	No task is complete without lint-and-validate.
-	4.	No task is complete without verification-before-completion.
-	5.	Never merge without production-code-audit.
+	3.	No task is complete without lint-and-validate (as enforced by Definition of Done).
+	4.	No task is complete without verification-before-completion (as enforced by Definition of Done).
+	5.	Never merge without production-code-audit (as enforced by Definition of Done).
 	6.	Prefer server-side logic over client-side logic.
 	7.	Never trust client state.
 	8.	No duplicated logic.
@@ -166,6 +246,10 @@ Full policy: [Git + Monorepo Policy](docs/governance/git-monorepo-policy.md)
 	15.	Explicit error handling required everywhere.
 	16.	Every story starts by defining/updating unit tests (TDD RED first).
 	17.	No story is complete unless unit tests pass at final verification.
+	18.	For frontend/auth stories, Playwright E2E must pass before completion.
+	19.	For wallet-connected UI flows, Synpress E2E must pass before completion.
+	20.	For critical UI flows, MCP browser evidence (snapshot/screenshot/log) is mandatory.
+	21.	Definition of Done is the single completion gate for any task.
 
 ⸻
 
@@ -194,10 +278,34 @@ If UI breaks at any of the widths above → task incomplete.
 
 ⸻
 
+🧪 E2E TOOLING POLICY (PLAYWRIGHT + SYNPRESS + MCP)
+
+Scope:
+- Applies to frontend/auth/wallet flows and any user-critical browser journey.
+
+Mandatory Toolchain:
+1. Use `playwright-skill` for E2E design/execution guidance.
+2. Run Playwright suite (`npx playwright test` or project-equivalent command).
+3. Run Synpress wallet suite (`npx synpress run` or project-equivalent command).
+4. Use MCP Playwright tools to capture deterministic evidence for critical flows:
+   - `mcp__playwright__browser_snapshot`
+   - `mcp__playwright__browser_navigate`
+   - `mcp__playwright__browser_click`
+   - `mcp__playwright__browser_fill_form`
+   - `mcp__playwright__browser_wait_for`
+   - `mcp__playwright__browser_take_screenshot`
+
+Strict Rules:
+- No mocked wallet provider for wallet E2E.
+- No mocked signature validation in UI auth flows.
+- If Playwright or Synpress gate fails, Definition of Done fails.
+
+⸻
+
 🌐 DEVNET EXECUTION POLICY (ABSOLUTE)
 	1.	Default cluster is devnet.
 	2.	Never use localnet.
-	3.	Never simulate transactions.
+	3.	Never use simulation as final acceptance evidence.
 	4.	Never mock RPC.
 	5.	Never stub smart contract calls.
 	6.	Never fake transaction signatures.
@@ -208,7 +316,11 @@ If UI breaks at any of the widths above → task incomplete.
 	11.	Always confirm transactions on-chain.
 	12.	Always fetch real on-chain account state.
 	13.	Wallet signatures must be real cryptographic signatures.
-	14.	If RPC fails → stop execution. Do not fallback to simulation.
+	14.	If RPC fails → stop execution. Do not fallback to simulation for final proof.
+
+Allowed preflight/testing usage (non-acceptance phase only):
+- Local deterministic simulation (for example LiteSVM/Mollusk) is allowed for TDD RED/GREEN and debugging.
+- Final acceptance still requires real devnet transactions, real signatures, on-chain confirmation, and fetched account state.
 
 ⸻
 
@@ -220,24 +332,25 @@ Run @blockchain-cycle
 
 Mandatory Execution Order
 	1.	concise-planning
-	2.	architecture-patterns
-	3.	blockchain-developer
+	2.	solana-dev
+	3.	metaplex (only when NFT/asset scope applies)
 	4.	test-driven-development
 	5.	tdd-workflow
-	6.	Deploy program to devnet
-	7.	Execute real on-chain transactions
-	8.	Confirm transaction signatures
-	9.	Fetch and validate real account state
-	10.	clean-code
-	11.	lint-and-validate
-	12.	verification-before-completion
-	13.	production-code-audit
-	14.	requesting-code-review
-	15.	create-pr
+	6.	Bootstrap program test stack (`cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`)
+	7.	Deploy program to devnet
+	8.	Execute real on-chain transactions
+	9.	Confirm transaction signatures
+	10.	Fetch and validate real account state
+	11.	clean-code
+	12.	lint-and-validate
+	13.	verification-before-completion
+	14.	production-code-audit
+	15.	requesting-code-review
+	16.	create-pr
 
 Strict Rules
 	•	Devnet only
-	•	No simulation
+	•	No simulation-only acceptance
 	•	No mocked RPC
 	•	No fake accounts
 	•	No fake signatures
@@ -257,20 +370,26 @@ Mandatory Execution Order
 	4.	frontend-developer
 	5.	react-best-practices
 	6.	typescript-expert
-	7.	Implement SSR-first architecture
-	8.	Wallet interaction in client-only components
-	9.	Server-side signature verification
-	10.	clean-code
-	11.	lint-and-validate
-	12.	web-performance-optimization
-	13.	verification-before-completion
-	14.	requesting-code-review
+	7.	playwright-skill
+	8.	e2e-testing
+	9.	Implement SSR-first architecture
+	10.	Wallet interaction in client-only components
+	11.	Server-side signature verification
+	12.	Run Playwright E2E suite
+	13.	Run Synpress wallet E2E suite (if wallet/auth/browser extension flow is in scope)
+	14.	Collect MCP browser evidence for critical path
+	15.	clean-code
+	16.	lint-and-validate
+	17.	web-performance-optimization
+	18.	verification-before-completion
+	19.	requesting-code-review
 
 Strict Rules
 	•	No client-side authority validation
 	•	No trusting wallet state from frontend
 	•	All signatures verified server-side
 	•	No mock Phantom provider
+	•	No mocked E2E assertions for critical flows
 	•	Devnet RPC only
 
 ⸻
@@ -281,19 +400,20 @@ Run @nft-cycle
 
 Mandatory Execution Order
 	1.	concise-planning
-	2.	nft-standards
-	3.	blockchain-developer
+	2.	solana-dev
+	3.	metaplex
 	4.	Design mint authority model
 	5.	Define PDA seeds explicitly
 	6.	test-driven-development
-	7.	Deploy to devnet
-	8.	Execute real mint on devnet
-	9.	Validate metadata on-chain
-	10.	Validate royalty configuration
-	11.	clean-code
-	12.	lint-and-validate
-	13.	security-audit
-	14.	production-code-audit
+	7.	Bootstrap program test stack (`cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`)
+	8.	Deploy to devnet
+	9.	Execute real mint on devnet
+	10.	Validate metadata on-chain
+	11.	Validate royalty configuration
+	12.	clean-code
+	13.	lint-and-validate
+	14.	security-audit
+	15.	production-code-audit
 
 Strict Rules
 	•	Devnet only
@@ -366,16 +486,20 @@ Canonical source:
 Installed official skill packages:
 - `solana-dev` (Solana Foundation maintained)
 - `metaplex` (Metaplex Foundation maintained)
+- `playwright-skill` (browser E2E automation and QA evidence)
 
 Installed locations:
 - Codex: `~/.codex/skills/solana-dev`
 - Codex: `~/.codex/skills/metaplex`
+- Codex: `~/.codex/skills/playwright-skill`
 
 Mandatory usage rule:
 1. For any Solana task (wallet, tx, Anchor, Pinocchio, tokens, payments, testing, security), invoke `solana-dev` as the first contextual skill.
 2. For Metaplex tasks (Core, Token Metadata, Bubblegum, Candy Machine, Genesis), invoke `metaplex` after `solana-dev`.
 3. Keep this playbook as governance. Skills augment implementation guidance but must not bypass governance docs or required macros.
 4. If task touches `/programs`, `/app`, or NFT logic, still execute `@blockchain-cycle`, `@frontend-cycle`, and/or `@nft-cycle` as required.
+5. For frontend/auth/browser-critical tasks, invoke `playwright-skill` and execute MCP Playwright tooling for verification evidence.
+6. Blockchain workflow in Codex is Solana-only: do not invoke Ethereum/EVM-oriented skills (including Solidity/Hardhat/Foundry/ethers/viem/web3.js-EVM toolchains) unless the user explicitly requests cross-chain work.
 
 Official Solana references included via `solana-dev`:
 - common errors and solutions
@@ -395,13 +519,103 @@ Official Solana references included via `solana-dev`:
 
 ⸻
 
-🔥 FINAL ENFORCEMENT RULE
+🛰️ SOLANA MCP OPERATIONAL POLICY (`mcp.solana.com`)
+
+Project integration files:
+- Claude/Codex project scope: `/.mcp.json`
+- Cursor workspace scope: `/.cursor/mcp.json`
+
+Primary endpoint:
+- `https://mcp.solana.com/mcp`
+
+When MCP usage is mandatory:
+1. Anchor design/API questions (accounts, constraints, CPI, events, IDL patterns).
+2. Solana runtime/debugging questions (transaction errors, account model, PDA derivation mistakes, signer/authority mismatches).
+3. Token/NFT implementation decisions where current Solana guidance matters.
+4. Security-sensitive Solana decisions before final implementation.
+
+Recommended MCP query order:
+1. Solana Documentation Search → gather canonical docs context.
+2. Ask Solana Anchor Framework Expert → resolve Anchor-specific design details.
+3. Solana Expert: Ask For Help → resolve cross-cutting issues (runtime + SDK + architecture).
+
+Required query context (always include):
+- Target cluster: `devnet`
+- Solana/Anchor versions in use
+- Relevant code snippet (minimal reproducible excerpt)
+- Exact error logs / transaction signature (when debugging)
+- Current expected vs actual behavior
+
+Verification and evidence rule:
+1. Summarize key MCP conclusions in the task notes/PR description.
+2. Map each conclusion to concrete code/test changes.
+3. Validate changes with real devnet execution and project test gates.
+4. Never mark complete based only on MCP guidance; implementation proof is mandatory.
+
+Strict safeguards:
+- MCP guidance does not override governance docs in `/docs/governance`.
+- For conflicts: governance docs + official Solana docs + real devnet behavior take precedence.
+- Do not use Ethereum/EVM recommendations unless user explicitly requests cross-chain work.
+- If MCP is unavailable, fallback to `solana-dev` skill references and continue with explicit uncertainty notes.
+
+⸻
+
+🛰️ HELIUS MCP OPERATIONAL POLICY (`helius-mcp@latest`)
+
+Project integration files:
+- Claude/Codex project scope: `/.mcp.json`
+- Cursor workspace scope: `/.cursor/mcp.json`
+
+Server runtime:
+- `npx helius-mcp@latest`
+
+Credential and network requirements:
+1. `HELIUS_API_KEY` must be configured (or use `setHeliusApiKey` tool).
+2. Project policy is devnet-only, so Helius MCP must run on devnet:
+   - `HELIUS_NETWORK=devnet` or call `setNetwork` to `devnet` at session start.
+3. If network is not devnet, task is blocked until corrected.
+
+When Helius MCP usage is mandatory:
+1. DAS/NFT ownership lookups, metadata reads, and asset inventory queries.
+2. Enhanced transaction parsing/inspection from real signatures.
+3. Webhook/streaming setup or event-delivery debugging.
+4. Priority fee, balance, transfer history, and wallet analytics investigations.
+
+Recommended Helius session start sequence:
+1. Confirm API key availability (`HELIUS_API_KEY` or `setHeliusApiKey`).
+2. Explicitly set/confirm network = `devnet`.
+3. Run a lightweight sanity query (`getBalance` / equivalent) before critical actions.
+
+Required Helius query context:
+- Target network: `devnet`
+- Wallet/account/signature under investigation
+- Relevant snippet + observed error/log
+- Expected vs actual behavior
+
+Verification and evidence rule:
+1. Include Helius tool outputs used for decisions in task notes/PR summary.
+2. Record real signatures/accounts used for validation (no placeholders).
+3. Cross-check Helius output with on-chain state and project tests.
+4. Never complete a task from Helius output alone without repo-level verification.
+
+Strict safeguards:
+- Do not run autonomous signup flows unless explicitly requested by user (billing-sensitive).
+- No mocked signatures, mocked RPC, or simulated-only conclusions.
+- Helius MCP guidance must follow governance docs and devnet execution policy.
+
+⸻
+
+🔥 DEFINITION OF DONE (SINGLE COMPLETION GATE)
 
 Before marking ANY task complete:
 	1.	Run clean-code
 	2.	Run lint-and-validate
 	3.	Run verification-before-completion
-	4.	Confirm blockchain interaction happened on devnet
-	5.	Confirm no mocks were used
+	4.	Confirm required docs for the detected impact tier were updated
+	5.	Confirm blockchain interaction happened on devnet
+	6.	Confirm no mocks were used as final acceptance evidence
+	7.	For frontend/auth changes, confirm Playwright E2E passed
+	8.	For wallet-connected frontend flows, confirm Synpress E2E passed
+	9.	For critical browser flows, confirm MCP evidence was captured
 
 If any fail → task is not complete.

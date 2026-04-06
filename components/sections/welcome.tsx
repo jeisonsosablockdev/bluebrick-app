@@ -9,21 +9,21 @@ export function WelcomeSection() {
   return (
     <section className="py-14 text-center">
       <H2 className="text-white">
-        {t({ en: "Welcome to the", es: "Bienvenido al", pt: "Bem-vindo ao" })}{" "}
+        {t({ en: "Welcome to the", es: "Bienvenido a la", pt: "Bem-vindo a" })}{" "}
         <span className="bg-gradientPrimary bg-clip-text text-transparent">
           {t({ en: "future", es: "futuro", pt: "futuro" })}
         </span>{" "}
         {t({
-          en: "of real estate investment.",
-          es: "de la inversion inmobiliaria.",
-          pt: "do investimento imobiliario."
+          en: "of fractional real estate investing.",
+          es: "de la inversion inmobiliaria fraccionada.",
+          pt: "do investimento imobiliario fracionado."
         })}
       </H2>
       <Lead className="mx-auto mt-3 max-w-2xl">
         {t({
-          en: "Invest from home in real fractions, with legal backing and clear performance visibility.",
-          es: "Invierte desde casa en fracciones reales, con respaldo legal y visualizacion clara de rendimiento.",
-          pt: "Invista de casa em fracoes reais, com respaldo legal e visao clara de rendimento."
+          en: "Discover projects from our partners with clear information and digital traceability.",
+          es: "Conoce los proyectos de nuestros aliados, proyectos inmobiliarios con trazabilidad digital.",
+          pt: "Conheca os projetos dos nossos parceiros, projetos imobiliarios com rastreabilidade digital."
         })}
       </Lead>
     </section>

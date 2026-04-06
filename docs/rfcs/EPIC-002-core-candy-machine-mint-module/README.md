@@ -3,10 +3,10 @@
 ## Metadata
 - Epic ID: `EPIC-002`
 - Title: `Core Candy Machine Mint Module`
-- Status: `in-review`
+- Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-03-16`
-- Last Updated: `2026-03-18`
+- Last Updated: `2026-03-27`
 
 ## Scope
 - Problem statement:
@@ -20,22 +20,24 @@
   - Tesorería avanzada/distribuciones.
   - Recovery avanzado multi-escenario.
   - Analytics/comercial extras.
+  - Batch mint como requisito funcional obligatorio de cierre.
 
 ## Success Criteria
-- [ ] Desde `Create Asset` se completa un mint end-to-end en **devnet** dentro del mismo flujo visual.
-- [ ] Se mintean `N` NFTs reales (cantidad del formulario: `1`, `10`, `1000`, ...) usando cover/metadata/cantidad pre-cargados.
-- [ ] Se registran tx signatures confirmadas y estado final reconciliado con RPC/DAS.
-- [ ] Guard mínimo aplicado: `startDate + solPayment(0.00001 SOL)`; cobro simbólico validado.
+- [x] Desde `Create Asset` se completa un mint end-to-end en **devnet** dentro del mismo flujo visual.
+- [x] Se valida mint real en cantidad operativa definida por producto (sin exigir batch mint para cierre).
+- [x] Se registran tx signatures confirmadas y estado final reconciliado con RPC/DAS.
+- [x] Guard mínimo aplicado: `startDate + solPayment(0.00001 SOL)`; cobro simbólico validado.
 
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-002-01 | Technical Decision: Core Candy Machine | `STORY-002-01-technical-decision.md` | `approved` | `TBD` | Decisión base del epic: Core Candy Machine + plugins + guards mínimos |
-| STORY-002-02 | Continuous UI Flow: Create Asset -> Continue to Mint | `STORY-002-02-create-asset-to-mint-flow.md` | `in-review` | `TBD` | Paso 2 habilitado inline en `/admin/assets/new` con prefill |
-| STORY-002-03 | Deploy Core Candy Machine | `STORY-002-03-deploy-core-candy-machine.md` | `in-review` | `TBD` | Endpoints y panel deploy CM + guards + load config lines implementados |
-| STORY-002-04 | Mint Execution and Progress | `STORY-002-04-mint-execution-and-progress.md` | `in-review` | `TBD` | Mint prepare/submit por lotes y progreso de firmas integrado en UI |
-| STORY-002-05 | On-chain Reconciliation and Minimal Job Persistence | `STORY-002-05-onchain-reconciliation-and-job-persistence.md` | `in-review` | `TBD` | Snapshot relacional agregado para create/prepare/submit/reconcile |
-| STORY-002-06 | Mint Snapshot Persistence + Create Asset Gate | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` | `implemented` | `TBD` | Persistir datos de formulario + blockchain y habilitar `Create Asset` con verificación DAS (`getAssetsByGroup`) |
+| STORY-002-01 | Technical Decision: Core Candy Machine | `STORY-002-01-technical-decision.md` | `implemented` | `#17, #19` | Decisión base ejecutada en implementación de flujo mint admin |
+| STORY-002-02 | Continuous UI Flow: Create Asset -> Continue to Mint | `STORY-002-02-create-asset-to-mint-flow.md` | `implemented` | `#28, #41` | Paso 2 inline en `/admin/assets/new` con prefill y validación visual |
+| STORY-002-03 | Deploy Core Candy Machine | `STORY-002-03-deploy-core-candy-machine.md` | `implemented` | `#19, #41` | Deploy Core CM + guards mínimos + carga de items en devnet |
+| STORY-002-04 | Mint Execution and Progress | `STORY-002-04-mint-execution-and-progress.md` | `implemented` | `#22, #24` | Ejecución mint/progreso/reconciliación cerrada sin batch mint obligatorio |
+| STORY-002-05 | On-chain Reconciliation and Minimal Job Persistence | `STORY-002-05-onchain-reconciliation-and-job-persistence.md` | `implemented` | `#17, #22, #24` | Persistencia relacional mínima + reconciliación RPC/DAS |
+| STORY-002-06 | Mint Snapshot Persistence + Create Asset Gate | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` | `implemented` | `#40` | Snapshot final + gate `Create Asset` con verificación DAS (`getAssetsByGroup`) |
+| STORY-002-07 | USDC tokenPayment + Temporary Recipient (Treasury Bridge) | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` | `approved` | `TBD` | Migración de `solPayment` a `tokenPayment` con receptor temporal hardcoded y plan de treasury |
 
 
 ## Decision Log
@@ -50,10 +52,13 @@
 | 2026-03-18 | STORY-002-06 | Refinamiento técnico incorporado: FK+UNIQUE con `mint_jobs`, política strict para `partial`, error estructurado y verificación DAS principal | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
 | 2026-03-18 | STORY-002-06 | RFC aprobado para implementación en rama stacked | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
 | 2026-03-18 | STORY-002-06 | Implementado snapshot final persistente + verificación DAS/fallback + gate `Create Asset` en `/admin/assets/new` | jaymusicmachine | `STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md` |
+| 2026-03-27 | STORY-002-07 | RFC draft creada para migración de pricing a USDC `tokenPayment` con fase puente de receptor temporal | jaymusicmachine | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` |
+| 2026-03-27 | STORY-002-07 | RFC aprobado: migración de guard de precio a USDC `tokenPayment` con estrategia de 3 commits y deuda técnica Treasury explícita | jaymusicmachine | `STORY-002-07-usdc-token-payment-and-temporary-recipient.md` |
+| 2026-03-27 | EPIC-002 | Decisión de producto: batch mint deja de ser requisito de cierre; epic se cierra con mint operativo en devnet + reconciliación | jaymusicmachine | `README.md` |
 
 ## Risks and Dependencies
 - Risks:
-  - Costo/tiempo de minteo elevado para cantidades grandes (`1000+`) en un solo flujo.
+  - Costo/tiempo de minteo puede crecer si se intenta escalar cantidad en una sola corrida.
   - Fallos RPC intermitentes en devnet durante deploy/mint/reconciliación.
   - Desalineación entre estado UI y estado real on-chain si no hay reconciliación robusta.
 - Dependencies:
@@ -66,14 +71,14 @@
   - Progreso transaccional visible por etapas con fallos explícitos.
 
 ## Open Questions
-- [ ] ¿Cantidad máxima permitida por ejecución inicial para no degradar UX en browser wallet?
-- [ ] ¿La carga de items se hará en batchs fijos o variable por capacidad RPC/compute budget?
-- [ ] ¿Formato final de persistencia mínima de job (`table` única vs `json` state store)?
+- [x] ¿Cantidad máxima permitida por ejecución inicial para no degradar UX en browser wallet?
+- [x] ¿La carga de items se hará en batchs fijos o variable por capacidad RPC/compute budget?
+- [x] ¿Formato final de persistencia mínima de job (`table` única vs `json` state store)?
 
 ## Traceability
 - Issue(s): `EPIC-002`
-- PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- PR(s): `#17`, `#19`, `#22`, `#24`, `#28`, `#40`, `#41`
+- Final commit hash(es): `TBD` (consolidar hash final de cierre en próximo corte de release)
 
 ---
 

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -10,6 +10,7 @@ import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,8 @@ import { getWalletModalAutoClose } from "@/lib/solana";
 type WalletModalProps = {
   initialAuth: AuthMeResponse;
 };
+
+const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 
@@ -127,12 +130,14 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const inactivityTimeoutRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
   const autoCloseOnConnect = useMemo(() => getWalletModalAutoClose(), []);
   const walletPublicKey = publicKey?.toBase58() ?? null;
@@ -214,6 +219,43 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const resetInactivityTimeout = (): void => {
+      if (inactivityTimeoutRef.current !== null) {
+        window.clearTimeout(inactivityTimeoutRef.current);
+      }
+
+      inactivityTimeoutRef.current = window.setTimeout(() => {
+        setIsOpen(false);
+      }, WALLET_MODAL_IDLE_TIMEOUT_MS);
+    };
+
+    const handleInteraction = (): void => {
+      resetInactivityTimeout();
+    };
+
+    const interactionEvents = ["pointerdown", "keydown", "touchstart", "wheel"] as const;
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, handleInteraction);
+    });
+    resetInactivityTimeout();
+
+    return () => {
+      if (inactivityTimeoutRef.current !== null) {
+        window.clearTimeout(inactivityTimeoutRef.current);
+        inactivityTimeoutRef.current = null;
+      }
+
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, handleInteraction);
+      });
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!wallet) {
       select(PhantomWalletName);
     }
@@ -287,7 +329,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Current wallet does not support message signing.");
       }
 
-      const verifiedPublicKey = await startSiws({
+      const verifiedResult = await startSiws({
         publicKey: activePublicKey,
         signMessage,
         statement: signInStatement,
@@ -298,7 +340,30 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         const currentAuth = await fetchAuthMe();
         setAuthState(currentAuth);
       } catch {
-        setAuthState({ authenticated: true, pubkey: verifiedPublicKey, role: "user" });
+        setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
+      }
+
+      try {
+        const profileRes = await fetch("/api/protected/profile");
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (!profileData.firstName || !profileData.email || !profileData.phone) {
+            setIsOpen(false);
+            router.push("/protected/perfil");
+            return;
+          }
+        } else if (profileRes.status === 404) {
+          setIsOpen(false);
+          router.push("/protected/perfil");
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to check profile completion during auth", err);
+      }
+
+      if (verifiedResult.isNewUser) {
+        setIsOpen(false);
+        router.push("/protected/perfil");
       }
     } catch (error) {
       setLastError(getFriendlyWalletErrorMessage(error, t));
@@ -362,6 +427,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const accountStatusText = authState.authenticated && authState.pubkey
     ? `${authState.role === "admin" ? t({ en: "Admin", es: "Admin", pt: "Admin" }) : t({ en: "User", es: "Usuario", pt: "Usuario" })}: ${truncatePublicKey(authState.pubkey)}`
     : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
+  const topFeedbackText = statusText ?? lastError;
+  const isTopFeedbackStatus = Boolean(statusText);
 
   return (
     <>
@@ -373,7 +440,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           <div className="relative z-10 flex items-center gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
+              className="brand-pill inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
               aria-label={t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar para inicio" })}
             >
               <Image src="/brand/brids-mark.svg" alt="BRIDS mark" width={24} height={24} className="h-6 w-auto sm:hidden" priority />
@@ -418,6 +485,10 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
             </button>
 
             <div className="hidden shrink-0 sm:block">
+              <ThemeToggle />
+            </div>
+
+            <div className="hidden shrink-0 sm:block">
               <LanguageSwitcher />
             </div>
 
@@ -438,6 +509,9 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
           {isMobileMenuOpen ? (
             <nav className="relative z-10 mt-3 flex flex-wrap items-center gap-2 sm:hidden" aria-label="Mobile navigation">
+              <div className="w-full">
+                <ThemeToggle />
+              </div>
               <div className="w-full">
                 <LanguageSwitcher />
               </div>
@@ -501,10 +575,21 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 </button>
               </div>
 
-              {statusText ? (
-                <div className="flex min-h-11 items-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-4 text-sm text-cyan-200" role="status" aria-live="polite">
-                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" />
-                  {statusText}
+              {topFeedbackText ? (
+                <div
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-sm",
+                    isTopFeedbackStatus
+                      ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+                      : "border-red-300/35 bg-red-500/10 text-red-200"
+                  )}
+                  role={isTopFeedbackStatus ? "status" : "alert"}
+                  aria-live={isTopFeedbackStatus ? "polite" : "assertive"}
+                >
+                  {isTopFeedbackStatus ? (
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" />
+                  ) : null}
+                  {topFeedbackText}
                 </div>
               ) : null}
 
@@ -552,11 +637,6 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
               </Button>
 
-              {lastError ? (
-                <p className="rounded-2xl border border-red-300/35 bg-red-500/10 p-3 text-sm text-red-200" role="status">
-                  {lastError}
-                </p>
-              ) : null}
             </div>
           </div>
         </div>

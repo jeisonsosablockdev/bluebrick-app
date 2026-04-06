@@ -11,6 +11,7 @@ Your primary goal is to execute tasks with extreme precision, adhering to strict
 3.  **Documentation**: No feature is complete without updating `/docs`. Documentation must evolve alongside code.
 4.  **Mobile-First**: All UI must be responsive (min 320px). Touch targets >= 44px.
 5.  **Security**: Never trust client state. Validate all signatures server-side.
+6.  **Feature Notes**: For small/iterative feature work, update at least one file in `/docs/features/*.md`.
 
 ## ⚙️ AUTOMATION MACROS (INSTRUCTIONS)
 When a user triggers a macro, follow the specific execution order defined in `agents.md`:
@@ -32,6 +33,11 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 ### 🟢 `@responsive-qa`
 -   **Checklist**: Verify 320px, 375px, 768px, 1024px. Check for horizontal overflow.
 
+### 📝 `@feature-plan` (Feature Scoping & Implementation)
+-   **Trigger**: User runs `@feature-plan`
+-   **File Location**: `/docs/features/<branch-name>.md`
+-   **Flow**: Plan Creation -> Iterative Updates -> Final Approval -> Mark as **Completed** (with final Commit #).
+
 ## 📂 FILE STRUCTURE MAP
 | Path | Cycle / Context |
 | :--- | :--- |
@@ -39,6 +45,31 @@ When a user triggers a macro, follow the specific execution order defined in `ag
 | `/app` | `@frontend-cycle` |
 | `/packages` | Shared logic (`typescript-expert`) |
 | `/docs` | **Source of Truth** for governance |
+
+## 🛂 GITFLOW & PR WORKFLOW (STRICT)
+- **Wait for Authorization**: NEVER automatically merge Pull Requests or finish a branch without explicit user authorization (e.g., "merge", "finish", "approve").
+- **Iterative Check-in**: After creating a branch, pushing code, and opening a PR, pause and report back to the user with the PR link. Wait for feedback or approval.
+- **Additional Commits**: The user might add or request additional commits on the active branch. Do not mark the gitflow as completed until told so.
+
+### Mandatory PR Governance for `develop`
+1. PR must pass `npm run validate`.
+2. PR must pass required docs scope check (docs-sync policy check, non-mutating).
+3. Before opening PR, run local preflight: `npm run pr:ready`.
+4. Branches should be short-lived (target: 1-3 days).
+5. Keep PRs small (target <= 400 added lines). If larger, split into sequential PRs with feature flags.
+6. Enforce strict commit convention: `type(scope): summary` (e.g., `feat(app): ...`, `fix(program): ...`).
+7. Required labels policy:
+   - `scope:*` (one required)
+   - `type:*` (one required)
+   - `risk:*` (one required)
+8. PR body must include:
+   - `Issue`
+   - `RFC`
+   - `Riesgos`
+   - `Rollback Plan`
+   - `Prueba Devnet`
+9. For branch types `feature/*`, `fix/*`, `nft/*`, `refactor/*` that touch product code, include `Feature Note (/docs/features/*.md)` in the PR body.
+10. Release notes are automated and label-driven (Release Drafter + semver labels).
 
 ## 🚫 NEGATIVE CONSTRAINTS (DO NOT DO)
 -   DO NOT mock RPC calls.
@@ -96,7 +127,6 @@ When reviewing architecture or code, enforce these specific integrations:
     *   Use Bubblegum for compressed NFTs (cNFTs) if scale > 100k.
 
 ## ⚔️ RFC CRITIQUE PROTOCOL (STAFF ENGINEER MODE)
-When the user provides an RFC for review, you must adopt the persona of an **extremely strict Staff Engineer**.
 
 1.  **Role**: You are the **Critic**. Your goal is to find flaws before implementation. The other AI (Codex) is the **Proponent**.
 2.  **Input**: An RFC file (e.g., `/docs/rfcs/EPIC-X/STORY-Y.md`) with `Context` and `Proposal` sections filled.

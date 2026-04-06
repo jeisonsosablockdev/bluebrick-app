@@ -409,5 +409,28 @@ describe("api/admin/assets/import-jobs routes", () => {
       expect(routeMocks.registerImportJobProcessingFailure).toHaveBeenCalledTimes(1);
       expect(routeMocks.enqueueImportJob).toHaveBeenCalledWith(VALID_UUID);
     });
+
+    it("returns ok=false and does not re-enqueue when worker failure is terminal", async () => {
+      routeMocks.processImportJobBatch.mockRejectedValueOnce(new Error("worker hard failure"));
+      routeMocks.registerImportJobProcessingFailure.mockResolvedValueOnce({
+        failedPermanently: true,
+        attemptCount: 3,
+        maxAttempts: 3,
+        state: "failed"
+      });
+
+      const request = createJsonPostRequest("https://example.com/api/admin/assets/import-jobs/process", {
+        jobId: VALID_UUID
+      });
+
+      const response = await processImportJobRoute(request);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.ok).toBe(false);
+      expect(payload.failedPermanently).toBe(true);
+      expect(routeMocks.registerImportJobProcessingFailure).toHaveBeenCalledTimes(1);
+      expect(routeMocks.enqueueImportJob).not.toHaveBeenCalled();
+    });
   });
 });

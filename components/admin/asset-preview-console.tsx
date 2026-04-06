@@ -23,12 +23,12 @@ const checks: PublicationCheck[] = [
   { label: { en: "cover image uploaded", es: "cover image cargada", pt: "cover image carregada" }, done: true },
   { label: { en: "short and long description", es: "descripcion corta y larga", pt: "descricao curta e longa" }, done: true },
   { label: { en: "collection assigned", es: "coleccion asignada", pt: "colecao atribuida" }, done: true },
-  { label: { en: "total NFTs defined", es: "total NFTs definido", pt: "total NFTs definido" }, done: true },
+  { label: { en: "total Fractions defined", es: "total Fracciones definido", pt: "total Frações definido" }, done: true },
   {
     label: {
-      en: "price per NFT defined",
-      es: "precio por NFT definido",
-      pt: "preco por NFT definido"
+      en: "price per Fraction defined",
+      es: "precio por Fracción definido",
+      pt: "preco por Fração definido"
     },
     done: false,
     warning: true
@@ -70,15 +70,15 @@ export function AssetPreviewConsole({ assetId }: { assetId: string }): ReactElem
               <p className="text-white/75">{t({ en: "Name", es: "Nombre", pt: "Nome" })}: Vista Mar Cartagena</p>
               <p className="text-white/75">{t({ en: "Type", es: "Tipo", pt: "Tipo" })}: {t({ en: "Rental property", es: "Propiedad en renta", pt: "Propriedade em renda" })}</p>
               <p className="text-white/75">{t({ en: "Location", es: "Ubicacion", pt: "Localizacao" })}: Cartagena, Colombia</p>
-              <p className="text-white/75">{t({ en: "Price per NFT", es: "Precio por NFT", pt: "Preco por NFT" })}: $120</p>
-              <p className="text-white/75">{t({ en: "Total NFTs", es: "Total NFTs", pt: "Total NFTs" })}: 5000 · {t({ en: "Available", es: "Disponibles", pt: "Disponiveis" })}: 5000</p>
+              <p className="text-white/75">{t({ en: "Price per Fraction", es: "Precio por Fracción", pt: "Preco por Fração" })}: $120</p>
+              <p className="text-white/75">{t({ en: "Total Fractions", es: "Total Fracciones", pt: "Total Frações" })}: 5000 · {t({ en: "Available", es: "Disponibles", pt: "Disponiveis" })}: 5000</p>
               <p className="text-white/75">{t({ en: "Publication status", es: "Estado de publicacion", pt: "Status de publicacao" })}: draft</p>
               <p className="text-white/75">{t({ en: "Short description", es: "Descripcion breve", pt: "Descricao breve" })}: {t({ en: "asset oriented to monthly yield.", es: "activo orientado a renta mensual.", pt: "ativo orientado a renda mensal." })}</p>
             </div>
           </Card>
 
           <Card className="space-y-3">
-            <p className="text-sm font-semibold text-white">{t({ en: "NFT metadata preview", es: "Preview NFT Metadata", pt: "Preview da metadata NFT" })}</p>
+            <p className="text-sm font-semibold text-white">{t({ en: "Fraction metadata preview", es: "Preview Fracción Metadata", pt: "Preview da metadata Fração" })}</p>
             <div className="rounded-xl border border-white/10 bg-slate-900/70 p-3 text-xs text-white/80">
               <pre>{`{
   "name": "BRIDS Coastal #001",

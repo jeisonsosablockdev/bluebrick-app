@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,7 +18,7 @@ export function ProcessSection() {
     }),
     t({
       en: "Connect your investment profile",
-      es: "Conecta tu perfil de inversion",
+      es: "Completa tu perfil de acceso",
       pt: "Conecte seu perfil de investimento"
     }),
     t({
@@ -37,9 +39,9 @@ export function ProcessSection() {
         <H2 className="text-white">{t({ en: "How to Start", es: "Como Empezar", pt: "Como Comecar" })}</H2>
         <Lead className="mx-auto mt-2 max-w-xl">
           {t({
-            en: "Four simple steps to start generating passive income.",
-            es: "Cuatro pasos simples para comenzar a generar ingresos pasivos.",
-            pt: "Quatro passos simples para comecar a gerar renda passiva."
+            en: "Four simple steps to start using the platform.",
+            es: "Cuatro pasos simples para comenzar a usar la plataforma.",
+            pt: "Quatro passos simples para comecar a usar a plataforma."
           })}
         </Lead>
       </div>
@@ -56,7 +58,9 @@ export function ProcessSection() {
       </div>
 
       <div className="mt-7 text-center">
-        <Button className="px-7">{t({ en: "Start with a free account", es: "Empieza con una cuenta gratis", pt: "Comece com uma conta gratis" })}</Button>
+        <Link href="/protected/perfil" className="inline-flex">
+          <Button className="px-7">{t({ en: "Start with a free account", es: "Empieza con una cuenta gratis", pt: "Comece com uma conta gratis" })}</Button>
+        </Link>
       </div>
     </section>
   );

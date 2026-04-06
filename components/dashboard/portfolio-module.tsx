@@ -262,19 +262,19 @@ function PortfolioEmptyState({
     return (
       <Card className="space-y-2">
         <h2 className="text-lg font-semibold text-white">{t({ en: "No results", es: "Sin resultados", pt: "Sem resultados" })}</h2>
-        <p className="text-sm text-white/70">{t({ en: "No NFTs found with those filters. Try another status or term.", es: "No encontramos NFTs con esos filtros. Prueba con otro estado o termino.", pt: "Nao encontramos NFTs com esses filtros. Tente outro status ou termo." })}</p>
+        <p className="text-sm text-white/70">{t({ en: "No Fractions found with those filters. Try another status or term.", es: "No encontramos Fracciones con esos filtros. Prueba con otro estado o termino.", pt: "Nao encontramos Frações com esses filtros. Tente outro status ou termo." })}</p>
       </Card>
     );
   }
 
   return (
     <Card className="space-y-2 border-dashed">
-      <h2 className="text-lg font-semibold text-white">{t({ en: "You do not have NFTs in your portfolio", es: "No tienes NFTs en portfolio", pt: "Voce nao tem NFTs no portfolio" })}</h2>
+      <h2 className="text-lg font-semibold text-white">{t({ en: "You do not have Fractions in your portfolio", es: "No tienes Fracciones en portfolio", pt: "Voce nao tem Frações no portfolio" })}</h2>
       <p className="text-sm text-white/70">
         {t({
-          en: "When you buy your first fractional NFT, this screen will show your positions and estimated yield.",
-          es: "Cuando compres tu primer NFT fraccionado, esta pantalla mostrara tus posiciones y su rentabilidad estimada.",
-          pt: "Quando voce comprar seu primeiro NFT fracionado, esta tela mostrara suas posicoes e rentabilidade estimada."
+          en: "When you buy your first fractional Fraction, this screen will show your positions and estimated yield.",
+          es: "Cuando compres tu primer Fracción fraccionado, esta pantalla mostrara tus posiciones y su rentabilidad estimada.",
+          pt: "Quando voce comprar seu primeiro Fração fracionado, esta tela mostrara suas posicoes e rentabilidade estimada."
         })}
       </p>
     </Card>
@@ -311,7 +311,7 @@ function DetailModal({
       <section className="glass-drawer-surface relative ml-auto h-full w-full overflow-y-auto md:max-w-3xl">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#0b1224]/85 px-4 py-3 backdrop-blur-md sm:px-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{t({ en: "NFT detail", es: "Detalle NFT", pt: "Detalhe NFT" })}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{t({ en: "Fraction detail", es: "Detalle Fracción", pt: "Detalhe Fração" })}</p>
             <h2 className="text-lg font-semibold text-white">{item.property}</h2>
           </div>
           <Button className="min-h-11" variant="ghost" onClick={onClose}>
@@ -412,9 +412,9 @@ function DetailModal({
           <Card className="space-y-3 border-amber-400/30 bg-amber-500/5">
             <p className="text-sm text-amber-100">
               {t({
-                en: "Notice: when an NFT enters staking, transfers are blocked until unlock period ends.",
-                es: "Aviso: si un NFT entra en staking, las transferencias quedan bloqueadas hasta el periodo de desbloqueo.",
-                pt: "Aviso: se um NFT entra em staking, as transferencias ficam bloqueadas ate o periodo de desbloqueio."
+                en: "Notice: when an Fraction enters staking, transfers are blocked until unlock period ends.",
+                es: "Aviso: si un Fracción entra en staking, las transferencias quedan bloqueadas hasta el periodo de desbloqueo.",
+                pt: "Aviso: se um Fração entra em staking, as transferencias ficam bloqueadas ate o periodo de desbloqueio."
               })}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -472,11 +472,11 @@ export function PortfolioModule(): ReactElement {
   return (
     <div className="space-y-4">
       <Card className="space-y-3">
-        <h2 className="text-lg font-semibold text-white">{t({ en: "NFT assets", es: "Activos NFT", pt: "Ativos NFT" })}</h2>
+        <h2 className="text-lg font-semibold text-white">{t({ en: "Fraction assets", es: "Activos Fracción", pt: "Ativos Fração" })}</h2>
         <p className="text-sm text-white/70">{t({ en: "Filter by status or search by property and ID to find a position quickly.", es: "Filtra por estado o busca por propiedad e ID para ubicar una posicion rapido.", pt: "Filtre por status ou busque por propriedade e ID para localizar uma posicao rapidamente." })}</p>
         <div className="grid gap-3 md:grid-cols-[1fr,auto]">
           <Input
-            aria-label={t({ en: "Search NFT by property or ID", es: "Buscar NFT por propiedad o ID", pt: "Buscar NFT por propriedade ou ID" })}
+            aria-label={t({ en: "Search Fraction by property or ID", es: "Buscar Fracción por propiedad o ID", pt: "Buscar Fração por propriedade ou ID" })}
             placeholder={t({ en: "Search by property or ID...", es: "Buscar por propiedad o ID...", pt: "Buscar por propriedade ou ID..." })}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}

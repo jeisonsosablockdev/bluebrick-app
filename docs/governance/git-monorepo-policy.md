@@ -132,8 +132,35 @@ PR must include:
 	•	Devnet transaction proof (if blockchain change)
 	•	Security impact analysis
 	•	Screenshots (if frontend change)
+	•	Issue reference
+	•	RFC reference (if applicable)
+	•	Risk analysis section
+	•	Rollback plan section
+	•	Feature note path under `/docs/features/*.md` for small/iterative feature/fix/refactor/nft product changes
 
 No PR allowed without macro completion.
+
+⸻
+
+🔒 DEVELOP PR GOVERNANCE GATES (MANDATORY)
+
+Every PR targeting `develop` must pass:
+	1.	`npm run validate` (mandatory status check)
+	2.	Required docs scope check (must fail if mandatory docs for touched scope are missing)
+	3.	Commit convention check (`type(scope): summary`)
+	4.	Label policy check:
+	•	one `scope:*`
+	•	one `type:*`
+	•	one `risk:*`
+	5.	PR body policy check (Issue, RFC, Risks, Rollback Plan, Devnet Proof)
+	6.	PR size policy:
+	•	Target <= 400 added lines
+	•	If larger, split into sequential PRs and use feature flags
+	7.	Branch lifetime policy:
+	•	Target 1-3 days
+	•	Long-lived branches require explicit exception
+
+If any governance gate fails, merge must be blocked.
 
 ⸻
 
@@ -172,3 +199,10 @@ No release without:
 	•	Passing @mainnet-hardening
 	•	Passing full CI
 	•	Clean-code validation
+
+Release notes policy:
+	•	Release notes are generated automatically from merged PR metadata and labels.
+	•	Use semantic labels to drive version bump:
+	•	`semver:major`
+	•	`semver:minor`
+	•	`semver:patch`

@@ -40,11 +40,21 @@ export function PropertiesSection() {
                 </span>
               </div>
               <p className="text-sm text-slate-400">{property.locationLabel}</p>
-              <p className="text-sm font-semibold text-cyan-300">ROI: {property.annualRoiPct.toFixed(1)}%</p>
+              <p className="text-sm font-semibold text-cyan-300">
+                {t({ en: "Project metric", es: "Metrica del proyecto", pt: "Metrica do projeto" })}: {property.annualRoiPct.toFixed(1)}%
+              </p>
             </div>
           </Card>
         ))}
       </div>
+
+      <p className="mx-auto mt-4 max-w-3xl text-center text-xs text-slate-400">
+        {t({
+          en: "Project metrics are informational references and may change according to partner updates and applicable documentation.",
+          es: "Las metricas del proyecto son referenciales e informativas y pueden cambiar segun actualizaciones del partner y documentacion aplicable.",
+          pt: "As metricas do projeto sao referenciais e informativas e podem mudar conforme atualizacoes do parceiro e documentacao aplicavel."
+        })}
+      </p>
 
       <div className="mt-6 text-center">
         <Link

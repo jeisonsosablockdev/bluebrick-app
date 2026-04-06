@@ -65,6 +65,22 @@ If documentation is missing or outdated → task incomplete.
 
 ⸻
 
+Feature Notes for Small/Iterative Work
+
+For branch types:
+	•	`feature/*`
+	•	`fix/*`
+	•	`nft/*`
+	•	`refactor/*`
+
+If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), the PR must update at least one Markdown file under:
+	•	`/docs/features/*.md`
+
+Enforcement:
+	•	If no `/docs/features/*.md` file is updated for qualifying changes, documentation is considered incomplete.
+
+⸻
+
 RFC Workflow by Epic
 
 Use RFCs to document architecture debate, multi-model review, and final technical decisions for epics/stories with relevant complexity.
@@ -92,3 +108,11 @@ Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
+
+Automated enforcement in project flow:
+	•	`npm run validate` now includes docs governance validation (`scripts/ci/validate-doc-governance.sh`).
+	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with `epic-<id>-story-<id>` when product code is touched:
+		•	Story RFC file and EPIC `README.md` must both be updated in the same PR.
+		•	Required story sections must exist.
+		•	If story status is `implemented`, traceability cannot remain in `TBD` or `pending/open`.
+		•	Story status in EPIC Story Index must match story RFC status.

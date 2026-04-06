@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +9,15 @@ export function FooterSection() {
   const { t } = useI18n();
 
   return (
-    <footer className="mt-10 rounded-t-3xl border border-white/10 bg-slate-900/80 px-6 py-10 md:px-10">
+    <footer className="app-footer mt-10 rounded-t-3xl border border-white/10 bg-slate-900/80 px-6 py-10 md:px-10">
       <div className="grid gap-8 text-sm text-slate-300 md:grid-cols-4">
         <div>
           <h4 className="mb-2 text-base font-semibold text-white">BRIDS</h4>
           <p>
             {t({
-              en: "Tokenized real estate investment platform. SSR-first UI demo for Next.js App Router.",
-              es: "Plataforma de inversion inmobiliaria tokenizada. UI demo SSR-first para Next.js App Router.",
-              pt: "Plataforma de investimento imobiliario tokenizado. UI demo SSR-first para Next.js App Router."
+              en: "Technology platform for project visualization, documentation and third-party integrations.",
+              es: "Plataforma tecnologica para visualizacion de proyectos inmobiliarios fraccionados.",
+              pt: "Plataforma tecnologica para visualizacao de projetos, documentacao e integracoes de terceiros."
             })}
           </p>
           <div className="mt-4 space-y-2">
@@ -41,6 +42,11 @@ export function FooterSection() {
             <li>{t({ en: "Terms", es: "Terminos", pt: "Termos" })}</li>
             <li>{t({ en: "Privacy", es: "Privacidad", pt: "Privacidade" })}</li>
             <li>{t({ en: "Risks", es: "Riesgos", pt: "Riscos" })}</li>
+            <li>
+              <Link href="/transparencia" className="transition hover:text-white">
+                {t({ en: "Transparency", es: "Transparencia", pt: "Transparencia" })}
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

@@ -142,16 +142,16 @@ function ConfirmActionModal({
         <p className="mt-2 text-sm text-white/75">
           {t({ en: "You are about to execute", es: "Vas a ejecutar", pt: "Voce vai executar" })}{" "}
           <span className="font-semibold text-white">{action}</span>{" "}
-          {t({ en: "on NFT", es: "sobre el NFT", pt: "no NFT" })} {asset.id} {t({ en: "from", es: "de", pt: "de" })}{" "}
+          {t({ en: "on Fraction", es: "sobre el Fracción", pt: "no Fração" })} {asset.id} {t({ en: "from", es: "de", pt: "de" })}{" "}
           <span className="font-semibold text-white">{asset.property}</span>.
         </p>
 
         <Card className="mt-4 space-y-2 border-amber-400/30 bg-amber-500/5">
           <p className="text-sm text-amber-100">
             {t({
-              en: "UX warning: when staking, NFT transfers stay blocked until unlock.",
-              es: "Advertencia UX: al hacer stake, el NFT quedara bloqueado para transferencias hasta su desbloqueo.",
-              pt: "Aviso UX: ao fazer stake, o NFT ficara bloqueado para transferencias ate o desbloqueio."
+              en: "UX warning: when staking, Fraction transfers stay blocked until unlock.",
+              es: "Advertencia UX: al hacer stake, el Fracción quedara bloqueado para transferencias hasta su desbloqueo.",
+              pt: "Aviso UX: ao fazer stake, o Fração ficara bloqueado para transferencias ate o desbloqueio."
             })}
           </p>
           <p className="text-sm text-amber-100">
@@ -194,7 +194,7 @@ export function StakeModule(): ReactElement {
     <div className="space-y-4">
       <Card className="space-y-2">
         <h2 className="text-lg font-semibold text-white">
-          {t({ en: "NFTs eligible for Stake / Unstake", es: "NFTs elegibles para Stake / Unstake", pt: "NFTs elegiveis para Stake / Unstake" })}
+          {t({ en: "Fractions eligible for Stake / Unstake", es: "Fracciones elegibles para Stake / Unstake", pt: "Frações elegiveis para Stake / Unstake" })}
         </h2>
         <p className="text-sm text-white/70">
           {t({
@@ -208,9 +208,9 @@ export function StakeModule(): ReactElement {
       <Card className="space-y-2 border-amber-400/30 bg-amber-500/5">
         <p className="text-sm text-amber-100">
           {t({
-            en: "Important note: staked NFTs keep transfer restrictions until lock period ends.",
-            es: "Nota importante: los NFTs en stake mantienen restricciones de transferencia hasta finalizar su periodo de bloqueo.",
-            pt: "Nota importante: NFTs em stake mantem restricoes de transferencia ate o fim do periodo de bloqueio."
+            en: "Important note: staked Fractions keep transfer restrictions until lock period ends.",
+            es: "Nota importante: los Fracciones en stake mantienen restricciones de transferencia hasta finalizar su periodo de bloqueo.",
+            pt: "Nota importante: Frações em stake mantem restricoes de transferencia ate o fim do periodo de bloqueio."
           })}
         </p>
       </Card>

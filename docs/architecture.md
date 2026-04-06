@@ -64,4 +64,53 @@
   - This handoff is intentionally deploy-first (no mint required).
   - Explorer link is derived from collection address using devnet cluster.
   - If `DATABASE_URL` is not configured, create-entry returns an explicit failure.
-Last Updated: 2026-03-18 16:24:39 UTC
+
+## Compliance Dashboard and Audit (EPIC-004 STORY-005)
+- Scope:
+  - `app/admin/compliance/page.tsx`
+  - `components/admin/compliance-console.tsx`
+  - `app/api/admin/compliance/cases/*`
+  - `lib/compliance/case-service.ts`
+  - `lib/compliance/profile-repository.ts`
+  - `db/migrations/014_compliance_notes.sql`
+- Queue data model:
+  - Operational queue reads from denormalized `user_profiles.compliance_status`.
+  - Cursor pagination ordered by `compliance_status_updated_at DESC, wallet_public_key DESC`.
+- Admin actions:
+  - `kyc-decision`: `verified` or `rejected` (reason required for rejected).
+  - `aml-decision`: `clear` or `flagged` (reason required).
+  - `suspend` and `unsuspend`: toggles `is_suspended`, then recomputes projected status.
+  - `notes`: internal notes persisted in `compliance_notes`.
+- Audit model:
+  - Every admin mutation writes to `compliance_audit_events` with actor, event name, payload and UTC timestamp.
+  - Notes also produce dedicated audit events (`compliance.note_added`).
+- Financial guardrail:
+  - Financial routes enforce compliance blocking for `restricted_aml` and `suspended`.
+  - Applied to `/api/purchase/challenge`, `/api/purchase/prepare`, `/api/purchase/submit`.
+
+## EPIC-006 STORY-006-03: Economic AppData Plugin
+- Scope:
+  - `lib/core-candy-machine-admin.ts`
+  - `components/admin/core-candy-machine-panel.tsx`
+  - `tests/lib/core-candy-machine-admin-validation.test.ts`
+- Runtime flow (mint pipeline):
+  1. `mint` transaction creates the asset from Core Candy Machine.
+  2. `add-app-data-plugin` attaches `AppData` with `ExternalPluginAdapterSchema.Json` and `UpdateAuthority`.
+  3. `write-app-data` writes economic payload `v1` immediately after mint.
+- Canonical payload fields:
+  - `revenue_share_bps`, `yield_bps`, `yield_mode`
+  - `locked_at`, `eligible_from`, `earning_start_ts`
+  - `distribution_enabled`, `economic_version`
+  - `last_updated_at`, `updated_by`
+- Validation guarantees:
+  - Catalog-only `yield_mode` (`cap | linear`).
+  - `bps` range in `[0, 10000]`.
+  - `economic_version` format gate + explicit support for `v1`.
+  - Unsupported keys rejected (`additionalProperties=false` behavior).
+  - Optional lifecycle timestamps accepted when omitted.
+- Devnet proof anchor:
+  - Collection: `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi`
+  - Asset: `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK`
+  - Final on-chain `AppData` confirms updated economic payload (`yield_mode=linear`, `yield_bps=1300`, `distribution_enabled=false`).
+
+Last Updated: 2026-04-01 08:20:33 UTC

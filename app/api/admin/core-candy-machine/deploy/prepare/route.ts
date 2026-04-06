@@ -30,6 +30,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       assetNamePrefix: body.assetNamePrefix ?? "",
       assetUri: body.assetUri ?? "",
       quantity: typeof body.quantity === "number" ? body.quantity : 0,
+      priceUsdcAtomic: typeof body.priceUsdcAtomic === "number" ? body.priceUsdcAtomic : undefined,
       startDate: body.startDate ?? "",
       startSerial: body.startSerial
     });

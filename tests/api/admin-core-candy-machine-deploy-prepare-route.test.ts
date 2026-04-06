@@ -72,4 +72,38 @@ describe("api/admin/core-candy-machine/deploy/prepare", () => {
     expect(response.status).toBe(400);
     expect(payload.error).toBe("collectionUri is required.");
   });
+
+  it("forwards priceUsdcAtomic when provided", async () => {
+    routeMocks.prepareCoreCandyMachineDeploy.mockResolvedValue({
+      deployId: "deploy-1",
+      candyMachineAddress: "11111111111111111111111111111111",
+      collectionAddress: "11111111111111111111111111111111",
+      quantity: 1,
+      paymentMode: "USDC",
+      priceUsdcAtomic: 1500000,
+      priceLamports: null,
+      startDate: "2026-03-17T20:00:00.000Z",
+      transactions: []
+    });
+
+    const request = new NextRequest("https://example.com/api/admin/core-candy-machine/deploy/prepare", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        collectionName: "Collection",
+        collectionUri: "ipfs://collection-cid",
+        assetNamePrefix: "Asset",
+        assetUri: "ipfs://asset-cid",
+        quantity: 1,
+        priceUsdcAtomic: 1500000,
+        startDate: "2026-03-17T20:00:00.000Z"
+      })
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(routeMocks.prepareCoreCandyMachineDeploy).toHaveBeenCalledWith(expect.objectContaining({
+      priceUsdcAtomic: 1500000
+    }));
+  });
 });

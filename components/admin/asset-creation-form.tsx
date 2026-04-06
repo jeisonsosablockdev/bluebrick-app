@@ -1,137 +1,45 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, DragEvent, ReactElement } from "react";
+import type { InputHTMLAttributes, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
-  CoreCandyMachinePanel,
-  type DeployCompletedPayload,
-  type SnapshotFinalizeResponse
+  CoreCandyMachinePanel
 } from "@/components/admin/core-candy-machine-panel";
+import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
+import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
+import {
+  AssetCollectionSection,
+  AssetCommercialDescriptionSection,
+  AssetCreationIntroSection,
+  AssetIdentificationSection,
+  AssetImportSection,
+  AssetLocationSection,
+  AssetMediaSection,
+  AssetTypeSelectionSection
+} from "@/components/admin/asset-creation/sections";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   applyFinancialRule,
   mapImportRowToFormFields,
-  parseTabularText,
-  parseTextFileToTabularRows,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
+import {
+  convertSolToUsd,
+  convertUsdToSol,
+  formatPriceInput,
+  parsePositiveDecimalInput
+} from "@/lib/admin/pricing";
 import {
   parseCollectionName,
   parseCollectionSymbol,
   parseExitStrategy
 } from "@/lib/admin/asset-compatibility-validation";
-import {
-  type AssetUploadCategory,
-  type FinalizeResponse,
-  uploadAssetFileViaSignedUrl
-} from "@/lib/admin/asset-upload-client";
-
-type AssetType = "building_new" | "rental_property" | "land_lot" | "";
-type FormStatus = "draft" | "saving" | "saved" | "validation-error";
-type TypeFormState = "incomplete" | "valid" | "invalid";
-type FileUploadField = "coverImage" | "galleryImages" | "brochureFile" | "legalDocs" | "financialDocs" | "propertyImages";
-type UploadFieldUiState = {
-  uploading: boolean;
-  message: string;
-  error: string;
-};
-
-type ImportJobState =
-  | "queued"
-  | "processing"
-  | "completed"
-  | "completed_with_errors"
-  | "failed"
-  | "delayed";
-
-type ImportJobErrorItem = {
-  row: number | null;
-  column: string | null;
-  code: string;
-  message: string;
-};
-
-type ImportJobTracker = {
-  importJobId: string;
-  statusUrl: string;
-  state: ImportJobState;
-  delayed: boolean;
-  totalRows: number;
-  processedRows: number;
-  failedRows: number;
-  warningsCount: number;
-  errorReportUrl: string | null;
-  errors: ImportJobErrorItem[];
-  error: string;
-};
-
-type AssetForm = {
-  assetType: AssetType;
-  assetName: string;
-  slug: string;
-  internalCode: string;
-  country: string;
-  state: string;
-  city: string;
-  address: string;
-  geoLat: string;
-  geoLng: string;
-  shortDescription: string;
-  longDescription: string;
-  investmentThesis: string;
-  riskNotes: string;
-  coverImage: string;
-  galleryImages: string[];
-  videoUrl: string;
-  brochureFile: string;
-  legalDocs: string[];
-  financialDocs: string[];
-  propertyImages: string[];
-  collectionName: string;
-  collectionSymbol: string;
-  buildingProjectStage: string;
-  buildingDeveloperName: string;
-  buildingEstimatedDeliveryDate: string;
-  buildingConstructionStartDate: string;
-  buildingTotalUnits: string;
-  buildingFundingGoal: string;
-  buildingNftCost: string;
-  buildingExpectedAnnualReturn: string;
-  buildingExitStrategy: string;
-  buildingProjectDurationMonths: string;
-  buildingLicensesStatus: string;
-  buildingFiduciaryStructure: string;
-  buildingSalesProgressPercent: string;
-  rentalMonthlyRentEstimate: string;
-  rentalAnnualGrossIncome: string;
-  rentalOccupancyRate: string;
-  rentalLeaseStartDate: string;
-  rentalLeaseEndDate: string;
-  rentalTenantType: string;
-  rentalPropertyManager: string;
-  rentalHistoricalYield: string;
-  rentalMaintenanceReserve: string;
-  rentalCurrentTenant: string;
-  rentalContractStatus: string;
-  rentalPaymentFrequency: string;
-  landCadastralNumber: string;
-  landAreaM2: string;
-  landUse: string;
-  landZoningClassification: string;
-  landAppreciationHorizonMonths: string;
-  landTargetExitValue: string;
-  landEntryPrice: string;
-  landExitStrategy: string;
-  landUrbanDevelopmentPotential: string;
-  landRoadAccess: string;
-  landUtilitiesAccess: string;
-  landRegulatoryStatus: string;
-};
 
 const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: { en: string; es: string; pt: string }; subtitle: { en: string; es: string; pt: string } }> = [
   {
@@ -189,78 +97,6 @@ const exitStrategyOptions: Array<{
   }
 ];
 
-const initialForm: AssetForm = {
-  assetType: "",
-  assetName: "",
-  slug: "",
-  internalCode: "",
-  country: "",
-  state: "",
-  city: "",
-  address: "",
-  geoLat: "",
-  geoLng: "",
-  shortDescription: "",
-  longDescription: "",
-  investmentThesis: "",
-  riskNotes: "",
-  coverImage: "",
-  galleryImages: [],
-  videoUrl: "",
-  brochureFile: "",
-  legalDocs: [],
-  financialDocs: [],
-  propertyImages: [],
-  collectionName: "",
-  collectionSymbol: "",
-  buildingProjectStage: "",
-  buildingDeveloperName: "",
-  buildingEstimatedDeliveryDate: "",
-  buildingConstructionStartDate: "",
-  buildingTotalUnits: "",
-  buildingFundingGoal: "",
-  buildingNftCost: "",
-  buildingExpectedAnnualReturn: "",
-  buildingExitStrategy: "",
-  buildingProjectDurationMonths: "",
-  buildingLicensesStatus: "",
-  buildingFiduciaryStructure: "",
-  buildingSalesProgressPercent: "",
-  rentalMonthlyRentEstimate: "",
-  rentalAnnualGrossIncome: "",
-  rentalOccupancyRate: "",
-  rentalLeaseStartDate: "",
-  rentalLeaseEndDate: "",
-  rentalTenantType: "",
-  rentalPropertyManager: "",
-  rentalHistoricalYield: "",
-  rentalMaintenanceReserve: "",
-  rentalCurrentTenant: "",
-  rentalContractStatus: "",
-  rentalPaymentFrequency: "",
-  landCadastralNumber: "",
-  landAreaM2: "",
-  landUse: "",
-  landZoningClassification: "",
-  landAppreciationHorizonMonths: "",
-  landTargetExitValue: "",
-  landEntryPrice: "",
-  landExitStrategy: "",
-  landUrbanDevelopmentPotential: "",
-  landRoadAccess: "",
-  landUtilitiesAccess: "",
-  landRegulatoryStatus: ""
-};
-
-const initialUploadState: Record<FileUploadField, UploadFieldUiState> = {
-  coverImage: { uploading: false, message: "", error: "" },
-  galleryImages: { uploading: false, message: "", error: "" },
-  brochureFile: { uploading: false, message: "", error: "" },
-  legalDocs: { uploading: false, message: "", error: "" },
-  financialDocs: { uploading: false, message: "", error: "" },
-  propertyImages: { uploading: false, message: "", error: "" }
-};
-
 function createDraftId(): string {
   const cryptoApi = globalThis.crypto;
 
@@ -287,32 +123,6 @@ function createDraftId(): string {
   ].join("-");
 }
 
-function fieldToUploadCategory(field: FileUploadField): AssetUploadCategory {
-  if (field === "propertyImages") {
-    return "propertyImage";
-  }
-
-  if (field === "brochureFile") {
-    return "brochureFile";
-  }
-
-  if (field === "legalDocs") {
-    return "legalDoc";
-  }
-
-  if (field === "financialDocs") {
-    return "financialDoc";
-  }
-
-  return "galleryImage";
-}
-
-function updateListField(current: string[], fileNames: string[]): string[] {
-  const merged = [...fileNames, ...current];
-  const unique = Array.from(new Set(merged.map((name) => name.trim()).filter(Boolean)));
-  return unique.slice(0, 20);
-}
-
 function dedupeValidationErrors(errors: string[]): string[] {
   return Array.from(new Set(errors.map((item) => item.trim()).filter(Boolean)));
 }
@@ -329,34 +139,6 @@ function areStringArraysEqual(left: string[], right: string[]): boolean {
   }
 
   return true;
-}
-
-function parseImportJobState(value: unknown): ImportJobState {
-  if (
-    value === "queued" ||
-    value === "processing" ||
-    value === "completed" ||
-    value === "completed_with_errors" ||
-    value === "failed" ||
-    value === "delayed"
-  ) {
-    return value;
-  }
-
-  return "queued";
-}
-
-function isTerminalImportJobState(state: ImportJobState): boolean {
-  return state === "completed" || state === "completed_with_errors" || state === "failed";
-}
-
-function toSafeNonNegativeNumber(value: unknown): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return 0;
-  }
-
-  return Math.floor(parsed);
 }
 
 function readApiErrorMessage(payload: unknown, fallback: string): string {
@@ -474,38 +256,185 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
   return documents;
 }
 
+type GuidedInputFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "className"> & {
+  label: string;
+  hint: string;
+  tooltip: string;
+  prefix?: string;
+  suffix?: string;
+  className?: string;
+};
+
+function GuidedInputField({
+  label,
+  hint,
+  tooltip,
+  prefix,
+  suffix,
+  className,
+  ...inputProps
+}: GuidedInputFieldProps): ReactElement {
+  return (
+    <label className="space-y-1 text-xs text-white/70">
+      <span className="inline-flex items-center gap-1">
+        <span>{label}</span>
+        <span
+          className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+          title={tooltip}
+          aria-label={tooltip}
+        >
+          ?
+        </span>
+      </span>
+      <div className="relative">
+        {prefix ? <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{prefix}</span> : null}
+        <Input
+          className={cn(prefix ? "pl-7" : "", suffix ? "pr-12" : "", className)}
+          {...inputProps}
+        />
+        {suffix ? <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{suffix}</span> : null}
+      </div>
+      <span className="text-[11px] text-white/50">{hint}</span>
+    </label>
+  );
+}
+
+function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
+  if (!startDateRaw || !deliveryDateRaw) {
+    return "";
+  }
+
+  const startDate = Date.parse(`${startDateRaw}T00:00:00Z`);
+  const deliveryDate = Date.parse(`${deliveryDateRaw}T00:00:00Z`);
+  if (!Number.isFinite(startDate) || !Number.isFinite(deliveryDate) || deliveryDate < startDate) {
+    return "";
+  }
+
+  const DAY_IN_MS = 1000 * 60 * 60 * 24;
+  const averageMonthInDays = 30.4375;
+  const diffDays = (deliveryDate - startDate) / DAY_IN_MS;
+  const months = Math.max(1, Math.ceil(diffDays / averageMonthInDays));
+  return String(months);
+}
+
+type PriceInputCurrency = "USD" | "SOL";
+
+type SolUsdQuoteResponse = {
+  solUsd?: number;
+  updatedAt?: string;
+  error?: string;
+};
+
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
-  const [form, setForm] = useState<AssetForm>(initialForm);
-  const [formStatus, setFormStatus] = useState<FormStatus>("draft");
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [collectionNameManual, setCollectionNameManual] = useState(false);
-  const [collectionSymbolManual, setCollectionSymbolManual] = useState(false);
-  const [importText, setImportText] = useState("");
-  const [importFileName, setImportFileName] = useState("");
-  const [importPreviewCount, setImportPreviewCount] = useState(0);
-  const [importHeaders, setImportHeaders] = useState<string[]>([]);
-  const [importMessage, setImportMessage] = useState<string>("");
-  const [importSubmitting, setImportSubmitting] = useState(false);
-  const [importJob, setImportJob] = useState<ImportJobTracker | null>(null);
-  const [dragTargetField, setDragTargetField] = useState<FileUploadField | null>(null);
-  const [uploadState, setUploadState] = useState<Record<FileUploadField, UploadFieldUiState>>(initialUploadState);
-  const [uploadRefs, setUploadRefs] = useState<Record<FileUploadField, string[]>>({
-    coverImage: [],
-    galleryImages: [],
-    brochureFile: [],
-    legalDocs: [],
-    financialDocs: [],
-    propertyImages: []
-  });
-  const [mintQuantity, setMintQuantity] = useState<string>("1");
-  const [showMintSetup, setShowMintSetup] = useState(false);
-  const [deployCompletedData, setDeployCompletedData] = useState<DeployCompletedPayload | null>(null);
-  const [snapshotFinalize, setSnapshotFinalize] = useState<SnapshotFinalizeResponse | null>(null);
-  const [createAssetMessage, setCreateAssetMessage] = useState("");
-  const [isCreatingMarketplaceEntry, setIsCreatingMarketplaceEntry] = useState(false);
-  const [createdMarketplaceEntryId, setCreatedMarketplaceEntryId] = useState<string | null>(null);
+  const {
+    form,
+    formStatus,
+    validationErrors,
+    collectionNameManual,
+    collectionSymbolManual,
+    importText,
+    importFileName,
+    importPreviewCount,
+    importHeaders,
+    importMessage,
+    importSubmitting,
+    importJob,
+    dragTargetField,
+    uploadState,
+    uploadRefs,
+    mintQuantity,
+    showMintSetup,
+    deployCompletedData,
+    snapshotFinalize,
+    createAssetMessage,
+    isCreatingMarketplaceEntry,
+    createdMarketplaceEntryId,
+    setForm,
+    setFormStatus,
+    setValidationErrors,
+    setCollectionNameManual,
+    setCollectionSymbolManual,
+    setImportText,
+    setImportFileName,
+    setImportPreviewCount,
+    setImportHeaders,
+    setImportMessage,
+    setImportSubmitting,
+    setImportJob,
+    setDragTargetField,
+    setUploadState,
+    setUploadRefs,
+    setMintQuantity,
+    setShowMintSetup,
+    setDeployCompletedData,
+    setSnapshotFinalize,
+    setCreateAssetMessage,
+    setIsCreatingMarketplaceEntry,
+    setCreatedMarketplaceEntryId
+  } = useAssetCreationFormState(draftId);
+  const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
+  const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
+  const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
+  const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [solUsdQuoteError, setSolUsdQuoteError] = useState<string | null>(null);
+
+  const refreshSolUsdQuote = useCallback(async () => {
+    setSolUsdQuoteStatus((previous) => (previous === "ready" ? "ready" : "loading"));
+    setSolUsdQuoteError(null);
+
+    try {
+      const response = await fetch("/api/admin/pricing/sol-usd", {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        },
+        cache: "no-store"
+      });
+
+      const payload = await response.json().catch(() => null) as SolUsdQuoteResponse | null;
+      if (!response.ok || typeof payload?.solUsd !== "number" || !Number.isFinite(payload.solUsd) || payload.solUsd <= 0) {
+        throw new Error(payload?.error ?? "Could not fetch SOL/USD quote.");
+      }
+
+      setSolUsdRate(payload.solUsd);
+      setSolUsdUpdatedAt(typeof payload.updatedAt === "string" ? payload.updatedAt : null);
+      setSolUsdQuoteStatus("ready");
+    } catch (error) {
+      setSolUsdQuoteStatus("error");
+      setSolUsdQuoteError(error instanceof Error ? error.message : "Could not fetch SOL/USD quote.");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (form.assetType !== "building_new") {
+      setPriceInputCurrency("USD");
+      return;
+    }
+
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const loadQuote = async () => {
+      if (cancelled) {
+        return;
+      }
+      await refreshSolUsdQuote();
+    };
+
+    void loadQuote();
+    intervalId = setInterval(() => {
+      void loadQuote();
+    }, 90_000);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [form.assetType, refreshSolUsdQuote]);
 
   const derivedMintQuantityFromType = useMemo(() => {
     if (form.assetType !== "building_new") {
@@ -727,7 +656,7 @@ export function AssetCreationForm(): ReactElement {
 
       return currentValidationErrors;
     });
-  }, [formStatus, canContinueToMint, currentValidationErrors]);
+  }, [formStatus, canContinueToMint, currentValidationErrors, setFormStatus, setValidationErrors]);
 
   useEffect(() => {
     const collectionSuggestion = suggestCollectionFromIdentity({
@@ -751,157 +680,47 @@ export function AssetCreationForm(): ReactElement {
 
       return changed ? next : prev;
     });
-  }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual]);
+  }, [form.internalCode, form.slug, collectionNameManual, collectionSymbolManual, setForm]);
 
-  const patchUploadState = (field: FileUploadField, patch: Partial<UploadFieldUiState>) => {
-    setUploadState((prev) => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        ...patch
-      }
-    }));
-  };
-
-  const applySuccessfulUploads = (field: FileUploadField, uploaded: FinalizeResponse[]) => {
-    if (uploaded.length === 0) {
+  useEffect(() => {
+    if (form.assetType !== "building_new") {
       return;
     }
 
-    const cdnUrls = uploaded.map((item) => item.cdnUrl);
-    const fileRefIds = uploaded.map((item) => item.fileRefId);
-
-    setUploadRefs((prev) => ({
-      ...prev,
-      [field]: updateListField(prev[field], fileRefIds)
-    }));
-
-    if (field === "coverImage" || field === "brochureFile") {
-      const firstUrl = cdnUrls[0];
-      if (!firstUrl) {
-        return;
+    const autoDuration = deriveProjectDurationMonths(form.buildingConstructionStartDate, form.buildingEstimatedDeliveryDate);
+    setForm((prev) => {
+      if (prev.buildingProjectDurationMonths === autoDuration) {
+        return prev;
       }
 
-      setForm((prev) => ({ ...prev, [field]: firstUrl }));
-      return;
-    }
-
-    setForm((prev) => ({ ...prev, [field]: updateListField(prev[field], cdnUrls) }));
-  };
-
-  const applyFilesToField = async (field: FileUploadField, files: File[]) => {
-    if (files.length === 0) {
-      return;
-    }
-
-    const filesToUpload = field === "coverImage" ? files.slice(-1) : files;
-
-    patchUploadState(field, {
-      uploading: true,
-      error: "",
-      message: t({ en: "Uploading...", es: "Subiendo...", pt: "Enviando..." })
+      return {
+        ...prev,
+        buildingProjectDurationMonths: autoDuration
+      };
     });
+  }, [
+    form.assetType,
+    form.buildingConstructionStartDate,
+    form.buildingEstimatedDeliveryDate,
+    setForm
+  ]);
 
-    const uploaded: FinalizeResponse[] = [];
-    const failed: string[] = [];
-    const category = fieldToUploadCategory(field);
-    const previousSingleFieldCdnUrl = (field === "coverImage" || field === "brochureFile")
-      ? form[field].trim()
-      : "";
-
-    for (let index = 0; index < filesToUpload.length; index += 1) {
-      const file = filesToUpload[index];
-      if (!file) {
-        continue;
-      }
-
-      patchUploadState(field, {
-        message: t({
-          en: `Uploading ${index + 1}/${filesToUpload.length}: ${file.name}`,
-          es: `Subiendo ${index + 1}/${filesToUpload.length}: ${file.name}`,
-          pt: `Enviando ${index + 1}/${filesToUpload.length}: ${file.name}`
-        })
-      });
-
-      try {
-        const result = await uploadAssetFileViaSignedUrl({
-          file,
-          category,
-          draftId,
-          previousCdnUrl: previousSingleFieldCdnUrl || null
-        });
-        uploaded.push(result);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown upload error.";
-        failed.push(`${file.name}: ${message}`);
-      }
-    }
-
-    applySuccessfulUploads(field, uploaded);
-
-    patchUploadState(field, {
-      uploading: false,
-      message: uploaded.length > 0
-        ? t({
-          en: `${uploaded.length} file(s) uploaded.`,
-          es: `${uploaded.length} archivo(s) subidos.`,
-          pt: `${uploaded.length} arquivo(s) enviados.`
-        })
-        : "",
-      error: failed.join(" | ")
-    });
-  };
-
-  const onFileInput = (field: FileUploadField) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files || files.length === 0) {
-        return;
-      }
-
-      void applyFilesToField(field, Array.from(files));
-      event.target.value = "";
-    };
-
-  const onFileDragOver = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (dragTargetField !== field) {
-        setDragTargetField(field);
-      }
-    };
-
-  const onFileDragLeave = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const nextTarget = event.relatedTarget;
-      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
-        return;
-      }
-      if (dragTargetField === field) {
-        setDragTargetField(null);
-      }
-    };
-
-  const onFileDrop = (field: FileUploadField) =>
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setDragTargetField(null);
-      const files = Array.from(event.dataTransfer.files ?? []);
-      void applyFilesToField(field, files);
-    };
-
-  const uploadFieldValue = (field: FileUploadField): string => {
-    if (field === "coverImage") return form.coverImage;
-    if (field === "brochureFile") return form.brochureFile;
-    if (field === "galleryImages") return form.galleryImages.join(", ");
-    if (field === "legalDocs") return form.legalDocs.join(", ");
-    if (field === "financialDocs") return form.financialDocs.join(", ");
-    return form.propertyImages.join(", ");
-  };
+  const {
+    onFileInput,
+    onFileDragOver,
+    onFileDragLeave,
+    onFileDrop,
+    uploadFieldValue
+  } = useAssetUploadWorkflow({
+    draftId,
+    form,
+    dragTargetField,
+    setForm,
+    setUploadState,
+    setUploadRefs,
+    setDragTargetField,
+    t
+  });
 
   const renderUploadFieldFeedback = (field: FileUploadField): ReactElement | null => {
     const state = uploadState[field];
@@ -928,7 +747,7 @@ export function AssetCreationForm(): ReactElement {
     );
   };
 
-  const applyFinancialSource = (source: "totalUnits" | "nftCost", nextValue: string) => {
+  const applyFinancialSource = useCallback((source: "totalUnits" | "nftCost", nextValue: string) => {
     setForm((prev) => {
       const raw = source === "totalUnits"
         ? { ...prev, buildingTotalUnits: nextValue }
@@ -948,7 +767,68 @@ export function AssetCreationForm(): ReactElement {
         buildingTotalUnits: result.totalUnits
       };
     });
-  };
+  }, [setForm]);
+
+  const buildingNftCostUsd = useMemo(() => parsePositiveDecimalInput(form.buildingNftCost), [form.buildingNftCost]);
+  const buildingNftCostSol = useMemo(() => {
+    if (!buildingNftCostUsd || !solUsdRate) {
+      return null;
+    }
+
+    return convertUsdToSol(buildingNftCostUsd, solUsdRate);
+  }, [buildingNftCostUsd, solUsdRate]);
+
+  const displayedBuildingNftCostInput = useMemo(() => {
+    if (priceInputCurrency === "USD") {
+      return form.buildingNftCost;
+    }
+
+    if (!buildingNftCostUsd || !solUsdRate) {
+      return "";
+    }
+
+    return formatPriceInput(buildingNftCostSol ?? 0, 8);
+  }, [buildingNftCostSol, buildingNftCostUsd, form.buildingNftCost, priceInputCurrency, solUsdRate]);
+
+  const onBuildingNftCostChange = useCallback((nextValue: string) => {
+    if (priceInputCurrency === "USD") {
+      applyFinancialSource("nftCost", nextValue);
+      return;
+    }
+
+    const parsedSol = parsePositiveDecimalInput(nextValue);
+    if (!parsedSol || !solUsdRate) {
+      applyFinancialSource("nftCost", "");
+      return;
+    }
+
+    const convertedUsd = convertSolToUsd(parsedSol, solUsdRate);
+    applyFinancialSource("nftCost", formatPriceInput(convertedUsd, 8));
+  }, [applyFinancialSource, priceInputCurrency, solUsdRate]);
+
+  const nftCostConversionSummary = useMemo(() => {
+    if (!buildingNftCostUsd) {
+      return t({
+        en: "Define a positive Fraction cost to lock deploy price.",
+        es: "Define un costo por Fracción positivo para fijar el precio del deploy.",
+        pt: "Defina um custo por Fração positivo para fixar o preco do deploy."
+      });
+    }
+
+    if (!solUsdRate || !buildingNftCostSol) {
+      return t({
+        en: "SOL/USD quote unavailable. Keep pricing input in USD for now.",
+        es: "No hay cotizacion SOL/USD disponible. Mantenga el ingreso en USD por ahora.",
+        pt: "Cotacao SOL/USD indisponivel. Mantenha o valor em USD por enquanto."
+      });
+    }
+
+    return t({
+      en: `Canonical deploy price: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`,
+      es: `Precio canonico para deploy: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`,
+      pt: `Preco canonico para deploy: $${buildingNftCostUsd.toFixed(6)} USD (~${buildingNftCostSol.toFixed(8)} SOL @ $${solUsdRate.toFixed(4)}/SOL).`
+    });
+  }, [buildingNftCostSol, buildingNftCostUsd, solUsdRate, t]);
 
   const onFundingGoalChange = (nextFundingGoal: string) => {
     setForm((prev) => {
@@ -1010,369 +890,24 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
-  const setTrackedImportJobFromStatus = useCallback((
-    input: {
-      importJobId: string;
-      statusUrl: string;
-      state: unknown;
-      delayed?: unknown;
-      totalRows?: unknown;
-      processedRows?: unknown;
-      failedRows?: unknown;
-      warningsCount?: unknown;
-      errorReportUrl?: unknown;
-    }
-  ) => {
-    const parsedState = parseImportJobState(input.state);
-    const parsedErrorReportUrl = typeof input.errorReportUrl === "string" ? input.errorReportUrl : null;
-
-    setImportJob((prev) => {
-      if (prev && prev.importJobId === input.importJobId) {
-        return {
-          ...prev,
-          state: parsedState,
-          delayed: Boolean(input.delayed),
-          totalRows: toSafeNonNegativeNumber(input.totalRows),
-          processedRows: toSafeNonNegativeNumber(input.processedRows),
-          failedRows: toSafeNonNegativeNumber(input.failedRows),
-          warningsCount: toSafeNonNegativeNumber(input.warningsCount),
-          errorReportUrl: parsedErrorReportUrl,
-          error: ""
-        };
-      }
-
-      return {
-        importJobId: input.importJobId,
-        statusUrl: input.statusUrl,
-        state: parsedState,
-        delayed: Boolean(input.delayed),
-        totalRows: toSafeNonNegativeNumber(input.totalRows),
-        processedRows: toSafeNonNegativeNumber(input.processedRows),
-        failedRows: toSafeNonNegativeNumber(input.failedRows),
-        warningsCount: toSafeNonNegativeNumber(input.warningsCount),
-        errorReportUrl: parsedErrorReportUrl,
-        errors: [],
-        error: ""
-      };
-    });
-  }, []);
-
-  const fetchImportJobErrors = useCallback(async (input: {
-    importJobId: string;
-    errorReportUrl: string;
-  }) => {
-    try {
-      const separator = input.errorReportUrl.includes("?") ? "&" : "?";
-      const response = await fetch(`${input.errorReportUrl}${separator}limit=10&offset=0`, {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      const payload = await response.json().catch(() => null) as {
-        errors?: Array<{
-          row?: unknown;
-          column?: unknown;
-          code?: unknown;
-          message?: unknown;
-        }>;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(readApiErrorMessage(payload, "Could not fetch import errors."));
-      }
-
-      const mappedErrors: ImportJobErrorItem[] = Array.isArray(payload?.errors)
-        ? payload.errors.map((item) => ({
-          row: typeof item.row === "number" ? item.row : null,
-          column: typeof item.column === "string" ? item.column : null,
-          code: typeof item.code === "string" ? item.code : "UNKNOWN",
-          message: typeof item.message === "string" ? item.message : "Unknown error"
-        }))
-        : [];
-
-      setImportJob((prev) => {
-        if (!prev || prev.importJobId !== input.importJobId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          errors: mappedErrors
-        };
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not fetch import errors.";
-      setImportJob((prev) => {
-        if (!prev || prev.importJobId !== input.importJobId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          error: message
-        };
-      });
-    }
-  }, []);
-
-  const pollImportJobStatus = useCallback(async (input: {
-    importJobId: string;
-    statusUrl: string;
-  }) => {
-    const response = await fetch(input.statusUrl, {
-      method: "GET",
-      cache: "no-store"
-    });
-
-    const payload = await response.json().catch(() => null) as {
-      importJobId?: unknown;
-      state?: unknown;
-      delayed?: unknown;
-      totalRows?: unknown;
-      processedRows?: unknown;
-      failedRows?: unknown;
-      warningsCount?: unknown;
-      errorReportUrl?: unknown;
-      error?: {
-        message?: unknown;
-      };
-    } | null;
-
-    if (!response.ok) {
-      throw new Error(readApiErrorMessage(payload, "Could not fetch import job status."));
-    }
-
-    const responseJobId = typeof payload?.importJobId === "string" ? payload.importJobId : input.importJobId;
-    setTrackedImportJobFromStatus({
-      importJobId: responseJobId,
-      statusUrl: input.statusUrl,
-      state: payload?.state,
-      delayed: payload?.delayed,
-      totalRows: payload?.totalRows,
-      processedRows: payload?.processedRows,
-      failedRows: payload?.failedRows,
-      warningsCount: payload?.warningsCount,
-      errorReportUrl: payload?.errorReportUrl
-    });
-
-    const parsedState = parseImportJobState(payload?.state);
-    const parsedErrorReportUrl = typeof payload?.errorReportUrl === "string" ? payload.errorReportUrl : null;
-
-    if ((parsedState === "completed_with_errors" || parsedState === "failed") && parsedErrorReportUrl) {
-      await fetchImportJobErrors({
-        importJobId: responseJobId,
-        errorReportUrl: parsedErrorReportUrl
-      });
-    }
-  }, [fetchImportJobErrors, setTrackedImportJobFromStatus]);
-
-  const enqueueImportJobRequest = useCallback(async (request: {
-    csvText?: string;
-    file?: File;
-    fileName?: string;
-    mimeType?: string;
-  }) => {
-    setImportSubmitting(true);
-    setImportMessage(
-      t({
-        en: "Creating async import job...",
-        es: "Creando job de importacion asincrona...",
-        pt: "Criando job de importacao assincrona..."
-      })
-    );
-
-    try {
-      let response: Response;
-
-      if (request.file) {
-        const formData = new FormData();
-        formData.set("file", request.file);
-        formData.set("draftId", draftId);
-        formData.set("idempotencyKey", `${draftId}:${request.file.name}:${request.file.size}:${request.file.lastModified}`);
-
-        response = await fetch("/api/admin/assets/import-jobs", {
-          method: "POST",
-          body: formData
-        });
-      } else {
-        response = await fetch("/api/admin/assets/import-jobs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            draftId,
-            fileName: request.fileName ?? "pasted-import.csv",
-            mimeType: request.mimeType ?? "text/csv",
-            csvText: request.csvText ?? ""
-          })
-        });
-      }
-
-      const payload = await response.json().catch(() => null) as {
-        importJobId?: unknown;
-        statusUrl?: unknown;
-        state?: unknown;
-        error?: {
-          message?: unknown;
-        };
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(readApiErrorMessage(payload, "Could not create import job."));
-      }
-
-      const importJobId = typeof payload?.importJobId === "string" ? payload.importJobId : "";
-      const statusUrl = typeof payload?.statusUrl === "string" ? payload.statusUrl : "";
-
-      if (!importJobId || !statusUrl) {
-        throw new Error("Import job response is missing required fields.");
-      }
-
-      setTrackedImportJobFromStatus({
-        importJobId,
-        statusUrl,
-        state: payload?.state
-      });
-
-      setImportMessage(
-        t({
-          en: "Import job created. Validating rows in background...",
-          es: "Job de importacion creado. Validando filas en segundo plano...",
-          pt: "Job de importacao criado. Validando linhas em segundo plano..."
-        })
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not create import job.";
-      setImportMessage(message);
-    } finally {
-      setImportSubmitting(false);
-    }
-  }, [draftId, setTrackedImportJobFromStatus, t]);
-
-  useEffect(() => {
-    if (!importJob?.importJobId || !importJob.statusUrl) {
-      return;
-    }
-
-    if (isTerminalImportJobState(importJob.state)) {
-      return;
-    }
-
-    const trackedJobId = importJob.importJobId;
-    const trackedStatusUrl = importJob.statusUrl;
-    let active = true;
-
-    const tick = async () => {
-      if (!active) {
-        return;
-      }
-
-      try {
-        await pollImportJobStatus({
-          importJobId: trackedJobId,
-          statusUrl: trackedStatusUrl
-        });
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-
-        const message = error instanceof Error ? error.message : "Could not fetch import job status.";
-        setImportJob((prev) => {
-          if (!prev || prev.importJobId !== trackedJobId) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            error: message
-          };
-        });
-      }
-    };
-
-    void tick();
-    const intervalId = setInterval(() => {
-      void tick();
-    }, 2500);
-
-    return () => {
-      active = false;
-      clearInterval(intervalId);
-    };
-  }, [importJob?.importJobId, importJob?.statusUrl, importJob?.state, pollImportJobStatus]);
-
-  const previewImportFromText = () => {
-    const parsed = parseTabularText(importText);
-    setImportHeaders(parsed.headers);
-    setImportPreviewCount(parsed.rows.length);
-    if (parsed.rows.length > 0) {
-      applyImportedRow(parsed.rows[0] ?? {});
-      setImportMessage(t({
-        en: "Imported preview row into the form.",
-        es: "Se importo la fila de vista previa al formulario.",
-        pt: "Linha de pre-visualizacao importada para o formulario."
-      }));
-    } else {
-      setImportMessage(t({
-        en: "No valid rows found in pasted content.",
-        es: "No se encontraron filas validas en el contenido pegado.",
-        pt: "Nenhuma linha valida encontrada no conteudo colado."
-      }));
-    }
-  };
-
-  const enqueueImportFromText = async () => {
-    const parsed = parseTabularText(importText);
-    setImportHeaders(parsed.headers);
-    setImportPreviewCount(parsed.rows.length);
-
-    if (parsed.rows.length === 0) {
-      setImportMessage(t({
-        en: "No valid rows found in pasted content.",
-        es: "No se encontraron filas validas en el contenido pegado.",
-        pt: "Nenhuma linha valida encontrada no conteudo colado."
-      }));
-      return;
-    }
-
-    applyImportedRow(parsed.rows[0] ?? {});
-    await enqueueImportJobRequest({
-      csvText: importText,
-      fileName: importFileName || "pasted-import.csv",
-      mimeType: "text/csv"
-    });
-  };
-
-  const onImportFileInput = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    try {
-      setImportFileName(file.name);
-      const text = await file.text();
-      const parsed = parseTextFileToTabularRows(file.name, text);
-      setImportHeaders(parsed.headers);
-      setImportPreviewCount(parsed.rows.length);
-
-      if (parsed.rows.length > 0) {
-        applyImportedRow(parsed.rows[0] ?? {});
-        await enqueueImportJobRequest({ file });
-      } else {
-        setImportMessage(t({
-          en: "File parsed but no rows were detected.",
-          es: "Se proceso el archivo pero no se detectaron filas.",
-          pt: "Arquivo processado, mas nenhuma linha foi detectada."
-        }));
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown import error.";
-      setImportMessage(message);
-    } finally {
-      event.target.value = "";
-    }
-  };
+  const {
+    previewImportFromText,
+    enqueueImportFromText,
+    onImportFileInput
+  } = useAssetImportJobs({
+    draftId,
+    importText,
+    importFileName,
+    importJob,
+    setImportSubmitting,
+    setImportMessage,
+    setImportJob,
+    setImportHeaders,
+    setImportPreviewCount,
+    setImportFileName,
+    t,
+    onApplyImportedRow: applyImportedRow
+  });
 
   const saveDraft = async () => {
     setFormStatus("saving");
@@ -1474,352 +1009,61 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const handleResetSuggestedCollectionValues = () => {
+    const suggestion = suggestCollectionFromIdentity({
+      internalCode: form.internalCode,
+      slug: form.slug
+    });
+    setCollectionNameManual(false);
+    setCollectionSymbolManual(false);
+    setForm((prev) => ({
+      ...prev,
+      collectionName: suggestion.collectionName,
+      collectionSymbol: suggestion.collectionSymbol
+    }));
+  };
+
   return (
     <div className="space-y-4 pb-24">
-      <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">{t({ en: "Create tokenizable asset", es: "Crear activo tokenizable", pt: "Criar ativo tokenizavel" })}</h2>
-        <p className="text-sm text-white/75">
-          {t({
-            en: "Create the master asset record. Rule: one collection per asset, and mint cannot be enabled without a defined asset.",
-            es: "Crea el registro maestro del activo. Regla: una coleccion por activo y no se habilita mint sin activo definido.",
-            pt: "Crie o registro mestre do ativo. Regra: uma colecao por ativo, e o mint nao e habilitado sem ativo definido."
-          })}
-        </p>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Initial step: type selection", es: "Paso inicial: seleccion de tipo", pt: "Passo inicial: selecao de tipo" })}</p>
-        <div className="grid gap-3 md:grid-cols-3">
-          {assetTypeOptions.map((option) => {
-            const active = form.assetType === option.value;
-            return (
-              <button
-                key={option.value}
-                className={`rounded-xl border p-3 text-left ${active ? "border-cyan-400/50 bg-cyan-500/10" : "border-white/10 bg-white/5"}`}
-                onClick={() => setForm((prev) => ({ ...prev, assetType: option.value }))}
-                type="button"
-              >
-                <p className="font-medium text-white">{t(option.title)}</p>
-                <p className="text-xs text-white/70">{t(option.subtitle)}</p>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Identification", es: "Identificacion", pt: "Identificacao" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="assetName" value={form.assetName} onChange={(event) => setForm((prev) => ({ ...prev, assetName: event.target.value }))} />
-          <Input placeholder="slug" value={form.slug} onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))} />
-          <Input placeholder="internalCode" value={form.internalCode} onChange={(event) => setForm((prev) => ({ ...prev, internalCode: event.target.value }))} />
-        </div>
-        <p className="text-xs text-white/60">
-          {t({
-            en: "Commercial asset status is derived from on-chain state and is not manually selected here.",
-            es: "El estado comercial del activo se deriva del estado on-chain y no se selecciona manualmente aqui.",
-            pt: "O status comercial do ativo e derivado do estado on-chain e nao e selecionado manualmente aqui."
-          })}
-        </p>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Location", es: "Ubicacion", pt: "Localizacao" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="country" value={form.country} onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))} />
-          <Input placeholder="state" value={form.state} onChange={(event) => setForm((prev) => ({ ...prev, state: event.target.value }))} />
-          <Input placeholder="city" value={form.city} onChange={(event) => setForm((prev) => ({ ...prev, city: event.target.value }))} />
-          <Input placeholder="address" value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
-          <Input placeholder="geoLat (opcional)" value={form.geoLat} onChange={(event) => setForm((prev) => ({ ...prev, geoLat: event.target.value }))} />
-          <Input placeholder="geoLng (opcional)" value={form.geoLng} onChange={(event) => setForm((prev) => ({ ...prev, geoLng: event.target.value }))} />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Commercial description", es: "Descripcion comercial", pt: "Descricao comercial" })}</p>
-        <div className="grid gap-3">
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="shortDescription" value={form.shortDescription} onChange={(event) => setForm((prev) => ({ ...prev, shortDescription: event.target.value }))} />
-          <textarea className="min-h-24 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="longDescription" value={form.longDescription} onChange={(event) => setForm((prev) => ({ ...prev, longDescription: event.target.value }))} />
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="investmentThesis" value={form.investmentThesis} onChange={(event) => setForm((prev) => ({ ...prev, investmentThesis: event.target.value }))} />
-          <textarea className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white" placeholder="riskNotes" value={form.riskNotes} onChange={(event) => setForm((prev) => ({ ...prev, riskNotes: event.target.value }))} />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Media and documents", es: "Media y documentos", pt: "Midia e documentos" })}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            {t({ en: "coverImage (required)", es: "coverImage (obligatoria)", pt: "coverImage (obrigatoria)" })}
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "coverImage"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("coverImage")}
-              onDragLeave={onFileDragLeave("coverImage")}
-              onDrop={onFileDrop("coverImage")}
-            >
-              <input id="upload-coverImage" className="sr-only" type="file" onChange={onFileInput("coverImage")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-coverImage">
-                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.coverImage || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
-            {renderUploadFieldFeedback("coverImage")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            galleryImages[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "galleryImages"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("galleryImages")}
-              onDragLeave={onFileDragLeave("galleryImages")}
-              onDrop={onFileDrop("galleryImages")}
-            >
-              <input id="upload-galleryImages" className="sr-only" type="file" multiple onChange={onFileInput("galleryImages")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-galleryImages">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("galleryImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("galleryImages")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            brochureFile
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "brochureFile"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("brochureFile")}
-              onDragLeave={onFileDragLeave("brochureFile")}
-              onDrop={onFileDrop("brochureFile")}
-            >
-              <input id="upload-brochureFile" className="sr-only" type="file" onChange={onFileInput("brochureFile")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop file here", es: "Arrastra y suelta archivo aqui", pt: "Arraste e solte arquivo aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-brochureFile">
-                {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{form.brochureFile || t({ en: "No file", es: "Sin archivo", pt: "Sem arquivo" })}</p>
-            {renderUploadFieldFeedback("brochureFile")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            legalDocs[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "legalDocs"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("legalDocs")}
-              onDragLeave={onFileDragLeave("legalDocs")}
-              onDrop={onFileDrop("legalDocs")}
-            >
-              <input id="upload-legalDocs" className="sr-only" type="file" multiple onChange={onFileInput("legalDocs")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-legalDocs">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("legalDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("legalDocs")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            financialDocs[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "financialDocs"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("financialDocs")}
-              onDragLeave={onFileDragLeave("financialDocs")}
-              onDrop={onFileDrop("financialDocs")}
-            >
-              <input id="upload-financialDocs" className="sr-only" type="file" multiple onChange={onFileInput("financialDocs")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-financialDocs">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("financialDocs") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("financialDocs")}
-          </label>
-          <label className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-            propertyImages[]
-            <div
-              className={`mt-2 rounded-xl border border-dashed p-3 transition ${
-                dragTargetField === "propertyImages"
-                  ? "border-cyan-300/70 bg-cyan-500/10"
-                  : "border-white/20 bg-slate-900/50"
-              }`}
-              onDragOver={onFileDragOver("propertyImages")}
-              onDragLeave={onFileDragLeave("propertyImages")}
-              onDrop={onFileDrop("propertyImages")}
-            >
-              <input id="upload-propertyImages" className="sr-only" type="file" multiple onChange={onFileInput("propertyImages")} />
-              <p className="text-xs text-white/60">{t({ en: "Drag and drop files here", es: "Arrastra y suelta archivos aqui", pt: "Arraste e solte arquivos aqui" })}</p>
-              <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20" htmlFor="upload-propertyImages">
-                {t({ en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
-              </label>
-            </div>
-            <p className="mt-1 max-h-16 overflow-y-auto break-all pr-1 text-xs leading-relaxed text-white/60">{uploadFieldValue("propertyImages") || t({ en: "No files", es: "Sin archivos", pt: "Sem arquivos" })}</p>
-            {renderUploadFieldFeedback("propertyImages")}
-          </label>
-        </div>
-        <Input placeholder={t({ en: "videoUrl optional", es: "videoUrl opcional", pt: "videoUrl opcional" })} value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} />
-      </Card>
-
-      <Card className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-white">{t({ en: "NFT / Collection relationship", es: "Relacion NFT / Coleccion", pt: "Relacao NFT / Colecao" })}</p>
-          <Button
-            className="min-h-11"
-            variant="ghost"
-            onClick={() => {
-              const suggestion = suggestCollectionFromIdentity({
-                internalCode: form.internalCode,
-                slug: form.slug
-              });
-              setCollectionNameManual(false);
-              setCollectionSymbolManual(false);
-              setForm((prev) => ({
-                ...prev,
-                collectionName: suggestion.collectionName,
-                collectionSymbol: suggestion.collectionSymbol
-              }));
-            }}
-          >
-            {t({ en: "Reset suggested values", es: "Resetear valores sugeridos", pt: "Resetar valores sugeridos" })}
-          </Button>
-        </div>
-        <p className="text-xs text-white/60">
-          {t({
-            en: "collectionName and collectionSymbol are auto-suggested from slug + internalCode. You can override manually.",
-            es: "collectionName y collectionSymbol se sugieren automaticamente desde slug + internalCode. Puedes sobreescribirlos manualmente.",
-            pt: "collectionName e collectionSymbol sao sugeridos automaticamente por slug + internalCode. Voce pode sobrescrever manualmente."
-          })}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input
-            placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })}
-            value={form.collectionName}
-            onChange={(event) => {
-              setCollectionNameManual(true);
-              setForm((prev) => ({ ...prev, collectionName: event.target.value }));
-            }}
-          />
-          <Input
-            placeholder="collectionSymbol"
-            value={form.collectionSymbol}
-            onChange={(event) => {
-              setCollectionSymbolManual(true);
-              setForm((prev) => ({ ...prev, collectionSymbol: event.target.value }));
-            }}
-          />
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">{t({ en: "Quick import (CSV or paste from Excel)", es: "Importacion rapida (CSV o pegado desde Excel)", pt: "Importacao rapida (CSV ou colar do Excel)" })}</p>
-        <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-sm text-white/80">
-          <p>{t({ en: "Import file (.csv, .txt, .tsv)", es: "Importar archivo (.csv, .txt, .tsv)", pt: "Importar arquivo (.csv, .txt, .tsv)" })}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <input id="quick-import-file" className="sr-only" type="file" accept=".csv,.txt,.tsv" onChange={onImportFileInput} />
-            <label
-              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
-              htmlFor="quick-import-file"
-            >
-              {t({ en: "Choose file", es: "Elegir archivo", pt: "Escolher arquivo" })}
-            </label>
-            <p className="text-xs text-white/60">
-              {importFileName || t({ en: "No file selected", es: "Sin archivo seleccionado", pt: "Nenhum arquivo selecionado" })}
-            </p>
-          </div>
-        </div>
-        <textarea
-          className="min-h-24 resize-none appearance-none rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white"
-          placeholder={t({
-            en: "Paste cells copied from Excel (tabular content with header row).",
-            es: "Pega celdas copiadas desde Excel (contenido tabular con fila de encabezados).",
-            pt: "Cole celulas copiadas do Excel (conteudo tabular com linha de cabecalho)."
-          })}
-          value={importText}
-          onChange={(event) => setImportText(event.target.value)}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button className="min-h-11" disabled={importSubmitting} variant="outline" onClick={previewImportFromText}>
-            {t({ en: "Preview and apply first row", es: "Previsualizar y aplicar primera fila", pt: "Pre-visualizar e aplicar primeira linha" })}
-          </Button>
-          <Button className="min-h-11" disabled={importSubmitting} onClick={() => void enqueueImportFromText()}>
-            {importSubmitting
-              ? t({ en: "Queueing import...", es: "Encolando importacion...", pt: "Enfileirando importacao..." })
-              : t({ en: "Queue async import", es: "Encolar importacion async", pt: "Enfileirar importacao async" })}
-          </Button>
-          <p className="text-xs text-white/60">
-            {t({ en: "Columns detected", es: "Columnas detectadas", pt: "Colunas detectadas" })}: {importHeaders.length}
-          </p>
-          <p className="text-xs text-white/60">
-            {t({ en: "Rows detected", es: "Filas detectadas", pt: "Linhas detectadas" })}: {importPreviewCount}
-          </p>
-        </div>
-        {importMessage && <p className="text-xs text-cyan-100">{importMessage}</p>}
-        {importJob && (
-          <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/5 p-3 text-xs text-cyan-100">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold">
-                {t({ en: "Import job", es: "Import job", pt: "Import job" })}: {importJob.importJobId}
-              </p>
-              <span className="rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-1 text-[11px] uppercase tracking-wide">
-                {importJob.state}
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cyan-100/90">
-              <p>
-                {t({ en: "processed", es: "procesadas", pt: "processadas" })}: {importJob.processedRows}/{importJob.totalRows}
-              </p>
-              <p>
-                {t({ en: "failed", es: "fallidas", pt: "falhas" })}: {importJob.failedRows}
-              </p>
-              <p>
-                {t({ en: "warnings", es: "advertencias", pt: "avisos" })}: {importJob.warningsCount}
-              </p>
-            </div>
-            {importJob.delayed && (
-              <p className="mt-2 text-[11px] text-amber-200">
-                {t({
-                  en: "Import is delayed. Worker retry is active.",
-                  es: "La importacion esta demorada. El worker sigue reintentando.",
-                  pt: "A importacao esta atrasada. O worker segue tentando."
-                })}
-              </p>
-            )}
-            {importJob.error && (
-              <p className="mt-2 text-[11px] text-rose-200">{importJob.error}</p>
-            )}
-            {importJob.errors.length > 0 && (
-              <div className="mt-2 space-y-1 text-[11px]">
-                <p className="font-semibold text-rose-100">
-                  {t({ en: "Top import errors", es: "Errores principales", pt: "Erros principais" })}
-                </p>
-                {importJob.errors.slice(0, 5).map((error, index) => (
-                  <p key={`${error.code}-${error.row ?? "na"}-${index}`} className="text-rose-100/90">
-                    {error.row !== null ? `#${error.row} ` : ""}{error.column ? `${error.column}: ` : ""}{error.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </Card>
+      <AssetCreationIntroSection t={t} />
+      <AssetTypeSelectionSection t={t} form={form} setForm={setForm} options={assetTypeOptions} />
+      <AssetIdentificationSection t={t} form={form} setForm={setForm} />
+      <AssetLocationSection t={t} form={form} setForm={setForm} />
+      <AssetCommercialDescriptionSection t={t} form={form} setForm={setForm} />
+      <AssetMediaSection
+        t={t}
+        form={form}
+        dragTargetField={dragTargetField}
+        setForm={setForm}
+        onFileDragOver={onFileDragOver}
+        onFileDragLeave={onFileDragLeave}
+        onFileDrop={onFileDrop}
+        onFileInput={onFileInput}
+        uploadFieldValue={uploadFieldValue}
+        renderUploadFieldFeedback={renderUploadFieldFeedback}
+      />
+      <AssetCollectionSection
+        t={t}
+        form={form}
+        setForm={setForm}
+        setCollectionNameManual={setCollectionNameManual}
+        setCollectionSymbolManual={setCollectionSymbolManual}
+        onResetSuggestedValues={handleResetSuggestedCollectionValues}
+      />
+      <AssetImportSection
+        t={t}
+        importFileName={importFileName}
+        importText={importText}
+        importPreviewCount={importPreviewCount}
+        importHeaders={importHeaders}
+        importMessage={importMessage}
+        importSubmitting={importSubmitting}
+        importJob={importJob}
+        setImportText={setImportText}
+        previewImportFromText={previewImportFromText}
+        enqueueImportFromText={enqueueImportFromText}
+        onImportFileInput={onImportFileInput}
+      />
 
       {form.assetType && (
         <Card className="space-y-3">
@@ -1841,22 +1085,126 @@ export function AssetCreationForm(): ReactElement {
           {form.assetType === "building_new" && (
             <>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input placeholder="projectStage" value={form.buildingProjectStage} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))} />
-                <Input placeholder="developerName" value={form.buildingDeveloperName} onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))} />
-                <div className="space-y-1">
-                  <p className="text-xs text-white/60">estimatedDeliveryDate</p>
-                  <Input type="date" value={form.buildingEstimatedDeliveryDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))} />
+                <GuidedInputField
+                  label={t({ en: "Project stage", es: "Etapa del proyecto", pt: "Etapa do projeto" })}
+                  hint={t({ en: "Example: pre-sale, construction, delivery.", es: "Ejemplo: preventa, construccion, entrega.", pt: "Exemplo: pre-venda, construcao, entrega." })}
+                  tooltip={t({ en: "Current lifecycle status used in investor communications.", es: "Estado del ciclo de vida usado en comunicacion al inversionista.", pt: "Status do ciclo de vida usado na comunicacao ao investidor." })}
+                  placeholder="projectStage"
+                  value={form.buildingProjectStage}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Developer name", es: "Nombre del desarrollador", pt: "Nome da incorporadora" })}
+                  hint={t({ en: "Legal entity or brand in charge of execution.", es: "Entidad legal o marca a cargo de la ejecucion.", pt: "Entidade legal ou marca responsavel pela execucao." })}
+                  tooltip={t({ en: "Displayed in admin traceability and listings.", es: "Se muestra en trazabilidad admin y listados.", pt: "Exibido na rastreabilidade admin e listagens." })}
+                  placeholder="developerName"
+                  value={form.buildingDeveloperName}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
+                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
+                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
+                  type="date"
+                  value={form.buildingEstimatedDeliveryDate}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Construction start date", es: "Fecha de inicio de construccion", pt: "Data de inicio da construcao" })}
+                  hint={t({ en: "Together with delivery date defines project months.", es: "Junto con la fecha de entrega define meses del proyecto.", pt: "Junto com a data de entrega define os meses do projeto." })}
+                  tooltip={t({ en: "Initial date for timeline and progress baseline.", es: "Fecha inicial para linea de tiempo y progreso.", pt: "Data inicial para linha do tempo e progresso." })}
+                  type="date"
+                  value={form.buildingConstructionStartDate}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Funding goal", es: "Meta de fondeo", pt: "Meta de captacao" })}
+                  hint={t({ en: "Reference value in USD for total units and Fraction cost.", es: "Valor de referencia en USD para unidades y costo Fracción.", pt: "Valor de referencia em USD para unidades e custo do Fração." })}
+                  tooltip={t({ en: "Core financial target used for consistency checks.", es: "Objetivo financiero base para validaciones de consistencia.", pt: "Meta financeira base para validacoes de consistencia." })}
+                  placeholder="fundingGoal"
+                  prefix="$"
+                  value={form.buildingFundingGoal}
+                  onChange={(event) => onFundingGoalChange(event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "Total units", es: "Total de unidades", pt: "Total de unidades" })}
+                  hint={t({ en: "Defines mint quantity for building assets.", es: "Define la cantidad de mint para activos building.", pt: "Define a quantidade de mint para ativos building." })}
+                  tooltip={t({ en: "Must be an integer greater than zero.", es: "Debe ser un entero mayor a cero.", pt: "Deve ser um inteiro maior que zero." })}
+                  placeholder="totalUnits"
+                  value={form.buildingTotalUnits}
+                  onChange={(event) => applyFinancialSource("totalUnits", event.target.value)}
+                />
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-white/70">{t({ en: "Pricing input currency", es: "Moneda de entrada", pt: "Moeda de entrada" })}</p>
+                    <div className="inline-flex rounded-xl border border-white/20 bg-slate-900/50 p-1">
+                      {(["USD", "SOL"] as const).map((currency) => (
+                        <button
+                          key={currency}
+                          className={cn(
+                            "rounded-lg px-3 py-1 text-xs font-semibold transition-colors",
+                            priceInputCurrency === currency
+                              ? "bg-cyan-400/25 text-cyan-100"
+                              : "text-white/70 hover:text-white"
+                          )}
+                          onClick={() => {
+                            setPriceInputCurrency(currency);
+                            if (currency === "SOL" && !solUsdRate) {
+                              void refreshSolUsdQuote();
+                            }
+                          }}
+                          type="button"
+                        >
+                          {currency}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <GuidedInputField
+                    label={t({ en: "Fraction cost", es: "Costo por Fracción", pt: "Custo por Fração" })}
+                    hint={t({ en: "Unit price per Fraction share. Canonical value is stored in USD.", es: "Precio unitario por fraccion Fracción. El valor canonico se guarda en USD.", pt: "Preco unitario por fracao Fração. O valor canonico e salvo em USD." })}
+                    tooltip={t({ en: "Auto-adjusted with funding goal and total units.", es: "Se autoajusta con meta de fondeo y total de unidades.", pt: "Autoajustado com meta de captacao e total de unidades." })}
+                    placeholder="nftCost"
+                    prefix={priceInputCurrency === "SOL" ? "◎" : "$"}
+                    value={displayedBuildingNftCostInput}
+                    disabled={priceInputCurrency === "SOL" && !solUsdRate}
+                    onChange={(event) => onBuildingNftCostChange(event.target.value)}
+                  />
+                  <p className="text-[11px] text-white/60">{nftCostConversionSummary}</p>
+                  {solUsdQuoteStatus === "loading" ? (
+                    <p className="text-[11px] text-cyan-100/80">
+                      {t({ en: "Refreshing SOL/USD quote...", es: "Actualizando cotizacion SOL/USD...", pt: "Atualizando cotacao SOL/USD..." })}
+                    </p>
+                  ) : null}
+                  {solUsdUpdatedAt ? (
+                    <p className="text-[11px] text-white/50">
+                      {t({ en: "SOL/USD updated at", es: "SOL/USD actualizado a las", pt: "SOL/USD atualizado em" })}: {new Date(solUsdUpdatedAt).toLocaleString()}
+                    </p>
+                  ) : null}
+                  {solUsdQuoteError ? (
+                    <p className="text-[11px] text-rose-200">{solUsdQuoteError}</p>
+                  ) : null}
                 </div>
+                <GuidedInputField
+                  label={t({ en: "Expected annual return", es: "Retorno anual esperado", pt: "Retorno anual esperado" })}
+                  hint={t({ en: "Projected percentage return for investors.", es: "Porcentaje proyectado de retorno para inversionistas.", pt: "Percentual projetado de retorno para investidores." })}
+                  tooltip={t({ en: "Displayed in marketplace ROI summary.", es: "Se muestra en el resumen ROI del marketplace.", pt: "Exibido no resumo de ROI do marketplace." })}
+                  placeholder="expectedAnnualReturn"
+                  suffix="%"
+                  value={form.buildingExpectedAnnualReturn}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))}
+                />
                 <div className="space-y-1">
-                  <p className="text-xs text-white/60">constructionStartDate</p>
-                  <Input type="date" value={form.buildingConstructionStartDate} onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))} />
-                </div>
-                <Input placeholder="fundingGoal (fixed reference)" value={form.buildingFundingGoal} onChange={(event) => onFundingGoalChange(event.target.value)} />
-                <Input placeholder="totalUnits" value={form.buildingTotalUnits} onChange={(event) => applyFinancialSource("totalUnits", event.target.value)} />
-                <Input placeholder="nftCost" value={form.buildingNftCost} onChange={(event) => applyFinancialSource("nftCost", event.target.value)} />
-                <Input placeholder="expectedAnnualReturn (%)" value={form.buildingExpectedAnnualReturn} onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))} />
-                <div className="space-y-1">
-                  <p className="text-xs text-white/60">exitStrategy</p>
+                  <p className="inline-flex items-center gap-1 text-xs text-white/70">
+                    <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
+                    <span
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+                      title={t({ en: "How investor capital is recovered at the end of cycle.", es: "Como se recupera el capital del inversionista al cierre del ciclo.", pt: "Como o capital do investidor e recuperado no fim do ciclo." })}
+                      aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                    >
+                      ?
+                    </span>
+                  </p>
                   <select
                     className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
                     value={form.buildingExitStrategy}
@@ -1871,11 +1219,44 @@ export function AssetCreationForm(): ReactElement {
                       </option>
                     ))}
                   </select>
+                  <p className="text-[11px] text-white/50">
+                    {t({ en: "Choose the expected liquidation path for the project.", es: "Selecciona la via esperada de liquidacion del proyecto.", pt: "Selecione a via esperada de liquidacao do projeto." })}
+                  </p>
                 </div>
-                <Input placeholder="projectDurationMonths" value={form.buildingProjectDurationMonths} onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))} />
-                <Input placeholder="licensesStatus (extra)" value={form.buildingLicensesStatus} onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))} />
-                <Input placeholder="fiduciaryStructure (extra)" value={form.buildingFiduciaryStructure} onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))} />
-                <Input placeholder="salesProgressPercent (extra)" value={form.buildingSalesProgressPercent} onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))} />
+                <GuidedInputField
+                  label={t({ en: "Project duration", es: "Duracion del proyecto", pt: "Duracao do projeto" })}
+                  hint={t({ en: "Calculated automatically from start and delivery dates.", es: "Se calcula automaticamente con inicio y entrega.", pt: "Calculado automaticamente a partir de inicio e entrega." })}
+                  tooltip={t({ en: "Read-only field to prevent manual inconsistency.", es: "Campo solo lectura para evitar inconsistencias manuales.", pt: "Campo somente leitura para evitar inconsistencias manuais." })}
+                  placeholder={t({ en: "Auto", es: "Auto", pt: "Auto" })}
+                  suffix={t({ en: "mo", es: "meses", pt: "meses" })}
+                  value={form.buildingProjectDurationMonths}
+                  readOnly
+                />
+                <GuidedInputField
+                  label={t({ en: "Licenses status", es: "Estado de licencias", pt: "Status das licencas" })}
+                  hint={t({ en: "Use short status like approved, in-process, pending.", es: "Usa estado corto como aprobado, en tramite, pendiente.", pt: "Use status curto como aprovado, em tramitacao, pendente." })}
+                  tooltip={t({ en: "Administrative status of permits and municipal approvals.", es: "Estado administrativo de permisos y aprobaciones municipales.", pt: "Status administrativo de permissoes e aprovacoes municipais." })}
+                  placeholder="licensesStatus"
+                  value={form.buildingLicensesStatus}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingLicensesStatus: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Fiduciary structure", es: "Estructura fiduciaria", pt: "Estrutura fiduciaria" })}
+                  hint={t({ en: "Describe trust/fiduciary setup in one line.", es: "Describe en una linea la estructura fiduciaria.", pt: "Descreva em uma linha a estrutura fiduciaria." })}
+                  tooltip={t({ en: "Useful for legal and governance context.", es: "Util para contexto legal y de gobernanza.", pt: "Util para contexto legal e de governanca." })}
+                  placeholder="fiduciaryStructure"
+                  value={form.buildingFiduciaryStructure}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingFiduciaryStructure: event.target.value }))}
+                />
+                <GuidedInputField
+                  label={t({ en: "Sales progress", es: "Progreso de ventas", pt: "Progresso de vendas" })}
+                  hint={t({ en: "Approximate pre-sale/commercialization progress.", es: "Progreso aproximado de preventa/comercializacion.", pt: "Progresso aproximado de pre-venda/comercializacao." })}
+                  tooltip={t({ en: "Operational indicator for commercial stage.", es: "Indicador operativo del estado comercial.", pt: "Indicador operacional do estado comercial." })}
+                  placeholder="salesProgressPercent"
+                  suffix="%"
+                  value={form.buildingSalesProgressPercent}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))}
+                />
               </div>
               <p className="text-xs text-white/60">
                 {t({
@@ -1889,32 +1270,183 @@ export function AssetCreationForm(): ReactElement {
 
           {form.assetType === "rental_property" && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder="monthlyRentEstimate" value={form.rentalMonthlyRentEstimate} onChange={(event) => setForm((prev) => ({ ...prev, rentalMonthlyRentEstimate: event.target.value }))} />
-              <Input placeholder="annualGrossIncome" value={form.rentalAnnualGrossIncome} onChange={(event) => setForm((prev) => ({ ...prev, rentalAnnualGrossIncome: event.target.value }))} />
-              <Input placeholder="occupancyRate (0-100)" value={form.rentalOccupancyRate} onChange={(event) => setForm((prev) => ({ ...prev, rentalOccupancyRate: event.target.value }))} />
-              <Input placeholder="leaseStartDate (YYYY-MM-DD)" value={form.rentalLeaseStartDate} onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseStartDate: event.target.value }))} />
-              <Input placeholder="leaseEndDate (YYYY-MM-DD)" value={form.rentalLeaseEndDate} onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseEndDate: event.target.value }))} />
-              <Input placeholder="tenantType" value={form.rentalTenantType} onChange={(event) => setForm((prev) => ({ ...prev, rentalTenantType: event.target.value }))} />
-              <Input placeholder="propertyManager" value={form.rentalPropertyManager} onChange={(event) => setForm((prev) => ({ ...prev, rentalPropertyManager: event.target.value }))} />
-              <Input placeholder="historicalYield" value={form.rentalHistoricalYield} onChange={(event) => setForm((prev) => ({ ...prev, rentalHistoricalYield: event.target.value }))} />
-              <Input placeholder="maintenanceReserve" value={form.rentalMaintenanceReserve} onChange={(event) => setForm((prev) => ({ ...prev, rentalMaintenanceReserve: event.target.value }))} />
-              <Input placeholder="currentTenant (extra)" value={form.rentalCurrentTenant} onChange={(event) => setForm((prev) => ({ ...prev, rentalCurrentTenant: event.target.value }))} />
-              <Input placeholder="contractStatus (extra)" value={form.rentalContractStatus} onChange={(event) => setForm((prev) => ({ ...prev, rentalContractStatus: event.target.value }))} />
-              <Input placeholder="paymentFrequency (extra)" value={form.rentalPaymentFrequency} onChange={(event) => setForm((prev) => ({ ...prev, rentalPaymentFrequency: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Monthly rent estimate", es: "Renta mensual estimada", pt: "Renda mensal estimada" })}
+                hint={t({ en: "Base rent amount before expenses.", es: "Monto base de renta antes de gastos.", pt: "Valor base de renda antes de despesas." })}
+                tooltip={t({ en: "Primary input used for revenue projections.", es: "Input principal para proyecciones de ingresos.", pt: "Input principal para projecoes de receita." })}
+                placeholder="monthlyRentEstimate"
+                prefix="$"
+                value={form.rentalMonthlyRentEstimate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalMonthlyRentEstimate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Annual gross income", es: "Ingreso bruto anual", pt: "Receita bruta anual" })}
+                hint={t({ en: "Total yearly income before deductions.", es: "Ingreso total anual antes de deducciones.", pt: "Receita total anual antes de deducoes." })}
+                tooltip={t({ en: "Used for ROI and treasury planning.", es: "Se usa para ROI y planificacion financiera.", pt: "Usado para ROI e planejamento financeiro." })}
+                placeholder="annualGrossIncome"
+                prefix="$"
+                value={form.rentalAnnualGrossIncome}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalAnnualGrossIncome: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Occupancy rate", es: "Tasa de ocupacion", pt: "Taxa de ocupacao" })}
+                hint={t({ en: "Value between 0 and 100.", es: "Valor entre 0 y 100.", pt: "Valor entre 0 e 100." })}
+                tooltip={t({ en: "Operational occupancy of the property.", es: "Nivel de ocupacion operativa del inmueble.", pt: "Nivel de ocupacao operacional do imovel." })}
+                placeholder="occupancyRate"
+                suffix="%"
+                value={form.rentalOccupancyRate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalOccupancyRate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Lease start date", es: "Inicio del contrato", pt: "Inicio do contrato" })}
+                hint={t({ en: "Date the lease period starts.", es: "Fecha en la que inicia la vigencia del contrato.", pt: "Data em que inicia a vigencia do contrato." })}
+                tooltip={t({ en: "Must be earlier than lease end date.", es: "Debe ser anterior a la fecha de fin del contrato.", pt: "Deve ser anterior a data de fim do contrato." })}
+                type="date"
+                value={form.rentalLeaseStartDate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseStartDate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Lease end date", es: "Fin del contrato", pt: "Fim do contrato" })}
+                hint={t({ en: "Date the current lease ends.", es: "Fecha en la que termina el contrato actual.", pt: "Data em que termina o contrato atual." })}
+                tooltip={t({ en: "Used to validate lease timeline consistency.", es: "Se usa para validar consistencia del periodo contractual.", pt: "Usado para validar consistencia do periodo contratual." })}
+                type="date"
+                value={form.rentalLeaseEndDate}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalLeaseEndDate: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Tenant type", es: "Tipo de inquilino", pt: "Tipo de inquilino" })}
+                hint={t({ en: "Example: residential, corporate, mixed.", es: "Ejemplo: residencial, corporativo, mixto.", pt: "Exemplo: residencial, corporativo, misto." })}
+                tooltip={t({ en: "Helps classify tenant profile and risk.", es: "Ayuda a clasificar perfil y riesgo del arrendatario.", pt: "Ajuda a classificar perfil e risco do locatario." })}
+                placeholder="tenantType"
+                value={form.rentalTenantType}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalTenantType: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Property manager", es: "Administrador del inmueble", pt: "Administrador do imovel" })}
+                hint={t({ en: "Person or company managing operations.", es: "Persona o empresa que opera el activo.", pt: "Pessoa ou empresa que opera o ativo." })}
+                tooltip={t({ en: "Operational owner for maintenance and tenant service.", es: "Responsable operativo de mantenimiento y servicio al inquilino.", pt: "Responsavel operacional por manutencao e atendimento ao inquilino." })}
+                placeholder="propertyManager"
+                value={form.rentalPropertyManager}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalPropertyManager: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Historical yield", es: "Yield historico", pt: "Yield historico" })}
+                hint={t({ en: "Past observed rental return.", es: "Retorno historico observado por renta.", pt: "Retorno historico observado por renda." })}
+                tooltip={t({ en: "Reference metric for expectations and risk.", es: "Metrica de referencia para expectativas y riesgo.", pt: "Metrica de referencia para expectativas e risco." })}
+                placeholder="historicalYield"
+                suffix="%"
+                value={form.rentalHistoricalYield}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalHistoricalYield: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Maintenance reserve", es: "Reserva de mantenimiento", pt: "Reserva de manutencao" })}
+                hint={t({ en: "Planned reserve for upkeep and contingencies.", es: "Reserva planificada para mantenimiento y contingencias.", pt: "Reserva planejada para manutencao e contingencias." })}
+                tooltip={t({ en: "Protects yield projections from operational shocks.", es: "Protege proyecciones de yield frente a eventos operativos.", pt: "Protege projecoes de yield contra eventos operacionais." })}
+                placeholder="maintenanceReserve"
+                prefix="$"
+                value={form.rentalMaintenanceReserve}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalMaintenanceReserve: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Current tenant", es: "Inquilino actual", pt: "Inquilino atual" })}
+                hint={t({ en: "Optional descriptive reference.", es: "Referencia descriptiva opcional.", pt: "Referencia descritiva opcional." })}
+                tooltip={t({ en: "Extra context field for operational follow-up.", es: "Campo extra para seguimiento operativo.", pt: "Campo extra para acompanhamento operacional." })}
+                placeholder="currentTenant"
+                value={form.rentalCurrentTenant}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalCurrentTenant: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Contract status", es: "Estado del contrato", pt: "Status do contrato" })}
+                hint={t({ en: "Optional legal/admin status.", es: "Estado legal/admin opcional.", pt: "Status legal/admin opcional." })}
+                tooltip={t({ en: "Extra context field for admin operations.", es: "Campo de contexto adicional para operacion admin.", pt: "Campo de contexto adicional para operacao admin." })}
+                placeholder="contractStatus"
+                value={form.rentalContractStatus}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalContractStatus: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Payment frequency", es: "Frecuencia de pago", pt: "Frequencia de pagamento" })}
+                hint={t({ en: "Example: monthly, quarterly.", es: "Ejemplo: mensual, trimestral.", pt: "Exemplo: mensal, trimestral." })}
+                tooltip={t({ en: "Optional field to detail rent payment cadence.", es: "Campo opcional para detallar la cadencia de pago.", pt: "Campo opcional para detalhar a cadencia de pagamento." })}
+                placeholder="paymentFrequency"
+                value={form.rentalPaymentFrequency}
+                onChange={(event) => setForm((prev) => ({ ...prev, rentalPaymentFrequency: event.target.value }))}
+              />
             </div>
           )}
 
           {form.assetType === "land_lot" && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder="cadastralNumber" value={form.landCadastralNumber} onChange={(event) => setForm((prev) => ({ ...prev, landCadastralNumber: event.target.value }))} />
-              <Input placeholder="landAreaM2" value={form.landAreaM2} onChange={(event) => setForm((prev) => ({ ...prev, landAreaM2: event.target.value }))} />
-              <Input placeholder="landUse" value={form.landUse} onChange={(event) => setForm((prev) => ({ ...prev, landUse: event.target.value }))} />
-              <Input placeholder="zoningClassification" value={form.landZoningClassification} onChange={(event) => setForm((prev) => ({ ...prev, landZoningClassification: event.target.value }))} />
-              <Input placeholder="appreciationHorizonMonths" value={form.landAppreciationHorizonMonths} onChange={(event) => setForm((prev) => ({ ...prev, landAppreciationHorizonMonths: event.target.value }))} />
-              <Input placeholder="targetExitValue" value={form.landTargetExitValue} onChange={(event) => setForm((prev) => ({ ...prev, landTargetExitValue: event.target.value }))} />
-              <Input placeholder="entryPrice" value={form.landEntryPrice} onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Cadastral number", es: "Numero catastral", pt: "Numero cadastral" })}
+                hint={t({ en: "Official property registry identifier.", es: "Identificador oficial del registro del predio.", pt: "Identificador oficial do registro do terreno." })}
+                tooltip={t({ en: "Used for legal traceability and due diligence.", es: "Se usa para trazabilidad legal y due diligence.", pt: "Usado para rastreabilidade legal e due diligence." })}
+                placeholder="cadastralNumber"
+                value={form.landCadastralNumber}
+                onChange={(event) => setForm((prev) => ({ ...prev, landCadastralNumber: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Land area", es: "Area del lote", pt: "Area do lote" })}
+                hint={t({ en: "Total area available for development.", es: "Area total disponible para desarrollo.", pt: "Area total disponivel para desenvolvimento." })}
+                tooltip={t({ en: "Supports valuation and zoning feasibility.", es: "Soporta valuacion y factibilidad de uso de suelo.", pt: "Suporta avaliacao e viabilidade de uso do solo." })}
+                placeholder="landAreaM2"
+                suffix="m²"
+                value={form.landAreaM2}
+                onChange={(event) => setForm((prev) => ({ ...prev, landAreaM2: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Land use", es: "Uso del suelo", pt: "Uso do terreno" })}
+                hint={t({ en: "Primary intended use for the lot.", es: "Uso principal previsto para el lote.", pt: "Uso principal previsto para o terreno." })}
+                tooltip={t({ en: "Example: residential, industrial, mixed use.", es: "Ejemplo: residencial, industrial, uso mixto.", pt: "Exemplo: residencial, industrial, uso misto." })}
+                placeholder="landUse"
+                value={form.landUse}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUse: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Zoning classification", es: "Clasificacion de zonificacion", pt: "Classificacao de zoneamento" })}
+                hint={t({ en: "Municipal zoning code or category.", es: "Codigo o categoria de zonificacion municipal.", pt: "Codigo ou categoria de zoneamento municipal." })}
+                tooltip={t({ en: "Key legal input for permitted development.", es: "Input legal clave para desarrollo permitido.", pt: "Input legal chave para desenvolvimento permitido." })}
+                placeholder="zoningClassification"
+                value={form.landZoningClassification}
+                onChange={(event) => setForm((prev) => ({ ...prev, landZoningClassification: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Appreciation horizon", es: "Horizonte de valorizacion", pt: "Horizonte de valorizacao" })}
+                hint={t({ en: "Planned months until expected exit.", es: "Meses planificados hasta la salida esperada.", pt: "Meses planejados ate a saida esperada." })}
+                tooltip={t({ en: "Defines expected investment timeline.", es: "Define la linea de tiempo esperada de la inversion.", pt: "Define a linha do tempo esperada do investimento." })}
+                placeholder="appreciationHorizonMonths"
+                suffix={t({ en: "mo", es: "meses", pt: "meses" })}
+                value={form.landAppreciationHorizonMonths}
+                onChange={(event) => setForm((prev) => ({ ...prev, landAppreciationHorizonMonths: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Target exit value", es: "Valor objetivo de salida", pt: "Valor alvo de saida" })}
+                hint={t({ en: "Projected valuation at disposal time.", es: "Valuacion proyectada al momento de salida.", pt: "Avaliacao projetada no momento da saida." })}
+                tooltip={t({ en: "Financial target for upside scenario.", es: "Objetivo financiero para escenario de valorizacion.", pt: "Meta financeira para cenario de valorizacao." })}
+                placeholder="targetExitValue"
+                prefix="$"
+                value={form.landTargetExitValue}
+                onChange={(event) => setForm((prev) => ({ ...prev, landTargetExitValue: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Entry price", es: "Precio de entrada", pt: "Preco de entrada" })}
+                hint={t({ en: "Acquisition reference value.", es: "Valor de referencia de adquisicion.", pt: "Valor de referencia de aquisicao." })}
+                tooltip={t({ en: "Base price used for return calculations.", es: "Precio base usado para calculos de retorno.", pt: "Preco base usado nos calculos de retorno." })}
+                placeholder="entryPrice"
+                prefix="$"
+                value={form.landEntryPrice}
+                onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))}
+              />
               <div className="space-y-1">
-                <p className="text-xs text-white/60">exitStrategy</p>
+                <p className="inline-flex items-center gap-1 text-xs text-white/70">
+                  <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
+                  <span
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
+                    title={t({ en: "Expected monetization route at exit.", es: "Ruta esperada de monetizacion en la salida.", pt: "Rota esperada de monetizacao na saida." })}
+                    aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                  >
+                    ?
+                  </span>
+                </p>
                 <select
                   className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
                   value={form.landExitStrategy}
@@ -1927,13 +1459,44 @@ export function AssetCreationForm(): ReactElement {
                     <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
                       {t(option.label)}
                     </option>
-                  ))}
-                </select>
+                    ))}
+                  </select>
+                <p className="text-[11px] text-white/50">
+                  {t({ en: "Choose disposal strategy at investment maturity.", es: "Selecciona la estrategia de salida al madurar la inversion.", pt: "Selecione a estrategia de saida na maturidade do investimento." })}
+                </p>
               </div>
-              <Input placeholder="urbanDevelopmentPotential" value={form.landUrbanDevelopmentPotential} onChange={(event) => setForm((prev) => ({ ...prev, landUrbanDevelopmentPotential: event.target.value }))} />
-              <Input placeholder="roadAccess (extra)" value={form.landRoadAccess} onChange={(event) => setForm((prev) => ({ ...prev, landRoadAccess: event.target.value }))} />
-              <Input placeholder="utilitiesAccess (extra)" value={form.landUtilitiesAccess} onChange={(event) => setForm((prev) => ({ ...prev, landUtilitiesAccess: event.target.value }))} />
-              <Input placeholder="regulatoryStatus (extra)" value={form.landRegulatoryStatus} onChange={(event) => setForm((prev) => ({ ...prev, landRegulatoryStatus: event.target.value }))} />
+              <GuidedInputField
+                label={t({ en: "Urban development potential", es: "Potencial urbanistico", pt: "Potencial urbanistico" })}
+                hint={t({ en: "Short thesis on future development upside.", es: "Tesis corta sobre potencial de desarrollo futuro.", pt: "Tese curta sobre potencial de desenvolvimento futuro." })}
+                tooltip={t({ en: "Supports qualitative valuation narrative.", es: "Soporta narrativa cualitativa de valorizacion.", pt: "Suporta narrativa qualitativa de valorizacao." })}
+                placeholder="urbanDevelopmentPotential"
+                value={form.landUrbanDevelopmentPotential}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUrbanDevelopmentPotential: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Road access", es: "Acceso vial", pt: "Acesso viario" })}
+                hint={t({ en: "Optional road connectivity notes.", es: "Notas opcionales sobre conectividad vial.", pt: "Notas opcionais sobre conectividade viaria." })}
+                tooltip={t({ en: "Extra operational context for development feasibility.", es: "Contexto operativo adicional para factibilidad de desarrollo.", pt: "Contexto operacional adicional para viabilidade de desenvolvimento." })}
+                placeholder="roadAccess"
+                value={form.landRoadAccess}
+                onChange={(event) => setForm((prev) => ({ ...prev, landRoadAccess: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Utilities access", es: "Acceso a servicios", pt: "Acesso a servicos" })}
+                hint={t({ en: "Optional notes on water, energy, sewage, telecom.", es: "Notas opcionales sobre agua, energia, alcantarillado, telecom.", pt: "Notas opcionais sobre agua, energia, esgoto, telecom." })}
+                tooltip={t({ en: "Operational readiness indicator for land projects.", es: "Indicador de preparacion operativa para proyectos de lote.", pt: "Indicador de prontidao operacional para projetos de terreno." })}
+                placeholder="utilitiesAccess"
+                value={form.landUtilitiesAccess}
+                onChange={(event) => setForm((prev) => ({ ...prev, landUtilitiesAccess: event.target.value }))}
+              />
+              <GuidedInputField
+                label={t({ en: "Regulatory status", es: "Estado regulatorio", pt: "Status regulatorio" })}
+                hint={t({ en: "Optional legal/regulatory checkpoint.", es: "Checkpoint legal/regulatorio opcional.", pt: "Checkpoint legal/regulatorio opcional." })}
+                tooltip={t({ en: "Additional compliance context for admin review.", es: "Contexto adicional de cumplimiento para revision admin.", pt: "Contexto adicional de compliance para revisao admin." })}
+                placeholder="regulatoryStatus"
+                value={form.landRegulatoryStatus}
+                onChange={(event) => setForm((prev) => ({ ...prev, landRegulatoryStatus: event.target.value }))}
+              />
             </div>
           )}
 
@@ -2080,7 +1643,10 @@ export function AssetCreationForm(): ReactElement {
               imageUrl: form.coverImage || "",
               quantity: mintQuantityValue > 0 ? mintQuantityValue : 1,
               description: form.shortDescription || form.longDescription || "",
-              symbol: form.collectionSymbol || ""
+              symbol: form.collectionSymbol || "",
+              nftPriceUsd: deriveNftPriceUsd(form),
+              nftPriceInputCurrency: priceInputCurrency,
+              solUsdRate
             }}
             snapshotContext={{
               draftId,

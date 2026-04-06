@@ -8,9 +8,10 @@
 ## Marketplace Purchase Flow (STORY-003-04)
 - Price source of truth:
   - Mint price is never configured at purchase time.
-  - UI price comes from backend quote cache that reads Candy Guard `solPayment`.
+  - UI price comes from backend quote cache that reads Candy Guard payment guard (`tokenPayment` USDC preferred, `solPayment` as legacy fallback).
+  - Guard payment mode is USDC-only by policy for new deploys (`tokenPayment` on devnet USDC mint).
 - Guard cache + revalidation:
-  - `POST /api/purchase/quote` serves cached guard snapshot (`priceLamports`, `startDate`, `itemsRemaining`, `cacheUpdatedAt`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`).
+  - `POST /api/purchase/quote` serves cached guard snapshot (`paymentCurrency`, `priceLamports`, `priceUsdcAtomic`, `startDate`, `itemsRemaining`, `cacheUpdatedAt`) plus quantity contract fields (`quantityMode`, `quantity`, `totalPriceLamports`, `totalPriceUsdcAtomic`).
   - `POST /api/purchase/prepare` always revalidates against fresh on-chain guard state before building transaction.
   - If quote and fresh guard diverge, backend returns `PRICE_CHANGED`.
 - Quantity contract:
@@ -53,6 +54,10 @@
   - Candy Machine deploy sets `thirdPartySigner` guard to backend signer address from `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY`.
   - Purchase prepare enforces on-chain `thirdPartySigner` match with backend signer configuration before mint transaction assembly.
   - Core Candy Machine `collectionName` is capped at 32 chars (on-chain serialization constraint).
+  - Core Candy Machine deploy requires both delegate authorities from environment:
+    - `SQUADS_FREEZE_AUTHORITY` for `PermanentFreezeDelegate`.
+    - `SQUADS_TRANSFER_AUTHORITY` for `PermanentTransferDelegate`.
+  - Collection creation now attaches both permanent delegates on-chain (`PermanentFreezeDelegate` + `PermanentTransferDelegate`) with explicit authority address validation server-side.
 - Rotation/revocation:
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
   - Revoking admin rights is immediate once wallet is removed from allowlist.
@@ -65,6 +70,75 @@
 - Update authority validation:
   - Collection is created with `updateAuthority = admin wallet`.
   - Assets minted into a collection do not set per-asset `updateAuthority` (Core rejects setting both collection + update authority).
+  - Current operational decision (pending final governance decision):
+    - The deploy signer wallet keeps `updateAuthority` on the collection so metadata/economic fields remain editable during the decision window.
+    - Metadata updates are therefore performed by the wallet that executed deploy when it is also the current `updateAuthority`.
+    - This authority does not grant custody rights over third-party assets or SOL balances by itself.
+
+## Economic AppData (EPIC-006 STORY-006-03)
+- Objective:
+  - Persist auditable economic parameters per NFT directly on-chain via Core `AppData`.
+- Adapter model:
+  - External adapter type: `AppData`.
+  - Schema: `ExternalPluginAdapterSchema.Json`.
+  - Data authority: `UpdateAuthority`.
+- `AppData v1` contract:
+  - Required:
+    - `revenue_share_bps` (`0..10000`)
+    - `yield_bps` (`0..10000`)
+    - `yield_mode` (`cap | linear`)
+    - `distribution_enabled` (`boolean`)
+    - `economic_version` (`^v[0-9]+$`, currently `v1`)
+    - `last_updated_at` (`unix seconds`)
+    - `updated_by` (`string`, min practical length enforced)
+  - Optional:
+    - `locked_at`
+    - `eligible_from`
+    - `earning_start_ts`
+- Mint pipeline behavior:
+  1. Mint asset.
+  2. Attach `AppData` adapter.
+  3. Write initial payload `v1`.
+  4. Permit controlled subsequent writes under same authority model.
+- Validation behavior:
+  - Rejects unsupported keys to avoid schema drift.
+  - Rejects unsupported `yield_mode`.
+  - Rejects unsupported `economic_version` values.
+  - Enforces audit fields in every write.
+
+## Delegate Authority Lifecycle (EPIC-006 STORY-006-04)
+- Scope:
+  - Add backend-admin lifecycle for critical collection authorities on devnet.
+  - Applies to `transfer_delegate` (`PermanentTransferDelegate`) and `appdata_authority` (collection `updateAuthority` used by AppData writes).
+- Admin endpoints:
+  - `POST /api/admin/core-candy-machine/authorities/prepare`
+  - `POST /api/admin/core-candy-machine/authorities/submit`
+- Supported operations:
+  - `rotate(role, new_authority)`
+  - `revoke(role)` (moves to sentinel `11111111111111111111111111111111`)
+  - `emergency_rotate(role, new_authority)`
+- Security and trust-chain enforcement (server-side):
+  - Mandatory multisig evidence in request (`proposalId`, `proposer`, `executor`, `approverSigners`).
+  - Regular threshold: `SQUADS_MULTISIG_THRESHOLD` (default `2`).
+  - Emergency threshold: `SQUADS_EMERGENCY_MULTISIG_THRESHOLD` (default `max(regular+1, 3)`).
+  - Optional allowlists:
+    - `SQUADS_PROPOSER_ALLOWLIST`
+    - `SQUADS_APPROVER_ALLOWLIST`
+    - `SQUADS_EXECUTOR_ALLOWLIST`
+  - Cooldown for non-emergency ops:
+    - `AUTHORITY_ROTATION_COOLDOWN_SECONDS` (default `21600`).
+  - No null-authority window on rotation:
+    - Rotate executes as a direct authority swap in one on-chain transaction.
+- Audit + versioning:
+  - `authority_version` is monotonic (`+1` per accepted operation).
+  - Audit trail persists operation intent and outcome:
+    - status (`prepared` -> `submitted`)
+    - proposal/executor/approvers
+    - previous/new authority + previous/new version
+    - confirmed on-chain signature.
+  - Persistence tables:
+    - `authority_registry`
+    - `authority_audit_events`
 
 ## Royalty Model
 - Seller fee basis points:
@@ -143,7 +217,16 @@
 | Load config lines 321-384 | `295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB` | `https://explorer.solana.com/tx/295UBmYo2nxZ1Tx5XHJdPK776oQYA7qqeh5XGsd87kQ9zzesEdivukHgsHFf7U6QvcqyDGCn17oSf4cAqiFiPZCB?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 | Load config lines 385-400 | `5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o` | `https://explorer.solana.com/tx/5F1sktcVcgGmYPS1qEvrYewdd8wAkV9tzutQfC1JDmu3VoP6hbVpW6knTEgahfe5BWFAyAc8NPV11RfpzMr8qM1o?cluster=devnet` | `96BNZVbtC4qyTp8THm3q1dpmcFqmVoDzpVrLuLTJdvU3` |
 
-Last Updated: 2026-03-20 19:27:57 UTC
+## Devnet AppData Proof (STORY-006-03)
+| Purpose | Signature | Explorer URL | Account |
+| --- | --- | --- | --- |
+| Create Core collection (`CreateCollectionV2`) | `3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N` | `https://explorer.solana.com/tx/3UJFwJDhmU56FRhbxURZGkYN2Vc7QtxkDhnd6stKgJE2mudcepzQxHcvs7bYDMNegnTeN6dEkUobToHPBmPg3h9N?cluster=devnet` | `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi` |
+| Mint asset (`CreateV2`) | `39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek` | `https://explorer.solana.com/tx/39mG3FSESWfASb74cDdkYbX9LGxDQXKc9Eiy8vt3CNF2R1jFDjn9Z5wgmBWiFGmBQquyyDDAb1mfvT7uxs9sS4ek?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Attach AppData (`AddExternalPluginAdapter`) | `2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3` | `https://explorer.solana.com/tx/2FshFpvXW6543eNE5Vot9k4po4Cr8PTSUga66tCg517H1GFKaCHTfKHe6ZSfZxeJkpx8inuYEYMNr5DuFhD4tnY3?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Write initial AppData | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+| Update AppData | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
+
+Last Updated: 2026-04-01 10:45:00 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)
@@ -161,7 +244,7 @@ Last Updated: 2026-03-20 19:27:57 UTC
 - Reconciliation:
   - DAS route (`/reconcile/das`) remains active as primary high-throughput reconciliation path.
 - Pending for full EPIC close:
-  - Complete migration from Core direct mint flow to Core Candy Machine flow (`create+guards+items+mint`) with `startDate + solPayment(0.00001 SOL)`.
+  - Complete migration from Core direct mint flow to Core Candy Machine flow (`create+guards+items+mint`) with `startDate + tokenPayment(USDC)` as canonical pricing guard.
   - Devnet proof update with real signatures for Candy Machine deploy was completed on 2026-03-18; mint batch signatures are still pending for this EPIC.
 
 - Core Candy Machine implementation status:
@@ -174,5 +257,5 @@ Last Updated: 2026-03-20 19:27:57 UTC
     - `components/admin/core-candy-machine-panel.tsx`
   - Enforced guards on deploy:
     - `startDate`
-    - `solPayment = 10,000 lamports (0.00001 SOL)`
+    - `tokenPayment = amountUsdcAtomic` (unit price derived from admin form `Costo por NFT`)
     - `thirdPartySigner` (backend signer, mandatory for public purchase flow)

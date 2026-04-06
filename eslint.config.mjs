@@ -1,5 +1,67 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 
-const config = [...nextVitals];
+const legacyWeb3ImportAllowlist = [
+  "app/api/admin/mint-orchestrator/jobs/*/reconcile/route.ts",
+  "components/admin/core-candy-machine-panel.tsx",
+  "components/admin/metaplex-core-mint-panel.tsx",
+  "components/marketplace/PurchaseCta.tsx",
+  "e2e/helpers/siws-local-wallet.ts",
+  "scripts/devnet-authority-lifecycle-proof.ts",
+  "scripts/validation/epic-001-validation.mjs",
+  "test/wallet-setup/solana-wallet-profiles.mjs",
+  "lib/auth.ts",
+  "lib/candy-guard-payment-config.ts",
+  "lib/core-authority-lifecycle.ts",
+  "lib/core-candy-machine-admin.ts",
+  "lib/core-candy-machine-snapshot-service.ts",
+  "lib/metaplex-core-admin.ts",
+  "lib/property-marketplace-server.ts",
+  "lib/purchase-anti-bot.ts",
+  "lib/purchase-service.ts",
+  "lib/purchase-third-party-signer.ts",
+  "lib/solana.ts",
+  "tests/lib/auth.test.ts",
+  "tests/lib/purchase-anti-bot.test.ts",
+  "tests/lib/solana.test.ts"
+];
+
+const noWeb3ImportsRule = [
+  "error",
+  {
+    paths: [
+      {
+        name: "@solana/web3.js",
+        message:
+          "Use @solana/kit foundation modules. If interop is unavoidable, isolate it under a compat adapter."
+      }
+    ]
+  }
+];
+
+const config = [
+  {
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+      ".blob-report/**",
+      ".cache-synpress/**"
+    ]
+  },
+  {
+    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    rules: {
+      "no-restricted-imports": noWeb3ImportsRule
+    }
+  },
+  {
+    files: legacyWeb3ImportAllowlist,
+    rules: {
+      "no-restricted-imports": "off"
+    }
+  },
+  ...nextVitals
+];
 
 export default config;
