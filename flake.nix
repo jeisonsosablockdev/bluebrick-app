@@ -25,6 +25,7 @@
             jq
             nodejs_22
             openssl
+            postgresql
             pkg-config
             python3
             rustup

@@ -5,6 +5,7 @@
     pkgs.git
     pkgs.ffmpeg
     pkgs.openssl
+    pkgs.postgresql
     pkgs.pkg-config
     pkgs.jq
   ];
