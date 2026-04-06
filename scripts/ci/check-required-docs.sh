@@ -11,7 +11,9 @@ if [[ -n "${HEAD_BRANCH}" ]]; then
   echo "Head branch: ${HEAD_BRANCH}"
 fi
 
-git fetch --no-tags --depth=1 origin "${BASE_REF}" >/dev/null 2>&1 || true
+# Fetch full base branch history. Using depth=1 can break merge-base discovery
+# on long-lived branches and makes the docs gate fail with exit 128.
+git fetch --no-tags origin "${BASE_REF}" >/dev/null 2>&1 || true
 
 CHANGED_FILES="$(git diff --name-only "origin/${BASE_REF}...${HEAD_REF}")"
 
