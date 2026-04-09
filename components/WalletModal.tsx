@@ -22,6 +22,10 @@ type WalletModalProps = {
 };
 
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
+const PHANTOM_INSTALL_URL = "https://phantom.app/download";
+const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
+const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
+const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 
@@ -126,6 +130,10 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function buildPhantomDeepLink(siteUrl: string): string {
+  return `https://phantom.app/ul/browse/${encodeURIComponent(siteUrl)}`;
+}
+
 export function WalletModal({ initialAuth }: WalletModalProps) {
   const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
@@ -138,8 +146,13 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const [lastError, setLastError] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const inactivityTimeoutRef = useRef<number | null>(null);
+  const phantomFallbackTimerRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
   const autoCloseOnConnect = useMemo(() => getWalletModalAutoClose(), []);
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
+  const [isMobileUserAgent, setIsMobileUserAgent] = useState(false);
+  const [isInPhantomApp, setIsInPhantomApp] = useState(false);
+  const [showPhantomFallback, setShowPhantomFallback] = useState(false);
   const walletPublicKey = publicKey?.toBase58() ?? null;
   const phantomWallet = useMemo(() => wallets.find((item) => item.adapter.name === PhantomWalletName), [wallets]);
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
@@ -429,6 +442,84 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
   const topFeedbackText = statusText ?? lastError;
   const isTopFeedbackStatus = Boolean(statusText);
+  const shouldShowPhantomOpenPill = isSmallViewport && isMobileUserAgent && !isInPhantomApp;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const updateMobileSignals = (): void => {
+      const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+      const userAgent = window.navigator.userAgent ?? "";
+      const phantomWindow = window as Window & {
+        phantom?: { solana?: { isPhantom?: boolean } };
+      };
+      const providerSaysPhantom = Boolean(phantomWindow.phantom?.solana?.isPhantom);
+
+      setIsSmallViewport(mediaQuery.matches);
+      setIsMobileUserAgent(MOBILE_USER_AGENT_PATTERN.test(userAgent));
+      setIsInPhantomApp(providerSaysPhantom || PHANTOM_USER_AGENT_PATTERN.test(userAgent));
+    };
+
+    updateMobileSignals();
+    window.addEventListener("resize", updateMobileSignals);
+
+    return () => {
+      window.removeEventListener("resize", updateMobileSignals);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (phantomFallbackTimerRef.current !== null) {
+        window.clearTimeout(phantomFallbackTimerRef.current);
+        phantomFallbackTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  function handleOpenInPhantom(): void {
+    if (!shouldShowPhantomOpenPill || typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    setShowPhantomFallback(false);
+
+    if (phantomFallbackTimerRef.current !== null) {
+      window.clearTimeout(phantomFallbackTimerRef.current);
+      phantomFallbackTimerRef.current = null;
+    }
+
+    const deeplink = buildPhantomDeepLink(window.location.href);
+    let phantomOpened = false;
+
+    const onVisibilityChange = (): void => {
+      if (document.hidden) {
+        phantomOpened = true;
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+
+        if (phantomFallbackTimerRef.current !== null) {
+          window.clearTimeout(phantomFallbackTimerRef.current);
+          phantomFallbackTimerRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    phantomFallbackTimerRef.current = window.setTimeout(() => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+
+      if (!phantomOpened && !document.hidden) {
+        setShowPhantomFallback(true);
+      }
+
+      phantomFallbackTimerRef.current = null;
+    }, 1800);
+
+    window.location.assign(deeplink);
+  }
 
   return (
     <>
@@ -534,6 +625,51 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 );
               })}
             </nav>
+          ) : null}
+
+          {shouldShowPhantomOpenPill ? (
+            <div className="relative z-10 mt-3 sm:hidden">
+              <button
+                type="button"
+                onClick={handleOpenInPhantom}
+                className="quick-tour-pill inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-medium"
+              >
+                {t({
+                  en: "Do you use Phantom? Open in app.",
+                  es: "¿Usas Phantom? Abrir en la app.",
+                  pt: "Usa Phantom? Abrir no app."
+                })}
+              </button>
+            </div>
+          ) : null}
+
+          {showPhantomFallback && shouldShowPhantomOpenPill ? (
+            <div className="relative z-10 mt-2 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100 sm:hidden">
+              <p>
+                {t({
+                  en: "Could not open Phantom automatically.",
+                  es: "No se pudo abrir Phantom automaticamente.",
+                  pt: "Nao foi possivel abrir o Phantom automaticamente."
+                })}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <a
+                  href={PHANTOM_INSTALL_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/50 px-4 font-medium text-amber-50 transition hover:bg-amber-200/10"
+                >
+                  {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowPhantomFallback(false)}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 font-medium text-white/90 transition hover:bg-white/10"
+                >
+                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                </button>
+              </div>
+            </div>
           ) : null}
         </div>
       </header>
