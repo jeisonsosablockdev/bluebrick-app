@@ -17,7 +17,8 @@
    - Session stored in in-memory map keyed by token.
    - Cookie `siws_session` written with path `/`.
 2. Refresh session:
-   - Not implemented; user re-authenticates with SIWS.
+   - No token rotation endpoint; user re-authenticates with SIWS.
+   - UI auth state is revalidated across browser contexts via `BroadcastChannel` + `localStorage` sync signal, and on `focus`/`visibilitychange`.
 3. Revoke session:
    - `POST /api/auth/logout` deletes server record and clears cookie.
 
@@ -121,6 +122,7 @@
 - Wallet modal UX safety:
   - Progress and error feedback are rendered in the same top visual slot to avoid ambiguous state perception.
   - Modal auto-close after inactivity requires explicit user re-open and never skips SIWS verification steps.
+  - Cross-window sync events never grant access by themselves; server session validation remains the source of truth.
 
 - Theme toggle UX safety:
 - Theme preference is stored in browser `localStorage` (`brids-ui-theme`) and restored at startup.
@@ -173,4 +175,13 @@ Implementation guide for request correlation and timeline tracing:
   - frontend receives only redirect-safe fields (`intentId`, `clientSecret`, `env`, `successUrl`),
   - final payment/order transition is webhook-driven and signature-validated server-side.
 
-Last Updated: 2026-04-05 03:40:00 UTC
+## BRI-12 Session Notes (Wallet Connection Migration)
+- SIWS signature verification no longer depends on `@solana/web3.js` for public key byte conversion in auth boundary.
+- Server normalizes wallet addresses with `@solana/kit` primitives before signature verification and session issuance.
+- Frontend session visibility consistency between tabs/windows now uses:
+  - login/logout sync event emission,
+  - `BroadcastChannel` listener,
+  - `storage` listener,
+  - and background revalidation on `focus`/`visibilitychange`.
+
+Last Updated: 2026-04-12 22:30:00 UTC

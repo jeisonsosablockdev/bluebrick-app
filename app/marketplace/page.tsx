@@ -15,6 +15,22 @@ type MarketplacePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+async function safeListMarketplaceProperties(filters: PropertyFilters) {
+  try {
+    return await listMarketplaceProperties(filters);
+  } catch {
+    return [];
+  }
+}
+
+async function safeListMarketplacePropertyCities() {
+  try {
+    return await listMarketplacePropertyCities();
+  } catch {
+    return [];
+  }
+}
+
 function readValue(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) {
     return value[0];
@@ -45,8 +61,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const locale = await getServerLocale();
   const filters = parseFilters(await searchParams);
-  const properties = await listMarketplaceProperties(filters);
-  const cityOptions = await listMarketplacePropertyCities();
+  const properties = await safeListMarketplaceProperties(filters);
+  const cityOptions = await safeListMarketplacePropertyCities();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">

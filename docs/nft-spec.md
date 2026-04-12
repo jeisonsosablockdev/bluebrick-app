@@ -62,6 +62,22 @@
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
   - Revoking admin rights is immediate once wallet is removed from allowlist.
 
+## BRI-12 Wallet/Auth Migration Impact (NFT Scope)
+- Change summary:
+  - Wallet auth boundary migrated public key byte handling from `@solana/web3.js` to `@solana/kit` (`address` + `getAddressEncoder`) in SIWS verification path.
+  - Wallet modal auth sync between browser contexts was hardened (`BroadcastChannel` + `storage` + `focus`/`visibilitychange` revalidation).
+- NFT authority impact:
+  - No change in authority model for NFT operations.
+  - Admin NFT endpoints continue to derive authority only from server-side SIWS session (`ADMIN_WALLETS` allowlist), never from client wallet state.
+  - `payerPublicKey` checks remain server-authoritative in prepare/submit flows.
+- Metadata and collection impact:
+  - No change to metadata ownership semantics.
+  - No change to collection `updateAuthority` policy or delegate lifecycle requirements.
+- Security invariants (unchanged):
+  - No client-side authority validation is accepted as final decision.
+  - No mocked signatures/RPC are valid acceptance evidence.
+  - Devnet-only execution policy remains mandatory for NFT proof flows.
+
 ## Metadata Ownership
 - Metadata PDA seeds:
   - Metaplex Core stores metadata in the same Core asset account (no separate Metaplex Token Metadata PDA in this flow).
@@ -226,7 +242,7 @@
 | Write initial AppData | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 | Update AppData | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 
-Last Updated: 2026-04-01 10:45:00 UTC
+Last Updated: 2026-04-12 21:07:07 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)

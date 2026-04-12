@@ -3,6 +3,7 @@
 ## Scope
 - Feature: Phantom wallet connection + Sign-In With Solana (SIWS) via message signing only.
 - Wallet integration: `@solana/wallet-adapter-react` with Phantom as primary wallet.
+- Signature verification primitive: `@solana/kit` address encoder (`address` + `getAddressEncoder`) in server auth boundary.
 - RBAC extension: authenticated wallet is mapped to `user`/`admin` server-side.
 
 ## SIWS Flow
@@ -70,6 +71,8 @@
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
 - The wallet modal closes automatically after 30 seconds without user interaction (`pointerdown`, `keydown`, `touchstart`, `wheel`).
 - Any interaction while the modal is open resets the 30-second inactivity timer.
+- Auth state is revalidated across tabs/windows using `BroadcastChannel` + `localStorage` sync events, plus `focus`/`visibilitychange` revalidation.
+- Wallet connect flow resolves public key from adapter state with retry window after `connect()` to avoid race conditions on first connection.
 - This UX timeout never bypasses SIWS rules: nonce validation, signature verification, and role resolution remain server-side.
 
 ## Theme Selector UX Guardrails
@@ -230,4 +233,15 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Home `Features` cards now read icon values from locale data (`app/data/home*.json`) instead of a static bullet marker.
 - Change is presentational only and does not alter auth/session boundaries, SIWS flow, nonce lifecycle, or signature verification.
 
-Last Updated: 2026-04-05 03:40:00 UTC
+## BRI-12 Wallet Connection Migration (`@solana/web3.js` -> `@solana/kit`)
+- Scope:
+  - SIWS server verification path migrates wallet public key handling to `@solana/kit`.
+  - Wallet modal auth synchronization between browser contexts is hardened.
+- Behavior:
+  - Server verification normalizes incoming wallet address with `address(...)` and verifies signature bytes derived from `getAddressEncoder()`.
+  - Client emits auth sync events on login/logout and revalidates session on sync/focus/visibility changes.
+- Security boundary:
+  - Session authority remains server-side only.
+  - Sync channel is advisory for UX state; authorization decisions continue to use `httpOnly` cookie + server checks.
+
+Last Updated: 2026-04-12 22:30:00 UTC

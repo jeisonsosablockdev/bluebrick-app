@@ -1,16 +1,32 @@
-import { Keypair } from "@solana/web3.js";
+import { createSignableMessage, generateKeyPairSigner } from "@solana/kit";
 import { NextRequest } from "next/server";
-import nacl from "tweetnacl";
 import { describe, expect, it } from "vitest";
 
 import { getSessionPublicKey, issueNonce } from "@/lib/auth-store";
 import { getRequestHost, isIssuedAtValid, normalizeHost, verifySiwsPayload } from "@/lib/auth";
 import { buildSiwsMessage } from "@/lib/siws";
 
-function signMessage(message: string, secretKey: Uint8Array): string {
-  const messageBytes = new TextEncoder().encode(message);
-  const signature = nacl.sign.detached(messageBytes, secretKey);
-  return Buffer.from(signature).toString("base64");
+type TestWalletIdentity = {
+  publicKey: string;
+  signMessage: (message: string) => Promise<string>;
+};
+
+async function createWalletIdentity(): Promise<TestWalletIdentity> {
+  const signer = await generateKeyPairSigner();
+
+  return {
+    publicKey: signer.address,
+    signMessage: async (message: string) => {
+      const [signatures] = await signer.signMessages([createSignableMessage(message)]);
+      const signatureBytes = signatures[signer.address];
+
+      if (!signatureBytes) {
+        throw new Error("Could not sign SIWS message.");
+      }
+
+      return Buffer.from(signatureBytes).toString("base64");
+    }
+  };
 }
 
 describe("lib/auth", () => {
@@ -38,25 +54,24 @@ describe("lib/auth", () => {
     expect(isIssuedAtValid("not-a-date")).toBe(false);
   });
 
-  it("verifies a valid SIWS payload and creates a session token", () => {
-    const keypair = Keypair.generate();
+  it("verifies a valid SIWS payload and creates a session token", async () => {
+    const wallet = await createWalletIdentity();
     const nonce = issueNonce();
     const domain = "admin.example.com";
-    const publicKey = keypair.publicKey.toBase58();
     const message = buildSiwsMessage({
       domain,
-      publicKey,
+      publicKey: wallet.publicKey,
       nonce,
       issuedAt: new Date().toISOString(),
       statement: "Authorize admin dashboard"
     });
-    const signature = signMessage(message, keypair.secretKey);
+    const signature = await wallet.signMessage(message);
 
     const result = verifySiwsPayload(
       {
         message,
         signature,
-        publicKey
+        publicKey: wallet.publicKey
       },
       domain
     );
@@ -64,28 +79,27 @@ describe("lib/auth", () => {
     expect(result.ok).toBe(true);
 
     if (result.ok) {
-      expect(getSessionPublicKey(result.sessionToken)).toBe(publicKey);
+      expect(getSessionPublicKey(result.sessionToken)).toBe(wallet.publicKey);
     }
   });
 
-  it("rejects SIWS payload when host does not match domain", () => {
-    const keypair = Keypair.generate();
+  it("rejects SIWS payload when host does not match domain", async () => {
+    const wallet = await createWalletIdentity();
     const nonce = issueNonce();
-    const publicKey = keypair.publicKey.toBase58();
     const message = buildSiwsMessage({
       domain: "admin.example.com",
-      publicKey,
+      publicKey: wallet.publicKey,
       nonce,
       issuedAt: new Date().toISOString(),
       statement: "Authorize admin dashboard"
     });
-    const signature = signMessage(message, keypair.secretKey);
+    const signature = await wallet.signMessage(message);
 
     const result = verifySiwsPayload(
       {
         message,
         signature,
-        publicKey
+        publicKey: wallet.publicKey
       },
       "other.example.com"
     );
@@ -97,23 +111,22 @@ describe("lib/auth", () => {
     });
   });
 
-  it("rejects SIWS payload for invalid nonce", () => {
-    const keypair = Keypair.generate();
-    const publicKey = keypair.publicKey.toBase58();
+  it("rejects SIWS payload for invalid nonce", async () => {
+    const wallet = await createWalletIdentity();
     const message = buildSiwsMessage({
       domain: "admin.example.com",
-      publicKey,
+      publicKey: wallet.publicKey,
       nonce: "nonce-not-issued",
       issuedAt: new Date().toISOString(),
       statement: "Authorize admin dashboard"
     });
-    const signature = signMessage(message, keypair.secretKey);
+    const signature = await wallet.signMessage(message);
 
     const result = verifySiwsPayload(
       {
         message,
         signature,
-        publicKey
+        publicKey: wallet.publicKey
       },
       "admin.example.com"
     );

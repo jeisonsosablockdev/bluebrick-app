@@ -11,3 +11,5 @@ playwright-report
 test-results
 .blob-report
 .cache-synpress
+.vercel
+.env*.local

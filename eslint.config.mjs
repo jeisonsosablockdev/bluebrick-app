@@ -9,7 +9,6 @@ const legacyWeb3ImportAllowlist = [
   "scripts/devnet-authority-lifecycle-proof.ts",
   "scripts/validation/epic-001-validation.mjs",
   "test/wallet-setup/solana-wallet-profiles.mjs",
-  "lib/auth.ts",
   "lib/candy-guard-payment-config.ts",
   "lib/core-authority-lifecycle.ts",
   "lib/core-candy-machine-admin.ts",
@@ -19,10 +18,7 @@ const legacyWeb3ImportAllowlist = [
   "lib/purchase-anti-bot.ts",
   "lib/purchase-service.ts",
   "lib/purchase-third-party-signer.ts",
-  "lib/solana.ts",
-  "tests/lib/auth.test.ts",
-  "tests/lib/purchase-anti-bot.test.ts",
-  "tests/lib/solana.test.ts"
+  "tests/lib/purchase-anti-bot.test.ts"
 ];
 
 const noWeb3ImportsRule = [
@@ -42,6 +38,7 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".vercel/**",
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",

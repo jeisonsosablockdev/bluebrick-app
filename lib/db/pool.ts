@@ -19,6 +19,9 @@ export function getDbPool(): Pool {
     global.__dbPool = new Pool({
       connectionString: getDatabaseUrl()
     });
+
+    // Avoid unhandled idle-client errors (e.g. transient ECONNRESET) from crashing SSR routes.
+    global.__dbPool.on("error", () => {});
   }
 
   return global.__dbPool;

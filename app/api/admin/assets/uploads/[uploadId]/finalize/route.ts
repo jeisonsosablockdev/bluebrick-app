@@ -135,17 +135,11 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       return errorResponse(422, "UPLOAD_VALIDATION_FAILED", "Stored object content-type does not match signed contract.");
     }
 
-    if (!metadata.md5Base64) {
-      return errorResponse(422, "UPLOAD_VALIDATION_FAILED", "Stored object MD5 metadata is unavailable.");
-    }
-
-    if (metadata.md5Base64 !== payload.contentMd5Base64) {
-      return errorResponse(422, "CONTENT_MD5_MISMATCH", "Stored object MD5 does not match signed contract.");
-    }
-
     if (payload.etag && metadata.etag && payload.etag !== metadata.etag) {
       return errorResponse(422, "UPLOAD_VALIDATION_FAILED", "etag does not match stored object ETag.");
     }
+
+    const cdnUrl = metadata.url ?? buildCdnUrl(config, contract.objectKey);
 
     const persisted = await persistFinalizedUpload({
       uploadId: contract.uploadId,
@@ -153,7 +147,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       draftId: contract.draftId,
       bucket: contract.bucket,
       objectKey: contract.objectKey,
-      cdnUrl: buildCdnUrl(config, contract.objectKey),
+      cdnUrl,
       mimeType: contract.mimeType,
       sizeBytes: contract.sizeBytes,
       contentMd5Base64: contract.contentMd5Base64,

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { fetchAuthMe, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import {
+  AUTH_SYNC_STORAGE_KEY,
+  broadcastAuthSync,
+  createAuthSyncBroadcastChannel,
+  parseAuthSyncPayload,
+  parseAuthSyncPayloadFromUnknown
+} from "@/lib/auth-sync";
 import { getWalletModalAutoClose } from "@/lib/solana";
 
 type WalletModalProps = {
@@ -148,6 +155,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const inactivityTimeoutRef = useRef<number | null>(null);
   const phantomFallbackTimerRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
+  const authRefreshPromiseRef = useRef<Promise<void> | null>(null);
   const autoCloseOnConnect = useMemo(() => getWalletModalAutoClose(), []);
   const [isSmallViewport, setIsSmallViewport] = useState(false);
   const [isMobileUserAgent, setIsMobileUserAgent] = useState(false);
@@ -200,6 +208,67 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     es: "Firma este mensaje para autenticarte en la app.",
     pt: "Assine esta mensagem para se autenticar no app."
   });
+
+  const resolveCurrentWalletPublicKey = useCallback((): string | null => {
+    return (
+      publicKey?.toBase58()
+      ?? wallet?.adapter.publicKey?.toBase58()
+      ?? wallets.find((item) => item.adapter.name === PhantomWalletName)?.adapter.publicKey?.toBase58()
+      ?? null
+    );
+  }, [publicKey, wallet, wallets]);
+
+  const waitForWalletPublicKey = useCallback(async (): Promise<string | null> => {
+    const immediatePublicKey = resolveCurrentWalletPublicKey();
+    if (immediatePublicKey) {
+      return immediatePublicKey;
+    }
+
+    const maxAttempts = 20;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+      const nextPublicKey = resolveCurrentWalletPublicKey();
+      if (nextPublicKey) {
+        return nextPublicKey;
+      }
+    }
+
+    return null;
+  }, [resolveCurrentWalletPublicKey]);
+
+  const refreshAuthState = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
+    if (authRefreshPromiseRef.current) {
+      return authRefreshPromiseRef.current;
+    }
+
+    const silent = Boolean(options?.silent);
+    const refreshPromise = (async () => {
+      try {
+        const currentAuth = await fetchAuthMe();
+        setAuthState((previous) => (
+          previous.authenticated === currentAuth.authenticated
+          && previous.pubkey === currentAuth.pubkey
+          && previous.role === currentAuth.role
+            ? previous
+            : currentAuth
+        ));
+
+        if (!silent) {
+          setLastError(null);
+        }
+      } catch (error) {
+        if (!silent) {
+          setLastError(getFriendlyWalletErrorMessage(error, t));
+        }
+      }
+    })();
+
+    authRefreshPromiseRef.current = refreshPromise.finally(() => {
+      authRefreshPromiseRef.current = null;
+    });
+
+    return authRefreshPromiseRef.current;
+  }, [t]);
 
   useEffect(() => {
     setAuthState(initialAuth);
@@ -279,21 +348,64 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       return;
     }
 
-    void (async () => {
-      try {
-        const currentAuth = await fetchAuthMe();
-        setAuthState(currentAuth);
-      } catch {
-        setLastError(
-          t({
-            en: "Could not check current session.",
-            es: "No se pudo verificar la sesion actual.",
-            pt: "Nao foi possivel verificar a sessao atual."
-          })
-        );
+    void refreshAuthState();
+  }, [isOpen, refreshAuthState]);
+
+  useEffect(() => {
+    void refreshAuthState({ silent: true });
+  }, [refreshAuthState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const handleFocus = (): void => {
+      void refreshAuthState({ silent: true });
+    };
+
+    const handleVisibilityChange = (): void => {
+      if (!document.hidden) {
+        void refreshAuthState({ silent: true });
       }
-    })();
-  }, [isOpen, t]);
+    };
+
+    const handleStorage = (event: StorageEvent): void => {
+      if (event.key !== AUTH_SYNC_STORAGE_KEY) {
+        return;
+      }
+
+      if (!parseAuthSyncPayload(event.newValue)) {
+        return;
+      }
+
+      void refreshAuthState({ silent: true });
+    };
+
+    const channel = createAuthSyncBroadcastChannel();
+    const handleChannelMessage = (event: MessageEvent<unknown>): void => {
+      if (!parseAuthSyncPayloadFromUnknown(event.data)) {
+        return;
+      }
+
+      void refreshAuthState({ silent: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("storage", handleStorage);
+    channel?.addEventListener("message", handleChannelMessage);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorage);
+      if (channel) {
+        channel.removeEventListener("message", handleChannelMessage);
+        channel.close();
+      }
+    };
+  }, [refreshAuthState]);
 
   useEffect(() => {
     const hasConnectedNow = connected && Boolean(walletPublicKey);
@@ -320,7 +432,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Phantom wallet was not found in this browser.");
       }
 
-      let activePublicKey = walletPublicKey;
+      let activePublicKey = resolveCurrentWalletPublicKey();
 
       if (!activePublicKey) {
         setPhase("connecting");
@@ -331,7 +443,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         }
 
         await connect();
-        activePublicKey = publicKey?.toBase58() ?? null;
+        activePublicKey = await waitForWalletPublicKey();
       }
 
       if (!activePublicKey) {
@@ -349,12 +461,9 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         onStatus: (status) => setPhase(status)
       });
 
-      try {
-        const currentAuth = await fetchAuthMe();
-        setAuthState(currentAuth);
-      } catch {
-        setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
-      }
+      setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
+      broadcastAuthSync("login", verifiedResult.publicKey);
+      void refreshAuthState({ silent: true });
 
       try {
         const profileRes = await fetch("/api/protected/profile");
@@ -370,8 +479,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           router.push("/protected/perfil");
           return;
         }
-      } catch (err) {
-        console.error("Failed to check profile completion during auth", err);
+      } catch {
+        // Fail-open here: profile completion is checked server-side on protected routes.
       }
 
       if (verifiedResult.isNewUser) {
@@ -423,6 +532,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         setLastError(disconnectError ?? logoutError);
       } else {
         setAuthState({ authenticated: false, pubkey: null });
+        broadcastAuthSync("logout", walletPublicKey);
       }
     } finally {
       setPhase("idle");

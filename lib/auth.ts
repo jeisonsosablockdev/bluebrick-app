@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { PublicKey } from "@solana/web3.js";
+import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
 import { consumeNonce, createSession, getSessionMaxAgeSeconds, getSessionPublicKey, hasUsableNonce, revokeSession } from "@/lib/auth-store";
@@ -8,6 +8,7 @@ import { parseSiwsMessage } from "@/lib/siws";
 
 const AUTH_COOKIE_NAME = "siws_session";
 const SIWS_MAX_AGE_MS = 5 * 60 * 1000;
+const addressEncoder = getAddressEncoder();
 
 type VerifyPayload = {
   message: string;
@@ -61,17 +62,20 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
   }
 
   let signatureBytes: Uint8Array;
-  let walletPublicKey: PublicKey;
+  let walletPublicKeyBytes: Uint8Array;
+  let normalizedPublicKey: string;
 
   try {
     signatureBytes = Uint8Array.from(Buffer.from(payload.signature, "base64"));
-    walletPublicKey = new PublicKey(payload.publicKey);
+    const walletAddress = address(payload.publicKey);
+    walletPublicKeyBytes = Uint8Array.from(addressEncoder.encode(walletAddress));
+    normalizedPublicKey = walletAddress;
   } catch {
     return { ok: false, status: 400, error: "Malformed signature or public key." };
   }
 
   const messageBytes = new TextEncoder().encode(payload.message);
-  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKey.toBytes());
+  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKeyBytes);
 
   if (!isValid) {
     return { ok: false, status: 401, error: "Signature verification failed." };
@@ -81,7 +85,7 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
     return { ok: false, status: 409, error: "Nonce already consumed." };
   }
 
-  return { ok: true, publicKey: payload.publicKey, sessionToken: createSession(payload.publicKey) };
+  return { ok: true, publicKey: normalizedPublicKey, sessionToken: createSession(normalizedPublicKey) };
 }
 
 export function setSessionCookie(response: NextResponse, sessionToken: string): void {
