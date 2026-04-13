@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
+
 import { InstitutionalPageTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "About",
+  description: "Company profile, mission, and operating principles for BRIDS.",
+  path: "/about"
+});
 
 export default function AboutPage() {
   return (

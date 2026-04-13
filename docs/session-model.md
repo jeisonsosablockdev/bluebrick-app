@@ -192,4 +192,12 @@ Implementation guide for request correlation and timeline tracing:
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.
 
-Last Updated: 2026-04-13 07:20:00 UTC
+## STORY-010-04 Technical SEO Infrastructure Impact
+- Story-010-04 modifies metadata/canonical/robots/sitemap infrastructure and index/noindex routing policy.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-13 14:20:00 UTC

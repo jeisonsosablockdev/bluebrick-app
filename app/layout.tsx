@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 
 import { AppProviders } from "@/app/providers";
 import { getServerLocale } from "@/lib/i18n-server";
+import { createRootMetadata } from "@/lib/seo";
 import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
 
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "BRIDS UI Demo",
-  description: "UI-only App Router demo inspired by the provided design"
-};
+export const metadata: Metadata = createRootMetadata({
+  title: "BRIDS",
+  description: "AI discovery infrastructure and public platform pages for BRIDS."
+});
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getServerLocale();

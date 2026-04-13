@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
+
 import { KnowledgeHubTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Knowledge",
+  description: "Canonical knowledge hub with namespaced routes for articles, FAQ, and definitions.",
+  path: "/knowledge",
+  section: "knowledge"
+});
 
 export default function KnowledgeLayerPage() {
   return (

@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
+
 import { InstitutionalPageTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Platform",
+  description: "Technical overview of BRIDS platform capabilities and service boundaries.",
+  path: "/platform"
+});
 
 export default function PlatformPage() {
   return (

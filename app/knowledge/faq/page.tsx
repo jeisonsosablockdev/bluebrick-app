@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
+
 import { FaqTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Knowledge FAQ",
+  description: "Frequently asked questions for the BRIDS knowledge layer.",
+  path: "/knowledge/faq",
+  section: "knowledge"
+});
 
 export default function KnowledgeFaqPage() {
   return (

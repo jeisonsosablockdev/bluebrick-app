@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { WalletModal } from "@/components/WalletModal";
 import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
@@ -13,6 +15,13 @@ import { UiStatesSection } from "@/components/sections/ui-states";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getRoleForWallet } from "@/lib/rbac";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Home",
+  description: "Discover tokenized real-estate opportunities and platform capabilities in BRIDS.",
+  path: "/"
+});
 
 export default async function HomePage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();

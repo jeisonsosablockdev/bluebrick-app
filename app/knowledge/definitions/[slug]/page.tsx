@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
+
 import { DefinitionTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
 
 function toLabelFromSlug(slug: string): string {
   return slug
@@ -6,6 +9,22 @@ function toLabelFromSlug(slug: string): string {
     .filter(Boolean)
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const term = toLabelFromSlug(slug);
+
+  return createPageMetadata({
+    title: `${term} Definition`,
+    description: `Glossary definition page for ${term}.`,
+    path: `/knowledge/definitions/${slug}`,
+    section: "knowledge"
+  });
 }
 
 export default async function KnowledgeDefinitionPage({

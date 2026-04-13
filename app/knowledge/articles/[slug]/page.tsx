@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
+
 import { ArticleTemplate } from "@/components/templates";
 import { buildKnowledgeBreadcrumbs } from "@/lib/content/routes";
+import { createPageMetadata } from "@/lib/seo";
 
 function toTitleCaseFromSlug(slug: string): string {
   return slug
@@ -7,6 +10,22 @@ function toTitleCaseFromSlug(slug: string): string {
     .filter(Boolean)
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const title = toTitleCaseFromSlug(slug);
+
+  return createPageMetadata({
+    title,
+    description: `Knowledge article for ${title}.`,
+    path: `/knowledge/articles/${slug}`,
+    section: "knowledge"
+  });
 }
 
 export default async function KnowledgeArticlePage({

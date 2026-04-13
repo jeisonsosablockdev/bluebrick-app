@@ -63,7 +63,7 @@
 | STORY-010-01 | Foundation and Layered Architecture | `STORY-010-01-foundation-and-layered-architecture.md` | `implemented` | `TBD` | Cubre R01 |
 | STORY-010-02 | Content as Code and Editorial Contracts | `STORY-010-02-content-as-code-and-editorial-contracts.md` | `in-review` | `TBD` | Cubre R02, R03, R14, R15 (branch `story-010-02-content-as-code-and-editorial-contracts-bri-52`) |
 | STORY-010-03 | Route Architecture and Reusable Templates | `STORY-010-03-route-architecture-and-reusable-templates.md` | `in-review` | `TBD` | Cubre R04, R11, R12, R13 (branch `story-010-03-route-architecture-and-reusable-templates-bri-53`) |
-| STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `approved` | `TBD` | Cubre R05 |
+| STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `in-review` | `TBD` | Cubre R05 (branch `story-010-04-technical-seo-infrastructure-bri-54`) |
 | STORY-010-05 | Structured Data JSON-LD Layer | `STORY-010-05-structured-data-json-ld-layer.md` | `approved` | `TBD` | Cubre R06 |
 | STORY-010-06 | AI Readable and Machine Endpoints | `STORY-010-06-ai-readable-and-machine-endpoints.md` | `approved` | `TBD` | Cubre R07 |
 | STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `approved` | `TBD` | Cubre R08, R09 |

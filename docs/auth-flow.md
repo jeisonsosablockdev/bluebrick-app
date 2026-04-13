@@ -253,4 +253,13 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - role resolution and RBAC boundaries.
 - Story-010-03 remains a non-auth functional change.
 
-Last Updated: 2026-04-13 07:20:00 UTC
+## STORY-010-04 Technical SEO Infrastructure Impact
+- Scope touched metadata generation, canonical resolution, robots/sitemap routes, and index/noindex policy wiring.
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-04 remains a non-auth functional change.
+
+Last Updated: 2026-04-13 14:20:00 UTC

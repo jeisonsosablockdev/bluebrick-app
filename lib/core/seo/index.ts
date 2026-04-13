@@ -1,7 +1,5 @@
-export type SeoSection = "software" | "knowledge" | "regulatory";
+import { SEO_CANONICAL_PREFIX, type SeoCanonicalSection } from "@/lib/seo";
 
-export const SEO_CANONICAL_PREFIX: Record<SeoSection, string> = {
-  software: "/software",
-  knowledge: "/knowledge",
-  regulatory: "/regulatory"
-};
+export type SeoSection = SeoCanonicalSection;
+
+export { SEO_CANONICAL_PREFIX };

@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
+
 import { ResourcePageTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
 
 function toTitleFromSlug(slug: string): string {
   return slug
@@ -6,6 +9,21 @@ function toTitleFromSlug(slug: string): string {
     .filter(Boolean)
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const title = toTitleFromSlug(slug);
+
+  return createPageMetadata({
+    title,
+    description: `Resource page for ${title}.`,
+    path: `/resources/${slug}`
+  });
 }
 
 export default async function ResourcePage({

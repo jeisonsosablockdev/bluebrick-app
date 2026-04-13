@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
+
 import { InstitutionalPageTemplate } from "@/components/templates";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Software",
+  description: "Entry route for software layer content and platform-focused technical pages.",
+  path: "/software",
+  section: "software"
+});
 
 export default function SoftwareLayerPage() {
   return (

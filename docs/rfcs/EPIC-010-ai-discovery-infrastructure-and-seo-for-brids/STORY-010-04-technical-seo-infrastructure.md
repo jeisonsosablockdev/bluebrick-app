@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-04-technical-seo-infrastructure`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -61,13 +61,13 @@
   - Cubre baseline técnico de indexación.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
   - Ejecutar STORY-010-05.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -80,15 +80,15 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] Metadata dinámica funcional por plantilla.
-- [ ] Canonicals consistentes y únicos.
-- [ ] Robots y sitemap generados automáticamente.
-- [ ] Drafts/superseded no indexables por default.
+- [x] Metadata dinámica funcional por plantilla.
+- [x] Canonicals consistentes y únicos.
+- [x] Robots y sitemap generados automáticamente.
+- [x] Drafts/superseded no indexables por default.
 
 ## Requirement Mapping
 - `R05`
 
 ## Traceability
-- Related issue(s): `BRI-50`
+- Related issue(s): `BRI-54`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
