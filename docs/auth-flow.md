@@ -244,4 +244,13 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Session authority remains server-side only.
   - Sync channel is advisory for UX state; authorization decisions continue to use `httpOnly` cookie + server checks.
 
-Last Updated: 2026-04-12 22:30:00 UTC
+## STORY-010-03 Route and Template Infrastructure Impact
+- Scope touched only public route architecture and reusable rendering templates.
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-03 remains a non-auth functional change.
+
+Last Updated: 2026-04-13 07:20:00 UTC

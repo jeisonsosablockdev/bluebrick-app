@@ -1,10 +1,16 @@
+import { InstitutionalPageTemplate } from "@/components/templates";
+
 export default function RegulatoryLayerPage() {
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Regulatory Layer</h1>
-      <p className="mt-3 text-base text-muted-foreground">
-        Foundation route reserved for BRIDS regulatory and institutional disclosure content.
-      </p>
-    </main>
+    <InstitutionalPageTemplate
+      title="Regulatory"
+      summary="Entry route for regulatory disclosures and compliance-facing public documents."
+      sectionTitle="Regulatory layer namespace"
+      sectionBody="Regulatory content remains isolated from product and knowledge routes to maintain auditability, traceability, and compliance-friendly navigation boundaries."
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Regulatory", href: "/regulatory" }
+      ]}
+    />
   );
 }

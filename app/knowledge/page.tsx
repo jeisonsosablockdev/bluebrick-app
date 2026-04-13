@@ -1,10 +1,27 @@
+import { KnowledgeHubTemplate } from "@/components/templates";
+
 export default function KnowledgeLayerPage() {
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Knowledge Layer</h1>
-      <p className="mt-3 text-base text-muted-foreground">
-        Foundation route reserved for BRIDS knowledge hub and documentation surfaces.
-      </p>
-    </main>
+    <KnowledgeHubTemplate
+      title="Knowledge"
+      summary="Canonical knowledge hub with namespaced routes for articles, FAQ, and definitions."
+      sections={[
+        {
+          title: "Articles",
+          description: "Long-form guides and explainers.",
+          links: [{ label: "Tokenization fundamentals", href: "/knowledge/articles/tokenization-fundamentals" }]
+        },
+        {
+          title: "FAQ",
+          description: "Operational and platform frequently asked questions.",
+          links: [{ label: "View FAQ hub", href: "/knowledge/faq" }]
+        },
+        {
+          title: "Definitions",
+          description: "Glossary terms with stable semantic URLs.",
+          links: [{ label: "Yield", href: "/knowledge/definitions/yield" }]
+        }
+      ]}
+    />
   );
 }

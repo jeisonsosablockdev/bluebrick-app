@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-03-route-architecture-and-reusable-templates`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -59,13 +59,13 @@
   - Habilita crecimiento ordenado de conocimiento institucional.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
-  - Ejecutar STORY-010-04.
+  - Abrir PR y cerrar trazabilidad final (PR/hash).
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -78,15 +78,15 @@
   - Validación de templates a 320/375/768/1024.
 
 ## Executable Acceptance Checklist
-- [ ] Arquitectura de rutas definida y documentada.
-- [ ] Templates base implementables por tipo documental.
-- [ ] Breadcrumbs y navegación contextual disponibles como infraestructura.
-- [ ] Sin colisiones de slugs cross-type.
+- [x] Arquitectura de rutas definida y documentada.
+- [x] Templates base implementables por tipo documental.
+- [x] Breadcrumbs y navegación contextual disponibles como infraestructura.
+- [x] Sin colisiones de slugs cross-type.
 
 ## Requirement Mapping
 - `R04`, `R11`, `R12`, `R13`
 
 ## Traceability
-- Related issue(s): `BRI-50`
+- Related issue(s): `BRI-50`, `BRI-53`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

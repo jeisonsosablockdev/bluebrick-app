@@ -184,4 +184,12 @@ Implementation guide for request correlation and timeline tracing:
   - `storage` listener,
   - and background revalidation on `focus`/`visibilitychange`.
 
-Last Updated: 2026-04-12 22:30:00 UTC
+## STORY-010-03 Route and Template Infrastructure Impact
+- Story-010-03 modifies only public route rendering and reusable page templates.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-13 07:20:00 UTC
