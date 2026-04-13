@@ -26,6 +26,18 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@core/*": [
+        "./lib/core/*"
+      ],
+      "@software/*": [
+        "./lib/software/*"
+      ],
+      "@knowledge/*": [
+        "./lib/knowledge/*"
+      ],
+      "@regulatory/*": [
+        "./lib/regulatory/*"
       ]
     }
   },

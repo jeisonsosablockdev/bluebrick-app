@@ -58,6 +58,39 @@ const config = [
       "no-restricted-imports": "off"
     }
   },
+  {
+    files: ["lib/software/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: ["@knowledge/*", "@regulatory/*"]
+        }
+      ]
+    }
+  },
+  {
+    files: ["lib/knowledge/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: ["@software/*", "@regulatory/*"]
+        }
+      ]
+    }
+  },
+  {
+    files: ["lib/regulatory/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: ["@software/*", "@knowledge/*"]
+        }
+      ]
+    }
+  },
   ...nextVitals
 ];
 
