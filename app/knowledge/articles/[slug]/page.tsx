@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { ArticleTemplate } from "@/components/templates";
 import { buildKnowledgeBreadcrumbs } from "@/lib/content/routes";
 import { createPageMetadata } from "@/lib/seo";
+import { createArticleTemplateSchemas } from "@/lib/schema";
 
 function toTitleCaseFromSlug(slug: string): string {
   return slug
@@ -36,40 +38,52 @@ export default async function KnowledgeArticlePage({
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const title = toTitleCaseFromSlug(slug);
+  const breadcrumbs = buildKnowledgeBreadcrumbs({
+    label: "Articles",
+    href: "/knowledge/articles"
+  }).concat([{ label: title, href: `/knowledge/articles/${slug}` }]);
+  const schemas = createArticleTemplateSchemas({
+    title,
+    summary:
+      "Article template baseline with namespaced route architecture and contextual navigation placeholders.",
+    path: `/knowledge/articles/${slug}`,
+    breadcrumbs,
+    technical: true
+  });
 
   return (
-    <ArticleTemplate
-      title={title}
-      summary="Article template baseline with namespaced route architecture and contextual navigation placeholders."
-      breadcrumbs={buildKnowledgeBreadcrumbs({
-        label: "Articles",
-        href: "/knowledge/articles"
-      }).concat([{ label: title, href: `/knowledge/articles/${slug}` }])}
-      toc={[
-        { id: "overview", label: "Overview" },
-        { id: "implementation-notes", label: "Implementation notes" }
-      ]}
-      relatedLinks={[
-        { label: "Knowledge hub", href: "/knowledge" },
-        { label: "FAQ", href: "/knowledge/faq" }
-      ]}
-      previousLink={{ label: "Previous article", href: "/knowledge/articles/previous-article" }}
-      nextLink={{ label: "Next article", href: "/knowledge/articles/next-article" }}
-    >
-      <section id="overview" className="space-y-2">
-        <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Overview</h2>
-        <p className="text-sm leading-7 text-muted-foreground md:text-base">
-          This route uses document-type namespacing (`/knowledge/articles/[slug]`) to avoid collisions
-          with glossary and FAQ namespaces.
-        </p>
-      </section>
-      <section id="implementation-notes" className="space-y-2">
-        <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Implementation notes</h2>
-        <p className="text-sm leading-7 text-muted-foreground md:text-base">
-          Data loading remains decoupled from templates. Content contracts are resolved in the content
-          layer before rendering and should feed this template with typed props.
-        </p>
-      </section>
-    </ArticleTemplate>
+    <>
+      <JsonLdScript id="jsonld-knowledge-article" schemas={schemas} />
+      <ArticleTemplate
+        title={title}
+        summary="Article template baseline with namespaced route architecture and contextual navigation placeholders."
+        breadcrumbs={breadcrumbs}
+        toc={[
+          { id: "overview", label: "Overview" },
+          { id: "implementation-notes", label: "Implementation notes" }
+        ]}
+        relatedLinks={[
+          { label: "Knowledge hub", href: "/knowledge" },
+          { label: "FAQ", href: "/knowledge/faq" }
+        ]}
+        previousLink={{ label: "Previous article", href: "/knowledge/articles/previous-article" }}
+        nextLink={{ label: "Next article", href: "/knowledge/articles/next-article" }}
+      >
+        <section id="overview" className="space-y-2">
+          <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Overview</h2>
+          <p className="text-sm leading-7 text-muted-foreground md:text-base">
+            This route uses document-type namespacing (`/knowledge/articles/[slug]`) to avoid collisions
+            with glossary and FAQ namespaces.
+          </p>
+        </section>
+        <section id="implementation-notes" className="space-y-2">
+          <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Implementation notes</h2>
+          <p className="text-sm leading-7 text-muted-foreground md:text-base">
+            Data loading remains decoupled from templates. Content contracts are resolved in the content
+            layer before rendering and should feed this template with typed props.
+          </p>
+        </section>
+      </ArticleTemplate>
+    </>
   );
 }

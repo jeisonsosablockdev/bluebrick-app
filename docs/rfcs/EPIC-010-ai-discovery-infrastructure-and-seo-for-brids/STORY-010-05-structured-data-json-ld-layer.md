@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-05-structured-data-json-ld-layer`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -56,13 +56,13 @@
   - Define capa semántica estandarizada.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
   - Ejecutar STORY-010-06.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -75,15 +75,15 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] Emitters JSON-LD implementables por tipo.
-- [ ] Validación de campos mínimos activa.
-- [ ] BreadcrumbList integrado a navegación.
-- [ ] Contratos documentados para autores.
+- [x] Emitters JSON-LD implementables por tipo.
+- [x] Validación de campos mínimos activa.
+- [x] BreadcrumbList integrado a navegación.
+- [x] Contratos documentados para autores.
 
 ## Requirement Mapping
 - `R06`
 
 ## Traceability
-- Related issue(s): `BRI-50`
+- Related issue(s): `BRI-55`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

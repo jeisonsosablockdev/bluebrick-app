@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { ResourcePageTemplate } from "@/components/templates";
 import { createPageMetadata } from "@/lib/seo";
+import { createResourceTemplateSchemas } from "@/lib/schema";
 
 function toTitleFromSlug(slug: string): string {
   return slug
@@ -33,16 +35,30 @@ export default async function ResourcePage({
 }) {
   const resolvedParams = await params;
   const title = toTitleFromSlug(resolvedParams.slug);
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Resources", href: "/resources" },
+    { label: title, href: `/resources/${resolvedParams.slug}` }
+  ];
+  const schemas = createResourceTemplateSchemas({
+    title,
+    summary: "Resource template baseline for changelog and downloadable references.",
+    path: `/resources/${resolvedParams.slug}`,
+    breadcrumbs
+  });
 
   return (
-    <ResourcePageTemplate
-      title={title}
-      summary="Resource template baseline for changelog and downloadable references."
-      body="This route is reserved for resource-like content and can later connect to typed content loaders for changelogs, whitepapers, and public exports."
-      relatedLinks={[
-        { label: "Knowledge hub", href: "/knowledge" },
-        { label: "Platform", href: "/platform" }
-      ]}
-    />
+    <>
+      <JsonLdScript id="jsonld-resource" schemas={schemas} />
+      <ResourcePageTemplate
+        title={title}
+        summary="Resource template baseline for changelog and downloadable references."
+        body="This route is reserved for resource-like content and can later connect to typed content loaders for changelogs, whitepapers, and public exports."
+        relatedLinks={[
+          { label: "Knowledge hub", href: "/knowledge" },
+          { label: "Platform", href: "/platform" }
+        ]}
+      />
+    </>
   );
 }

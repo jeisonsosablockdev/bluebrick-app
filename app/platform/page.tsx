@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { InstitutionalPageTemplate } from "@/components/templates";
 import { createPageMetadata } from "@/lib/seo";
+import { createInstitutionalTemplateSchemas } from "@/lib/schema";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Platform",
@@ -10,16 +12,27 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PlatformPage() {
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Platform", href: "/platform" }
+  ];
+  const schemas = createInstitutionalTemplateSchemas({
+    title: "Platform",
+    summary: "Technical overview of BRIDS platform capabilities and service boundaries.",
+    path: "/platform",
+    breadcrumbs
+  });
+
   return (
-    <InstitutionalPageTemplate
-      title="Platform"
-      summary="Technical overview of BRIDS platform capabilities and service boundaries."
-      sectionTitle="Platform overview"
-      sectionBody="This route acts as a stable institutional entry point for platform communication. Detailed technical references should be linked from this page to the knowledge namespace."
-      breadcrumbs={[
-        { label: "Home", href: "/" },
-        { label: "Platform", href: "/platform" }
-      ]}
-    />
+    <>
+      <JsonLdScript id="jsonld-platform" schemas={schemas} />
+      <InstitutionalPageTemplate
+        title="Platform"
+        summary="Technical overview of BRIDS platform capabilities and service boundaries."
+        sectionTitle="Platform overview"
+        sectionBody="This route acts as a stable institutional entry point for platform communication. Detailed technical references should be linked from this page to the knowledge namespace."
+        breadcrumbs={breadcrumbs}
+      />
+    </>
   );
 }

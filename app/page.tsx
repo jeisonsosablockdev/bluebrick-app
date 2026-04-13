@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { WalletModal } from "@/components/WalletModal";
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
 import { FeaturesSection } from "@/components/sections/features";
@@ -16,6 +17,7 @@ import { WelcomeSection } from "@/components/sections/welcome";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getRoleForWallet } from "@/lib/rbac";
 import { createPageMetadata } from "@/lib/seo";
+import { createOrganizationSchema, createWebPageSchema, createWebSiteSchema } from "@/lib/schema";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Home",
@@ -25,9 +27,19 @@ export const metadata: Metadata = createPageMetadata({
 
 export default async function HomePage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const homeSchemas = [
+    createOrganizationSchema(),
+    createWebSiteSchema(),
+    createWebPageSchema({
+      name: "Home",
+      description: "Discover tokenized real-estate opportunities and platform capabilities in BRIDS.",
+      path: "/"
+    })
+  ];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      <JsonLdScript id="jsonld-home" schemas={homeSchemas} />
       <WalletModal
         initialAuth={{
           authenticated: Boolean(authenticatedPublicKey),

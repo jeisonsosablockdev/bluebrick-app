@@ -262,4 +262,13 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - role resolution and RBAC boundaries.
 - Story-010-04 remains a non-auth functional change.
 
-Last Updated: 2026-04-13 14:20:00 UTC
+## STORY-010-05 Structured Data JSON-LD Layer Impact
+- Scope touched JSON-LD emitters, schema validation, and semantic script injection in public pages.
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-05 remains a non-auth functional change.
+
+Last Updated: 2026-04-13 16:45:00 UTC

@@ -200,4 +200,12 @@ Implementation guide for request correlation and timeline tracing:
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.
 
-Last Updated: 2026-04-13 14:20:00 UTC
+## STORY-010-05 Structured Data JSON-LD Layer Impact
+- Story-010-05 modifies schema emitters/validators and JSON-LD script injection for public template routes.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-13 16:45:00 UTC

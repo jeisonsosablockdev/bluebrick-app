@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { DefinitionTemplate } from "@/components/templates";
 import { createPageMetadata } from "@/lib/seo";
+import { createDefinitionTemplateSchemas } from "@/lib/schema";
 
 function toLabelFromSlug(slug: string): string {
   return slug
@@ -34,16 +36,33 @@ export default async function KnowledgeDefinitionPage({
 }) {
   const resolvedParams = await params;
   const term = toLabelFromSlug(resolvedParams.slug);
+  const definition = `${term} is rendered from the glossary namespace and is isolated from article and FAQ routes by design.`;
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Knowledge", href: "/knowledge" },
+    { label: "Definitions", href: "/knowledge/definitions" },
+    { label: term, href: `/knowledge/definitions/${resolvedParams.slug}` }
+  ];
+  const schemas = createDefinitionTemplateSchemas({
+    term,
+    summary: "Glossary template baseline with semantic namespaced routing.",
+    definition,
+    path: `/knowledge/definitions/${resolvedParams.slug}`,
+    breadcrumbs
+  });
 
   return (
-    <DefinitionTemplate
-      term={term}
-      summary="Glossary template baseline with semantic namespaced routing."
-      definition={`${term} is rendered from the glossary namespace and is isolated from article and FAQ routes by design.`}
-      relatedLinks={[
-        { label: "Knowledge hub", href: "/knowledge" },
-        { label: "Related article", href: "/knowledge/articles/tokenization-fundamentals" }
-      ]}
-    />
+    <>
+      <JsonLdScript id="jsonld-knowledge-definition" schemas={schemas} />
+      <DefinitionTemplate
+        term={term}
+        summary="Glossary template baseline with semantic namespaced routing."
+        definition={definition}
+        relatedLinks={[
+          { label: "Knowledge hub", href: "/knowledge" },
+          { label: "Related article", href: "/knowledge/articles/tokenization-fundamentals" }
+        ]}
+      />
+    </>
   );
 }
