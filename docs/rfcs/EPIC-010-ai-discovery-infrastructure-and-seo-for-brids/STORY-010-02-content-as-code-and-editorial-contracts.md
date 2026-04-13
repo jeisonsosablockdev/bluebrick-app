@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-02-content-as-code-and-editorial-contracts`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -62,13 +62,13 @@
   - Define base para ingestión estable y auditable.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
-  - Ejecutar STORY-010-03.
+  - Abrir PR de implementación y cerrar trazabilidad final (PR/hash).
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -82,17 +82,17 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] Frontmatter obligatorio documentado y validado.
-- [ ] Existen tipos de documento y estado documental versionable.
-- [ ] Loader tipado devuelve contratos estables.
-- [ ] CI bloquea contenido inválido.
-- [ ] Flujo de preview documentado vía PR preview/staging (sin CMS UI).
-- [ ] Estrategia de redirects definida para `renamed/superseded`.
+- [x] Frontmatter obligatorio documentado y validado.
+- [x] Existen tipos de documento y estado documental versionable.
+- [x] Loader tipado devuelve contratos estables.
+- [x] CI bloquea contenido inválido.
+- [x] Flujo de preview documentado vía PR preview/staging (sin CMS UI).
+- [x] Estrategia de redirects definida para `renamed/superseded`.
 
 ## Requirement Mapping
 - `R02`, `R03`, `R14`, `R15`
 
 ## Traceability
-- Related issue(s): `BRI-50`
+- Related issue(s): `BRI-50`, `BRI-52`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

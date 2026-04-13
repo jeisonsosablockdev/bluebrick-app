@@ -61,7 +61,7 @@
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
 | STORY-010-01 | Foundation and Layered Architecture | `STORY-010-01-foundation-and-layered-architecture.md` | `implemented` | `TBD` | Cubre R01 |
-| STORY-010-02 | Content as Code and Editorial Contracts | `STORY-010-02-content-as-code-and-editorial-contracts.md` | `approved` | `TBD` | Cubre R02, R03, R14, R15 |
+| STORY-010-02 | Content as Code and Editorial Contracts | `STORY-010-02-content-as-code-and-editorial-contracts.md` | `in-review` | `TBD` | Cubre R02, R03, R14, R15 (branch `story-010-02-content-as-code-and-editorial-contracts-bri-52`) |
 | STORY-010-03 | Route Architecture and Reusable Templates | `STORY-010-03-route-architecture-and-reusable-templates.md` | `approved` | `TBD` | Cubre R04, R11, R12, R13 |
 | STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `approved` | `TBD` | Cubre R05 |
 | STORY-010-05 | Structured Data JSON-LD Layer | `STORY-010-05-structured-data-json-ld-layer.md` | `approved` | `TBD` | Cubre R06 |
