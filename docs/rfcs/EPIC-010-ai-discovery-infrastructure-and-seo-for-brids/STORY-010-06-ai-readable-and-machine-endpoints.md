@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-06-ai-readable-and-machine-endpoints`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -58,13 +58,13 @@
   - Cubre capa AI-readable central del epic.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
   - Ejecutar STORY-010-07.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -77,15 +77,16 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] Endpoints/archivos AI-readable definidos y documentados.
-- [ ] Contrato JSON versionado.
-- [ ] Solo contenido `published` se expone.
-- [ ] No se exponen APIs internas/privadas.
+- [x] Endpoints/archivos AI-readable definidos y documentados.
+- [x] Contrato JSON versionado.
+- [x] Solo contenido `published` se expone.
+- [x] No se exponen APIs internas/privadas.
 
 ## Requirement Mapping
 - `R07`
 
 ## Traceability
 - Related issue(s): `BRI-50`
+- Related issue(s): `BRI-56`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

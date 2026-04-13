@@ -271,4 +271,15 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - role resolution and RBAC boundaries.
 - Story-010-05 remains a non-auth functional change.
 
-Last Updated: 2026-04-13 16:45:00 UTC
+## STORY-010-06 AI-readable and Machine Endpoints Impact
+- Scope touched public machine-readable files and APIs:
+  - `/llms.txt`, `/ai.txt`, `/knowledge.json`
+  - `/api/knowledge`, `/api/entities`, `/api/definitions`
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-06 remains a non-auth functional change.
+
+Last Updated: 2026-04-13 17:05:00 UTC

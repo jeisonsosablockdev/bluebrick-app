@@ -208,4 +208,14 @@ Implementation guide for request correlation and timeline tracing:
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.
 
-Last Updated: 2026-04-13 16:45:00 UTC
+## STORY-010-06 AI-readable and Machine Endpoints Impact
+- Story-010-06 modifies only machine-readable public outputs and APIs:
+  - `/llms.txt`, `/ai.txt`, `/knowledge.json`
+  - `/api/knowledge`, `/api/entities`, `/api/definitions`
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-13 17:05:00 UTC
