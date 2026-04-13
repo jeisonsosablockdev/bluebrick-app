@@ -1,0 +1,89 @@
+# STORY-010-05-structured-data-json-ld-layer
+
+## Metadata
+- Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
+- Story ID: `STORY-010-05-structured-data-json-ld-layer`
+- Status: `approved` (`draft | in-review | approved | implemented`)
+- Owner: `jaymusicmachine`
+- Created: `2026-04-13`
+- Last Updated: `2026-04-13`
+
+## Context
+- Problem:
+  - No existe infraestructura JSON-LD por tipo de página.
+- Why now:
+  - BRIDS requiere narrativa institucional y semántica explícita para motores tradicionales y generativos.
+- Constraints:
+  - Sin datos finales, pero con contratos listos.
+- Affected paths:
+  - `/lib/schema`
+  - `/app/*`
+
+## Proposal
+- Approach summary:
+  - Crear emitters JSON-LD tipados y reutilizables por template.
+- Technical design:
+  - Schemas base: `Organization`, `WebSite`, `WebPage`, `Article`, `TechArticle`, `FAQPage`, `DefinedTerm`, `BreadcrumbList`.
+  - Validador de payloads schema.org.
+  - Hook/helper para inyectar JSON-LD por tipo de página.
+- Alternatives considered:
+  - JSON-LD inline ad-hoc por vista.
+- Tradeoffs:
+  - Mayor consistencia con menor flexibilidad local.
+
+## Critique
+- Reviewer(s): `TBD`
+- Critical findings:
+1. Riesgo de drift entre contenido y schema.
+2. Riesgo de tipo incorrecto de schema por template.
+3. Riesgo de datos vacíos en campos obligatorios.
+- Blocking concerns:
+  - Validación estricta en CI.
+
+## Resolution
+- Final approach after critique:
+  - Emitters por tipo + validación mínima requerida antes de render.
+- Changes accepted:
+  - Librería central `lib/schema`.
+- Changes rejected (with rationale):
+  - Schemas libres sin contratos.
+
+## Decision
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-04-13`
+- Decision owner: `jaymusicmachine`
+- Approval notes:
+  - Define capa semántica estandarizada.
+
+## Status
+- Current status: `approved`
+- Next action:
+  - Ejecutar STORY-010-06.
+- Exit criteria:
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
+- [ ] Implementation completed (if in scope)
+
+## Test and Validation Plan
+- Unit tests:
+  - Validación de shape por schema type.
+- Integration tests:
+  - Snapshot de JSON-LD por template.
+- Devnet validation (if applicable):
+  - N/A.
+- Responsive QA (if applicable):
+  - N/A.
+
+## Executable Acceptance Checklist
+- [ ] Emitters JSON-LD implementables por tipo.
+- [ ] Validación de campos mínimos activa.
+- [ ] BreadcrumbList integrado a navegación.
+- [ ] Contratos documentados para autores.
+
+## Requirement Mapping
+- `R06`
+
+## Traceability
+- Related issue(s): `BRI-50`
+- Related PR(s): `TBD`
+- Final commit hash(es): `TBD`
