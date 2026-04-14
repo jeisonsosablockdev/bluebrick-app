@@ -215,7 +215,12 @@ export function buildLlmsTxt(): string {
     `Knowledge JSON: ${origin}/knowledge.json`,
     `Knowledge API: ${origin}/api/knowledge`,
     `Entities API: ${origin}/api/entities`,
-    `Definitions API: ${origin}/api/definitions`
+    `Definitions API: ${origin}/api/definitions`,
+    `RSS Feed: ${origin}/feeds/rss`,
+    `JSON Feed: ${origin}/feeds/json`,
+    `Recent Feed: ${origin}/feeds/recent`,
+    `Knowledge Export: ${origin}/feeds/export`,
+    `Search Index: ${origin}/feeds/search-index`
   ].join("\n");
 }
 

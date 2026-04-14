@@ -294,4 +294,15 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - role resolution and RBAC boundaries.
 - Story-010-08 remains a non-auth functional change focused on semantic content modeling.
 
-Last Updated: 2026-04-14 07:40:00 UTC
+## STORY-010-09 Feeds, Exports, and Internal Search Readiness Impact
+- Scope touched public feed/export/search-discovery endpoints:
+  - `/feeds/rss`, `/feeds/json`, `/feeds/recent`, `/feeds/export`, `/feeds/search-index`
+  - `public/feeds/manifest.json`
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-09 remains a non-auth functional change focused on machine-readable distribution and search preparation.
+
+Last Updated: 2026-04-14 14:20:00 UTC

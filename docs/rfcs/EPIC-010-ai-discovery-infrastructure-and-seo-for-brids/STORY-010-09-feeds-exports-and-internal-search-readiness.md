@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-09-feeds-exports-and-internal-search-readiness`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-13`
+- Last Updated: `2026-04-14`
 
 ## Context
 - Problem:
@@ -58,7 +58,7 @@
   - Cierra distribución y discoverability técnica.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
   - Ejecutar STORY-010-10.
 - Exit criteria:
@@ -77,15 +77,16 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] RSS y JSON Feed generables en build.
-- [ ] Export estructurado disponible para consumo externo.
-- [ ] Índice local de búsqueda generado y versionable.
-- [ ] Política published-only aplicada.
+- [x] RSS y JSON Feed generables en build.
+- [x] Export estructurado disponible para consumo externo.
+- [x] Índice local de búsqueda generado y versionable.
+- [x] Política published-only aplicada.
 
 ## Requirement Mapping
 - `R09`, `R16`
 
 ## Traceability
 - Related issue(s): `BRI-50`
+- Related issue(s): `BRI-59`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

@@ -6,5 +6,10 @@ export const MACHINE_ENDPOINTS = {
   knowledgeJson: "/knowledge.json",
   knowledgeApi: "/api/knowledge",
   entitiesApi: "/api/entities",
-  definitionsApi: "/api/definitions"
+  definitionsApi: "/api/definitions",
+  feedRss: "/feeds/rss",
+  feedJson: "/feeds/json",
+  feedRecent: "/feeds/recent",
+  feedExport: "/feeds/export",
+  feedSearchIndex: "/feeds/search-index"
 } as const;

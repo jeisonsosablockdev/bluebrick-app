@@ -229,4 +229,14 @@ Implementation guide for request correlation and timeline tracing:
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.
 
-Last Updated: 2026-04-14 07:40:00 UTC
+## STORY-010-09 Feeds, Exports, and Internal Search Readiness Impact
+- Story-010-09 modifies only public machine-readable distribution and search readiness endpoints:
+  - `/feeds/rss`, `/feeds/json`, `/feeds/recent`, `/feeds/export`, `/feeds/search-index`
+  - `public/feeds/manifest.json`
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-14 14:20:00 UTC
