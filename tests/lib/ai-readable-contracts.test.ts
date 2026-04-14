@@ -121,7 +121,7 @@ describe("lib/ai machine-readable contracts", () => {
     expect(payload.items[0]?.term).toBe("Core Candy Machine");
   });
 
-  it("builds entity list from tags and glossary terms", async () => {
+  it("builds entity list from tags, glossary terms, and semantic graph nodes", async () => {
     contentMocks.loadContentDocuments.mockResolvedValueOnce([
       BASE_DOCUMENT,
       {
@@ -143,10 +143,15 @@ describe("lib/ai machine-readable contracts", () => {
 
     const tagEntity = payload.items.find((item) => item.slug === "solana");
     const glossaryEntity = payload.items.find((item) => item.slug === "idempotency");
+    const semanticEntity = payload.items.find((item) => item.slug === "tokenization-fundamentals");
 
     expect(tagEntity?.sourceType).toBe("tag");
     expect(tagEntity?.relatedDocumentSlugs).toContain("solana-architecture");
-    expect(glossaryEntity?.sourceType).toBe("glossary-term");
-    expect(glossaryEntity?.summary).toBe("Idempotency definition");
+    expect(glossaryEntity?.sourceType).toBe("semantic-defined-term");
+    expect(glossaryEntity?.canonicalPath).toBe("/knowledge/definitions/idempotency");
+    expect(glossaryEntity?.aliases).toContain("request-idempotency");
+    expect(semanticEntity?.sourceType).toBe("semantic-concept");
+    expect(semanticEntity?.canonicalPath).toBe("/knowledge/articles/tokenization-fundamentals");
+    expect(semanticEntity?.relationTargets?.some((entry) => entry.targetSlug === "yield")).toBe(true);
   });
 });

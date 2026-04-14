@@ -4,6 +4,7 @@ import {
   serializePipelineDocumentForAi,
   type ContentPipelineDocument
 } from "@/lib/content";
+import { buildSemanticEntities } from "@/lib/knowledge-graph";
 import { getSiteOrigin } from "@/lib/seo";
 
 import {
@@ -60,6 +61,20 @@ async function loadPublishedDocuments(): Promise<ContentPipelineDocument[]> {
 
 function buildGeneratedAtIso(): string {
   return new Date().toISOString();
+}
+
+function mergeEntityItems(current: AiEntityItem, incoming: AiEntityItem): AiEntityItem {
+  const relatedDocumentSlugs = Array.from(
+    new Set([...current.relatedDocumentSlugs, ...incoming.relatedDocumentSlugs])
+  ).sort((left, right) => left.localeCompare(right));
+
+  return {
+    ...current,
+    ...incoming,
+    relatedDocumentSlugs,
+    aliases: incoming.aliases ?? current.aliases,
+    relationTargets: incoming.relationTargets ?? current.relationTargets
+  };
 }
 
 export async function buildKnowledgeContract(): Promise<AiKnowledgeContract> {
@@ -143,6 +158,30 @@ export async function buildEntitiesContract(): Promise<AiEntitiesContract> {
         relatedDocumentSlugs: [document.slug]
       });
     }
+  }
+
+  const semanticEntities = await buildSemanticEntities();
+  for (const semanticEntity of semanticEntities) {
+    const incoming: AiEntityItem = {
+      id: semanticEntity.id,
+      slug: semanticEntity.slug,
+      name: semanticEntity.name,
+      summary: semanticEntity.summary,
+      sourceType: semanticEntity.sourceType as AiEntityItem["sourceType"],
+      relatedDocumentSlugs: semanticEntity.relatedDocumentSlugs,
+      nodeType: semanticEntity.nodeType,
+      canonicalPath: semanticEntity.canonicalPath,
+      aliases: semanticEntity.aliases,
+      relationTargets: semanticEntity.relationTargets
+    };
+
+    const current = entityMap.get(semanticEntity.slug);
+    if (current) {
+      entityMap.set(semanticEntity.slug, mergeEntityItems(current, incoming));
+      continue;
+    }
+
+    entityMap.set(semanticEntity.slug, incoming);
   }
 
   const items = Array.from(entityMap.values()).sort((left, right) => left.slug.localeCompare(right.slug));

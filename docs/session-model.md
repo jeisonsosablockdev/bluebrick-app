@@ -218,4 +218,15 @@ Implementation guide for request correlation and timeline tracing:
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.
 
-Last Updated: 2026-04-13 17:05:00 UTC
+## STORY-010-08 Semantic Layer for Entities and Relations Impact
+- Story-010-08 modifies semantic knowledge rendering and entity relation outputs:
+  - `/knowledge/articles/[slug]`
+  - `/knowledge/definitions/[slug]`
+  - `/api/entities` semantic contract enrichment.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation,
+  - same role derivation and middleware/handler authorization.
+- No new auth/session endpoints were added.
+
+Last Updated: 2026-04-14 07:40:00 UTC

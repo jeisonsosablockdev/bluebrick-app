@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { DefinitionTemplate } from "@/components/templates";
+import { buildDefinitionSemanticContext } from "@/lib/knowledge-graph";
 import { createPageMetadata } from "@/lib/seo";
 import { createDefinitionTemplateSchemas } from "@/lib/schema";
 
@@ -19,12 +20,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const term = toLabelFromSlug(slug);
+  const context = await buildDefinitionSemanticContext(slug);
+  const term = context.term || toLabelFromSlug(slug);
 
   return createPageMetadata({
     title: `${term} Definition`,
-    description: `Glossary definition page for ${term}.`,
-    path: `/knowledge/definitions/${slug}`,
+    description: context.summary || `Glossary definition page for ${term}.`,
+    path: context.canonicalPath,
     section: "knowledge"
   });
 }
@@ -35,19 +37,20 @@ export default async function KnowledgeDefinitionPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  const term = toLabelFromSlug(resolvedParams.slug);
-  const definition = `${term} is rendered from the glossary namespace and is isolated from article and FAQ routes by design.`;
+  const context = await buildDefinitionSemanticContext(resolvedParams.slug);
+  const term = context.term || toLabelFromSlug(resolvedParams.slug);
+  const definition = context.definition;
   const breadcrumbs = [
     { label: "Home", href: "/" },
     { label: "Knowledge", href: "/knowledge" },
     { label: "Definitions", href: "/knowledge/definitions" },
-    { label: term, href: `/knowledge/definitions/${resolvedParams.slug}` }
+    { label: term, href: context.canonicalPath }
   ];
   const schemas = createDefinitionTemplateSchemas({
     term,
-    summary: "Glossary template baseline with semantic namespaced routing.",
+    summary: context.summary,
     definition,
-    path: `/knowledge/definitions/${resolvedParams.slug}`,
+    path: context.canonicalPath,
     breadcrumbs
   });
 
@@ -56,12 +59,9 @@ export default async function KnowledgeDefinitionPage({
       <JsonLdScript id="jsonld-knowledge-definition" schemas={schemas} />
       <DefinitionTemplate
         term={term}
-        summary="Glossary template baseline with semantic namespaced routing."
+        summary={context.summary}
         definition={definition}
-        relatedLinks={[
-          { label: "Knowledge hub", href: "/knowledge" },
-          { label: "Related article", href: "/knowledge/articles/tokenization-fundamentals" }
-        ]}
+        relatedLinks={[...context.relatedLinks, { label: "Knowledge hub", href: "/knowledge" }]}
       />
     </>
   );

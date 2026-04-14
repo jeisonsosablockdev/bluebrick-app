@@ -282,4 +282,16 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - role resolution and RBAC boundaries.
 - Story-010-06 remains a non-auth functional change.
 
-Last Updated: 2026-04-13 17:05:00 UTC
+## STORY-010-08 Semantic Layer for Entities and Relations Impact
+- Scope touched semantic rendering context and knowledge linking for:
+  - `/knowledge/articles/[slug]`
+  - `/knowledge/definitions/[slug]`
+  - `/api/entities` semantic enrichment.
+- No change in SIWS primitives:
+  - nonce issuance/consumption,
+  - signature verification,
+  - auth cookie/session lifecycle,
+  - role resolution and RBAC boundaries.
+- Story-010-08 remains a non-auth functional change focused on semantic content modeling.
+
+Last Updated: 2026-04-14 07:40:00 UTC

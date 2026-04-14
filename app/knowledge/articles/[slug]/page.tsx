@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { ArticleTemplate } from "@/components/templates";
 import { buildKnowledgeBreadcrumbs } from "@/lib/content/routes";
+import { buildArticleSemanticContext } from "@/lib/knowledge-graph";
 import { createPageMetadata } from "@/lib/seo";
 import { createArticleTemplateSchemas } from "@/lib/schema";
 
@@ -20,12 +21,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const title = toTitleCaseFromSlug(slug);
+  const context = await buildArticleSemanticContext(slug);
+  const title = context.title || toTitleCaseFromSlug(slug);
 
   return createPageMetadata({
     title,
-    description: `Knowledge article for ${title}.`,
-    path: `/knowledge/articles/${slug}`,
+    description: context.summary || `Knowledge article for ${title}.`,
+    path: context.canonicalPath,
     section: "knowledge"
   });
 }
@@ -36,17 +38,16 @@ export default async function KnowledgeArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  const slug = resolvedParams.slug;
-  const title = toTitleCaseFromSlug(slug);
+  const context = await buildArticleSemanticContext(resolvedParams.slug);
+  const title = context.title || toTitleCaseFromSlug(resolvedParams.slug);
   const breadcrumbs = buildKnowledgeBreadcrumbs({
     label: "Articles",
     href: "/knowledge/articles"
-  }).concat([{ label: title, href: `/knowledge/articles/${slug}` }]);
+  }).concat([{ label: title, href: context.canonicalPath }]);
   const schemas = createArticleTemplateSchemas({
     title,
-    summary:
-      "Article template baseline with namespaced route architecture and contextual navigation placeholders.",
-    path: `/knowledge/articles/${slug}`,
+    summary: context.summary,
+    path: context.canonicalPath,
     breadcrumbs,
     technical: true
   });
@@ -56,18 +57,15 @@ export default async function KnowledgeArticlePage({
       <JsonLdScript id="jsonld-knowledge-article" schemas={schemas} />
       <ArticleTemplate
         title={title}
-        summary="Article template baseline with namespaced route architecture and contextual navigation placeholders."
+        summary={context.summary}
         breadcrumbs={breadcrumbs}
         toc={[
           { id: "overview", label: "Overview" },
           { id: "implementation-notes", label: "Implementation notes" }
         ]}
-        relatedLinks={[
-          { label: "Knowledge hub", href: "/knowledge" },
-          { label: "FAQ", href: "/knowledge/faq" }
-        ]}
-        previousLink={{ label: "Previous article", href: "/knowledge/articles/previous-article" }}
-        nextLink={{ label: "Next article", href: "/knowledge/articles/next-article" }}
+        relatedLinks={[...context.relatedLinks, { label: "Knowledge hub", href: "/knowledge" }]}
+        previousLink={context.previousLink}
+        nextLink={context.nextLink}
       >
         <section id="overview" className="space-y-2">
           <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Overview</h2>

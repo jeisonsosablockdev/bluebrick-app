@@ -52,8 +52,25 @@ export const AiEntityItemSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
   summary: z.string().min(1),
-  sourceType: z.enum(["tag", "glossary-term"]),
-  relatedDocumentSlugs: z.array(z.string().min(1))
+  sourceType: z.enum([
+    "tag",
+    "glossary-term",
+    "semantic-entity",
+    "semantic-concept",
+    "semantic-defined-term"
+  ]),
+  relatedDocumentSlugs: z.array(z.string().min(1)),
+  nodeType: z.enum(["entity", "concept", "definedTerm"]).optional(),
+  canonicalPath: z.string().min(1).optional(),
+  aliases: z.array(z.string().min(1)).optional(),
+  relationTargets: z
+    .array(
+      z.object({
+        type: z.enum(["related", "defines", "next"]),
+        targetSlug: z.string().min(1)
+      })
+    )
+    .optional()
 });
 
 export const AiEntitiesContractSchema = z.object({

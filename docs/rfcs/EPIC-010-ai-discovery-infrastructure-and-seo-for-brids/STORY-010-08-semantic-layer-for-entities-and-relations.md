@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-08-semantic-layer-for-entities-and-relations`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-13`
+- Last Updated: `2026-04-14`
 
 ## Context
 - Problem:
@@ -57,13 +57,13 @@
   - Cubre base de claridad conceptual institucional.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
-  - Ejecutar STORY-010-09.
+  - Abrir PR contra `develop` y completar revisión de Story-08.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -76,15 +76,15 @@
   - Validar bloques related en móvil/escritorio.
 
 ## Executable Acceptance Checklist
-- [ ] Modelo semántico mínimo definido y versionado.
-- [ ] Relación de conceptos aplicable a rendering.
-- [ ] Sistema de aliases controlado.
-- [ ] Navegación contextual conectada a relaciones.
+- [x] Modelo semántico mínimo definido y versionado.
+- [x] Relación de conceptos aplicable a rendering.
+- [x] Sistema de aliases controlado.
+- [x] Navegación contextual conectada a relaciones.
 
 ## Requirement Mapping
 - `R10`, `R11`
 
 ## Traceability
-- Related issue(s): `BRI-50`
+- Related issue(s): `BRI-58`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
