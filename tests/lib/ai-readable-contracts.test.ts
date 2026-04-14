@@ -1,13 +1,28 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ContentDocument } from "@/lib/content";
+import type { ContentDocument, ContentPipelineDocument } from "@/lib/content";
 
 const contentMocks = vi.hoisted(() => ({
-  loadContentDocuments: vi.fn<() => Promise<ContentDocument[]>>()
+  loadContentDocuments: vi.fn<() => Promise<ContentDocument[]>>(),
+  buildPipelineDocument: vi.fn<(document: ContentDocument) => ContentPipelineDocument>(),
+  serializePipelineDocumentForAi: vi.fn<(document: ContentPipelineDocument) => {
+    id: string;
+    slug: string;
+    title: string;
+    summary: string;
+    layer: ContentDocument["layer"];
+    type: ContentDocument["type"];
+    canonicalPath: string;
+    updatedAt: string;
+    tags: string[];
+    readingTimeMinutes: number;
+  }>()
 }));
 
 vi.mock("@/lib/content", () => ({
-  loadContentDocuments: contentMocks.loadContentDocuments
+  loadContentDocuments: contentMocks.loadContentDocuments,
+  buildPipelineDocument: contentMocks.buildPipelineDocument,
+  serializePipelineDocumentForAi: contentMocks.serializePipelineDocumentForAi
 }));
 
 import {
@@ -34,6 +49,32 @@ const BASE_DOCUMENT: ContentDocument = {
 };
 
 describe("lib/ai machine-readable contracts", () => {
+  contentMocks.buildPipelineDocument.mockImplementation((document) => ({
+    ...document,
+    normalizedBody: document.body,
+    renderedHtml: "<p>mock</p>",
+    renderedMdx: document.body,
+    plainText: document.body.replace(/[#*]/g, " ").replace(/\s+/g, " ").trim(),
+    technicalSummary: document.summary,
+    headings: [],
+    toc: [],
+    wordCount: 10,
+    readingTimeMinutes: 1
+  }));
+
+  contentMocks.serializePipelineDocumentForAi.mockImplementation((document) => ({
+    id: document.id,
+    slug: document.slug,
+    title: document.title,
+    summary: document.technicalSummary || document.summary,
+    layer: document.layer,
+    type: document.type,
+    canonicalPath: document.canonicalPath,
+    updatedAt: document.updatedAt,
+    tags: [...document.tags],
+    readingTimeMinutes: document.readingTimeMinutes
+  }));
+
   it("builds a versioned knowledge contract with public fields only", async () => {
     contentMocks.loadContentDocuments.mockResolvedValueOnce([
       BASE_DOCUMENT,

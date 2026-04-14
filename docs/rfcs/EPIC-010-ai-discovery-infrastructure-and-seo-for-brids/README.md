@@ -66,7 +66,7 @@
 | STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `in-review` | `TBD` | Cubre R05 (branch `story-010-04-technical-seo-infrastructure-bri-54`) |
 | STORY-010-05 | Structured Data JSON-LD Layer | `STORY-010-05-structured-data-json-ld-layer.md` | `in-review` | `TBD` | Cubre R06 (branch `story-010-05-structured-data-json-ld-layer-bri-55`) |
 | STORY-010-06 | AI Readable and Machine Endpoints | `STORY-010-06-ai-readable-and-machine-endpoints.md` | `in-review` | `TBD` | Cubre R07 (branch `story-010-06-ai-readable-and-machine-endpoints-bri-56`) |
-| STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `approved` | `TBD` | Cubre R08, R09 |
+| STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `in-review` | `TBD` | Cubre R08, R09 (branch `story-010-07-content-pipeline-and-serialization-bri-57`) |
 | STORY-010-08 | Semantic Layer for Entities and Relations | `STORY-010-08-semantic-layer-for-entities-and-relations.md` | `approved` | `TBD` | Cubre R10, R11 |
 | STORY-010-09 | Feeds, Exports, and Internal Search Readiness | `STORY-010-09-feeds-exports-and-internal-search-readiness.md` | `approved` | `TBD` | Cubre R09, R16 |
 | STORY-010-10 | Observability, Security, Performance, Deploy, Docs | `STORY-010-10-observability-security-performance-deploy-docs.md` | `approved` | `TBD` | Cubre R17–R23 |

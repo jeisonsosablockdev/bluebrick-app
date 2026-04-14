@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-010-ai-discovery-infrastructure-and-seo-for-brids`
 - Story ID: `STORY-010-07-content-pipeline-and-serialization`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `in-review` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
 - Last Updated: `2026-04-13`
@@ -56,13 +56,13 @@
   - Cubre la columna vertebral técnica del sistema de contenido.
 
 ## Status
-- Current status: `approved`
+- Current status: `in-review`
 - Next action:
   - Ejecutar STORY-010-08.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -75,15 +75,16 @@
   - N/A.
 
 ## Executable Acceptance Checklist
-- [ ] Pipeline modular documentado y ejecutable.
-- [ ] TOC, headings y reading-time derivados automáticamente.
-- [ ] Serializadores `web/feed/ai` consistentes.
-- [ ] Build genera artefacto indexable para búsqueda futura.
+- [x] Pipeline modular documentado y ejecutable.
+- [x] TOC, headings y reading-time derivados automáticamente.
+- [x] Serializadores `web/feed/ai` consistentes.
+- [x] Build genera artefacto indexable para búsqueda futura.
 
 ## Requirement Mapping
 - `R08`, `R09`
 
 ## Traceability
 - Related issue(s): `BRI-50`
+- Related issue(s): `BRI-57`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
