@@ -12,7 +12,6 @@ import { ProcessSection } from "@/components/sections/process";
 import { PromoBannerSection } from "@/components/sections/promo-banner";
 import { PropertiesSection } from "@/components/sections/properties";
 import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
-import { UiStatesSection } from "@/components/sections/ui-states";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getRoleForWallet } from "@/lib/rbac";
@@ -57,7 +56,6 @@ export default async function HomePage() {
       <FirstInvestmentSection />
       <ProcessSection />
       <FaqSection />
-      <UiStatesSection />
       <FooterSection />
     </main>
   );

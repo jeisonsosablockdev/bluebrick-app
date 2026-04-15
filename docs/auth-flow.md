@@ -317,3 +317,13 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - Security hardening now applies globally through response headers and CSP policy in `next.config.ts`.
 - Client analytics instrumentation is telemetry-only and does not grant or alter auth/session state.
 - Explicit scope lock preserved: no non-code editorial interface is introduced in EPIC-010.
+
+## BRI-63 Landing UI States Removal Impact
+- Scope touched only public landing presentation:
+  - removed `UiStatesSection` from `app/page.tsx`.
+  - deleted `components/sections/ui-states.tsx`.
+- No auth boundary changes:
+  - nonce lifecycle unchanged,
+  - SIWS signature verification unchanged,
+  - cookie/session model unchanged,
+  - role resolution and admin enforcement unchanged.

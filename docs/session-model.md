@@ -255,3 +255,12 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - excludes identity/session secrets,
   - never trusts client state for authorization.
 - EPIC-010 still excludes non-code editorial/backoffice authoring UI.
+
+## BRI-63 Landing UI States Removal Impact
+- Scope touched only public landing presentation:
+  - removed `UiStatesSection` from `app/page.tsx`.
+  - deleted `components/sections/ui-states.tsx`.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract,
+  - same server-side session validation and role derivation,
+  - same middleware + handler authorization.
