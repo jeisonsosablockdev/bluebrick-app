@@ -4,6 +4,13 @@ on:
   pull_request:
     branches:
       - develop
+    types:
+      - synchronize
+      - labeled
+      - unlabeled
+      - edited
+      - reopened
+      - ready_for_review
 
 permissions:
   contents: read
