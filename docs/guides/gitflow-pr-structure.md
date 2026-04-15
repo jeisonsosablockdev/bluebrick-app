@@ -3,6 +3,18 @@
 ## Objective
 Eliminate PR governance friction by enforcing a deterministic, metadata-first workflow before CI evaluation.
 
+## Source Of Truth (SSOT)
+All PR governance rules come from:
+- `docs/governance/pr-policy-source-of-truth.json`
+
+This includes:
+- allowed labels (`scope:*`, `type:*`, `risk:*`),
+- required PR body sections,
+- commit-message pattern,
+- size/branch-age thresholds and exemption labels.
+
+`AGENTS.md`, local scripts, and CI must reference this file and must not duplicate rule lists.
+
 ## Mandatory Sequence
 1. Commit in working branch (never `develop`/`main`).
 2. Push branch to origin.
@@ -49,6 +61,14 @@ npm run pr:open -- \
 
 ## Label Application Strategy
 Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL instability observed in some environments.
+
+## Troubleshooting
+- `unknown flag: --head` with `gh pr view`:
+  - use `gh pr list --head <branch>` to discover PR number/url.
+  - `pr:open` already uses `gh pr list` for compatibility across `gh` versions.
+- Local/CI mismatch on labels or sections:
+  - check `docs/governance/pr-policy-source-of-truth.json`,
+  - rerun `npm run pr:metadata` before opening or updating PR.
 
 ## Expected Outcomes
 - Fewer failures in `PR Policy (labels, size, branch age, commits, template)`.

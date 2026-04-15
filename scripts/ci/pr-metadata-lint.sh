@@ -7,6 +7,7 @@ SCOPE_LABEL=""
 TYPE_LABEL=""
 RISK_LABEL=""
 SIZE_EXEMPT="0"
+POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
 
 usage() {
   cat <<USAGE
@@ -17,7 +18,8 @@ Usage:
     --type <type:feature|type:fix|type:security|type:refactor|type:chore|type:docs> \\
     --risk <risk:low|risk:medium|risk:high> \\
     [--base <branch>] \\
-    [--size-exempt 0|1]
+    [--size-exempt 0|1] \\
+    [--policy-file <path>]
 USAGE
 }
 
@@ -47,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       SIZE_EXEMPT="$2"
       shift 2
       ;;
+    --policy-file)
+      POLICY_FILE="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -70,6 +76,11 @@ if [[ ! -f "$BODY_FILE" ]]; then
   exit 1
 fi
 
+if [[ ! -f "$POLICY_FILE" ]]; then
+  echo "❌ Policy file not found: $POLICY_FILE"
+  exit 1
+fi
+
 if ! git show-ref --verify --quiet "refs/remotes/origin/${BASE_REF}"; then
   git fetch origin "$BASE_REF" --depth=1
 fi
@@ -85,56 +96,55 @@ if [[ "$CURRENT_BRANCH" == "$BASE_REF" ]]; then
   exit 1
 fi
 
-ALLOWED_SCOPE=(scope:app scope:program scope:shared scope:docs scope:infra scope:nft)
-ALLOWED_TYPE=(type:feature type:fix type:security type:refactor type:chore type:docs)
-ALLOWED_RISK=(risk:low risk:medium risk:high)
+ALLOWED_SCOPE="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.scope.join('\n'));" "$POLICY_FILE")"
+ALLOWED_TYPE="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.type.join('\n'));" "$POLICY_FILE")"
+ALLOWED_RISK="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.risk.join('\n'));" "$POLICY_FILE")"
+REQUIRED_SECTIONS="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.requiredPrSections.join('\n'));" "$POLICY_FILE")"
+MAX_ADDITIONS="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(String(p.thresholds.maxAddedLines));" "$POLICY_FILE")"
+FEATURE_FLAG_REGEX="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.patterns.featureFlag);" "$POLICY_FILE")"
+SIZE_EXEMPT_LABEL="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.sizeExempt);" "$POLICY_FILE")"
 
 contains_label() {
   local wanted="$1"
-  shift
-  for label in "$@"; do
-    if [[ "$label" == "$wanted" ]]; then
-      return 0
-    fi
-  done
-  return 1
+  local pool="$2"
+  grep -Fxq "$wanted" <<< "$pool"
 }
 
-if ! contains_label "$SCOPE_LABEL" "${ALLOWED_SCOPE[@]}"; then
+if ! contains_label "$SCOPE_LABEL" "$ALLOWED_SCOPE"; then
   echo "❌ Invalid scope label: $SCOPE_LABEL"
   exit 1
 fi
-if ! contains_label "$TYPE_LABEL" "${ALLOWED_TYPE[@]}"; then
+if ! contains_label "$TYPE_LABEL" "$ALLOWED_TYPE"; then
   echo "❌ Invalid type label: $TYPE_LABEL"
   exit 1
 fi
-if ! contains_label "$RISK_LABEL" "${ALLOWED_RISK[@]}"; then
+if ! contains_label "$RISK_LABEL" "$ALLOWED_RISK"; then
   echo "❌ Invalid risk label: $RISK_LABEL"
   exit 1
 fi
 
 BODY_CONTENT="$(tr '[:upper:]' '[:lower:]' < "$BODY_FILE")"
-REQUIRED_SECTIONS=("issue" "rfc" "riesgos" "rollback plan" "prueba devnet")
-for section in "${REQUIRED_SECTIONS[@]}"; do
+while IFS= read -r section; do
+  [[ -z "$section" ]] && continue
   if ! grep -q "$section" <<< "$BODY_CONTENT"; then
     echo "❌ Missing required PR section in body: $section"
     exit 1
   fi
-done
+done <<< "$REQUIRED_SECTIONS"
 
 MERGE_BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"
 ADDITIONS="$(git diff --numstat "${MERGE_BASE}..HEAD" | awk '{a+=$1} END {print a+0}')"
-if (( ADDITIONS > 400 )); then
+if (( ADDITIONS > MAX_ADDITIONS )); then
   if [[ "$SIZE_EXEMPT" != "1" ]]; then
-    echo "❌ PR has ${ADDITIONS} added lines (> 400); require --size-exempt 1 and strategy."
+    echo "❌ PR has ${ADDITIONS} added lines (> ${MAX_ADDITIONS}); require --size-exempt 1 and strategy."
     exit 1
   fi
 
-  if ! grep -Eq 'feature[- ]flag' <<< "$BODY_CONTENT"; then
-    echo "❌ size-exempt requires mentioning feature-flag strategy in PR body."
+  if ! grep -Eq "$FEATURE_FLAG_REGEX" <<< "$BODY_CONTENT"; then
+    echo "❌ ${SIZE_EXEMPT_LABEL} requires mentioning feature-flag strategy in PR body."
     exit 1
   fi
 fi
 
 echo "✅ PR metadata lint passed."
-echo "Base: ${BASE_REF} | Branch: ${CURRENT_BRANCH} | Additions: ${ADDITIONS} | SizeExempt: ${SIZE_EXEMPT}"
+echo "Base: ${BASE_REF} | Branch: ${CURRENT_BRANCH} | Additions: ${ADDITIONS} | SizeExempt: ${SIZE_EXEMPT} | Policy: ${POLICY_FILE}"

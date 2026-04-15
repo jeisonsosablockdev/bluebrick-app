@@ -161,26 +161,16 @@ Applies to every PR targeting `develop`:
      - `npm run pr:metadata -- --body-file <file> --scope <scope:*> --type <type:*> --risk <risk:*> [--base develop] [--size-exempt 0|1]`
      - `npm run pr:open -- --title "..." --body-file <file> --scope <scope:*> --type <type:*> --risk <risk:*> [--base develop] [--draft 0|1]`
    - `pr:open` is the canonical command for opening PRs with required metadata and labels.
-4. Branch lifetime policy: short-lived branches only (target 1-3 days).
-5. PR size policy: <= 400 added lines preferred; if exceeded, split into sequential PRs with feature flags.
-6. Commit convention (strict): `type(scope): summary`
-   - Examples: `feat(app): ...`, `fix(program): ...`
-7. Required labels:
-   - one `scope:*` label (`scope:app|scope:program|scope:shared|scope:docs|scope:infra|scope:nft`)
-   - one `type:*` label (`type:feature|type:fix|type:security|type:refactor|type:chore|type:docs`)
-   - one `risk:*` label (`risk:low|risk:medium|risk:high`)
-8. PR template sections are mandatory:
-   - `Issue`
-   - `RFC`
-   - `Riesgos`
-   - `Rollback Plan`
-    - `Prueba Devnet`
-9. Feature-note section is mandatory for feature/fix/refactor/nft product changes:
+4. Source of truth for PR policy is mandatory:
+   - `docs/governance/pr-policy-source-of-truth.json`
+   - Labels, required PR sections, commit pattern, size/branch-age thresholds and exemption labels are defined only there.
+   - `AGENTS.md`, local scripts, and CI workflows must reference this file and must not duplicate policy lists.
+5. Feature-note section is mandatory for feature/fix/refactor/nft product changes:
    - `Feature Note (/docs/features/*.md)` path must be included in PR body.
-10. Automatic release notes policy:
+6. Automatic release notes policy:
    - Release draft is generated from labels and merged PRs.
    - Semver labels (`semver:major|semver:minor|semver:patch`) drive version bump resolution.
-11. Required automation checks in CI:
+7. Required automation checks in CI:
    - Docs governance check must run and pass (for example `validate-doc-governance`).
    - PR governance check must enforce required labels/template sections and block invalid PR metadata.
 
@@ -231,10 +221,12 @@ If waiver data is missing or expired, merge is blocked.
     - `proptest`
 
 - `./scripts/ci/pr-metadata-lint.sh`
-  - Validates mandatory PR metadata before opening:
-    - required sections: `Issue`, `RFC`, `Riesgos`, `Rollback Plan`, `Prueba Devnet`
-    - required labels: one `scope:*`, one `type:*`, one `risk:*`
-    - size policy gate (`>400` added lines requires size-exempt strategy and feature-flag mention)
+  - Validates mandatory PR metadata before opening.
+  - Reads all rules from `docs/governance/pr-policy-source-of-truth.json`.
+
+- `./scripts/ci/pr-ready.sh`
+  - Local preflight for validate + commits + size + branch-age checks.
+  - Reads all rules from `docs/governance/pr-policy-source-of-truth.json`.
 
 - `./scripts/ci/pr-open.sh`
   - Canonical PR-open workflow for `develop`:

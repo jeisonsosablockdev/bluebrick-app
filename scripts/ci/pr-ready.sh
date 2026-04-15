@@ -2,9 +2,26 @@
 set -euo pipefail
 
 BASE_REF="${1:-develop}"
+POLICY_FILE="${2:-docs/governance/pr-policy-source-of-truth.json}"
+
+if [[ ! -f "${POLICY_FILE}" ]]; then
+  echo "❌ Policy file not found: ${POLICY_FILE}"
+  exit 1
+fi
+
+COMMIT_REGEX="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.patterns.commitMessage);" "$POLICY_FILE")"
+MAX_ADDITIONS="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(String(p.thresholds.maxAddedLines));" "$POLICY_FILE")"
+MAX_BRANCH_AGE_DAYS="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(String(p.thresholds.maxBranchAgeDays));" "$POLICY_FILE")"
+SIZE_EXEMPT_LABEL="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.sizeExempt);" "$POLICY_FILE")"
+BRANCH_AGE_EXEMPT_LABEL="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.branchAgeExempt);" "$POLICY_FILE")"
+
+# Backward-compatible env vars for local preflight toggles.
+SIZE_EXEMPT_ENV="${SIZE_EXEMPT:-0}"
+BRANCH_AGE_EXEMPT_ENV="${BRANCH_AGE_EXEMPT:-0}"
 
 echo "== PR Readiness Preflight =="
 echo "Base branch: ${BASE_REF}"
+echo "Policy file: ${POLICY_FILE}"
 
 if ! git show-ref --verify --quiet "refs/remotes/origin/${BASE_REF}"; then
   echo "Fetching origin/${BASE_REF}..."
@@ -36,10 +53,9 @@ if [[ -z "${COMMITS}" ]]; then
   exit 1
 fi
 
-CONVENTIONAL_REGEX='^(feat|fix|docs|chore|refactor|security|nft|test|ci)\((app|program|shared|docs|infra|security|nft)\): .+'
 INVALID=0
 while IFS=$'\t' read -r sha subject; do
-  if [[ ! "${subject}" =~ ${CONVENTIONAL_REGEX} ]]; then
+  if [[ ! "${subject}" =~ ${COMMIT_REGEX} ]]; then
     echo "❌ Invalid commit message: ${sha:0:7} -> ${subject}"
     INVALID=1
   fi
@@ -55,12 +71,12 @@ echo
 echo "3) Checking PR-size discipline..."
 ADDITIONS="$(git diff --numstat "${MERGE_BASE}..HEAD" | awk '{a+=$1} END {print a+0}')"
 echo "Added lines vs origin/${BASE_REF}: ${ADDITIONS}"
-if (( ADDITIONS > 400 )); then
-  if [[ "${SIZE_EXEMPT:-0}" != "1" ]]; then
-    echo "❌ Added lines exceed 400. Split PR or run with SIZE_EXEMPT=1 and document feature-flag strategy in PR."
+if (( ADDITIONS > MAX_ADDITIONS )); then
+  if [[ "${SIZE_EXEMPT_ENV}" != "1" ]]; then
+    echo "❌ Added lines exceed ${MAX_ADDITIONS}. Split PR or run with SIZE_EXEMPT=1 and document feature-flag strategy in PR."
     exit 1
   fi
-  echo "⚠️ SIZE_EXEMPT=1 set. Remember label 'size-exempt' and PR justification."
+  echo "⚠️ SIZE_EXEMPT=1 set. Remember label '${SIZE_EXEMPT_LABEL}' and PR justification."
 else
   echo "✅ PR-size check passed."
 fi
@@ -71,13 +87,13 @@ FIRST_COMMIT_EPOCH="$(git log --reverse --format='%ct' "${MERGE_BASE}..HEAD" | h
 NOW_EPOCH="$(date +%s)"
 AGE_DAYS="$(awk -v now="${NOW_EPOCH}" -v first="${FIRST_COMMIT_EPOCH}" 'BEGIN {printf "%.2f", (now-first)/86400}')"
 echo "Branch age (days): ${AGE_DAYS}"
-TOO_OLD="$(awk -v age="${AGE_DAYS}" 'BEGIN {print (age>3) ? "1" : "0"}')"
+TOO_OLD="$(awk -v age="${AGE_DAYS}" -v max="${MAX_BRANCH_AGE_DAYS}" 'BEGIN {print (age>max) ? "1" : "0"}')"
 if [[ "${TOO_OLD}" == "1" ]]; then
-  if [[ "${BRANCH_AGE_EXEMPT:-0}" != "1" ]]; then
-    echo "❌ Branch age exceeds 3 days. Rebase/split work or use BRANCH_AGE_EXEMPT=1 with explicit PR justification."
+  if [[ "${BRANCH_AGE_EXEMPT_ENV}" != "1" ]]; then
+    echo "❌ Branch age exceeds ${MAX_BRANCH_AGE_DAYS} days. Rebase/split work or use BRANCH_AGE_EXEMPT=1 with explicit PR justification."
     exit 1
   fi
-  echo "⚠️ BRANCH_AGE_EXEMPT=1 set. Remember label 'branch-age-exempt' and PR justification."
+  echo "⚠️ BRANCH_AGE_EXEMPT=1 set. Remember label '${BRANCH_AGE_EXEMPT_LABEL}' and PR justification."
 else
   echo "✅ Branch-age check passed."
 fi

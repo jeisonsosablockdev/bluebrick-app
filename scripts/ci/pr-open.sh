@@ -9,6 +9,7 @@ TYPE_LABEL=""
 RISK_LABEL=""
 SIZE_EXEMPT=""
 DRAFT="1"
+POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
 
 usage() {
   cat <<USAGE
@@ -21,10 +22,11 @@ Usage:
     --risk <risk:low|risk:medium|risk:high> \\
     [--base <branch>] \\
     [--size-exempt 0|1] \\
-    [--draft 0|1]
+    [--draft 0|1] \\
+    [--policy-file <path>]
 
 Notes:
-- If --size-exempt is omitted, it is inferred automatically from diff size (>400 lines).
+- If --size-exempt is omitted, it is inferred automatically from diff size threshold in policy.
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
 USAGE
 }
@@ -63,6 +65,10 @@ while [[ $# -gt 0 ]]; do
       DRAFT="$2"
       shift 2
       ;;
+    --policy-file)
+      POLICY_FILE="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -78,6 +84,11 @@ done
 if [[ -z "$TITLE" || -z "$BODY_FILE" || -z "$SCOPE_LABEL" || -z "$TYPE_LABEL" || -z "$RISK_LABEL" ]]; then
   echo "❌ Missing required arguments."
   usage
+  exit 1
+fi
+
+if [[ ! -f "$POLICY_FILE" ]]; then
+  echo "❌ Policy file not found: $POLICY_FILE"
   exit 1
 fi
 
@@ -101,11 +112,14 @@ if [[ "$CURRENT_BRANCH" == "$BASE_REF" ]]; then
   exit 1
 fi
 
+MAX_ADDITIONS="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(String(p.thresholds.maxAddedLines));" "$POLICY_FILE")"
+SIZE_EXEMPT_LABEL="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(p.labels.sizeExempt);" "$POLICY_FILE")"
+
 MERGE_BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"
 ADDITIONS="$(git diff --numstat "${MERGE_BASE}..HEAD" | awk '{a+=$1} END {print a+0}')"
 
 if [[ -z "$SIZE_EXEMPT" ]]; then
-  if (( ADDITIONS > 400 )); then
+  if (( ADDITIONS > MAX_ADDITIONS )); then
     SIZE_EXEMPT="1"
   else
     SIZE_EXEMPT="0"
@@ -118,7 +132,8 @@ bash ./scripts/ci/pr-metadata-lint.sh \
   --scope "$SCOPE_LABEL" \
   --type "$TYPE_LABEL" \
   --risk "$RISK_LABEL" \
-  --size-exempt "$SIZE_EXEMPT"
+  --size-exempt "$SIZE_EXEMPT" \
+  --policy-file "$POLICY_FILE"
 
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
   SIZE_EXEMPT=1 npm run pr:ready "$BASE_REF"
@@ -129,8 +144,11 @@ fi
 git push -u origin "$CURRENT_BRANCH"
 
 OWNER_REPO="$(gh repo view --json nameWithOwner -q '.nameWithOwner')"
-PR_NUMBER=""
-if PR_NUMBER="$(gh pr view --repo "$OWNER_REPO" --head "$CURRENT_BRANCH" --json number -q '.number' 2>/dev/null)"; then
+PR_INFO="$(gh pr list --repo "$OWNER_REPO" --head "$CURRENT_BRANCH" --json number,url --limit 1)"
+PR_NUMBER="$(echo "$PR_INFO" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const a=JSON.parse(s);process.stdout.write(a[0]?.number?String(a[0].number):'');});")"
+PR_URL="$(echo "$PR_INFO" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const a=JSON.parse(s);process.stdout.write(a[0]?.url||'');});")"
+
+if [[ -n "$PR_NUMBER" ]]; then
   echo "ℹ️ Existing PR detected: #${PR_NUMBER}"
 else
   CREATE_ARGS=(--repo "$OWNER_REPO" --base "$BASE_REF" --head "$CURRENT_BRANCH" --title "$TITLE" --body-file "$BODY_FILE")
@@ -139,13 +157,13 @@ else
   fi
 
   PR_URL="$(gh pr create "${CREATE_ARGS[@]}")"
-  PR_NUMBER="$(gh pr view --repo "$OWNER_REPO" --head "$CURRENT_BRANCH" --json number -q '.number')"
+  PR_NUMBER="$(gh pr list --repo "$OWNER_REPO" --head "$CURRENT_BRANCH" --json number --limit 1 -q '.[0].number')"
   echo "✅ PR created: ${PR_URL}"
 fi
 
 LABEL_ARGS=(-f "labels[]=${SCOPE_LABEL}" -f "labels[]=${TYPE_LABEL}" -f "labels[]=${RISK_LABEL}")
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
-  LABEL_ARGS+=(-f "labels[]=size-exempt")
+  LABEL_ARGS+=(-f "labels[]=${SIZE_EXEMPT_LABEL}")
 fi
 
 # Use gh api for labels to avoid pr edit GraphQL instability in some environments.
