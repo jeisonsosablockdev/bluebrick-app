@@ -5,7 +5,6 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
-  createMarketplacePropertyEntry as createMarketplacePropertyEntryInMemory,
   listPropertyDetailsSnapshot,
   PropertyRpcError,
   type BlockchainSyncStatus,
@@ -219,6 +218,42 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
   };
 }
 
+function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): PropertyDetail {
+  return {
+    id: input.id,
+    title: input.title,
+    city: input.city,
+    country: input.country,
+    locationLabel: `${input.city}, ${input.country}`,
+    listingStatus: input.listingStatus,
+    image: input.image,
+    shortDescription: input.shortDescription,
+    detailedLocation: input.detailedLocation,
+    highlights: [...input.highlights],
+    investmentNotes: input.investmentNotes,
+    investment: {
+      supplyTotal: input.supplyTotal,
+      mintedOrSold: input.mintedOrSold,
+      nftPriceUsd: input.nftPriceUsd,
+      annualRoiPct: input.annualRoiPct,
+      availabilityLabel: input.availabilityLabel
+    },
+    documents: input.documents.map((document, index) => ({
+      id: toDocumentId(document.label, index),
+      label: document.label,
+      url: document.url
+    })),
+    blockchain: {
+      network: "Solana Devnet",
+      collectionAddress: input.collectionAddress,
+      assetMintAddress: input.assetMintAddress,
+      explorerUrl: input.explorerUrl,
+      lastOnchainUpdate: input.lastOnchainUpdate,
+      syncStatus: input.syncStatus
+    }
+  };
+}
+
 function filterPropertyDetails(records: PropertyDetail[], filters: PropertyFilters): PropertyDetail[] {
   const normalizedSearch = filters.search?.trim().toLowerCase();
 
@@ -258,22 +293,6 @@ function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
     nftPriceUsd: property.investment.nftPriceUsd,
     annualRoiPct: property.investment.annualRoiPct
   }));
-}
-
-function mergePropertyRecords(primary: PropertyDetail[], secondary: PropertyDetail[]): PropertyDetail[] {
-  const seen = new Set<string>();
-  const merged: PropertyDetail[] = [];
-
-  for (const property of [...primary, ...secondary]) {
-    if (seen.has(property.id)) {
-      continue;
-    }
-
-    seen.add(property.id);
-    merged.push(clonePropertyDetail(property));
-  }
-
-  return merged;
 }
 
 async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
@@ -320,8 +339,11 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
 
 async function readMarketplaceRecordsForServer(): Promise<PropertyDetail[]> {
   const persisted = await readPersistedMarketplaceEntries();
-  const inMemory = listPropertyDetailsSnapshot();
-  return mergePropertyRecords(persisted, inMemory);
+  if (persisted.length > 0) {
+    return persisted;
+  }
+
+  return listPropertyDetailsSnapshot();
 }
 
 export async function createMarketplacePropertyEntryPersistent(input: CreateMarketplaceEntryPersistentInput): Promise<PropertyDetail> {
@@ -424,7 +446,7 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
     throw error;
   }
 
-  return createMarketplacePropertyEntryInMemory(input);
+  return mapCreateInputToPropertyDetail(input);
 }
 
 export async function listMarketplaceProperties(filters: PropertyFilters): Promise<PropertyListItem[]> {
