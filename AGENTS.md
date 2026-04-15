@@ -157,6 +157,10 @@ Applies to every PR targeting `develop`:
 1. Required CI check: `npm run validate` must pass.
 2. Required docs check: missing scope docs must block merge (non-mutating docs-sync policy check).
 3. Required local preflight before opening PR: `npm run pr:ready` (or `bash ./scripts/ci/pr-ready.sh`).
+   - Metadata-first preflight is mandatory for opening PRs:
+     - `npm run pr:metadata -- --body-file <file> --scope <scope:*> --type <type:*> --risk <risk:*> [--base develop] [--size-exempt 0|1]`
+     - `npm run pr:open -- --title "..." --body-file <file> --scope <scope:*> --type <type:*> --risk <risk:*> [--base develop] [--draft 0|1]`
+   - `pr:open` is the canonical command for opening PRs with required metadata and labels.
 4. Branch lifetime policy: short-lived branches only (target 1-3 days).
 5. PR size policy: <= 400 added lines preferred; if exceeded, split into sequential PRs with feature flags.
 6. Commit convention (strict): `type(scope): summary`
@@ -225,6 +229,19 @@ If waiver data is missing or expired, merge is blocked.
     - `mollusk-svm`
     - `mollusk-svm-programs-token`
     - `proptest`
+
+- `./scripts/ci/pr-metadata-lint.sh`
+  - Validates mandatory PR metadata before opening:
+    - required sections: `Issue`, `RFC`, `Riesgos`, `Rollback Plan`, `Prueba Devnet`
+    - required labels: one `scope:*`, one `type:*`, one `risk:*`
+    - size policy gate (`>400` added lines requires size-exempt strategy and feature-flag mention)
+
+- `./scripts/ci/pr-open.sh`
+  - Canonical PR-open workflow for `develop`:
+    - runs metadata lint
+    - runs `npm run pr:ready`
+    - pushes branch
+    - creates PR and applies mandatory labels via GitHub API
 
 ⸻
 

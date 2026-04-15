@@ -28,6 +28,8 @@
     "validate:operability": "vitest run tests/lib/security-headers.test.ts tests/lib/observability-store.test.ts tests/lib/semantic-extension-contract.test.ts tests/api/analytics-events-route.test.ts tests/api/health-route.test.ts tests/api/admin-monitoring-analytics-route.test.ts tests/api/admin-monitoring-logs-route.test.ts",
     "validate:docs-governance": "bash ./scripts/ci/validate-doc-governance.sh",
     "pr:ready": "bash ./scripts/ci/pr-ready.sh",
+    "pr:metadata": "bash ./scripts/ci/pr-metadata-lint.sh",
+    "pr:open": "bash ./scripts/ci/pr-open.sh",
     "e2e:install": "playwright install chromium",
     "e2e:playwright": "playwright test --project=playwright-smoke",
     "e2e:synpress:cache": "node ./scripts/synpress-prepare-phantom-extension.js && synpress --phantom --headless test/wallet-setup",
