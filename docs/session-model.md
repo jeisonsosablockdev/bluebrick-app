@@ -240,3 +240,18 @@ Implementation guide for request correlation and timeline tracing:
 - No new auth/session endpoints were added.
 
 Last Updated: 2026-04-14 14:20:00 UTC
+
+## STORY-010-10 Session/Boundary Notes
+- Session contract is unchanged:
+  - same `siws_session` cookie behavior,
+  - same server-side role derivation,
+  - same middleware + handler authorization model.
+- New observability endpoints are classified by boundary:
+  - Public: `POST /api/analytics/events`, `GET /api/health`
+  - Admin-only: `GET /api/admin/monitoring/analytics`, `GET /api/admin/monitoring/logs`
+- Security headers and CSP are now centralized in `next.config.ts` and apply regardless of auth state.
+- Telemetry pipeline is privacy-friendly and authority-agnostic:
+  - captures route/UI interaction signals,
+  - excludes identity/session secrets,
+  - never trusts client state for authorization.
+- EPIC-010 still excludes non-code editorial/backoffice authoring UI.

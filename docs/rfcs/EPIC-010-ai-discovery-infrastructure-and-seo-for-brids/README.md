@@ -6,7 +6,7 @@
 - Status: `approved`
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-14`
+- Last Updated: `2026-04-15`
 
 ## Scope
 - Problem statement:
@@ -69,7 +69,7 @@
 | STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `in-review` | `TBD` | Cubre R08, R09 (branch `story-010-07-content-pipeline-and-serialization-bri-57`) |
 | STORY-010-08 | Semantic Layer for Entities and Relations | `STORY-010-08-semantic-layer-for-entities-and-relations.md` | `in-review` | `TBD` | Cubre R10, R11 (branch `story-010-08-semantic-layer-for-entities-and-relations-bri-58`) |
 | STORY-010-09 | Feeds, Exports, and Internal Search Readiness | `STORY-010-09-feeds-exports-and-internal-search-readiness.md` | `in-review` | `TBD` | Cubre R09, R16 (branch `story-010-09-feeds-exports-and-internal-search-readiness-bri-59`) |
-| STORY-010-10 | Observability, Security, Performance, Deploy, Docs | `STORY-010-10-observability-security-performance-deploy-docs.md` | `approved` | `TBD` | Cubre R17–R23 |
+| STORY-010-10 | Observability, Security, Performance, Deploy, Docs | `STORY-010-10-observability-security-performance-deploy-docs.md` | `implemented` | `TBD` | Cubre R17–R23 (branch `story-010-10-observability-security-performance-deploy-docs-bri-60`) |
 
 ## Execution Roadmap (technical, executable)
 ### Phase 1 - MVP Foundation (deployable, indexable)

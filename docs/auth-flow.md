@@ -306,3 +306,14 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 - Story-010-09 remains a non-auth functional change focused on machine-readable distribution and search preparation.
 
 Last Updated: 2026-04-14 14:20:00 UTC
+
+## STORY-010-10 Observability + Security + Deploy Impact
+- Story-010-10 adds operational endpoints and telemetry hooks without changing SIWS authority boundaries.
+- New endpoints in auth-adjacent operational surface:
+  - `POST /api/analytics/events` (public, privacy-friendly event ingestion)
+  - `GET /api/health` (public runtime health snapshot)
+  - `GET /api/admin/monitoring/analytics` (admin-only analytics summary)
+  - `GET /api/admin/monitoring/logs` (admin-only operability logs)
+- Security hardening now applies globally through response headers and CSP policy in `next.config.ts`.
+- Client analytics instrumentation is telemetry-only and does not grant or alter auth/session state.
+- Explicit scope lock preserved: no non-code editorial interface is introduced in EPIC-010.

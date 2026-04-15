@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +12,25 @@ type ErrorProps = {
 
 export default function Error({ error, reset }: ErrorProps) {
   const { t } = useI18n();
+
+  useEffect(() => {
+    const payload = {
+      eventType: "client_error",
+      path: typeof window !== "undefined" ? window.location.pathname : "/",
+      message: error.message,
+      occurredAt: new Date().toISOString(),
+      viewportWidth: typeof window !== "undefined" ? window.innerWidth : undefined,
+      viewportHeight: typeof window !== "undefined" ? window.innerHeight : undefined
+    };
+
+    void fetch("/api/analytics/events", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true,
+      cache: "no-store"
+    });
+  }, [error.message]);
 
   return (
     <main className="mx-auto max-w-6xl p-6 md:p-10">

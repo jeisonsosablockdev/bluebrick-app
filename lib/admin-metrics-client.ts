@@ -104,6 +104,48 @@ export type MonitoringEventsResponse = {
   };
 };
 
+export type AnalyticsMonitoringResponse = {
+  summary: {
+    windowMinutes: number;
+    totalEvents: number;
+    byType: {
+      page_view: number;
+      route_change: number;
+      scroll_depth: number;
+      cta_click: number;
+      client_error: number;
+    };
+    topPaths: Array<{ path: string; hits: number }>;
+    topCtas: Array<{ ctaLabel: string; clicks: number }>;
+    latestEventAt: string | null;
+  };
+  recentEvents: Array<{
+    id: string;
+    eventType: "page_view" | "route_change" | "scroll_depth" | "cta_click" | "client_error";
+    path: string;
+    fromPath: string | null;
+    scrollDepth: number | null;
+    ctaId: string | null;
+    ctaLabel: string | null;
+    message: string | null;
+    viewportWidth: number | null;
+    viewportHeight: number | null;
+    occurredAt: string;
+    recordedAt: string;
+  }>;
+};
+
+export type OperabilityLogsResponse = {
+  entries: Array<{
+    id: string;
+    level: "info" | "warn" | "error";
+    event: string;
+    message: string;
+    context: Record<string, string | number | boolean | null>;
+    createdAt: string;
+  }>;
+};
+
 type JsonSuccess<T> = {
   ok: true;
   data: T;
@@ -228,4 +270,36 @@ export async function reprocessAdminMonitoringEvent(input: { eventId: string }):
   }
 
   return payload.data;
+}
+
+export async function fetchAdminAnalyticsMonitoring(input?: {
+  minutes?: number | null;
+  limit?: number | null;
+  signal?: AbortSignal;
+}): Promise<AnalyticsMonitoringResponse> {
+  const params = toSearchParams({
+    minutes: input?.minutes ?? null,
+    limit: input?.limit ?? null
+  });
+  const query = params.toString();
+
+  return requestJson<AnalyticsMonitoringResponse>(
+    `/api/admin/monitoring/analytics${query ? `?${query}` : ""}`,
+    input?.signal
+  );
+}
+
+export async function fetchAdminOperabilityLogs(input?: {
+  limit?: number | null;
+  signal?: AbortSignal;
+}): Promise<OperabilityLogsResponse> {
+  const params = toSearchParams({
+    limit: input?.limit ?? null
+  });
+  const query = params.toString();
+
+  return requestJson<OperabilityLogsResponse>(
+    `/api/admin/monitoring/logs${query ? `?${query}` : ""}`,
+    input?.signal
+  );
 }

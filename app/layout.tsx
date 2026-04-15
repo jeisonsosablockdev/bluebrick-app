@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AppProviders } from "@/app/providers";
+import { ClientAnalytics } from "@/components/observability/client-analytics";
 import { getServerLocale } from "@/lib/i18n-server";
 import { createRootMetadata } from "@/lib/seo";
 import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <ClientAnalytics />
         <AppProviders locale={locale}>{children}</AppProviders>
       </body>
     </html>
