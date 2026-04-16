@@ -89,6 +89,7 @@ export interface RootMetadataOverrides {
 export function createRootMetadata(overrides?: RootMetadataOverrides): Metadata {
   const title = overrides?.title ?? SEO_SITE_NAME;
   const description = overrides?.description ?? SEO_DEFAULT_DESCRIPTION;
+  const faviconPath = "/favicon.svg";
 
   return {
     metadataBase: new URL(getSiteOrigin()),
@@ -108,6 +109,10 @@ export function createRootMetadata(overrides?: RootMetadataOverrides): Metadata 
       card: "summary",
       title,
       description
+    },
+    icons: {
+      icon: [{ url: faviconPath, type: "image/svg+xml" }],
+      shortcut: [faviconPath]
     }
   };
 }
