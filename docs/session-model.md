@@ -6,6 +6,8 @@
 
 ## Cookie Strategy
 - Cookie type: `httpOnly`, `secure` (production), `sameSite=lax`.
+- Nonce cookie:
+  - `siws_nonce` (signed, short-lived, 5 minutes).
 - Expiration:
   - 24 hours (`maxAge` + matching server-side expiry).
 - Rotation policy:
@@ -13,14 +15,14 @@
 
 ## Session Lifecycle
 1. Create session:
-   - Server creates random token after SIWS verification and nonce checks.
-   - Session stored in in-memory map keyed by token.
+   - Server verifies SIWS message signature and validates nonce against signed nonce cookie.
+   - Server creates signed session token (`siws_session`) with 24h expiration.
    - Cookie `siws_session` written with path `/`.
 2. Refresh session:
    - No token rotation endpoint; user re-authenticates with SIWS.
    - UI auth state is revalidated across browser contexts via `BroadcastChannel` + `localStorage` sync signal, and on `focus`/`visibilitychange`.
 3. Revoke session:
-   - `POST /api/auth/logout` deletes server record and clears cookie.
+   - `POST /api/auth/logout` clears cookie and revokes current token in-process.
 
 ## Validation Rules
 - Authentication:
@@ -53,7 +55,7 @@
 
 ## Authorization Layers
 1. Session layer:
-   - Cookie `siws_session` maps to server-side in-memory session token.
+   - Cookie `siws_session` carries signed server token validated on each request.
 2. Role layer:
    - Role is derived from `ADMIN_WALLETS` and wallet pubkey.
 3. Middleware layer:
@@ -85,7 +87,9 @@
 - CSRF strategy:
   - SameSite `lax` + POST-only mutation endpoints.
 - Replay protections:
-  - Single-use nonce with 5-minute TTL.
+  - Signed nonce cookie (`siws_nonce`) with 5-minute TTL.
+  - SIWS message nonce must match nonce cookie value.
+  - Nonce cookie is cleared after verify attempt to force a fresh challenge.
   - Purchase challenges are single-use with short TTL (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
   - Purchase challenge replay attempts are rejected once consumed/expired.
   - Stripe KYC bootstrap is rate-limited by wallet/IP (`STRIPE_IDENTITY_RATE_LIMIT_WINDOW_SECONDS`, `STRIPE_IDENTITY_RATE_LIMIT_MAX_ATTEMPTS`).
@@ -114,10 +118,9 @@
   - Stripe KYC events are deduplicated by `provider_event_id` and do not store raw payload PII fields.
   - DAS reconciliation only confirms submitted items with known `expectedAddress`.
   - Snapshot persistence is idempotent at DB level via `asset_mint_snapshots.mint_job_id UNIQUE`.
-- Persistence caveat:
-  - Session store is currently process-local in-memory.
-  - App restart invalidates sessions.
-  - Shared store (for example Redis) is required before horizontal scaling.
+- Key management caveat:
+  - Session and nonce signatures depend on `SIWS_TOKEN_SECRET`.
+  - In production, `SIWS_TOKEN_SECRET` must be explicitly configured and stable across replicas.
 
 - Wallet modal UX safety:
   - Progress and error feedback are rendered in the same top visual slot to avoid ambiguous state perception.

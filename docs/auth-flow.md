@@ -8,14 +8,15 @@
 
 ## SIWS Flow
 1. Nonce issued by server:
-   - `GET /api/auth/nonce` returns a single-use nonce with 5-minute TTL.
+   - `GET /api/auth/nonce` returns a nonce (5-minute TTL) and writes an `httpOnly` signed nonce cookie (`siws_nonce`).
 2. Message signed by wallet:
    - Client builds deterministic SIWS message with `domain`, `address`, `statement`, `nonce`, `issuedAt`.
    - Wallet signs message bytes via `signMessage()`.
 3. Signature verified server-side:
-   - `POST /api/auth/verify` validates format, host/domain, nonce, signature.
+   - `POST /api/auth/verify` validates format, host/domain, issuedAt freshness, signature, and nonce equality against signed nonce cookie.
+   - Nonce cookie is cleared after verify success/failure to force fresh challenge on retry.
 4. Session established:
-   - Server creates session token and sets `httpOnly` cookie (`siws_session`).
+   - Server creates a signed session token and sets `httpOnly` cookie (`siws_session`).
 5. Role resolved server-side:
    - Request wallet pubkey is compared against `ADMIN_WALLETS` allowlist.
    - Role is `admin` if allowlisted, otherwise `user`.
@@ -92,8 +93,8 @@
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |
-| `/api/auth/nonce` | `GET` | No | None | Returns single-use nonce (5 min TTL) |
-| `/api/auth/verify` | `POST` | No | None | Verifies SIWS signature and sets `siws_session` cookie |
+| `/api/auth/nonce` | `GET` | No | None | Returns nonce (5 min TTL) and sets signed nonce cookie (`siws_nonce`) |
+| `/api/auth/verify` | `POST` | No | None | Verifies SIWS signature against signed nonce cookie, sets `siws_session`, and clears `siws_nonce` |
 | `/api/auth/me` | `GET` | Optional | None | Returns current auth payload and server-computed role |
 | `/api/auth/logout` | `POST` | Optional | None | Revokes session token and clears cookie |
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
@@ -158,8 +159,8 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
 
 ## Replay Protection
 - Nonce TTL: 5 minutes.
-- Nonce invalidation: nonce consumed after successful verification.
-- Reuse handling: consumed nonce returns `409`.
+- Nonce binding: SIWS message nonce must match signed nonce cookie value.
+- Nonce invalidation: signed nonce cookie is cleared after verify attempt (success or failure), forcing fresh nonce for retries.
 - Issued-at freshness: SIWS `issuedAt` must be within a 5-minute window.
 - Purchase challenge TTL: configurable (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
 - Purchase challenge replay protection: challenge is single-use and transitions to `consumed`; replays return `409`.

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WalletReadyState } from "@solana/wallet-adapter-base";
+import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
@@ -35,6 +35,7 @@ const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
 const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
+type MessageSigner = (message: Uint8Array) => Promise<Uint8Array>;
 
 type NavEntry = {
   href: string;
@@ -141,6 +142,10 @@ function buildPhantomDeepLink(siteUrl: string): string {
   return `https://phantom.app/ul/browse/${encodeURIComponent(siteUrl)}`;
 }
 
+function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSignerWalletAdapter {
+  return typeof (adapter as { signMessage?: unknown } | null)?.signMessage === "function";
+}
+
 export function WalletModal({ initialAuth }: WalletModalProps) {
   const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
@@ -235,6 +240,41 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
     return null;
   }, [resolveCurrentWalletPublicKey]);
+
+  const resolveCurrentSignMessage = useCallback((): MessageSigner | null => {
+    if (signMessage) {
+      return signMessage;
+    }
+
+    if (wallet && adapterSupportsMessageSigning(wallet.adapter)) {
+      return wallet.adapter.signMessage.bind(wallet.adapter);
+    }
+
+    const phantomAdapter = wallets.find((item) => item.adapter.name === PhantomWalletName)?.adapter;
+    if (phantomAdapter && adapterSupportsMessageSigning(phantomAdapter)) {
+      return phantomAdapter.signMessage.bind(phantomAdapter);
+    }
+
+    return null;
+  }, [signMessage, wallet, wallets]);
+
+  const waitForSignMessage = useCallback(async (): Promise<MessageSigner | null> => {
+    const immediateSignMessage = resolveCurrentSignMessage();
+    if (immediateSignMessage) {
+      return immediateSignMessage;
+    }
+
+    const maxAttempts = 20;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+      const nextSignMessage = resolveCurrentSignMessage();
+      if (nextSignMessage) {
+        return nextSignMessage;
+      }
+    }
+
+    return null;
+  }, [resolveCurrentSignMessage]);
 
   const refreshAuthState = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
     if (authRefreshPromiseRef.current) {
@@ -450,13 +490,14 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Wallet connected but public key is unavailable.");
       }
 
-      if (!signMessage) {
+      const activeSignMessage = await waitForSignMessage();
+      if (!activeSignMessage) {
         throw new Error("Current wallet does not support message signing.");
       }
 
       const verifiedResult = await startSiws({
         publicKey: activePublicKey,
-        signMessage,
+        signMessage: activeSignMessage,
         statement: signInStatement,
         onStatus: (status) => setPhase(status)
       });

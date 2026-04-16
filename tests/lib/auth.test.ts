@@ -73,7 +73,8 @@ describe("lib/auth", () => {
         signature,
         publicKey: wallet.publicKey
       },
-      domain
+      domain,
+      nonce
     );
 
     expect(result.ok).toBe(true);
@@ -101,7 +102,8 @@ describe("lib/auth", () => {
         signature,
         publicKey: wallet.publicKey
       },
-      "other.example.com"
+      "other.example.com",
+      nonce
     );
 
     expect(result).toMatchObject({
@@ -113,6 +115,7 @@ describe("lib/auth", () => {
 
   it("rejects SIWS payload for invalid nonce", async () => {
     const wallet = await createWalletIdentity();
+    const issuedNonce = issueNonce();
     const message = buildSiwsMessage({
       domain: "admin.example.com",
       publicKey: wallet.publicKey,
@@ -128,7 +131,8 @@ describe("lib/auth", () => {
         signature,
         publicKey: wallet.publicKey
       },
-      "admin.example.com"
+      "admin.example.com",
+      issuedNonce
     );
 
     expect(result).toMatchObject({

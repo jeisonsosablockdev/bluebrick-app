@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 
+import { setNonceCookie } from "@/lib/auth";
 import { issueNonce } from "@/lib/auth-store";
 
 export async function GET(): Promise<NextResponse> {
-  return NextResponse.json({ nonce: issueNonce() });
+  const nonce = issueNonce();
+  const response = NextResponse.json({ nonce });
+  setNonceCookie(response, nonce);
+  return response;
 }
-

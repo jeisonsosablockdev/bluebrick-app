@@ -3,10 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
-import { consumeNonce, createSession, getSessionMaxAgeSeconds, getSessionPublicKey, hasUsableNonce, revokeSession } from "@/lib/auth-store";
+import {
+  createSession,
+  createNonceToken,
+  getNonceMaxAgeSeconds,
+  getSessionMaxAgeSeconds,
+  getSessionPublicKey,
+  readNonceFromToken,
+  revokeSession
+} from "@/lib/auth-store";
 import { parseSiwsMessage } from "@/lib/siws";
 
 const AUTH_COOKIE_NAME = "siws_session";
+const NONCE_COOKIE_NAME = "siws_nonce";
 const SIWS_MAX_AGE_MS = 5 * 60 * 1000;
 const addressEncoder = getAddressEncoder();
 
@@ -38,7 +47,7 @@ export function isIssuedAtValid(issuedAt: string): boolean {
   return Math.abs(Date.now() - timestamp) <= SIWS_MAX_AGE_MS;
 }
 
-export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): VerifyResult {
+export function verifySiwsPayload(payload: VerifyPayload, requestHost: string, expectedNonce: string | null): VerifyResult {
   const parsed = parseSiwsMessage(payload.message);
 
   if (!parsed) {
@@ -49,7 +58,7 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
     return { ok: false, status: 400, error: "Public key mismatch." };
   }
 
-  if (!hasUsableNonce(parsed.nonce)) {
+  if (!expectedNonce || parsed.nonce !== expectedNonce) {
     return { ok: false, status: 409, error: "Invalid or expired nonce." };
   }
 
@@ -81,11 +90,40 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
     return { ok: false, status: 401, error: "Signature verification failed." };
   }
 
-  if (!consumeNonce(parsed.nonce)) {
-    return { ok: false, status: 409, error: "Nonce already consumed." };
+  return { ok: true, publicKey: normalizedPublicKey, sessionToken: createSession(normalizedPublicKey) };
+}
+
+export function setNonceCookie(response: NextResponse, nonce: string): void {
+  response.cookies.set({
+    name: NONCE_COOKIE_NAME,
+    value: createNonceToken(nonce),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: getNonceMaxAgeSeconds()
+  });
+}
+
+export function clearNonceCookie(response: NextResponse): void {
+  response.cookies.set({
+    name: NONCE_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0
+  });
+}
+
+export function getNonceFromRequest(request: NextRequest): string | null {
+  const nonceToken = request.cookies.get(NONCE_COOKIE_NAME)?.value;
+  if (!nonceToken) {
+    return null;
   }
 
-  return { ok: true, publicKey: normalizedPublicKey, sessionToken: createSession(normalizedPublicKey) };
+  return readNonceFromToken(nonceToken);
 }
 
 export function setSessionCookie(response: NextResponse, sessionToken: string): void {
