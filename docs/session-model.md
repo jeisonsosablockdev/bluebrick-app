@@ -238,6 +238,14 @@ Implementation guide for request correlation and timeline tracing:
   - `public/feeds/manifest.json`
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
+
+## BRI-68 Home Title Metadata Impact
+- El cambio en `app/page.tsx` establece `title.absolute = "Home | BRIDS"` para Home.
+- El modelo de sesión no cambia:
+  - mismo contrato de cookie `siws_session`,
+  - misma validación server-side por request,
+  - misma derivación de roles y mismos límites de autorización.
+- No se introducen nuevos endpoints de auth/session ni cambios en trust boundaries.
   - same server-side session validation,
   - same role derivation and middleware/handler authorization.
 - No new auth/session endpoints were added.

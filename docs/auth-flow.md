@@ -218,6 +218,11 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Recovery-oriented failures return recoverable metadata (`BLOCKHASH_EXPIRED`, `CONFIRMATION_TIMEOUT`) for safe retry behavior.
 
 ## BRI-39 Home Copy + CTA Alignment
+
+## BRI-68 Home Title Metadata Impact
+- El cambio en `app/page.tsx` fija `title.absolute = "Home | BRIDS"` para la página de inicio.
+- No modifica el flujo SIWS, nonce, cookies (`siws_nonce`/`siws_session`), verificación de firma ni controles RBAC.
+- No se agregan ni alteran endpoints de autenticación/autorización.
 - Scope:
   - Home UX copy and CTA routing updates for `Hero`, `Features`, `Promo`, `First investment`, `How to start`, and `FAQ` context chips.
   - New informational sections for tokenization process and app overview.

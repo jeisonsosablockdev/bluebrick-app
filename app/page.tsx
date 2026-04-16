@@ -18,11 +18,18 @@ import { getRoleForWallet } from "@/lib/rbac";
 import { createPageMetadata } from "@/lib/seo";
 import { createOrganizationSchema, createWebPageSchema, createWebSiteSchema } from "@/lib/schema";
 
-export const metadata: Metadata = createPageMetadata({
+const homePageMetadata = createPageMetadata({
   title: "Home",
   description: "Discover tokenized real-estate opportunities and platform capabilities in BRIDS.",
   path: "/"
 });
+
+export const metadata: Metadata = {
+  ...homePageMetadata,
+  title: {
+    absolute: "Home | BRIDS"
+  }
+};
 
 export default async function HomePage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
