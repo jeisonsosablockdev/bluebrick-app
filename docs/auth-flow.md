@@ -174,6 +174,11 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Duplicate retries do not trigger repeated reconciliation side effects.
   - Stripe webhook processing is idempotent by `provider_event_id` and signed with `Stripe-Signature`.
 
+## Landing Featured Properties Data Source (BRI-65)
+- `Featured Properties` cards on `/` are sourced server-side from `listMarketplaceProperties({})` and trimmed to the first 3 active records.
+- Static property cards from `app/data/home*.json` remain as controlled fallback only when marketplace source returns zero records or is unavailable.
+- When marketplace has records, landing always prioritizes those records over fallback cards.
+
 ## Error Cases
 | Case | Server Response | Client Handling |
 | --- | --- | --- |

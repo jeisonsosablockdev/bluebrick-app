@@ -267,6 +267,14 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - never trusts client state for authorization.
 - EPIC-010 still excludes non-code editorial/backoffice authoring UI.
 
+## BRI-65 Landing Featured Properties Binding
+- Home landing `Featured Properties` cards are sourced from server marketplace data via `listMarketplaceProperties`.
+- Static property cards from `app/data/home*.json` are used only as fallback when marketplace source has no records.
+- Session boundaries are unchanged:
+  - SIWS cookie/session lifecycle remains identical.
+  - Role derivation remains server-side (`ADMIN_WALLETS` + authenticated wallet).
+  - No new auth/session endpoints were introduced.
+
 ## BRI-63 Landing UI States Removal Impact
 - Scope touched only public landing presentation:
   - removed `UiStatesSection` from `app/page.tsx`.

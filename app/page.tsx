@@ -14,6 +14,7 @@ import { PropertiesSection } from "@/components/sections/properties";
 import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { listMarketplaceProperties } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
 import { createPageMetadata } from "@/lib/seo";
 import { createOrganizationSchema, createWebPageSchema, createWebSiteSchema } from "@/lib/schema";
@@ -33,6 +34,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const featuredProperties = await listMarketplaceProperties({})
+    .then((properties) => properties.slice(0, 3))
+    .catch(() => []);
   const homeSchemas = [
     createOrganizationSchema(),
     createWebSiteSchema(),
@@ -59,7 +63,7 @@ export default async function HomePage() {
       <TokenizationProcessSection />
       <AppOverviewSection />
       <PromoBannerSection />
-      <PropertiesSection />
+      <PropertiesSection properties={featuredProperties} />
       <FirstInvestmentSection />
       <ProcessSection />
       <FaqSection />

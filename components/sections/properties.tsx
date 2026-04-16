@@ -6,11 +6,43 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { H2, Lead } from "@/components/ui/typography";
+import type { AppLocale } from "@/lib/i18n";
 import { getHomeContent } from "@/app/data";
 
-export function PropertiesSection() {
+export type FeaturedPropertyCard = {
+  id: string;
+  title: string;
+  locationLabel: string;
+  annualRoiPct: number;
+  image: string;
+};
+
+type PropertiesSectionProps = {
+  properties: FeaturedPropertyCard[];
+};
+
+function formatRoi(locale: AppLocale, annualRoiPct: number): string {
+  const normalizedLocale = locale === "es" ? "es-CO" : locale === "pt" ? "pt-BR" : "en-US";
+  return `${new Intl.NumberFormat(normalizedLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(annualRoiPct)}% ROI`;
+}
+
+function parseFallbackRoi(roiLabel: string): number {
+  const normalized = roiLabel.replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function PropertiesSection({ properties }: PropertiesSectionProps) {
   const { locale, t } = useI18n();
-  const properties = getHomeContent(locale).properties.slice(0, 3);
+  const fallbackProperties = getHomeContent(locale).properties.slice(0, 3).map((property, index) => ({
+    id: `fallback-${index}-${property.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    title: property.title,
+    locationLabel: property.location,
+    annualRoiPct: parseFallbackRoi(property.roi),
+    image: property.image
+  }));
+  const effectiveProperties = properties.length > 0 ? properties : fallbackProperties;
+  const usesFallback = properties.length === 0;
 
   return (
     <section className="py-12">
@@ -28,17 +60,26 @@ export function PropertiesSection() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {properties.map((property) => (
-          <Card key={`${property.title}-${property.location}`} className="overflow-hidden p-0">
+        {effectiveProperties.map((property) => (
+          <Card key={property.id} className="overflow-hidden p-0">
             <Image src={property.image} alt={property.title} width={600} height={360} className="h-44 w-full object-cover" />
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-base font-semibold text-white">{property.title}</h3>
               </div>
-              <p className="text-sm text-slate-400">{property.location}</p>
+              <p className="text-sm text-slate-400">{property.locationLabel}</p>
               <p className="text-sm font-semibold text-cyan-300">
-                {t({ en: "Project metric", es: "Metrica del proyecto", pt: "Metrica do projeto" })}: {property.roi}
+                {t({ en: "Project metric", es: "Metrica del proyecto", pt: "Metrica do projeto" })}: {formatRoi(locale, property.annualRoiPct)}
               </p>
+              {usesFallback ? (
+                <p className="text-xs text-amber-200">
+                  {t({
+                    en: "Fallback data shown while marketplace records are unavailable.",
+                    es: "Mostrando datos de respaldo mientras no hay registros del marketplace.",
+                    pt: "Exibindo dados de fallback enquanto nao ha registros do marketplace."
+                  })}
+                </p>
+              ) : null}
             </div>
           </Card>
         ))}
