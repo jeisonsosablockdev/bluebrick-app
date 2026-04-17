@@ -3,10 +3,10 @@
 ## Metadata
 - Epic ID: `EPIC-010`
 - Title: `AI Discovery Infrastructure and SEO for BRIDS`
-- Status: `approved`
+- Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-15`
+- Last Updated: `2026-04-17`
 
 ## Scope
 - Problem statement:
@@ -53,23 +53,23 @@
 | R23 | Documentación interna operativa del sistema |
 
 ## Success Criteria
-- [ ] Infraestructura lista para publicar contenido sin rediseño de arquitectura.
-- [ ] Todos los requisitos R01–R23 cubiertos por historias aprobadas y trazables.
-- [ ] Pipeline de validación y publicación ejecuta en CI sin dependencias de CMS externo.
+- [x] Infraestructura lista para publicar contenido sin rediseño de arquitectura.
+- [x] Todos los requisitos R01–R23 cubiertos por historias aprobadas y trazables.
+- [x] Pipeline de validación y publicación ejecuta en CI sin dependencias de CMS externo.
 
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-010-01 | Foundation and Layered Architecture | `STORY-010-01-foundation-and-layered-architecture.md` | `implemented` | `TBD` | Cubre R01 |
-| STORY-010-02 | Content as Code and Editorial Contracts | `STORY-010-02-content-as-code-and-editorial-contracts.md` | `in-review` | `TBD` | Cubre R02, R03, R14, R15 (branch `story-010-02-content-as-code-and-editorial-contracts-bri-52`) |
-| STORY-010-03 | Route Architecture and Reusable Templates | `STORY-010-03-route-architecture-and-reusable-templates.md` | `in-review` | `TBD` | Cubre R04, R11, R12, R13 (branch `story-010-03-route-architecture-and-reusable-templates-bri-53`) |
-| STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `in-review` | `TBD` | Cubre R05 (branch `story-010-04-technical-seo-infrastructure-bri-54`) |
-| STORY-010-05 | Structured Data JSON-LD Layer | `STORY-010-05-structured-data-json-ld-layer.md` | `in-review` | `TBD` | Cubre R06 (branch `story-010-05-structured-data-json-ld-layer-bri-55`) |
-| STORY-010-06 | AI Readable and Machine Endpoints | `STORY-010-06-ai-readable-and-machine-endpoints.md` | `in-review` | `TBD` | Cubre R07 (branch `story-010-06-ai-readable-and-machine-endpoints-bri-56`) |
-| STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `in-review` | `TBD` | Cubre R08, R09 (branch `story-010-07-content-pipeline-and-serialization-bri-57`) |
-| STORY-010-08 | Semantic Layer for Entities and Relations | `STORY-010-08-semantic-layer-for-entities-and-relations.md` | `in-review` | `TBD` | Cubre R10, R11 (branch `story-010-08-semantic-layer-for-entities-and-relations-bri-58`) |
-| STORY-010-09 | Feeds, Exports, and Internal Search Readiness | `STORY-010-09-feeds-exports-and-internal-search-readiness.md` | `in-review` | `TBD` | Cubre R09, R16 (branch `story-010-09-feeds-exports-and-internal-search-readiness-bri-59`) |
-| STORY-010-10 | Observability, Security, Performance, Deploy, Docs | `STORY-010-10-observability-security-performance-deploy-docs.md` | `implemented` | `TBD` | Cubre R17–R23 (branch `story-010-10-observability-security-performance-deploy-docs-bri-60`) |
+| STORY-010-01 | Foundation and Layered Architecture | `STORY-010-01-foundation-and-layered-architecture.md` | `implemented` | `#109` | Cubre R01 |
+| STORY-010-02 | Content as Code and Editorial Contracts | `STORY-010-02-content-as-code-and-editorial-contracts.md` | `implemented` | `#105` | Cubre R02, R03, R14, R15 (branch `story-010-02-content-as-code-and-editorial-contracts-bri-52`) |
+| STORY-010-03 | Route Architecture and Reusable Templates | `STORY-010-03-route-architecture-and-reusable-templates.md` | `implemented` | `#106` | Cubre R04, R11, R12, R13 (branch `story-010-03-route-architecture-and-reusable-templates-bri-53`) |
+| STORY-010-04 | Technical SEO Infrastructure | `STORY-010-04-technical-seo-infrastructure.md` | `implemented` | `#107` | Cubre R05 (branch `story-010-04-technical-seo-infrastructure-bri-54`) |
+| STORY-010-05 | Structured Data JSON-LD Layer | `STORY-010-05-structured-data-json-ld-layer.md` | `implemented` | `#108` | Cubre R06 (branch `story-010-05-structured-data-json-ld-layer-bri-55`) |
+| STORY-010-06 | AI Readable and Machine Endpoints | `STORY-010-06-ai-readable-and-machine-endpoints.md` | `implemented` | `#111` | Cubre R07 (branch `story-010-06-ai-readable-and-machine-endpoints-bri-56`) |
+| STORY-010-07 | Content Pipeline and Serialization | `STORY-010-07-content-pipeline-and-serialization.md` | `implemented` | `#112` | Cubre R08, R09 (branch `story-010-07-content-pipeline-and-serialization-bri-57`) |
+| STORY-010-08 | Semantic Layer for Entities and Relations | `STORY-010-08-semantic-layer-for-entities-and-relations.md` | `implemented` | `#113` | Cubre R10, R11 (branch `story-010-08-semantic-layer-for-entities-and-relations-bri-58`) |
+| STORY-010-09 | Feeds, Exports, and Internal Search Readiness | `STORY-010-09-feeds-exports-and-internal-search-readiness.md` | `implemented` | `#114` | Cubre R09, R16 (branch `story-010-09-feeds-exports-and-internal-search-readiness-bri-59`) |
+| STORY-010-10 | Observability, Security, Performance, Deploy, Docs | `STORY-010-10-observability-security-performance-deploy-docs.md` | `implemented` | `#115` | Cubre R17–R23 (branch `story-010-10-observability-security-performance-deploy-docs-bri-60`) |
 
 ## Execution Roadmap (technical, executable)
 ### Phase 1 - MVP Foundation (deployable, indexable)
@@ -189,5 +189,5 @@ Release rule:
 ## Traceability
 - Issue(s): `BRI-50`
 - Project: `EPIC 010 - AI Discovery Infrastructure and SEO for BRIDS`
-- PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- PR(s): `#105, #106, #107, #108, #109, #111, #112, #113, #114, #115`
+- Final commit hash(es): `87c6ea9, e9d3d98, ccfa17e, 9872f8d, 66c9d29, bc92cc2, db57e96, 1c639d2, d8e0f1a, c73deb6`

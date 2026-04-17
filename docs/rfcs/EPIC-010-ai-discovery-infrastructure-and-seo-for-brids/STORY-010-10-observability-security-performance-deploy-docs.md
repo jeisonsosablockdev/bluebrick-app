@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-15`
+- Last Updated: `2026-04-17`
 
 ## Context
 - Problem:
@@ -100,5 +100,5 @@
 
 ## Traceability
 - Related issue(s): `BRI-50`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related PR(s): `#115`
+- Final commit hash(es): `c73deb6`
