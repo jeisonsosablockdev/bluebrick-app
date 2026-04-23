@@ -5,6 +5,7 @@ on:
     branches:
       - develop
     types:
+      - opened
       - synchronize
       - labeled
       - unlabeled
@@ -19,6 +20,7 @@ permissions:
 jobs:
   validate:
     name: Validate (lint + typecheck + docs governance)
+    if: ${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,6 +42,7 @@ jobs:
 
   required-docs:
     name: Required Docs Sync Check
+    if: ${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

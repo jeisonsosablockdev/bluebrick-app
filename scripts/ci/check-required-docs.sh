@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+source "$(dirname "$0")/pr-governance-lib.sh"
+
 BASE_REF="${BASE_REF:-${GITHUB_BASE_REF:-develop}}"
 HEAD_REF="${HEAD_REF:-HEAD}"
 HEAD_BRANCH="${HEAD_BRANCH:-${GITHUB_HEAD_REF:-}}"
@@ -15,12 +17,24 @@ fi
 # on long-lived branches and makes the docs gate fail with exit 128.
 git fetch --no-tags origin "${BASE_REF}" >/dev/null 2>&1 || true
 
-CHANGED_FILES="$(git diff --name-only "origin/${BASE_REF}...${HEAD_REF}")"
+committed_changed_files="$(git diff --name-only "origin/${BASE_REF}...${HEAD_REF}")"
+working_tree_changed_files=""
+untracked_changed_files=""
 
-if [[ -z "${CHANGED_FILES}" && "${HEAD_REF}" == "HEAD" ]]; then
-  # Local fallback: if branch has no commits yet, inspect working tree vs HEAD.
-  CHANGED_FILES="$(git diff --name-only HEAD)"
+if [[ "${HEAD_REF}" == "HEAD" ]]; then
+  # Local fallback: include uncommitted changes so docs preflight matches what
+  # the author is about to commit/open in a PR.
+  working_tree_changed_files="$(git diff --name-only HEAD)"
+  untracked_changed_files="$(git ls-files --others --exclude-standard)"
 fi
+
+CHANGED_FILES="$(
+  {
+    printf '%s\n' "${committed_changed_files}"
+    printf '%s\n' "${working_tree_changed_files}"
+    printf '%s\n' "${untracked_changed_files}"
+  } | merge_changed_file_sets
+)"
 
 if [[ -z "${CHANGED_FILES}" ]]; then
   echo "No changed files detected. Docs check skipped."
@@ -61,19 +75,6 @@ touches_app=0
 touches_nft=0
 touches_product_code=0
 missing_any=0
-detected_story_epic=""
-detected_story_id=""
-
-extract_story_context_from_branch() {
-  local branch_name="$1"
-  if [[ "${branch_name}" =~ epic-([0-9]{3})-story-([0-9]{2}) ]]; then
-    detected_story_epic="${BASH_REMATCH[1]}"
-    detected_story_id="${BASH_REMATCH[2]}"
-    return 0
-  fi
-  return 1
-}
-
 resolve_epic_dir() {
   local epic_id="$1"
   shopt -s nullglob
@@ -206,6 +207,8 @@ validate_epic_readme_story_row() {
   table_status="$(echo "${row}" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $5); print $5}')"
   local table_pr
   table_pr="$(echo "${row}" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $6); print $6}')"
+  table_status="$(normalize_markdown_table_cell "${table_status}")"
+  table_pr="$(normalize_markdown_table_cell "${table_pr}")"
 
   if [[ "${table_status}" != "${expected_status}" ]]; then
     echo "::error::Story Index status mismatch for STORY-${epic_id}-${story_id} in ${epic_readme}: expected '${expected_status}', found '${table_status}'."

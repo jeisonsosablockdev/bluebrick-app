@@ -1,8 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_REF="${1:-develop}"
-POLICY_FILE="${2:-docs/governance/pr-policy-source-of-truth.json}"
+source "$(dirname "$0")/pr-governance-lib.sh"
+
+BASE_REF="develop"
+POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+VALIDATE_MODE="${VALIDATE_MODE:-full}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --base)
+      BASE_REF="$2"
+      shift 2
+      ;;
+    --policy-file)
+      POLICY_FILE="$2"
+      shift 2
+      ;;
+    --validate-mode)
+      VALIDATE_MODE="$2"
+      shift 2
+      ;;
+    *)
+      if [[ "${BASE_REF}" == "develop" && "$1" != -* ]]; then
+        BASE_REF="$1"
+      elif [[ "${POLICY_FILE}" == "docs/governance/pr-policy-source-of-truth.json" && "$1" != -* ]]; then
+        POLICY_FILE="$1"
+      else
+        echo "❌ Unknown argument: $1"
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
 
 if [[ ! -f "${POLICY_FILE}" ]]; then
   echo "❌ Policy file not found: ${POLICY_FILE}"
@@ -22,6 +53,7 @@ BRANCH_AGE_EXEMPT_ENV="${BRANCH_AGE_EXEMPT:-0}"
 echo "== PR Readiness Preflight =="
 echo "Base branch: ${BASE_REF}"
 echo "Policy file: ${POLICY_FILE}"
+echo "Validate mode: ${VALIDATE_MODE}"
 
 if ! git show-ref --verify --quiet "refs/remotes/origin/${BASE_REF}"; then
   echo "Fetching origin/${BASE_REF}..."
@@ -40,8 +72,14 @@ if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then
 fi
 
 echo
-echo "1) Running validate gate (lint + typecheck + docs governance)..."
-npm run validate
+echo "1) Running local validation gate..."
+VALIDATE_COMMAND="$(resolve_pr_ready_validate_command "${VALIDATE_MODE}")"
+if [[ -n "${VALIDATE_COMMAND}" ]]; then
+  echo "Command: ${VALIDATE_COMMAND}"
+  eval "${VALIDATE_COMMAND}"
+else
+  echo "Skipping local validate gate by configuration."
+fi
 
 echo
 echo "2) Checking commit convention for branch commits..."

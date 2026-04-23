@@ -10,6 +10,7 @@ RISK_LABEL=""
 SIZE_EXEMPT=""
 DRAFT="1"
 POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+VALIDATE_MODE="${VALIDATE_MODE:-governance-only}"
 
 usage() {
   cat <<USAGE
@@ -23,11 +24,13 @@ Usage:
     [--base <branch>] \\
     [--size-exempt 0|1] \\
     [--draft 0|1] \\
+    [--validate-mode full|governance-only|skip] \\
     [--policy-file <path>]
 
 Notes:
 - If --size-exempt is omitted, it is inferred automatically from diff size threshold in policy.
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
+- Default local validation mode for pr:open is governance-only; CI still runs full validate after PR creation.
 USAGE
 }
 
@@ -67,6 +70,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --policy-file)
       POLICY_FILE="$2"
+      shift 2
+      ;;
+    --validate-mode)
+      VALIDATE_MODE="$2"
       shift 2
       ;;
     -h|--help)
@@ -136,9 +143,9 @@ bash ./scripts/ci/pr-metadata-lint.sh \
   --policy-file "$POLICY_FILE"
 
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
-  SIZE_EXEMPT=1 npm run pr:ready "$BASE_REF"
+  SIZE_EXEMPT=1 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 else
-  npm run pr:ready "$BASE_REF"
+  npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 fi
 
 git push -u origin "$CURRENT_BRANCH"

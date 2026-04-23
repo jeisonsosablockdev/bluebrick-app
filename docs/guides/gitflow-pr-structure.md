@@ -25,9 +25,10 @@ This includes:
    - `Rollback Plan`
    - `Prueba Devnet`
 4. Run local metadata lint.
-5. Open PR in draft mode and apply required labels.
-6. Wait for governance gates.
-7. Mark PR ready and merge only after checks pass.
+5. Run lightweight local governance preflight.
+6. Open PR in draft mode and apply required labels.
+7. Wait for governance gates.
+8. Mark PR ready and merge only after checks pass.
 
 ## New Automation Commands
 ### `npm run pr:metadata -- ...`
@@ -43,7 +44,7 @@ npm run pr:metadata -- \
 ```
 
 ### `npm run pr:open -- ...`
-End-to-end PR opener (preflight + push + draft PR + labels).
+End-to-end PR opener (metadata lint + lightweight governance preflight + push + draft PR + labels).
 
 Example:
 ```bash
@@ -55,12 +56,37 @@ npm run pr:open -- \
   --risk risk:medium
 ```
 
+By default, `pr:open` runs `pr:ready` in `governance-only` mode so authors fail fast on:
+- docs governance
+- commit convention
+- PR size
+- branch age
+
+Full `npm run validate` remains mandatory in CI after the PR is opened. If needed, force the old local behavior:
+
+```bash
+npm run pr:open -- \
+  --title "feat(app): improve pr workflow" \
+  --body-file /tmp/pr.md \
+  --scope scope:app \
+  --type type:feature \
+  --risk risk:medium \
+  --validate-mode full
+```
+
 ## Large PR Handling
 - If diff adds more than 400 lines, `pr:open` auto-enables `size-exempt`.
 - PR body must include a **feature-flag strategy** phrase (`feature-flag` or `feature flag`).
 
 ## Label Application Strategy
 Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL instability observed in some environments.
+
+## Story Branch RFC Detection
+Docs governance accepts both story-branch naming styles:
+- `epic-011-story-02-...`
+- `epic-011-story-011-02-...`
+
+This keeps the RFC sync gate compatible with branches that include the full story identifier.
 
 ## Troubleshooting
 - `unknown flag: --head` with `gh pr view`:
@@ -69,8 +95,12 @@ Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL ins
 - Local/CI mismatch on labels or sections:
   - check `docs/governance/pr-policy-source-of-truth.json`,
   - rerun `npm run pr:metadata` before opening or updating PR.
+- Docs gate says RFC files are missing even though you already edited them locally:
+  - rerun with the current working tree; local preflight now includes uncommitted and untracked changes,
+  - if CI still fails, confirm the RFC files are actually committed in the branch before pushing.
 
 ## Expected Outcomes
 - Fewer failures in `PR Policy (labels, size, branch age, commits, template)`.
 - Less manual rerun/recovery work in CI.
+- Fewer repeated heavy CI jobs after label/body updates.
 - Faster and more predictable merge path to `develop`.

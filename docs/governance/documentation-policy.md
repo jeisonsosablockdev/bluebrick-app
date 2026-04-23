@@ -111,8 +111,9 @@ Enforcement:
 
 Automated enforcement in project flow:
 	•	`npm run validate` now includes docs governance validation (`scripts/ci/validate-doc-governance.sh`).
-	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with `epic-<id>-story-<id>` when product code is touched:
+	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with either `epic-<id>-story-<story-id>` or `epic-<id>-story-<epic-id>-<story-id>` when product code is touched:
 		•	Story RFC file and EPIC `README.md` must both be updated in the same PR.
 		•	Required story sections must exist.
 		•	If story status is `implemented`, traceability cannot remain in `TBD` or `pending/open`.
-		•	Story status in EPIC Story Index must match story RFC status.
+		•	Story status in EPIC Story Index must match story RFC status, ignoring markdown-only wrapping like backticks.
+		•	Local preflight includes uncommitted and untracked working-tree changes so docs validation reflects the author’s current edits before commit/PR creation.
