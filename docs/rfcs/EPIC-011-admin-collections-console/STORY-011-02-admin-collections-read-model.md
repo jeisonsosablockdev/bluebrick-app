@@ -77,7 +77,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar `BRI-81` para exponer `GET /api/admin/collections` reutilizando el contrato de matching y `validationState` validado en `BRI-80`.
+  Implementar `BRI-82` para consumir el endpoint de listado desde la UI mínima de index sin duplicar el contrato server-side.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -96,12 +96,13 @@
   - La UI que consuma este modelo deberá validarse en el story de UI.
 
 ## Traceability
-- Related issue(s): `BRI-71`, `BRI-80`
+- Related issue(s): `BRI-71`, `BRI-80`, `BRI-81`
 - Related PR(s): `TBD`
 - Final commit hash(es): `6af5b99` (slice branch commit; final merge hash TBD)
 
 ## Implementation Progress
 - `BRI-80` completed the server-side query ownership contract as the first slice of this story.
+- `BRI-81` adds `GET /api/admin/collections` as a thin admin-only API layer over the read model, reusing the server-side ownership and `validationState` contract without duplicating matching logic.
 - The read model now classifies marketplace rows as `linked`, `missing_snapshot`, or `inconsistent` by reconciling `marketplace_entries` against `asset_mint_snapshots`.
 - In this codebase, `marketplace_entries.asset_mint_address` is treated as the persisted candy machine address for matching purposes.
 - Only `linked` rows expose editable sections; error and partial-match rows remain non-editable and are delegated to later API/UI slices.

@@ -338,3 +338,12 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - SIWS signature verification unchanged,
   - cookie/session model unchanged,
   - role resolution and admin enforcement unchanged.
+
+## EPIC-011 / BRI-81 Admin Collections List
+- Added `GET /api/admin/collections` as an admin-only read endpoint for the collections console.
+- The route requires:
+  - authenticated SIWS session
+  - server-resolved `admin` role
+  - authenticated session `pubkey`
+- The handler delegates ownership and consistency logic to the server-side collections read model instead of trusting request input or client state.
+- No changes were made to nonce issuance, SIWS verification, cookie behavior, or role derivation.

@@ -170,6 +170,30 @@ async function createFeatureBranchRepo(branchName: string): Promise<string> {
   return workDir;
 }
 
+async function createAppDocsRepo(): Promise<string> {
+  const originDir = await createTempDir("pr-governance-origin-");
+  const workDir = await createTempDir("pr-governance-work-");
+
+  runGit(["init", "--bare", originDir], repoRoot);
+  runGit(["init", "-b", "develop"], workDir);
+
+  await copyScriptIntoRepo(workDir);
+  await mkdir(path.join(workDir, "app", "api", "admin", "collections"), { recursive: true });
+  await mkdir(path.join(workDir, "docs"), { recursive: true });
+
+  await writeFile(path.join(workDir, "app", "api", "admin", "collections", "route.ts"), "// seed\n", "utf8");
+  await writeFile(path.join(workDir, "docs", "auth-flow.md"), "# Auth Flow\n", "utf8");
+  await writeFile(path.join(workDir, "docs", "session-model.md"), "# Session Model\n", "utf8");
+
+  runGit(["add", "."], workDir);
+  runGit(["commit", "-m", "docs(shared): seed app governance fixtures"], workDir);
+  runGit(["remote", "add", "origin", originDir], workDir);
+  runGit(["push", "-u", "origin", "develop"], workDir);
+  runGit(["checkout", "-b", "chore/app-docs-gate-fixture"], workDir);
+
+  return workDir;
+}
+
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -317,6 +341,31 @@ describe("PR governance shell helpers", () => {
     const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
 
     expect(output).toContain("Feature/fix/refactor scope detected -> validating feature note");
+    expect(output).toContain("Required docs check passed.");
+  });
+
+  it("passes app doc enforcement when required docs are updated in the working tree", async () => {
+    const repoDir = await createAppDocsRepo();
+
+    await writeFile(
+      path.join(repoDir, "app", "api", "admin", "collections", "route.ts"),
+      "export const GET = () => Response.json({ ok: true });\n",
+      "utf8"
+    );
+    await writeFile(
+      path.join(repoDir, "docs", "auth-flow.md"),
+      "# Auth Flow\n\n## Admin Collections\nUpdated.\n",
+      "utf8"
+    );
+    await writeFile(
+      path.join(repoDir, "docs", "session-model.md"),
+      "# Session Model\n\n## Admin Collections\nUpdated.\n",
+      "utf8"
+    );
+
+    const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
+
+    expect(output).toContain("App scope detected -> validating required frontend/auth docs.");
     expect(output).toContain("Required docs check passed.");
   });
 });

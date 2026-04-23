@@ -46,10 +46,16 @@ echo "${CHANGED_FILES}"
 
 has_changed() {
   local regex="$1"
-  if echo "${CHANGED_FILES}" | grep -E -q "${regex}"; then
+  if grep -E -q -- "${regex}" <<<"${CHANGED_FILES}"; then
     return 0
   fi
   return 1
+}
+
+changed_files_include_path() {
+  local file_path="$1"
+
+  grep -Fx -q -- "${file_path}" <<<"${CHANGED_FILES}"
 }
 
 require_docs_changed() {
@@ -62,7 +68,7 @@ require_docs_changed() {
       missing=1
       continue
     fi
-    if ! echo "${CHANGED_FILES}" | grep -Fx -q "${doc}"; then
+    if ! changed_files_include_path "${doc}"; then
       echo "::error::Missing required doc update for ${scope}: ${doc}"
       missing=1
     fi
@@ -281,7 +287,7 @@ fi
 
 if [[ "${requires_feature_doc}" -eq 1 ]]; then
   echo "Feature/fix/refactor scope detected -> validating feature note under docs/features."
-  if ! echo "${CHANGED_FILES}" | grep -E -q '^docs/features/.*\.md$'; then
+  if ! grep -E -q '^docs/features/.*\.md$' <<<"${CHANGED_FILES}"; then
     echo "::error::Missing feature note update: add/update at least one Markdown file under docs/features/ for this feature/fix/refactor PR."
     missing_any=1
   fi
@@ -305,11 +311,11 @@ if [[ "${touches_product_code}" -eq 1 ]] && extract_story_context_from_branch "$
     fi
 
     if [[ "${missing_any}" -eq 0 ]]; then
-      if ! echo "${CHANGED_FILES}" | grep -Fx -q "${story_file}"; then
+      if ! changed_files_include_path "${story_file}"; then
         echo "::error::Missing story RFC update for this story branch: ${story_file}"
         missing_any=1
       fi
-      if ! echo "${CHANGED_FILES}" | grep -Fx -q "${epic_readme}"; then
+      if ! changed_files_include_path "${epic_readme}"; then
         echo "::error::Missing epic README update for this story branch: ${epic_readme}"
         missing_any=1
       fi

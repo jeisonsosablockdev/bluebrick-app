@@ -283,3 +283,12 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same `siws_session` cookie contract,
   - same server-side session validation and role derivation,
   - same middleware + handler authorization.
+
+## EPIC-011 / BRI-81 Session Enforcement Notes
+- `GET /api/admin/collections` now consumes the existing SIWS session model for admin collections listing.
+- Session requirements are unchanged:
+  - valid `siws_session` cookie
+  - server-side wallet resolution from session token
+  - role derivation from `ADMIN_WALLETS`
+- The endpoint is read-only and returns `403` unless the request resolves to an authenticated admin with a server-side `pubkey`.
+- No new session token shape, rotation rule, or trust boundary was introduced in this slice.
