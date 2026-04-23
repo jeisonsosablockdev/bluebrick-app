@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -35,7 +35,7 @@
   - Mayor trabajo inicial en estructura, mejor SEO y mantenibilidad.
 
 ## Critique
-- Reviewer(s): `TBD`
+- Reviewer(s): `Staff Engineer critique incorporated via epic review`
 - Critical findings:
 1. Riesgo de rigidizar estructura demasiado pronto.
 2. Riesgo de colisión entre slugs de tipos distintos.

@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -42,7 +42,7 @@
   - Más setup inicial; menos incidentes y retrabajo posterior.
 
 ## Critique
-- Reviewer(s): `TBD`
+- Reviewer(s): `Staff Engineer critique incorporated via epic review`
 - Critical findings:
 1. Riesgo de sobredimensionar observabilidad.
 2. Riesgo de CSP romper render de features nuevas.

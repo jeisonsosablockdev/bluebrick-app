@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -34,7 +34,7 @@
   - Más superficie pública; mejor interoperabilidad con agentes.
 
 ## Critique
-- Reviewer(s): `TBD`
+- Reviewer(s): `Staff Engineer critique incorporated via epic review`
 - Critical findings:
 1. Riesgo de fuga de información no pública.
 2. Riesgo de breaking changes en JSON contract.

@@ -6,7 +6,7 @@
 - Status: `implemented`
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Scope
 - Problem statement:
@@ -181,13 +181,13 @@ Release rule:
   - Contratos de contenido estrictos y validación por schema.
   - Extensión semántica solo como interface contract, no runtime heavy.
 
-## Open Questions
-- [ ] ¿`/ai.txt` será obligatorio o solo opcional?
-- [ ] ¿El knowledge export público debe incluir toda la capa regulatoria o solo subconjuntos?
-- [ ] ¿Se publica una sola taxonomía global o taxonomías por dominio (`software`, `knowledge`, `regulatory`)?
+## Resolved Questions
+- [x] `/ai.txt` queda opcional y controlado por feature flag `ENABLE_AI_TXT`; no es obligatorio en EPIC-010.
+- [x] El knowledge export público incluye todos los documentos `published` de las capas `software`, `knowledge` y `regulatory`, manteniendo `layer` en el contrato para segmentación downstream.
+- [x] La taxonomía y segmentación pública permanecen por dominio (`software`, `knowledge`, `regulatory`), no como una única taxonomía global plana.
 
 ## Traceability
-- Issue(s): `BRI-50`
+- Issue(s): `BRI-50`, `BRI-69`
 - Project: `EPIC 010 - AI Discovery Infrastructure and SEO for BRIDS`
-- PR(s): `#105, #106, #107, #108, #109, #111, #112, #113, #114, #115`
-- Final commit hash(es): `87c6ea9, e9d3d98, ccfa17e, 9872f8d, 66c9d29, bc92cc2, db57e96, 1c639d2, d8e0f1a, c73deb6`
+- PR(s): `#105, #106, #107, #108, #109, #111, #112, #113, #114, #115, #126`
+- Final commit hash(es): `87c6ea9, e9d3d98, ccfa17e, 9872f8d, 66c9d29, bc92cc2, db57e96, 1c639d2, d8e0f1a, c73deb6, 3c87df6`

@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -34,7 +34,7 @@
   - Algo de trabajo upfront, alto beneficio de integración posterior.
 
 ## Critique
-- Reviewer(s): `TBD`
+- Reviewer(s): `Staff Engineer critique incorporated via epic review`
 - Critical findings:
 1. Riesgo de incluir contenidos no publicados en feeds.
 2. Riesgo de formatos inconsistentes entre exportaciones.

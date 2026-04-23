@@ -6,7 +6,7 @@
 - Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-13`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -37,7 +37,7 @@
   - Más rigor inicial, menor costo operativo de crecimiento.
 
 ## Critique
-- Reviewer(s): `TBD`
+- Reviewer(s): `Staff Engineer critique incorporated via epic review`
 - Critical findings:
 1. Riesgo de fricción al crear documentos sin toolchain de soporte.
 2. Riesgo de acoplar schema a rendering.
