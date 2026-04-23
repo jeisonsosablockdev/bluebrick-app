@@ -37,7 +37,7 @@
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
 | STORY-011-01 | Kickoff and contract definition | `STORY-011-01-kickoff.md` | `approved` | `TBD` | Define ownership, edit boundaries, and data contract |
-| STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | `approved` | `TBD` | Build listing/query layer for owned marketplace entries |
+| STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; slices `BRI-80 -> BRI-81 -> BRI-82` |
 | STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover |
 | STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints |
 | STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing |
@@ -61,6 +61,7 @@
 | 2026-04-17 | STORY-011-04/06 | El editor vivirá en `/admin/collections/[id]`, con guardado manual y botones `Save` / `Cancel` por sección, permaneciendo en la misma pantalla | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-17 | STORY-011-06 | La vista de detalle incluirá información blockchain visible, datos de `nft-economic-data-appdata-plugin` y una integración con Google Maps para visualización, autocomplete y salida al sitio | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-17 | STORY-011-08/09 | La información blockchain read-only y la integración Google Maps se separan en stories dedicadas para no sobrecargar el editor principal | jaymusicmachine | `STORY-011-08-blockchain-readonly-panel.md` |
+| 2026-04-23 | STORY-011-02 | El primer slice (`BRI-80`) fija el contrato de matching dual usando `collection_address` y candy machine address persistida en `marketplace_entries.asset_mint_address`, y deja `GET /api/admin/collections` para `BRI-81` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 
 ## Risks and Dependencies
 - Risks:
@@ -164,9 +165,9 @@
 
 ## Story Slicing Guidance
 - `STORY-011-02` should be split into:
-  - query ownership contract
-  - list endpoint
-  - list view consumption
+  - `BRI-80` query ownership contract
+  - `BRI-81` list endpoint
+  - `BRI-82` list view consumption
 - `STORY-011-03` should be split into:
   - migration for new fields
   - bootstrap mapping

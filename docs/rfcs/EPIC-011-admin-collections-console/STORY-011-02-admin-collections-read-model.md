@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-23`
 
 ## Context
 - Problem:
@@ -77,7 +77,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar endpoint de listado con el filtro estricto de ownership.
+  Implementar `BRI-81` para exponer `GET /api/admin/collections` reutilizando el contrato de matching y `validationState` validado en `BRI-80`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -96,6 +96,12 @@
   - La UI que consuma este modelo deberá validarse en el story de UI.
 
 ## Traceability
-- Related issue(s): `TBD`
+- Related issue(s): `BRI-71`, `BRI-80`
 - Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Final commit hash(es): `6af5b99` (slice branch commit; final merge hash TBD)
+
+## Implementation Progress
+- `BRI-80` completed the server-side query ownership contract as the first slice of this story.
+- The read model now classifies marketplace rows as `linked`, `missing_snapshot`, or `inconsistent` by reconciling `marketplace_entries` against `asset_mint_snapshots`.
+- In this codebase, `marketplace_entries.asset_mint_address` is treated as the persisted candy machine address for matching purposes.
+- Only `linked` rows expose editable sections; error and partial-match rows remain non-editable and are delegated to later API/UI slices.
