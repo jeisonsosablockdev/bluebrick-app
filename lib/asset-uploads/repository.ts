@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "../db/pool.ts";
 import {
   type AssetUploadCategory,
   type SignedUploadContract,
   type UploadedFileRef,
   type UploadedFileRefWithCategory
-} from "@/lib/asset-uploads/types";
+} from "./types.ts";
 
 type SignedUploadContractRow = {
   upload_id: string;
@@ -254,6 +254,24 @@ export async function listUploadedFileRefsByDraftId(draftId: string): Promise<Up
     return [];
   }
 
+  const uploadsByDraftId = await listUploadedFileRefsByDraftIds([normalizedDraftId]);
+  return uploadsByDraftId.get(normalizedDraftId) ?? [];
+}
+
+export async function listUploadedFileRefsByDraftIds(draftIds: string[]): Promise<Map<string, UploadedFileRefWithCategory[]>> {
+  const normalizedDraftIds = Array.from(
+    new Set(
+      draftIds
+        .map((draftId) => draftId.trim())
+        .filter((draftId) => draftId.length > 0)
+    )
+  );
+
+  const uploadsByDraftId = new Map<string, UploadedFileRefWithCategory[]>();
+  if (normalizedDraftIds.length === 0) {
+    return uploadsByDraftId;
+  }
+
   return withDbClient(async (client) => {
     const result = await client.query<UploadedFileRefWithCategoryRow>(
       `
@@ -275,13 +293,20 @@ export async function listUploadedFileRefsByDraftId(draftId: string): Promise<Up
         FROM asset_uploaded_files AS files
         INNER JOIN asset_upload_contracts AS contracts
           ON contracts.upload_id = files.upload_id
-        WHERE files.draft_id = $1::uuid
-        ORDER BY files.uploaded_at ASC, files.created_at ASC, files.file_ref_id ASC
+        WHERE files.draft_id = ANY($1::uuid[])
+        ORDER BY files.draft_id ASC, files.uploaded_at ASC, files.created_at ASC, files.file_ref_id ASC
       `,
-      [normalizedDraftId]
+      [normalizedDraftIds]
     );
 
-    return result.rows.map(toUploadedFileRefWithCategory);
+    for (const row of result.rows) {
+      const fileRef = toUploadedFileRefWithCategory(row);
+      const currentDraftFiles = uploadsByDraftId.get(fileRef.draftId) ?? [];
+      currentDraftFiles.push(fileRef);
+      uploadsByDraftId.set(fileRef.draftId, currentDraftFiles);
+    }
+
+    return uploadsByDraftId;
   });
 }
 

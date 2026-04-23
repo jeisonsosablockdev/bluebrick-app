@@ -9,6 +9,7 @@
     "start": "next start",
     "db:migrate": "node ./scripts/db-migrate.js",
     "cm:items": "node ./scripts/check-candy-machine-items.js",
+    "collection:bootstrap:dry-run": "node ./scripts/collection-bootstrap-dry-run.ts",
     "purchase:trace": "node ./scripts/purchase-trace.js",
     "rfc:new": "node ./scripts/rfc-new.js",
     "lint": "eslint .",

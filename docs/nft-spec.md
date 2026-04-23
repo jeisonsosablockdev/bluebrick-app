@@ -184,6 +184,8 @@
   - `form_snapshot.uploadRefs` is the primary ordering source for gallery/property/document bootstrap into marketplace editable fields.
   - Finalized uploads from `asset_uploaded_files` joined with `asset_upload_contracts.category` are matched by `fileRefId`; raw snapshot URLs are fallback-only when the referenced finalized upload is missing.
   - Corrupt snapshot shapes must not invent collection editor data. Malformed arrays, unresolved upload refs without fallback URLs, or invalid reduced Maps payloads are routed to manual review instead of silent persistence.
+  - The approved bootstrap runner is versioned (`2026-04-23-v1`) and exposed through `npm run collection:bootstrap:dry-run -- [--actor-pubkey <pubkey>] [--entry-id <id>] [--output-file <path>]`.
+  - Dry-run output is a manifest with explicit `successes`, `manualReviewRequired`, and `failures` buckets so operations can audit bootstrap readiness before any write slice lands.
 - Verification policy:
   - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.

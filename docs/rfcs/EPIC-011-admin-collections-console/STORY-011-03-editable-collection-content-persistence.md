@@ -102,7 +102,7 @@
   - No aplica directo a persistencia.
 
 ## Traceability
-- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`
+- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -111,3 +111,5 @@
 - This slice intentionally does not execute bootstrap, repository writes, or UI changes yet.
 - `BRI-84` closes the mapper contract for bootstrap by defining the JSON shape of gallery/property images, normalized document taxonomy, upload-ref-first ordering, snapshot fallback behavior, and explicit `manual_review_required` reason codes for corrupt data.
 - The mapper preserves existing marketplace `documents_json` first, dedupes bootstrap candidates by `fileRefId` and URL, and leaves `google_maps_place_json` null unless a valid reduced payload already exists in the snapshot.
+- `BRI-85` adds the versioned dry-run runner (`2026-04-23-v1`) with scoped CLI execution, exact-link candidate planning, and explicit manifest buckets for `successes`, `manualReviewRequired`, and `failures`.
+- The dry-run manifest treats missing/inconsistent snapshot links and blank `draftId` as preflight failures, while corrupt `form_snapshot` payloads continue to flow through the mapper as `manual_review_required`.

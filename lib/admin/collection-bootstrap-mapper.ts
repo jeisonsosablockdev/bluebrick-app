@@ -1,4 +1,4 @@
-import type { AssetUploadCategory, UploadedFileRefWithCategory } from "@/lib/asset-uploads/types";
+import type { AssetUploadCategory, UploadedFileRefWithCategory } from "../asset-uploads/types.ts";
 
 export type CollectionBootstrapStatus = "ready" | "manual_review_required";
 export type CollectionBootstrapReasonCode =

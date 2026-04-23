@@ -38,7 +38,7 @@
 | --- | --- | --- | --- | --- | --- |
 | STORY-011-01 | Kickoff and contract definition | `STORY-011-01-kickoff.md` | `approved` | `TBD` | Define ownership, edit boundaries, and data contract |
 | STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; `BRI-80`, `BRI-81`, and `BRI-82` are done, final visual refinement moves to `STORY-011-05` |
-| STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover; `BRI-83` adds schema and `BRI-84` closes the bootstrap mapper contract |
+| STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover; `BRI-83` adds schema, `BRI-84` closes the mapper contract, and `BRI-85` adds the versioned dry-run runner |
 | STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints |
 | STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing |
 | STORY-011-06 | Collection detail editor UI | `STORY-011-06-collection-detail-editor-ui.md` | `approved` | `TBD` | Visual editor for summary, property info, gallery, documents |
@@ -66,6 +66,7 @@
 | 2026-04-23 | STORY-011-02 | El tercer slice (`BRI-82`) conecta el contrato aprobado al placeholder de `/admin/collections` con estados mínimos `loading`, `error`, `empty` y `success`, dejando el diseño visual final para `STORY-011-05` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 | 2026-04-23 | STORY-011-03 | El primer slice (`BRI-83`) agrega a `marketplace_entries` las columnas editoriales aprobadas, manteniendo `image_url` intacto y documentando la separación entre contenido editable e historial de snapshot | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
 | 2026-04-23 | STORY-011-03 | El segundo slice (`BRI-84`) fija el mapper de bootstrap con shape tipado para galerías/documentos, dedupe por `fileRefId` + URL y reason codes de revisión manual | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
+| 2026-04-23 | STORY-011-03 | El tercer slice (`BRI-85`) agrega el runner versionado `2026-04-23-v1` con `dry-run`, filtros por actor/entry y manifiesto auditable de `successes`, `manualReviewRequired` y `failures` | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
 
 ## Risks and Dependencies
 - Risks:
