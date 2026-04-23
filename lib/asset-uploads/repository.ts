@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 
 import { withDbClient } from "@/lib/db/pool";
-import { type AssetUploadCategory, type SignedUploadContract, type UploadedFileRef } from "@/lib/asset-uploads/types";
+import {
+  type AssetUploadCategory,
+  type SignedUploadContract,
+  type UploadedFileRef,
+  type UploadedFileRefWithCategory
+} from "@/lib/asset-uploads/types";
 
 type SignedUploadContractRow = {
   upload_id: string;
@@ -35,6 +40,10 @@ type UploadedFileRefRow = {
   etag: string | null;
   uploaded_at: string;
   created_at: string;
+};
+
+type UploadedFileRefWithCategoryRow = UploadedFileRefRow & {
+  category: AssetUploadCategory;
 };
 
 type CreateSignedUploadContractInput = {
@@ -101,6 +110,13 @@ function toUploadedFileRef(row: UploadedFileRefRow): UploadedFileRef {
     etag: row.etag,
     uploadedAt: row.uploaded_at,
     createdAt: row.created_at
+  };
+}
+
+function toUploadedFileRefWithCategory(row: UploadedFileRefWithCategoryRow): UploadedFileRefWithCategory {
+  return {
+    ...toUploadedFileRef(row),
+    category: row.category
   };
 }
 
@@ -229,6 +245,43 @@ export async function getUploadedFileRefByUploadId(uploadId: string): Promise<Up
     }
 
     return toUploadedFileRef(result.rows[0]);
+  });
+}
+
+export async function listUploadedFileRefsByDraftId(draftId: string): Promise<UploadedFileRefWithCategory[]> {
+  const normalizedDraftId = draftId.trim();
+  if (!normalizedDraftId) {
+    return [];
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<UploadedFileRefWithCategoryRow>(
+      `
+        SELECT
+          files.file_ref_id,
+          files.upload_id,
+          files.actor_pubkey,
+          files.draft_id,
+          files.bucket,
+          files.object_key,
+          files.cdn_url,
+          files.mime_type,
+          files.size_bytes,
+          files.content_md5_base64,
+          files.etag,
+          files.uploaded_at,
+          files.created_at,
+          contracts.category
+        FROM asset_uploaded_files AS files
+        INNER JOIN asset_upload_contracts AS contracts
+          ON contracts.upload_id = files.upload_id
+        WHERE files.draft_id = $1::uuid
+        ORDER BY files.uploaded_at ASC, files.created_at ASC, files.file_ref_id ASC
+      `,
+      [normalizedDraftId]
+    );
+
+    return result.rows.map(toUploadedFileRefWithCategory);
   });
 }
 

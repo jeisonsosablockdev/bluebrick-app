@@ -180,6 +180,10 @@
 - Persisted datasets:
   - `asset_mint_snapshots`: form snapshot, blockchain snapshot, verification result, handoff status.
   - `asset_mint_onchain_proofs`: deploy/mint signatures with confirmation status, slot, and error.
+- Collection editor bootstrap contract (EPIC-011 STORY-011-03):
+  - `form_snapshot.uploadRefs` is the primary ordering source for gallery/property/document bootstrap into marketplace editable fields.
+  - Finalized uploads from `asset_uploaded_files` joined with `asset_upload_contracts.category` are matched by `fileRefId`; raw snapshot URLs are fallback-only when the referenced finalized upload is missing.
+  - Corrupt snapshot shapes must not invent collection editor data. Malformed arrays, unresolved upload refs without fallback URLs, or invalid reduced Maps payloads are routed to manual review instead of silent persistence.
 - Verification policy:
   - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.

@@ -59,3 +59,7 @@ export type UploadedFileRef = {
   uploadedAt: string;
   createdAt: string;
 };
+
+export type UploadedFileRefWithCategory = UploadedFileRef & {
+  category: AssetUploadCategory;
+};

@@ -9,6 +9,12 @@
   - `property_information`
   - `google_maps_place_json`
   - `updated_by`
+- Added a deterministic bootstrap mapper contract for the next migration slice:
+  - typed `gallery_images_json` items
+  - typed `property_images_json` items
+  - normalized `documents_json` items with taxonomy tags
+  - `manual_review_required` reason codes for corrupt or incomplete snapshot data
+  - upload-ref-first ordering with snapshot URL fallback
 
 ## Notes
 - `image_url` remains the immutable cover field and was not changed by this slice.
@@ -16,9 +22,17 @@
 - Textual editor fields remain nullable until bootstrap and manual editing slices populate them.
 - Google Maps persistence remains a reduced JSON payload and is still separate from address text fields already present on the entry.
 - Column comments were added to document the separation between editable marketplace content and historical snapshot evidence.
+- The bootstrap mapper uses `uploadRefs` from `form_snapshot` as the primary ordering source and falls back to raw snapshot URLs only when the referenced finalized upload is missing.
+- Existing `documents_json` marketplace data is preserved first and deduped against bootstrap uploads by both `fileRefId` and URL to avoid duplicate brochure/legal/financial rows.
+- When `form_snapshot` contains malformed arrays, unresolved upload refs without fallback URLs, or an invalid reduced Google Maps payload, the mapper does not invent data and instead marks the row for manual review.
 
 ## Validation
 - Added migration contract coverage for:
   - approved column names and types
   - immutable cover protection at the migration level
   - schema comments documenting editorial vs snapshot separation
+- Added bootstrap mapper coverage for:
+  - deterministic upload-ref ordering
+  - fallback to snapshot URLs
+  - documents taxonomy normalization and dedupe
+  - manual review detection for corrupt snapshot payloads

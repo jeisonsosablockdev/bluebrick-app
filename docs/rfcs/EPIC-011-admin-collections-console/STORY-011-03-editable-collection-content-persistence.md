@@ -54,11 +54,11 @@
 - Reviewer(s):
   - `TBD`
 - Critical findings:
-1. Falta decidir el shape exacto de cada item dentro de `gallery_images_json` y `property_images_json` para el helper de repositorio.
-2. Falta decidir si `documents_json` conserva categorías o solo etiquetas libres.
-3. Falta cerrar reglas de deduplicación entre bootstrap desde snapshot y datos ya presentes en marketplace.
+1. El bootstrap mapper debe mantener orden determinista usando `uploadRefs` como fuente primaria y solo caer a URLs de snapshot cuando el upload finalizado no esté disponible.
+2. `documents_json` debe normalizarse con taxonomía explícita (`brochure`, `legal`, `financial`, etc.) sin romper compatibilidad con rows antiguas que solo tengan `label + url`.
+3. Los snapshots corruptos o incompletos no pueden poblar data inventada; deben emitir reason codes de `manual_review_required`.
 - Blocking concerns:
-  - No aprobar migración hasta definir shape de los JSON de galerías.
+  - No ejecutar el dry-run versionado hasta conectar el mapper aprobado a un runner con manifiesto y persistencia controlada.
 
 ## Resolution
 - Final approach after critique:
@@ -68,6 +68,8 @@
   - Columnas editoriales nuevas con defaults seguros para colecciones de imágenes y nulabilidad explícita para contenido aún no bootstrappeado.
   - Script de bootstrap versionado con dry-run y manifiesto de errores.
   - Ciclo de vida estricto para uploads de edición (orphan cleanup).
+  - Mapper puro para bootstrap con contratos explícitos de `gallery_images_json`, `property_images_json`, `documents_json` y reduced maps payload.
+  - Dedupe entre uploads/snapshot y `documents_json` existente usando `fileRefId` y URL.
 - Changes rejected (with rationale):
   - Rechazado reusar `form_snapshot` como modelo de edición.
   - Rechazada la creación de una tabla dedicada para el contenido editable.
@@ -82,7 +84,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Continuar con el bootstrap mapping/versioned dry-run después de la migración de columnas (`BRI-83`).
+  Continuar con el runner versionado y `dry-run` del bootstrap usando el mapper aprobado (`BRI-85`).
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -100,10 +102,12 @@
   - No aplica directo a persistencia.
 
 ## Traceability
-- Related issue(s): `BRI-72`, `BRI-83`
+- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
 ## Implementation Progress
 - `BRI-83` adds the first schema slice for this story by extending `marketplace_entries` with the approved editable collection columns and documenting their editorial purpose with SQL column comments.
 - This slice intentionally does not execute bootstrap, repository writes, or UI changes yet.
+- `BRI-84` closes the mapper contract for bootstrap by defining the JSON shape of gallery/property images, normalized document taxonomy, upload-ref-first ordering, snapshot fallback behavior, and explicit `manual_review_required` reason codes for corrupt data.
+- The mapper preserves existing marketplace `documents_json` first, dedupes bootstrap candidates by `fileRefId` and URL, and leaves `google_maps_place_json` null unless a valid reduced payload already exists in the snapshot.
