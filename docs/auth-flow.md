@@ -347,3 +347,13 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - authenticated session `pubkey`
 - The handler delegates ownership and consistency logic to the server-side collections read model instead of trusting request input or client state.
 - No changes were made to nonce issuance, SIWS verification, cookie behavior, or role derivation.
+
+## EPIC-011 / BRI-82 Admin Collections Screen Consumption
+- `/admin/collections` now consumes the approved admin collections list contract on the server side.
+- The page forwards the current request cookie context to `GET /api/admin/collections` instead of deriving client-trusted list state in the browser.
+- Rendering remains read-only in this slice:
+  - loading handoff
+  - empty handoff
+  - error handoff
+  - minimal success rendering
+- No changes were made to SIWS challenge issuance, signature verification, or session creation.

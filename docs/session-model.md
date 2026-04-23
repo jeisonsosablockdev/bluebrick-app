@@ -292,3 +292,12 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - role derivation from `ADMIN_WALLETS`
 - The endpoint is read-only and returns `403` unless the request resolves to an authenticated admin with a server-side `pubkey`.
 - No new session token shape, rotation rule, or trust boundary was introduced in this slice.
+
+## EPIC-011 / BRI-82 Collections Page Session Handoff
+- `/admin/collections` now performs server-side consumption of the admin collections endpoint using the same request cookie context.
+- The page does not create a parallel client-side auth path and does not cache a client-authoritative collections state.
+- Session model remains unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup
+  - same admin role derivation
+- This slice only adds UI handoff states over the existing authenticated admin session boundary.

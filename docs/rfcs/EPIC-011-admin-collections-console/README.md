@@ -37,7 +37,7 @@
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
 | STORY-011-01 | Kickoff and contract definition | `STORY-011-01-kickoff.md` | `approved` | `TBD` | Define ownership, edit boundaries, and data contract |
-| STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; `BRI-80` query contract and `BRI-81` GET endpoint are done, `BRI-82` remains |
+| STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; `BRI-80`, `BRI-81`, and `BRI-82` are done, final visual refinement moves to `STORY-011-05` |
 | STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover |
 | STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints |
 | STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing |
@@ -63,6 +63,7 @@
 | 2026-04-17 | STORY-011-08/09 | La información blockchain read-only y la integración Google Maps se separan en stories dedicadas para no sobrecargar el editor principal | jaymusicmachine | `STORY-011-08-blockchain-readonly-panel.md` |
 | 2026-04-23 | STORY-011-02 | El primer slice (`BRI-80`) fija el contrato de matching dual usando `collection_address` y candy machine address persistida en `marketplace_entries.asset_mint_address`, y deja `GET /api/admin/collections` para `BRI-81` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 | 2026-04-23 | STORY-011-02 | El segundo slice (`BRI-81`) expone `GET /api/admin/collections` como una capa read-only delgada, admin-only y sin duplicación de lógica de ownership/matching | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
+| 2026-04-23 | STORY-011-02 | El tercer slice (`BRI-82`) conecta el contrato aprobado al placeholder de `/admin/collections` con estados mínimos `loading`, `error`, `empty` y `success`, dejando el diseño visual final para `STORY-011-05` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 
 ## Risks and Dependencies
 - Risks:
