@@ -28,12 +28,12 @@
   Extender el modelo de `marketplace_entries` con columnas adicionales para el contenido editable off-chain, manteniendo la separación conceptual con `image_url` (cover) y el `form_snapshot` histórico.
 - Technical design:
   - Añadir las siguientes columnas a la tabla `marketplace_entries`:
-    - `gallery_images_json` (JSONB)
-    - `property_images_json` (JSONB)
-    - `fractional_investment_summary` (TEXT)
-    - `property_information` (TEXT)
-    - `google_maps_place_json` (JSONB)
-    - `updated_by`
+    - `gallery_images_json` (JSONB, `NOT NULL DEFAULT []`)
+    - `property_images_json` (JSONB, `NOT NULL DEFAULT []`)
+    - `fractional_investment_summary` (TEXT nullable hasta bootstrap/manual edit)
+    - `property_information` (TEXT nullable hasta bootstrap/manual edit)
+    - `google_maps_place_json` (JSONB nullable con payload reducido aprobado en `STORY-011-09`)
+    - `updated_by` (TEXT nullable hasta primer cambio editorial)
   - Bootstrap:
     - Implementar un script de migración versionado y con capacidad de `dry-run`.
     - El script debe mapear las galerías desde `form_snapshot` a los nuevos campos JSON de forma segura.
@@ -54,7 +54,7 @@
 - Reviewer(s):
   - `TBD`
 - Critical findings:
-1. Falta definir shape exacta de los JSON para `gallery_images_json` y `property_images_json`.
+1. Falta decidir el shape exacto de cada item dentro de `gallery_images_json` y `property_images_json` para el helper de repositorio.
 2. Falta decidir si `documents_json` conserva categorías o solo etiquetas libres.
 3. Falta cerrar reglas de deduplicación entre bootstrap desde snapshot y datos ya presentes en marketplace.
 - Blocking concerns:
@@ -65,6 +65,7 @@
   Aprobado con ajustes. Se extenderá el modelo `marketplace_entries` existente para incluir el contenido editable y se añade formalmente la estrategia segura de bootstrap y recolección de basura para uploads, alineado con la decisión del Epic.
 - Changes accepted:
   - Persistencia editable como extensión del modelo `marketplace_entries`, separada conceptualmente del snapshot histórico.
+  - Columnas editoriales nuevas con defaults seguros para colecciones de imágenes y nulabilidad explícita para contenido aún no bootstrappeado.
   - Script de bootstrap versionado con dry-run y manifiesto de errores.
   - Ciclo de vida estricto para uploads de edición (orphan cleanup).
 - Changes rejected (with rationale):
@@ -81,7 +82,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Crear migración de base de datos y script de dry-run para el bootstrap.
+  Continuar con el bootstrap mapping/versioned dry-run después de la migración de columnas (`BRI-83`).
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -99,6 +100,10 @@
   - No aplica directo a persistencia.
 
 ## Traceability
-- Related issue(s): `TBD`
+- Related issue(s): `BRI-72`, `BRI-83`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
+
+## Implementation Progress
+- `BRI-83` adds the first schema slice for this story by extending `marketplace_entries` with the approved editable collection columns and documenting their editorial purpose with SQL column comments.
+- This slice intentionally does not execute bootstrap, repository writes, or UI changes yet.
