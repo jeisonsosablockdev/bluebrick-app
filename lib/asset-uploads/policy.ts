@@ -114,6 +114,25 @@ function parseUuidField(value: unknown): string | null {
   return isUuidV4(normalized) ? normalized : null;
 }
 
+function parseOptionalUuidField(value: unknown): { ok: true; value: string | null } | { ok: false; message: string } {
+  if (value === undefined || value === null || value === "") {
+    return { ok: true, value: null };
+  }
+
+  const parsed = parseUuidField(value);
+  if (!parsed) {
+    return {
+      ok: false,
+      message: "editSessionId must be a UUIDv4 when provided."
+    };
+  }
+
+  return {
+    ok: true,
+    value: parsed
+  };
+}
+
 export function isValidContentMd5Base64(value: unknown): value is string {
   if (typeof value !== "string") {
     return false;
@@ -261,6 +280,15 @@ export function parseSignedUrlRequest(
     };
   }
 
+  const parsedEditSessionId = parseOptionalUuidField(record.editSessionId);
+  if (!parsedEditSessionId.ok) {
+    return {
+      ok: false,
+      code: "INVALID_UPLOAD_REQUEST",
+      message: parsedEditSessionId.message
+    };
+  }
+
   const policy = getCategoryPolicy(category);
 
   if (!policy.allowedMimeTypes.has(mimeType)) {
@@ -306,7 +334,8 @@ export function parseSignedUrlRequest(
       mimeType,
       sizeBytes,
       contentMd5Base64: record.contentMd5Base64.trim(),
-      draftId
+      draftId,
+      editSessionId: parsedEditSessionId.value
     }
   };
 }
@@ -329,6 +358,15 @@ export function parseFinalizeUploadRequest(
       ok: false,
       code: "INVALID_UPLOAD_REQUEST",
       message: "draftId is required and must be a UUIDv4."
+    };
+  }
+
+  const parsedEditSessionId = parseOptionalUuidField(record.editSessionId);
+  if (!parsedEditSessionId.ok) {
+    return {
+      ok: false,
+      code: "INVALID_UPLOAD_REQUEST",
+      message: parsedEditSessionId.message
     };
   }
 
@@ -387,6 +425,7 @@ export function parseFinalizeUploadRequest(
     ok: true,
     value: {
       draftId,
+      editSessionId: parsedEditSessionId.value,
       etag,
       sizeBytes,
       mimeType,

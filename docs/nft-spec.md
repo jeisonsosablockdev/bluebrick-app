@@ -186,6 +186,8 @@
   - Corrupt snapshot shapes must not invent collection editor data. Malformed arrays, unresolved upload refs without fallback URLs, or invalid reduced Maps payloads are routed to manual review instead of silent persistence.
   - The approved bootstrap runner is versioned (`2026-04-23-v1`) and exposed through `npm run collection:bootstrap:dry-run -- [--actor-pubkey <pubkey>] [--entry-id <id>] [--output-file <path>]`.
   - Dry-run output is a manifest with explicit `successes`, `manualReviewRequired`, and `failures` buckets so operations can audit bootstrap readiness before any write slice lands.
+  - Collection-editor uploads can now carry an optional `editSessionId` in `asset_upload_contracts` so temporary edit media is distinguishable from promoted marketplace media.
+  - Promotion on save is modeled server-side (`promoted_at` / `promoted_by`); orphan cleanup only purges session-linked uploads that were never promoted, and it attempts blob deletion before removing DB rows.
 - Verification policy:
   - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.

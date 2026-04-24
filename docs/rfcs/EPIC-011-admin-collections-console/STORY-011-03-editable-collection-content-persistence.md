@@ -84,7 +84,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar el lifecycle temporal de uploads y cleanup para sesiones canceladas/expiradas (`BRI-87`).
+  Continuar con `STORY-011-04` para exponer las mutaciones del editor sobre el contrato ya persistido.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -102,7 +102,7 @@
   - No aplica directo a persistencia.
 
 ## Traceability
-- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`, `BRI-86`
+- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`, `BRI-86`, `BRI-87`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -115,3 +115,5 @@
 - The dry-run manifest treats missing/inconsistent snapshot links and blank `draftId` as preflight failures, while corrupt `form_snapshot` payloads continue to flow through the mapper as `manual_review_required`.
 - `BRI-86` adds the narrow repository/helper layer for this story in `lib/admin/collection-content-repository.ts`, centralizing reads and writes of the editable collection fields without reopening `image_url`.
 - The repository contract now gives later API/detail slices a single place to read normalized editable content and to apply bootstrap payloads or section updates without duplicating SQL or legacy `documents_json` parsing.
+- `BRI-87` completes the upload lifecycle for edit sessions by adding optional `editSessionId` association to upload contracts, repository helpers to promote/cancel session uploads, and cleanup rules that only purge session-linked uploads that were never promoted.
+- The orphan reconciler now deletes blob objects before removing DB rows and ignores uploads already promoted on save, preventing collection-editor media from being treated as temporary debris.

@@ -51,6 +51,7 @@
   - `/api/webhooks/stripe/identity` triggers AML screening (`kyc_verified_webhook`) when KYC becomes `verified`.
   - `/api/internal/compliance/aml/screen` allows admin SIWS or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
   - `/api/admin/compliance/cases/:walletPublicKey/aml` is admin-only and returns AML case detail for review.
+  - `/api/admin/assets/uploads/signed-url`, `/api/admin/assets/uploads/:uploadId/finalize`, and `/api/admin/assets/uploads/orphan-reconciler` are admin-only and keep upload lifecycle checks server-authoritative.
   - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
 
 ## Authorization Layers
@@ -69,6 +70,7 @@
   - `/api/admin/mint-orchestrator/*` is backend-controlled and does not trust client workflow state.
   - Manual mutation endpoints (`next-batch`, `submit`, `reconcile`, `reconcile/das`) require `admin` role and `actorPubkey === job.createdBy`.
   - `/api/admin/core-candy-machine/snapshot/finalize` requires `admin` role and persists immutable snapshot/proofs after server-side verification.
+  - Admin upload lifecycle routes bind every request to the authenticated admin wallet and revalidate `draftId` plus optional `editSessionId` against the stored signed contract before persisting file refs.
   - `/admin` signing orchestration UI is an operator surface only; all state transitions are revalidated server-side.
 5. Webhook ingress layer:
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
@@ -82,6 +84,9 @@
 7. Core Candy Machine snapshot layer:
   - `POST /api/admin/core-candy-machine/snapshot/finalize` performs DAS verification and stores relational snapshot evidence.
   - Fallback verification mode (`candy_machine_items_loaded`) is marked `degraded` and never enables `Create Asset`.
+8. Admin upload lifecycle layer:
+  - Collection-editor uploads may carry an optional `editSessionId` to remain temporary until a later save flow promotes them.
+  - Orphan cleanup explicitly excludes promoted uploads and only purges session-linked uploads that remained temporary or were canceled.
 
 ## Security Notes
 - CSRF strategy:
@@ -118,6 +123,7 @@
   - Stripe KYC events are deduplicated by `provider_event_id` and do not store raw payload PII fields.
   - DAS reconciliation only confirms submitted items with known `expectedAddress`.
   - Snapshot persistence is idempotent at DB level via `asset_mint_snapshots.mint_job_id UNIQUE`.
+  - Session-linked asset uploads can be canceled or promoted only through server-side repository helpers; promoted uploads are then excluded from orphan cleanup.
 - Key management caveat:
   - Session and nonce signatures depend on `SIWS_TOKEN_SECRET`.
   - In production, `SIWS_TOKEN_SECRET` must be explicitly configured and stable across replicas.

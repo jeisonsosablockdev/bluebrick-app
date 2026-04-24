@@ -67,6 +67,10 @@
 16. AML operational endpoints (STORY-004-04):
    - `POST /api/internal/compliance/aml/screen` accepts admin SIWS session or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
    - `GET /api/admin/compliance/cases/:walletPublicKey/aml` returns AML snapshot + recent screenings for admin review.
+17. Admin asset upload lifecycle for collection editing (BRI-87, server-authoritative):
+   - `POST /api/admin/assets/uploads/signed-url` and `POST /api/admin/assets/uploads/:uploadId/finalize` remain admin-only.
+   - Uploads may now carry an optional `editSessionId` in addition to `draftId` so collection-editor media can stay temporary until the save path promotes them.
+   - `POST /api/admin/assets/uploads/orphan-reconciler` remains admin-only and only cleans session-linked uploads that were never promoted.
 
 ## Wallet Modal UX Guardrails
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
@@ -124,6 +128,9 @@
 | `/api/admin/mint-orchestrator/jobs/:jobId/reconcile` | `POST` | Yes | `admin` | Reconciles signature confirmations via devnet RPC with `createdBy` authority check |
 | `/api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` | `POST` | Yes | `admin` | Reconciles submitted items via paginated DAS lookup with `createdBy` authority check |
 | `/api/admin/core-candy-machine/snapshot/finalize` | `POST` | Yes | `admin` | Verifies minted quantity (DAS), persists `asset_mint_snapshots` + `asset_mint_onchain_proofs`, computes `Create Asset` gate |
+| `/api/admin/assets/uploads/signed-url` | `POST` | Yes | `admin` | Issues signed upload contract; optional `editSessionId` keeps collection-editor uploads temporary until save |
+| `/api/admin/assets/uploads/:uploadId/finalize` | `POST` | Yes | `admin` | Validates upload against signed contract (`draftId` + optional `editSessionId`) and persists finalized file ref |
+| `/api/admin/assets/uploads/orphan-reconciler` | `POST` | Yes | `admin` | Reconciles orphaned session uploads and purges only non-promoted temporary files |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 | `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
@@ -151,6 +158,7 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
   - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
+  - For admin asset uploads, validate admin session first and treat optional `editSessionId` as server-checked lifecycle metadata, never as client authority.
 - External webhook responsibilities:
   - Helius pushes signature lifecycle events.
   - Server never trusts webhook payload blindly: optional secret + dedupe + signature-level state transition checks.

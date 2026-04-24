@@ -21,6 +21,7 @@ type FinalizeErrorCode =
   | "UPLOAD_NOT_FOUND"
   | "UPLOAD_EXPIRED"
   | "DRAFT_MISMATCH"
+  | "EDIT_SESSION_MISMATCH"
   | "CONTENT_MD5_MISMATCH"
   | "UPLOAD_VALIDATION_FAILED"
   | "UNAUTHENTICATED"
@@ -98,6 +99,10 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
 
     if (payload.draftId !== contract.draftId) {
       return errorResponse(409, "DRAFT_MISMATCH", "draftId does not match the signed upload contract.");
+    }
+
+    if (payload.editSessionId !== contract.editSessionId) {
+      return errorResponse(409, "EDIT_SESSION_MISMATCH", "editSessionId does not match the signed upload contract.");
     }
 
     if (payload.contentMd5Base64 !== contract.contentMd5Base64) {

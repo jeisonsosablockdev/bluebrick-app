@@ -26,6 +26,11 @@
   - `get`/`list` helpers for repository-backed detail reads
   - `update` helper for editable fields only
   - `applyBootstrap` helper for manifest-backed persistence reuse
+- Added edit-session lifecycle tracking for temporary collection-editor uploads:
+  - `db/migrations/020_asset_upload_edit_sessions.sql`
+  - optional `editSessionId` association in the upload contract
+  - repository helpers to promote or cancel session-linked uploads
+  - orphan cleanup that only purges non-promoted session uploads and deletes blob objects before removing DB rows
 
 ## Notes
 - `image_url` remains the immutable cover field and was not changed by this slice.
@@ -40,6 +45,9 @@
 - The CLI supports scoped execution by `--actor-pubkey` and repeatable `--entry-id`, and can emit JSON either to stdout or to an `--output-file` for audit/review.
 - The repository layer keeps `image_url` out of the write contract and centralizes the SQL update surface for `gallery_images_json`, `property_images_json`, `documents_json`, `fractional_investment_summary`, `property_information`, `google_maps_place_json`, and `updated_by`.
 - Read helpers normalize `documents_json` into the typed collection document contract so later API/detail slices do not need to duplicate legacy compatibility parsing.
+- Edit-session uploads can now stay temporary while a collection section is being edited, then be promoted on save so later cleanup jobs do not remove them.
+- Explicit session cancelation is now supported at the repository layer, giving later API/detail slices a deterministic way to mark abandoned uploads before scheduled cleanup runs.
+- The orphan reconciler now scopes itself to `editSessionId`-linked uploads that were never promoted and attempts blob deletion before deleting DB records.
 
 ## Validation
 - Added migration contract coverage for:
@@ -60,3 +68,7 @@
   - repository-backed detail reads
   - write SQL restricted to editable fields only
   - bootstrap payload application reuse
+- Added upload lifecycle coverage for:
+  - optional `editSessionId` parsing in signed-url/finalize contracts
+  - session-linked promotion and cancelation helpers
+  - cleanup that ignores promoted uploads and records blob-delete failures explicitly

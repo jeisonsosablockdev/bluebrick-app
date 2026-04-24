@@ -1,4 +1,4 @@
-import { head, put } from "@vercel/blob";
+import { del, head, put } from "@vercel/blob";
 
 export type GcsUploadConfig = {
   bucketName: string;
@@ -14,6 +14,11 @@ export type GcsObjectMetadata = {
   etag: string | null;
   md5Base64: string | null;
   url: string | null;
+};
+
+export type DeleteGcsObjectResult = {
+  deleted: boolean;
+  notFound: boolean;
 };
 
 type BuildSignedPutUrlInput = {
@@ -152,6 +157,29 @@ export async function headGcsObject(config: GcsUploadConfig, objectKey: string):
     }
     throw error;
   }
+}
+
+export async function deleteGcsObjectIfPresent(
+  config: GcsUploadConfig,
+  objectKey: string
+): Promise<DeleteGcsObjectResult> {
+  const metadata = await headGcsObject(config, objectKey);
+
+  if (!metadata.found || !metadata.url) {
+    return {
+      deleted: false,
+      notFound: true
+    };
+  }
+
+  await del(metadata.url, {
+    token: config.blobReadWriteToken
+  });
+
+  return {
+    deleted: true,
+    notFound: false
+  };
 }
 
 export function buildCdnUrl(config: GcsUploadConfig, objectKey: string): string {

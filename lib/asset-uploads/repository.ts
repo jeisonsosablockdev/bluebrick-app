@@ -12,6 +12,7 @@ type SignedUploadContractRow = {
   upload_id: string;
   actor_pubkey: string;
   draft_id: string;
+  edit_session_id: string | null;
   category: AssetUploadCategory;
   original_file_name: string;
   sanitized_file_name: string;
@@ -24,6 +25,10 @@ type SignedUploadContractRow = {
   created_at: string;
   finalized_at: string | null;
   final_file_ref_id: string | null;
+  promoted_at: string | null;
+  promoted_by: string | null;
+  canceled_at: string | null;
+  canceled_by: string | null;
 };
 
 type UploadedFileRefRow = {
@@ -50,6 +55,7 @@ type CreateSignedUploadContractInput = {
   uploadId: string;
   actorPubkey: string;
   draftId: string;
+  editSessionId: string | null;
   category: AssetUploadCategory;
   originalFileName: string;
   sanitizedFileName: string;
@@ -75,11 +81,32 @@ type FinalizeUploadInput = {
   uploadedAt: string;
 };
 
+export type EditSessionUploadLifecycleState = "temporary" | "finalized" | "promoted" | "canceled";
+
+type EditSessionUploadRow = UploadedFileRefWithCategoryRow & {
+  edit_session_id: string;
+  finalized_at: string | null;
+  promoted_at: string | null;
+  promoted_by: string | null;
+  canceled_at: string | null;
+  canceled_by: string | null;
+};
+
+export type EditSessionUploadRecord = UploadedFileRefWithCategory & {
+  editSessionId: string;
+  lifecycleState: EditSessionUploadLifecycleState;
+  promotedAt: string | null;
+  promotedBy: string | null;
+  canceledAt: string | null;
+  canceledBy: string | null;
+};
+
 function toSignedUploadContract(row: SignedUploadContractRow): SignedUploadContract {
   return {
     uploadId: row.upload_id,
     actorPubkey: row.actor_pubkey,
     draftId: row.draft_id,
+    editSessionId: row.edit_session_id,
     category: row.category,
     originalFileName: row.original_file_name,
     sanitizedFileName: row.sanitized_file_name,
@@ -120,6 +147,28 @@ function toUploadedFileRefWithCategory(row: UploadedFileRefWithCategoryRow): Upl
   };
 }
 
+function toEditSessionUploadRecord(row: EditSessionUploadRow): EditSessionUploadRecord {
+  let lifecycleState: EditSessionUploadLifecycleState = "temporary";
+
+  if (row.canceled_at) {
+    lifecycleState = "canceled";
+  } else if (row.promoted_at) {
+    lifecycleState = "promoted";
+  } else if (row.finalized_at) {
+    lifecycleState = "finalized";
+  }
+
+  return {
+    ...toUploadedFileRefWithCategory(row),
+    editSessionId: row.edit_session_id,
+    lifecycleState,
+    promotedAt: row.promoted_at,
+    promotedBy: row.promoted_by,
+    canceledAt: row.canceled_at,
+    canceledBy: row.canceled_by
+  };
+}
+
 export async function createSignedUploadContract(
   input: CreateSignedUploadContractInput
 ): Promise<SignedUploadContract> {
@@ -130,6 +179,7 @@ export async function createSignedUploadContract(
           upload_id,
           actor_pubkey,
           draft_id,
+          edit_session_id,
           category,
           original_file_name,
           sanitized_file_name,
@@ -140,11 +190,12 @@ export async function createSignedUploadContract(
           content_md5_base64,
           expires_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::timestamptz)
+        VALUES ($1, $2, $3, $4::uuid, $5, $6, $7, $8, $9, $10, $11, $12, $13::timestamptz)
         RETURNING
           upload_id,
           actor_pubkey,
           draft_id,
+          edit_session_id,
           category,
           original_file_name,
           sanitized_file_name,
@@ -156,12 +207,17 @@ export async function createSignedUploadContract(
           expires_at,
           created_at,
           finalized_at,
-          final_file_ref_id
+          final_file_ref_id,
+          promoted_at,
+          promoted_by,
+          canceled_at,
+          canceled_by
       `,
       [
         input.uploadId,
         input.actorPubkey,
         input.draftId,
+        input.editSessionId,
         input.category,
         input.originalFileName,
         input.sanitizedFileName,
@@ -190,6 +246,7 @@ export async function getSignedUploadContract(uploadId: string): Promise<SignedU
           upload_id,
           actor_pubkey,
           draft_id,
+          edit_session_id,
           category,
           original_file_name,
           sanitized_file_name,
@@ -201,7 +258,11 @@ export async function getSignedUploadContract(uploadId: string): Promise<SignedU
           expires_at,
           created_at,
           finalized_at,
-          final_file_ref_id
+          final_file_ref_id,
+          promoted_at,
+          promoted_by,
+          canceled_at,
+          canceled_by
         FROM asset_upload_contracts
         WHERE upload_id = $1
       `,
@@ -307,6 +368,162 @@ export async function listUploadedFileRefsByDraftIds(draftIds: string[]): Promis
     }
 
     return uploadsByDraftId;
+  });
+}
+
+export async function listEditSessionUploads(input: {
+  draftId: string;
+  editSessionId: string;
+}): Promise<EditSessionUploadRecord[]> {
+  const draftId = input.draftId.trim();
+  const editSessionId = input.editSessionId.trim();
+
+  if (!draftId || !editSessionId) {
+    return [];
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<EditSessionUploadRow>(
+      `
+        SELECT
+          files.file_ref_id,
+          files.upload_id,
+          files.actor_pubkey,
+          files.draft_id,
+          files.bucket,
+          files.object_key,
+          files.cdn_url,
+          files.mime_type,
+          files.size_bytes,
+          files.content_md5_base64,
+          files.etag,
+          files.uploaded_at,
+          files.created_at,
+          contracts.category,
+          contracts.edit_session_id,
+          contracts.finalized_at,
+          contracts.promoted_at,
+          contracts.promoted_by,
+          contracts.canceled_at,
+          contracts.canceled_by
+        FROM asset_uploaded_files AS files
+        INNER JOIN asset_upload_contracts AS contracts
+          ON contracts.upload_id = files.upload_id
+        WHERE files.draft_id = $1::uuid
+          AND contracts.edit_session_id = $2::uuid
+        ORDER BY files.uploaded_at ASC, files.created_at ASC, files.file_ref_id ASC
+      `,
+      [draftId, editSessionId]
+    );
+
+    return result.rows.map(toEditSessionUploadRecord);
+  });
+}
+
+export async function promoteEditSessionUploads(input: {
+  draftId: string;
+  editSessionId: string;
+  actorPubkey: string;
+}): Promise<EditSessionUploadRecord[]> {
+  const draftId = input.draftId.trim();
+  const editSessionId = input.editSessionId.trim();
+  const actorPubkey = input.actorPubkey.trim();
+
+  if (!draftId || !editSessionId) {
+    return [];
+  }
+
+  if (!actorPubkey) {
+    throw new Error("actorPubkey is required.");
+  }
+
+  return withDbClient(async (client) => {
+    await client.query(
+      `
+        UPDATE asset_upload_contracts
+        SET
+          promoted_at = COALESCE(promoted_at, NOW()),
+          promoted_by = COALESCE(promoted_by, $3),
+          canceled_at = NULL,
+          canceled_by = NULL
+        WHERE draft_id = $1::uuid
+          AND edit_session_id = $2::uuid
+          AND finalized_at IS NOT NULL
+      `,
+      [draftId, editSessionId, actorPubkey]
+    );
+
+    const result = await client.query<EditSessionUploadRow>(
+      `
+        SELECT
+          files.file_ref_id,
+          files.upload_id,
+          files.actor_pubkey,
+          files.draft_id,
+          files.bucket,
+          files.object_key,
+          files.cdn_url,
+          files.mime_type,
+          files.size_bytes,
+          files.content_md5_base64,
+          files.etag,
+          files.uploaded_at,
+          files.created_at,
+          contracts.category,
+          contracts.edit_session_id,
+          contracts.finalized_at,
+          contracts.promoted_at,
+          contracts.promoted_by,
+          contracts.canceled_at,
+          contracts.canceled_by
+        FROM asset_uploaded_files AS files
+        INNER JOIN asset_upload_contracts AS contracts
+          ON contracts.upload_id = files.upload_id
+        WHERE files.draft_id = $1::uuid
+          AND contracts.edit_session_id = $2::uuid
+          AND contracts.promoted_at IS NOT NULL
+        ORDER BY files.uploaded_at ASC, files.created_at ASC, files.file_ref_id ASC
+      `,
+      [draftId, editSessionId]
+    );
+
+    return result.rows.map(toEditSessionUploadRecord);
+  });
+}
+
+export async function cancelEditSessionUploads(input: {
+  draftId: string;
+  editSessionId: string;
+  actorPubkey: string;
+}): Promise<number> {
+  const draftId = input.draftId.trim();
+  const editSessionId = input.editSessionId.trim();
+  const actorPubkey = input.actorPubkey.trim();
+
+  if (!draftId || !editSessionId) {
+    return 0;
+  }
+
+  if (!actorPubkey) {
+    throw new Error("actorPubkey is required.");
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<{ upload_id: string }>(
+      `
+        UPDATE asset_upload_contracts
+        SET
+          canceled_at = COALESCE(canceled_at, NOW()),
+          canceled_by = COALESCE(canceled_by, $3)
+        WHERE draft_id = $1::uuid
+          AND edit_session_id = $2::uuid
+          AND promoted_at IS NULL
+        RETURNING upload_id
+      `,
+      [draftId, editSessionId, actorPubkey]
+    );
+
+    return result.rowCount ?? 0;
   });
 }
 
