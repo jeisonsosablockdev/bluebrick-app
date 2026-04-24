@@ -410,6 +410,10 @@ function parseExistingDocumentsJson(
   return documents;
 }
 
+export function normalizeCollectionBootstrapDocumentsJson(value: unknown): CollectionBootstrapDocumentItem[] {
+  return parseExistingDocumentsJson(value, new Set<CollectionBootstrapReasonCode>());
+}
+
 function resolveUploadsByRefs(input: {
   refs: string[];
   fallbackUrls: string[];
@@ -728,6 +732,10 @@ function parseGoogleMapsPlace(
     googleMapsUrl,
     placeId
   };
+}
+
+export function normalizeCollectionBootstrapGoogleMapsPlaceJson(value: unknown): CollectionBootstrapGoogleMapsPlace | null {
+  return parseGoogleMapsPlace({ googleMapsPlaceJson: value }, new Set<CollectionBootstrapReasonCode>());
 }
 
 export function mapCollectionBootstrapFromSnapshot(input: CollectionBootstrapInput): CollectionBootstrapResult {

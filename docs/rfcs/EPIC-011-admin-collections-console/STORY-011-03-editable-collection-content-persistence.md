@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-23`
+- Last Updated: `2026-04-24`
 
 ## Context
 - Problem:
@@ -84,7 +84,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Continuar con el runner versionado y `dry-run` del bootstrap usando el mapper aprobado (`BRI-85`).
+  Implementar el lifecycle temporal de uploads y cleanup para sesiones canceladas/expiradas (`BRI-87`).
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -102,7 +102,7 @@
   - No aplica directo a persistencia.
 
 ## Traceability
-- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`
+- Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`, `BRI-86`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -113,3 +113,5 @@
 - The mapper preserves existing marketplace `documents_json` first, dedupes bootstrap candidates by `fileRefId` and URL, and leaves `google_maps_place_json` null unless a valid reduced payload already exists in the snapshot.
 - `BRI-85` adds the versioned dry-run runner (`2026-04-23-v1`) with scoped CLI execution, exact-link candidate planning, and explicit manifest buckets for `successes`, `manualReviewRequired`, and `failures`.
 - The dry-run manifest treats missing/inconsistent snapshot links and blank `draftId` as preflight failures, while corrupt `form_snapshot` payloads continue to flow through the mapper as `manual_review_required`.
+- `BRI-86` adds the narrow repository/helper layer for this story in `lib/admin/collection-content-repository.ts`, centralizing reads and writes of the editable collection fields without reopening `image_url`.
+- The repository contract now gives later API/detail slices a single place to read normalized editable content and to apply bootstrap payloads or section updates without duplicating SQL or legacy `documents_json` parsing.
