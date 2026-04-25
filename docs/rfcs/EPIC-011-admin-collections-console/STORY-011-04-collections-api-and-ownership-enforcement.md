@@ -83,11 +83,11 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar `PATCH /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)` y `parseAdminCollectionPatchPayload(...)`.
+  Completar trazabilidad final de PR/commit después del merge de `BRI-91`; la implementación funcional de los slices está completa.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -106,7 +106,7 @@
   - No aplica directo a API.
 
 ## Traceability
-- Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`, `BRI-90`
+- Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`, `BRI-90`, `BRI-91`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -121,3 +121,6 @@
 - The detail response is split into `ownership` evidence and `content` fields, keeping blockchain/ownership evidence separate from editable off-chain content for later UI panels.
 - `BRI-90` adds `parseAdminCollectionPatchPayload(payload)` as the shared validation contract for the upcoming unified PATCH route.
 - The validator accepts only discriminated section payloads for `summary`, `propertyInformation`, `gallery`, `documents`, and `googleMapsPlace`, and rejects immutable cover fields with `IMMUTABLE_COVER_FIELD`.
+- `BRI-91` adds `PATCH /api/admin/collections/[id]` as the unified mutation route for editable collection sections.
+- The route requires an authenticated admin SIWS session with wallet pubkey, validates the section payload before ownership lookup, calls `assertAdminCollectionOwnership(...)`, and persists only repository-ready section updates through `updateAdminCollectionContent(...)`.
+- The route preserves cover immutability by rejecting `image_url`, `imageUrl`, and `coverImageUrl` payloads before any ownership or content repository call.

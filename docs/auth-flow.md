@@ -75,6 +75,10 @@
    - `GET /api/admin/collections/:id` requires an authenticated admin SIWS session with wallet pubkey.
    - The handler uses `assertAdminCollectionOwnership(adminId, collectionId)` before reading editable collection content.
    - Ownership is proven server-side from marketplace entry ownership plus matching snapshot evidence; client route state is never trusted.
+19. Admin collection detail write (BRI-91, server-authoritative):
+   - `PATCH /api/admin/collections/:id` requires an authenticated admin SIWS session with wallet pubkey.
+   - The handler validates a section-discriminated payload before ownership lookup and rejects immutable cover fields.
+   - The handler uses `assertAdminCollectionOwnership(adminId, collectionId)` before persisting editable off-chain content through the repository layer.
 
 ## Wallet Modal UX Guardrails
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
@@ -136,6 +140,7 @@
 | `/api/admin/assets/uploads/:uploadId/finalize` | `POST` | Yes | `admin` | Validates upload against signed contract (`draftId` + optional `editSessionId`) and persists finalized file ref |
 | `/api/admin/assets/uploads/orphan-reconciler` | `POST` | Yes | `admin` | Reconciles orphaned session uploads and purges only non-promoted temporary files |
 | `/api/admin/collections/:id` | `GET` | Yes | `admin` | Returns collection detail only after centralized ownership verification against marketplace entry and snapshot evidence |
+| `/api/admin/collections/:id` | `PATCH` | Yes | `admin` | Updates one editable collection section only after payload validation and centralized ownership verification |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 | `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
@@ -164,6 +169,7 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
   - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
   - For admin asset uploads, validate admin session first and treat optional `editSessionId` as server-checked lifecycle metadata, never as client authority.
+  - For admin collection detail writes, validate the section payload server-side, reject immutable cover changes, and bind updates to the authenticated admin wallet through ownership evidence.
 - External webhook responsibilities:
   - Helius pushes signature lifecycle events.
   - Server never trusts webhook payload blindly: optional secret + dedupe + signature-level state transition checks.

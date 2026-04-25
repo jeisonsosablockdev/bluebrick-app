@@ -5,7 +5,8 @@ const routeMocks = vi.hoisted(() => ({
   assertAdminCollectionOwnership: vi.fn(),
   getAdminCollectionContentByEntryId: vi.fn(),
   getRequestRole: vi.fn(),
-  isAdminCollectionOwnershipError: vi.fn()
+  isAdminCollectionOwnershipError: vi.fn(),
+  updateAdminCollectionContent: vi.fn()
 }));
 
 vi.mock("@/lib/auth-session", () => ({
@@ -18,10 +19,11 @@ vi.mock("@/lib/admin/collection-ownership", () => ({
 }));
 
 vi.mock("@/lib/admin/collection-content-repository", () => ({
-  getAdminCollectionContentByEntryId: routeMocks.getAdminCollectionContentByEntryId
+  getAdminCollectionContentByEntryId: routeMocks.getAdminCollectionContentByEntryId,
+  updateAdminCollectionContent: routeMocks.updateAdminCollectionContent
 }));
 
-import { GET } from "@/app/api/admin/collections/[id]/route";
+import { GET, PATCH } from "@/app/api/admin/collections/[id]/route";
 
 type RouteContext = {
   params: Promise<{
@@ -33,9 +35,55 @@ function createRequest(url = "https://example.com/api/admin/collections/entry-1"
   return new NextRequest(url, { method: "GET" });
 }
 
+function createPatchRequest(body: unknown, url = "https://example.com/api/admin/collections/entry-1"): NextRequest {
+  return new NextRequest(url, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+    headers: {
+      "content-type": "application/json"
+    }
+  });
+}
+
 function createContext(id = "entry-1"): RouteContext {
   return {
     params: Promise.resolve({ id })
+  };
+}
+
+function buildContentRecord(input: Record<string, unknown> = {}) {
+  return {
+    entryId: "entry-1",
+    title: "Central Tower",
+    createdBy: "Admin111",
+    coverImageUrl: "https://cdn.example.com/cover.jpg",
+    collectionAddress: "Collection111",
+    candyMachineAddress: "Candy111",
+    galleryImages: [],
+    propertyImages: [],
+    documents: [],
+    fractionalInvestmentSummary: "Stable yield.",
+    propertyInformation: "Prime property.",
+    googleMapsPlace: null,
+    updatedBy: "Admin111",
+    updatedAt: "2026-04-25T04:00:00.000Z",
+    ...input
+  };
+}
+
+function buildOwnershipRecord() {
+  return {
+    entryId: "entry-1",
+    adminId: "Admin111",
+    title: "Central Tower",
+    coverImageUrl: "https://cdn.example.com/cover.jpg",
+    collectionAddress: "Collection111",
+    candyMachineAddress: "Candy111",
+    snapshotId: "snapshot-1",
+    snapshotDraftId: "draft-1",
+    snapshotVerificationStatus: "verified",
+    snapshotMarketplaceHandoffStatus: "completed",
+    updatedAt: "2026-04-25T04:00:00.000Z"
   };
 }
 
@@ -48,35 +96,11 @@ describe("GET /api/admin/collections/:id", () => {
       pubkey: "Admin111"
     });
     routeMocks.isAdminCollectionOwnershipError.mockReturnValue(false);
-    routeMocks.assertAdminCollectionOwnership.mockResolvedValue({
-      entryId: "entry-1",
-      adminId: "Admin111",
-      title: "Central Tower",
-      coverImageUrl: "https://cdn.example.com/cover.jpg",
-      collectionAddress: "Collection111",
-      candyMachineAddress: "Candy111",
-      snapshotId: "snapshot-1",
-      snapshotDraftId: "draft-1",
-      snapshotVerificationStatus: "verified",
-      snapshotMarketplaceHandoffStatus: "completed",
-      updatedAt: "2026-04-25T04:00:00.000Z"
-    });
-    routeMocks.getAdminCollectionContentByEntryId.mockResolvedValue({
-      entryId: "entry-1",
-      title: "Central Tower",
-      createdBy: "Admin111",
-      coverImageUrl: "https://cdn.example.com/cover.jpg",
-      collectionAddress: "Collection111",
-      candyMachineAddress: "Candy111",
-      galleryImages: [],
-      propertyImages: [],
-      documents: [],
-      fractionalInvestmentSummary: "Stable yield.",
-      propertyInformation: "Prime property.",
-      googleMapsPlace: null,
-      updatedBy: "Admin111",
-      updatedAt: "2026-04-25T04:00:00.000Z"
-    });
+    routeMocks.assertAdminCollectionOwnership.mockResolvedValue(buildOwnershipRecord());
+    routeMocks.getAdminCollectionContentByEntryId.mockResolvedValue(buildContentRecord());
+    routeMocks.updateAdminCollectionContent.mockResolvedValue(buildContentRecord({
+      fractionalInvestmentSummary: "Updated yield."
+    }));
   });
 
   it("returns 403 when caller is not an authenticated admin with a pubkey", async () => {
@@ -140,5 +164,147 @@ describe("GET /api/admin/collections/:id", () => {
 
     expect(response.status).toBe(500);
     expect(payload.error.code).toBe("ADMIN_COLLECTION_DETAIL_FAILED");
+  });
+});
+
+describe("PATCH /api/admin/collections/:id", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    routeMocks.getRequestRole.mockReturnValue({
+      authenticated: true,
+      role: "admin",
+      pubkey: "Admin111"
+    });
+    routeMocks.isAdminCollectionOwnershipError.mockReturnValue(false);
+    routeMocks.assertAdminCollectionOwnership.mockResolvedValue(buildOwnershipRecord());
+    routeMocks.updateAdminCollectionContent.mockResolvedValue(buildContentRecord({
+      fractionalInvestmentSummary: "Updated yield."
+    }));
+  });
+
+  it("returns 403 when caller is not an authenticated admin with a pubkey", async () => {
+    routeMocks.getRequestRole.mockReturnValueOnce({
+      authenticated: true,
+      role: "admin"
+    });
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "summary",
+        data: {
+          fractionalInvestmentSummary: "Updated yield."
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload.error.code).toBe("FORBIDDEN");
+    expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("updates a valid section after centralized ownership enforcement", async () => {
+    const response = await PATCH(
+      createPatchRequest({
+        section: "summary",
+        data: {
+          fractionalInvestmentSummary: " Updated yield. "
+        }
+      }),
+      createContext(" entry-1 ")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.section).toBe("summary");
+    expect(payload.data.content.fractionalInvestmentSummary).toBe("Updated yield.");
+    expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-1");
+    expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
+      entryId: "entry-1",
+      updatedBy: "Admin111",
+      fractionalInvestmentSummary: "Updated yield."
+    });
+  });
+
+  it("rejects immutable cover mutations before ownership lookup", async () => {
+    const response = await PATCH(
+      createPatchRequest({
+        section: "summary",
+        data: {
+          fractionalInvestmentSummary: "Updated yield.",
+          image_url: "https://cdn.example.com/new-cover.jpg"
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("IMMUTABLE_COVER_FIELD");
+    expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("returns ownership helper errors without updating content", async () => {
+    const ownershipError = Object.assign(new Error("Collection does not belong to the authenticated admin."), {
+      code: "COLLECTION_OWNERSHIP_MISMATCH",
+      status: 403
+    });
+    routeMocks.assertAdminCollectionOwnership.mockRejectedValueOnce(ownershipError);
+    routeMocks.isAdminCollectionOwnershipError.mockReturnValueOnce(true);
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "propertyInformation",
+        data: {
+          propertyInformation: "Updated property."
+        }
+      }),
+      createContext("entry-1")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload.error.code).toBe("COLLECTION_OWNERSHIP_MISMATCH");
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 when the update returns no content after ownership succeeds", async () => {
+    routeMocks.updateAdminCollectionContent.mockResolvedValueOnce(null);
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "documents",
+        data: {
+          documents: []
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(payload.error.code).toBe("COLLECTION_CONTENT_NOT_FOUND");
+  });
+
+  it("returns 500 when update fails unexpectedly", async () => {
+    routeMocks.updateAdminCollectionContent.mockRejectedValueOnce(new Error("boom"));
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "propertyInformation",
+        data: {
+          propertyInformation: "Updated property."
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error.code).toBe("ADMIN_COLLECTION_PATCH_FAILED");
   });
 });

@@ -5,10 +5,12 @@
   - `assertAdminCollectionOwnership(adminId, collectionId)`
   - `GET /api/admin/collections/[id]`
   - `parseAdminCollectionPatchPayload(payload)`
+  - `PATCH /api/admin/collections/[id]`
 - The helper validates ownership through both:
   - `marketplace_entries.created_by`
   - exact `asset_mint_snapshots.created_by + collection_address + candy_machine_address`
 - The detail `GET` route uses the helper before reading editable content and returns a stable detail payload for later editor/read-only panels.
+- The detail `PATCH` route validates a single section-discriminated payload, enforces ownership, and delegates the normalized update to the collection content repository.
 
 ## Notes
 - `collectionId` is the `marketplace_entries.id` value.
@@ -22,7 +24,12 @@
 - PATCH payload validation is centralized before the final mutation route:
   - allowed sections: `summary`, `propertyInformation`, `gallery`, `documents`, `googleMapsPlace`
   - cover fields such as `image_url`, `imageUrl`, and `coverImageUrl` are rejected explicitly
-  - validation returns repository-ready normalized updates for the later PATCH route
+  - validation returns repository-ready normalized updates for the PATCH route
+- `PATCH /api/admin/collections/[id]` returns:
+  - `section`: the accepted section discriminator.
+  - `ownership`: the same server-side ownership evidence used by the detail read route.
+  - `content`: the persisted editable content after the repository update.
+- Payload validation runs before ownership lookup so malformed or immutable-cover requests fail without touching ownership/content repositories.
 
 ## Validation
 - Added focused unit coverage for:
@@ -43,3 +50,10 @@
   - document tag allowlist
   - immutable cover rejection
   - malformed/unknown section errors
+- Added focused PATCH route coverage for:
+  - admin-only access
+  - valid section update persistence
+  - immutable cover rejection before ownership checks
+  - ownership error passthrough
+  - missing content after ownership
+  - unexpected repository update failures

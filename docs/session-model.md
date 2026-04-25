@@ -53,6 +53,7 @@
   - `/api/admin/compliance/cases/:walletPublicKey/aml` is admin-only and returns AML case detail for review.
   - `/api/admin/assets/uploads/signed-url`, `/api/admin/assets/uploads/:uploadId/finalize`, and `/api/admin/assets/uploads/orphan-reconciler` are admin-only and keep upload lifecycle checks server-authoritative.
   - `GET /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, and calls the centralized collection ownership helper before returning editable content.
+  - `PATCH /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, validates one editable section payload, rejects immutable cover fields, and calls the centralized collection ownership helper before persisting content.
   - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
 
 ## Authorization Layers
@@ -73,6 +74,7 @@
   - `/api/admin/core-candy-machine/snapshot/finalize` requires `admin` role and persists immutable snapshot/proofs after server-side verification.
   - Admin upload lifecycle routes bind every request to the authenticated admin wallet and revalidate `draftId` plus optional `editSessionId` against the stored signed contract before persisting file refs.
   - Admin collection detail reads bind `collectionId` to the authenticated admin wallet through `marketplace_entries.created_by` plus exact `asset_mint_snapshots` evidence before content lookup.
+  - Admin collection detail writes use the same binding before repository updates and never accept `image_url`/cover mutation from client payloads.
   - `/admin` signing orchestration UI is an operator surface only; all state transitions are revalidated server-side.
 5. Webhook ingress layer:
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
