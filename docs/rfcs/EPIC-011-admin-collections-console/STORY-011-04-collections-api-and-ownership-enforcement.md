@@ -22,6 +22,7 @@
   - `app/api/admin/collections/route.ts`
   - `app/api/admin/collections/[id]/route.ts`
   - `lib/admin/collection-ownership.ts`
+  - `lib/admin/collection-patch-payload.ts`
   - `lib/admin/collection-content-repository.ts`
   - `lib/auth-session.ts`
   - `tests/api/*`
@@ -82,7 +83,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar `PATCH /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)` y payload discriminado por sección.
+  Implementar `PATCH /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)` y `parseAdminCollectionPatchPayload(...)`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -92,6 +93,7 @@
 - Unit tests:
   - Helper de ownership centralizado.
   - Validación de payload permitido/prohibido.
+  - Rechazo explícito de campos cover/image inmutables.
 - Integration tests:
   - 403 para no-admin
   - 403 para admin no dueño
@@ -104,7 +106,7 @@
   - No aplica directo a API.
 
 ## Traceability
-- Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`
+- Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`, `BRI-90`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -117,3 +119,5 @@
   - `COLLECTION_OWNERSHIP_MISMATCH`
 - `BRI-89` adds `GET /api/admin/collections/[id]` as a thin admin-only route that uses `assertAdminCollectionOwnership(...)` before loading editable collection content.
 - The detail response is split into `ownership` evidence and `content` fields, keeping blockchain/ownership evidence separate from editable off-chain content for later UI panels.
+- `BRI-90` adds `parseAdminCollectionPatchPayload(payload)` as the shared validation contract for the upcoming unified PATCH route.
+- The validator accepts only discriminated section payloads for `summary`, `propertyInformation`, `gallery`, `documents`, and `googleMapsPlace`, and rejects immutable cover fields with `IMMUTABLE_COVER_FIELD`.

@@ -4,6 +4,7 @@
 - Added the API foundation slices for collection detail routes:
   - `assertAdminCollectionOwnership(adminId, collectionId)`
   - `GET /api/admin/collections/[id]`
+  - `parseAdminCollectionPatchPayload(payload)`
 - The helper validates ownership through both:
   - `marketplace_entries.created_by`
   - exact `asset_mint_snapshots.created_by + collection_address + candy_machine_address`
@@ -18,6 +19,10 @@
   - `ownership`: server-side evidence from the centralized helper.
   - `content`: editable off-chain collection fields from `marketplace_entries`.
 - Missing content after ownership succeeds returns `COLLECTION_CONTENT_NOT_FOUND` instead of fabricating partial data.
+- PATCH payload validation is centralized before the final mutation route:
+  - allowed sections: `summary`, `propertyInformation`, `gallery`, `documents`, `googleMapsPlace`
+  - cover fields such as `image_url`, `imageUrl`, and `coverImageUrl` are rejected explicitly
+  - validation returns repository-ready normalized updates for the later PATCH route
 
 ## Validation
 - Added focused unit coverage for:
@@ -32,3 +37,9 @@
   - ownership error passthrough
   - missing content after ownership
   - unexpected content lookup failures
+- Added focused PATCH payload validation coverage for:
+  - each allowed section
+  - nullable text clears
+  - document tag allowlist
+  - immutable cover rejection
+  - malformed/unknown section errors
