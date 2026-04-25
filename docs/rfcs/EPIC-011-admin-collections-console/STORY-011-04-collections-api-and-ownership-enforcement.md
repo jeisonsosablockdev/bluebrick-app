@@ -22,6 +22,7 @@
   - `app/api/admin/collections/route.ts`
   - `app/api/admin/collections/[id]/route.ts`
   - `lib/admin/collection-ownership.ts`
+  - `lib/admin/collection-content-repository.ts`
   - `lib/auth-session.ts`
   - `tests/api/*`
 
@@ -81,7 +82,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar `GET /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)`.
+  Implementar `PATCH /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)` y payload discriminado por sección.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -94,6 +95,7 @@
 - Integration tests:
   - 403 para no-admin
   - 403 para admin no dueño
+  - 404 para contenido faltante después de ownership válido
   - 400 para intento de editar cover
   - 200 para update válido
 - Devnet validation (if applicable):
@@ -102,7 +104,7 @@
   - No aplica directo a API.
 
 ## Traceability
-- Related issue(s): `BRI-73`, `BRI-88`
+- Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
 
@@ -113,3 +115,5 @@
   - `INVALID_COLLECTION_OWNERSHIP_INPUT`
   - `COLLECTION_NOT_FOUND`
   - `COLLECTION_OWNERSHIP_MISMATCH`
+- `BRI-89` adds `GET /api/admin/collections/[id]` as a thin admin-only route that uses `assertAdminCollectionOwnership(...)` before loading editable collection content.
+- The detail response is split into `ownership` evidence and `content` fields, keeping blockchain/ownership evidence separate from editable off-chain content for later UI panels.

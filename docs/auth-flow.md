@@ -71,6 +71,10 @@
    - `POST /api/admin/assets/uploads/signed-url` and `POST /api/admin/assets/uploads/:uploadId/finalize` remain admin-only.
    - Uploads may now carry an optional `editSessionId` in addition to `draftId` so collection-editor media can stay temporary until the save path promotes them.
    - `POST /api/admin/assets/uploads/orphan-reconciler` remains admin-only and only cleans session-linked uploads that were never promoted.
+18. Admin collection detail read (BRI-89, server-authoritative):
+   - `GET /api/admin/collections/:id` requires an authenticated admin SIWS session with wallet pubkey.
+   - The handler uses `assertAdminCollectionOwnership(adminId, collectionId)` before reading editable collection content.
+   - Ownership is proven server-side from marketplace entry ownership plus matching snapshot evidence; client route state is never trusted.
 
 ## Wallet Modal UX Guardrails
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
@@ -131,6 +135,7 @@
 | `/api/admin/assets/uploads/signed-url` | `POST` | Yes | `admin` | Issues signed upload contract; optional `editSessionId` keeps collection-editor uploads temporary until save |
 | `/api/admin/assets/uploads/:uploadId/finalize` | `POST` | Yes | `admin` | Validates upload against signed contract (`draftId` + optional `editSessionId`) and persists finalized file ref |
 | `/api/admin/assets/uploads/orphan-reconciler` | `POST` | Yes | `admin` | Reconciles orphaned session uploads and purges only non-promoted temporary files |
+| `/api/admin/collections/:id` | `GET` | Yes | `admin` | Returns collection detail only after centralized ownership verification against marketplace entry and snapshot evidence |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 | `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
