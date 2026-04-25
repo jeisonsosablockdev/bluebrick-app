@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-23`
+- Last Updated: `2026-04-25`
 
 ## Context
 - Problem:
@@ -21,6 +21,7 @@
 - Affected paths:
   - `app/api/admin/collections/route.ts`
   - `app/api/admin/collections/[id]/route.ts`
+  - `lib/admin/collection-ownership.ts`
   - `lib/auth-session.ts`
   - `tests/api/*`
 
@@ -80,7 +81,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar helper de validación de ownership e interfaces de Zod para el PATCH.
+  Implementar `GET /api/admin/collections/:id` usando `assertAdminCollectionOwnership(...)`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -88,6 +89,7 @@
 
 ## Test and Validation Plan
 - Unit tests:
+  - Helper de ownership centralizado.
   - Validación de payload permitido/prohibido.
 - Integration tests:
   - 403 para no-admin
@@ -100,6 +102,14 @@
   - No aplica directo a API.
 
 ## Traceability
-- Related issue(s): `TBD`
+- Related issue(s): `BRI-73`, `BRI-88`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
+
+## Implementation Progress
+- `BRI-88` adds `assertAdminCollectionOwnership(adminId, collectionId)` as the mandatory server-side guard for future collection detail routes.
+- The helper treats `collectionId` as `marketplace_entries.id`, verifies `marketplace_entries.created_by`, and requires exact snapshot evidence from `asset_mint_snapshots` for the same admin, collection address, and candy machine address.
+- The helper exposes stable error codes for downstream routes:
+  - `INVALID_COLLECTION_OWNERSHIP_INPUT`
+  - `COLLECTION_NOT_FOUND`
+  - `COLLECTION_OWNERSHIP_MISMATCH`

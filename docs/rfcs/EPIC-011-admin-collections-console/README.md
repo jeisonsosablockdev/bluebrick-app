@@ -39,7 +39,7 @@
 | STORY-011-01 | Kickoff and contract definition | `STORY-011-01-kickoff.md` | `approved` | `TBD` | Define ownership, edit boundaries, and data contract |
 | STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; `BRI-80`, `BRI-81`, and `BRI-82` are done, final visual refinement moves to `STORY-011-05` |
 | STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover; `BRI-83` adds schema, `BRI-84` closes the mapper contract, `BRI-85` adds the dry-run runner, `BRI-86` adds repository read/write helpers, and `BRI-87` closes edit-session upload lifecycle + cleanup |
-| STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints |
+| STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints; `BRI-88` adds the centralized ownership helper |
 | STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing |
 | STORY-011-06 | Collection detail editor UI | `STORY-011-06-collection-detail-editor-ui.md` | `approved` | `TBD` | Visual editor for summary, property info, gallery, documents |
 | STORY-011-07 | QA, responsive evidence, and docs sync | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` | `approved` | `TBD` | Playwright, responsive QA, feature note, auth/docs updates |
@@ -69,6 +69,7 @@
 | 2026-04-23 | STORY-011-03 | El tercer slice (`BRI-85`) agrega el runner versionado `2026-04-23-v1` con `dry-run`, filtros por actor/entry y manifiesto auditable de `successes`, `manualReviewRequired` y `failures` | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
 | 2026-04-24 | STORY-011-03 | El cuarto slice (`BRI-86`) agrega un repository/helper layer estrecho para leer y escribir los campos editoriales de collections sin duplicar SQL ni reabrir `image_url` | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
 | 2026-04-24 | STORY-011-03 | El quinto slice (`BRI-87`) agrega asociación opcional por `editSessionId`, promoción/cancelación explícita y cleanup que solo purga uploads temporales no promovidos | jaymusicmachine | `STORY-011-03-editable-collection-content-persistence.md` |
+| 2026-04-25 | STORY-011-04 | El primer slice (`BRI-88`) agrega `assertAdminCollectionOwnership(adminId, collectionId)` como guard central para rutas de detalle, cruzando entry y snapshot exacto del mismo admin | jaymusicmachine | `STORY-011-04-collections-api-and-ownership-enforcement.md` |
 
 ## Risks and Dependencies
 - Risks:
