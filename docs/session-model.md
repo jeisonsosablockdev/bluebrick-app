@@ -335,3 +335,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup
   - same admin role derivation
 - This slice only adds UI handoff states over the existing authenticated admin session boundary.
+
+## EPIC-011 / BRI-123 Session Safety Notes
+- The clean-code refactor only restructures admin presentation components and route composition.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - no new client-managed session state
+- The refactor does not widen authority boundaries or add alternative auth flows.

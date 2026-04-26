@@ -1,5 +1,5 @@
 import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
-import { AdminCollectionsMinimalList } from "@/components/admin/admin-collections-minimal-list";
+import { AdminCollectionsWorkspace } from "@/components/admin/admin-collections-workspace";
 import { loadAdminCollectionsPageState } from "@/lib/admin/collections-page-state";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -23,7 +23,7 @@ export default async function AdminCollectionsPage() {
       })}
       title={localize(locale, { en: "Collections", es: "Colecciones", pt: "Colecoes" })}
     >
-      <AdminCollectionsMinimalList locale={locale} state={state} />
+      <AdminCollectionsWorkspace locale={locale} state={state} />
     </AdminModulePlaceholder>
   );
 }

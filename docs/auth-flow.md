@@ -405,3 +405,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/collections/[id]` now renders a stable read-only detail shell instead of a minimal handoff card.
 - The shell still consumes the same server-fetched detail payload and does not introduce any client-authoritative ownership or editability logic.
 - Cover lock semantics, section scaffolding, and document links are presentation-only in this slice; no auth/session, SIWS, or admin guard behavior changed.
+
+## EPIC-011 / BRI-123 Clean-Code Admin UI Refactor
+- `AdminShell`, the admin collections workspace, and the read-only detail shell were refactored into smaller presentation units.
+- The refactor does not change route guards, session reads, SIWS verification, cookie handling, or admin role derivation.
+- Navigation, cards, and detail sections remain presentation-only consumers of the same server-side auth and ownership contracts.

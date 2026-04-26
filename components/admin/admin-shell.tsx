@@ -1,11 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
+import {
+  AdminNavigation,
+  buildAdminNavigation,
+  resolveCurrentAdminLabel
+} from "@/components/admin/admin-shell-navigation";
 import { WalletModal } from "@/components/WalletModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,70 +20,14 @@ type AdminShellProps = {
   children: ReactNode;
 };
 
-type AdminNavItem = {
-  label: string;
-  route: string;
-  icon: string;
-  isEnabled: boolean;
-  badgeCount?: number;
-};
-
-type AdminNavSection = {
-  section: string;
-  items: AdminNavItem[];
-};
-
-function isItemActive(pathname: string, route: string): boolean {
-  if (pathname === route) {
-    return true;
-  }
-
-  return pathname.startsWith(`${route}/`);
-}
-
-function resolveCurrentLabel(pathname: string, adminNav: AdminNavSection[]): string {
-  const enabledItems = adminNav.flatMap((section) => section.items.filter((item) => item.isEnabled));
-  const found = enabledItems.find((item) => isItemActive(pathname, item.route));
-
-  return found?.label ?? enabledItems[0]?.label ?? "Overview";
-}
-
 export function AdminShell({ authenticatedPublicKey, walletLabel, children }: AdminShellProps): ReactElement {
   const { t } = useI18n();
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const adminNav = useMemo<AdminNavSection[]>(
-    () => [
-      {
-        section: t({ en: "General", es: "General", pt: "Geral" }),
-        items: [
-          { label: t({ en: "Overview", es: "Resumen", pt: "Resumo" }), route: "/admin/dashboard", icon: "OV", isEnabled: true },
-          { label: t({ en: "Assets", es: "Activos", pt: "Ativos" }), route: "/admin/assets", icon: "AS", isEnabled: true, badgeCount: 2 },
-          { label: t({ en: "Create asset", es: "Crear activo", pt: "Criar ativo" }), route: "/admin/assets/new", icon: "CR", isEnabled: true }
-        ]
-      },
-      {
-        section: t({ en: "Operations", es: "Operacion", pt: "Operacao" }),
-        items: [
-          { label: "Mint", route: "/admin/mint", icon: "MI", isEnabled: true },
-          { label: t({ en: "Compliance", es: "Cumplimiento", pt: "Compliance" }), route: "/admin/compliance", icon: "CP", isEnabled: true },
-          { label: t({ en: "Collections", es: "Colecciones", pt: "Colecoes" }), route: "/admin/collections", icon: "CO", isEnabled: true },
-          { label: t({ en: "Sales", es: "Ventas", pt: "Vendas" }), route: "/admin/sales", icon: "VE", isEnabled: true },
-          { label: t({ en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }), route: "/admin/treasury", icon: "TE", isEnabled: true },
-          { label: t({ en: "Distribution", es: "Distribucion", pt: "Distribuicao" }), route: "/admin/distributions", icon: "DI", isEnabled: true },
-          { label: t({ en: "Monitoring", es: "Monitoreo", pt: "Monitoramento" }), route: "/admin/monitoring", icon: "MO", isEnabled: true, badgeCount: 3 }
-        ]
-      },
-      {
-        section: t({ en: "System", es: "Sistema", pt: "Sistema" }),
-        items: [{ label: t({ en: "Settings", es: "Configuracion", pt: "Configuracao" }), route: "/admin/settings", icon: "CF", isEnabled: true }]
-      }
-    ],
-    [t]
-  );
+  const adminNav = useMemo(() => buildAdminNavigation(t), [t]);
 
-  const currentLabel = useMemo(() => resolveCurrentLabel(pathname, adminNav), [adminNav, pathname]);
+  const currentLabel = useMemo(() => resolveCurrentAdminLabel(pathname, adminNav), [adminNav, pathname]);
 
   return (
     <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
@@ -102,36 +50,7 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
               </p>
               <p className="admin-sidebar-wallet mt-1 text-xs">{walletLabel}</p>
             </div>
-
-            {adminNav.map((section) => (
-              <div key={section.section} className="space-y-2">
-                <p className="admin-sidebar-section px-2 text-xs uppercase tracking-[0.15em]">{section.section}</p>
-                <nav className="space-y-1">
-                  {section.items
-                    .filter((item) => item.isEnabled)
-                    .map((item) => {
-                      const active = isItemActive(pathname, item.route);
-                      return (
-                        <Link
-                          key={item.route}
-                          href={item.route}
-                          className={`flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm ${
-                            active ? "admin-sidebar-link-active" : "admin-sidebar-link"
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="admin-sidebar-icon rounded-md px-1.5 py-0.5 text-[10px]">{item.icon}</span>
-                            {item.label}
-                          </span>
-                          {item.badgeCount ? (
-                            <span className="admin-sidebar-badge rounded-full px-2 py-0.5 text-xs">{item.badgeCount}</span>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
-                </nav>
-              </div>
-            ))}
+            <AdminNavigation pathname={pathname} sections={adminNav} />
           </Card>
         </aside>
 
@@ -183,36 +102,12 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
               </Button>
             </div>
 
-            {adminNav.map((section) => (
-              <div key={`mobile-${section.section}`} className="mb-4 space-y-2">
-                <p className="admin-sidebar-section px-2 text-xs uppercase tracking-[0.15em]">{section.section}</p>
-                <nav className="space-y-1">
-                  {section.items
-                    .filter((item) => item.isEnabled)
-                    .map((item) => {
-                      const active = isItemActive(pathname, item.route);
-                      return (
-                        <Link
-                          key={`mobile-${item.route}`}
-                          href={item.route}
-                          className={`flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm ${
-                            active ? "admin-sidebar-link-active" : "admin-sidebar-link"
-                          }`}
-                          onClick={() => setIsDrawerOpen(false)}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="admin-sidebar-icon rounded-md px-1.5 py-0.5 text-[10px]">{item.icon}</span>
-                            {item.label}
-                          </span>
-                          {item.badgeCount ? (
-                            <span className="admin-sidebar-badge rounded-full px-2 py-0.5 text-xs">{item.badgeCount}</span>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
-                </nav>
-              </div>
-            ))}
+            <AdminNavigation
+              onNavigate={() => setIsDrawerOpen(false)}
+              pathname={pathname}
+              sectionKeyPrefix="mobile"
+              sections={adminNav}
+            />
           </aside>
         </div>
       )}
