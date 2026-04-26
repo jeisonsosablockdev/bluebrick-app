@@ -13,6 +13,10 @@ on:
       - reopened
       - ready_for_review
 
+concurrency:
+  group: pr-governance-develop-${{ github.event.pull_request.number }}-${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) && 'full' || 'policy' }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -59,6 +63,7 @@ jobs:
 
   governance-policy:
     name: PR Policy (labels, size, branch age, commits, template)
+    if: ${{ contains(fromJson('["labeled","unlabeled","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -71,13 +76,20 @@ jobs:
         with:
           script: |
             const fs = require("fs");
-            const pr = context.payload.pull_request;
-            const labels = pr.labels.map((l) => l.name);
-            const body = (pr.body || "").toLowerCase();
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
             const policyPath = "docs/governance/pr-policy-source-of-truth.json";
             const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            const labels = (pr.labels || [])
+              .map((label) => (typeof label === "string" ? label : label.name))
+              .filter(Boolean);
+            const body = (pr.body || "").toLowerCase();
 
             const errors = [];
 
@@ -133,7 +145,7 @@ jobs:
             const commits = await github.paginate(github.rest.pulls.listCommits, {
               owner,
               repo,
-              pull_number: pr.number,
+              pull_number: prNumber,
               per_page: 100
             });
 

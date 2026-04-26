@@ -81,6 +81,22 @@ npm run pr:open -- \
 ## Label Application Strategy
 Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL instability observed in some environments.
 
+## CI Event Strategy
+- Full governance validation (`validate` + `required docs`) runs only on events that can change code state:
+  - `opened`
+  - `synchronize`
+  - `reopened`
+  - `ready_for_review`
+- PR metadata policy runs only after metadata-bearing events are reliable:
+  - `labeled`
+  - `unlabeled`
+  - `edited`
+  - `synchronize`
+  - `reopened`
+  - `ready_for_review`
+- The policy job re-fetches the current PR body and labels from the live pull-request API instead of trusting the original event payload.
+- Workflow concurrency cancels superseded runs by PR number and event category so metadata-only churn does not fan out into redundant CI.
+
 ## Story Branch RFC Detection
 Docs governance accepts both story-branch naming styles:
 - `epic-011-story-02-...`
