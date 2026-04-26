@@ -11,15 +11,15 @@ export default async function AdminCollectionsPage() {
   return (
     <AdminModulePlaceholder
       highlights={[
-        localize(locale, { en: "Admin-only server contract", es: "Contrato server-side solo admin", pt: "Contrato server-side so admin" }),
-        localize(locale, { en: "Read-only state handoff", es: "Handoff read-only de estados", pt: "Handoff read-only de estados" }),
-        localize(locale, { en: "Final UI deferred to STORY-011-05", es: "UI final diferida a STORY-011-05", pt: "UI final adiada para STORY-011-05" })
+        localize(locale, { en: "Ownership checked server-side", es: "Ownership verificado server-side", pt: "Ownership verificado server-side" }),
+        localize(locale, { en: "Clear loading, empty, and error states", es: "Estados claros de carga, vacio y error", pt: "Estados claros de carregamento, vazio e erro" }),
+        localize(locale, { en: "Card polish continues in later slices", es: "El polish de cards continua en slices posteriores", pt: "O polish dos cards continua em slices posteriores" })
       ]}
-      listTitle={localize(locale, { en: "Minimal contract consumption", es: "Consumo minimo del contrato", pt: "Consumo minimo do contrato" })}
+      listTitle={localize(locale, { en: "Index readiness", es: "Preparacion del index", pt: "Preparacao do index" })}
       subtitle={localize(locale, {
-        en: "Minimal read-only wiring for the approved admin collections list contract.",
-        es: "Wiring minimo read-only para el contrato aprobado del listado admin de colecciones.",
-        pt: "Wiring minimo read-only para o contrato aprovado da lista admin de colecoes."
+        en: "Operational states for the admin collections workspace.",
+        es: "Estados operativos para el workspace admin de colecciones.",
+        pt: "Estados operacionais para o workspace admin de colecoes."
       })}
       title={localize(locale, { en: "Collections", es: "Colecciones", pt: "Colecoes" })}
     >

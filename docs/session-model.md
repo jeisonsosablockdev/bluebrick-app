@@ -153,6 +153,11 @@
   - It does not alter wallet adapter configuration, role derivation, middleware authorization, or handler-level session checks.
   - Main app content remains rendered behind the overlay and becomes visible after the timed fade-out.
 
+- BRI-92 admin collections state UX safety notes:
+  - Empty, loading, and error states are presentation-only wrappers around server-derived admin collection state.
+  - Retry and creation links do not mutate session data and still rely on the destination route/API authorization checks.
+  - No client-side state is used to determine collection ownership or editability.
+
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:
   - `POST /api/admin/core-candy-machine/authorities/prepare`

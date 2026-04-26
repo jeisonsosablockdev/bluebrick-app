@@ -21,6 +21,7 @@
   - Usar referencias visuales externas solo como inspiración de layout/jerarquía, nunca como clon visual.
 - Affected paths:
   - `app/admin/collections/page.tsx`
+  - `app/admin/collections/loading.tsx`
   - `components/admin/*`
   - `e2e/*`
 
@@ -100,6 +101,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-92`
+- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`
+- Final commit hash(es): `pending squash merge commit via PR #143`

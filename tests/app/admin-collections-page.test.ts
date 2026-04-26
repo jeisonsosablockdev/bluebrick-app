@@ -27,8 +27,9 @@ describe("app/admin/collections/page", () => {
   it("renders the loading handoff", () => {
     const html = renderToStaticMarkup(createElement(LoadingAdminCollectionsPage));
 
-    expect(html).toContain("Loading state");
-    expect(html).toContain("Preparing the minimal read-only collections view.");
+    expect(html).toContain("Loading collections workspace");
+    expect(html).toContain("Checking ownership, snapshots, and editable sections.");
+    expect(html).toContain("aria-live=\"polite\"");
   });
 
   it("renders the empty state when no collections are returned", async () => {
@@ -36,8 +37,9 @@ describe("app/admin/collections/page", () => {
 
     const html = renderToStaticMarkup(await AdminCollectionsPage());
 
-    expect(html).toContain("No collections available yet");
-    expect(html).toContain("This admin wallet does not have linked marketplace collections yet.");
+    expect(html).toContain("No owned collections found");
+    expect(html).toContain("Deploy or link a collection before this workspace can expose editable content.");
+    expect(html).toContain("Start a collection");
   });
 
   it("renders the error state when the list contract fails", async () => {
@@ -48,8 +50,9 @@ describe("app/admin/collections/page", () => {
 
     const html = renderToStaticMarkup(await AdminCollectionsPage());
 
-    expect(html).toContain("Collections could not be loaded");
+    expect(html).toContain("Collections workspace unavailable");
     expect(html).toContain("Admin role is required.");
+    expect(html).toContain("Retry loading");
   });
 
   it("renders the success state with summary and rows", async () => {

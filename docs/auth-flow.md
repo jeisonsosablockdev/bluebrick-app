@@ -381,3 +381,9 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - error handoff
   - minimal success rendering
 - No changes were made to SIWS challenge issuance, signature verification, or session creation.
+
+## EPIC-011 / BRI-92 Admin Collections State UX
+- `/admin/collections` now renders polished loading, empty, and error states for the same server-derived page state.
+- The UI copy explicitly preserves the trust boundary: ownership, snapshots, and editable sections are checked server-side.
+- Empty/error CTAs are navigation-only affordances and do not grant access, mutate collection data, or bypass admin session checks.
+- No changes were made to SIWS challenge issuance, signature verification, cookie behavior, or role derivation.
