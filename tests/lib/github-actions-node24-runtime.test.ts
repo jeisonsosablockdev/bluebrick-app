@@ -33,6 +33,14 @@ describe("GitHub Actions Node 24 runtime compatibility", () => {
     );
   });
 
+  it("keeps release drafter on push-only automation to avoid PR churn", () => {
+    expect(releaseDrafterWorkflow).toContain("on:");
+    expect(releaseDrafterWorkflow).toContain("  push:");
+    expect(releaseDrafterWorkflow).toContain("      - develop");
+    expect(releaseDrafterWorkflow).not.toContain("pull_request_target:");
+    expect(releaseDrafterWorkflow).toContain("workflow_dispatch:");
+  });
+
   it("does not rely on the Node 24 force flag workaround", () => {
     expect(prGovernanceWorkflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
     expect(releaseDrafterWorkflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");

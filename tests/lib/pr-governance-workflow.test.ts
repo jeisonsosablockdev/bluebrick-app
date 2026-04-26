@@ -10,20 +10,22 @@ describe("PR governance workflow", () => {
   it("cancels superseded runs by PR number and event category", () => {
     expect(workflowSource).toContain("concurrency:");
     expect(workflowSource).toContain("pr-governance-develop-${{ github.event.pull_request.number }}");
-    expect(workflowSource).toContain("&& 'full' || 'policy' }}");
+    expect(workflowSource).toContain("&& 'full' || 'policy-lite' }}");
     expect(workflowSource).toContain("cancel-in-progress: true");
   });
 
-  it("keeps heavy validation on opened/synchronize events but skips policy on opened", () => {
+  it("keeps heavy validation on opened/synchronize events and limits policy to conservative metadata events", () => {
     expect(workflowSource).toContain(
       `if: \${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
     expect(workflowSource).toContain(
-      `if: \${{ contains(fromJson('["labeled","unlabeled","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
+      `if: \${{ contains(fromJson('["edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
     expect(workflowSource).not.toContain(
-      `if: \${{ contains(fromJson('["opened","labeled","unlabeled","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
+      `if: \${{ contains(fromJson('["opened","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
+    expect(workflowSource).not.toContain("      - labeled");
+    expect(workflowSource).not.toContain("      - unlabeled");
   });
 
   it("re-fetches the current PR state from the GitHub API before enforcing policy", () => {

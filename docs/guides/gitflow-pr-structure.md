@@ -87,15 +87,17 @@ Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL ins
   - `synchronize`
   - `reopened`
   - `ready_for_review`
-- PR metadata policy runs only after metadata-bearing events are reliable:
-  - `labeled`
-  - `unlabeled`
+- PR metadata policy runs in conservative mode on state changes that justify a re-check without fan-out from label churn:
   - `edited`
   - `synchronize`
   - `reopened`
   - `ready_for_review`
 - The policy job re-fetches the current PR body and labels from the live pull-request API instead of trusting the original event payload.
-- Workflow concurrency cancels superseded runs by PR number and event category so metadata-only churn does not fan out into redundant CI.
+- Workflow concurrency cancels superseded runs by PR number and event category (`full` vs `policy-lite`) so metadata-only churn does not fan out into redundant CI.
+- Release drafter stays on minimum-noise mode:
+  - `push` to `develop`
+  - optional manual `workflow_dispatch`
+  - no PR-event trigger churn while the branch is still under review
 
 ## Story Branch RFC Detection
 Docs governance accepts both story-branch naming styles:
