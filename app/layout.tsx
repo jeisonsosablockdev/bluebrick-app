@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AppProviders } from "@/app/providers";
+import { AppSplashScreen } from "@/components/brand/app-splash-screen";
 import { ClientAnalytics } from "@/components/observability/client-analytics";
 import { getServerLocale } from "@/lib/i18n-server";
 import { createRootMetadata } from "@/lib/seo";
@@ -28,12 +29,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   `;
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         <ClientAnalytics />
+        <AppSplashScreen />
         <AppProviders locale={locale}>{children}</AppProviders>
       </body>
     </html>

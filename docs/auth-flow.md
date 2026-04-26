@@ -102,6 +102,11 @@
 - The tour moved from fixed top banner to anchored glass-effect floating card.
 - No changes to SIWS verification, nonce lifecycle, cookie/session boundaries, replay controls, or role checks.
 
+## BRI-121 App Startup Splash Screen
+- Scope limited to the global presentation layer in `components/brand/app-splash-screen.tsx`.
+- The splash is a client-side overlay that waits for initial app load and then fades out.
+- No changes to SIWS verification, nonce lifecycle, cookie/session boundaries, wallet adapter behavior, RBAC, or protected route checks.
+
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |

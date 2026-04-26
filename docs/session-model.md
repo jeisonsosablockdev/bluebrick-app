@@ -148,6 +148,11 @@
   - No mutation to `siws_session` cookie behavior, TTL, refresh/revoke model, or role derivation.
   - No new auth/session API surface introduced by the redesign.
 
+- BRI-121 startup splash safety notes:
+  - The splash screen is a visual overlay only and does not gate, mutate, refresh, or extend `siws_session`.
+  - It does not alter wallet adapter configuration, role derivation, middleware authorization, or handler-level session checks.
+  - Main app content remains rendered behind the overlay and becomes visible after the timed fade-out.
+
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:
   - `POST /api/admin/core-candy-machine/authorities/prepare`
