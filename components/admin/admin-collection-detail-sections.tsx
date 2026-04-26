@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 
+import { formatAdminCollectionDocumentTag } from "@/components/admin/admin-collection-document-copy";
 import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
 import {
   AdminCollectionDetailEmptyState,
@@ -10,37 +11,6 @@ import {
 import type { CollectionBootstrapDocumentItem } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 import { localize, type AppLocale } from "@/lib/i18n";
-
-function formatDocumentTag(locale: AppLocale, tag: CollectionBootstrapDocumentItem["tag"]): string {
-  switch (tag) {
-    case "brochure":
-      return localize(locale, { en: "Brochure", es: "Brochure", pt: "Brochura" });
-    case "legal":
-      return localize(locale, { en: "Legal", es: "Legal", pt: "Legal" });
-    case "financial":
-      return localize(locale, { en: "Financial", es: "Financiero", pt: "Financeiro" });
-    case "title-report":
-      return localize(locale, { en: "Title report", es: "Title report", pt: "Title report" });
-    case "appraisal":
-      return localize(locale, { en: "Appraisal", es: "Avaluo", pt: "Avaliacao" });
-    case "lease":
-      return localize(locale, { en: "Lease", es: "Lease", pt: "Lease" });
-    case "agreement":
-      return localize(locale, { en: "Agreement", es: "Acuerdo", pt: "Acordo" });
-    case "inspection":
-      return localize(locale, { en: "Inspection", es: "Inspeccion", pt: "Inspecao" });
-    case "tax":
-      return localize(locale, { en: "Tax", es: "Impuestos", pt: "Impostos" });
-    case "insurance":
-      return localize(locale, { en: "Insurance", es: "Seguro", pt: "Seguro" });
-    case "permit":
-      return localize(locale, { en: "Permit", es: "Permiso", pt: "Permissao" });
-    case "floor-plan":
-      return localize(locale, { en: "Floor plan", es: "Plano", pt: "Planta" });
-    default:
-      return localize(locale, { en: "Other", es: "Otro", pt: "Outro" });
-  }
-}
 
 function DocumentsList({
   locale,
@@ -68,7 +38,7 @@ function DocumentsList({
           <div className="space-y-1">
             <div className="flex flex-wrap gap-2">
               <span className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs text-white/70">
-                {formatDocumentTag(locale, item.tag)}
+                {formatAdminCollectionDocumentTag(locale, item.tag)}
               </span>
               <span className="inline-flex min-h-8 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs text-white/45">
                 {item.source}
@@ -176,20 +146,22 @@ export function AdminCollectionDetailSections({
   content,
   summarySection,
   propertyInformationSection,
-  gallerySection
+  gallerySection,
+  documentsSection
 }: {
   locale: AppLocale;
   content: AdminCollectionContentRecord;
   summarySection?: ReactNode;
   propertyInformationSection?: ReactNode;
   gallerySection?: ReactNode;
+  documentsSection?: ReactNode;
 }): ReactElement {
   return (
     <>
       {summarySection ?? <SummarySection content={content} locale={locale} />}
       {propertyInformationSection ?? <PropertyInformationSection content={content} locale={locale} />}
       {gallerySection ?? <AdminCollectionGalleryShell content={content} locale={locale} />}
-      <DocumentsSection content={content} locale={locale} />
+      {documentsSection ?? <DocumentsSection content={content} locale={locale} />}
     </>
   );
 }

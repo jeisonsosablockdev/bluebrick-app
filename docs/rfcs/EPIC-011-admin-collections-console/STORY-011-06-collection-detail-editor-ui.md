@@ -98,9 +98,9 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `BRI-95`, `BRI-96`, `BRI-97`, `BRI-98`
-- Related PR(s): `#146`, `#148`, `#149`, `TBD`
-- Final commit hash(es): `8aa9aa4`, `aa4d919`, `f93c8f5`, `TBD`
+- Related issue(s): `BRI-95`, `BRI-96`, `BRI-97`, `BRI-98`, `BRI-99`
+- Related PR(s): `#146`, `#148`, `#149`, `#150`, `TBD`
+- Final commit hash(es): `8aa9aa4`, `aa4d919`, `f93c8f5`, `3077016`, `TBD`
 
 ## Slice Notes
 - `2026-04-26`:
@@ -108,3 +108,4 @@
   - `BRI-96` mounts the first live editor for `Fractional investment summary`, preserving independent `dirty`, `saving`, `success`, and `error` feedback inside the section.
   - `BRI-97` mounts the `Property information` editor with the same isolated save contract and extracts a shared text-section editor core so later slices do not duplicate textarea mutation logic.
   - `BRI-98` mounts a dedicated gallery tabs shell, preserving separate lanes for `galleryImages` and `propertyImages` while staging add/replace/delete action surfaces for the next media slice.
+  - `BRI-99` mounts the `Documents` editor with section-scoped save/cancel and editable document metadata over the approved `documents[]` patch contract while preserving inherited upload metadata.

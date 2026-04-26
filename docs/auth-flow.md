@@ -428,3 +428,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/collections/[id]` now mounts a dedicated gallery shell with separate tabs for marketplace gallery and property imagery.
 - The new tab state is presentation-only and does not change the authenticated request path, admin role derivation, or server-side ownership enforcement.
 - No upload mutation, nonce, cookie, or client-authoritative permission behavior was introduced in this slice.
+
+## EPIC-011 / BRI-99 Documents Editor
+- `/admin/collections/[id]` now mounts a client-side documents editor that persists through the same authenticated admin PATCH route used by the other section editors.
+- Document edits remain scoped to the `documents` section and still rely on the existing server-side ownership guard and admin role derivation.
+- No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced.

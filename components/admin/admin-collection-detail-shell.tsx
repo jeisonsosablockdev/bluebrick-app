@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
 import { AdminCollectionDetailHero } from "@/components/admin/admin-collection-detail-hero";
 import { AdminCollectionDetailSections } from "@/components/admin/admin-collection-detail-sections";
+import { AdminCollectionDocumentsEditor } from "@/components/admin/admin-collection-documents-editor";
 import { AdminCollectionPropertyInformationEditor } from "@/components/admin/admin-collection-property-information-editor";
 import { AdminCollectionSummaryEditor } from "@/components/admin/admin-collection-summary-editor";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
@@ -31,9 +32,9 @@ function DetailShellFooter({
       </Link>
       <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/65">
         {localize(locale, {
-          en: "Summary and property editing are live, and gallery tabs are now staged. Documents arrive in the next STORY-011-06 slice.",
-          es: "La edicion de summary y property information ya esta activa, y las tabs de gallery ya quedaron montadas. Documents llega en el siguiente slice de STORY-011-06.",
-          pt: "A edicao de summary e property information ja esta ativa, e as abas de gallery agora estao montadas. Documents chega no proximo slice de STORY-011-06."
+          en: "Summary, property information, and documents editing are live. Gallery mutations remain staged for the next STORY-011-06 slice.",
+          es: "La edicion de summary, property information y documents ya esta activa. Las mutaciones de gallery siguen preparadas para el siguiente slice de STORY-011-06.",
+          pt: "A edicao de summary, property information e documents ja esta ativa. As mutacoes de gallery permanecem preparadas para o proximo slice da STORY-011-06."
         })}
       </span>
     </div>
@@ -66,6 +67,13 @@ export function AdminCollectionDetailShell({
           />
         }
         gallerySection={<AdminCollectionGalleryShell content={content} locale={locale} />}
+        documentsSection={
+          <AdminCollectionDocumentsEditor
+            entryId={content.entryId}
+            initialDocuments={content.documents}
+            locale={locale}
+          />
+        }
       />
       <DetailShellFooter locale={locale} />
     </div>

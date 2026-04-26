@@ -370,3 +370,14 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - no new authenticated mutation path in this slice
 - The staged gallery action surfaces do not persist any browser-owned authority state and do not widen the session boundary.
+
+## EPIC-011 / BRI-99 Documents Editor Session Notes
+- The documents editor introduces local section state for:
+  - editable document rows
+  - save/cancel feedback
+  - section-scoped dirty detection
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated PATCH route as the only persistence path
+- Inherited upload metadata is rendered as presentation detail only and does not create any new browser-owned authority state.
