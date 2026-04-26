@@ -127,6 +127,9 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Managed from Candy Machine");
     expect(html).toContain("Read-only cover");
     expect(html).toContain("Fractional investment summary");
+    expect(html).toContain("Summary narrative");
+    expect(html).toContain("Save summary");
+    expect(html).toContain("Cancel");
     expect(html).toContain("Property information");
     expect(html).toContain("Project gallery");
     expect(html).toContain("Documents");
@@ -136,6 +139,7 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Collection111");
     expect(html).toContain("Candy111");
     expect(html).toContain("verified / completed");
+    expect(html).toContain("Summary editor mounted");
     expect(html).toContain("Back to collections");
   });
 });

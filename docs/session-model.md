@@ -343,3 +343,14 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - no new client-managed session state
 - The refactor does not widen authority boundaries or add alternative auth flows.
+
+## EPIC-011 / BRI-96 Summary Editor Session Notes
+- The summary editor introduces local per-section UI state only:
+  - draft text
+  - dirty flag
+  - saving/success/error feedback
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated PATCH route as the only persistence path
+- No new session token shape, refresh rule, or browser-stored authority state was added.

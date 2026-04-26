@@ -55,15 +55,15 @@ export default async function AdminCollectionDetailPage({
   return (
     <AdminModulePlaceholder
       highlights={[
-        localize(locale, { en: "Read-only detail shell mounted", es: "Shell read-only de detalle montado", pt: "Shell read-only de detalhe montado" }),
+        localize(locale, { en: "Summary editor mounted", es: "Editor de summary montado", pt: "Editor de summary montado" }),
         localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" }),
-        localize(locale, { en: "Section scaffolds ready for modular editors", es: "Scaffolds de seccion listos para editores modulares", pt: "Scaffolds de secao prontos para editores modulares" })
+        localize(locale, { en: "Other sections remain modular scaffolds", es: "Las otras secciones siguen como scaffolds modulares", pt: "As outras secoes continuam como scaffolds modulares" })
       ]}
       listTitle={localize(locale, { en: "Detail shell", es: "Shell de detalle", pt: "Shell de detalhe" })}
       subtitle={localize(locale, {
-        en: "Read-only detail layout over the approved detail contract, ready for modular section editors in later slices.",
-        es: "Layout de detalle read-only sobre el contrato aprobado de detalle, listo para editores modulares por seccion en slices posteriores.",
-        pt: "Layout de detalhe read-only sobre o contrato aprovado de detalhe, pronto para editores modulares por secao em slices posteriores."
+        en: "Detail layout over the approved contract, now with the summary edit loop live and the remaining sections staged for later slices.",
+        es: "Layout de detalle sobre el contrato aprobado, ahora con el loop de edicion del summary activo y las secciones restantes preparadas para slices posteriores.",
+        pt: "Layout de detalhe sobre o contrato aprovado, agora com o loop de edicao do summary ativo e as secoes restantes preparadas para slices posteriores."
       })}
       title={state.content.title}
     >

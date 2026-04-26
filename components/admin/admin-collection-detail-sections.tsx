@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
-import { Card } from "@/components/ui/card";
+import {
+  AdminCollectionDetailEmptyState,
+  AdminCollectionDetailSectionShell,
+  AdminCollectionDetailTextContent
+} from "@/components/admin/admin-collection-detail-section-primitives";
 import type { CollectionBootstrapDocumentItem, CollectionBootstrapImageItem } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 import { localize, type AppLocale } from "@/lib/i18n";
@@ -38,66 +42,6 @@ function formatDocumentTag(locale: AppLocale, tag: CollectionBootstrapDocumentIt
   }
 }
 
-function SectionShell({
-  eyebrow,
-  title,
-  description,
-  children
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  children: ReactElement;
-}): ReactElement {
-  return (
-    <Card className="space-y-4">
-      <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.18em] text-white/45">{eyebrow}</p>
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
-            <p className="max-w-3xl text-sm leading-6 text-white/70">{description}</p>
-          </div>
-          <span className="inline-flex min-h-9 items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/65">
-            {eyebrow}
-          </span>
-        </div>
-      </div>
-      {children}
-    </Card>
-  );
-}
-
-function EmptySectionState({
-  message
-}: {
-  message: string;
-}): ReactElement {
-  return (
-    <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-white/60">
-      {message}
-    </div>
-  );
-}
-
-function TextSectionContent({
-  value,
-  emptyMessage
-}: {
-  value: string | null;
-  emptyMessage: string;
-}): ReactElement {
-  if (!value) {
-    return <EmptySectionState message={emptyMessage} />;
-  }
-
-  return (
-    <div className="rounded-2xl border border-white/10 bg-black/10 p-4 text-sm leading-7 text-white/85">
-      {value}
-    </div>
-  );
-}
-
 function ImageRail({
   locale,
   title,
@@ -118,7 +62,7 @@ function ImageRail({
         </span>
       </div>
       {items.length === 0 ? (
-        <EmptySectionState message={emptyMessage} />
+        <AdminCollectionDetailEmptyState message={emptyMessage} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
@@ -155,7 +99,7 @@ function DocumentsList({
 }): ReactElement {
   if (items.length === 0) {
     return (
-      <EmptySectionState
+      <AdminCollectionDetailEmptyState
         message={localize(locale, {
           en: "No documents were linked yet. The editor slice will mount document controls here next.",
           es: "Aun no hay documentos vinculados. El siguiente slice montara aqui los controles de documentos.",
@@ -203,7 +147,7 @@ function SummarySection({
   content: AdminCollectionContentRecord;
 }): ReactElement {
   return (
-    <SectionShell
+    <AdminCollectionDetailSectionShell
       description={localize(locale, {
         en: "Long-form commercial narrative stays in its own module so the future summary editor can mount here without disturbing the page shell.",
         es: "La narrativa comercial larga vive en su propio modulo para que el futuro editor de resumen se monte aqui sin perturbar el shell.",
@@ -212,7 +156,7 @@ function SummarySection({
       eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
       title={localize(locale, { en: "Fractional investment summary", es: "Fractional investment summary", pt: "Fractional investment summary" })}
     >
-      <TextSectionContent
+      <AdminCollectionDetailTextContent
         emptyMessage={localize(locale, {
           en: "No summary content was persisted yet. The editor slice will mount save/cancel controls here next.",
           es: "Aun no se persistio contenido de resumen. El siguiente slice montara aqui los controles save/cancel.",
@@ -220,7 +164,7 @@ function SummarySection({
         })}
         value={content.fractionalInvestmentSummary}
       />
-    </SectionShell>
+    </AdminCollectionDetailSectionShell>
   );
 }
 
@@ -232,7 +176,7 @@ function PropertyInformationSection({
   content: AdminCollectionContentRecord;
 }): ReactElement {
   return (
-    <SectionShell
+    <AdminCollectionDetailSectionShell
       description={localize(locale, {
         en: "Property information stays isolated so the future text editor can reuse the same layout and status surface.",
         es: "La informacion de propiedad queda aislada para que el futuro editor de texto reutilice el mismo layout y superficie de estado.",
@@ -241,7 +185,7 @@ function PropertyInformationSection({
       eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
       title={localize(locale, { en: "Property information", es: "Property information", pt: "Property information" })}
     >
-      <TextSectionContent
+      <AdminCollectionDetailTextContent
         emptyMessage={localize(locale, {
           en: "No property information was persisted yet. This block is ready for the dedicated editor slice.",
           es: "Aun no se persistio property information. Este bloque ya esta listo para el slice del editor dedicado.",
@@ -249,7 +193,7 @@ function PropertyInformationSection({
         })}
         value={content.propertyInformation}
       />
-    </SectionShell>
+    </AdminCollectionDetailSectionShell>
   );
 }
 
@@ -261,7 +205,7 @@ function ProjectGallerySection({
   content: AdminCollectionContentRecord;
 }): ReactElement {
   return (
-    <SectionShell
+    <AdminCollectionDetailSectionShell
       description={localize(locale, {
         en: "The gallery area stays split between marketplace gallery and property imagery, preserving the approved data model before upload/edit interactions arrive.",
         es: "La zona de galeria se mantiene separada entre marketplace gallery y property imagery, preservando el modelo aprobado antes de que lleguen las interacciones de upload/edicion.",
@@ -292,7 +236,7 @@ function ProjectGallerySection({
           title={localize(locale, { en: "Property images", es: "Property images", pt: "Property images" })}
         />
       </div>
-    </SectionShell>
+    </AdminCollectionDetailSectionShell>
   );
 }
 
@@ -304,7 +248,7 @@ function DocumentsSection({
   content: AdminCollectionContentRecord;
 }): ReactElement {
   return (
-    <SectionShell
+    <AdminCollectionDetailSectionShell
       description={localize(locale, {
         en: "Documents stay rendered in a stable read-only list so the later editor can focus on mutation flows instead of rebuilding layout and metadata presentation.",
         es: "Los documentos quedan renderizados en una lista read-only estable para que el editor posterior se enfoque en los flujos de mutacion y no en rehacer layout y metadata.",
@@ -314,20 +258,22 @@ function DocumentsSection({
       title={localize(locale, { en: "Documents", es: "Documents", pt: "Documents" })}
     >
       <DocumentsList items={content.documents} locale={locale} />
-    </SectionShell>
+    </AdminCollectionDetailSectionShell>
   );
 }
 
 export function AdminCollectionDetailSections({
   locale,
-  content
+  content,
+  summarySection
 }: {
   locale: AppLocale;
   content: AdminCollectionContentRecord;
+  summarySection?: ReactNode;
 }): ReactElement {
   return (
     <>
-      <SummarySection content={content} locale={locale} />
+      {summarySection ?? <SummarySection content={content} locale={locale} />}
       <PropertyInformationSection content={content} locale={locale} />
       <ProjectGallerySection content={content} locale={locale} />
       <DocumentsSection content={content} locale={locale} />

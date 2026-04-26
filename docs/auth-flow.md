@@ -410,3 +410,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `AdminShell`, the admin collections workspace, and the read-only detail shell were refactored into smaller presentation units.
 - The refactor does not change route guards, session reads, SIWS verification, cookie handling, or admin role derivation.
 - Navigation, cards, and detail sections remain presentation-only consumers of the same server-side auth and ownership contracts.
+
+## EPIC-011 / BRI-96 Summary Editor
+- `/admin/collections/[id]` now mounts a client-side editor only for the `Fractional investment summary` section.
+- The edit loop still depends on the same authenticated admin request path:
+  - existing `siws_session` cookie
+  - server-side `admin` role derivation
+  - server-side ownership validation inside `PATCH /api/admin/collections/[id]`
+- The client only manages local draft/saving feedback and never becomes the authority for ownership, session validity, or editable scope.

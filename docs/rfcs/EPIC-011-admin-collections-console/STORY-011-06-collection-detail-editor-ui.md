@@ -81,7 +81,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar cascarón visual y conectar mutaciones de React Query a la API unificada.
+  Continuar con `property information`, `gallery` y `documents` sobre el mismo patrón modular por sección.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -98,6 +98,11 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `BRI-95`
-- Related PR(s): `#146`
-- Final commit hash(es): `8aa9aa4`
+- Related issue(s): `BRI-95`, `BRI-96`
+- Related PR(s): `#146`, `TBD`
+- Final commit hash(es): `8aa9aa4`, `TBD`
+
+## Slice Notes
+- `2026-04-26`:
+  - `BRI-95` mounted the read-only shell and stable section scaffolds.
+  - `BRI-96` mounts the first live editor for `Fractional investment summary`, preserving independent `dirty`, `saving`, `success`, and `error` feedback inside the section.
