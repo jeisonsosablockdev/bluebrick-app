@@ -131,6 +131,8 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Save summary");
     expect(html).toContain("Cancel");
     expect(html).toContain("Property information");
+    expect(html).toContain("Property description");
+    expect(html).toContain("Save property information");
     expect(html).toContain("Project gallery");
     expect(html).toContain("Documents");
     expect(html).toContain("Gallery images");
@@ -140,6 +142,7 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Candy111");
     expect(html).toContain("verified / completed");
     expect(html).toContain("Summary editor mounted");
+    expect(html).toContain("Property information editor mounted");
     expect(html).toContain("Back to collections");
   });
 });

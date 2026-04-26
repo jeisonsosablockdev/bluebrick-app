@@ -106,3 +106,4 @@
 - `2026-04-26`:
   - `BRI-95` mounted the read-only shell and stable section scaffolds.
   - `BRI-96` mounts the first live editor for `Fractional investment summary`, preserving independent `dirty`, `saving`, `success`, and `error` feedback inside the section.
+  - `BRI-97` mounts the `Property information` editor with the same isolated save contract and extracts a shared text-section editor core so later slices do not duplicate textarea mutation logic.

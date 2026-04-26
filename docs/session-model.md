@@ -354,3 +354,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - same authenticated PATCH route as the only persistence path
 - No new session token shape, refresh rule, or browser-stored authority state was added.
+
+## EPIC-011 / BRI-97 Property Information Editor Session Notes
+- The property information editor reuses the same per-section local UI state pattern as the summary editor.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated PATCH route as the only persistence path
+- The shared text-section editor core does not introduce a global client form store or any new session surface.

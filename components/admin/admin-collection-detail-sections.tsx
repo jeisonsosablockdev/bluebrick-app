@@ -265,16 +265,18 @@ function DocumentsSection({
 export function AdminCollectionDetailSections({
   locale,
   content,
-  summarySection
+  summarySection,
+  propertyInformationSection
 }: {
   locale: AppLocale;
   content: AdminCollectionContentRecord;
   summarySection?: ReactNode;
+  propertyInformationSection?: ReactNode;
 }): ReactElement {
   return (
     <>
       {summarySection ?? <SummarySection content={content} locale={locale} />}
-      <PropertyInformationSection content={content} locale={locale} />
+      {propertyInformationSection ?? <PropertyInformationSection content={content} locale={locale} />}
       <ProjectGallerySection content={content} locale={locale} />
       <DocumentsSection content={content} locale={locale} />
     </>

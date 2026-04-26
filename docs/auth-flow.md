@@ -418,3 +418,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - server-side `admin` role derivation
   - server-side ownership validation inside `PATCH /api/admin/collections/[id]`
 - The client only manages local draft/saving feedback and never becomes the authority for ownership, session validity, or editable scope.
+
+## EPIC-011 / BRI-97 Property Information Editor
+- `/admin/collections/[id]` now mounts a second client-side editor for the `Property information` section.
+- Both text editors still persist through the same authenticated admin PATCH route and the same server-side ownership guard.
+- No new auth flow, nonce behavior, cookie handling, or client-authoritative permission model was introduced.
