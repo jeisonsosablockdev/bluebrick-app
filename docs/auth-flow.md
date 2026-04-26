@@ -400,3 +400,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - Linked cards now navigate to `/admin/collections/[id]`.
 - The destination route re-fetches detail server-side through the existing admin detail contract instead of trusting client route state.
 - Non-linked cards remain blocked until the health/manual-review flow exists, so this slice does not widen admin authority boundaries.
+
+## EPIC-011 / BRI-95 Read-Only Detail Shell
+- `/admin/collections/[id]` now renders a stable read-only detail shell instead of a minimal handoff card.
+- The shell still consumes the same server-fetched detail payload and does not introduce any client-authoritative ownership or editability logic.
+- Cover lock semantics, section scaffolding, and document links are presentation-only in this slice; no auth/session, SIWS, or admin guard behavior changed.

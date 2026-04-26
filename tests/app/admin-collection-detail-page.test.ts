@@ -70,9 +70,47 @@ describe("app/admin/collections/[id]/page", () => {
         coverImageUrl: "https://cdn.example.com/ocean.jpg",
         collectionAddress: "Collection111",
         candyMachineAddress: "Candy111",
-        galleryImages: [],
-        propertyImages: [],
-        documents: [],
+        galleryImages: [
+          {
+            id: "gallery-1",
+            url: "https://cdn.example.com/gallery-1.jpg",
+            title: "Ocean lounge",
+            alt: "Ocean lounge",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "gallery-1.jpg",
+            fileRefId: "file-gallery-1",
+            source: "marketplace"
+          }
+        ],
+        propertyImages: [
+          {
+            id: "property-1",
+            url: "https://cdn.example.com/property-1.jpg",
+            title: "Facade",
+            alt: "Facade",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "property-1.jpg",
+            fileRefId: "file-property-1",
+            source: "snapshot"
+          }
+        ],
+        documents: [
+          {
+            id: "document-1",
+            tag: "brochure",
+            title: "Ocean brochure",
+            label: "Investor brochure",
+            description: "Commercial brochure",
+            url: "https://cdn.example.com/brochure.pdf",
+            displayOrder: 1,
+            mimeType: "application/pdf",
+            fileName: "brochure.pdf",
+            fileRefId: "file-brochure-1",
+            source: "upload"
+          }
+        ],
         fractionalInvestmentSummary: "Stable income.",
         propertyInformation: "Prime oceanfront location.",
         googleMapsPlace: null,
@@ -86,8 +124,15 @@ describe("app/admin/collections/[id]/page", () => {
     }));
 
     expect(html).toContain("Ocean View Residences");
-    expect(html).toContain("Detail route active");
-    expect(html).toContain("Editor pending");
+    expect(html).toContain("Managed from Candy Machine");
+    expect(html).toContain("Read-only cover");
+    expect(html).toContain("Fractional investment summary");
+    expect(html).toContain("Property information");
+    expect(html).toContain("Project gallery");
+    expect(html).toContain("Documents");
+    expect(html).toContain("Gallery images");
+    expect(html).toContain("Property images");
+    expect(html).toContain("Investor brochure");
     expect(html).toContain("Collection111");
     expect(html).toContain("Candy111");
     expect(html).toContain("verified / completed");

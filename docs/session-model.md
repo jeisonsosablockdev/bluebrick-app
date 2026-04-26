@@ -167,6 +167,10 @@
   - Navigation from the index is enabled only for `linked` entries and remains a presentation-level affordance, not an authority check.
   - The `/admin/collections/[id]` page revalidates access through the existing admin API/session boundary before rendering any detail context.
   - No new session mutation, refresh, or client-side authorization logic was introduced in this slice.
+- BRI-95 read-only detail shell safety notes:
+  - The detail route now renders a richer read-only shell, but it still derives all content from the same server-fetched admin detail payload.
+  - Cover lock semantics and section scaffolding do not create any new write surface or bypass the centralized ownership check.
+  - Document links and media rendering remain presentation-only and do not alter session state or authorization boundaries.
 
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:

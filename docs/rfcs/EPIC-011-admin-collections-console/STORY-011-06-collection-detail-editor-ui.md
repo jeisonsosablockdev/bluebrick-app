@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-23`
+- Last Updated: `2026-04-26`
 
 ## Context
 - Problem:
@@ -98,6 +98,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-95`
+- Related PR(s): `#146`
+- Final commit hash(es): `8aa9aa4`
