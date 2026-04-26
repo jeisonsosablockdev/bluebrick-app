@@ -101,6 +101,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `BRI-92`
-- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`
-- Final commit hash(es): `pending squash merge commit via PR #143`
+- Related issue(s): `BRI-92`, `BRI-93`
+- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`, `TBD (BRI-93)`
+- Final commit hash(es): `abb4dad465b11bfe7e88ca6e563a36d1fabe9542 (BRI-92)`, `pending (BRI-93)`

@@ -158,6 +158,11 @@
   - Retry and creation links do not mutate session data and still rely on the destination route/API authorization checks.
   - No client-side state is used to determine collection ownership or editability.
 
+- BRI-93 admin collection cards safety notes:
+  - Success-state cards are a visual transformation only over existing server-side collection payloads.
+  - Added card CTAs do not create or update session state and do not bypass admin authorization checks.
+  - Validation/editability status shown in cards continues to come from server classification, not browser state.
+
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:
   - `POST /api/admin/core-candy-machine/authorities/prepare`

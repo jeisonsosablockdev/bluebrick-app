@@ -89,10 +89,15 @@ describe("app/admin/collections/page", () => {
 
     const html = renderToStaticMarkup(await AdminCollectionsPage());
 
-    expect(html).toContain("Contract handoff");
+    expect(html).toContain("Collections dashboard");
+    expect(html).toContain("Owned projects workspace");
     expect(html).toContain("Ocean View Residences");
     expect(html).toContain("Harbor Point");
-    expect(html).toContain("Editable sections: summary, gallery");
+    expect(html).toContain("Collection cards");
+    expect(html).toContain("Manage project");
+    expect(html).toContain("Location unavailable");
+    expect(html).toContain("Summary");
+    expect(html).toContain("Gallery");
     expect(html).toContain("Not editable in this validation state.");
   });
 });

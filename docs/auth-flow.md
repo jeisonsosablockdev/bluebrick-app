@@ -387,3 +387,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - The UI copy explicitly preserves the trust boundary: ownership, snapshots, and editable sections are checked server-side.
 - Empty/error CTAs are navigation-only affordances and do not grant access, mutate collection data, or bypass admin session checks.
 - No changes were made to SIWS challenge issuance, signature verification, cookie behavior, or role derivation.
+
+## EPIC-011 / BRI-93 Admin Collection Cards UI
+- `/admin/collections` now renders the success state as visual collection cards instead of a minimal row list.
+- Cards remain fully backed by the same server-derived read-model payload and do not introduce client-authoritative ownership logic.
+- CTA surfaces added in cards are presentation-only in this slice; no auth/session or admin guard behavior changed.

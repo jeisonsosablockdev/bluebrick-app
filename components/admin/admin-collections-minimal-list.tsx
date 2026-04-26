@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import Image from "next/image";
 
 import { Card } from "@/components/ui/card";
 import type { AdminCollectionsPageState } from "@/lib/admin/collections-page-state";
@@ -64,6 +65,14 @@ function getEditableSectionsLabel(locale: AppLocale, sections: string[]): string
     en: `Editable sections: ${sections.join(", ")}`,
     es: `Secciones editables: ${sections.join(", ")}`,
     pt: `Secoes editaveis: ${sections.join(", ")}`
+  });
+}
+
+function getLocationLabel(locale: AppLocale): string {
+  return localize(locale, {
+    en: "Location unavailable",
+    es: "Ubicacion no disponible",
+    pt: "Localizacao indisponivel"
   });
 }
 
@@ -147,6 +156,59 @@ function StatePanel({
   );
 }
 
+function EditableSectionPill({
+  locale,
+  section
+}: {
+  locale: AppLocale;
+  section: string;
+}): ReactElement {
+  const label = section === "propertyInformation"
+    ? localize(locale, { en: "Property info", es: "Info de propiedad", pt: "Info da propriedade" })
+    : section === "summary"
+      ? localize(locale, { en: "Summary", es: "Resumen", pt: "Resumo" })
+      : section === "gallery"
+        ? localize(locale, { en: "Gallery", es: "Galeria", pt: "Galeria" })
+        : section === "documents"
+          ? localize(locale, { en: "Documents", es: "Documentos", pt: "Documentos" })
+          : section;
+
+  return (
+    <span className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs font-medium text-white/80">
+      {label}
+    </span>
+  );
+}
+
+function SuccessCardAction({
+  locale,
+  canManage
+}: {
+  locale: AppLocale;
+  canManage: boolean;
+}): ReactElement {
+  return (
+    <button
+      className={`inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
+        canManage
+          ? "border border-white/20 bg-white/10 text-white/85"
+          : "border border-white/10 bg-white/5 text-white/45"
+      }`}
+      disabled
+      title={localize(locale, {
+        en: "Detail navigation is enabled in the next slice.",
+        es: "La navegacion a detalle se habilita en el siguiente slice.",
+        pt: "A navegacao de detalhe sera habilitada no proximo slice."
+      })}
+      type="button"
+    >
+      {canManage
+        ? localize(locale, { en: "Manage project", es: "Gestionar proyecto", pt: "Gerenciar projeto" })
+        : localize(locale, { en: "Needs review", es: "Requiere revision", pt: "Requer revisao" })}
+    </button>
+  );
+}
+
 export function AdminCollectionsMinimalList({
   locale,
   state
@@ -214,19 +276,26 @@ export function AdminCollectionsMinimalList({
   return (
     <div className="space-y-4">
       <Card className="space-y-4">
-        <div className="space-y-1">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {localize(locale, {
+              en: "Collections dashboard",
+              es: "Dashboard de colecciones",
+              pt: "Dashboard de colecoes"
+            })}
+          </p>
           <h3 className="text-sm font-semibold text-white">
             {localize(locale, {
-              en: "Contract handoff",
-              es: "Handoff del contrato",
-              pt: "Handoff do contrato"
+              en: "Owned projects workspace",
+              es: "Workspace de proyectos propios",
+              pt: "Workspace de projetos proprios"
             })}
           </h3>
           <p className="text-sm text-white/70">
             {localize(locale, {
-              en: "This slice keeps rendering intentionally simple and read-only so the later index UI can refine presentation without reopening the payload contract.",
-              es: "Este slice mantiene el render simple y de solo lectura para que la UI final del index refine la presentacion sin reabrir el contrato del payload.",
-              pt: "Este slice mantém o render simples e somente leitura para que a UI final do index refine a apresentacao sem reabrir o contrato do payload."
+              en: "Each card mirrors the approved read-model contract and highlights readiness for editing without changing ownership rules.",
+              es: "Cada card refleja el contrato aprobado del read-model y destaca readiness de edicion sin cambiar reglas de ownership.",
+              pt: "Cada card espelha o contrato aprovado do read-model e destaca readiness de edicao sem mudar regras de ownership."
             })}
           </p>
         </div>
@@ -249,53 +318,100 @@ export function AdminCollectionsMinimalList({
       <Card className="space-y-3">
         <h3 className="text-sm font-semibold text-white">
           {localize(locale, {
-            en: "Collections list",
-            es: "Listado de colecciones",
-            pt: "Lista de colecoes"
+            en: "Collection cards",
+            es: "Cards de colecciones",
+            pt: "Cards de colecoes"
           })}
         </h3>
-        <ul className="space-y-3">
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {state.collections.map((collection) => (
-            <li key={collection.entryId} className="rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <li key={collection.entryId} className="overflow-hidden rounded-2xl border border-white/10 bg-black/10">
+              <div className="relative aspect-[16/9] border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.2),transparent_50%),linear-gradient(165deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))]">
+                {collection.coverImageUrl ? (
+                  <Image
+                    alt={localize(locale, {
+                      en: `${collection.title} cover`,
+                      es: `Caratula de ${collection.title}`,
+                      pt: `Capa de ${collection.title}`
+                    })}
+                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    src={collection.coverImageUrl}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-6 text-center text-sm text-white/70">
+                    {localize(locale, {
+                      en: "Cover pending from on-chain metadata",
+                      es: "Caratula pendiente desde metadata on-chain",
+                      pt: "Capa pendente da metadata on-chain"
+                    })}
+                  </div>
+                )}
+                <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+                  <span
+                    className={`inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-xs font-medium backdrop-blur-sm ${getValidationBadgeClass(collection.validationState)}`}
+                  >
+                    {getValidationLabel(locale, collection.validationState)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-white">{collection.title}</p>
-                  <p className="text-xs text-white/55">
+                  <p className="text-base font-semibold text-white">{collection.title}</p>
+                  <p className="text-xs text-white/60">{getLocationLabel(locale)}</p>
+                  <p className="text-xs text-white/50">
                     {localize(locale, { en: "Updated", es: "Actualizada", pt: "Atualizada" })}:{" "}
                     {formatDate(locale, collection.updatedAt)}
                   </p>
                 </div>
-                <span
-                  className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-xs font-medium ${getValidationBadgeClass(collection.validationState)}`}
-                >
-                  {getValidationLabel(locale, collection.validationState)}
-                </span>
-              </div>
 
-              <div className="mt-3 space-y-2 text-xs text-white/70">
-                <p className="break-all">
-                  <span className="text-white/45">
+                <div className="grid gap-2 text-xs text-white/70">
+                  <p className="break-all rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                    <span className="text-white/45">
+                      {localize(locale, {
+                        en: "Collection",
+                        es: "Coleccion",
+                        pt: "Colecao"
+                      })}
+                      :
+                    </span>{" "}
+                    {collection.collectionAddress}
+                  </p>
+                  <p className="break-all rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                    <span className="text-white/45">
+                      {localize(locale, {
+                        en: "Candy machine",
+                        es: "Candy machine",
+                        pt: "Candy machine"
+                      })}
+                      :
+                    </span>{" "}
+                    {collection.candyMachineAddress}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.14em] text-white/45">
                     {localize(locale, {
-                      en: "Collection",
-                      es: "Coleccion",
-                      pt: "Colecao"
+                      en: "Editable sections",
+                      es: "Secciones editables",
+                      pt: "Secoes editaveis"
                     })}
-                    :
-                  </span>{" "}
-                  {collection.collectionAddress}
-                </p>
-                <p className="break-all">
-                  <span className="text-white/45">
-                    {localize(locale, {
-                      en: "Candy machine",
-                      es: "Candy machine",
-                      pt: "Candy machine"
-                    })}
-                    :
-                  </span>{" "}
-                  {collection.candyMachineAddress}
-                </p>
-                <p>{getEditableSectionsLabel(locale, collection.editableSections)}</p>
+                  </p>
+                  {collection.editableSections.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {collection.editableSections.map((section) => (
+                        <EditableSectionPill key={`${collection.entryId}-${section}`} locale={locale} section={section} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-white/60">{getEditableSectionsLabel(locale, collection.editableSections)}</p>
+                  )}
+                </div>
+
+                <SuccessCardAction locale={locale} canManage={collection.validationState === "linked"} />
               </div>
             </li>
           ))}
