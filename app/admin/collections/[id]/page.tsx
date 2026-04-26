@@ -57,14 +57,15 @@ export default async function AdminCollectionDetailPage({
       highlights={[
         localize(locale, { en: "Summary editor mounted", es: "Editor de summary montado", pt: "Editor de summary montado" }),
         localize(locale, { en: "Property information editor mounted", es: "Editor de property information montado", pt: "Editor de property information montado" }),
+        localize(locale, { en: "Gallery tabs shell mounted", es: "Shell de tabs de gallery montado", pt: "Shell de abas de gallery montado" }),
         localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" }),
-        localize(locale, { en: "Gallery and documents remain modular scaffolds", es: "Gallery y documents siguen como scaffolds modulares", pt: "Gallery e documents continuam como scaffolds modulares" })
+        localize(locale, { en: "Documents remain staged for the next slice", es: "Documents queda preparado para el siguiente slice", pt: "Documents permanece preparado para o proximo slice" })
       ]}
       listTitle={localize(locale, { en: "Detail shell", es: "Shell de detalle", pt: "Shell de detalhe" })}
       subtitle={localize(locale, {
-        en: "Detail layout over the approved contract, now with summary and property edit loops live while gallery and documents remain staged for later slices.",
-        es: "Layout de detalle sobre el contrato aprobado, ahora con los loops de edicion de summary y property information activos mientras gallery y documents quedan para slices posteriores.",
-        pt: "Layout de detalhe sobre o contrato aprovado, agora com os loops de edicao de summary e property information ativos enquanto gallery e documents ficam para slices posteriores."
+        en: "Detail layout over the approved contract, now with summary and property edit loops live plus a dedicated gallery tabs shell while documents stay staged for the next slice.",
+        es: "Layout de detalle sobre el contrato aprobado, ahora con los loops de edicion de summary y property information activos mas un shell dedicado de tabs para gallery mientras documents queda para el siguiente slice.",
+        pt: "Layout de detalhe sobre o contrato aprovado, agora com os loops de edicao de summary e property information ativos mais um shell dedicado de abas para gallery enquanto documents fica para o proximo slice."
       })}
       title={state.content.title}
     >

@@ -362,3 +362,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - same authenticated PATCH route as the only persistence path
 - The shared text-section editor core does not introduce a global client form store or any new session surface.
+
+## EPIC-011 / BRI-98 Gallery Tabs Shell Session Notes
+- The gallery shell introduces only local tab-selection state for the authenticated detail page.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - no new authenticated mutation path in this slice
+- The staged gallery action surfaces do not persist any browser-owned authority state and do not widen the session boundary.

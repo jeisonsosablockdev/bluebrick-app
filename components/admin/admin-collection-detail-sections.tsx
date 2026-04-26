@@ -1,13 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 
+import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
 import {
   AdminCollectionDetailEmptyState,
   AdminCollectionDetailSectionShell,
   AdminCollectionDetailTextContent
 } from "@/components/admin/admin-collection-detail-section-primitives";
-import type { CollectionBootstrapDocumentItem, CollectionBootstrapImageItem } from "@/lib/admin/collection-bootstrap-mapper";
+import type { CollectionBootstrapDocumentItem } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 import { localize, type AppLocale } from "@/lib/i18n";
 
@@ -40,54 +40,6 @@ function formatDocumentTag(locale: AppLocale, tag: CollectionBootstrapDocumentIt
     default:
       return localize(locale, { en: "Other", es: "Otro", pt: "Outro" });
   }
-}
-
-function ImageRail({
-  locale,
-  title,
-  items,
-  emptyMessage
-}: {
-  locale: AppLocale;
-  title: string;
-  items: CollectionBootstrapImageItem[];
-  emptyMessage: string;
-}): ReactElement {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <h4 className="text-sm font-semibold text-white">{title}</h4>
-        <span className="text-xs text-white/45">
-          {localize(locale, { en: `${items.length} items`, es: `${items.length} items`, pt: `${items.length} itens` })}
-        </span>
-      </div>
-      {items.length === 0 ? (
-        <AdminCollectionDetailEmptyState message={emptyMessage} />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
-            <div key={item.id} className="overflow-hidden rounded-2xl border border-white/10 bg-black/10">
-              <div className="relative aspect-[4/3] bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_50%),linear-gradient(165deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))]">
-                <Image
-                  alt={item.alt}
-                  className="h-full w-full object-cover"
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                  src={item.url}
-                />
-              </div>
-              <div className="space-y-1 p-3">
-                <p className="text-sm font-medium text-white">{item.title}</p>
-                <p className="text-xs text-white/45">
-                  {localize(locale, { en: "Source", es: "Fuente", pt: "Fonte" })}: {item.source}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 function DocumentsList({
@@ -197,49 +149,6 @@ function PropertyInformationSection({
   );
 }
 
-function ProjectGallerySection({
-  locale,
-  content
-}: {
-  locale: AppLocale;
-  content: AdminCollectionContentRecord;
-}): ReactElement {
-  return (
-    <AdminCollectionDetailSectionShell
-      description={localize(locale, {
-        en: "The gallery area stays split between marketplace gallery and property imagery, preserving the approved data model before upload/edit interactions arrive.",
-        es: "La zona de galeria se mantiene separada entre marketplace gallery y property imagery, preservando el modelo aprobado antes de que lleguen las interacciones de upload/edicion.",
-        pt: "A area de galeria permanece separada entre marketplace gallery e property imagery, preservando o modelo aprovado antes da chegada das interacoes de upload/edicao."
-      })}
-      eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
-      title={localize(locale, { en: "Project gallery", es: "Project gallery", pt: "Project gallery" })}
-    >
-      <div className="grid gap-4 xl:grid-cols-2">
-        <ImageRail
-          emptyMessage={localize(locale, {
-            en: "No gallery images are available yet.",
-            es: "Aun no hay gallery images disponibles.",
-            pt: "Ainda nao ha gallery images disponiveis."
-          })}
-          items={content.galleryImages}
-          locale={locale}
-          title={localize(locale, { en: "Gallery images", es: "Gallery images", pt: "Gallery images" })}
-        />
-        <ImageRail
-          emptyMessage={localize(locale, {
-            en: "No property images are available yet.",
-            es: "Aun no hay property images disponibles.",
-            pt: "Ainda nao ha property images disponiveis."
-          })}
-          items={content.propertyImages}
-          locale={locale}
-          title={localize(locale, { en: "Property images", es: "Property images", pt: "Property images" })}
-        />
-      </div>
-    </AdminCollectionDetailSectionShell>
-  );
-}
-
 function DocumentsSection({
   locale,
   content
@@ -266,18 +175,20 @@ export function AdminCollectionDetailSections({
   locale,
   content,
   summarySection,
-  propertyInformationSection
+  propertyInformationSection,
+  gallerySection
 }: {
   locale: AppLocale;
   content: AdminCollectionContentRecord;
   summarySection?: ReactNode;
   propertyInformationSection?: ReactNode;
+  gallerySection?: ReactNode;
 }): ReactElement {
   return (
     <>
       {summarySection ?? <SummarySection content={content} locale={locale} />}
       {propertyInformationSection ?? <PropertyInformationSection content={content} locale={locale} />}
-      <ProjectGallerySection content={content} locale={locale} />
+      {gallerySection ?? <AdminCollectionGalleryShell content={content} locale={locale} />}
       <DocumentsSection content={content} locale={locale} />
     </>
   );

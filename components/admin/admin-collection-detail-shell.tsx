@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 
+import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
 import { AdminCollectionDetailHero } from "@/components/admin/admin-collection-detail-hero";
 import { AdminCollectionDetailSections } from "@/components/admin/admin-collection-detail-sections";
 import { AdminCollectionPropertyInformationEditor } from "@/components/admin/admin-collection-property-information-editor";
@@ -30,9 +31,9 @@ function DetailShellFooter({
       </Link>
       <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/65">
         {localize(locale, {
-          en: "Summary and property editing are live. Gallery and documents arrive in the next STORY-011-06 slices.",
-          es: "La edicion de summary y property information ya esta activa. Gallery y documents llegan en los siguientes slices de STORY-011-06.",
-          pt: "A edicao de summary e property information ja esta ativa. Gallery e documents chegam nos proximos slices da STORY-011-06."
+          en: "Summary and property editing are live, and gallery tabs are now staged. Documents arrive in the next STORY-011-06 slice.",
+          es: "La edicion de summary y property information ya esta activa, y las tabs de gallery ya quedaron montadas. Documents llega en el siguiente slice de STORY-011-06.",
+          pt: "A edicao de summary e property information ja esta ativa, e as abas de gallery agora estao montadas. Documents chega no proximo slice de STORY-011-06."
         })}
       </span>
     </div>
@@ -64,6 +65,7 @@ export function AdminCollectionDetailShell({
             locale={locale}
           />
         }
+        gallerySection={<AdminCollectionGalleryShell content={content} locale={locale} />}
       />
       <DetailShellFooter locale={locale} />
     </div>
