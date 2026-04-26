@@ -433,3 +433,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/collections/[id]` now mounts a client-side documents editor that persists through the same authenticated admin PATCH route used by the other section editors.
 - Document edits remain scoped to the `documents` section and still rely on the existing server-side ownership guard and admin role derivation.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced.
+
+## EPIC-011 / BRI-100 API Regression Hardening
+- `GET /api/admin/collections/[id]` and `PATCH /api/admin/collections/[id]` now carry explicit regression coverage around canonical ownership resolution and validation failures before repository access.
+- The authenticated PATCH route now treats malformed JSON as `400 INVALID_COLLECTION_PAYLOAD` instead of falling through as a generic server failure.
+- No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced; this slice only hardens the existing admin-only route contract.

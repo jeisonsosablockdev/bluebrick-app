@@ -77,7 +77,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Ejecutar el pipeline de validación sobre el código final.
+  Ejecutar el pipeline de validación sobre el código final, empezando por la regresión de API/admin collections ya cubierta en `BRI-100`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -94,6 +94,10 @@
   - Obligatoria con checklist en PR.
 
 ## Traceability
-- Related issue(s): `TBD`
+- Related issue(s): `BRI-100`
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
+
+## Slice Notes
+- `2026-04-26`:
+  - `BRI-100` cierra la primera capa de regresión del story con tests de API/admin collections para ownership canonical, blank ids, cover immutable rejection y `400` explícito para JSON PATCH inválido.

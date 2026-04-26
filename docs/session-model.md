@@ -381,3 +381,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - same authenticated PATCH route as the only persistence path
 - Inherited upload metadata is rendered as presentation detail only and does not create any new browser-owned authority state.
+
+## EPIC-011 / BRI-100 API Regression Session Notes
+- This slice does not add any new client session state; it hardens the existing admin collection detail API contract.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated GET/PATCH routes as the only admin collection detail paths
+- Malformed JSON rejection and canonical ownership-path coverage tighten server behavior without widening the session boundary.

@@ -45,6 +45,16 @@ function createPatchRequest(body: unknown, url = "https://example.com/api/admin/
   });
 }
 
+function createMalformedPatchRequest(rawBody = "{", url = "https://example.com/api/admin/collections/entry-1"): NextRequest {
+  return new NextRequest(url, {
+    method: "PATCH",
+    body: rawBody,
+    headers: {
+      "content-type": "application/json"
+    }
+  });
+}
+
 function createContext(id = "entry-1"): RouteContext {
   return {
     params: Promise.resolve({ id })
@@ -71,7 +81,7 @@ function buildContentRecord(input: Record<string, unknown> = {}) {
   };
 }
 
-function buildOwnershipRecord() {
+function buildOwnershipRecord(input: Record<string, unknown> = {}) {
   return {
     entryId: "entry-1",
     adminId: "Admin111",
@@ -83,7 +93,8 @@ function buildOwnershipRecord() {
     snapshotDraftId: "draft-1",
     snapshotVerificationStatus: "verified",
     snapshotMarketplaceHandoffStatus: "completed",
-    updatedAt: "2026-04-25T04:00:00.000Z"
+    updatedAt: "2026-04-25T04:00:00.000Z",
+    ...input
   };
 }
 
@@ -128,6 +139,38 @@ describe("GET /api/admin/collections/:id", () => {
     expect(payload.data.content.fractionalInvestmentSummary).toBe("Stable yield.");
     expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-1");
     expect(routeMocks.getAdminCollectionContentByEntryId).toHaveBeenCalledWith("entry-1");
+  });
+
+  it("loads editable content by the canonical entry id returned from ownership", async () => {
+    routeMocks.assertAdminCollectionOwnership.mockResolvedValueOnce(
+      buildOwnershipRecord({
+        entryId: "entry-canonical-7"
+      })
+    );
+
+    const response = await GET(createRequest(), createContext("entry-alias"));
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-alias");
+    expect(routeMocks.getAdminCollectionContentByEntryId).toHaveBeenCalledWith("entry-canonical-7");
+  });
+
+  it("returns helper validation errors for blank collection ids", async () => {
+    const ownershipError = Object.assign(new Error("Collection id is required."), {
+      code: "INVALID_COLLECTION_OWNERSHIP_INPUT",
+      status: 400
+    });
+    routeMocks.assertAdminCollectionOwnership.mockRejectedValueOnce(ownershipError);
+    routeMocks.isAdminCollectionOwnershipError.mockReturnValueOnce(true);
+
+    const response = await GET(createRequest(), createContext("   "));
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("INVALID_COLLECTION_OWNERSHIP_INPUT");
+    expect(routeMocks.getAdminCollectionContentByEntryId).not.toHaveBeenCalled();
   });
 
   it("returns ownership helper errors without querying editable content", async () => {
@@ -229,6 +272,39 @@ describe("PATCH /api/admin/collections/:id", () => {
     });
   });
 
+  it("updates editable content by the canonical entry id returned from ownership", async () => {
+    routeMocks.assertAdminCollectionOwnership.mockResolvedValueOnce(
+      buildOwnershipRecord({
+        entryId: "entry-canonical-7"
+      })
+    );
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "propertyInformation",
+        data: {
+          propertyInformation: "Updated property."
+        }
+      }),
+      createContext("entry-alias")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-alias");
+    expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
+      entryId: "entry-canonical-7",
+      updatedBy: "Admin111",
+      fractionalInvestmentSummary: undefined,
+      propertyInformation: "Updated property.",
+      galleryImages: undefined,
+      propertyImages: undefined,
+      documents: undefined,
+      googleMapsPlace: undefined
+    });
+  });
+
   it("rejects immutable cover mutations before ownership lookup", async () => {
     const response = await PATCH(
       createPatchRequest({
@@ -244,6 +320,47 @@ describe("PATCH /api/admin/collections/:id", () => {
 
     expect(response.status).toBe(400);
     expect(payload.error.code).toBe("IMMUTABLE_COVER_FIELD");
+    expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("rejects immutable cover mutations nested inside gallery payloads before ownership lookup", async () => {
+    const response = await PATCH(
+      createPatchRequest({
+        section: "gallery",
+        data: {
+          galleryImages: [
+            {
+              id: "gallery-1",
+              url: "https://cdn.example.com/gallery-1.jpg",
+              title: "Gallery image",
+              alt: "Gallery image",
+              displayOrder: 1,
+              mimeType: "image/jpeg",
+              fileName: "gallery-1.jpg",
+              fileRefId: "file-gallery-1",
+              source: "upload",
+              coverImageUrl: "https://cdn.example.com/new-cover.jpg"
+            }
+          ]
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("IMMUTABLE_COVER_FIELD");
+    expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when the PATCH body is not valid JSON", async () => {
+    const response = await PATCH(createMalformedPatchRequest(), createContext());
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("INVALID_COLLECTION_PAYLOAD");
     expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
     expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
   });
@@ -269,6 +386,30 @@ describe("PATCH /api/admin/collections/:id", () => {
 
     expect(response.status).toBe(403);
     expect(payload.error.code).toBe("COLLECTION_OWNERSHIP_MISMATCH");
+    expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
+  });
+
+  it("returns helper validation errors for blank collection ids before any update", async () => {
+    const ownershipError = Object.assign(new Error("Collection id is required."), {
+      code: "INVALID_COLLECTION_OWNERSHIP_INPUT",
+      status: 400
+    });
+    routeMocks.assertAdminCollectionOwnership.mockRejectedValueOnce(ownershipError);
+    routeMocks.isAdminCollectionOwnershipError.mockReturnValueOnce(true);
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "documents",
+        data: {
+          documents: []
+        }
+      }),
+      createContext("   ")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("INVALID_COLLECTION_OWNERSHIP_INPUT");
     expect(routeMocks.updateAdminCollectionContent).not.toHaveBeenCalled();
   });
 

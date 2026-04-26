@@ -42,7 +42,7 @@
 | STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints; `BRI-88` adds the centralized ownership helper, `BRI-89` adds detail GET, `BRI-90` adds PATCH payload validation, and `BRI-91` adds the unified PATCH route |
 | STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing; `BRI-92` adds polished empty/loading/error states, `BRI-93` adds collection cards UI, and `BRI-94` activates the detail handoff route |
 | STORY-011-06 | Collection detail editor UI | `STORY-011-06-collection-detail-editor-ui.md` | `approved` | `#146 (slice)` | Visual editor for summary, property info, gallery, documents; `BRI-95` mounts the read-only detail shell, `BRI-96` activates the summary editor, `BRI-97` activates the property information editor, `BRI-98` mounts the gallery tabs shell, and `BRI-99` activates the documents editor |
-| STORY-011-07 | QA, responsive evidence, and docs sync | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` | `approved` | `TBD` | Playwright, responsive QA, feature note, auth/docs updates |
+| STORY-011-07 | QA, responsive evidence, and docs sync | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` | `approved` | `BRI-100 (slice)` | Playwright, responsive QA, feature note, auth/docs updates; `BRI-100` locks API/admin collections regression coverage |
 | STORY-011-08 | Blockchain readonly panel | `STORY-011-08-blockchain-readonly-panel.md` | `approved` | `TBD` | Read-only candy machine, authorities, guards, and appdata panel |
 | STORY-011-09 | Google Maps location integration | `STORY-011-09-google-maps-location-integration.md` | `approved` | `TBD` | Address autocomplete, maps persistence, and outbound maps UX |
 | STORY-011-10 | Collections health and manual review queue | `STORY-011-10-collections-health-and-manual-review-queue.md` | `approved` | `TBD` | Read-only health view for inconsistent or bootstrap-failed entries |
@@ -81,6 +81,7 @@
 | 2026-04-26 | STORY-011-06 | El tercer slice (`BRI-97`) activa el editor aislado de `Property information` y refactoriza un núcleo compartido para editores de texto por sección, manteniendo gallery/documents para slices posteriores | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-26 | STORY-011-06 | El cuarto slice (`BRI-98`) monta un shell dedicado de tabs para la galería, separando `galleryImages` y `propertyImages` y dejando los handoffs de add/replace/delete listos para el siguiente slice | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-26 | STORY-011-06 | El quinto slice (`BRI-99`) activa el editor aislado de `Documents`, conservando metadata heredada de uploads y guardado manual de la lista completa por sección | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
+| 2026-04-26 | STORY-011-07 | El primer slice (`BRI-100`) endurece la regresión de API/admin collections con cobertura explícita para ownership canonical, blank ids, cover immutable rejection y malformed JSON en PATCH | jaymusicmachine | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` |
 
 ## Risks and Dependencies
 - Risks:

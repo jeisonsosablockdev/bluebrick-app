@@ -10,6 +10,7 @@ import {
   updateAdminCollectionContent
 } from "@/lib/admin/collection-content-repository";
 import {
+  AdminCollectionPatchPayloadError,
   isAdminCollectionPatchPayloadError,
   parseAdminCollectionPatchPayload
 } from "@/lib/admin/collection-patch-payload";
@@ -76,7 +77,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams): Prom
   const collectionId = id.trim();
 
   try {
-    const payload = await request.json();
+    const payload = await request
+      .json()
+      .catch(() => {
+        throw new AdminCollectionPatchPayloadError(
+          "INVALID_COLLECTION_PAYLOAD",
+          "Collection PATCH payload must be valid JSON."
+        );
+      });
     const update = parseAdminCollectionPatchPayload(payload);
     const ownership = await assertAdminCollectionOwnership(role.pubkey, collectionId);
     const content = await updateAdminCollectionContent({
