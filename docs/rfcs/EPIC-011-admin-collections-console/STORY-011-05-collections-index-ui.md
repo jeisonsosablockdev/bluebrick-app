@@ -101,6 +101,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `BRI-92`, `BRI-93`
-- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`, `TBD (BRI-93)`
-- Final commit hash(es): `abb4dad465b11bfe7e88ca6e563a36d1fabe9542 (BRI-92)`, `pending (BRI-93)`
+- Related issue(s): `BRI-92`, `BRI-93`, `BRI-94`
+- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`, `https://github.com/jeisonsosablockdev/solana-test-1/pull/144`, `TBD (BRI-94)`
+- Final commit hash(es): `abb4dad465b11bfe7e88ca6e563a36d1fabe9542 (BRI-92)`, `c68ae7840e2780e727e3a6b54c0a39b19919adeb (BRI-93)`, `pending (BRI-94)`

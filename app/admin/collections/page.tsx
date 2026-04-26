@@ -13,13 +13,13 @@ export default async function AdminCollectionsPage() {
       highlights={[
         localize(locale, { en: "Ownership checked server-side", es: "Ownership verificado server-side", pt: "Ownership verificado server-side" }),
         localize(locale, { en: "Collection cards with visual status", es: "Cards de colecciones con estado visual", pt: "Cards de colecoes com estado visual" }),
-        localize(locale, { en: "Detail navigation continues in later slices", es: "La navegacion de detalle continua en slices posteriores", pt: "A navegacao de detalhe continua em slices posteriores" })
+        localize(locale, { en: "Detail route now active for ready entries", es: "La ruta de detalle ya esta activa para entries listas", pt: "A rota de detalhe ja esta ativa para entradas prontas" })
       ]}
       listTitle={localize(locale, { en: "Index readiness", es: "Preparacion del index", pt: "Preparacao do index" })}
       subtitle={localize(locale, {
-        en: "Visual admin index for owned collections using the approved read-model contract.",
-        es: "Index visual admin para colecciones propias usando el contrato aprobado del read-model.",
-        pt: "Index visual admin para colecoes proprias usando o contrato aprovado do read-model."
+        en: "Visual admin index for owned collections using the approved read-model contract and handoff route to detail.",
+        es: "Index visual admin para colecciones propias usando el contrato aprobado del read-model y la ruta de handoff al detalle.",
+        pt: "Index visual admin para colecoes proprias usando o contrato aprovado do read-model e a rota de handoff para detalhe."
       })}
       title={localize(locale, { en: "Collections", es: "Colecciones", pt: "Colecoes" })}
     >

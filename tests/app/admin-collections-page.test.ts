@@ -95,6 +95,7 @@ describe("app/admin/collections/page", () => {
     expect(html).toContain("Harbor Point");
     expect(html).toContain("Collection cards");
     expect(html).toContain("Manage project");
+    expect(html).toContain("href=\"/admin/collections/entry-1\"");
     expect(html).toContain("Location unavailable");
     expect(html).toContain("Summary");
     expect(html).toContain("Gallery");

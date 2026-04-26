@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 import type { AdminCollectionsPageState } from "@/lib/admin/collections-page-state";
@@ -182,29 +183,36 @@ function EditableSectionPill({
 
 function SuccessCardAction({
   locale,
+  entryId,
   canManage
 }: {
   locale: AppLocale;
+  entryId: string;
   canManage: boolean;
 }): ReactElement {
+  if (canManage) {
+    return (
+      <Link
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/85 transition-all hover:bg-white/15"
+        href={`/admin/collections/${entryId}`}
+      >
+        {localize(locale, { en: "Manage project", es: "Gestionar proyecto", pt: "Gerenciar projeto" })}
+      </Link>
+    );
+  }
+
   return (
     <button
-      className={`inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
-        canManage
-          ? "border border-white/20 bg-white/10 text-white/85"
-          : "border border-white/10 bg-white/5 text-white/45"
-      }`}
+      className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/45 transition-all"
       disabled
       title={localize(locale, {
-        en: "Detail navigation is enabled in the next slice.",
-        es: "La navegacion a detalle se habilita en el siguiente slice.",
-        pt: "A navegacao de detalhe sera habilitada no proximo slice."
+        en: "This entry stays blocked here until the health/manual review flow is available.",
+        es: "Esta entry queda bloqueada aqui hasta que exista el flujo de salud/revision manual.",
+        pt: "Esta entrada permanece bloqueada aqui ate existir o fluxo de saude/revisao manual."
       })}
       type="button"
     >
-      {canManage
-        ? localize(locale, { en: "Manage project", es: "Gestionar proyecto", pt: "Gerenciar projeto" })
-        : localize(locale, { en: "Needs review", es: "Requiere revision", pt: "Requer revisao" })}
+      {localize(locale, { en: "Needs review", es: "Requiere revision", pt: "Requer revisao" })}
     </button>
   );
 }
@@ -411,7 +419,11 @@ export function AdminCollectionsMinimalList({
                   )}
                 </div>
 
-                <SuccessCardAction locale={locale} canManage={collection.validationState === "linked"} />
+                <SuccessCardAction
+                  canManage={collection.validationState === "linked"}
+                  entryId={collection.entryId}
+                  locale={locale}
+                />
               </div>
             </li>
           ))}

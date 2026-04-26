@@ -54,6 +54,7 @@
   - `/api/admin/assets/uploads/signed-url`, `/api/admin/assets/uploads/:uploadId/finalize`, and `/api/admin/assets/uploads/orphan-reconciler` are admin-only and keep upload lifecycle checks server-authoritative.
   - `GET /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, and calls the centralized collection ownership helper before returning editable content.
   - `PATCH /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, validates one editable section payload, rejects immutable cover fields, and calls the centralized collection ownership helper before persisting content.
+  - `/admin/collections/[id]` is admin-only by middleware and resolves its handoff UI from the server-fetched detail payload only.
   - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
 
 ## Authorization Layers
@@ -162,6 +163,10 @@
   - Success-state cards are a visual transformation only over existing server-side collection payloads.
   - Added card CTAs do not create or update session state and do not bypass admin authorization checks.
   - Validation/editability status shown in cards continues to come from server classification, not browser state.
+- BRI-94 admin collection detail handoff safety notes:
+  - Navigation from the index is enabled only for `linked` entries and remains a presentation-level affordance, not an authority check.
+  - The `/admin/collections/[id]` page revalidates access through the existing admin API/session boundary before rendering any detail context.
+  - No new session mutation, refresh, or client-side authorization logic was introduced in this slice.
 
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:

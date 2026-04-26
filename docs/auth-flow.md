@@ -79,6 +79,9 @@
    - `PATCH /api/admin/collections/:id` requires an authenticated admin SIWS session with wallet pubkey.
    - The handler validates a section-discriminated payload before ownership lookup and rejects immutable cover fields.
    - The handler uses `assertAdminCollectionOwnership(adminId, collectionId)` before persisting editable off-chain content through the repository layer.
+20. Admin collection detail navigation handoff (BRI-94, server-authoritative):
+   - `/admin/collections/[id]` is a server-rendered admin route that fetches detail through `GET /api/admin/collections/:id`.
+   - The page does not trust index-card state; route access still depends on the server-side detail contract and SIWS admin session.
 
 ## Wallet Modal UX Guardrails
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.
@@ -392,3 +395,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/collections` now renders the success state as visual collection cards instead of a minimal row list.
 - Cards remain fully backed by the same server-derived read-model payload and do not introduce client-authoritative ownership logic.
 - CTA surfaces added in cards are presentation-only in this slice; no auth/session or admin guard behavior changed.
+
+## EPIC-011 / BRI-94 Admin Collection Detail Navigation
+- Linked cards now navigate to `/admin/collections/[id]`.
+- The destination route re-fetches detail server-side through the existing admin detail contract instead of trusting client route state.
+- Non-linked cards remain blocked until the health/manual-review flow exists, so this slice does not widen admin authority boundaries.

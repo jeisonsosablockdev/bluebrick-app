@@ -40,7 +40,7 @@
 | STORY-011-02 | Admin collections read model | `STORY-011-02-admin-collections-read-model.md` | approved | `TBD` | Build listing/query layer for owned marketplace entries; `BRI-80`, `BRI-81`, and `BRI-82` are done, final visual refinement moves to `STORY-011-05` |
 | STORY-011-03 | Editable collection content persistence | `STORY-011-03-editable-collection-content-persistence.md` | `approved` | `TBD` | Persist gallery/property/docs content outside on-chain cover; `BRI-83` adds schema, `BRI-84` closes the mapper contract, `BRI-85` adds the dry-run runner, `BRI-86` adds repository read/write helpers, and `BRI-87` closes edit-session upload lifecycle + cleanup |
 | STORY-011-04 | Collections API and ownership enforcement | `STORY-011-04-collections-api-and-ownership-enforcement.md` | `approved` | `TBD` | Add GET/PATCH admin APIs with immutable cover constraints; `BRI-88` adds the centralized ownership helper, `BRI-89` adds detail GET, `BRI-90` adds PATCH payload validation, and `BRI-91` adds the unified PATCH route |
-| STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing; `BRI-92` adds polished empty/loading/error states and `BRI-93` adds collection cards UI |
+| STORY-011-05 | Collections index UI | `STORY-011-05-collections-index-ui.md` | `approved` | `TBD` | Replace placeholder with visual admin listing; `BRI-92` adds polished empty/loading/error states, `BRI-93` adds collection cards UI, and `BRI-94` activates the detail handoff route |
 | STORY-011-06 | Collection detail editor UI | `STORY-011-06-collection-detail-editor-ui.md` | `approved` | `TBD` | Visual editor for summary, property info, gallery, documents |
 | STORY-011-07 | QA, responsive evidence, and docs sync | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` | `approved` | `TBD` | Playwright, responsive QA, feature note, auth/docs updates |
 | STORY-011-08 | Blockchain readonly panel | `STORY-011-08-blockchain-readonly-panel.md` | `approved` | `TBD` | Read-only candy machine, authorities, guards, and appdata panel |
@@ -75,6 +75,7 @@
 | 2026-04-25 | STORY-011-04 | El cuarto slice (`BRI-91`) conecta el `PATCH /api/admin/collections/[id]` final con SIWS admin, validación discriminada, ownership centralizado y repository update | jaymusicmachine | `STORY-011-04-collections-api-and-ownership-enforcement.md` |
 | 2026-04-25 | STORY-011-05 | El primer slice (`BRI-92`) reemplaza los handoffs mínimos de loading/empty/error por estados operativos responsivos, manteniendo success/card polish para slices posteriores | jaymusicmachine | `STORY-011-05-collections-index-ui.md` |
 | 2026-04-26 | STORY-011-05 | El segundo slice (`BRI-93`) transforma el estado success a grid visual de cards con cover, badges, secciones editables y CTA base, sin tocar API ni navegación de detalle | jaymusicmachine | `STORY-011-05-collections-index-ui.md` |
+| 2026-04-26 | STORY-011-05 | El tercer slice (`BRI-94`) activa la navegación real hacia `/admin/collections/[id]` solo para entries `linked` y deja un handoff mínimo al detalle sin adelantar el editor modular | jaymusicmachine | `STORY-011-05-collections-index-ui.md` |
 
 ## Risks and Dependencies
 - Risks:
