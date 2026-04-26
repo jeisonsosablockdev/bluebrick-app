@@ -344,6 +344,41 @@ describe("PR governance shell helpers", () => {
     expect(output).toContain("Required docs check passed.");
   });
 
+  it("suppresses known local-noise paths from docs output while keeping real untracked changes", async () => {
+    const repoDir = await createFeatureBranchRepo("fix/shared-pr-governance-flow-flexibility");
+
+    await mkdir(path.join(repoDir, "tests", "lib"), { recursive: true });
+    await mkdir(path.join(repoDir, ".npm-cache", "_logs"), { recursive: true });
+    await mkdir(path.join(repoDir, "docs"), { recursive: true });
+
+    await writeFile(
+      path.join(repoDir, "tests", "lib", "real-change.test.ts"),
+      "export const testCase = true;\n",
+      "utf8"
+    );
+    await writeFile(path.join(repoDir, ".env.vercel"), "VERCEL_TOKEN=secret\n", "utf8");
+    await writeFile(
+      path.join(repoDir, ".npm-cache", "_logs", "debug.log"),
+      "debug noise\n",
+      "utf8"
+    );
+    await writeFile(path.join(repoDir, "docs", "linear-context.md"), "noise\n", "utf8");
+    await writeFile(
+      path.join(repoDir, "docs", "features", "feature-untracked-note.md"),
+      "# Feature Note\n",
+      "utf8"
+    );
+
+    const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
+
+    expect(output).toContain("Changed files:");
+    expect(output).toContain("tests/lib/real-change.test.ts");
+    expect(output).toContain("Suppressed local-noise paths from docs log: 3");
+    expect(output).not.toContain(".npm-cache/_logs/debug.log");
+    expect(output).not.toContain(".env.vercel");
+    expect(output).not.toContain("docs/linear-context.md");
+  });
+
   it("passes app doc enforcement when required docs are updated in the working tree", async () => {
     const repoDir = await createAppDocsRepo();
 

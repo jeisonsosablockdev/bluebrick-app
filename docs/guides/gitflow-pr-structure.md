@@ -88,6 +88,7 @@ Labels are applied through `gh api` instead of `gh pr edit` to avoid GraphQL ins
   - `reopened`
   - `ready_for_review`
 - PR metadata policy runs in conservative mode on state changes that justify a re-check without fan-out from label churn:
+  - `opened` returns a lightweight success message so the PR surface stays explicit without running full metadata enforcement too early
   - `edited`
   - `synchronize`
   - `reopened`
@@ -115,6 +116,7 @@ This keeps the RFC sync gate compatible with branches that include the full stor
   - rerun `npm run pr:metadata` before opening or updating PR.
 - Docs gate says RFC files are missing even though you already edited them locally:
   - rerun with the current working tree; local preflight now includes uncommitted and untracked changes,
+  - local docs output suppresses known operational-noise paths such as `.npm-cache/*`, `.env.vercel`, and `docs/linear-context.md`,
   - if CI still fails, confirm the RFC files are actually committed in the branch before pushing.
 
 ## Expected Outcomes

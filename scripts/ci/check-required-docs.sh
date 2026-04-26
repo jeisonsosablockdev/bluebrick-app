@@ -6,6 +6,8 @@ source "$(dirname "$0")/pr-governance-lib.sh"
 BASE_REF="${BASE_REF:-${GITHUB_BASE_REF:-develop}}"
 HEAD_REF="${HEAD_REF:-HEAD}"
 HEAD_BRANCH="${HEAD_BRANCH:-${GITHUB_HEAD_REF:-}}"
+LOCAL_NOISE_REGEX='^(\.npm-cache/|\.env\.vercel$|docs/linear-context\.md$)'
+MAX_DISPLAYED_CHANGED_FILES=25
 
 echo "Base ref: ${BASE_REF}"
 echo "Head ref: ${HEAD_REF}"
@@ -25,7 +27,9 @@ if [[ "${HEAD_REF}" == "HEAD" ]]; then
   # Local fallback: include uncommitted changes so docs preflight matches what
   # the author is about to commit/open in a PR.
   working_tree_changed_files="$(git diff --name-only HEAD)"
-  untracked_changed_files="$(git ls-files --others --exclude-standard)"
+  untracked_changed_files="$(
+    git ls-files --others --exclude-standard | grep -E -v "${LOCAL_NOISE_REGEX}" || true
+  )"
 fi
 
 CHANGED_FILES="$(
@@ -41,8 +45,31 @@ if [[ -z "${CHANGED_FILES}" ]]; then
   exit 0
 fi
 
-echo "Changed files:"
-echo "${CHANGED_FILES}"
+summarize_changed_files_for_output() {
+  local changed_files="$1"
+  local display_count
+  display_count="$(grep -c . <<<"${changed_files}" || true)"
+
+  if [[ "${display_count}" -le "${MAX_DISPLAYED_CHANGED_FILES}" ]]; then
+    echo "Changed files:"
+    echo "${changed_files}"
+    return 0
+  fi
+
+  echo "Changed files (showing first ${MAX_DISPLAYED_CHANGED_FILES} of ${display_count}):"
+  head -n "${MAX_DISPLAYED_CHANGED_FILES}" <<<"${changed_files}"
+}
+
+summarize_changed_files_for_output "${CHANGED_FILES}"
+
+if [[ "${HEAD_REF}" == "HEAD" ]]; then
+  suppressed_local_noise_count="$(
+    git ls-files --others --exclude-standard | grep -E -c "${LOCAL_NOISE_REGEX}" || true
+  )"
+  if [[ "${suppressed_local_noise_count}" -gt 0 ]]; then
+    echo "Suppressed local-noise paths from docs log: ${suppressed_local_noise_count}"
+  fi
+fi
 
 has_changed() {
   local regex="$1"

@@ -61,7 +61,7 @@ jobs:
 
   governance-policy:
     name: PR Policy (labels, size, branch age, commits, template)
-    if: ${{ contains(fromJson('["edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}
+    if: ${{ contains(fromJson('["opened","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -69,7 +69,12 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Defer metadata enforcement on opened
+        if: ${{ github.event.action == 'opened' }}
+        run: echo "PR governance policy deferred on opened. Canonical enforcement runs on edited, synchronize, reopened, and ready_for_review after metadata settles."
+
       - name: Enforce PR governance policy
+        if: ${{ github.event.action != 'opened' }}
         uses: actions/github-script@v8
         with:
           script: |

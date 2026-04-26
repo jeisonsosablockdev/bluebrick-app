@@ -14,16 +14,20 @@ describe("PR governance workflow", () => {
     expect(workflowSource).toContain("cancel-in-progress: true");
   });
 
-  it("keeps heavy validation on opened/synchronize events and limits policy to conservative metadata events", () => {
+  it("keeps heavy validation on opened/synchronize events and defers opened metadata enforcement explicitly", () => {
     expect(workflowSource).toContain(
       `if: \${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
     expect(workflowSource).toContain(
-      `if: \${{ contains(fromJson('["edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
-    );
-    expect(workflowSource).not.toContain(
       `if: \${{ contains(fromJson('["opened","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
+    expect(workflowSource).toContain(
+      `if: \${{ github.event.action == 'opened' }}`
+    );
+    expect(workflowSource).toContain(
+      `if: \${{ github.event.action != 'opened' }}`
+    );
+    expect(workflowSource).toContain("PR governance policy deferred on opened.");
     expect(workflowSource).not.toContain("      - labeled");
     expect(workflowSource).not.toContain("      - unlabeled");
   });
