@@ -13,6 +13,10 @@ import {
 type MarketplaceEditableCollectionRow = {
   id: string;
   title: string;
+  city: string;
+  country: string;
+  location_label: string;
+  detailed_location: string;
   created_by: string;
   image_url: string;
   collection_address: string;
@@ -30,6 +34,10 @@ type MarketplaceEditableCollectionRow = {
 export type AdminCollectionContentRecord = {
   entryId: string;
   title: string;
+  city: string;
+  country: string;
+  locationLabel: string;
+  detailedLocation: string;
   createdBy: string;
   coverImageUrl: string;
   collectionAddress: string;
@@ -70,6 +78,10 @@ const SELECT_COLLECTION_CONTENT_COLUMNS = `
   SELECT
     id,
     title,
+    city,
+    country,
+    location_label,
+    detailed_location,
     created_by,
     image_url,
     collection_address,
@@ -175,6 +187,10 @@ function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): 
   return {
     entryId: row.id,
     title: row.title,
+    city: row.city,
+    country: row.country,
+    locationLabel: row.location_label,
+    detailedLocation: row.detailed_location,
     createdBy: row.created_by,
     coverImageUrl: row.image_url,
     collectionAddress: row.collection_address,

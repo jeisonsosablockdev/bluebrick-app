@@ -13,6 +13,10 @@ function buildPatchedContent() {
   return {
     entryId: PRIMARY_ENTRY_ID,
     title: "Oceanview Fractional Tower",
+    city: "Cartagena",
+    country: "CO",
+    locationLabel: "Bocagrande Waterfront",
+    detailedLocation: "Avenida San Martin 7-14, Bocagrande",
     createdBy: "Admin111",
     coverImageUrl: "/brand/brids-logo.svg",
     collectionAddress: "CollectionOceanview11111111111111111111111111",
@@ -62,7 +66,14 @@ function buildPatchedContent() {
       "Oceanview summary saved through the Playwright admin collections flow.",
     propertyInformation:
       "Updated property information saved independently from summary and documents.",
-    googleMapsPlace: null,
+    googleMapsPlace: {
+      placeLabel: "Oceanview Fractional Tower",
+      formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+      lat: 10.3997,
+      lng: -75.5553,
+      googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower",
+      placeId: "place-oceanview"
+    },
     updatedBy: "Admin111",
     updatedAt: "2026-04-26T20:45:00.000Z"
   };

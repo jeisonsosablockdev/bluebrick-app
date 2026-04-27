@@ -6,7 +6,7 @@
 - Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-26`
 
 ## Context
 - Problem:
@@ -85,7 +85,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Implementar componente de Autocomplete de Google Maps y conectar a la API general PATCH.
+  Slice `BRI-110` ya deja visible el contexto de direccion actual, el preview del mapa y el CTA outbound. El siguiente paso es formalizar el contrato backend del section payload y del autocomplete.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -119,5 +119,7 @@
 
 ## Traceability
 - Related issue(s): `TBD`
+- Implementation progress:
+  - `BRI-110` implemented current address context + visible map preview + outbound Google Maps CTA on the admin collection detail page.
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`

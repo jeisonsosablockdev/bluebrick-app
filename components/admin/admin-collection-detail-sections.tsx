@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import { formatAdminCollectionDocumentTag } from "@/components/admin/admin-collection-document-copy";
 import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
+import { AdminCollectionLocationShell } from "@/components/admin/admin-collection-location-shell";
 import {
   AdminCollectionDetailEmptyState,
   AdminCollectionDetailSectionShell,
@@ -146,6 +147,7 @@ export function AdminCollectionDetailSections({
   content,
   summarySection,
   propertyInformationSection,
+  locationSection,
   gallerySection,
   documentsSection
 }: {
@@ -153,6 +155,7 @@ export function AdminCollectionDetailSections({
   content: AdminCollectionContentRecord;
   summarySection?: ReactNode;
   propertyInformationSection?: ReactNode;
+  locationSection?: ReactNode;
   gallerySection?: ReactNode;
   documentsSection?: ReactNode;
 }): ReactElement {
@@ -160,6 +163,7 @@ export function AdminCollectionDetailSections({
     <>
       {summarySection ?? <SummarySection content={content} locale={locale} />}
       {propertyInformationSection ?? <PropertyInformationSection content={content} locale={locale} />}
+      {locationSection ?? <AdminCollectionLocationShell content={content} locale={locale} />}
       {gallerySection ?? <AdminCollectionGalleryShell content={content} locale={locale} />}
       {documentsSection ?? <DocumentsSection content={content} locale={locale} />}
     </>

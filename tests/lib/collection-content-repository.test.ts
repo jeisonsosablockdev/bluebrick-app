@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 type MarketplaceEditableCollectionRow = {
   id: string;
   title: string;
+  city: string;
+  country: string;
+  location_label: string;
+  detailed_location: string;
   created_by: string;
   image_url: string;
   collection_address: string;
@@ -60,6 +64,10 @@ function buildRow(input: Partial<MarketplaceEditableCollectionRow> = {}): Market
   return {
     id: "entry-1",
     title: "Central Tower",
+    city: "Bogota",
+    country: "CO",
+    location_label: "Financial district",
+    detailed_location: "Calle 72 # 10-34, Bogota",
     created_by: "Admin111",
     image_url: "https://cdn.example.com/cover.jpg",
     collection_address: "Collection111",
@@ -138,6 +146,10 @@ describe("lib/admin/collection-content-repository", () => {
       {
         entryId: "entry-1",
         title: "Central Tower",
+        city: "Bogota",
+        country: "CO",
+        locationLabel: "Financial district",
+        detailedLocation: "Calle 72 # 10-34, Bogota",
         createdBy: "Admin111",
         coverImageUrl: "https://cdn.example.com/cover.jpg",
         collectionAddress: "Collection111",

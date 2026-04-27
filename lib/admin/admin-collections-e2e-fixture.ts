@@ -66,6 +66,10 @@ function buildBri101Fixture(): AdminCollectionsE2eFixture {
         content: {
           entryId: "entry-bri-101-primary",
           title: "Oceanview Fractional Tower",
+          city: "Cartagena",
+          country: "CO",
+          locationLabel: "Bocagrande Waterfront",
+          detailedLocation: "Avenida San Martin 7-14, Bocagrande",
           createdBy: "Admin111",
           coverImageUrl: "/brand/brids-logo.svg",
           collectionAddress: "CollectionOceanview11111111111111111111111111",
@@ -115,7 +119,14 @@ function buildBri101Fixture(): AdminCollectionsE2eFixture {
             "Oceanview opens with a deterministic summary so Playwright can verify section-level persistence feedback.",
           propertyInformation:
             "Downtown tower with hospitality and retail mix. Property information stays independently editable from the summary.",
-          googleMapsPlace: null,
+          googleMapsPlace: {
+            placeLabel: "Oceanview Fractional Tower",
+            formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+            lat: 10.3997,
+            lng: -75.5553,
+            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower",
+            placeId: "place-oceanview"
+          },
           updatedBy: "Admin111",
           updatedAt: "2026-04-26T20:15:00.000Z"
         },
