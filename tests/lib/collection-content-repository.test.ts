@@ -272,6 +272,52 @@ describe("lib/admin/collection-content-repository", () => {
     ]);
   });
 
+  it("persists reduced google maps payloads through the repository helper", async () => {
+    updatedRow = buildRow({
+      google_maps_place_json: {
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      },
+      updated_by: "Admin333"
+    });
+
+    const result = await updateAdminCollectionContent({
+      entryId: "entry-1",
+      updatedBy: " Admin333 ",
+      googleMapsPlace: {
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      }
+    });
+
+    expect(result?.googleMapsPlace?.placeId).toBe("place-2");
+
+    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
+    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    expect(sql).toContain("google_maps_place_json = $2::jsonb");
+    expect(sql).toContain("updated_by = $3");
+    expect(values).toEqual([
+      "entry-1",
+      JSON.stringify({
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      }),
+      "Admin333"
+    ]);
+  });
+
   it("applies a full bootstrap payload through the repository helper", async () => {
     const payload: CollectionBootstrapPayload = {
       galleryImagesJson: [

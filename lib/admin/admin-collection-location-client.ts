@@ -15,6 +15,16 @@ type AdminCollectionLocationResolveSuccessResponse = {
   };
 };
 
+type AdminCollectionLocationMutationSuccessResponse = {
+  ok: true;
+  data: {
+    section: "googleMapsPlace";
+    content: {
+      googleMapsPlace: CollectionBootstrapGoogleMapsPlace | null;
+    } & Record<string, unknown>;
+  };
+};
+
 type AdminCollectionLocationErrorResponse = {
   error: {
     code: string;
@@ -94,4 +104,35 @@ export async function resolveAdminCollectionLocationPlace(input: {
   }
 
   return payload.data.googleMapsPlace;
+}
+
+export async function updateAdminCollectionLocationPlace(input: {
+  entryId: string;
+  googleMapsPlace: CollectionBootstrapGoogleMapsPlace | null;
+}): Promise<CollectionBootstrapGoogleMapsPlace | null> {
+  const response = await fetch(`/api/admin/collections/${encodeURIComponent(input.entryId)}`, {
+    method: "PATCH",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      section: "googleMapsPlace",
+      data: {
+        googleMapsPlace: input.googleMapsPlace
+      }
+    })
+  });
+
+  const payload = (await response.json()) as
+    | AdminCollectionLocationMutationSuccessResponse
+    | AdminCollectionLocationErrorResponse;
+
+  if (!response.ok || "error" in payload) {
+    throw new AdminCollectionLocationClientError(
+      "error" in payload ? payload.error.code : "ADMIN_COLLECTION_PATCH_FAILED",
+      "error" in payload ? payload.error.message : "Could not persist the Google Maps place payload."
+    );
+  }
+
+  return (payload.data.content.googleMapsPlace as CollectionBootstrapGoogleMapsPlace | null) ?? null;
 }

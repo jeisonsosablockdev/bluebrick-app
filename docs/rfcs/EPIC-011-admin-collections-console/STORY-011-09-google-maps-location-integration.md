@@ -85,7 +85,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  `BRI-110`, `BRI-111`, y `BRI-112` ya dejaron visible la lectura actual, el contrato backend, y el autocomplete local del section payload. El siguiente paso es conectar la persistencia del payload reducido a la ruta PATCH existente.
+  `BRI-110` a `BRI-113` ya dejaron lectura, contrato backend, autocomplete local y persistencia del payload reducido. El siguiente paso es cerrar la UX manual `Save` / `Cancel` y la evidencia QA del section flow.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -123,5 +123,6 @@
   - `BRI-110` implemented current address context + visible map preview + outbound Google Maps CTA on the admin collection detail page.
   - `BRI-111` implemented a dedicated backend location/maps contract route with normalized context, reduced place payload, and derived outbound/embed URLs.
   - `BRI-112` implemented admin-only Google Maps autocomplete + place resolution routes and mounted a local-selection editor flow without persisting yet.
+  - `BRI-113` implemented the reduced `googleMapsPlace` mutation client and regression coverage for repository/API persistence.
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
