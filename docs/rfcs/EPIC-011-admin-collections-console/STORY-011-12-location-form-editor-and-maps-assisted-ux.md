@@ -42,10 +42,14 @@
     - La selección de autocomplete puede hidratar el draft del formulario.
     - El admin puede ajustar manualmente los valores antes de guardar.
     - Si el draft manual invalida el payload seleccionado de Maps, la UI debe comunicar que el preview quedará derivado del texto hasta elegir un nuevo place.
+    - Si `country` cambia, `stateProvince` debe reiniciarse inmediatamente cuando ya no sea válido para el nuevo país.
+    - La UI debe ofrecer una acción explícita `Clear Google Maps selection` para descartar el place actual sin borrar el formulario manual.
+    - `geoLat` / `geoLng` pueden aceptarse con coma o punto decimal en el input, pero deben normalizarse a formato decimal con punto antes de validar/guardar.
   - Arquitectura:
     - Un solo draft local para `locationForm` + `googleMapsPlace`.
     - Un solo `Save location` / `Cancel` para toda la sección.
     - El preview visible debe derivarse del draft, no solo del payload persistido.
+    - Si no hay `googleMapsPlace`, el preview y el deep-link deben derivarse del formulario canónico guardado o del draft actual.
 - Alternatives considered:
   - Mantener el editor actual de search box + preview y agregar inputs aparte en otra sección.
     - Rechazado: duplica la experiencia y fragmenta la ubicación en dos flujos.
@@ -58,15 +62,15 @@
 - Reviewer(s):
   - `TBD`
 - Critical findings:
-1. Falta definir el comportamiento exacto cuando `country` cambie y el `stateProvince` previo ya no sea válido.
-2. Falta confirmar si `geoLat` / `geoLng` deben aceptar coma decimal o solo punto decimal.
-3. Falta cerrar si la UI debe ofrecer una acción explícita para limpiar el place de Maps actual.
+1. Resuelto: cambiar `country` reinicia `stateProvince` cuando la división previa ya no es válida para el nuevo país.
+2. Resuelto: la UI acepta coma o punto decimal y normaliza a punto antes del save.
+3. Resuelto: la UI ofrecerá una acción explícita para limpiar la selección actual de Google Maps sin perder el formulario manual.
 - Blocking concerns:
-  - No producir implementación sin una UX clara para estados divergentes entre formulario manual y sugerencia de Maps.
+  - No producir implementación si el preview y el deep-link no pueden derivarse consistentemente del draft manual cuando no exista place persistido.
 
 ## Resolution
 - Final approach after critique:
-  Aprobado. La paridad visual con `/admin/assets/new` se implementará dentro de la misma sección de ubicación, y Google Maps quedará como ayuda contextual para completar y validar la dirección, no como reemplazo del formulario manual.
+  Aprobado. La paridad visual con `/admin/assets/new` se implementará dentro de la misma sección de ubicación, y Google Maps quedará como ayuda contextual para completar y validar la dirección, no como reemplazo del formulario manual. La UX resuelve explícitamente reset de `stateProvince`, normalización de coordenadas y limpieza manual del place.
 - Changes accepted:
   - Reuso del patrón de país/estado de `/admin/assets/new`.
   - Unificación de autocomplete, formulario y preview en una sola sección.
@@ -96,9 +100,9 @@
 - Slice B:
   integración de country/state shared logic desde `/admin/assets/new`
 - Slice C:
-  hidratación del draft desde autocomplete + preview derivado
+  hidratación del draft desde autocomplete + preview/deep-link derivado
 - Slice D:
-  Save/Cancel final con estados dirty/saving/success/error
+  Save/Cancel final con estados dirty/saving/success/error + clear place action
 - Slice E:
   Playwright + responsive QA del flujo combinado
 
@@ -107,9 +111,11 @@
   - cambio de país reinicia `stateProvince` cuando aplica
   - parse/normalización de coordenadas
   - preview derivado desde draft manual y/o place seleccionado
+  - limpiar el place conserva intacto el formulario manual
 - Integration tests:
   - el admin puede editar y guardar los campos manuales sin depender de una selección de Maps
   - el admin puede seleccionar una sugerencia de Maps, ajustar el formulario y guardar
+  - el admin puede limpiar la selección de Maps y seguir usando preview derivado del formulario
 - Devnet validation (if applicable):
   - No aplica.
 - Responsive QA (if applicable):

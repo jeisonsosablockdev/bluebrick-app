@@ -234,6 +234,17 @@
   - health read model
   - manual review state mapping
   - read-only health UI
+- `STORY-011-11` should be split into:
+  - schema and repository helpers for canonical location fields
+  - PATCH contract validation for locationForm
+  - synchronization helper for manual draft and Google Maps payload
+  - validation and cleanup tests
+- `STORY-011-12` should be split into:
+  - extended location form layout and local state
+  - country/state shared logic integration
+  - autocomplete hydration and derived preview
+  - Save/Cancel state management
+  - responsive QA and Playwright flow
 
 ## Linear Execution Guidance
 - Goal:
@@ -322,6 +333,16 @@
 - `STORY-011-10`
   - issue: health read model
   - issue: manual review UI
+- `STORY-011-11`
+  - issue: canonical location schema and repository
+  - issue: locationForm PATCH contract
+  - issue: maps payload sync helper
+- `STORY-011-12`
+  - issue: extended location form UI
+  - issue: country/state shared logic
+  - issue: autocomplete hydration integration
+  - issue: location form Save/Cancel state management
+  - issue: location E2E and responsive QA
 
 ## Open Questions
 - [x] Confirmar si la integración de Google Maps v1 persiste solo `google_maps_url` + `place_label` o también un `place_json` reducido para no depender de recomputar el lookup en cada lectura.
