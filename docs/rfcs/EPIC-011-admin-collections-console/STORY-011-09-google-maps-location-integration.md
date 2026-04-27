@@ -85,7 +85,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  Slice `BRI-110` ya deja visible el contexto de direccion actual, el preview del mapa y el CTA outbound. El siguiente paso es formalizar el contrato backend del section payload y del autocomplete.
+  `BRI-110` y `BRI-111` ya dejaron visible la lectura actual y el contrato backend de la seccion location/maps. El siguiente paso es activar el autocomplete sobre ese contrato dedicado.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -121,5 +121,6 @@
 - Related issue(s): `TBD`
 - Implementation progress:
   - `BRI-110` implemented current address context + visible map preview + outbound Google Maps CTA on the admin collection detail page.
+  - `BRI-111` implemented a dedicated backend location/maps contract route with normalized context, reduced place payload, and derived outbound/embed URLs.
 - Related PR(s): `TBD`
 - Final commit hash(es): `TBD`
