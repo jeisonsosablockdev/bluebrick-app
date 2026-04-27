@@ -41,7 +41,8 @@
     - Mantener el preview de mapa y el CTA `Open in Google Maps`.
     - La selección de autocomplete puede hidratar el draft del formulario.
     - El admin puede ajustar manualmente los valores antes de guardar.
-    - Si el draft manual invalida el payload seleccionado de Maps, la UI debe comunicar que el preview quedará derivado del texto hasta elegir un nuevo place.
+    - **Regla de Deriva (Drift)**: Si el usuario edita el draft manual y los strings de `country`, `city` o `address` difieren del `googleMapsPlace` actualmente seleccionado, la selección de Maps se invalida ("stale").
+    - **Rate Limiting**: El input de búsqueda de Google Maps **debe** implementar un `debounce` de al menos 300ms para evitar abusos de la API y sobrecostos.
     - Si `country` cambia, `stateProvince` debe reiniciarse inmediatamente cuando ya no sea válido para el nuevo país.
     - La UI debe ofrecer una acción explícita `Clear Google Maps selection` para descartar el place actual sin borrar el formulario manual.
     - `geoLat` / `geoLng` pueden aceptarse con coma o punto decimal en el input, pero deben normalizarse a formato decimal con punto antes de validar/guardar.
@@ -65,8 +66,10 @@
 1. Resuelto: cambiar `country` reinicia `stateProvince` cuando la división previa ya no es válida para el nuevo país.
 2. Resuelto: la UI acepta coma o punto decimal y normaliza a punto antes del save.
 3. Resuelto: la UI ofrecerá una acción explícita para limpiar la selección actual de Google Maps sin perder el formulario manual.
+4. Nuevo hallazgo: Falta mitigación de costos por peticiones excesivas a Google Maps. Resuelto agregando mandato de `debounce`.
+5. Nuevo hallazgo: Falta definición estricta de cuándo el payload de Maps queda inválido. Resuelto definiendo la regla de deriva (Drift Rule).
 - Blocking concerns:
-  - No producir implementación si el preview y el deep-link no pueden derivarse consistentemente del draft manual cuando no exista place persistido.
+  - No producir implementación sin un debounce explícito ni una política estricta de invalidación de datos entre los campos manuales y el payload de Maps.
 
 ## Resolution
 - Final approach after critique:
@@ -110,6 +113,7 @@
 - Unit tests:
   - cambio de país reinicia `stateProvince` cuando aplica
   - parse/normalización de coordenadas
+  - la modificación de campos de texto invalida correctamente el `googleMapsPlace` si hay deriva (drift)
   - preview derivado desde draft manual y/o place seleccionado
   - limpiar el place conserva intacto el formulario manual
 - Integration tests:
