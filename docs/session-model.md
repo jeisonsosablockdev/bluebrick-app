@@ -54,6 +54,7 @@
   - `/api/admin/assets/uploads/signed-url`, `/api/admin/assets/uploads/:uploadId/finalize`, and `/api/admin/assets/uploads/orphan-reconciler` are admin-only and keep upload lifecycle checks server-authoritative.
   - `GET /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, and calls the centralized collection ownership helper before returning editable content.
   - `GET /api/admin/collections/:id/location-maps` is admin-only, requires a session wallet pubkey, and calls the same centralized collection ownership helper before deriving the location/maps section contract.
+  - `GET /api/admin/collections/:id/location-maps/autocomplete` and `/resolve` are admin-only, require a session wallet pubkey, and keep Google provider lookups behind the same ownership boundary.
   - The same `GET /api/admin/collections/:id` response may now include a read-only `blockchain.baseAddresses` payload derived server-side from snapshot evidence.
   - That read-only `blockchain` payload may also include authority identities resolved server-side from `authority_registry`, snapshot data, and configured backend authorities.
   - `PATCH /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, validates one editable section payload, rejects immutable cover fields, and calls the centralized collection ownership helper before persisting content.
@@ -79,6 +80,7 @@
   - Admin upload lifecycle routes bind every request to the authenticated admin wallet and revalidate `draftId` plus optional `editSessionId` against the stored signed contract before persisting file refs.
   - Admin collection detail reads bind `collectionId` to the authenticated admin wallet through `marketplace_entries.created_by` plus exact `asset_mint_snapshots` evidence before content lookup.
   - Admin collection location/maps contract reads use the same binding before deriving any Google Maps outbound/embed URL.
+  - Admin collection location/maps lookup helpers use the same binding before any Google suggestions or place details are requested from the provider.
   - Admin collection detail writes use the same binding before repository updates and never accept `image_url`/cover mutation from client payloads.
   - `/admin` signing orchestration UI is an operator surface only; all state transitions are revalidated server-side.
 5. Webhook ingress layer:

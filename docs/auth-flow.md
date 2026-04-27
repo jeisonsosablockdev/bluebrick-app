@@ -82,14 +82,17 @@
 20. Admin collection location/maps contract read (BRI-111, server-authoritative):
    - `GET /api/admin/collections/:id/location-maps` requires the same authenticated admin SIWS session with wallet pubkey.
    - The handler reuses `assertAdminCollectionOwnership(adminId, collectionId)` before reading collection content and deriving normalized location context plus outbound/embed Google Maps URLs.
-21. Admin collection detail navigation handoff (BRI-94, server-authoritative):
+21. Admin collection location/maps lookup helpers (BRI-112, server-authoritative):
+   - `GET /api/admin/collections/:id/location-maps/autocomplete` and `GET /api/admin/collections/:id/location-maps/resolve` require the same authenticated admin SIWS session with wallet pubkey.
+   - Both handlers reuse the same centralized ownership guard before calling Google Maps provider logic, and the browser only receives reduced suggestion/place DTOs.
+22. Admin collection detail navigation handoff (BRI-94, server-authoritative):
    - `/admin/collections/[id]` is a server-rendered admin route that fetches detail through `GET /api/admin/collections/:id`.
    - The page does not trust index-card state; route access still depends on the server-side detail contract and SIWS admin session.
-22. Admin collection blockchain read-only base addresses (BRI-104, server-authoritative):
+23. Admin collection blockchain read-only base addresses (BRI-104, server-authoritative):
    - `GET /api/admin/collections/:id` now also returns a read-only `blockchain` block with base addresses for the detail shell.
    - The block is derived server-side from ownership evidence plus `asset_mint_snapshots.blockchain_snapshot`; browser state never supplies or authorizes blockchain addresses.
    - Missing snapshot asset mint data degrades to `null` without widening write access or bypassing the existing ownership gate.
-23. Admin collection blockchain authorities read (BRI-105, server-authoritative):
+24. Admin collection blockchain authorities read (BRI-105, server-authoritative):
    - The same read-only `blockchain` block now includes visible authority identities for admin inspection.
    - `transfer_delegate` and `appdata_authority` are resolved server-side from `authority_registry`; `third_party_signer` and `freeze_delegate` use snapshot/configured fallbacks.
    - This remains informational only and does not grant any mutation path from `/admin/collections`.
@@ -161,6 +164,8 @@
 | `/api/admin/collections/:id` | `GET` | Yes | `admin` | Returns collection detail only after centralized ownership verification against marketplace entry and snapshot evidence |
 | `/api/admin/collections/:id` | `PATCH` | Yes | `admin` | Updates one editable collection section only after payload validation and centralized ownership verification |
 | `/api/admin/collections/:id/location-maps` | `GET` | Yes | `admin` | Returns the normalized location/maps section contract only after centralized ownership verification |
+| `/api/admin/collections/:id/location-maps/autocomplete` | `GET` | Yes | `admin` | Returns Google Maps autocomplete suggestions only after centralized ownership verification |
+| `/api/admin/collections/:id/location-maps/resolve` | `GET` | Yes | `admin` | Resolves a selected Google place into the reduced `googleMapsPlace` payload only after centralized ownership verification |
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 | `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
@@ -455,6 +460,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `GET /api/admin/collections/[id]/location-maps` now exposes a dedicated admin-only section contract for Google Maps/location UI.
 - The route derives current location context, reduced place payload, and outbound/embed URLs only after the same server-side ownership check used by the main detail route.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced; this slice only narrows a read contract for later autocomplete/edit flows.
+
+## EPIC-011 / BRI-112 Address Autocomplete
+- `/admin/collections/[id]` now mounts a location editor that can search Google Maps addresses and resolve a selected place locally before persistence.
+- `GET /api/admin/collections/[id]/location-maps/autocomplete` and `/resolve` remain server-authoritative, session-protected helpers behind the same ownership boundary as the rest of the detail surface.
+- No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced; this slice only adds lookup UX and reduced place resolution.
 
 ## EPIC-011 / BRI-101 Playwright Admin Collections Flow
 - `/admin/collections` and `/admin/collections/[id]` now have a deterministic Playwright browser flow that still begins with a real admin SIWS authentication step.
