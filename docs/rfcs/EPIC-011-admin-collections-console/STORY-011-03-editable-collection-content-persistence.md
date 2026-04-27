@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-03-editable-collection-content-persistence`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
 - Last Updated: `2026-04-24`
@@ -82,13 +82,13 @@
   Se aprueba la extensión del modelo existente y la integración de las reglas de seguridad de datos definidas en el Epic.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Continuar con `STORY-011-04` para exponer las mutaciones del editor sobre el contrato ya persistido.
+  Ninguna dentro de este story; las mutaciones posteriores quedaron cubiertas por `STORY-011-04`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -103,8 +103,8 @@
 
 ## Traceability
 - Related issue(s): `BRI-72`, `BRI-83`, `BRI-84`, `BRI-85`, `BRI-86`, `BRI-87`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related PR(s): `#133`, `#134`, `#135`, `#136`, `#137`
+- Final commit hash(es): `76bfa16802b8dd183c23e5f66daa52dd8dc3c9b4` (`BRI-83`), `79a4e1546d3d05d31f26e6931d44c9937bd9d4bc` (`BRI-84`), `7f057653b14c9ffb8d4ca67115bbfd899f897ed4` (`BRI-85`), `35ca8891051fee58bc985f5d74d1756e5f7497b0` (`BRI-86`), `fe755db044a7f3975ae8ec62adc740b7ad82141f` (`BRI-87`)
 
 ## Implementation Progress
 - `BRI-83` adds the first schema slice for this story by extending `marketplace_entries` with the approved editable collection columns and documenting their editorial purpose with SQL column comments.

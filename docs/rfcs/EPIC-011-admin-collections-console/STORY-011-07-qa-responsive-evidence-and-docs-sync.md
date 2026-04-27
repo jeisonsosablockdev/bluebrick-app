@@ -77,7 +77,7 @@
 ## Status
 - Current status: `implemented`
 - Next action:
-  Preparar la PR final del branch de integración `story-011-07-qa-responsive-evidence-and-docs-sync-bri-76-integration` hacia `develop` una vez termine la revisión integral del usuario.
+  Ninguna dentro de este story; la PR final `#158` ya fue mergeada en `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -95,8 +95,8 @@
 
 ## Traceability
 - Related issue(s): `BRI-100`, `BRI-101`, `BRI-103`, `BRI-102`
-- Related PR(s): `#158`
-- Final commit hash(es): `6d686d1` (`BRI-100`), `79ff5ea` (`BRI-101`), `29e9ca9` (`BRI-103`)
+- Related PR(s): `#152`, `#158`
+- Final commit hash(es): `6d686d15834eed77e548cbff497205acbc0a9e11` (`BRI-100`), `79ff5ea332c4554c042a046a602643b3f128e6d5` (`BRI-101`), `29e9ca93a02b839e4670fc7f8a0726a8080bcaaa` (`BRI-103`), `06fad92d7d793b20e27cfabf8b1d7457a67896d0` (`BRI-102`), `4e5e2d79b717d0afac3a0c4f485d8e728c366084` (final story merge)
 
 ## Slice Notes
 - `2026-04-26`:

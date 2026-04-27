@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-02-admin-collections-read-model`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
 - Last Updated: `2026-04-23`
@@ -75,13 +75,13 @@
   Aprobado el contrato de matching dual. Se delegan los estados de error a la historia de Health (10).
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Handoff a `STORY-011-05` / `BRI-74` para refinar la UI visual del index sobre el contrato ya consumido por `BRI-82`.
+  Ninguna dentro de este story; la refinación visual quedó absorbida por `STORY-011-05`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -97,8 +97,8 @@
 
 ## Traceability
 - Related issue(s): `BRI-71`, `BRI-80`, `BRI-81`, `BRI-82`
-- Related PR(s): `TBD`
-- Final commit hash(es): `6af5b99` (slice branch commit; final merge hash TBD)
+- Related PR(s): `#129`, `#131`, `#132`
+- Final commit hash(es): `02ee2f55cad2b0d1a88eb3b9c5ed87d7dd76252d` (`BRI-80`), `eef45769f83c819e7a86a39debf08a8742c1d301` (`BRI-81`), `6fcccd0a767cfc0eb20d30040657f124c28a92ac` (`BRI-82`)
 
 ## Implementation Progress
 - `BRI-80` completed the server-side query ownership contract as the first slice of this story.

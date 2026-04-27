@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-04-collections-api-and-ownership-enforcement`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
 - Last Updated: `2026-04-25`
@@ -81,9 +81,9 @@
   Se aprueba la API con los estrictos controles de ownership y consolidación de mutaciones del Epic.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Completar trazabilidad final de PR/commit después del merge de `BRI-91`; la implementación funcional de los slices está completa.
+  Ninguna dentro de este story; la implementación y trazabilidad de los slices ya quedaron cerradas.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -107,8 +107,8 @@
 
 ## Traceability
 - Related issue(s): `BRI-73`, `BRI-88`, `BRI-89`, `BRI-90`, `BRI-91`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related PR(s): `#138`, `#139`, `#140`, `#141`
+- Final commit hash(es): `2e582383e337c0d64bef257c4bb1f77304dbdb4e` (`BRI-88`), `8699e1caa6ed3d52d43a85106f97356a466615f4` (`BRI-89`), `3eaff0604b6827a1b3b676da57bde703ff57efb0` (`BRI-90`), `e1d390305d7c11c91193bd686efd2be26124c871` (`BRI-91`)
 
 ## Implementation Progress
 - `BRI-88` adds `assertAdminCollectionOwnership(adminId, collectionId)` as the mandatory server-side guard for future collection detail routes.

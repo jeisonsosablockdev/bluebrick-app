@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-01-kickoff`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-26`
 
 ## Context
 - Problem:
@@ -100,13 +100,13 @@
   Se aprueba el kickoff sentando las bases inmutables del Epic: ownership estricto, cover read-only y gestión de contenido off-chain explícito.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Proceder con el desglose y ejecución de las historias dependientes.
+  Ninguna dentro de este story; el kickoff y contrato del epic ya quedaron absorbidos por la implementación de `STORY-011-02` a `STORY-011-07`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -133,6 +133,6 @@
   - Sí aplica para el módulo final del epic: 320px, 375px, 768px, 1024px; sin overflow y con acciones >= 44px.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-70`
+- Related PR(s): `#127`
+- Final commit hash(es): `7c183103d0dd8b98c827b95c72cdb495c93e5975`

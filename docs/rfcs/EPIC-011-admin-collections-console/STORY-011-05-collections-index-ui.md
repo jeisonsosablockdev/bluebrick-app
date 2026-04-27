@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-05-collections-index-ui`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-26`
 
 ## Context
 - Problem:
@@ -82,13 +82,13 @@
   Aprobada la propuesta UI y su delegación de casos complejos al health panel.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Construir listado visual conectado con endpoint de read model.
+  Ninguna dentro de este story; el detalle/editor quedó delegado y resuelto en `STORY-011-06`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -102,5 +102,5 @@
 
 ## Traceability
 - Related issue(s): `BRI-92`, `BRI-93`, `BRI-94`
-- Related PR(s): `https://github.com/jeisonsosablockdev/solana-test-1/pull/143`, `https://github.com/jeisonsosablockdev/solana-test-1/pull/144`, `TBD (BRI-94)`
-- Final commit hash(es): `abb4dad465b11bfe7e88ca6e563a36d1fabe9542 (BRI-92)`, `c68ae7840e2780e727e3a6b54c0a39b19919adeb (BRI-93)`, `pending (BRI-94)`
+- Related PR(s): `#143`, `#144`, `#145`
+- Final commit hash(es): `abb4dad465b11bfe7e88ca6e563a36d1fabe9542` (`BRI-92`), `c68ae7840e2780e727e3a6b54c0a39b19919adeb` (`BRI-93`), `00b59c85a6ec36319cf71142eaa6c19a6149c259` (`BRI-94`)

@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-06-collection-detail-editor-ui`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
 - Last Updated: `2026-04-26`
@@ -79,13 +79,13 @@
   Se aprueba la UX modular con manejo de estados asíncronos distribuidos según reglas del Epic.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Continuar con `property information`, `gallery` y `documents` sobre el mismo patrón modular por sección.
+  Ninguna dentro de este story; las secciones `summary`, `property information`, `gallery` y `documents` ya quedaron cerradas.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -99,8 +99,8 @@
 
 ## Traceability
 - Related issue(s): `BRI-95`, `BRI-96`, `BRI-97`, `BRI-98`, `BRI-99`
-- Related PR(s): `#146`, `#148`, `#149`, `#150`, `TBD`
-- Final commit hash(es): `8aa9aa4`, `aa4d919`, `f93c8f5`, `3077016`, `TBD`
+- Related PR(s): `#146`, `#148`, `#149`, `#150`, `#151`
+- Final commit hash(es): `3e07fd94560b24c85e48efe4de3ffb7fa6ccdc2d` (`BRI-95`), `aa4d919a1e65f891d4522ac8a9e44fb60e2ad222` (`BRI-96`), `f93c8f5830f26c41a6a0371e40e04b9fcd2bd584` (`BRI-97`), `30770167affbaf9b0a4d04367d9228e41e65cb94` (`BRI-98`), `7c89e64d8fff429e9626d4052d5d78bcb58e8fc5` (`BRI-99`)
 
 ## Slice Notes
 - `2026-04-26`:
