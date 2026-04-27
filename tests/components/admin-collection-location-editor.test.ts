@@ -19,6 +19,7 @@ function renderEditor(): RenderHandle {
   act(() => {
     root.render(createElement(AdminCollectionLocationEditor, {
       entryId: "entry-1",
+      googleMapsEmbedApiKey: "test-google-maps-key",
       locale: "en",
       content: {
         entryId: "entry-1",

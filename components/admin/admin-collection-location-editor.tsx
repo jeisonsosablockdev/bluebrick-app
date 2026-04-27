@@ -56,10 +56,12 @@ function buildPreviewContent(
 
 export function AdminCollectionLocationEditor({
   entryId,
+  googleMapsEmbedApiKey,
   locale,
   content
 }: {
   entryId: string;
+  googleMapsEmbedApiKey: string | null;
   locale: AppLocale;
   content: AdminCollectionContentRecord;
 }): ReactElement {
@@ -123,7 +125,9 @@ export function AdminCollectionLocationEditor({
 
   const previewContent = buildPreviewContent(content, draftPlace);
   const previewLabel = buildAdminCollectionLocationLabel(previewContent);
-  const embedUrl = buildAdminCollectionGoogleMapsEmbedUrl(previewContent);
+  const embedUrl = buildAdminCollectionGoogleMapsEmbedUrl(previewContent, {
+    apiKey: googleMapsEmbedApiKey
+  });
   const outboundUrl = buildAdminCollectionGoogleMapsUrl(previewContent);
   const dirty = !arePlacesEqual(draftPlace, persistedPlace);
 
@@ -386,9 +390,15 @@ export function AdminCollectionLocationEditor({
           ) : (
             <AdminCollectionDetailEmptyState
               message={localize(locale, {
-                en: "Map preview will appear once the section has either a reduced place payload or enough address context.",
-                es: "El preview del mapa aparecera cuando la seccion tenga un payload reducido o suficiente contexto de direccion.",
-                pt: "O preview do mapa aparecera quando a secao tiver um payload reduzido ou contexto suficiente de endereco."
+                en: outboundUrl
+                  ? "Map preview is unavailable for embedding right now. Keep using the Google Maps link while the embed configuration is completed."
+                  : "Map preview will appear once the section has either a reduced place payload or enough address context.",
+                es: outboundUrl
+                  ? "El preview del mapa no esta disponible para embebido en este momento. Sigue usando el enlace de Google Maps mientras se completa la configuracion del embed."
+                  : "El preview del mapa aparecera cuando la seccion tenga un payload reducido o suficiente contexto de direccion.",
+                pt: outboundUrl
+                  ? "O preview do mapa nao esta disponivel para embed agora. Continue usando o link do Google Maps enquanto a configuracao do embed e concluida."
+                  : "O preview do mapa aparecera quando a secao tiver um payload reduzido ou contexto suficiente de endereco."
               })}
             />
           )}

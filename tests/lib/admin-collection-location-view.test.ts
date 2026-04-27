@@ -17,7 +17,16 @@ const baseContent = {
 };
 
 describe("lib/admin/admin-collection-location-view", () => {
+  it("returns null for the embed preview when no Google Maps embed key is configured", () => {
+    delete process.env.GOOGLE_MAPS_API_KEY;
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toBeNull();
+  });
+
   it("builds label and outbound query from persisted text fields when no place exists", () => {
+    process.env.GOOGLE_MAPS_API_KEY = "test-google-maps-key";
+
     expect(buildAdminCollectionLocationLabel(baseContent)).toBe(
       "Bocagrande Waterfront · Avenida San Martin 7-14, Bocagrande"
     );
@@ -25,10 +34,13 @@ describe("lib/admin/admin-collection-location-view", () => {
       "Avenida San Martin 7-14, Bocagrande, Bocagrande Waterfront, Cartagena, CO"
     );
     expect(buildAdminCollectionGoogleMapsUrl(baseContent)).toContain("google.com/maps/search/");
-    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("output=embed");
+    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("google.com/maps/embed/v1/place");
+    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("key=test-google-maps-key");
   });
 
   it("prefers the reduced place payload when it is already persisted", () => {
+    process.env.GOOGLE_MAPS_API_KEY = "test-google-maps-key";
+
     const content = {
       ...baseContent,
       googleMapsPlace: {
@@ -45,6 +57,6 @@ describe("lib/admin/admin-collection-location-view", () => {
       "Avenida San Martin 7-14, Bocagrande, Cartagena, CO, Ocean View Residences"
     );
     expect(buildAdminCollectionGoogleMapsUrl(content)).toBe(content.googleMapsPlace.googleMapsUrl);
-    expect(buildAdminCollectionGoogleMapsEmbedUrl(content)).toContain("10.3997%2C-75.5553");
+    expect(buildAdminCollectionGoogleMapsEmbedUrl(content)).toContain("place_id%3Aplace-ocean-view");
   });
 });

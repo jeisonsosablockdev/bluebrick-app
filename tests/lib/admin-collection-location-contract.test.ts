@@ -4,6 +4,8 @@ import { buildAdminCollectionLocationMapsSection } from "@/lib/admin/admin-colle
 
 describe("lib/admin/admin-collection-location-contract", () => {
   it("serializes current location context and reduced place payload into one section contract", () => {
+    process.env.GOOGLE_MAPS_API_KEY = "test-google-maps-key";
+
     const result = buildAdminCollectionLocationMapsSection({
       entryId: "entry-1",
       title: "Ocean View Residences",
@@ -40,6 +42,7 @@ describe("lib/admin/admin-collection-location-contract", () => {
     );
     expect(result.googleMapsPlace?.placeId).toBe("place-ocean-view");
     expect(result.outboundUrl).toContain("google.com/maps/search/");
-    expect(result.embedUrl).toContain("output=embed");
+    expect(result.embedUrl).toContain("google.com/maps/embed/v1/place");
+    expect(result.embedUrl).toContain("place_id%3Aplace-ocean-view");
   });
 });

@@ -57,9 +57,15 @@ function MapPreview({
     return (
       <AdminCollectionDetailEmptyState
         message={localize(locale, {
-          en: "No location preview is available yet. The next slices will add autocomplete and reduced place persistence here.",
-          es: "Aun no hay un preview de ubicacion disponible. Los siguientes slices agregaran autocomplete y persistencia reducida del place.",
-          pt: "Ainda nao ha um preview de localizacao disponivel. Os proximos slices adicionarao autocomplete e persistencia reduzida do place."
+          en: outboundUrl
+            ? "Map preview is unavailable for embedding right now. Use the outbound Google Maps link while the embed configuration is completed."
+            : "No location preview is available yet. The next slices will add autocomplete and reduced place persistence here.",
+          es: outboundUrl
+            ? "El preview del mapa no esta disponible para embebido en este momento. Usa el enlace externo de Google Maps mientras se completa la configuracion del embed."
+            : "Aun no hay un preview de ubicacion disponible. Los siguientes slices agregaran autocomplete y persistencia reducida del place.",
+          pt: outboundUrl
+            ? "O preview do mapa nao esta disponivel para embed agora. Use o link externo do Google Maps enquanto a configuracao do embed e concluida."
+            : "Ainda nao ha um preview de localizacao disponivel. Os proximos slices adicionarao autocomplete e persistencia reduzida do place."
         })}
       />
     );

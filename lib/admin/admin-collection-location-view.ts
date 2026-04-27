@@ -6,6 +6,20 @@ function normalizeSegments(segments: Array<string | null | undefined>): string[]
     .filter((segment) => segment.length > 0);
 }
 
+function resolveGoogleMapsEmbedApiKey(explicitApiKey?: string | null): string | null {
+  if (typeof explicitApiKey === "string" && explicitApiKey.trim().length > 0) {
+    return explicitApiKey.trim();
+  }
+
+  const publicApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+  if (publicApiKey) {
+    return publicApiKey;
+  }
+
+  const serverApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
+  return serverApiKey && serverApiKey.length > 0 ? serverApiKey : null;
+}
+
 export function buildAdminCollectionLocationLabel(content: Pick<
   AdminCollectionContentRecord,
   "locationLabel" | "detailedLocation" | "city" | "country"
@@ -58,13 +72,28 @@ export function buildAdminCollectionGoogleMapsUrl(content: Pick<
 export function buildAdminCollectionGoogleMapsEmbedUrl(content: Pick<
   AdminCollectionContentRecord,
   "locationLabel" | "detailedLocation" | "city" | "country" | "googleMapsPlace"
->): string | null {
+>, options?: {
+  apiKey?: string | null;
+}): string | null {
+  const apiKey = resolveGoogleMapsEmbedApiKey(options?.apiKey);
+  if (!apiKey) {
+    return null;
+  }
+
+  if (content.googleMapsPlace?.placeId) {
+    return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(
+      `place_id:${content.googleMapsPlace.placeId}`
+    )}`;
+  }
+
   if (content.googleMapsPlace) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(
+    return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(
       `${content.googleMapsPlace.lat},${content.googleMapsPlace.lng}`
-    )}&z=15&output=embed`;
+    )}`;
   }
 
   const query = buildAdminCollectionLocationQuery(content);
-  return query ? `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed` : null;
+  return query
+    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(query)}`
+    : null;
 }

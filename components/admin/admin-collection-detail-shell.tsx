@@ -51,6 +51,8 @@ export function AdminCollectionDetailShell({
   content,
   blockchain
 }: AdminCollectionDetailShellProps): ReactElement {
+  const googleMapsEmbedApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || null;
+
   return (
     <div className="space-y-4">
       <AdminCollectionDetailHero content={content} locale={locale} ownership={ownership} />
@@ -76,6 +78,7 @@ export function AdminCollectionDetailShell({
           <AdminCollectionLocationEditor
             content={content}
             entryId={content.entryId}
+            googleMapsEmbedApiKey={googleMapsEmbedApiKey}
             locale={locale}
           />
         }
