@@ -6,7 +6,7 @@
 - Status: `approved`
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-26`
+- Last Updated: `2026-04-27`
 
 ## Scope
 - Problem statement:
@@ -29,6 +29,7 @@
 ## Success Criteria
 - [ ] `/admin/collections` muestra únicamente proyectos cuya entrada de marketplace y snapshot on-chain pertenecen al admin autenticado y pasan validación de consistencia.
 - [ ] El admin puede editar `Fractional investment summary`, `Property information`, `documents` y galería secundaria del proyecto, y esos cambios se reflejan en la entrada del marketplace.
+- [ ] El admin puede editar la ubicación canónica del proyecto con paridad funcional respecto a `/admin/assets/new` (`country`, `state / province`, `city`, `address`, `geoLat`, `geoLng`) y usar Google Maps como capa asistiva, no como única fuente editable.
 - [ ] La carátula del proyecto no se puede reemplazar desde la consola; el sistema la trata como fuente read-only proveniente de candy machine/metadata.
 - [ ] El módulo conserva el estilo visual actual del admin console, incorporando una UX más visual para entender qué puede cambiarse en cada proyecto.
 - [ ] La funcionalidad queda cubierta por tests server-side y E2E responsivos para 320px, 375px, 768px y 1024px.
@@ -46,6 +47,8 @@
 | STORY-011-08 | Blockchain readonly panel | `STORY-011-08-blockchain-readonly-panel.md` | `implemented` | `#160` | Read-only candy machine, authorities, guards, and appdata panel; `BRI-104` establishes base addresses, `BRI-105` adds authorities, `BRI-106` adds guard fields, `BRI-107` normalizes AppData payload fields, `BRI-108` closes the read-only panel UI, and `BRI-109` adds copy/link interactions with focused tests |
 | STORY-011-09 | Google Maps location integration | `STORY-011-09-google-maps-location-integration.md` | `approved` | `TBD` | Address autocomplete, maps persistence, and outbound maps UX |
 | STORY-011-10 | Collections health and manual review queue | `STORY-011-10-collections-health-and-manual-review-queue.md` | `approved` | `TBD` | Read-only health view for inconsistent or bootstrap-failed entries |
+| STORY-011-11 | Location form contract and persistence parity | `STORY-011-11-location-form-contract-and-persistence-parity.md` | `approved` | `TBD` | Extends the editable model so `/admin/collections` can persist the same canonical location fields already present in `/admin/assets/new`, plus a clear sync contract with Google Maps payloads |
+| STORY-011-12 | Location form editor and maps-assisted UX parity | `STORY-011-12-location-form-editor-and-maps-assisted-ux.md` | `approved` | `TBD` | Reuses the `/admin/assets/new` location experience inside collection detail, keeping Google Maps as an assistive layer for lookup, preview, and outbound navigation |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
@@ -61,6 +64,7 @@
 | 2026-04-17 | STORY-011-04/06 | El editor vivirá en `/admin/collections/[id]`, con guardado manual y botones `Save` / `Cancel` por sección, permaneciendo en la misma pantalla | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-17 | STORY-011-06 | La vista de detalle incluirá información blockchain visible, datos de `nft-economic-data-appdata-plugin` y una integración con Google Maps para visualización, autocomplete y salida al sitio | jaymusicmachine | `STORY-011-06-collection-detail-editor-ui.md` |
 | 2026-04-17 | STORY-011-08/09 | La información blockchain read-only y la integración Google Maps se separan en stories dedicadas para no sobrecargar el editor principal | jaymusicmachine | `STORY-011-08-blockchain-readonly-panel.md` |
+| 2026-04-27 | STORY-011-09/11/12 | Google Maps deja de ser la única vía de edición de ubicación: los campos canónicos de `/admin/assets/new` (`country`, `state / province`, `city`, `address`, `geoLat`, `geoLng`) pasan a formar parte del alcance editable de `/admin/collections`, y el payload de Maps queda como capa asistiva sincronizada | jaymusicmachine | `STORY-011-09-google-maps-location-integration.md` |
 | 2026-04-23 | STORY-011-02 | El primer slice (`BRI-80`) fija el contrato de matching dual usando `collection_address` y candy machine address persistida en `marketplace_entries.asset_mint_address`, y deja `GET /api/admin/collections` para `BRI-81` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 | 2026-04-23 | STORY-011-02 | El segundo slice (`BRI-81`) expone `GET /api/admin/collections` como una capa read-only delgada, admin-only y sin duplicación de lógica de ownership/matching | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
 | 2026-04-23 | STORY-011-02 | El tercer slice (`BRI-82`) conecta el contrato aprobado al placeholder de `/admin/collections` con estados mínimos `loading`, `error`, `empty` y `success`, dejando el diseño visual final para `STORY-011-05` | jaymusicmachine | `STORY-011-02-admin-collections-read-model.md` |
