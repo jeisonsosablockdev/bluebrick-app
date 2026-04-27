@@ -85,12 +85,12 @@ test("admin collections responsive QA evidence pack", async ({ page }, testInfo)
     await expect(page.getByText(/Managed from Candy Machine/i)).toBeVisible();
     await expect(page.getByText(/Read-only cover/i)).toBeVisible();
 
-    const summarySaveButton = page.getByRole("button", { name: /Save summary/i });
-    await expect(summarySaveButton).toBeVisible();
+    const locationSaveButton = page.getByRole("button", { name: /Save location/i });
+    await expect(locationSaveButton).toBeVisible();
     const detailOverflow = await hasHorizontalOverflow(page);
     expect(detailOverflow).toBe(false);
-    const summaryButtonHeight = await measureActionHeight(summarySaveButton);
-    expect(summaryButtonHeight).toBeGreaterThanOrEqual(44);
+    const locationButtonHeight = await measureActionHeight(locationSaveButton);
+    expect(locationButtonHeight).toBeGreaterThanOrEqual(44);
 
     const detailScreenshotPath = testInfo.outputPath(`admin-collections-detail-${viewport.label}.png`);
     await page.screenshot({
@@ -106,7 +106,7 @@ test("admin collections responsive QA evidence pack", async ({ page }, testInfo)
       route: "detail",
       viewport: viewport.label,
       horizontalOverflow: detailOverflow,
-      primaryActionHeight: summaryButtonHeight
+      primaryActionHeight: locationButtonHeight
     });
   }
 

@@ -12,7 +12,8 @@ import {
   createAdminCollectionLocationSessionToken,
   fetchAdminCollectionLocationSuggestions,
   resolveAdminCollectionLocationPlace,
-  AdminCollectionLocationClientError
+  AdminCollectionLocationClientError,
+  updateAdminCollectionLocationPlace
 } from "@/lib/admin/admin-collection-location-client";
 import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
@@ -29,6 +30,19 @@ type SuggestionsState =
   | { kind: "loading" }
   | { kind: "error"; message: string }
   | { kind: "ready"; suggestions: AdminCollectionLocationAutocompleteSuggestion[] };
+
+type FeedbackState =
+  | { kind: "idle" }
+  | { kind: "saving" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
+
+function arePlacesEqual(
+  left: CollectionBootstrapGoogleMapsPlace | null,
+  right: CollectionBootstrapGoogleMapsPlace | null
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
 
 function buildPreviewContent(
   content: AdminCollectionContentRecord,
@@ -49,9 +63,11 @@ export function AdminCollectionLocationEditor({
   locale: AppLocale;
   content: AdminCollectionContentRecord;
 }): ReactElement {
+  const [persistedPlace, setPersistedPlace] = useState<CollectionBootstrapGoogleMapsPlace | null>(content.googleMapsPlace);
+  const [draftPlace, setDraftPlace] = useState<CollectionBootstrapGoogleMapsPlace | null>(content.googleMapsPlace);
   const [query, setQuery] = useState("");
-  const [selectedPlace, setSelectedPlace] = useState<CollectionBootstrapGoogleMapsPlace | null>(null);
   const [suggestionsState, setSuggestionsState] = useState<SuggestionsState>({ kind: "idle" });
+  const [feedback, setFeedback] = useState<FeedbackState>({ kind: "idle" });
   const [selectionMessage, setSelectionMessage] = useState<string>(
     localize(locale, {
       en: "Autocomplete selection stays local in this slice. Save/cancel will land in the next steps.",
@@ -105,10 +121,11 @@ export function AdminCollectionLocationEditor({
     };
   }, [entryId, locale, query, sessionToken]);
 
-  const previewContent = buildPreviewContent(content, selectedPlace);
+  const previewContent = buildPreviewContent(content, draftPlace);
   const previewLabel = buildAdminCollectionLocationLabel(previewContent);
   const embedUrl = buildAdminCollectionGoogleMapsEmbedUrl(previewContent);
   const outboundUrl = buildAdminCollectionGoogleMapsUrl(previewContent);
+  const dirty = !arePlacesEqual(draftPlace, persistedPlace);
 
   async function handleSelectSuggestion(suggestion: AdminCollectionLocationAutocompleteSuggestion): Promise<void> {
     setSelectionMessage(
@@ -126,9 +143,10 @@ export function AdminCollectionLocationEditor({
         sessionToken
       });
 
-      setSelectedPlace(nextPlace);
-      setQuery(suggestion.fullText);
+      setDraftPlace(nextPlace);
+      setQuery("");
       setSuggestionsState({ kind: "idle" });
+      setFeedback({ kind: "idle" });
       setSelectionMessage(
         localize(locale, {
           en: "Location selection resolved locally. The reduced payload is ready for the later save slice.",
@@ -149,17 +167,75 @@ export function AdminCollectionLocationEditor({
     }
   }
 
+  async function handleSave(): Promise<void> {
+    if (!dirty || feedback.kind === "saving") {
+      return;
+    }
+
+    setFeedback({ kind: "saving" });
+
+    try {
+      const nextPlace = await updateAdminCollectionLocationPlace({
+        entryId,
+        googleMapsPlace: draftPlace
+      });
+      setPersistedPlace(nextPlace);
+      setDraftPlace(nextPlace);
+      setFeedback({ kind: "success" });
+      setSelectionMessage(
+        localize(locale, {
+          en: "Location saved. The latest persisted Maps payload is already reflected in the preview.",
+          es: "Ubicacion guardada. El ultimo payload persistido de Maps ya se refleja en el preview.",
+          pt: "Localizacao salva. O payload persistido mais recente do Maps ja aparece no preview."
+        })
+      );
+    } catch (error) {
+      setFeedback({
+        kind: "error",
+        message: error instanceof AdminCollectionLocationClientError
+          ? error.message
+          : localize(locale, {
+              en: "Could not save the Google Maps location section.",
+              es: "No se pudo guardar la seccion de Google Maps location.",
+              pt: "Nao foi possivel salvar a secao Google Maps location."
+            })
+      });
+    }
+  }
+
+  function handleCancel(): void {
+    setDraftPlace(persistedPlace);
+    setQuery("");
+    setSuggestionsState({ kind: "idle" });
+    setFeedback({ kind: "idle" });
+    setSelectionMessage(
+      localize(locale, {
+        en: "Local changes were discarded. The section is back to the latest persisted Maps payload.",
+        es: "Los cambios locales se descartaron. La seccion volvio al ultimo payload persistido de Maps.",
+        pt: "As alteracoes locais foram descartadas. A secao voltou ao payload persistido mais recente do Maps."
+      })
+    );
+  }
+
   return (
     <AdminCollectionDetailSectionShell
       aside={
         <span className="inline-flex min-h-9 items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/65">
-          {localize(locale, { en: "Autocomplete live", es: "Autocomplete activo", pt: "Autocomplete ativo" })}
+          {feedback.kind === "saving"
+            ? localize(locale, { en: "Saving", es: "Guardando", pt: "Salvando" })
+            : feedback.kind === "success"
+              ? localize(locale, { en: "Saved", es: "Guardado", pt: "Salvo" })
+              : feedback.kind === "error"
+                ? localize(locale, { en: "Save failed", es: "Error al guardar", pt: "Falha ao salvar" })
+                : dirty
+                  ? localize(locale, { en: "Unsaved changes", es: "Cambios sin guardar", pt: "Alteracoes nao salvas" })
+                  : localize(locale, { en: "Location editor", es: "Editor de ubicacion", pt: "Editor de localizacao" })}
         </span>
       }
       description={localize(locale, {
-        en: "The location section now supports address lookup and local place selection without leaving the editor. Persistence remains isolated for the next slice.",
-        es: "La seccion de ubicacion ahora soporta busqueda de direccion y seleccion local del place sin salir del editor. La persistencia queda aislada para el siguiente slice.",
-        pt: "A secao de localizacao agora suporta busca de endereco e selecao local do place sem sair do editor. A persistencia permanece isolada para o proximo slice."
+        en: "The location section now supports address lookup, local place selection, and manual save/cancel without leaving the editor shell.",
+        es: "La seccion de ubicacion ahora soporta busqueda de direccion, seleccion local del place y save/cancel manual sin salir del shell del editor.",
+        pt: "A secao de localizacao agora suporta busca de endereco, selecao local do place e save/cancel manual sem sair do shell do editor."
       })}
       eyebrow={localize(locale, { en: "Editable section", es: "Seccion editable", pt: "Secao editavel" })}
       title={localize(locale, { en: "Google Maps location", es: "Google Maps location", pt: "Google Maps location" })}
@@ -181,9 +257,9 @@ export function AdminCollectionLocationEditor({
               }
               setSelectionMessage(
                 localize(locale, {
-                  en: "Autocomplete selection stays local in this slice. Save/cancel will land in the next steps.",
-                  es: "La seleccion del autocomplete se mantiene local en este slice. Save/cancel llegara en los siguientes pasos.",
-                  pt: "A selecao do autocomplete permanece local neste slice. Save/cancel chegara nos proximos passos."
+                  en: "Select a Google Maps suggestion to stage a new reduced place payload for this section.",
+                  es: "Selecciona una sugerencia de Google Maps para preparar un nuevo payload reducido para esta seccion.",
+                  pt: "Selecione uma sugestao do Google Maps para preparar um novo payload reduzido para esta secao."
                 })
               );
             }}
@@ -212,10 +288,10 @@ export function AdminCollectionLocationEditor({
               {suggestionsState.suggestions.map((suggestion) => (
                 <button
                   key={suggestion.placeId}
-                  className="rounded-2xl border border-white/10 bg-black/10 p-4 text-left transition hover:border-sky-300/35 hover:bg-black/20"
-                  onClick={() => {
-                    void handleSelectSuggestion(suggestion);
-                  }}
+                className="rounded-2xl border border-white/10 bg-black/10 p-4 text-left transition hover:border-sky-300/35 hover:bg-black/20"
+                onClick={() => {
+                  void handleSelectSuggestion(suggestion);
+                }}
                   type="button"
                 >
                   <p className="text-sm font-semibold text-white">{suggestion.primaryText}</p>
@@ -245,10 +321,21 @@ export function AdminCollectionLocationEditor({
               </h4>
             </div>
             <p className="text-sm leading-6 text-white/65">
-              {(selectedPlace ?? content.googleMapsPlace)?.formattedAddress ?? content.detailedLocation}
+              {(draftPlace ?? content.googleMapsPlace)?.formattedAddress ?? content.detailedLocation}
             </p>
-            <p aria-live="polite" className="text-sm text-white/55">
-              {selectionMessage}
+            <p
+              aria-live="polite"
+              className={`text-sm ${
+                feedback.kind === "error"
+                  ? "text-rose-100"
+                  : feedback.kind === "success"
+                    ? "text-emerald-100"
+                    : dirty
+                      ? "text-amber-100"
+                      : "text-white/55"
+              }`}
+            >
+              {feedback.kind === "error" ? feedback.message : selectionMessage}
             </p>
             {outboundUrl ? (
               <Link
@@ -260,6 +347,28 @@ export function AdminCollectionLocationEditor({
                 {localize(locale, { en: "Open in Google Maps", es: "Open in Google Maps", pt: "Open in Google Maps" })}
               </Link>
             ) : null}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/75 transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={!dirty || feedback.kind === "saving"}
+                onClick={handleCancel}
+                type="button"
+              >
+                {localize(locale, { en: "Cancel", es: "Cancel", pt: "Cancelar" })}
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={!dirty || feedback.kind === "saving"}
+                onClick={() => {
+                  void handleSave();
+                }}
+                type="button"
+              >
+                {feedback.kind === "saving"
+                  ? localize(locale, { en: "Saving location", es: "Guardando ubicacion", pt: "Salvando localizacao" })
+                  : localize(locale, { en: "Save location", es: "Save location", pt: "Save location" })}
+              </button>
+            </div>
           </div>
 
           {embedUrl ? (

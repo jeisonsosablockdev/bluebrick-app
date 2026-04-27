@@ -82,6 +82,7 @@
   - Admin collection location/maps contract reads use the same binding before deriving any Google Maps outbound/embed URL.
   - Admin collection location/maps lookup helpers use the same binding before any Google suggestions or place details are requested from the provider.
   - Admin collection detail writes use the same binding before repository updates and never accept `image_url`/cover mutation from client payloads.
+  - Admin collection location saves also use the same PATCH boundary; autocomplete selection remains local browser state until the authenticated `googleMapsPlace` section save executes.
   - `/admin` signing orchestration UI is an operator surface only; all state transitions are revalidated server-side.
 5. Webhook ingress layer:
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.

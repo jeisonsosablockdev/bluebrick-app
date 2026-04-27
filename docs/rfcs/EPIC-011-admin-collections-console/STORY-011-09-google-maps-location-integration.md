@@ -85,7 +85,7 @@
 ## Status
 - Current status: `approved`
 - Next action:
-  `BRI-110` a `BRI-113` ya dejaron lectura, contrato backend, autocomplete local y persistencia del payload reducido. El siguiente paso es cerrar la UX manual `Save` / `Cancel` y la evidencia QA del section flow.
+  Story implementation is complete on the integration branch. The next action is final integrated review and PR creation from `story-011-09-google-maps-location-integration-bri-78` to `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
@@ -118,11 +118,12 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
+- Related issue(s): `BRI-78`, `BRI-110`, `BRI-111`, `BRI-112`, `BRI-113`, `BRI-114`
 - Implementation progress:
   - `BRI-110` implemented current address context + visible map preview + outbound Google Maps CTA on the admin collection detail page.
   - `BRI-111` implemented a dedicated backend location/maps contract route with normalized context, reduced place payload, and derived outbound/embed URLs.
   - `BRI-112` implemented admin-only Google Maps autocomplete + place resolution routes and mounted a local-selection editor flow without persisting yet.
   - `BRI-113` implemented the reduced `googleMapsPlace` mutation client and regression coverage for repository/API persistence.
+  - `BRI-114` implemented manual `Save` / `Cancel` integration for the location section and closed focused Playwright/responsive QA for the flow.
 - Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Final commit hash(es): `e3e4dca`, `a4c2afe`, `5935581`, `c8d4542`

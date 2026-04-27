@@ -176,7 +176,8 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Save property information");
     expect(html).toContain("Google Maps location");
     expect(html).toContain("Search address");
-    expect(html).toContain("Autocomplete selection stays local in this slice.");
+    expect(html).toContain("Save location");
+    expect(html).toContain("Cancel");
     expect(html).toContain("Avenida San Martin 7-14, Bocagrande, Cartagena, CO");
     expect(html).toContain("Open in Google Maps");
     expect(html).toContain("Project gallery");

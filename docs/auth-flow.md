@@ -466,6 +466,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `GET /api/admin/collections/[id]/location-maps/autocomplete` and `/resolve` remain server-authoritative, session-protected helpers behind the same ownership boundary as the rest of the detail surface.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced; this slice only adds lookup UX and reduced place resolution.
 
+## EPIC-011 / BRI-114 Location Save/Cancel and QA
+- The location editor now persists through the same authenticated `PATCH /api/admin/collections/[id]` route used by the other detail sections, with `section = googleMapsPlace`.
+- The browser still stages autocomplete selection locally first, then commits only the reduced payload through the authenticated PATCH route when `Save location` is pressed.
+- Focused Playwright and responsive QA now cover the location section without adding any new auth/session path.
+
 ## EPIC-011 / BRI-101 Playwright Admin Collections Flow
 - `/admin/collections` and `/admin/collections/[id]` now have a deterministic Playwright browser flow that still begins with a real admin SIWS authentication step.
 - The supporting fixture path is intentionally read-only and server-gated:

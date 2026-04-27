@@ -49,6 +49,7 @@ function renderEditor(): RenderHandle {
 describe("components/admin/admin-collection-location-editor", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
   });
 
   afterEach(() => {
@@ -61,6 +62,8 @@ describe("components/admin/admin-collection-location-editor", () => {
     expect(container.textContent).toContain("Search address");
     expect(container.textContent).toContain("Autocomplete selection stays local in this slice.");
     expect(container.textContent).toContain("Open in Google Maps");
+    expect(container.textContent).toContain("Save location");
+    expect(container.textContent).toContain("Cancel");
 
     act(() => {
       root.unmount();

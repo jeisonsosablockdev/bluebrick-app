@@ -155,6 +155,14 @@ test.describe("admin collections primary flow", () => {
       page.getByText("Documents saved. The latest persisted document list is already reflected below.")
     ).toBeVisible();
 
-    expect(patchSections).toEqual(["summary", "propertyInformation", "documents"]);
+    const locationSearch = page.getByLabel(/Search address/i);
+    await locationSearch.fill("Ocean");
+    await page.getByRole("button", { name: /Oceanview Fractional Tower/i }).click();
+    await page.getByRole("button", { name: /Save location/i }).click();
+    await expect(
+      page.getByText("Location saved. The latest persisted Maps payload is already reflected in the preview.")
+    ).toBeVisible();
+
+    expect(patchSections).toEqual(["summary", "propertyInformation", "documents", "googleMapsPlace"]);
   });
 });
