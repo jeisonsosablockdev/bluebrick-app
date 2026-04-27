@@ -438,3 +438,15 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `GET /api/admin/collections/[id]` and `PATCH /api/admin/collections/[id]` now carry explicit regression coverage around canonical ownership resolution and validation failures before repository access.
 - The authenticated PATCH route now treats malformed JSON as `400 INVALID_COLLECTION_PAYLOAD` instead of falling through as a generic server failure.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced; this slice only hardens the existing admin-only route contract.
+
+## EPIC-011 / BRI-101 Playwright Admin Collections Flow
+- `/admin/collections` and `/admin/collections/[id]` now have a deterministic Playwright browser flow that still begins with a real admin SIWS authentication step.
+- The supporting fixture path is intentionally read-only and server-gated:
+  - it applies only to `GET /api/admin/collections` and `GET /api/admin/collections/[id]`,
+  - it activates only when the `brids_admin_collections_fixture` cookie is present,
+  - and it is disabled in production (`NODE_ENV === "production"` returns no fixture).
+- The fixture does not bypass auth or authority:
+  - middleware/admin role checks still require a valid SIWS session,
+  - detail access still flows through the authenticated server handlers,
+  - section save coverage still uses the same authenticated PATCH route contract and server-side validation/ownership checks.
+- No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced in this slice.

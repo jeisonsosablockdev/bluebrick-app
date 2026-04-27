@@ -16,8 +16,11 @@ vi.mock("@/lib/admin/collections-read-model", () => ({
 
 import { GET } from "@/app/api/admin/collections/route";
 
-function createRequest(url = "https://example.com/api/admin/collections"): NextRequest {
-  return new NextRequest(url, { method: "GET" });
+function createRequest(
+  url = "https://example.com/api/admin/collections",
+  headers?: Record<string, string>
+): NextRequest {
+  return new NextRequest(url, { method: "GET", headers });
 }
 
 describe("GET /api/admin/collections", () => {
@@ -75,6 +78,21 @@ describe("GET /api/admin/collections", () => {
     expect(payload.data).toHaveLength(2);
     expect(payload.data[0].entryId).toBe("entry-1");
     expect(routeMocks.listAdminCollectionReadModels).toHaveBeenCalledWith("Admin111");
+  });
+
+  it("returns the E2E fixture payload when the fixture cookie is present", async () => {
+    const response = await GET(
+      createRequest("https://example.com/api/admin/collections", {
+        cookie: "brids_admin_collections_fixture=bri-101"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data).toHaveLength(2);
+    expect(payload.data[0].entryId).toBe("entry-bri-101-primary");
+    expect(routeMocks.listAdminCollectionReadModels).not.toHaveBeenCalled();
   });
 
   it("returns 500 when the read model fails", async () => {

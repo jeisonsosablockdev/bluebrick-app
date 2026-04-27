@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAdminCollectionsE2eFixture } from "@/lib/admin/admin-collections-e2e-fixture";
 import { getRequestRole } from "@/lib/auth-session";
 import { listAdminCollectionReadModels } from "@/lib/admin/collections-read-model";
 
@@ -18,6 +19,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    const fixture = getAdminCollectionsE2eFixture(request);
+    if (fixture) {
+      return NextResponse.json({
+        ok: true,
+        data: fixture.collections
+      });
+    }
+
     const collections = await listAdminCollectionReadModels(role.pubkey);
 
     return NextResponse.json({

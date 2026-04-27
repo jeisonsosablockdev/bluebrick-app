@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-07-qa-responsive-evidence-and-docs-sync`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-26`
 
 ## Context
 - Problem:
@@ -75,13 +75,13 @@
   Matriz de QA formalmente aprobada como requisito innegociable de salida.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Ejecutar el pipeline de validación sobre el código final, empezando por la regresión de API/admin collections ya cubierta en `BRI-100`.
+  Preparar la PR final del branch de integración `story-011-07-qa-responsive-evidence-and-docs-sync-bri-76-integration` hacia `develop` una vez termine la revisión integral del usuario.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -94,10 +94,13 @@
   - Obligatoria con checklist en PR.
 
 ## Traceability
-- Related issue(s): `BRI-100`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-100`, `BRI-101`, `BRI-103`, `BRI-102`
+- Related PR(s): `#158`
+- Final commit hash(es): `6d686d1` (`BRI-100`), `79ff5ea` (`BRI-101`), `29e9ca9` (`BRI-103`)
 
 ## Slice Notes
 - `2026-04-26`:
   - `BRI-100` cierra la primera capa de regresión del story con tests de API/admin collections para ownership canonical, blank ids, cover immutable rejection y `400` explícito para JSON PATCH inválido.
+  - `BRI-101` agrega el flujo Playwright determinista de admin collections usando auth SIWS real, fixture server-side solo para `GET`, y verificación browser-side de detail entry, summary/property/documents save loops y carátula read-only.
+  - `BRI-103` agrega el responsive QA evidence pack formal del módulo admin collections, con checklist JSON y screenshots de index/detail para `320`, `375`, `768` y `1024` sin overflow horizontal y con acciones táctiles `>= 44px`.
+  - `BRI-102` cierra la trazabilidad documental del story, lo marca como `implemented` y deja enlazada la PR final `#158` hacia `develop`.

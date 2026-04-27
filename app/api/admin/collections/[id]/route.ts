@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAdminCollectionsE2eFixture } from "@/lib/admin/admin-collections-e2e-fixture";
 import { getRequestRole } from "@/lib/auth-session";
 import {
   assertAdminCollectionOwnership,
@@ -43,6 +44,19 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
   const collectionId = id.trim();
 
   try {
+    const fixture = getAdminCollectionsE2eFixture(request);
+    if (fixture) {
+      const detail = fixture.detailsByEntryId[collectionId] ?? null;
+      if (!detail) {
+        return errorResponse(404, "COLLECTION_NOT_FOUND", "Collection was not found.");
+      }
+
+      return NextResponse.json({
+        ok: true,
+        data: detail
+      });
+    }
+
     const ownership = await assertAdminCollectionOwnership(role.pubkey, collectionId);
     const content = await getAdminCollectionContentByEntryId(ownership.entryId);
 

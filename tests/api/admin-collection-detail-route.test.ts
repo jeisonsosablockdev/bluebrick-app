@@ -31,8 +31,11 @@ type RouteContext = {
   }>;
 };
 
-function createRequest(url = "https://example.com/api/admin/collections/entry-1"): NextRequest {
-  return new NextRequest(url, { method: "GET" });
+function createRequest(
+  url = "https://example.com/api/admin/collections/entry-1",
+  headers?: Record<string, string>
+): NextRequest {
+  return new NextRequest(url, { method: "GET", headers });
 }
 
 function createPatchRequest(body: unknown, url = "https://example.com/api/admin/collections/entry-1"): NextRequest {
@@ -139,6 +142,23 @@ describe("GET /api/admin/collections/:id", () => {
     expect(payload.data.content.fractionalInvestmentSummary).toBe("Stable yield.");
     expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-1");
     expect(routeMocks.getAdminCollectionContentByEntryId).toHaveBeenCalledWith("entry-1");
+  });
+
+  it("returns the E2E fixture detail payload when the fixture cookie is present", async () => {
+    const response = await GET(
+      createRequest("https://example.com/api/admin/collections/entry-bri-101-primary", {
+        cookie: "brids_admin_collections_fixture=bri-101"
+      }),
+      createContext("entry-bri-101-primary")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.ownership.entryId).toBe("entry-bri-101-primary");
+    expect(payload.data.content.documents).toHaveLength(1);
+    expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
+    expect(routeMocks.getAdminCollectionContentByEntryId).not.toHaveBeenCalled();
   });
 
   it("loads editable content by the canonical entry id returned from ownership", async () => {

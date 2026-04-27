@@ -171,6 +171,15 @@
   - The detail route now renders a richer read-only shell, but it still derives all content from the same server-fetched admin detail payload.
   - Cover lock semantics and section scaffolding do not create any new write surface or bypass the centralized ownership check.
   - Document links and media rendering remain presentation-only and do not alter session state or authorization boundaries.
+- BRI-101 Playwright admin collections flow safety notes:
+  - Browser E2E now uses a deterministic read fixture for `/api/admin/collections` and `/api/admin/collections/:id`, but only after a real admin SIWS session is established.
+  - The fixture is gated by `brids_admin_collections_fixture` and disabled in production, so it cannot become a runtime authority path.
+  - The fixture affects only GET responses; write paths continue to require authenticated admin session checks, payload validation, and centralized ownership verification.
+  - No session lifecycle changes were introduced:
+    - no extra cookie for auth,
+    - no session refresh path,
+    - no client-authoritative role override,
+    - no middleware bypass.
 
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:
