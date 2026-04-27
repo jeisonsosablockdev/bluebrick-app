@@ -59,6 +59,7 @@ export default async function AdminCollectionDetailPage({
         localize(locale, { en: "Property information editor mounted", es: "Editor de property information montado", pt: "Editor de property information montado" }),
         localize(locale, { en: "Gallery tabs shell mounted", es: "Shell de tabs de gallery montado", pt: "Shell de abas de gallery montado" }),
         localize(locale, { en: "Documents editor mounted", es: "Editor de documents montado", pt: "Editor de documents montado" }),
+        localize(locale, { en: "Blockchain addresses panel mounted", es: "Panel de direcciones blockchain montado", pt: "Painel de enderecos blockchain montado" }),
         localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" }),
         localize(locale, { en: "Gallery mutations remain staged for the next slice", es: "Las mutaciones de gallery quedan para el siguiente slice", pt: "As mutacoes de gallery ficam para o proximo slice" })
       ]}
@@ -67,10 +68,15 @@ export default async function AdminCollectionDetailPage({
         en: "Detail layout over the approved contract, now with summary, property, and documents edit loops live plus a dedicated gallery tabs shell staged for the next media mutation slice.",
         es: "Layout de detalle sobre el contrato aprobado, ahora con los loops de edicion de summary, property information y documents activos mas un shell dedicado de tabs para gallery preparado para el siguiente slice de mutaciones de media.",
         pt: "Layout de detalhe sobre o contrato aprovado, agora com os loops de edicao de summary, property information e documents ativos mais um shell dedicado de abas para gallery preparado para o proximo slice de mutacoes de midia."
-      })}
+        })}
       title={state.content.title}
     >
-      <AdminCollectionDetailShell content={state.content} locale={locale} ownership={state.ownership} />
+      <AdminCollectionDetailShell
+        blockchain={state.blockchain}
+        content={state.content}
+        locale={locale}
+        ownership={state.ownership}
+      />
     </AdminModulePlaceholder>
   );
 }

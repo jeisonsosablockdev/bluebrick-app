@@ -1,6 +1,9 @@
 import type { NextRequest } from "next/server";
 
 import type {
+  AdminCollectionBlockchainPanel
+} from "@/lib/admin/collection-blockchain-panel";
+import type {
   AdminCollectionContentRecord
 } from "@/lib/admin/collection-content-repository";
 import type { AdminCollectionOwnership } from "@/lib/admin/collection-ownership";
@@ -16,6 +19,7 @@ type AdminCollectionsE2eFixture = {
     {
       ownership: AdminCollectionOwnership;
       content: AdminCollectionContentRecord;
+      blockchain: AdminCollectionBlockchainPanel;
     }
   >;
 };
@@ -114,6 +118,36 @@ function buildBri101Fixture(): AdminCollectionsE2eFixture {
           googleMapsPlace: null,
           updatedBy: "Admin111",
           updatedAt: "2026-04-26T20:15:00.000Z"
+        },
+        blockchain: {
+          baseAddresses: {
+            collectionAddress: "CollectionOceanview11111111111111111111111111",
+            candyMachineAddress: "CandyOceanview111111111111111111111111111",
+            assetMintAddress: "AssetMintOceanview111111111111111111111111"
+          },
+          authorities: {
+            thirdPartySigner: "ThirdPartySignerOceanview1111111111111111111",
+            freezeDelegate: "FreezeDelegateOceanview1111111111111111111111",
+            transferDelegate: "TransferDelegateOceanview1111111111111111111",
+            appdataAuthority: "AppdataAuthorityOceanview1111111111111111111"
+          },
+          guards: {
+            startDateIso: "2026-04-26T20:00:00.000Z",
+            tokenPaymentMint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+            tokenPaymentDestination: "ATAOceanviewUsdcDestination11111111111111111"
+          },
+          appdata: {
+            revenueShareBps: 2500,
+            yieldBps: 1300,
+            yieldMode: "linear",
+            lockedAt: 1775031177,
+            eligibleFrom: 1775031177,
+            earningStartTs: 1775031177,
+            distributionEnabled: false,
+            economicVersion: "v1",
+            lastUpdatedAt: 1775031297,
+            updatedBy: "story-006-03-admin-update"
+          }
         }
       }
     }

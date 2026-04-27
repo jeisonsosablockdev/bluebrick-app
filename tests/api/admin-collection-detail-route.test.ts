@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
   assertAdminCollectionOwnership: vi.fn(),
+  getAdminCollectionBlockchainPanel: vi.fn(),
   getAdminCollectionContentByEntryId: vi.fn(),
   getRequestRole: vi.fn(),
   isAdminCollectionOwnershipError: vi.fn(),
@@ -16,6 +17,10 @@ vi.mock("@/lib/auth-session", () => ({
 vi.mock("@/lib/admin/collection-ownership", () => ({
   assertAdminCollectionOwnership: routeMocks.assertAdminCollectionOwnership,
   isAdminCollectionOwnershipError: routeMocks.isAdminCollectionOwnershipError
+}));
+
+vi.mock("@/lib/admin/collection-blockchain-panel", () => ({
+  getAdminCollectionBlockchainPanel: routeMocks.getAdminCollectionBlockchainPanel
 }));
 
 vi.mock("@/lib/admin/collection-content-repository", () => ({
@@ -101,6 +106,44 @@ function buildOwnershipRecord(input: Record<string, unknown> = {}) {
   };
 }
 
+function buildBlockchainPanelRecord(input: Record<string, unknown> = {}) {
+  return {
+    baseAddresses: {
+      collectionAddress: "Collection111",
+      candyMachineAddress: "Candy111",
+      assetMintAddress: "AssetMint111",
+      ...((input.baseAddresses as Record<string, unknown> | undefined) ?? {})
+    },
+    authorities: {
+      thirdPartySigner: "ThirdParty111",
+      freezeDelegate: "FreezeDelegate111",
+      transferDelegate: "TransferDelegate111",
+      appdataAuthority: "AppdataAuthority111",
+      ...((input.authorities as Record<string, unknown> | undefined) ?? {})
+    },
+    guards: {
+      startDateIso: "2026-04-27T00:00:00.000Z",
+      tokenPaymentMint: "UsdcMint111",
+      tokenPaymentDestination: "UsdcDestination111",
+      ...((input.guards as Record<string, unknown> | undefined) ?? {})
+    },
+    appdata: {
+      revenueShareBps: 2500,
+      yieldBps: 1300,
+      yieldMode: "linear",
+      lockedAt: 1775031177,
+      eligibleFrom: 1775031177,
+      earningStartTs: 1775031177,
+      distributionEnabled: false,
+      economicVersion: "v1",
+      lastUpdatedAt: 1775031297,
+      updatedBy: "story-006-03-admin-update",
+      ...((input.appdata as Record<string, unknown> | undefined) ?? {})
+    },
+    ...input
+  };
+}
+
 describe("GET /api/admin/collections/:id", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,6 +154,7 @@ describe("GET /api/admin/collections/:id", () => {
     });
     routeMocks.isAdminCollectionOwnershipError.mockReturnValue(false);
     routeMocks.assertAdminCollectionOwnership.mockResolvedValue(buildOwnershipRecord());
+    routeMocks.getAdminCollectionBlockchainPanel.mockResolvedValue(buildBlockchainPanelRecord());
     routeMocks.getAdminCollectionContentByEntryId.mockResolvedValue(buildContentRecord());
     routeMocks.updateAdminCollectionContent.mockResolvedValue(buildContentRecord({
       fractionalInvestmentSummary: "Updated yield."
@@ -140,7 +184,11 @@ describe("GET /api/admin/collections/:id", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.ownership.snapshotId).toBe("snapshot-1");
     expect(payload.data.content.fractionalInvestmentSummary).toBe("Stable yield.");
+    expect(payload.data.blockchain.baseAddresses.assetMintAddress).toBe("AssetMint111");
+    expect(payload.data.blockchain.appdata.economicVersion).toBe("v1");
+    expect(payload.data.blockchain.appdata.updatedBy).toBe("story-006-03-admin-update");
     expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-1");
+    expect(routeMocks.getAdminCollectionBlockchainPanel).toHaveBeenCalledWith(buildOwnershipRecord());
     expect(routeMocks.getAdminCollectionContentByEntryId).toHaveBeenCalledWith("entry-1");
   });
 
@@ -157,8 +205,14 @@ describe("GET /api/admin/collections/:id", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.ownership.entryId).toBe("entry-bri-101-primary");
     expect(payload.data.content.documents).toHaveLength(1);
+    expect(payload.data.blockchain.baseAddresses.assetMintAddress).toBe("AssetMintOceanview111111111111111111111111");
+    expect(payload.data.blockchain.authorities.transferDelegate).toBe("TransferDelegateOceanview1111111111111111111");
+    expect(payload.data.blockchain.guards.tokenPaymentMint).toBe("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+    expect(payload.data.blockchain.appdata.yieldMode).toBe("linear");
+    expect(payload.data.blockchain.appdata.updatedBy).toBe("story-006-03-admin-update");
     expect(routeMocks.assertAdminCollectionOwnership).not.toHaveBeenCalled();
     expect(routeMocks.getAdminCollectionContentByEntryId).not.toHaveBeenCalled();
+    expect(routeMocks.getAdminCollectionBlockchainPanel).not.toHaveBeenCalled();
   });
 
   it("loads editable content by the canonical entry id returned from ownership", async () => {
@@ -174,6 +228,11 @@ describe("GET /api/admin/collections/:id", () => {
     expect(response.status).toBe(200);
     expect(payload.ok).toBe(true);
     expect(routeMocks.assertAdminCollectionOwnership).toHaveBeenCalledWith("Admin111", "entry-alias");
+    expect(routeMocks.getAdminCollectionBlockchainPanel).toHaveBeenCalledWith(
+      buildOwnershipRecord({
+        entryId: "entry-canonical-7"
+      })
+    );
     expect(routeMocks.getAdminCollectionContentByEntryId).toHaveBeenCalledWith("entry-canonical-7");
   });
 
@@ -207,6 +266,7 @@ describe("GET /api/admin/collections/:id", () => {
     expect(response.status).toBe(404);
     expect(payload.error.code).toBe("COLLECTION_NOT_FOUND");
     expect(routeMocks.getAdminCollectionContentByEntryId).not.toHaveBeenCalled();
+    expect(routeMocks.getAdminCollectionBlockchainPanel).not.toHaveBeenCalled();
   });
 
   it("returns 404 if content disappears after ownership is proven", async () => {
@@ -217,6 +277,7 @@ describe("GET /api/admin/collections/:id", () => {
 
     expect(response.status).toBe(404);
     expect(payload.error.code).toBe("COLLECTION_CONTENT_NOT_FOUND");
+    expect(routeMocks.getAdminCollectionBlockchainPanel).toHaveBeenCalledTimes(1);
   });
 
   it("returns 500 when editable content lookup fails unexpectedly", async () => {

@@ -63,6 +63,36 @@ describe("app/admin/collections/[id]/page", () => {
         snapshotMarketplaceHandoffStatus: "completed",
         updatedAt: "2026-04-26T02:00:00.000Z"
       },
+      blockchain: {
+        baseAddresses: {
+          collectionAddress: "Collection111",
+          candyMachineAddress: "Candy111",
+          assetMintAddress: "AssetMint111"
+        },
+        authorities: {
+          thirdPartySigner: "ThirdParty111",
+          freezeDelegate: "FreezeDelegate111",
+          transferDelegate: "TransferDelegate111",
+          appdataAuthority: "AppdataAuthority111"
+        },
+        guards: {
+          startDateIso: "2026-04-27T00:00:00.000Z",
+          tokenPaymentMint: "UsdcMint111",
+          tokenPaymentDestination: "UsdcDestination111"
+        },
+        appdata: {
+          revenueShareBps: 2500,
+          yieldBps: 1300,
+          yieldMode: "linear",
+          lockedAt: 1775031177,
+          eligibleFrom: 1775031177,
+          earningStartTs: 1775031177,
+          distributionEnabled: false,
+          economicVersion: "v1",
+          lastUpdatedAt: 1775031297,
+          updatedBy: "story-006-03-admin-update"
+        }
+      },
       content: {
         entryId: "entry-1",
         title: "Ocean View Residences",
@@ -144,6 +174,23 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Save documents");
     expect(html).toContain("Add document");
     expect(html).toContain("Investor brochure");
+    expect(html).toContain("Blockchain panel");
+    expect(html).toContain("Read-only blockchain state");
+    expect(html).toContain("On-chain evidence handoff");
+    expect(html).toContain("AssetMint111");
+    expect(html).toContain("Copy address");
+    expect(html).toContain("View on Solscan");
+    expect(html).toContain("Visible authorities");
+    expect(html).toContain("ThirdParty111");
+    expect(html).toContain("TransferDelegate111");
+    expect(html).toContain("Guard fields");
+    expect(html).toContain("UsdcMint111");
+    expect(html).toContain("UsdcDestination111");
+    expect(html).toContain("AppData economic fields");
+    expect(html).toContain("2500 bps");
+    expect(html).toContain("1300 bps");
+    expect(html).toContain("linear");
+    expect(html).toContain("story-006-03-admin-update");
     expect(html).toContain("Collection111");
     expect(html).toContain("Candy111");
     expect(html).toContain("verified / completed");
@@ -151,6 +198,7 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Property information editor mounted");
     expect(html).toContain("Gallery tabs shell mounted");
     expect(html).toContain("Documents editor mounted");
+    expect(html).toContain("Blockchain addresses panel mounted");
     expect(html).toContain("Back to collections");
   });
 });

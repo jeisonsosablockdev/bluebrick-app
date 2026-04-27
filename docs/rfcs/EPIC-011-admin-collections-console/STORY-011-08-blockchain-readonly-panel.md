@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-08-blockchain-readonly-panel`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-27`
 
 ## Context
 - Problem:
@@ -94,13 +94,13 @@
   Se aprueba la composición de información on-chain de forma read-only segura.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar agregadores y helpers de UI read-only.
+  Branch integrado listo en PR `#160` para merge a `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -129,6 +129,6 @@
   - Panel usable en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-77`, `BRI-104`, `BRI-105`, `BRI-106`, `BRI-107`, `BRI-108`, `BRI-109`
+- Related PR(s): `#160`
+- Final commit hash(es): `661d019`, `7415908`, `a89b2a6`, `3d50d55`, `825447a`, `fe4ee28`

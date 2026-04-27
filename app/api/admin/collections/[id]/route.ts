@@ -7,6 +7,9 @@ import {
   isAdminCollectionOwnershipError
 } from "@/lib/admin/collection-ownership";
 import {
+  getAdminCollectionBlockchainPanel
+} from "@/lib/admin/collection-blockchain-panel";
+import {
   getAdminCollectionContentByEntryId,
   updateAdminCollectionContent
 } from "@/lib/admin/collection-content-repository";
@@ -59,6 +62,7 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
 
     const ownership = await assertAdminCollectionOwnership(role.pubkey, collectionId);
     const content = await getAdminCollectionContentByEntryId(ownership.entryId);
+    const blockchain = await getAdminCollectionBlockchainPanel(ownership);
 
     if (!content) {
       return errorResponse(404, "COLLECTION_CONTENT_NOT_FOUND", "Collection content was not found.");
@@ -68,7 +72,8 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
       ok: true,
       data: {
         ownership,
-        content
+        content,
+        blockchain
       }
     });
   } catch (error) {

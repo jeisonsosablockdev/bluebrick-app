@@ -82,6 +82,14 @@
 20. Admin collection detail navigation handoff (BRI-94, server-authoritative):
    - `/admin/collections/[id]` is a server-rendered admin route that fetches detail through `GET /api/admin/collections/:id`.
    - The page does not trust index-card state; route access still depends on the server-side detail contract and SIWS admin session.
+21. Admin collection blockchain read-only base addresses (BRI-104, server-authoritative):
+   - `GET /api/admin/collections/:id` now also returns a read-only `blockchain` block with base addresses for the detail shell.
+   - The block is derived server-side from ownership evidence plus `asset_mint_snapshots.blockchain_snapshot`; browser state never supplies or authorizes blockchain addresses.
+   - Missing snapshot asset mint data degrades to `null` without widening write access or bypassing the existing ownership gate.
+22. Admin collection blockchain authorities read (BRI-105, server-authoritative):
+   - The same read-only `blockchain` block now includes visible authority identities for admin inspection.
+   - `transfer_delegate` and `appdata_authority` are resolved server-side from `authority_registry`; `third_party_signer` and `freeze_delegate` use snapshot/configured fallbacks.
+   - This remains informational only and does not grant any mutation path from `/admin/collections`.
 
 ## Wallet Modal UX Guardrails
 - The wallet modal uses one top feedback slot for both progress (`Connecting/Signing/Verifying`) and error messages to keep UI state transitions visually consistent.

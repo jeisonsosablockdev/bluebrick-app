@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies, headers } from "next/headers";
 
+import type { AdminCollectionBlockchainPanel } from "@/lib/admin/collection-blockchain-panel";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 import type { AdminCollectionOwnership } from "@/lib/admin/collection-ownership";
 import { getSiteOrigin } from "@/lib/seo/site";
@@ -11,6 +12,7 @@ type AdminCollectionDetailSuccessResponse = {
   data: {
     ownership: AdminCollectionOwnership;
     content: AdminCollectionContentRecord;
+    blockchain: AdminCollectionBlockchainPanel;
   };
 };
 
@@ -28,6 +30,7 @@ export type AdminCollectionDetailPageState =
       kind: "success";
       ownership: AdminCollectionOwnership;
       content: AdminCollectionContentRecord;
+      blockchain: AdminCollectionBlockchainPanel;
     }
   | {
       kind: "error";
@@ -95,7 +98,8 @@ export async function loadAdminCollectionDetailPageState(
     return {
       kind: "success",
       content: payload.data.content,
-      ownership: payload.data.ownership
+      ownership: payload.data.ownership,
+      blockchain: payload.data.blockchain
     };
   } catch {
     return {

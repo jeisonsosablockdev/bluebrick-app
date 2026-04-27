@@ -53,6 +53,8 @@
   - `/api/admin/compliance/cases/:walletPublicKey/aml` is admin-only and returns AML case detail for review.
   - `/api/admin/assets/uploads/signed-url`, `/api/admin/assets/uploads/:uploadId/finalize`, and `/api/admin/assets/uploads/orphan-reconciler` are admin-only and keep upload lifecycle checks server-authoritative.
   - `GET /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, and calls the centralized collection ownership helper before returning editable content.
+  - The same `GET /api/admin/collections/:id` response may now include a read-only `blockchain.baseAddresses` payload derived server-side from snapshot evidence.
+  - That read-only `blockchain` payload may also include authority identities resolved server-side from `authority_registry`, snapshot data, and configured backend authorities.
   - `PATCH /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, validates one editable section payload, rejects immutable cover fields, and calls the centralized collection ownership helper before persisting content.
   - `/admin/collections/[id]` is admin-only by middleware and resolves its handoff UI from the server-fetched detail payload only.
   - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
@@ -180,6 +182,14 @@
     - no session refresh path,
     - no client-authoritative role override,
     - no middleware bypass.
+- BRI-104 blockchain detail payload safety notes:
+  - The new `blockchain.baseAddresses` payload is read-only and server-derived from existing ownership + snapshot records.
+  - It does not create any new session mutation path, role override, or client-authoritative authority source.
+  - If `assetMintAddress` is absent in the snapshot, the server returns `null` instead of trusting any client-supplied fallback.
+- BRI-105 blockchain authorities payload safety notes:
+  - The new `blockchain.authorities` block is also read-only and server-derived.
+  - Registry-backed roles (`transferDelegate`, `appdataAuthority`) degrade to `null` when absent rather than inferring mutable authority from the client.
+  - Config-backed fallbacks for `thirdPartySigner` and `freezeDelegate` do not expose any signing capability to the browser; they only surface identity strings already enforced server-side elsewhere.
 
 ## STORY-006-04 Session Enforcement Notes
 - Added admin authority-lifecycle endpoints:

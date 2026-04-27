@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 
+import { AdminCollectionBlockchainBasePanel } from "@/components/admin/admin-collection-blockchain-base-panel";
 import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection-gallery-shell";
 import { AdminCollectionDetailHero } from "@/components/admin/admin-collection-detail-hero";
 import { AdminCollectionDetailSections } from "@/components/admin/admin-collection-detail-sections";
 import { AdminCollectionDocumentsEditor } from "@/components/admin/admin-collection-documents-editor";
 import { AdminCollectionPropertyInformationEditor } from "@/components/admin/admin-collection-property-information-editor";
 import { AdminCollectionSummaryEditor } from "@/components/admin/admin-collection-summary-editor";
+import type { AdminCollectionBlockchainPanel } from "@/lib/admin/collection-blockchain-panel";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 import type { AdminCollectionOwnership } from "@/lib/admin/collection-ownership";
 import { localize, type AppLocale } from "@/lib/i18n";
@@ -15,6 +17,7 @@ type AdminCollectionDetailShellProps = {
   locale: AppLocale;
   ownership: AdminCollectionOwnership;
   content: AdminCollectionContentRecord;
+  blockchain: AdminCollectionBlockchainPanel;
 };
 
 function DetailShellFooter({
@@ -44,11 +47,13 @@ function DetailShellFooter({
 export function AdminCollectionDetailShell({
   locale,
   ownership,
-  content
+  content,
+  blockchain
 }: AdminCollectionDetailShellProps): ReactElement {
   return (
     <div className="space-y-4">
       <AdminCollectionDetailHero content={content} locale={locale} ownership={ownership} />
+      <AdminCollectionBlockchainBasePanel blockchain={blockchain} locale={locale} />
       <AdminCollectionDetailSections
         content={content}
         locale={locale}
