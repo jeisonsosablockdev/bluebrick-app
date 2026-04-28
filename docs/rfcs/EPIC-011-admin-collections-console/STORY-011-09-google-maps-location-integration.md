@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-09-google-maps-location-integration`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-26`
+- Last Updated: `2026-04-28`
 
 ## Context
 - Problem:
@@ -59,15 +59,15 @@
 - Reviewer(s):
   - `TBD`
 - Critical findings:
-1. Falta confirmar si `google_maps_place_json` será el nombre final del campo.
-2. Falta confirmar política cuando el autocomplete no encuentre una coincidencia clara.
-3. Falta definir si `detailed_location` se actualiza en paralelo con la selección de Maps o si solo se sincroniza de una vía.
+1. Resuelto: `google_maps_place_json` quedó como el nombre final del campo persistido y el contrato backend dedicado lo consume de forma estable.
+2. Resuelto: cuando autocomplete no produce una selección persistible, la UI mantiene el draft local y el CTA outbound sigue derivándose del texto actual sin forzar guardado del payload reducido.
+3. Resuelto parcialmente en esta story: `detailed_location` convivió con la selección de Maps y el payload reducido se persistió sin romper el guardado manual por sección; la paridad completa del formulario canónico quedó extendida a `STORY-011-11` y `STORY-011-12`.
 - Blocking concerns:
   - No producir implementación sin contrato de sincronización entre texto de dirección y place payload.
 
 ## Resolution
 - Final approach after critique:
-  Aprobado. `google_maps_place_json` será la entidad oficial persistida. La actualización será gestionada mediante estado cliente (React Query) sincronizado con el PATCH general.
+  Implementado. `google_maps_place_json` quedó como la entidad oficial persistida para la capa Maps de `STORY-011-09`, con rutas server-side dedicadas para autocomplete/resolve, preview visible, outbound CTA y guardado manual por sección. La expansión futura del formulario canónico de ubicación se separó en `STORY-011-11` y `STORY-011-12`.
 - Changes accepted:
   - Story separada para Maps/location.
   - Autocomplete + outbound link incluidos en alcance.
@@ -83,13 +83,13 @@
   Aprobada la persistencia del payload reducido de maps para eficientar consultas.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Story implementation is complete on the integration branch. The next action is final integrated review and PR creation from `story-011-09-google-maps-location-integration-bri-78` to `develop`.
+  Story implemented and merged locally from `story-011-09-google-maps-location-integration-bri-78` into `develop`. The next action is only optional remote PR/branch cleanup if desired.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -125,5 +125,5 @@
   - `BRI-112` implemented admin-only Google Maps autocomplete + place resolution routes and mounted a local-selection editor flow without persisting yet.
   - `BRI-113` implemented the reduced `googleMapsPlace` mutation client and regression coverage for repository/API persistence.
   - `BRI-114` implemented manual `Save` / `Cancel` integration for the location section and closed focused Playwright/responsive QA for the flow.
-- Related PR(s): `TBD`
-- Final commit hash(es): `e3e4dca`, `a4c2afe`, `5935581`, `c8d4542`
+- Related PR(s): `none (local integration merge to develop)`
+- Final commit hash(es): `e3e4dca`, `a4c2afe`, `5935581`, `c8d4542`, `6bab6a3`, `084fbca`
