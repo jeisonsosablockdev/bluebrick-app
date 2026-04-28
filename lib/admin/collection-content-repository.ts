@@ -61,6 +61,12 @@ export type AdminCollectionContentRecord = {
 export type UpdateAdminCollectionContentInput = {
   entryId: string;
   updatedBy: string;
+  city?: string;
+  country?: string;
+  stateProvince?: string | null;
+  address?: string;
+  geoLat?: number | null;
+  geoLng?: number | null;
   galleryImages?: CollectionBootstrapImageItem[];
   propertyImages?: CollectionBootstrapImageItem[];
   documents?: CollectionBootstrapDocumentItem[];
@@ -272,6 +278,48 @@ function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): J
     });
   }
 
+  if (input.city !== undefined) {
+    assignments.push({
+      assignment: "city = $VALUE",
+      value: toOptionalTrimmedText(input.city) ?? ""
+    });
+  }
+
+  if (input.country !== undefined) {
+    assignments.push({
+      assignment: "country = $VALUE",
+      value: toOptionalTrimmedText(input.country) ?? ""
+    });
+  }
+
+  if (input.stateProvince !== undefined) {
+    assignments.push({
+      assignment: "state_province = $VALUE",
+      value: toOptionalTrimmedText(input.stateProvince)
+    });
+  }
+
+  if (input.address !== undefined) {
+    assignments.push({
+      assignment: "detailed_location = $VALUE",
+      value: toOptionalTrimmedText(input.address) ?? ""
+    });
+  }
+
+  if (input.geoLat !== undefined) {
+    assignments.push({
+      assignment: "geo_lat = $VALUE",
+      value: input.geoLat
+    });
+  }
+
+  if (input.geoLng !== undefined) {
+    assignments.push({
+      assignment: "geo_lng = $VALUE",
+      value: input.geoLng
+    });
+  }
+
   return assignments;
 }
 
@@ -382,6 +430,12 @@ export async function applyCollectionBootstrapPayload(
     documents: input.payload.documentsJson,
     fractionalInvestmentSummary: input.payload.fractionalInvestmentSummary,
     propertyInformation: input.payload.propertyInformation,
-    googleMapsPlace: input.payload.googleMapsPlaceJson
+    googleMapsPlace: input.payload.googleMapsPlaceJson,
+    city: input.payload.city,
+    country: input.payload.country,
+    stateProvince: input.payload.stateProvince,
+    address: input.payload.address,
+    geoLat: input.payload.geoLat,
+    geoLng: input.payload.geoLng
   });
 }

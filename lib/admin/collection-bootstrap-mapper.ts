@@ -1,4 +1,5 @@
 import type { AssetUploadCategory, UploadedFileRefWithCategory } from "../asset-uploads/types.ts";
+import { normalizeAdminCollectionLocationForm, type AdminCollectionLocationForm } from "./admin-collection-location-form.ts";
 
 export type CollectionBootstrapStatus = "ready" | "manual_review_required";
 export type CollectionBootstrapReasonCode =
@@ -16,7 +17,8 @@ export type CollectionBootstrapReasonCode =
   | "existing_documents_invalid"
   | "fractional_investment_summary_invalid"
   | "property_information_invalid"
-  | "google_maps_place_invalid";
+  | "google_maps_place_invalid"
+  | "location_form_invalid";
 
 export type CollectionBootstrapImageItem = {
   id: string;
@@ -75,6 +77,12 @@ export type CollectionBootstrapPayload = {
   fractionalInvestmentSummary: string | null;
   propertyInformation: string | null;
   googleMapsPlaceJson: CollectionBootstrapGoogleMapsPlace | null;
+  country?: string;
+  stateProvince?: string | null;
+  city?: string;
+  address?: string;
+  geoLat?: number | null;
+  geoLng?: number | null;
 };
 
 export type CollectionBootstrapInput = {
@@ -734,6 +742,39 @@ function parseGoogleMapsPlace(
   };
 }
 
+function parseCanonicalLocationForm(
+  formSnapshot: Record<string, unknown>,
+  reasonCodes: Set<CollectionBootstrapReasonCode>
+): AdminCollectionLocationForm | null {
+  const hasLocationCandidate = [
+    formSnapshot.country,
+    formSnapshot.stateProvince,
+    formSnapshot.state,
+    formSnapshot.city,
+    formSnapshot.address,
+    formSnapshot.geoLat,
+    formSnapshot.geoLng
+  ].some((value) => value !== undefined && value !== null && value !== "");
+
+  if (!hasLocationCandidate) {
+    return null;
+  }
+
+  try {
+    return normalizeAdminCollectionLocationForm({
+      country: formSnapshot.country,
+      stateProvince: formSnapshot.stateProvince ?? formSnapshot.state,
+      city: formSnapshot.city,
+      address: formSnapshot.address,
+      geoLat: formSnapshot.geoLat,
+      geoLng: formSnapshot.geoLng
+    });
+  } catch {
+    reasonCodes.add("location_form_invalid");
+    return null;
+  }
+}
+
 export function normalizeCollectionBootstrapGoogleMapsPlaceJson(value: unknown): CollectionBootstrapGoogleMapsPlace | null {
   return parseGoogleMapsPlace({ googleMapsPlaceJson: value }, new Set<CollectionBootstrapReasonCode>());
 }
@@ -807,6 +848,7 @@ export function mapCollectionBootstrapFromSnapshot(input: CollectionBootstrapInp
 
   const existingDocuments = parseExistingDocumentsJson(input.existingDocumentsJson, reasonCodes);
   const mergedDocuments = mergeDocuments(existingDocuments, snapshotDocuments.items);
+  const canonicalLocation = parseCanonicalLocationForm(input.formSnapshot, reasonCodes);
 
   const payload: CollectionBootstrapPayload = {
     galleryImagesJson: galleryGroup.items,
@@ -822,7 +864,13 @@ export function mapCollectionBootstrapFromSnapshot(input: CollectionBootstrapInp
       "property_information_invalid",
       reasonCodes
     ),
-    googleMapsPlaceJson: parseGoogleMapsPlace(input.formSnapshot, reasonCodes)
+    googleMapsPlaceJson: parseGoogleMapsPlace(input.formSnapshot, reasonCodes),
+    country: canonicalLocation?.country,
+    stateProvince: canonicalLocation?.stateProvince,
+    city: canonicalLocation?.city,
+    address: canonicalLocation?.address,
+    geoLat: canonicalLocation?.geoLat,
+    geoLng: canonicalLocation?.geoLng
   };
 
   return {

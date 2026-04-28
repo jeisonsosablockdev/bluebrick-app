@@ -37,6 +37,12 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
     const result = mapCollectionBootstrapFromSnapshot(
       buildInput({
         formSnapshot: {
+          country: "Colombia",
+          state: "ANT",
+          city: "Medellin",
+          address: "Carrera 43A #1-50",
+          geoLat: "6.25184",
+          geoLng: "-75.56359",
           investmentThesis: "Monthly distributions from stabilized rents.",
           longDescription: "A coastal mixed-use project.",
           galleryImages: ["https://cdn.example.com/gallery-fallback.jpg"],
@@ -136,6 +142,12 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
     expect(result.payload.fractionalInvestmentSummary).toBe("Monthly distributions from stabilized rents.");
     expect(result.payload.propertyInformation).toBe("A coastal mixed-use project.");
     expect(result.payload.googleMapsPlaceJson).toBeNull();
+    expect(result.payload.country).toBe("CO");
+    expect(result.payload.stateProvince).toBe("Antioquia");
+    expect(result.payload.city).toBe("Medellin");
+    expect(result.payload.address).toBe("Carrera 43A #1-50");
+    expect(result.payload.geoLat).toBe(6.25184);
+    expect(result.payload.geoLng).toBe(-75.56359);
   });
 
   it("falls back to snapshot URLs and uses sorted uploads when uploadRefs are absent", () => {
@@ -180,6 +192,9 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
       buildInput({
         formSnapshot: {
           longDescription: 42,
+          country: "Latam",
+          city: "Bogota",
+          address: "Calle 10 #12-34",
           galleryImages: [],
           uploadRefs: {
             galleryImages: ["missing-gallery-ref"]
@@ -195,6 +210,7 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
     expect(result.reasonCodes).toEqual(
       expect.arrayContaining([
         "gallery_upload_refs_unresolved",
+        "location_form_invalid",
         "property_information_invalid",
         "google_maps_place_invalid"
       ])
@@ -202,5 +218,6 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
     expect(result.payload.galleryImagesJson).toEqual([]);
     expect(result.payload.propertyInformation).toBeNull();
     expect(result.payload.googleMapsPlaceJson).toBeNull();
+    expect(result.payload.country).toBeUndefined();
   });
 });

@@ -376,10 +376,22 @@ describe("lib/admin/collection-content-repository", () => {
       ] satisfies CollectionBootstrapDocumentItem[],
       fractionalInvestmentSummary: "Monthly distributions from stabilized rents.",
       propertyInformation: "A coastal mixed-use project.",
-      googleMapsPlaceJson: null
+      googleMapsPlaceJson: null,
+      country: "CO",
+      stateProvince: "Bolivar",
+      city: "Cartagena",
+      address: "Avenida San Martin 7-14",
+      geoLat: 10.3997,
+      geoLng: -75.5553
     };
 
     updatedRow = buildRow({
+      city: payload.city,
+      country: payload.country,
+      state_province: payload.stateProvince,
+      detailed_location: payload.address,
+      geo_lat: payload.geoLat,
+      geo_lng: payload.geoLng,
       gallery_images_json: payload.galleryImagesJson,
       property_images_json: payload.propertyImagesJson,
       documents_json: payload.documentsJson,
@@ -397,6 +409,9 @@ describe("lib/admin/collection-content-repository", () => {
 
     expect(result?.galleryImages).toHaveLength(1);
     expect(result?.documents[0]?.tag).toBe("legal");
+    expect(result?.stateProvince).toBe("Bolivar");
+    expect(result?.geoLat).toBe(10.3997);
+    expect(result?.geoLng).toBe(-75.5553);
 
     const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
     const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
@@ -406,7 +421,13 @@ describe("lib/admin/collection-content-repository", () => {
     expect(sql).toContain("fractional_investment_summary = $5");
     expect(sql).toContain("property_information = $6");
     expect(sql).toContain("google_maps_place_json = $7::jsonb");
-    expect(sql).toContain("updated_by = $8");
-    expect(values[7]).toBe("bootstrap-script");
+    expect(sql).toContain("city = $8");
+    expect(sql).toContain("country = $9");
+    expect(sql).toContain("state_province = $10");
+    expect(sql).toContain("detailed_location = $11");
+    expect(sql).toContain("geo_lat = $12");
+    expect(sql).toContain("geo_lng = $13");
+    expect(sql).toContain("updated_by = $14");
+    expect(values[13]).toBe("bootstrap-script");
   });
 });

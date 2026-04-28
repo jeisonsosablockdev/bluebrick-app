@@ -24,6 +24,11 @@
 - `/admin/assets/new` now sends `stateProvince`, `geoLat`, and `geoLng` when creating the marketplace entry.
 - Marketplace-entry persistence now stores `state_province`, `geo_lat`, and `geo_lng` alongside the existing location fields.
 
+### BRI-138
+- Extended bootstrap/snapshot mapping to emit canonical location fields only when the snapshot contains enough valid data.
+- Invalid or non-deterministic bootstrap location data now raises `location_form_invalid` and keeps the row in manual review instead of overwriting persisted location state.
+- Repository bootstrap apply now persists canonical location fields when present in the bootstrap payload.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`
