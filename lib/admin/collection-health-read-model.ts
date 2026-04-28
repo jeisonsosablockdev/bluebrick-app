@@ -5,7 +5,9 @@ import type {
   CollectionBootstrapDryRunManifest
 } from "@/lib/admin/collection-bootstrap-dry-run";
 import type { CollectionBootstrapReasonCode } from "@/lib/admin/collection-bootstrap-mapper";
+import { runCollectionBootstrapDryRun } from "@/lib/admin/collection-bootstrap-dry-run";
 import type { AdminCollectionReadModel } from "@/lib/admin/collections-read-model";
+import { listAdminCollectionReadModels } from "@/lib/admin/collections-read-model";
 
 export const COLLECTION_HEALTH_V1_STATES = [
   "missing_snapshot",
@@ -141,4 +143,67 @@ export function mapBootstrapCollectionHealthRows(
     }));
 
   return [...manualReviewRows, ...bootstrapFailureRows];
+}
+
+function toTimestamp(value: string): number {
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+export function mergeAdminCollectionHealthRows(
+  rows: AdminCollectionHealthRow[]
+): AdminCollectionHealthRow[] {
+  const byEntryId = new Map<string, AdminCollectionHealthRow>();
+
+  for (const row of rows) {
+    const current = byEntryId.get(row.entryId);
+    if (!current) {
+      byEntryId.set(row.entryId, row);
+      continue;
+    }
+
+    const currentPriority = getAdminCollectionHealthPriority(current.healthState);
+    const nextPriority = getAdminCollectionHealthPriority(row.healthState);
+
+    if (nextPriority > currentPriority) {
+      byEntryId.set(row.entryId, row);
+      continue;
+    }
+
+    if (nextPriority === currentPriority && toTimestamp(row.lastCheckedAt) > toTimestamp(current.lastCheckedAt)) {
+      byEntryId.set(row.entryId, row);
+    }
+  }
+
+  return [...byEntryId.values()].sort((left, right) => {
+    const priorityDelta =
+      getAdminCollectionHealthPriority(right.healthState) - getAdminCollectionHealthPriority(left.healthState);
+    if (priorityDelta !== 0) {
+      return priorityDelta;
+    }
+
+    const checkedAtDelta = toTimestamp(right.lastCheckedAt) - toTimestamp(left.lastCheckedAt);
+    if (checkedAtDelta !== 0) {
+      return checkedAtDelta;
+    }
+
+    return left.title.localeCompare(right.title);
+  });
+}
+
+export async function listAdminCollectionHealthRows(actorPubkey: string): Promise<AdminCollectionHealthRow[]> {
+  const normalizedActorPubkey = actorPubkey.trim();
+  if (!normalizedActorPubkey) {
+    return [];
+  }
+
+  const [collections, bootstrapManifest] = await Promise.all([
+    listAdminCollectionReadModels(normalizedActorPubkey),
+    runCollectionBootstrapDryRun({ actorPubkey: normalizedActorPubkey })
+  ]);
+
+  return mergeAdminCollectionHealthRows([
+    ...mapConsistencyCollectionHealthRows(collections),
+    ...mapBootstrapCollectionHealthRows(bootstrapManifest)
+  ]);
 }
