@@ -42,6 +42,7 @@ const ADMIN_NAVIGATION_DEFINITIONS: AdminNavigationSectionDefinition[] = [
       { label: { en: "Mint", es: "Mint", pt: "Mint" }, route: "/admin/mint", icon: "MI" },
       { label: { en: "Compliance", es: "Cumplimiento", pt: "Compliance" }, route: "/admin/compliance", icon: "CP" },
       { label: { en: "Collections", es: "Colecciones", pt: "Colecoes" }, route: "/admin/collections", icon: "CO" },
+      { label: { en: "Collections health", es: "Salud de colecciones", pt: "Saude de colecoes" }, route: "/admin/health/collections", icon: "HL" },
       { label: { en: "Sales", es: "Ventas", pt: "Vendas" }, route: "/admin/sales", icon: "VE" },
       { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", icon: "TE" },
       { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "DI" },
