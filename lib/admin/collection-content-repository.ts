@@ -13,6 +13,10 @@ import {
   deriveAdminCanonicalLocationLabel,
   reconcileAdminCollectionGoogleMapsPlace
 } from "@/lib/admin/admin-collection-location-sync";
+import {
+  getMarketplaceEntryLocationColumnSupport,
+  type MarketplaceEntryLocationColumnSupport
+} from "@/lib/admin/marketplace-entry-location-columns";
 
 type MarketplaceEditableCollectionRow = {
   id: string;
@@ -97,31 +101,35 @@ type ResolvedLocationUpdate = Pick<
   locationLabel?: string;
 };
 
-const SELECT_COLLECTION_CONTENT_COLUMNS = `
-  SELECT
-    id,
-    title,
-    city,
-    country,
-    state_province,
-    location_label,
-    detailed_location,
-    geo_lat,
-    geo_lng,
-    created_by,
-    image_url,
-    collection_address,
-    asset_mint_address,
-    gallery_images_json,
-    property_images_json,
-    documents_json,
-    fractional_investment_summary,
-    property_information,
-    google_maps_place_json,
-    updated_by,
-    updated_at
-  FROM marketplace_entries
-`;
+function buildSelectCollectionContentColumns(
+  support: MarketplaceEntryLocationColumnSupport
+): string {
+  return `
+    SELECT
+      id,
+      title,
+      city,
+      country,
+      ${support.stateProvince ? "state_province" : "NULL::text AS state_province"},
+      location_label,
+      detailed_location,
+      ${support.geoLat ? "geo_lat" : "NULL::double precision AS geo_lat"},
+      ${support.geoLng ? "geo_lng" : "NULL::double precision AS geo_lng"},
+      created_by,
+      image_url,
+      collection_address,
+      asset_mint_address,
+      gallery_images_json,
+      property_images_json,
+      documents_json,
+      fractional_investment_summary,
+      property_information,
+      google_maps_place_json,
+      updated_by,
+      updated_at
+    FROM marketplace_entries
+  `;
+}
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
@@ -244,7 +252,10 @@ function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): 
   };
 }
 
-function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): JsonUpdateAssignment[] {
+function buildJsonUpdateAssignments(
+  input: UpdateAdminCollectionContentInput,
+  support: MarketplaceEntryLocationColumnSupport
+): JsonUpdateAssignment[] {
   const assignments: JsonUpdateAssignment[] = [];
 
   if (input.galleryImages !== undefined) {
@@ -303,7 +314,7 @@ function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): J
     });
   }
 
-  if (input.stateProvince !== undefined) {
+  if (input.stateProvince !== undefined && support.stateProvince) {
     assignments.push({
       assignment: "state_province = $VALUE",
       value: toOptionalTrimmedText(input.stateProvince)
@@ -324,14 +335,14 @@ function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): J
     });
   }
 
-  if (input.geoLat !== undefined) {
+  if (input.geoLat !== undefined && support.geoLat) {
     assignments.push({
       assignment: "geo_lat = $VALUE",
       value: input.geoLat
     });
   }
 
-  if (input.geoLng !== undefined) {
+  if (input.geoLng !== undefined && support.geoLng) {
     assignments.push({
       assignment: "geo_lng = $VALUE",
       value: input.geoLng
@@ -408,8 +419,9 @@ export async function listAdminCollectionContentsByEntryIds(entryIds: string[]):
   }
 
   return withDbClient(async (client) => {
+    const support = await getMarketplaceEntryLocationColumnSupport(client);
     const result = await client.query<MarketplaceEditableCollectionRow>(
-      `${SELECT_COLLECTION_CONTENT_COLUMNS}
+      `${buildSelectCollectionContentColumns(support)}
        WHERE id = ANY($1::text[])`,
       [normalizedEntryIds]
     );
@@ -449,25 +461,26 @@ export async function updateAdminCollectionContent(
     return null;
   }
 
-  const resolvedLocationUpdate = await resolveLocationUpdate(input);
-  const jsonAssignments = buildJsonUpdateAssignments({
-    ...input,
-    ...resolvedLocationUpdate
-  } as UpdateAdminCollectionContentInput & { locationLabel?: string });
-  if (jsonAssignments.length === 0) {
-    throw new Error("At least one editable collection field update is required.");
-  }
-
   const values: unknown[] = [entryId];
-  const assignments = jsonAssignments.map((assignment) => {
-    values.push(assignment.value);
-    return assignment.assignment.replace("$VALUE", `$${values.length}`);
-  });
-
-  values.push(updatedBy);
-  const updatedByParam = `$${values.length}`;
-
   return withDbClient(async (client) => {
+    const support = await getMarketplaceEntryLocationColumnSupport(client);
+    const resolvedLocationUpdate = await resolveLocationUpdate(input);
+    const jsonAssignments = buildJsonUpdateAssignments({
+      ...input,
+      ...resolvedLocationUpdate
+    } as UpdateAdminCollectionContentInput & { locationLabel?: string }, support);
+    if (jsonAssignments.length === 0) {
+      throw new Error("At least one editable collection field update is required.");
+    }
+
+    const assignments = jsonAssignments.map((assignment) => {
+      values.push(assignment.value);
+      return assignment.assignment.replace("$VALUE", `$${values.length}`);
+    });
+
+    values.push(updatedBy);
+    const updatedByParam = `$${values.length}`;
+
     const result = await client.query<MarketplaceEditableCollectionRow>(
       `UPDATE marketplace_entries
        SET
@@ -478,6 +491,13 @@ export async function updateAdminCollectionContent(
        RETURNING
          id,
          title,
+         city,
+         country,
+         ${support.stateProvince ? "state_province," : "NULL::text AS state_province,"}
+         location_label,
+         detailed_location,
+         ${support.geoLat ? "geo_lat," : "NULL::double precision AS geo_lat,"}
+         ${support.geoLng ? "geo_lng," : "NULL::double precision AS geo_lng,"}
          created_by,
          image_url,
          collection_address,

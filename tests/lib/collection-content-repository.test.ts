@@ -26,8 +26,16 @@ type MarketplaceEditableCollectionRow = {
 
 let selectedRows: MarketplaceEditableCollectionRow[] = [];
 let updatedRow: MarketplaceEditableCollectionRow | null = null;
+let locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
 
 const queryMock = vi.fn(async (sql: string, _values?: unknown[]) => {
+  if (sql.includes("information_schema.columns")) {
+    return {
+      rows: locationColumnNames.map((column_name) => ({ column_name })),
+      rowCount: locationColumnNames.length
+    };
+  }
+
   if (sql.includes("WHERE id = ANY($1::text[])")) {
     return {
       rows: selectedRows,
@@ -57,6 +65,7 @@ import {
   listAdminCollectionContentsByEntryIds,
   updateAdminCollectionContent
 } from "@/lib/admin/collection-content-repository";
+import { resetMarketplaceEntryLocationColumnSupportCache } from "@/lib/admin/marketplace-entry-location-columns";
 import type {
   CollectionBootstrapDocumentItem,
   CollectionBootstrapImageItem,
@@ -105,12 +114,19 @@ function buildRow(input: Partial<MarketplaceEditableCollectionRow> = {}): Market
   };
 }
 
+function findQueryCall(pattern: string): [string, unknown[]] {
+  const match = queryMock.mock.calls.find((call) => String(call[0] ?? "").includes(pattern));
+  return [String(match?.[0] ?? ""), (match?.[1] ?? []) as unknown[]];
+}
+
 describe("lib/admin/collection-content-repository", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.DATABASE_URL = "postgres://example";
     selectedRows = [];
     updatedRow = null;
+    locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
+    resetMarketplaceEntryLocationColumnSupportCache();
   });
 
   it("returns null for blank entry ids without querying", async () => {
@@ -224,6 +240,28 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.geoLng).toBeNull();
   });
 
+  it("falls back cleanly when canonical location columns are missing in the database", async () => {
+    locationColumnNames = [];
+    selectedRows = [
+      buildRow({
+        state_province: null,
+        geo_lat: null,
+        geo_lng: null
+      })
+    ];
+
+    const result = await getAdminCollectionContentByEntryId("entry-1");
+
+    expect(result?.stateProvince).toBeNull();
+    expect(result?.geoLat).toBeNull();
+    expect(result?.geoLng).toBeNull();
+
+    const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
+    expect(sql).toContain("NULL::text AS state_province");
+    expect(sql).toContain("NULL::double precision AS geo_lat");
+    expect(sql).toContain("NULL::double precision AS geo_lng");
+  });
+
   it("updates only editable collection fields and never touches the immutable cover", async () => {
     updatedRow = buildRow({
       documents_json: [
@@ -269,8 +307,7 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.propertyInformation).toBe("Updated property information.");
     expect(result?.updatedBy).toBe("Admin222");
 
-    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
-    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    const [sql, values] = findQueryCall("UPDATE marketplace_entries");
     expect(sql).toContain("documents_json = $2::jsonb");
     expect(sql).toContain("property_information = $3");
     expect(sql).toContain("updated_by = $4");
@@ -325,8 +362,7 @@ describe("lib/admin/collection-content-repository", () => {
 
     expect(result?.googleMapsPlace?.placeId).toBe("place-2");
 
-    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
-    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    const [sql, values] = findQueryCall("UPDATE marketplace_entries");
     expect(sql).toContain("google_maps_place_json = $2::jsonb");
     expect(sql).toContain("updated_by = $3");
     expect(values).toEqual([
@@ -371,8 +407,7 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.geoLat).toBe(6.25184);
     expect(result?.geoLng).toBe(-75.56359);
 
-    const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
-    const values = (queryMock.mock.calls[1]?.[1] ?? []) as unknown[];
+    const [sql, values] = findQueryCall("UPDATE marketplace_entries");
     expect(sql).toContain("google_maps_place_json = $2::jsonb");
     expect(sql).toContain("city = $3");
     expect(sql).toContain("country = $4");
@@ -394,6 +429,36 @@ describe("lib/admin/collection-content-repository", () => {
       -75.56359,
       "Admin444"
     ]);
+  });
+
+  it("omits unsupported canonical location columns from UPDATE statements", async () => {
+    locationColumnNames = [];
+    selectedRows = [buildRow()];
+    updatedRow = buildRow({
+      city: "Medellin",
+      country: "CO",
+      updated_by: "Admin444"
+    });
+
+    await updateAdminCollectionContent({
+      entryId: "entry-1",
+      updatedBy: " Admin444 ",
+      city: "Medellin",
+      country: "CO",
+      stateProvince: "Antioquia",
+      address: "Carrera 43A #1-50",
+      geoLat: 6.25184,
+      geoLng: -75.56359
+    });
+
+    const [sql] = findQueryCall("UPDATE marketplace_entries");
+    expect(sql).toContain("city = $3");
+    expect(sql).toContain("country = $4");
+    expect(sql).toContain("detailed_location = $5");
+    expect(sql).toContain("location_label = $6");
+    expect(sql).not.toContain("state_province =");
+    expect(sql).not.toContain("geo_lat =");
+    expect(sql).not.toContain("geo_lng =");
   });
 
   it("applies a full bootstrap payload through the repository helper", async () => {
@@ -467,8 +532,7 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.geoLat).toBe(10.3997);
     expect(result?.geoLng).toBe(-75.5553);
 
-    const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
-    const values = (queryMock.mock.calls[1]?.[1] ?? []) as unknown[];
+    const [sql, values] = findQueryCall("UPDATE marketplace_entries");
     expect(sql).toContain("gallery_images_json = $2::jsonb");
     expect(sql).toContain("property_images_json = $3::jsonb");
     expect(sql).toContain("documents_json = $4::jsonb");

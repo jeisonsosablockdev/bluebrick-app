@@ -44,6 +44,13 @@
 - Synced `STORY-011-11` and the EPIC-011 README to `implemented` within the integration branch.
 - Left traceability explicit so the story can move to a final PR against `develop` without reopening the contract discussion.
 
+### Follow-up fix
+- Added runtime schema detection for `marketplace_entries.state_province`, `geo_lat`, and `geo_lng`.
+- Admin collection reads now fall back to `NULL` aliases when migration `021_marketplace_entry_location_form_fields.sql` is not applied yet.
+- Create and PATCH persistence now omit unsupported canonical location columns instead of failing with `column does not exist`, while still preserving `city`, `country`, `address`, and derived `location_label`.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`
+- `npx vitest run tests/lib/collection-content-repository.test.ts tests/lib/property-marketplace-server.test.ts`
+- `npm run validate`

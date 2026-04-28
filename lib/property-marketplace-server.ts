@@ -3,6 +3,7 @@ import "server-only";
 import { Connection, PublicKey } from "@solana/web3.js";
 
 import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
+import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
@@ -360,95 +361,76 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
 
   try {
     await withDbClient(async (client) => {
+      const support = await getMarketplaceEntryLocationColumnSupport(client);
+      const columns = [
+        "id",
+        "title",
+        "city",
+        "country",
+        ...(support.stateProvince ? ["state_province"] : []),
+        "location_label",
+        "listing_status",
+        "image_url",
+        "short_description",
+        "detailed_location",
+        ...(support.geoLat ? ["geo_lat"] : []),
+        ...(support.geoLng ? ["geo_lng"] : []),
+        "highlights_json",
+        "investment_notes",
+        "supply_total",
+        "minted_or_sold",
+        "nft_price_usd",
+        "annual_roi_pct",
+        "availability_label",
+        "documents_json",
+        "collection_address",
+        "asset_mint_address",
+        "explorer_url",
+        "last_onchain_update",
+        "sync_status",
+        "created_by"
+      ];
+      const values = [
+        input.id,
+        input.title,
+        input.city,
+        input.country,
+        ...(support.stateProvince ? [input.stateProvince ?? null] : []),
+        deriveAdminCanonicalLocationLabel({
+          city: input.city,
+          country: input.country,
+          stateProvince: input.stateProvince ?? null
+        }),
+        input.listingStatus,
+        input.image,
+        input.shortDescription,
+        input.detailedLocation,
+        ...(support.geoLat ? [input.geoLat ?? null] : []),
+        ...(support.geoLng ? [input.geoLng ?? null] : []),
+        toJsonbValue(input.highlights),
+        input.investmentNotes,
+        input.supplyTotal,
+        input.mintedOrSold,
+        input.nftPriceUsd,
+        input.annualRoiPct,
+        input.availabilityLabel,
+        toJsonbValue(documentsPayload),
+        input.collectionAddress,
+        input.assetMintAddress,
+        input.explorerUrl,
+        input.lastOnchainUpdate,
+        input.syncStatus,
+        input.createdBy
+      ];
+
       await client.query(
         `INSERT INTO marketplace_entries (
-           id,
-           title,
-           city,
-           country,
-           state_province,
-           location_label,
-           listing_status,
-           image_url,
-           short_description,
-           detailed_location,
-           geo_lat,
-           geo_lng,
-           highlights_json,
-           investment_notes,
-           supply_total,
-           minted_or_sold,
-           nft_price_usd,
-           annual_roi_pct,
-           availability_label,
-           documents_json,
-           collection_address,
-           asset_mint_address,
-           explorer_url,
-           last_onchain_update,
-           sync_status,
-           created_by
+           ${columns.join(",\n           ")}
          )
          VALUES (
-           $1,
-           $2,
-           $3,
-           $4,
-           $5,
-           $6,
-           $7,
-           $8,
-           $9,
-           $10,
-           $11,
-           $12,
-           $13,
-           $14,
-           $15,
-           $16,
-           $17,
-           $18,
-           $19,
-           $20,
-           $21,
-           $22,
-           $23,
-           $24,
-           $25,
-           $26
+           ${values.map((_, index) => `$${index + 1}`).join(",\n           ")}
          )`,
-        [
-          input.id,
-          input.title,
-          input.city,
-          input.country,
-          input.stateProvince ?? null,
-          deriveAdminCanonicalLocationLabel({
-            city: input.city,
-            country: input.country,
-            stateProvince: input.stateProvince ?? null
-          }),
-          input.listingStatus,
-          input.image,
-          input.shortDescription,
-          input.detailedLocation,
-          input.geoLat ?? null,
-          input.geoLng ?? null,
-          toJsonbValue(input.highlights),
-          input.investmentNotes,
-          input.supplyTotal,
-          input.mintedOrSold,
-          input.nftPriceUsd,
-          input.annualRoiPct,
-          input.availabilityLabel,
-          toJsonbValue(documentsPayload),
-          input.collectionAddress,
-          input.assetMintAddress,
-          input.explorerUrl,
-          input.lastOnchainUpdate,
-          input.syncStatus,
-          input.createdBy
-        ]
+        values
       );
     });
   } catch (error) {
