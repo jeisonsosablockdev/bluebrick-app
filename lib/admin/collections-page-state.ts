@@ -30,6 +30,7 @@ export type AdminCollectionsPageState =
       kind: "success";
       collections: AdminCollectionReadModel[];
       summary: AdminCollectionsSummary;
+      healthQueueHref: string | null;
     }
   | {
       kind: "empty";
@@ -70,10 +71,14 @@ export function toAdminCollectionsPageState(
     return { kind: "empty" };
   }
 
+  const linkedCollections = response.data.filter((collection) => collection.validationState === "linked");
+  const reviewRequiredCount = response.data.length - linkedCollections.length;
+
   return {
     kind: "success",
-    collections: response.data,
-    summary: buildSummary(response.data)
+    collections: linkedCollections,
+    summary: buildSummary(response.data),
+    healthQueueHref: reviewRequiredCount > 0 ? "/admin/health/collections" : null
   };
 }
 

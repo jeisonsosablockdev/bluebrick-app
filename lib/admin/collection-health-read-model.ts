@@ -79,10 +79,9 @@ export function mapConsistencyCollectionHealthRows(
   collections: AdminCollectionReadModel[]
 ): AdminCollectionHealthRow[] {
   return collections
-    .filter(
-      (collection) =>
-        collection.validationState === "missing_snapshot" || collection.validationState === "inconsistent"
-    )
+    .filter((collection): collection is AdminCollectionReadModel & {
+      validationState: "missing_snapshot" | "inconsistent";
+    } => collection.validationState === "missing_snapshot" || collection.validationState === "inconsistent")
     .map((collection) => ({
       entryId: collection.entryId,
       title: collection.title,

@@ -18,3 +18,8 @@ export async function enableAdminCollectionsFixture(page: Page): Promise<void> {
     }
   ]);
 }
+
+export async function waitForAppSplashToClear(page: Page): Promise<void> {
+  const splash = page.getByRole("status", { name: /BRIDS loading screen/i });
+  await splash.waitFor({ state: "hidden", timeout: 10_000 }).catch(() => undefined);
+}

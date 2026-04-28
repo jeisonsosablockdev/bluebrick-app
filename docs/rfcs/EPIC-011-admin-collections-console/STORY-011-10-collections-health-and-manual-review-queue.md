@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-10-collections-health-and-manual-review-queue`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-17`
+- Last Updated: `2026-04-28`
 
 ## Context
 - Problem:
@@ -32,7 +32,6 @@
     - `inconsistent`
     - `bootstrap_failed`
     - `manual_review_required`
-    - `orphaned_uploads_detected`
   - Cada fila debe incluir:
     - `entryId`
     - `title`
@@ -52,17 +51,20 @@
 - Reviewer(s):
   - `TBD`
 - Critical findings:
-1. Falta confirmar si la vista será solo para admins globales o para cualquier admin dueño de entries.
-2. Falta definir si `orphaned_uploads_detected` es visible en v1 o solo queda en backend/logs.
-3. Falta decidir si manual review tiene etiqueta persistida o se deriva cada vez.
+1. La vista debe respetar ownership por actor autenticado, no exponer filas globales.
+2. `orphaned_uploads_detected` debe quedar fuera de v1 hasta tener una fuente canónica de repositorio.
+3. `manual_review_required` debe derivarse desde el bootstrap dry-run aprobado, no persistirse como etiqueta separada.
 - Blocking concerns:
   - No producir implementación sin contrato claro de estados de salud.
 
 ## Resolution
 - Final approach after critique:
-  Aprobado. Tal como exige el protocolo del Epic, esta vista garantizará que los fallos del bootstrap script (`STORY-011-03`) y orfandad de datos tengan un canal de salida seguro que no interfiera con el editor general.
+  Implementado en rama de integración. La vista de health quedó actor-scoped, derivada desde el read model principal y el dry-run de bootstrap, con filas degradadas fuera del happy path principal de `/admin/collections`.
 - Changes accepted:
   - Story dedicada para health/manual review.
+  - Health vocabulary v1 limitado a `missing_snapshot`, `inconsistent`, `bootstrap_failed`, `manual_review_required`.
+  - `manual_review_required` se deriva del manifest de bootstrap.
+  - `orphaned_uploads_detected` se difiere fuera de v1.
 - Changes rejected (with rationale):
   - Rechazado esconder fallas de bootstrap o consistencia en el editor principal.
 
@@ -74,13 +76,13 @@
   Se aprueba la vista de Health como mitigador obligatorio de riesgos operativos.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Desplegar el read model específico para entradas fallidas.
+  Validar la rama de integración completa y abrir PR final hacia `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -105,6 +107,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-79`, `BRI-115`, `BRI-116`, `BRI-117`, `BRI-135`, `BRI-118`, `BRI-136`, `BRI-119`
+- Related PR(s): `pending final PR from story-011-10-collections-health-and-manual-review-queue-bri-79 -> develop`
+- Final commit hash(es): `7104483`, `4a45533`, `1a56a83`, `d1c8d14`, `636aebb`, `d8d3ec1`, `pending current BRI-119 slice commit`

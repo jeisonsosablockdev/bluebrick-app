@@ -6,7 +6,8 @@ import { expect, test } from "@playwright/test";
 
 import {
   ADMIN_COLLECTIONS_PRIMARY_ENTRY_ID,
-  enableAdminCollectionsFixture
+  enableAdminCollectionsFixture,
+  waitForAppSplashToClear
 } from "./helpers/admin-collections-fixture";
 import { authenticateWithWalletRole, getWalletAvailability } from "./helpers/siws-local-wallet";
 
@@ -18,7 +19,7 @@ const responsiveViewports = [
 ] as const;
 
 type ResponsiveCheckResult = {
-  route: "index" | "detail";
+  route: "index" | "detail" | "health";
   viewport: string;
   horizontalOverflow: boolean;
   primaryActionHeight: number;
@@ -35,6 +36,8 @@ async function measureActionHeight(locator: Locator): Promise<number> {
 }
 
 test("admin collections responsive QA evidence pack", async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
+
   const availability = getWalletAvailability("admin");
   test.skip(!availability.exists, availability.reason);
 
@@ -50,6 +53,7 @@ test("admin collections responsive QA evidence pack", async ({ page }, testInfo)
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
     await page.goto("/admin/collections");
+    await waitForAppSplashToClear(page);
     await expect(page).toHaveURL(/\/admin\/collections$/);
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator("h1")).toHaveText(/Collections/i);
@@ -78,7 +82,8 @@ test("admin collections responsive QA evidence pack", async ({ page }, testInfo)
       primaryActionHeight: manageProjectHeight
     });
 
-    await manageProjectLink.click();
+    await page.goto(`/admin/collections/${ADMIN_COLLECTIONS_PRIMARY_ENTRY_ID}`);
+    await waitForAppSplashToClear(page);
 
     await expect(page).toHaveURL(new RegExp(`/admin/collections/${ADMIN_COLLECTIONS_PRIMARY_ENTRY_ID}$`));
     await expect(page.locator("main")).toBeVisible();
@@ -107,6 +112,37 @@ test("admin collections responsive QA evidence pack", async ({ page }, testInfo)
       viewport: viewport.label,
       horizontalOverflow: detailOverflow,
       primaryActionHeight: locationButtonHeight
+    });
+
+    await page.goto("/admin/health/collections");
+    await waitForAppSplashToClear(page);
+
+    await expect(page).toHaveURL(/\/admin\/health\/collections$/);
+    await expect(page.locator("main")).toBeVisible();
+    await expect(page.getByText("Harbor Reserve Phase II")).toBeVisible();
+
+    const contextLink = page.getByRole("link", { name: /View collection context/i }).first();
+    await expect(contextLink).toBeVisible();
+    const healthOverflow = await hasHorizontalOverflow(page);
+    expect(healthOverflow).toBe(false);
+    const contextLinkHeight = await measureActionHeight(contextLink);
+    expect(contextLinkHeight).toBeGreaterThanOrEqual(44);
+
+    const healthScreenshotPath = testInfo.outputPath(`admin-collections-health-${viewport.label}.png`);
+    await page.screenshot({
+      path: healthScreenshotPath,
+      fullPage: true
+    });
+    await testInfo.attach(`admin-collections-health-${viewport.label}`, {
+      path: healthScreenshotPath,
+      contentType: "image/png"
+    });
+
+    report.push({
+      route: "health",
+      viewport: viewport.label,
+      horizontalOverflow: healthOverflow,
+      primaryActionHeight: contextLinkHeight
     });
   }
 

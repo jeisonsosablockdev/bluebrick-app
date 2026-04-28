@@ -239,6 +239,40 @@ export function AdminCollectionsCardGrid({
 }: CollectionCardGridProps): ReactElement {
   return (
     <div className="space-y-4">
+      {state.healthQueueHref ? (
+        <Card className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {localize(locale, { en: "Health queue", es: "Cola health", pt: "Fila health" })}
+          </p>
+          <h3 className="text-sm font-semibold text-white">
+            {localize(locale, {
+              en: `${state.summary.reviewRequired} collection ${state.summary.reviewRequired === 1 ? "requires" : "require"} review`,
+              es: `${state.summary.reviewRequired} coleccion${state.summary.reviewRequired === 1 ? "" : "es"} requiere${state.summary.reviewRequired === 1 ? "" : "n"} revision`,
+              pt: `${state.summary.reviewRequired} colecao${state.summary.reviewRequired === 1 ? "" : "es"} requer${state.summary.reviewRequired === 1 ? "" : "em"} revisao`
+            })}
+          </h3>
+          <p className="text-sm text-white/70">
+            {localize(locale, {
+              en: "Degraded rows now live in the dedicated health queue so the main collections workspace stays focused on ready-to-edit projects.",
+              es: "Las filas degradadas ahora viven en la cola dedicada de health para que el workspace principal de colecciones permanezca enfocado en proyectos listos para editar.",
+              pt: "As linhas degradadas agora vivem na fila dedicada de health para que o workspace principal de colecoes permaneça focado em projetos prontos para editar."
+            })}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/85 transition-all hover:bg-white/15"
+              href={state.healthQueueHref}
+            >
+              {localize(locale, {
+                en: "Open health queue",
+                es: "Abrir cola health",
+                pt: "Abrir fila health"
+              })}
+            </Link>
+          </div>
+        </Card>
+      ) : null}
+
       <Card className="space-y-4">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">
@@ -266,11 +300,21 @@ export function AdminCollectionsCardGrid({
         <h3 className="text-sm font-semibold text-white">
           {localize(locale, { en: "Collection cards", es: "Cards de colecciones", pt: "Cards de colecoes" })}
         </h3>
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {state.collections.map((collection) => (
-            <CollectionCard key={collection.entryId} collection={collection} locale={locale} />
-          ))}
-        </ul>
+        {state.collections.length > 0 ? (
+          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {state.collections.map((collection) => (
+              <CollectionCard key={collection.entryId} collection={collection} locale={locale} />
+            ))}
+          </ul>
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+            {localize(locale, {
+              en: "No ready collections remain in the editable workspace. Review the health queue to inspect degraded rows.",
+              es: "No quedan colecciones listas en el workspace editable. Revisa la cola health para inspeccionar filas degradadas.",
+              pt: "Nao restam colecoes prontas no workspace editavel. Revise a fila health para inspecionar linhas degradadas."
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );

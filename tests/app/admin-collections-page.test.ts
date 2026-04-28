@@ -63,6 +63,7 @@ describe("app/admin/collections/page", () => {
         linked: 1,
         reviewRequired: 1
       },
+      healthQueueHref: "/admin/health/collections",
       collections: [
         {
           entryId: "entry-1",
@@ -73,16 +74,6 @@ describe("app/admin/collections/page", () => {
           updatedAt: "2026-04-23T07:00:00.000Z",
           validationState: "linked",
           editableSections: ["summary", "gallery"]
-        },
-        {
-          entryId: "entry-2",
-          title: "Harbor Point",
-          coverImageUrl: "https://cdn.example.com/harbor.jpg",
-          collectionAddress: "Collection222",
-          candyMachineAddress: "Candy222",
-          updatedAt: "2026-04-23T06:00:00.000Z",
-          validationState: "inconsistent",
-          editableSections: []
         }
       ]
     });
@@ -92,13 +83,14 @@ describe("app/admin/collections/page", () => {
     expect(html).toContain("Collections dashboard");
     expect(html).toContain("Owned projects workspace");
     expect(html).toContain("Ocean View Residences");
-    expect(html).toContain("Harbor Point");
+    expect(html).not.toContain("Harbor Point");
     expect(html).toContain("Collection cards");
+    expect(html).toContain("Open health queue");
+    expect(html).toContain("requires review");
     expect(html).toContain("Manage project");
     expect(html).toContain("href=\"/admin/collections/entry-1\"");
     expect(html).toContain("Location unavailable");
     expect(html).toContain("Summary");
     expect(html).toContain("Gallery");
-    expect(html).toContain("Not editable in this validation state.");
   });
 });
