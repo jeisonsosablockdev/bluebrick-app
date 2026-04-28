@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import type {
   AdminCollectionBlockchainPanel
 } from "@/lib/admin/collection-blockchain-panel";
+import type { AdminCollectionHealthRow } from "@/lib/admin/collection-health-read-model";
 import type {
   AdminCollectionContentRecord
 } from "@/lib/admin/collection-content-repository";
@@ -14,6 +15,7 @@ const BRI_101_FIXTURE_KEY = "bri-101";
 
 type AdminCollectionsE2eFixture = {
   collections: AdminCollectionReadModel[];
+  healthRows: AdminCollectionHealthRow[];
   detailsByEntryId: Record<
     string,
     {
@@ -46,6 +48,22 @@ function buildBri101Fixture(): AdminCollectionsE2eFixture {
         updatedAt: "2026-04-25T18:00:00.000Z",
         validationState: "missing_snapshot",
         editableSections: []
+      }
+    ],
+    healthRows: [
+      {
+        entryId: "entry-bri-101-review",
+        title: "Harbor Reserve Phase II",
+        collectionAddress: "CollectionHarborReserve2222222222222222222222",
+        candyMachineAddress: "CandyHarborReserve2222222222222222222222222",
+        healthState: "missing_snapshot",
+        source: "consistency",
+        failureReason: "No linked asset mint snapshot was found for the marketplace entry.",
+        lastCheckedAt: "2026-04-26T20:15:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-bri-101-review",
+          label: "View collection context"
+        }
       }
     ],
     detailsByEntryId: {
@@ -183,4 +201,11 @@ export function getAdminCollectionsE2eFixture(
   }
 
   return buildBri101Fixture();
+}
+
+export function getAdminCollectionsHealthE2eFixture(
+  request: NextRequest
+): AdminCollectionHealthRow[] | null {
+  const fixture = getAdminCollectionsE2eFixture(request);
+  return fixture?.healthRows ?? null;
 }
