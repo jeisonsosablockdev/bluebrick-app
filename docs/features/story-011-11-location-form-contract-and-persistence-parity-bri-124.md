@@ -19,6 +19,11 @@
 - `stateProvince` keeps visible business text, while deterministic division codes normalize to their readable names.
 - `geoLat` and `geoLng` now share one range-validated decimal parser for future create/bootstrap/PATCH reuse.
 
+### BRI-137
+- Wired `POST /api/admin/marketplace/entries` to normalize canonical location input through the shared location-form contract.
+- `/admin/assets/new` now sends `stateProvince`, `geoLat`, and `geoLng` when creating the marketplace entry.
+- Marketplace-entry persistence now stores `state_province`, `geo_lat`, and `geo_lng` alongside the existing location fields.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`

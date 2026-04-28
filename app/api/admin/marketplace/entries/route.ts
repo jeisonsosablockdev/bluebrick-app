@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
 import { getRequestRole } from "@/lib/auth-session";
 import { type ListingStatus } from "@/lib/property-service";
 import { createMarketplacePropertyEntryPersistent } from "@/lib/property-marketplace-server";
@@ -9,7 +10,10 @@ type MarketplaceEntryRequest = {
   title?: unknown;
   city?: unknown;
   country?: unknown;
+  stateProvince?: unknown;
   address?: unknown;
+  geoLat?: unknown;
+  geoLng?: unknown;
   imageUrl?: unknown;
   shortDescription?: unknown;
   highlights?: unknown;
@@ -96,7 +100,10 @@ function normalizePayload(rawBody: unknown): {
   title: string;
   city: string;
   country: string;
+  stateProvince: string | null;
   address: string;
+  geoLat: number | null;
+  geoLng: number | null;
   imageUrl: string;
   shortDescription: string;
   highlights: string[];
@@ -116,9 +123,14 @@ function normalizePayload(rawBody: unknown): {
   const body = rawBody as MarketplaceEntryRequest;
   const entryId = readRequiredText(body.entryId, "entryId");
   const title = readRequiredText(body.title, "title");
-  const city = readRequiredText(body.city, "city");
-  const country = readRequiredText(body.country, "country");
-  const address = readRequiredText(body.address, "address");
+  const locationForm = normalizeAdminCollectionLocationForm({
+    country: body.country,
+    stateProvince: body.stateProvince,
+    city: body.city,
+    address: body.address,
+    geoLat: body.geoLat,
+    geoLng: body.geoLng
+  });
   const imageUrl = readRequiredText(body.imageUrl, "imageUrl");
   const shortDescription = readRequiredText(body.shortDescription, "shortDescription");
   const collectionAddress = readRequiredText(body.collectionAddress, "collectionAddress");
@@ -141,9 +153,12 @@ function normalizePayload(rawBody: unknown): {
   return {
     entryId,
     title,
-    city,
-    country,
-    address,
+    city: locationForm.city,
+    country: locationForm.country,
+    stateProvince: locationForm.stateProvince,
+    address: locationForm.address,
+    geoLat: locationForm.geoLat,
+    geoLng: locationForm.geoLng,
     imageUrl,
     shortDescription,
     highlights,
@@ -212,10 +227,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       title: payload.title,
       city: payload.city,
       country: payload.country,
+      stateProvince: payload.stateProvince,
       listingStatus,
       image: payload.imageUrl,
       shortDescription: payload.shortDescription,
       detailedLocation: payload.address,
+      geoLat: payload.geoLat,
+      geoLng: payload.geoLng,
       highlights,
       investmentNotes: payload.investmentNotes,
       supplyTotal: payload.supplyTotal,

@@ -61,10 +61,13 @@ export type CreateMarketplaceEntryInput = {
   title: string;
   city: string;
   country: string;
+  stateProvince?: string | null;
   listingStatus: ListingStatus;
   image: string;
   shortDescription: string;
   detailedLocation: string;
+  geoLat?: number | null;
+  geoLng?: number | null;
   highlights: string[];
   investmentNotes: string;
   supplyTotal: number;
