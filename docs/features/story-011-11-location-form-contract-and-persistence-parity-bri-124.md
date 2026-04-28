@@ -39,6 +39,11 @@
 - `location_label` is now derived deterministically from canonical `city/stateProvince/country`.
 - Canonical location edits now retain the Maps payload only when the saved form still represents the same place; otherwise the payload is cleared in the same save.
 
+### BRI-129
+- Added regression coverage that proves create/bootstrap/PATCH converge on one canonical location shape.
+- Synced `STORY-011-11` and the EPIC-011 README to `implemented` within the integration branch.
+- Left traceability explicit so the story can move to a final PR against `develop` without reopening the contract discussion.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`

@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-11-location-form-contract-and-persistence-parity`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-27`
-- Last Updated: `2026-04-27`
+- Last Updated: `2026-04-28`
 
 ## Context
 - Problem:
@@ -100,13 +100,13 @@
   Aprobada la extensión del modelo editable para que collections no dependa exclusivamente de Google Maps en la gestión de ubicación.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar schema/repository/PATCH contract para el nuevo bloque canónico de ubicación antes de cerrar la paridad visual en el editor.
+  Revisar la rama de integración `story-011-11-location-form-contract-and-persistence-parity-bri-124` antes de abrir la PR final a `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -134,6 +134,6 @@
   - No aplica directamente; la cobertura visual queda en la story siguiente.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-124`, `BRI-126`, `BRI-127`, `BRI-137`, `BRI-138`, `BRI-139`, `BRI-128`, `BRI-129`
+- Related PR(s): `integration branch only (no PR to develop yet)`
+- Final commit hash(es): `bd461ad`, `ea09f33`, `a6885a0`, `79bffa6`, `04839c0`, `18f7b9e`
