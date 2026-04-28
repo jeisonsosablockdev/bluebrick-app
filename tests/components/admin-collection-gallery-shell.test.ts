@@ -11,6 +11,10 @@ import type { AdminCollectionContentRecord } from "@/lib/admin/collection-conten
 const content: AdminCollectionContentRecord = {
   entryId: "entry-1",
   title: "Ocean View Residences",
+  city: "Cartagena",
+  country: "CO",
+  locationLabel: "Bocagrande Waterfront",
+  detailedLocation: "Avenida San Martin 7-14, Bocagrande",
   createdBy: "Admin111",
   coverImageUrl: "https://cdn.example.com/ocean.jpg",
   collectionAddress: "Collection111",

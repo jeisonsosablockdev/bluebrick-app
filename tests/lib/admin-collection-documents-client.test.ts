@@ -106,6 +106,10 @@ describe("lib/admin/admin-collection-documents-client", () => {
           content: {
             entryId: "entry-1",
             title: "Ocean View Residences",
+            city: "Cartagena",
+            country: "CO",
+            locationLabel: "Bocagrande Waterfront",
+            detailedLocation: "Avenida San Martin 7-14, Bocagrande",
             createdBy: "Admin111",
             coverImageUrl: "https://cdn.example.com/ocean.jpg",
             collectionAddress: "Collection111",

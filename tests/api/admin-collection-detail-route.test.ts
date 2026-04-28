@@ -73,6 +73,10 @@ function buildContentRecord(input: Record<string, unknown> = {}) {
   return {
     entryId: "entry-1",
     title: "Central Tower",
+    city: "Bogota",
+    country: "CO",
+    locationLabel: "Financial district",
+    detailedLocation: "Calle 72 # 10-34, Bogota",
     createdBy: "Admin111",
     coverImageUrl: "https://cdn.example.com/cover.jpg",
     collectionAddress: "Collection111",
@@ -383,6 +387,59 @@ describe("PATCH /api/admin/collections/:id", () => {
       propertyImages: undefined,
       documents: undefined,
       googleMapsPlace: undefined
+    });
+  });
+
+  it("updates google maps place payloads through the same discriminated PATCH route", async () => {
+    routeMocks.updateAdminCollectionContent.mockResolvedValueOnce(buildContentRecord({
+      googleMapsPlace: {
+        placeId: "place-1",
+        placeLabel: "Oceanview Fractional Tower",
+        formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+        lat: 10.3997,
+        lng: -75.5553,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
+      }
+    }));
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "googleMapsPlace",
+        data: {
+          googleMapsPlace: {
+            placeId: "place-1",
+            placeLabel: "Oceanview Fractional Tower",
+            formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+            lat: 10.3997,
+            lng: -75.5553,
+            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
+          }
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.section).toBe("googleMapsPlace");
+    expect(payload.data.content.googleMapsPlace.placeId).toBe("place-1");
+    expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
+      entryId: "entry-1",
+      updatedBy: "Admin111",
+      fractionalInvestmentSummary: undefined,
+      propertyInformation: undefined,
+      galleryImages: undefined,
+      propertyImages: undefined,
+      documents: undefined,
+      googleMapsPlace: {
+        placeId: "place-1",
+        placeLabel: "Oceanview Fractional Tower",
+        formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+        lat: 10.3997,
+        lng: -75.5553,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
+      }
     });
   });
 

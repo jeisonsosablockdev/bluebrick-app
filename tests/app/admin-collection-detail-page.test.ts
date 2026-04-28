@@ -96,6 +96,10 @@ describe("app/admin/collections/[id]/page", () => {
       content: {
         entryId: "entry-1",
         title: "Ocean View Residences",
+        city: "Cartagena",
+        country: "CO",
+        locationLabel: "Bocagrande Waterfront",
+        detailedLocation: "Avenida San Martin 7-14, Bocagrande",
         createdBy: "Admin111",
         coverImageUrl: "https://cdn.example.com/ocean.jpg",
         collectionAddress: "Collection111",
@@ -143,7 +147,14 @@ describe("app/admin/collections/[id]/page", () => {
         ],
         fractionalInvestmentSummary: "Stable income.",
         propertyInformation: "Prime oceanfront location.",
-        googleMapsPlace: null,
+        googleMapsPlace: {
+          placeLabel: "Ocean View Residences",
+          formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+          lat: 10.3997,
+          lng: -75.5553,
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Ocean%20View%20Residences",
+          placeId: "place-ocean-view"
+        },
         updatedBy: "Admin111",
         updatedAt: "2026-04-26T02:00:00.000Z"
       }
@@ -163,6 +174,12 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Property information");
     expect(html).toContain("Property description");
     expect(html).toContain("Save property information");
+    expect(html).toContain("Google Maps location");
+    expect(html).toContain("Search address");
+    expect(html).toContain("Save location");
+    expect(html).toContain("Cancel");
+    expect(html).toContain("Avenida San Martin 7-14, Bocagrande, Cartagena, CO");
+    expect(html).toContain("Open in Google Maps");
     expect(html).toContain("Project gallery");
     expect(html).toContain("Marketplace gallery");
     expect(html).toContain("Property imagery");

@@ -6,6 +6,7 @@ import { AdminCollectionGalleryShell } from "@/components/admin/admin-collection
 import { AdminCollectionDetailHero } from "@/components/admin/admin-collection-detail-hero";
 import { AdminCollectionDetailSections } from "@/components/admin/admin-collection-detail-sections";
 import { AdminCollectionDocumentsEditor } from "@/components/admin/admin-collection-documents-editor";
+import { AdminCollectionLocationEditor } from "@/components/admin/admin-collection-location-editor";
 import { AdminCollectionPropertyInformationEditor } from "@/components/admin/admin-collection-property-information-editor";
 import { AdminCollectionSummaryEditor } from "@/components/admin/admin-collection-summary-editor";
 import type { AdminCollectionBlockchainPanel } from "@/lib/admin/collection-blockchain-panel";
@@ -50,6 +51,8 @@ export function AdminCollectionDetailShell({
   content,
   blockchain
 }: AdminCollectionDetailShellProps): ReactElement {
+  const googleMapsEmbedApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY?.trim() || null;
+
   return (
     <div className="space-y-4">
       <AdminCollectionDetailHero content={content} locale={locale} ownership={ownership} />
@@ -68,6 +71,14 @@ export function AdminCollectionDetailShell({
           <AdminCollectionPropertyInformationEditor
             entryId={content.entryId}
             initialValue={content.propertyInformation}
+            locale={locale}
+          />
+        }
+        locationSection={
+          <AdminCollectionLocationEditor
+            content={content}
+            entryId={content.entryId}
+            googleMapsEmbedApiKey={googleMapsEmbedApiKey}
             locale={locale}
           />
         }

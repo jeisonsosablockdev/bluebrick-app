@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 type MarketplaceEditableCollectionRow = {
   id: string;
   title: string;
+  city: string;
+  country: string;
+  location_label: string;
+  detailed_location: string;
   created_by: string;
   image_url: string;
   collection_address: string;
@@ -60,6 +64,10 @@ function buildRow(input: Partial<MarketplaceEditableCollectionRow> = {}): Market
   return {
     id: "entry-1",
     title: "Central Tower",
+    city: "Bogota",
+    country: "CO",
+    location_label: "Financial district",
+    detailed_location: "Calle 72 # 10-34, Bogota",
     created_by: "Admin111",
     image_url: "https://cdn.example.com/cover.jpg",
     collection_address: "Collection111",
@@ -138,6 +146,10 @@ describe("lib/admin/collection-content-repository", () => {
       {
         entryId: "entry-1",
         title: "Central Tower",
+        city: "Bogota",
+        country: "CO",
+        locationLabel: "Financial district",
+        detailedLocation: "Calle 72 # 10-34, Bogota",
         createdBy: "Admin111",
         coverImageUrl: "https://cdn.example.com/cover.jpg",
         collectionAddress: "Collection111",
@@ -257,6 +269,52 @@ describe("lib/admin/collection-content-repository", () => {
       ]),
       "Updated property information.",
       "Admin222"
+    ]);
+  });
+
+  it("persists reduced google maps payloads through the repository helper", async () => {
+    updatedRow = buildRow({
+      google_maps_place_json: {
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      },
+      updated_by: "Admin333"
+    });
+
+    const result = await updateAdminCollectionContent({
+      entryId: "entry-1",
+      updatedBy: " Admin333 ",
+      googleMapsPlace: {
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      }
+    });
+
+    expect(result?.googleMapsPlace?.placeId).toBe("place-2");
+
+    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
+    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    expect(sql).toContain("google_maps_place_json = $2::jsonb");
+    expect(sql).toContain("updated_by = $3");
+    expect(values).toEqual([
+      "entry-1",
+      JSON.stringify({
+        placeId: "place-2",
+        placeLabel: "Harbor Reserve Phase II",
+        formattedAddress: "Carrera 1 # 5-20, Cartagena, CO",
+        lat: 10.423,
+        lng: -75.551,
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Harbor%20Reserve%20Phase%20II"
+      }),
+      "Admin333"
     ]);
   });
 

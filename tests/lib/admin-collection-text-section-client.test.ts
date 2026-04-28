@@ -44,6 +44,10 @@ describe("lib/admin/admin-collection-text-section-client", () => {
           content: {
             entryId: "entry-1",
             title: "Central Tower",
+            city: "Bogota",
+            country: "CO",
+            locationLabel: "Financial district",
+            detailedLocation: "Calle 72 # 10-34, Bogota",
             createdBy: "Admin111",
             coverImageUrl: "https://cdn.example.com/cover.jpg",
             collectionAddress: "Collection111",
@@ -94,6 +98,10 @@ describe("lib/admin/admin-collection-text-section-client", () => {
           content: {
             entryId: "entry-1",
             title: "Central Tower",
+            city: "Bogota",
+            country: "CO",
+            locationLabel: "Financial district",
+            detailedLocation: "Calle 72 # 10-34, Bogota",
             createdBy: "Admin111",
             coverImageUrl: "https://cdn.example.com/cover.jpg",
             collectionAddress: "Collection111",
