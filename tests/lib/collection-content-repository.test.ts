@@ -344,6 +344,7 @@ describe("lib/admin/collection-content-repository", () => {
   });
 
   it("persists canonical location form fields through the repository helper", async () => {
+    selectedRows = [buildRow()];
     updatedRow = buildRow({
       city: "Medellin",
       country: "CO",
@@ -370,21 +371,25 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.geoLat).toBe(6.25184);
     expect(result?.geoLng).toBe(-75.56359);
 
-    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
-    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
-    expect(sql).toContain("city = $2");
-    expect(sql).toContain("country = $3");
-    expect(sql).toContain("state_province = $4");
-    expect(sql).toContain("detailed_location = $5");
-    expect(sql).toContain("geo_lat = $6");
-    expect(sql).toContain("geo_lng = $7");
-    expect(sql).toContain("updated_by = $8");
+    const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
+    const values = (queryMock.mock.calls[1]?.[1] ?? []) as unknown[];
+    expect(sql).toContain("google_maps_place_json = $2::jsonb");
+    expect(sql).toContain("city = $3");
+    expect(sql).toContain("country = $4");
+    expect(sql).toContain("state_province = $5");
+    expect(sql).toContain("detailed_location = $6");
+    expect(sql).toContain("location_label = $7");
+    expect(sql).toContain("geo_lat = $8");
+    expect(sql).toContain("geo_lng = $9");
+    expect(sql).toContain("updated_by = $10");
     expect(values).toEqual([
       "entry-1",
+      null,
       "Medellin",
       "CO",
       "Antioquia",
       "Carrera 43A #1-50",
+      "Medellin, Antioquia, CO",
       6.25184,
       -75.56359,
       "Admin444"
@@ -392,6 +397,7 @@ describe("lib/admin/collection-content-repository", () => {
   });
 
   it("applies a full bootstrap payload through the repository helper", async () => {
+    selectedRows = [buildRow()];
     const payload: CollectionBootstrapPayload = {
       galleryImagesJson: [
         {
@@ -461,8 +467,8 @@ describe("lib/admin/collection-content-repository", () => {
     expect(result?.geoLat).toBe(10.3997);
     expect(result?.geoLng).toBe(-75.5553);
 
-    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
-    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
+    const values = (queryMock.mock.calls[1]?.[1] ?? []) as unknown[];
     expect(sql).toContain("gallery_images_json = $2::jsonb");
     expect(sql).toContain("property_images_json = $3::jsonb");
     expect(sql).toContain("documents_json = $4::jsonb");
@@ -473,9 +479,11 @@ describe("lib/admin/collection-content-repository", () => {
     expect(sql).toContain("country = $9");
     expect(sql).toContain("state_province = $10");
     expect(sql).toContain("detailed_location = $11");
-    expect(sql).toContain("geo_lat = $12");
-    expect(sql).toContain("geo_lng = $13");
-    expect(sql).toContain("updated_by = $14");
-    expect(values[13]).toBe("bootstrap-script");
+    expect(sql).toContain("location_label = $12");
+    expect(sql).toContain("geo_lat = $13");
+    expect(sql).toContain("geo_lng = $14");
+    expect(sql).toContain("updated_by = $15");
+    expect(values[11]).toBe("Cartagena, Bolivar, CO");
+    expect(values[14]).toBe("bootstrap-script");
   });
 });

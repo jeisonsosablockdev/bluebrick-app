@@ -34,6 +34,11 @@
 - Canonical location PATCH input now reuses the same shared normalization path as create and bootstrap.
 - Repository update helpers now persist `country`, `stateProvince`, `city`, `address`, `geoLat`, and `geoLng` through the admin collection detail flow.
 
+### BRI-128
+- Added a server-side sync helper for canonical location fields vs `google_maps_place_json`.
+- `location_label` is now derived deterministically from canonical `city/stateProvince/country`.
+- Canonical location edits now retain the Maps payload only when the saved form still represents the same place; otherwise the payload is cleared in the same save.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`

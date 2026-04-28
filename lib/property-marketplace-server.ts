@@ -2,6 +2,7 @@ import "server-only";
 
 import { Connection, PublicKey } from "@solana/web3.js";
 
+import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
@@ -422,7 +423,11 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
           input.city,
           input.country,
           input.stateProvince ?? null,
-          `${input.city}, ${input.country}`,
+          deriveAdminCanonicalLocationLabel({
+            city: input.city,
+            country: input.country,
+            stateProvince: input.stateProvince ?? null
+          }),
           input.listingStatus,
           input.image,
           input.shortDescription,

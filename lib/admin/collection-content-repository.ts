@@ -9,6 +9,10 @@ import {
   type CollectionBootstrapImageItem,
   type CollectionBootstrapPayload
 } from "@/lib/admin/collection-bootstrap-mapper";
+import {
+  deriveAdminCanonicalLocationLabel,
+  reconcileAdminCollectionGoogleMapsPlace
+} from "@/lib/admin/admin-collection-location-sync";
 
 type MarketplaceEditableCollectionRow = {
   id: string;
@@ -84,6 +88,13 @@ export type ApplyCollectionBootstrapPayloadInput = {
 type JsonUpdateAssignment = {
   assignment: string;
   value: unknown;
+};
+
+type ResolvedLocationUpdate = Pick<
+  UpdateAdminCollectionContentInput,
+  "city" | "country" | "stateProvince" | "address" | "geoLat" | "geoLng" | "googleMapsPlace"
+> & {
+  locationLabel?: string;
 };
 
 const SELECT_COLLECTION_CONTENT_COLUMNS = `
@@ -306,6 +317,13 @@ function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): J
     });
   }
 
+  if ("locationLabel" in input && typeof (input as { locationLabel?: unknown }).locationLabel === "string") {
+    assignments.push({
+      assignment: "location_label = $VALUE",
+      value: (input as { locationLabel: string }).locationLabel
+    });
+  }
+
   if (input.geoLat !== undefined) {
     assignments.push({
       assignment: "geo_lat = $VALUE",
@@ -321,6 +339,66 @@ function buildJsonUpdateAssignments(input: UpdateAdminCollectionContentInput): J
   }
 
   return assignments;
+}
+
+function hasCanonicalLocationFieldUpdate(input: UpdateAdminCollectionContentInput): boolean {
+  return input.city !== undefined
+    || input.country !== undefined
+    || input.stateProvince !== undefined
+    || input.address !== undefined
+    || input.geoLat !== undefined
+    || input.geoLng !== undefined;
+}
+
+async function resolveLocationUpdate(
+  input: UpdateAdminCollectionContentInput
+): Promise<ResolvedLocationUpdate | null> {
+  const canonicalChanged = hasCanonicalLocationFieldUpdate(input);
+  const mapsChanged = input.googleMapsPlace !== undefined;
+
+  if (!canonicalChanged && !mapsChanged) {
+    return null;
+  }
+
+  if (!canonicalChanged && mapsChanged) {
+    return {
+      googleMapsPlace: input.googleMapsPlace
+    };
+  }
+
+  const current = await getAdminCollectionContentByEntryId(input.entryId);
+  if (!current) {
+    return null;
+  }
+
+  const nextLocation = {
+    city: input.city ?? current.city,
+    country: input.country ?? current.country,
+    stateProvince: input.stateProvince !== undefined ? input.stateProvince : current.stateProvince,
+    address: input.address ?? current.detailedLocation,
+    geoLat: input.geoLat !== undefined ? input.geoLat : current.geoLat,
+    geoLng: input.geoLng !== undefined ? input.geoLng : current.geoLng
+  };
+
+  const resolved: ResolvedLocationUpdate = {
+    city: input.city,
+    country: input.country,
+    stateProvince: input.stateProvince,
+    address: input.address,
+    geoLat: input.geoLat,
+    geoLng: input.geoLng
+  };
+
+  if (canonicalChanged) {
+    resolved.locationLabel = deriveAdminCanonicalLocationLabel(nextLocation);
+    const candidatePlace = input.googleMapsPlace !== undefined ? input.googleMapsPlace : current.googleMapsPlace;
+    resolved.googleMapsPlace = reconcileAdminCollectionGoogleMapsPlace({
+      location: nextLocation,
+      googleMapsPlace: candidatePlace
+    });
+  }
+
+  return resolved;
 }
 
 export async function listAdminCollectionContentsByEntryIds(entryIds: string[]): Promise<AdminCollectionContentRecord[]> {
@@ -371,7 +449,11 @@ export async function updateAdminCollectionContent(
     return null;
   }
 
-  const jsonAssignments = buildJsonUpdateAssignments(input);
+  const resolvedLocationUpdate = await resolveLocationUpdate(input);
+  const jsonAssignments = buildJsonUpdateAssignments({
+    ...input,
+    ...resolvedLocationUpdate
+  } as UpdateAdminCollectionContentInput & { locationLabel?: string });
   if (jsonAssignments.length === 0) {
     throw new Error("At least one editable collection field update is required.");
   }
