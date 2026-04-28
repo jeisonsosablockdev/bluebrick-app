@@ -13,6 +13,12 @@
   - `geoLng`
 - Preserved legacy compatibility by normalizing absent storage values to `null`.
 
+### BRI-127
+- Added shared canonical location-form normalization in `lib/admin/admin-collection-location-form.ts`.
+- Country normalization now accepts ISO-2 or deterministic localized names from `COUNTRIES` and persists ISO-2 uppercase.
+- `stateProvince` keeps visible business text, while deterministic division codes normalize to their readable names.
+- `geoLat` and `geoLng` now share one range-validated decimal parser for future create/bootstrap/PATCH reuse.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`
