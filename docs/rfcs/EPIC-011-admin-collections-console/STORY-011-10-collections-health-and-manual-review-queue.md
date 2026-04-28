@@ -109,4 +109,4 @@
 ## Traceability
 - Related issue(s): `BRI-79`, `BRI-115`, `BRI-116`, `BRI-117`, `BRI-135`, `BRI-118`, `BRI-136`, `BRI-119`
 - Related PR(s): `pending final PR from story-011-10-collections-health-and-manual-review-queue-bri-79 -> develop`
-- Final commit hash(es): `7104483`, `4a45533`, `1a56a83`, `d1c8d14`, `636aebb`, `d8d3ec1`, `pending current BRI-119 slice commit`
+- Final commit hash(es): `7104483`, `4a45533`, `1a56a83`, `d1c8d14`, `636aebb`, `d8d3ec1`, `909411e`
