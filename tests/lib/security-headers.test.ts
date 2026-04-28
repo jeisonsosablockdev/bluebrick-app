@@ -16,6 +16,7 @@ describe("lib/security headers", () => {
     expect(headerMap.get("X-Content-Type-Options")).toBe("nosniff");
     expect(headerMap.has("Content-Security-Policy")).toBe(true);
     expect(headerMap.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
+    expect(headerMap.get("Content-Security-Policy")).toContain("frame-src 'self' https://www.google.com https://maps.google.com");
     expect(headerMap.get("Content-Security-Policy")).toContain("https://fonts.googleapis.com");
     expect(headerMap.get("Content-Security-Policy")).toContain("https://fonts.gstatic.com");
   });

@@ -19,13 +19,14 @@ const baseContent = {
 describe("lib/admin/admin-collection-location-view", () => {
   it("returns null for the embed preview when no Google Maps embed key is configured", () => {
     delete process.env.GOOGLE_MAPS_API_KEY;
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY;
     delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
     expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toBeNull();
   });
 
   it("builds label and outbound query from persisted text fields when no place exists", () => {
-    process.env.GOOGLE_MAPS_API_KEY = "test-google-maps-key";
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY = "test-google-maps-embed-key";
 
     expect(buildAdminCollectionLocationLabel(baseContent)).toBe(
       "Bocagrande Waterfront · Avenida San Martin 7-14, Bocagrande"
@@ -35,11 +36,11 @@ describe("lib/admin/admin-collection-location-view", () => {
     );
     expect(buildAdminCollectionGoogleMapsUrl(baseContent)).toContain("google.com/maps/search/");
     expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("google.com/maps/embed/v1/place");
-    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("key=test-google-maps-key");
+    expect(buildAdminCollectionGoogleMapsEmbedUrl(baseContent)).toContain("key=test-google-maps-embed-key");
   });
 
   it("prefers the reduced place payload when it is already persisted", () => {
-    process.env.GOOGLE_MAPS_API_KEY = "test-google-maps-key";
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY = "test-google-maps-embed-key";
 
     const content = {
       ...baseContent,

@@ -27,6 +27,7 @@ export function buildCspValue(options: SecurityHeadersOptions): string {
   const scriptSrcValue = options.isProduction
     ? "script-src 'self' 'unsafe-inline'"
     : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+  const googleMapsFrameSrc = "https://www.google.com https://maps.google.com";
 
   const directives: string[] = [
     "default-src 'self'",
@@ -40,7 +41,7 @@ export function buildCspValue(options: SecurityHeadersOptions): string {
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https:",
     "worker-src 'self' blob:",
-    "frame-src 'self'"
+    `frame-src 'self' ${googleMapsFrameSrc}`
   ];
 
   if (options.isProduction) {

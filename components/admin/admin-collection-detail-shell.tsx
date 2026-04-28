@@ -51,7 +51,7 @@ export function AdminCollectionDetailShell({
   content,
   blockchain
 }: AdminCollectionDetailShellProps): ReactElement {
-  const googleMapsEmbedApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || null;
+  const googleMapsEmbedApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY?.trim() || null;
 
   return (
     <div className="space-y-4">

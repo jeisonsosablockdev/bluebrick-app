@@ -11,6 +11,11 @@ function resolveGoogleMapsEmbedApiKey(explicitApiKey?: string | null): string | 
     return explicitApiKey.trim();
   }
 
+  const embedApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY?.trim();
+  if (embedApiKey) {
+    return embedApiKey;
+  }
+
   const publicApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
   if (publicApiKey) {
     return publicApiKey;
