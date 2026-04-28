@@ -29,6 +29,11 @@
 - Invalid or non-deterministic bootstrap location data now raises `location_form_invalid` and keeps the row in manual review instead of overwriting persisted location state.
 - Repository bootstrap apply now persists canonical location fields when present in the bootstrap payload.
 
+### BRI-139
+- Added `locationForm` as a new discriminated PATCH section in `/api/admin/collections/[id]`.
+- Canonical location PATCH input now reuses the same shared normalization path as create and bootstrap.
+- Repository update helpers now persist `country`, `stateProvince`, `city`, `address`, `geoLat`, and `geoLng` through the admin collection detail flow.
+
 ## Validation
 - `npx vitest run tests/lib/collection-content-repository.test.ts tests/db/marketplace-entry-location-form-fields-migration.test.ts`
 - `npm run typecheck`

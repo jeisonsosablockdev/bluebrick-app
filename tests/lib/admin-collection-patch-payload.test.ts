@@ -122,6 +122,30 @@ describe("lib/admin/collection-patch-payload", () => {
     expect(result.googleMapsPlace?.placeId).toBe("place-1");
   });
 
+  it("parses canonical location form payloads into repository-ready updates", () => {
+    const result = parseAdminCollectionPatchPayload({
+      section: "locationForm",
+      data: {
+        country: "Colombia",
+        stateProvince: "DC",
+        city: " Bogota ",
+        address: " Calle 72 #10-34 ",
+        geoLat: "4.711",
+        geoLng: "-74.072"
+      }
+    });
+
+    expect(result).toEqual({
+      section: "locationForm",
+      country: "CO",
+      stateProvince: "Bogotá D.C.",
+      city: "Bogota",
+      address: "Calle 72 #10-34",
+      geoLat: 4.711,
+      geoLng: -74.072
+    });
+  });
+
   it("rejects immutable cover fields anywhere in the payload", () => {
     expectPayloadError(
       () => parseAdminCollectionPatchPayload({
@@ -171,6 +195,21 @@ describe("lib/admin/collection-patch-payload", () => {
               source: "upload"
             }
           ]
+        }
+      }),
+      {
+        code: "INVALID_COLLECTION_PAYLOAD",
+        status: 400
+      }
+    );
+
+    expectPayloadError(
+      () => parseAdminCollectionPatchPayload({
+        section: "locationForm",
+        data: {
+          country: "Latam",
+          city: "Bogota",
+          address: "Calle 72 #10-34"
         }
       }),
       {

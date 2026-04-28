@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
 import type {
   CollectionBootstrapDocumentItem,
   CollectionBootstrapGoogleMapsPlace,
@@ -11,7 +12,8 @@ export type AdminCollectionPatchSection =
   | "propertyInformation"
   | "gallery"
   | "documents"
-  | "googleMapsPlace";
+  | "googleMapsPlace"
+  | "locationForm";
 
 export type AdminCollectionPatchPayloadErrorCode =
   | "INVALID_COLLECTION_PAYLOAD"
@@ -25,6 +27,12 @@ export type AdminCollectionPatchUpdate = {
   propertyImages?: CollectionBootstrapImageItem[];
   documents?: CollectionBootstrapDocumentItem[];
   googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
+  country?: string;
+  stateProvince?: string | null;
+  city?: string;
+  address?: string;
+  geoLat?: number | null;
+  geoLng?: number | null;
 };
 
 export class AdminCollectionPatchPayloadError extends Error {
@@ -136,12 +144,27 @@ const googleMapsPlacePayloadSchema = z.object({
   }).strict()
 }).strict();
 
+const rawCoordinateSchema = z.union([z.number(), z.string().trim(), z.null()]).optional();
+
+const locationFormPayloadSchema = z.object({
+  section: z.literal("locationForm"),
+  data: z.object({
+    country: z.string(),
+    stateProvince: z.string().nullable().optional(),
+    city: z.string(),
+    address: z.string(),
+    geoLat: rawCoordinateSchema,
+    geoLng: rawCoordinateSchema
+  }).strict()
+}).strict();
+
 const collectionPatchPayloadSchema = z.discriminatedUnion("section", [
   summaryPayloadSchema,
   propertyInformationPayloadSchema,
   galleryPayloadSchema,
   documentsPayloadSchema,
-  googleMapsPlacePayloadSchema
+  googleMapsPlacePayloadSchema,
+  locationFormPayloadSchema
 ]);
 
 const IMMUTABLE_COVER_FIELDS = new Set([
@@ -228,5 +251,22 @@ export function parseAdminCollectionPatchPayload(payload: unknown): AdminCollect
         section: result.data.section,
         googleMapsPlace: result.data.data.googleMapsPlace
       };
+    case "locationForm": {
+      try {
+        const locationForm = normalizeAdminCollectionLocationForm(result.data.data);
+        return {
+          section: result.data.section,
+          country: locationForm.country,
+          stateProvince: locationForm.stateProvince,
+          city: locationForm.city,
+          address: locationForm.address,
+          geoLat: locationForm.geoLat,
+          geoLng: locationForm.geoLng
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Collection location form is invalid.";
+        throw new AdminCollectionPatchPayloadError("INVALID_COLLECTION_PAYLOAD", message);
+      }
+    }
   }
 }

@@ -109,6 +109,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams): Prom
     const content = await updateAdminCollectionContent({
       entryId: ownership.entryId,
       updatedBy: role.pubkey,
+      city: update.city,
+      country: update.country,
+      stateProvince: update.stateProvince,
+      address: update.address,
+      geoLat: update.geoLat,
+      geoLng: update.geoLng,
       fractionalInvestmentSummary: update.fractionalInvestmentSummary,
       propertyInformation: update.propertyInformation,
       galleryImages: update.galleryImages,

@@ -343,6 +343,54 @@ describe("lib/admin/collection-content-repository", () => {
     ]);
   });
 
+  it("persists canonical location form fields through the repository helper", async () => {
+    updatedRow = buildRow({
+      city: "Medellin",
+      country: "CO",
+      state_province: "Antioquia",
+      detailed_location: "Carrera 43A #1-50",
+      geo_lat: 6.25184,
+      geo_lng: -75.56359,
+      updated_by: "Admin444"
+    });
+
+    const result = await updateAdminCollectionContent({
+      entryId: "entry-1",
+      updatedBy: " Admin444 ",
+      city: "Medellin",
+      country: "CO",
+      stateProvince: "Antioquia",
+      address: "Carrera 43A #1-50",
+      geoLat: 6.25184,
+      geoLng: -75.56359
+    });
+
+    expect(result?.city).toBe("Medellin");
+    expect(result?.stateProvince).toBe("Antioquia");
+    expect(result?.geoLat).toBe(6.25184);
+    expect(result?.geoLng).toBe(-75.56359);
+
+    const sql = String(queryMock.mock.calls[0]?.[0] ?? "");
+    const values = (queryMock.mock.calls[0]?.[1] ?? []) as unknown[];
+    expect(sql).toContain("city = $2");
+    expect(sql).toContain("country = $3");
+    expect(sql).toContain("state_province = $4");
+    expect(sql).toContain("detailed_location = $5");
+    expect(sql).toContain("geo_lat = $6");
+    expect(sql).toContain("geo_lng = $7");
+    expect(sql).toContain("updated_by = $8");
+    expect(values).toEqual([
+      "entry-1",
+      "Medellin",
+      "CO",
+      "Antioquia",
+      "Carrera 43A #1-50",
+      6.25184,
+      -75.56359,
+      "Admin444"
+    ]);
+  });
+
   it("applies a full bootstrap payload through the repository helper", async () => {
     const payload: CollectionBootstrapPayload = {
       galleryImagesJson: [

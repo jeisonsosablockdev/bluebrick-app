@@ -75,8 +75,11 @@ function buildContentRecord(input: Record<string, unknown> = {}) {
     title: "Central Tower",
     city: "Bogota",
     country: "CO",
+    stateProvince: "Cundinamarca",
     locationLabel: "Financial district",
     detailedLocation: "Calle 72 # 10-34, Bogota",
+    geoLat: 4.711,
+    geoLng: -74.072,
     createdBy: "Admin111",
     coverImageUrl: "https://cdn.example.com/cover.jpg",
     collectionAddress: "Collection111",
@@ -353,6 +356,12 @@ describe("PATCH /api/admin/collections/:id", () => {
     expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
       entryId: "entry-1",
       updatedBy: "Admin111",
+      city: undefined,
+      country: undefined,
+      stateProvince: undefined,
+      address: undefined,
+      geoLat: undefined,
+      geoLng: undefined,
       fractionalInvestmentSummary: "Updated yield."
     });
   });
@@ -381,6 +390,12 @@ describe("PATCH /api/admin/collections/:id", () => {
     expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
       entryId: "entry-canonical-7",
       updatedBy: "Admin111",
+      city: undefined,
+      country: undefined,
+      stateProvince: undefined,
+      address: undefined,
+      geoLat: undefined,
+      geoLng: undefined,
       fractionalInvestmentSummary: undefined,
       propertyInformation: "Updated property.",
       galleryImages: undefined,
@@ -427,6 +442,12 @@ describe("PATCH /api/admin/collections/:id", () => {
     expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
       entryId: "entry-1",
       updatedBy: "Admin111",
+      city: undefined,
+      country: undefined,
+      stateProvince: undefined,
+      address: undefined,
+      geoLat: undefined,
+      geoLng: undefined,
       fractionalInvestmentSummary: undefined,
       propertyInformation: undefined,
       galleryImages: undefined,
@@ -440,6 +461,54 @@ describe("PATCH /api/admin/collections/:id", () => {
         lng: -75.5553,
         googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
       }
+    });
+  });
+
+  it("updates canonical location form fields through the same discriminated PATCH route", async () => {
+    routeMocks.updateAdminCollectionContent.mockResolvedValueOnce(buildContentRecord({
+      city: "Medellin",
+      country: "CO",
+      stateProvince: "Antioquia",
+      detailedLocation: "Carrera 43A #1-50",
+      geoLat: 6.25184,
+      geoLng: -75.56359
+    }));
+
+    const response = await PATCH(
+      createPatchRequest({
+        section: "locationForm",
+        data: {
+          country: "Colombia",
+          stateProvince: "ANT",
+          city: "Medellin",
+          address: "Carrera 43A #1-50",
+          geoLat: "6.25184",
+          geoLng: "-75.56359"
+        }
+      }),
+      createContext()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.section).toBe("locationForm");
+    expect(payload.data.content.stateProvince).toBe("Antioquia");
+    expect(routeMocks.updateAdminCollectionContent).toHaveBeenCalledWith({
+      entryId: "entry-1",
+      updatedBy: "Admin111",
+      city: "Medellin",
+      country: "CO",
+      stateProvince: "Antioquia",
+      address: "Carrera 43A #1-50",
+      geoLat: 6.25184,
+      geoLng: -75.56359,
+      fractionalInvestmentSummary: undefined,
+      propertyInformation: undefined,
+      galleryImages: undefined,
+      propertyImages: undefined,
+      documents: undefined,
+      googleMapsPlace: undefined
     });
   });
 
