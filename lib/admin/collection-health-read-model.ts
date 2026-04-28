@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { AdminCollectionReadModel } from "@/lib/admin/collections-read-model";
+
 export const COLLECTION_HEALTH_V1_STATES = [
   "missing_snapshot",
   "inconsistent",
@@ -53,4 +55,36 @@ export function buildAdminCollectionHealthCta(entryId: string): AdminCollectionH
     href: `/admin/collections/${normalizedEntryId}`,
     label: "View collection context"
   };
+}
+
+function getConsistencyFailureReason(collection: AdminCollectionReadModel): string {
+  switch (collection.validationState) {
+    case "missing_snapshot":
+      return "No linked asset mint snapshot was found for the marketplace entry.";
+    case "inconsistent":
+      return "A related asset mint snapshot exists, but collection and candy machine addresses do not both match.";
+    default:
+      return "Collection consistency requires manual inspection.";
+  }
+}
+
+export function mapConsistencyCollectionHealthRows(
+  collections: AdminCollectionReadModel[]
+): AdminCollectionHealthRow[] {
+  return collections
+    .filter(
+      (collection) =>
+        collection.validationState === "missing_snapshot" || collection.validationState === "inconsistent"
+    )
+    .map((collection) => ({
+      entryId: collection.entryId,
+      title: collection.title,
+      collectionAddress: collection.collectionAddress,
+      candyMachineAddress: collection.candyMachineAddress,
+      healthState: collection.validationState,
+      source: "consistency",
+      failureReason: getConsistencyFailureReason(collection),
+      lastCheckedAt: collection.updatedAt,
+      cta: buildAdminCollectionHealthCta(collection.entryId)
+    }));
 }

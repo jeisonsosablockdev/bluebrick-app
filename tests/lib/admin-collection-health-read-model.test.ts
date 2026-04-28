@@ -4,7 +4,8 @@ import {
   buildAdminCollectionHealthCta,
   COLLECTION_HEALTH_V1_STATES,
   getAdminCollectionHealthPriority,
-  isAdminCollectionHealthState
+  isAdminCollectionHealthState,
+  mapConsistencyCollectionHealthRows
 } from "@/lib/admin/collection-health-read-model";
 
 describe("lib/admin/collection-health-read-model", () => {
@@ -39,5 +40,72 @@ describe("lib/admin/collection-health-read-model", () => {
       label: "View collection context"
     });
     expect(buildAdminCollectionHealthCta("   ")).toBeNull();
+  });
+
+  it("maps only degraded consistency rows into the health-row contract", () => {
+    const rows = mapConsistencyCollectionHealthRows([
+      {
+        entryId: "entry-linked",
+        title: "Ready collection",
+        coverImageUrl: "/cover-linked.png",
+        collectionAddress: "CollectionLinked",
+        candyMachineAddress: "CandyLinked",
+        updatedAt: "2026-04-28T10:00:00.000Z",
+        validationState: "linked",
+        editableSections: ["summary"]
+      },
+      {
+        entryId: "entry-missing",
+        title: "Missing snapshot",
+        coverImageUrl: "/cover-missing.png",
+        collectionAddress: "CollectionMissing",
+        candyMachineAddress: "CandyMissing",
+        updatedAt: "2026-04-28T11:00:00.000Z",
+        validationState: "missing_snapshot",
+        editableSections: []
+      },
+      {
+        entryId: "entry-inconsistent",
+        title: "Inconsistent snapshot link",
+        coverImageUrl: "/cover-inconsistent.png",
+        collectionAddress: "CollectionInconsistent",
+        candyMachineAddress: "CandyInconsistent",
+        updatedAt: "2026-04-28T12:00:00.000Z",
+        validationState: "inconsistent",
+        editableSections: []
+      }
+    ]);
+
+    expect(rows).toEqual([
+      {
+        entryId: "entry-missing",
+        title: "Missing snapshot",
+        collectionAddress: "CollectionMissing",
+        candyMachineAddress: "CandyMissing",
+        healthState: "missing_snapshot",
+        source: "consistency",
+        failureReason: "No linked asset mint snapshot was found for the marketplace entry.",
+        lastCheckedAt: "2026-04-28T11:00:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-missing",
+          label: "View collection context"
+        }
+      },
+      {
+        entryId: "entry-inconsistent",
+        title: "Inconsistent snapshot link",
+        collectionAddress: "CollectionInconsistent",
+        candyMachineAddress: "CandyInconsistent",
+        healthState: "inconsistent",
+        source: "consistency",
+        failureReason:
+          "A related asset mint snapshot exists, but collection and candy machine addresses do not both match.",
+        lastCheckedAt: "2026-04-28T12:00:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-inconsistent",
+          label: "View collection context"
+        }
+      }
+    ]);
   });
 });
