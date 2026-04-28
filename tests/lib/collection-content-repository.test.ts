@@ -5,8 +5,11 @@ type MarketplaceEditableCollectionRow = {
   title: string;
   city: string;
   country: string;
+  state_province: string | null;
   location_label: string;
   detailed_location: string;
+  geo_lat: string | number | null;
+  geo_lng: string | number | null;
   created_by: string;
   image_url: string;
   collection_address: string;
@@ -66,8 +69,11 @@ function buildRow(input: Partial<MarketplaceEditableCollectionRow> = {}): Market
     title: "Central Tower",
     city: "Bogota",
     country: "CO",
+    state_province: "Cundinamarca",
     location_label: "Financial district",
     detailed_location: "Calle 72 # 10-34, Bogota",
+    geo_lat: 4.711,
+    geo_lng: -74.072,
     created_by: "Admin111",
     image_url: "https://cdn.example.com/cover.jpg",
     collection_address: "Collection111",
@@ -148,8 +154,11 @@ describe("lib/admin/collection-content-repository", () => {
         title: "Central Tower",
         city: "Bogota",
         country: "CO",
+        stateProvince: "Cundinamarca",
         locationLabel: "Financial district",
         detailedLocation: "Calle 72 # 10-34, Bogota",
+        geoLat: 4.711,
+        geoLng: -74.072,
         createdBy: "Admin111",
         coverImageUrl: "https://cdn.example.com/cover.jpg",
         collectionAddress: "Collection111",
@@ -197,6 +206,22 @@ describe("lib/admin/collection-content-repository", () => {
         updatedAt: "2026-04-24T10:00:00.000Z"
       }
     ]);
+  });
+
+  it("keeps canonical location fields nullable when storage has no state or coordinates", async () => {
+    selectedRows = [
+      buildRow({
+        state_province: null,
+        geo_lat: null,
+        geo_lng: null
+      })
+    ];
+
+    const result = await getAdminCollectionContentByEntryId("entry-1");
+
+    expect(result?.stateProvince).toBeNull();
+    expect(result?.geoLat).toBeNull();
+    expect(result?.geoLng).toBeNull();
   });
 
   it("updates only editable collection fields and never touches the immutable cover", async () => {

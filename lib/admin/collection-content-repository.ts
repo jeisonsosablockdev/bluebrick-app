@@ -15,8 +15,11 @@ type MarketplaceEditableCollectionRow = {
   title: string;
   city: string;
   country: string;
+  state_province: string | null;
   location_label: string;
   detailed_location: string;
+  geo_lat: number | string | null;
+  geo_lng: number | string | null;
   created_by: string;
   image_url: string;
   collection_address: string;
@@ -36,8 +39,11 @@ export type AdminCollectionContentRecord = {
   title: string;
   city: string;
   country: string;
+  stateProvince: string | null;
   locationLabel: string;
   detailedLocation: string;
+  geoLat: number | null;
+  geoLng: number | null;
   createdBy: string;
   coverImageUrl: string;
   collectionAddress: string;
@@ -80,8 +86,11 @@ const SELECT_COLLECTION_CONTENT_COLUMNS = `
     title,
     city,
     country,
+    state_province,
     location_label,
     detailed_location,
+    geo_lat,
+    geo_lng,
     created_by,
     image_url,
     collection_address,
@@ -125,6 +134,15 @@ function toIsoString(value: string | Date): string {
   }
 
   return parsed.toISOString();
+}
+
+function toOptionalFiniteNumber(value: number | string | null | undefined): number | null {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function parseCollectionImageItems(
@@ -189,8 +207,11 @@ function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): 
     title: row.title,
     city: row.city,
     country: row.country,
+    stateProvince: toOptionalTrimmedText(row.state_province),
     locationLabel: row.location_label,
     detailedLocation: row.detailed_location,
+    geoLat: toOptionalFiniteNumber(row.geo_lat),
+    geoLng: toOptionalFiniteNumber(row.geo_lng),
     createdBy: row.created_by,
     coverImageUrl: row.image_url,
     collectionAddress: row.collection_address,
