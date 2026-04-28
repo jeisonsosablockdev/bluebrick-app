@@ -5,6 +5,7 @@ import {
   COLLECTION_HEALTH_V1_STATES,
   getAdminCollectionHealthPriority,
   isAdminCollectionHealthState,
+  mapBootstrapCollectionHealthRows,
   mapConsistencyCollectionHealthRows
 } from "@/lib/admin/collection-health-read-model";
 
@@ -103,6 +104,130 @@ describe("lib/admin/collection-health-read-model", () => {
         lastCheckedAt: "2026-04-28T12:00:00.000Z",
         cta: {
           href: "/admin/collections/entry-inconsistent",
+          label: "View collection context"
+        }
+      }
+    ]);
+  });
+
+  it("maps bootstrap manual review rows and bootstrap failures without duplicating consistency-only cases", () => {
+    const rows = mapBootstrapCollectionHealthRows({
+      version: "2026-04-23-v1",
+      dryRun: true,
+      generatedAt: "2026-04-28T13:00:00.000Z",
+      totals: {
+        processed: 4,
+        successes: 0,
+        manualReviewRequired: 1,
+        failures: 3
+      },
+      successes: [],
+      manualReviewRequired: [
+        {
+          entryId: "entry-review",
+          title: "Manual review entry",
+          createdBy: "Admin111",
+          snapshotId: "snapshot-review",
+          draftId: "draft-review",
+          collectionAddress: "CollectionReview",
+          candyMachineAddress: "CandyReview",
+          status: "manual_review_required",
+          reasonCodes: ["property_information_invalid", "google_maps_place_invalid"],
+          warnings: [],
+          payload: {
+            galleryImagesJson: [],
+            propertyImagesJson: [],
+            documentsJson: [],
+            fractionalInvestmentSummary: null,
+            propertyInformation: null,
+            googleMapsPlaceJson: null
+          }
+        }
+      ],
+      failures: [
+        {
+          entryId: "entry-no-draft",
+          title: "Missing draft entry",
+          createdBy: "Admin111",
+          collectionAddress: "CollectionNoDraft",
+          candyMachineAddress: "CandyNoDraft",
+          documentsJson: [],
+          snapshotId: "snapshot-no-draft",
+          draftId: null,
+          status: "failed",
+          failureReason: "missing_draft_id",
+          details: "The linked asset mint snapshot does not contain a usable draftId."
+        },
+        {
+          entryId: "entry-exception",
+          title: "Bootstrap exception entry",
+          createdBy: "Admin111",
+          collectionAddress: "CollectionException",
+          candyMachineAddress: "CandyException",
+          documentsJson: [],
+          snapshotId: "snapshot-exception",
+          draftId: "draft-exception",
+          status: "failed",
+          failureReason: "bootstrap_exception",
+          details: "Unknown bootstrap exception."
+        },
+        {
+          entryId: "entry-missing",
+          title: "Missing snapshot entry",
+          createdBy: "Admin111",
+          collectionAddress: "CollectionMissing",
+          candyMachineAddress: "CandyMissing",
+          documentsJson: [],
+          snapshotId: null,
+          draftId: null,
+          status: "failed",
+          failureReason: "missing_snapshot",
+          details: "No linked asset mint snapshot was found for the marketplace entry."
+        }
+      ]
+    });
+
+    expect(rows).toEqual([
+      {
+        entryId: "entry-review",
+        title: "Manual review entry",
+        collectionAddress: "CollectionReview",
+        candyMachineAddress: "CandyReview",
+        healthState: "manual_review_required",
+        source: "bootstrap",
+        failureReason:
+          "Bootstrap mapping requires manual review: property information invalid, google maps place invalid.",
+        lastCheckedAt: "2026-04-28T13:00:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-review",
+          label: "View collection context"
+        }
+      },
+      {
+        entryId: "entry-no-draft",
+        title: "Missing draft entry",
+        collectionAddress: "CollectionNoDraft",
+        candyMachineAddress: "CandyNoDraft",
+        healthState: "bootstrap_failed",
+        source: "bootstrap",
+        failureReason: "The linked asset mint snapshot does not contain a usable draftId.",
+        lastCheckedAt: "2026-04-28T13:00:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-no-draft",
+          label: "View collection context"
+        }
+      },
+      {
+        entryId: "entry-exception",
+        title: "Bootstrap exception entry",
+        collectionAddress: "CollectionException",
+        candyMachineAddress: "CandyException",
+        healthState: "bootstrap_failed",
+        source: "bootstrap",
+        failureReason: "Unknown bootstrap exception.",
+        lastCheckedAt: "2026-04-28T13:00:00.000Z",
+        cta: {
+          href: "/admin/collections/entry-exception",
           label: "View collection context"
         }
       }

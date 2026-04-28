@@ -1,5 +1,10 @@
 import "server-only";
 
+import type {
+  CollectionBootstrapDryRunFailureItem,
+  CollectionBootstrapDryRunManifest
+} from "@/lib/admin/collection-bootstrap-dry-run";
+import type { CollectionBootstrapReasonCode } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionReadModel } from "@/lib/admin/collections-read-model";
 
 export const COLLECTION_HEALTH_V1_STATES = [
@@ -87,4 +92,53 @@ export function mapConsistencyCollectionHealthRows(
       lastCheckedAt: collection.updatedAt,
       cta: buildAdminCollectionHealthCta(collection.entryId)
     }));
+}
+
+const BOOTSTRAP_FAILURE_STATES = new Set<CollectionBootstrapDryRunFailureItem["failureReason"]>([
+  "missing_draft_id",
+  "bootstrap_exception"
+]);
+
+function humanizeBootstrapReasonCode(reasonCode: CollectionBootstrapReasonCode): string {
+  return reasonCode.replaceAll("_", " ");
+}
+
+function getManualReviewFailureReason(reasonCodes: CollectionBootstrapReasonCode[]): string {
+  if (reasonCodes.length === 0) {
+    return "Bootstrap mapping requires manual review.";
+  }
+
+  return `Bootstrap mapping requires manual review: ${reasonCodes.map(humanizeBootstrapReasonCode).join(", ")}.`;
+}
+
+export function mapBootstrapCollectionHealthRows(
+  manifest: CollectionBootstrapDryRunManifest
+): AdminCollectionHealthRow[] {
+  const manualReviewRows = manifest.manualReviewRequired.map<AdminCollectionHealthRow>((item) => ({
+    entryId: item.entryId,
+    title: item.title,
+    collectionAddress: item.collectionAddress,
+    candyMachineAddress: item.candyMachineAddress,
+    healthState: "manual_review_required",
+    source: "bootstrap",
+    failureReason: getManualReviewFailureReason(item.reasonCodes),
+    lastCheckedAt: manifest.generatedAt,
+    cta: buildAdminCollectionHealthCta(item.entryId)
+  }));
+
+  const bootstrapFailureRows = manifest.failures
+    .filter((item) => BOOTSTRAP_FAILURE_STATES.has(item.failureReason))
+    .map<AdminCollectionHealthRow>((item) => ({
+      entryId: item.entryId,
+      title: item.title,
+      collectionAddress: item.collectionAddress,
+      candyMachineAddress: item.candyMachineAddress,
+      healthState: "bootstrap_failed",
+      source: "bootstrap",
+      failureReason: item.details,
+      lastCheckedAt: manifest.generatedAt,
+      cta: buildAdminCollectionHealthCta(item.entryId)
+    }));
+
+  return [...manualReviewRows, ...bootstrapFailureRows];
 }
