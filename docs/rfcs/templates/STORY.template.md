@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-<id>-<slug>`
 - Story ID: `STORY-<id>-<slug>`
-- Status: `draft` (`draft | in-review | approved | implemented`)
+- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `<owner>`
 - Created: `<YYYY-MM-DD>`
 - Last Updated: `<YYYY-MM-DD>`
@@ -40,7 +40,7 @@
 - Approval notes:
 
 ## Status
-- Current status: `draft`
+- Current status: `draft` (`draft | in-review | approved | implemented | rejected`)
 - Next action:
 - Exit criteria:
 - [ ] All critical critique points addressed
@@ -57,4 +57,3 @@
 - Related issue(s):
 - Related PR(s):
 - Final commit hash(es):
-

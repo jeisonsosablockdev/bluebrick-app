@@ -73,6 +73,7 @@ feature/app-<name>
 feature/shared-<name>
 fix/program-<name>
 fix/app-<name>
+fix/shared-<name>
 security/program-<issue>
 security/app-<issue>
 nft/program-<feature>

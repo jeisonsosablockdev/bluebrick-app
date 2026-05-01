@@ -8,6 +8,12 @@ Documentation must be created and updated alongside development.
 
 No feature is complete without documentation.
 
+Canonical precedence and drift control:
+	•	This file is the canonical documentation policy for the repository.
+	•	`AGENTS.md`, guides, helper scripts, and workflow summaries may reference this policy, but must not redefine it with conflicting or looser rules.
+	•	The executable enforcement source is `scripts/ci/check-required-docs.sh`.
+	•	If a summary drifts from this file, this file and the enforcement scripts govern.
+
 ⸻
 
 For Blockchain Changes (`/programs`)
@@ -103,11 +109,13 @@ Allowed status values:
 	•	`in-review`
 	•	`approved`
 	•	`implemented`
+	•	`rejected`
 
 Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
+	•	`docs/rfcs/000-manifest.md` is intentionally blank as a bootstrap scaffold and is excluded from story/epic RFC content requirements.
 
 Automated enforcement in project flow:
 	•	`npm run validate` now includes docs governance validation (`scripts/ci/validate-doc-governance.sh`).

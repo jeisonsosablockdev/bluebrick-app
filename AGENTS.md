@@ -44,57 +44,25 @@ Example (blockchain + NFT + frontend task):
 Documentation must be created and updated alongside development.
 No feature is complete without documentation.
 
-For Blockchain Changes (`/programs`)
-- Impact-based requirement:
-  - Structural/high-risk changes (account model, PDA seeds, authority transitions, CPI/security constraints, state-machine invariants) must update/create:
-    - `/docs/architecture.md`
-    - `/docs/authority-model.md`
-    - `/docs/state-machine.md`
-    - `/docs/threat-model.md`
-    - `/docs/devnet-proof.md`
-  - Bounded low-risk changes (localized fix/refactor with no architecture/authority/security impact) must update:
-    - at least one `/docs/features/*.md`
-    - only the directly affected section(s) in canonical docs
-- Must document when applicable:
-  - Account architecture
-  - PDA seeds
-  - Authority validation logic
-  - Explicit invariants
-  - Identified attack vectors
-  - Mitigation mapping
-  - Devnet transaction proof (real signature)
+This playbook is intentionally only a summary. The canonical source for documentation requirements is:
+- `docs/governance/documentation-policy.md`
 
-For Frontend/Auth Changes (`/app`)
-- Impact-based requirement:
-  - Structural/auth-model changes (SIWS/session lifecycle/cookie trust boundaries/replay protection) must update/create:
-    - `/docs/auth-flow.md`
-    - `/docs/session-model.md`
-  - Bounded UI-only changes must update:
-    - at least one `/docs/features/*.md`
-    - only affected auth/session sections (if any)
-- Must document when applicable:
-  - SIWS flow
-  - Nonce lifecycle
-  - Cookie strategy
-  - Replay protection logic
-  - Trust boundaries
+Enforcement source:
+- `scripts/ci/check-required-docs.sh`
 
-For NFT Features
-- Impact-based requirement:
-  - Structural NFT changes (mint authority, collection/metadata rules, royalty logic, supply semantics) must update:
-    - `/docs/nft-spec.md`
-  - Bounded NFT fixes must update:
-    - at least one `/docs/features/*.md`
-    - only affected section(s) in `/docs/nft-spec.md`
-- Must document when applicable:
-  - Mint authority model
-  - Metadata ownership
-  - Royalty model
-  - Collection validation
-  - Devnet mint proof
+Drift-control rules:
+- Do not infer looser documentation requirements from `AGENTS.md`.
+- Exact required canonical docs, RFC status values, traceability rules, and branch-driven checks are governed by `docs/governance/documentation-policy.md` and the enforcement scripts.
+- If `AGENTS.md` and canonical docs differ, update `AGENTS.md` to match the canonical docs instead of treating this file as an alternate policy source.
+
+Operational summary:
+- For `/programs`, `/app`, and NFT work, update the canonical docs required by `docs/governance/documentation-policy.md`.
+- For qualifying `feature/*`, `fix/*`, `nft/*`, or `refactor/*` branches that touch product code, update at least one `docs/features/*.md`.
+- For RFC-governed work, follow the epic/story naming, required sections, allowed statuses, and traceability rules defined in the canonical documentation policy and RFC templates.
+- `docs/rfcs/000-manifest.md` is intentionally blank as a scaffold and is not a story/epic RFC artifact.
 
 Strict Rule:
-If required documentation for the detected impact tier is missing or outdated → Definition of Done fails.
+If required documentation is missing, outdated, or fails enforcement → Definition of Done fails.
 
 Feature Notes Rule (small/iterative features):
 - For branch types `feature/*`, `fix/*`, `nft/*`, or `refactor/*` that touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), update at least one file under `/docs/features/*.md`.
@@ -136,6 +104,7 @@ Workflow:
 	•	`feature/shared-<name>`
 	•	`fix/program-<name>`
 	•	`fix/app-<name>`
+	•	`fix/shared-<name>`
 	•	`security/program-<issue>`
 	•	`security/app-<issue>`
 	•	`nft/program-<feature>`

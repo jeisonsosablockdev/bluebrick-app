@@ -74,8 +74,9 @@ If change affects NFT logic:
 
 🧬 DEVELOPMENT PHILOSOPHY
 	•	Devnet-first execution.
-	•	Zero simulation.
-	•	Zero mocks.
+	•	Zero simulation as final blockchain acceptance evidence.
+	•	Zero mocked blockchain RPC, signatures, accounts, balances, or on-chain data as final acceptance evidence.
+	•	Application-layer mocks remain allowed for non-blockchain tests when they do not replace required devnet execution proof.
 	•	Real signatures only.
 	•	Clean Code always.
 	•	Security before features.
