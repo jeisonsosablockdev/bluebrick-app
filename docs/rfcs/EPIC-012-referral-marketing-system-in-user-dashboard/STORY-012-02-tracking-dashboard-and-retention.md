@@ -3,88 +3,54 @@
 ## Metadata
 - Epic: `EPIC-012-referral-marketing-system-in-user-dashboard`
 - Story ID: `STORY-012-02-tracking-dashboard-and-retention`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-02`
 - Last Updated: `2026-05-02`
 
 ## Context
 - Problem:
-  El referente necesita ver progreso real del programa para seguir invitando y entender cuándo una invitación ya se convirtió en una recompensa válida.
-- Why now:
-  Sin consola de seguimiento, el programa se siente opaco y pierde motivación. El dashboard es el punto de retención del referente.
-- Constraints:
-  - El estado visible debe depender del backend, no de heurísticas del cliente.
-  - Las notificaciones y niveles no pueden prometer recompensas no aprobadas.
-  - La UI debe mantenerse simple y entendible.
-- Affected paths:
-  - `app/(dashboard)/...`
-  - `app/api/...`
-  - `lib/referrals/...`
-  - posible store interno de notificaciones
+  El referente necesita ver a quién ha invitado y el estado de sus recompensas para fomentar la retención y la gamificación.
+- Technical design (Draft):
+  - Tabla de referidos en el dashboard con identidad ofuscada.
+  - Notificaciones in-app cuando una recompensa queda acumulada o lista para distribución admin.
+  - Estados visibles alineados al backend: `joined`, `kyc_verified`, `nft_purchase_confirmed`, `pending_settlement`, `accrued`, `pending_admin_distribution`, `paid`, `clawbacked`, `rejected`, `risk_hold`.
 
-## Proposal
-- Approach summary:
-  Construir una consola de seguimiento que combine estado detallado, señales de progreso y feedback visible para retener al referente.
-- Technical design:
-  - **Sub-story 2.1 (Data Viz):** listado de wallets referidas, clasificadas por estado (`Pendiente` / `Completado`).
-  - **Sub-story 2.2 (Engagement):** notificaciones internas con indicador visual cuando un referido se acepta con éxito.
-  - **Sub-story 2.3 (Gamification):** barra de progreso o hitos para mostrar cuántos referidos faltan para el siguiente nivel.
-  - El dashboard debe consumir un payload backend único para evitar divergencia de estado.
-- Alternatives considered:
-  - Mostrar solo agregados y no listado detallado.
-  - Omitir notificaciones internas en el MVP.
-  - Omitir gamificación hasta fases posteriores.
-- Tradeoffs:
-  - El listado detallado mejora confianza, pero requiere reglas claras de privacidad/visibilidad.
-  - La gamificación mejora retención, pero eleva riesgo de mensajes engañosos si el backend no es exacto.
+## Critique (Staff Engineer)
+- **Reviewer(s)**: `Gemini Code Assist (Staff Engineer)`
+- **Critical findings**:
+  1. **Ofuscación Estricta de Identidad**: Si la tabla de seguimiento muestra a los invitados, JAMÁS debemos mostrar la wallet completa ni el correo electrónico del invitado al referente, por razones de GDPR y privacidad Web3. Se debe estandarizar un formato como `Wallet 3e89...d0f1` o seudónimos generados aleatoriamente (ej. "Anon Badger").
+  2. **Paginación Mandatoria**: Aunque sea un MVP, un ataque Sybil o una campaña muy exitosa podría generar miles de registros de "Pendiente" para un solo usuario. El endpoint del backend DEBE implementar cursor-based pagination o limit+offset desde el día 1.
+  3. **Estados Claros de Recompensa**: El frontend debe manejar los estados de forma determinista. Sugiero: `joined` (registrado), `kyc_verified` (KYC superado), `qualifying_event` (evento completado), `reward_claimed` (recompensa liquidada).
+  4. **[STRICT] Vector de Ataque por Correlación On-Chain**: Si el dashboard muestra al referente la fecha/hora exacta en la que el invitado completó el evento (ej. "Compró a las 14:03:02"), el referente puede usar Solscan para buscar transacciones en ese segundo exacto y des-ofuscar la wallet del invitado. Las fechas mostradas al referente deben ser truncadas al día (ej. "Completado el 14 de Mayo") o tener un *jitter* (retraso aleatorio).
 
-## Critique
-- Reviewer(s):
-  - `pending`
-- Critical findings:
-1. Validar qué nivel de detalle de wallet puede mostrarse sin comprometer privacidad.
-2. Definir si la notificación vive como badge simple o como inbox/event stream.
-3. Evitar que la barra de progreso se compute con estados todavía no elegibles.
-- Blocking concerns:
-  - Falta definir el contrato exacto del payload de recompensas y milestones.
+- **Blocking concerns**:
+  - La query a la base de datos debe truncar u ofuscar la información PII del invitado *en el backend*, no depender de que el frontend oculte los datos.
+  - Restringir la granularidad temporal de los eventos expuestos al referente.
 
 ## Resolution
 - Final approach after critique:
-  Pendiente de validar el grado de detalle de visibilidad y el contrato del payload de dashboard.
+  - La UI mostrará estados derivados del ledger real de recompensas, no un modelo abstracto de `claimable`.
+  - El referente verá cuándo un invitado compró NFTs elegibles, cuándo la recompensa quedó acumulada en DB y cuándo quedó pendiente de distribución admin.
+  - La granularidad temporal expuesta al referente se truncará al día para evitar correlación on-chain.
 - Changes accepted:
-  - Estado detallado por referido.
-  - Indicador visual de éxito.
-  - Hitos/gamificación del programa.
+  - Identidad ofuscada en backend.
+  - Paginación obligatoria.
+  - Estados visibles alineados a `accrued` y `pending_admin_distribution`.
+  - Timestamps truncados al día.
 - Changes rejected (with rationale):
-  - Dashboard puramente agregado, porque reduce trazabilidad para el usuario.
+  - Exponer horas exactas o timestamps precisos, porque facilitan desanonimización.
+  - Mantener `claimable` como estado UI principal, porque el payout no es automático en este modelo.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
+- Decision: `approved`
 - Decision date: `2026-05-02`
 - Decision owner: `jaymusicmachine`
-- Approval notes:
-  Pendiente de aprobación junto con el payload backend de recompensas.
 
 ## Status
-- Current status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Current status: `approved`
 - Next action:
-  Definir payload canónico de reward status, notificaciones y hitos.
-- Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
-- [ ] Implementation completed (if in scope)
-
-## Test and Validation Plan
-- Unit tests:
-  - Mapeo de estados visibles y cálculo de milestones.
-- Integration tests:
-  - Dashboard refleja correctamente cambios de estado desde backend.
-  - Indicador visual se activa solo para referidos aceptados.
-- Devnet validation (if applicable):
-  - N/A
-- Responsive QA (if applicable):
-  - Tabla/listado, badge y barra de progreso en `320`, `375`, `768`, `1024`.
+  Iniciar desarrollo del endpoint `GET /api/users/me/referrals` con paginación y ofuscación de UI.
 
 ## Traceability
 - Related issue(s): `BRI-16`

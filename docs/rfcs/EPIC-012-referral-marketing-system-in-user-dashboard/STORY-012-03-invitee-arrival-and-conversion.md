@@ -3,88 +3,72 @@
 ## Metadata
 - Epic: `EPIC-012-referral-marketing-system-in-user-dashboard`
 - Story ID: `STORY-012-03-invitee-arrival-and-conversion`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `approved` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-02`
 - Last Updated: `2026-05-02`
 
 ## Context
 - Problem:
-  La persona invitada necesita una llegada fluida donde el sistema reconozca silenciosamente el referral sin obligarla a completar todo el registro de inmediato.
-- Why now:
-  Si el handshake de entrada falla, la atribución completa se rompe antes de llegar al backend y el programa pierde credibilidad.
-- Constraints:
-  - La captura del parámetro referral debe ser silenciosa, determinista y resistente a navegación posterior.
-  - La bienvenida debe ser sutil y no invasiva.
-  - El flujo debe funcionar en mobile wallet browsers y deep linking.
-- Affected paths:
-  - páginas de entrada/landing
-  - `app/...` con query params `?ref=...`
-  - estado global de app / auth bootstrap
-  - comportamiento mobile wallet browser
+  El usuario invitado debe tener un flujo de llegada claro que lea el enlace de referido, capture la intención y lo asocie a su billetera durante el registro sin dejar atribuciones zombie.
 
 ## Proposal
 - Approach summary:
-  Implementar el handshake del invitado desde la URL hasta el estado global de la aplicación y acompañarlo con una bienvenida contextual.
+  El binding del referral ocurrirá en el primer payload de autenticación/creación de usuario. Desde ese momento, la atribución queda activa por una ventana de `30 días` para que el invitado complete `KYC + compras NFT elegibles`. Si no cumple, la atribución expira y libera la wallet para un nuevo referral futuro.
 - Technical design:
-  - **Sub-story 3.1 (Handshake):** capturar `?ref=wallet_address` y guardarlo silenciosamente en el estado global.
-  - **Sub-story 3.2 (UI/UX de Bienvenida):** banner o mensaje sutil del tipo: `Has sido invitado por [Wallet_Address]. Conecta tu wallet para comenzar`.
-  - **Sub-story 3.3 (Web3 Bridge):** compatibilidad de enlace con navegadores integrados de wallets en mobile.
-  - Este handshake debe dejar listo el valor para la persistencia/reforwarding de Story 1 y el mapping backend de Story 4.
+  - Middleware/handler de llegada captura `?ref=` y prellena el campo `Referral code` en la pantalla de sign-up.
+  - El primer payload auth incluirá `referralCode`, `attributionSource` y metadatos básicos de llegada.
+  - Backend crea `referral_attributions` con estado `bound_pending_kyc`, `bound_at` y `eligibility_window_ends_at = bound_at + 30 days`.
+  - La tabla de atribuciones usará unicidad solo sobre atribuciones activas, por ejemplo mediante un índice parcial sobre estados vivos, en lugar de bloquear históricamente toda la wallet para siempre.
+  - Si antes de `eligibility_window_ends_at` no existe `kyc_approved_at` ni compras NFT elegibles, un job de limpieza marca la atribución como `expired_no_kyc` o `expired_no_qualification` y la wallet queda liberada para un nuevo binding futuro.
+  - Si el usuario vuelve con otro código válido después de la expiración y aún no tiene recompensas generadas, se permite una nueva atribución activa siguiendo la regla `Last-Touch`.
+  - Si `referrer_wallet == invitee_wallet`, el binding se rechaza silenciosamente como `rejected_self_referral`.
+  - Los deep links móviles deben preservar `ref` en la URL de retorno para no perder el código antes del primer auth.
 - Alternatives considered:
-  - No mostrar mensaje de bienvenida.
-  - Resolver compatibilidad mobile más tarde.
-  - Guardar el referral solo después del sign-in.
+  - Mantener la wallet bloqueada para siempre aunque nunca haya KYC ni compras.
+  - Hacer el binding después del sign-in completo/KYC.
+  - Permitir múltiples atribuciones activas para la misma invitee wallet.
 - Tradeoffs:
-  - Guardar temprano mejora robustez, pero obliga a definir limpieza/expiración.
-  - Mostrar banner mejora claridad, pero puede introducir ruido si se diseña mal.
+  - Liberar la wallet tras expirar evita basura y permite recuperación de usuarios que abandonaron onboarding.
+  - La expiración requiere un cleanup job adicional, pero resuelve de raíz el problema de estados zombie.
 
-## Critique
-- Reviewer(s):
-  - `pending`
-- Critical findings:
-1. Definir dónde vive el estado global del referral entre rutas y reloads.
-2. Validar el fallback cuando el parámetro referral es inválido o expiró.
-3. Confirmar la estrategia de deep linking para mobile wallet browsers.
-- Blocking concerns:
-  - Falta definir el contrato entre el handshake frontend y la persistencia real de atribución.
+## Critique (Staff Engineer)
+- **Reviewer(s)**: `Gemini Code Assist (Staff Engineer)`
+- **Critical findings**:
+  1. **Momento Exacto del Binding (Asociación)**: El `ref` (código del referente) debe enviarse en el **primer payload de creación del usuario** (cuando se hace la verificación de firma / Sign-In with Solana o Web3Auth). Si la wallet se crea sin el código y luego intentamos hacer el "attach", abrimos la puerta a condiciones de carrera o pérdida de atribución si el usuario cierra la pestaña.
+  2. **Compatibilidad Mobile Wallet**: Los enlaces referidos compartidos en Telegram/Twitter a menudo se abren en webviews restrictivos. Si el usuario intenta usar Phantom Deep Links (`phantom://`), el deep link DEBE propagar el parámetro `?ref=` en la URL de retorno, de lo contrario se perderá al cambiar de la app social a la app de la wallet.
+  3. **Validación de Auto-Referencia**: El frontend y backend deben verificar instantáneamente que el referente no sea el mismo que el invitado. Si `referrer_wallet == invitee_wallet`, la atribución debe ser silenciosamente descartada.
+  4. **[STRICT] Estados de Abandono (Drop-off)**: Si el binding ocurre al hacer el Sign-in, pero el usuario no pasa el KYC (EPIC-004), la atribución quedará en un estado zombie. El backend debe contemplar un TTL o limpieza automática para atribuciones que nunca superaron el KYC, liberando a la wallet para ser referida por otro (o bloqueándola para siempre, según se defina).
+
+- **Execution Risks**:
+  - Perder parámetros UTM o `ref` durante los redireccionamientos de OAuth (si hubiera integración social) o redireccionamientos de deep-links de wallets móviles.
+  - Ensuciar la base de datos con atribuciones huérfanas de wallets que nunca completaron el onboarding real.
 
 ## Resolution
-- Final approach after critique:
-  Pendiente de cerrar el contrato de estado global y la estrategia mobile wallet browser.
+- Proposed approach after critique:
+  - El binding ocurre en el primer payload auth y crea una atribución activa con ventana de elegibilidad de `30 días`.
+  - Si no hay `KYC + compras NFT elegibles` antes de expirar la ventana, la atribución se cierra automáticamente y libera la wallet para un nuevo referral futuro.
+  - La base no usará un `UNIQUE` histórico simple sobre `invitee_wallet_address`, sino unicidad sobre atribuciones activas para evitar bloquear permanentemente wallets sin conversión.
+  - Los deep links móviles deben preservar `ref` y el backend descarta auto-referidos de forma autoritativa.
 - Changes accepted:
-  - Captura silenciosa del referral.
-  - Bienvenida contextual.
-  - Compatibilidad mobile wallet.
+  - `first auth payload wins` como punto de binding.
+  - Cleanup automático de atribuciones no calificadas.
+  - Rebinding permitido solo después de expiración y solo si no existieron recompensas generadas.
+  - Rechazo explícito de auto-referidos.
 - Changes rejected (with rationale):
-  - Captura tardía solo al sign-in, porque debilita la atribución diferida.
+  - Wallet bloqueada para siempre aunque no haya KYC ni compras, porque deja zombies operativos y mala UX.
+  - Binding diferido hasta fases posteriores del onboarding, porque aumenta pérdidas de atribución y carreras.
+  - Multiplicidad de atribuciones activas por wallet invitada, porque rompe consistencia.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
+- Decision: `approved`
 - Decision date: `2026-05-02`
 - Decision owner: `jaymusicmachine`
-- Approval notes:
-  Pendiente de validar la estrategia cross-device / mobile wallet browser.
 
 ## Status
-- Current status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Current status: `approved`
 - Next action:
-  Aprobar el handshake URL -> state -> persistence y el comportamiento de bienvenida mobile.
-- Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
-- [ ] Implementation completed (if in scope)
-
-## Test and Validation Plan
-- Unit tests:
-  - Parseo y saneamiento del parámetro `ref`.
-- Integration tests:
-  - El valor referral sobrevive navegación y llega al punto de registro/sign-in.
-  - El banner se muestra solo cuando existe referral válido.
-- Devnet validation (if applicable):
-  - N/A
-- Responsive QA (if applicable):
-  - Validación explícita en mobile wallet browser y breakpoints `320`, `375`, `768`, `1024`.
+  Implementar el middleware de login para ingerir el `referralCode` en `lib/referrals/ReferralService.ts`.
 
 ## Traceability
 - Related issue(s): `BRI-16`
