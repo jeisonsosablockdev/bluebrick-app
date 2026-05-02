@@ -84,6 +84,8 @@ If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests
 
 Enforcement:
 	•	If no `/docs/features/*.md` file is updated for qualifying changes, documentation is considered incomplete.
+	•	For single-issue slice flows, multiple slice branches may update the same parent feature-note file incrementally instead of creating one near-duplicate file per slice.
+	•	Prefer one accumulated feature note per parent Linear issue when the slices belong to the same initiative.
 
 ⸻
 

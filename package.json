@@ -13,6 +13,7 @@
     "collection:bootstrap:dry-run": "node ./scripts/collection-bootstrap-dry-run.ts",
     "purchase:trace": "node ./scripts/purchase-trace.js",
     "rfc:new": "node ./scripts/rfc-new.js",
+    "linear:plan": "node ./scripts/linear-plan.js",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

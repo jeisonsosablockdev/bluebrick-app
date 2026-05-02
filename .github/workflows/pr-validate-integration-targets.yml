@@ -1,0 +1,60 @@
+name: PR Validation (Integration Targets)
+
+on:
+  pull_request:
+    branches:
+      - feature/**-integration
+      - fix/**-integration
+      - security/**-integration
+      - nft/**-integration
+      - refactor/**-integration
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+concurrency:
+  group: pr-integration-targets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate (lint + typecheck + docs governance)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run validate
+        run: npm run validate
+
+  required-docs:
+    name: Required Docs Sync Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check required docs for touched scopes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: HEAD
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: bash ./scripts/ci/check-required-docs.sh

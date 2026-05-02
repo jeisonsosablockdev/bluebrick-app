@@ -97,8 +97,9 @@ RFC Workflow by Epic (for architecture debate and decisions)
 🌿 BRANCH HANDLING (QUICK GUIDE)
 
 Workflow:
-	1.	Create branch from latest `develop`.
-	2.	Use scope-based name:
+	1.	For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, or `refactor/*` work, create/update one parent Linear issue first and keep the slice plan inside that same issue.
+	2.	Create branch from latest `develop`.
+	3.	Use scope-based name:
 	•	`feature/program-<name>`
 	•	`feature/app-<name>`
 	•	`feature/shared-<name>`
@@ -107,12 +108,20 @@ Workflow:
 	•	`fix/shared-<name>`
 	•	`security/program-<issue>`
 	•	`security/app-<issue>`
+	•	`security/shared-<issue>`
 	•	`nft/program-<feature>`
-	•	`refactor/<area>`
-	3.	Do not commit directly to `develop` or `main`.
-	4.	Open Pull Request to `develop` (regular work).
-	5.	Only release PRs go from `develop` to `main`.
-	6.	Squash and merge only after all checks pass.
+	•	`refactor/program-<name>`
+	•	`refactor/app-<name>`
+	•	`refactor/shared-<name>`
+	4.	For multi-slice work, propose an integration branch in the parent Linear issue:
+	•	`feature/shared-<name>-bri-149-integration`
+	•	Slice branches follow the same prefix family:
+	•	`feature/shared-<name>-bri-149-s01-<slice>`
+	5.	Slice PRs target the parent `*-integration` branch.
+	6.	Final PR targets `develop`.
+	7.	Do not commit directly to `develop` or `main`.
+	8.	Only release PRs go from `develop` to `main`.
+	9.	Squash and merge only after all checks pass.
 
 `main` is protected: no direct commits, no force push, no merge commits.
 `develop` is protected for integration: no direct commits.
@@ -144,6 +153,10 @@ Applies to every PR targeting `develop`:
    - PR governance check must enforce required labels/template sections and block invalid PR metadata.
 
 If any required governance gate fails, merge is blocked.
+
+Operational note for slice PRs:
+- PRs targeting a `*-integration` branch must still pass `npm run validate` and the required docs sync check.
+- Full metadata/label governance remains mandatory on the final PR targeting `develop`.
 
 ⸻
 
@@ -203,6 +216,10 @@ If waiver data is missing or expired, merge is blocked.
     - runs `npm run pr:ready`
     - pushes branch
     - creates PR and applies mandatory labels via GitHub API
+
+- `npm run linear:plan -- ...`
+  - Generates the parent Linear Markdown plan for issue-only slice tracking.
+  - Prints the proposed integration branch and slice branch commands that should be used for the implementation flow.
 
 ⸻
 

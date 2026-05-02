@@ -16,19 +16,61 @@ This includes:
 `AGENTS.md`, local scripts, and CI must reference this file and must not duplicate rule lists.
 
 ## Mandatory Sequence
-1. Commit in working branch (never `develop`/`main`).
-2. Push branch to origin.
-3. Prepare PR body with required sections:
+1. For non-trivial work, create/update one parent Linear issue with a Markdown slice plan before coding.
+2. If slices are required, create an `*-integration` branch from `develop` and create slice branches from that integration branch.
+3. Commit in the active working branch (never `develop`/`main`).
+4. Push branch to origin.
+5. Prepare PR body with required sections:
    - `Issue`
    - `RFC`
    - `Riesgos`
    - `Rollback Plan`
    - `Prueba Devnet`
-4. Run local metadata lint.
-5. Run lightweight local governance preflight.
-6. Open PR in draft mode and apply required labels.
-7. Wait for governance gates.
-8. Mark PR ready and merge only after checks pass.
+6. Run local metadata lint.
+7. Run lightweight local governance preflight.
+8. Open PR in draft mode and apply required labels.
+9. Wait for governance gates.
+10. Mark PR ready and merge only after checks pass.
+
+## Single-Issue Slice Planning
+- Preferred tracking model: one Linear issue with Markdown slices, not a pile of subissues.
+- Detailed planning guide: `docs/guides/linear-single-issue-slice-planning.md`
+- Template: `docs/templates/linear-single-issue-slices.template.md`
+- Generator: `npm run linear:plan -- ...`
+
+Use the parent issue to store:
+- objective, scope, and non-goals
+- integration branch name
+- slice table with one branch per slice
+- execution order and completion gate
+
+## Branch And PR Targets
+- Slice branch PRs target the parent `*-integration` branch.
+- Final integration PR targets `develop`.
+- Slice PRs must still pass `npm run validate` and the required docs sync check.
+- Final PRs to `develop` continue to use the full governance workflow and metadata policy.
+
+Example slice PR opener:
+```bash
+npm run pr:open -- \
+  --title "feat(shared): close BRI-149 S01 governance policy" \
+  --body-file /tmp/pr-s01.md \
+  --scope scope:shared \
+  --type type:feature \
+  --risk risk:low \
+  --base feature/shared-single-issue-slice-planning-bri-149-integration
+```
+
+Example final PR opener:
+```bash
+npm run pr:open -- \
+  --title "feat(shared): institutionalize single-issue slice planning" \
+  --body-file /tmp/pr-final.md \
+  --scope scope:shared \
+  --type type:feature \
+  --risk risk:low \
+  --base develop
+```
 
 ## New Automation Commands
 ### `npm run pr:metadata -- ...`
