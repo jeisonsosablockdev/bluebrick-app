@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
+import { getAllowedDevOrigins } from "./lib/dev-origins";
 import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./lib/security/headers";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   outputFileTracingRoot: process.cwd(),
+  allowedDevOrigins: getAllowedDevOrigins(),
   images: {
     remotePatterns: [
       {

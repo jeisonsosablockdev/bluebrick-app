@@ -1,5 +1,7 @@
 import { Pool, type PoolClient } from "pg";
 
+import { normalizeDatabaseUrlForPg } from "@/lib/db/connection-string";
+
 declare global {
   var __dbPool: Pool | undefined;
 }
@@ -11,7 +13,7 @@ function getDatabaseUrl(): string {
     throw new Error("DATABASE_URL is required.");
   }
 
-  return databaseUrl;
+  return normalizeDatabaseUrlForPg(databaseUrl);
 }
 
 export function getDbPool(): Pool {

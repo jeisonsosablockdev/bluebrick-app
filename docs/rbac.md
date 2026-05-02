@@ -26,7 +26,7 @@ If SIWS session is not valid, request is unauthenticated and no role is assigned
 
 ## Route Enforcement
 - Admin route prefix: `/admin/**`
-- Middleware gate:
+- Proxy gate:
   - unauthenticated -> redirect `/403`
   - authenticated but non-admin -> redirect `/403`
   - authenticated admin -> allow
@@ -39,13 +39,13 @@ If SIWS session is not valid, request is unauthenticated and no role is assigned
 | --- | --- | --- |
 | `/protected` | Authenticated SIWS session | Server component redirects to `/` without session |
 | `/api/protected/me` | Authenticated SIWS session | Returns `401` when unauthenticated |
-| `/admin/**` | `admin` role | Middleware redirect to `/403` + page-level role check |
+| `/admin/**` | `admin` role | Proxy redirect to `/403` + page-level role check |
 | `/api/admin/*` | `admin` role | Handler-level role check with `403` JSON |
 
 ## Security Notes
 - Client state is not trusted for authorization.
 - Role is computed server-side per request.
 - UI role indicators and menus are presentation only.
-- Middleware is not sufficient by itself; handlers/pages must enforce role checks directly.
+- Proxy is not sufficient by itself; handlers/pages must enforce role checks directly.
 
 Last Updated: 2026-03-03 UTC

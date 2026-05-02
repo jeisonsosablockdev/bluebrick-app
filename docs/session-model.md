@@ -37,7 +37,7 @@
   - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
   - `POST /api/protected/kyc/stripe/session` requires valid SIWS session and applies wallet/IP rate limit before creating provider session.
   - `POST /api/protected/kyc/stripe/session` also triggers AML screening (`kyc_session_started`) server-side.
-  - `/admin/**` middleware redirects unauthorized requests to `/403`.
+  - `/admin/**` proxy redirects unauthorized requests to `/403`.
   - Admin pages and `/api/admin/*` handlers perform explicit role re-checks.
   - Purchase challenge endpoint (`/api/purchase/challenge`) requires valid SIWS session.
   - Purchase mutation endpoints (`/api/purchase/prepare`, `/api/purchase/submit`) require valid SIWS session, challenge verification, and wallet ownership checks.
@@ -58,7 +58,7 @@
   - The same `GET /api/admin/collections/:id` response may now include a read-only `blockchain.baseAddresses` payload derived server-side from snapshot evidence.
   - That read-only `blockchain` payload may also include authority identities resolved server-side from `authority_registry`, snapshot data, and configured backend authorities.
   - `PATCH /api/admin/collections/:id` is admin-only, requires a session wallet pubkey, validates one editable section payload, rejects immutable cover fields, and calls the centralized collection ownership helper before persisting content.
-  - `/admin/collections/[id]` is admin-only by middleware and resolves its handoff UI from the server-fetched detail payload only.
+  - `/admin/collections/[id]` is admin-only by proxy and resolves its handoff UI from the server-fetched detail payload only.
   - Wallet modal inactivity auto-close (30s) is client-only UX behavior and never mutates/extends server session state.
 
 ## Authorization Layers
@@ -158,7 +158,7 @@
 
 - BRI-121 startup splash safety notes:
   - The splash screen is a visual overlay only and does not gate, mutate, refresh, or extend `siws_session`.
-  - It does not alter wallet adapter configuration, role derivation, middleware authorization, or handler-level session checks.
+  - It does not alter wallet adapter configuration, role derivation, proxy authorization, or handler-level session checks.
   - Main app content remains rendered behind the overlay and becomes visible after the timed fade-out.
 
 - BRI-92 admin collections state UX safety notes:
@@ -186,7 +186,7 @@
     - no extra cookie for auth,
     - no session refresh path,
     - no client-authoritative role override,
-    - no middleware bypass.
+    - no proxy bypass.
 - BRI-104 blockchain detail payload safety notes:
   - The new `blockchain.baseAddresses` payload is read-only and server-derived from existing ownership + snapshot records.
   - It does not create any new session mutation path, role override, or client-authoritative authority source.
@@ -250,7 +250,7 @@ Implementation guide for request correlation and timeline tracing:
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 ## STORY-010-04 Technical SEO Infrastructure Impact
@@ -258,7 +258,7 @@ Implementation guide for request correlation and timeline tracing:
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 ## STORY-010-05 Structured Data JSON-LD Layer Impact
@@ -266,7 +266,7 @@ Implementation guide for request correlation and timeline tracing:
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 ## STORY-010-06 AI-readable and Machine Endpoints Impact
@@ -276,7 +276,7 @@ Implementation guide for request correlation and timeline tracing:
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 ## STORY-010-08 Semantic Layer for Entities and Relations Impact
@@ -287,7 +287,7 @@ Implementation guide for request correlation and timeline tracing:
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 ## STORY-010-09 Feeds, Exports, and Internal Search Readiness Impact
@@ -305,7 +305,7 @@ Implementation guide for request correlation and timeline tracing:
   - misma derivación de roles y mismos límites de autorización.
 - No se introducen nuevos endpoints de auth/session ni cambios en trust boundaries.
   - same server-side session validation,
-  - same role derivation and middleware/handler authorization.
+  - same role derivation and proxy/handler authorization.
 - No new auth/session endpoints were added.
 
 Last Updated: 2026-04-14 14:20:00 UTC
@@ -314,7 +314,7 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - Session contract is unchanged:
   - same `siws_session` cookie behavior,
   - same server-side role derivation,
-  - same middleware + handler authorization model.
+  - same proxy + handler authorization model.
 - New observability endpoints are classified by boundary:
   - Public: `POST /api/analytics/events`, `GET /api/health`
   - Admin-only: `GET /api/admin/monitoring/analytics`, `GET /api/admin/monitoring/logs`
@@ -340,7 +340,7 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - Session model remains unchanged:
   - same `siws_session` cookie contract,
   - same server-side session validation and role derivation,
-  - same middleware + handler authorization.
+  - same proxy + handler authorization.
 
 ## EPIC-011 / BRI-81 Session Enforcement Notes
 - `GET /api/admin/collections` now consumes the existing SIWS session model for admin collections listing.

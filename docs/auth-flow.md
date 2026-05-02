@@ -24,7 +24,7 @@
    - `GET /api/auth/me` returns `{ authenticated, pubkey, role }` when session is valid.
 7. Protected routes:
    - `/protected` and `/api/protected/me` require a valid SIWS session.
-   - `/admin/**` is gated in middleware.
+   - `/admin/**` is gated in Next.js proxy (`proxy.ts`, previously `middleware.ts`).
    - Admin pages and admin API handlers also re-check role server-side.
 8. Batch orchestrator (H3, server-side):
    - Admin uses server APIs to create mint jobs, request next batch, submit signatures, and reconcile confirmations.
@@ -478,7 +478,7 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - it activates only when the `brids_admin_collections_fixture` cookie is present,
   - and it is disabled in production (`NODE_ENV === "production"` returns no fixture).
 - The fixture does not bypass auth or authority:
-  - middleware/admin role checks still require a valid SIWS session,
+  - proxy/admin role checks still require a valid SIWS session,
   - detail access still flows through the authenticated server handlers,
   - section save coverage still uses the same authenticated PATCH route contract and server-side validation/ownership checks.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced in this slice.
