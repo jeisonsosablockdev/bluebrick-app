@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type AuthMePayload = {
+export type AuthMePayload = {
   authenticated: boolean;
   role?: "user" | "admin";
 };
@@ -28,7 +28,7 @@ async function readRequestRole(request: NextRequest): Promise<AuthMePayload> {
   return (await response.json()) as AuthMePayload;
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function handleAdminProxy(request: NextRequest): Promise<NextResponse> {
   const auth = await readRequestRole(request);
 
   if (!auth.authenticated || auth.role !== "admin") {
@@ -37,7 +37,3 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/admin/:path*"]
-};
