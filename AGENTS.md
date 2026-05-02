@@ -194,6 +194,9 @@ If waiver data is missing or expired, merge is blocked.
   - Runs: start branch → program test stack bootstrap (program/nft) → docs sync → commit → push.
   - Example: `./scripts/full-cycle.sh app initial-ui "initial UI scaffold"`
   - Example: `./scripts/full-cycle.sh program nft-mint "add nft mint flow" program,nft`
+  - Canonical typed examples:
+    - `./scripts/full-cycle.sh refactor shared branch-alignment "align git workflow scripts"`
+    - `./scripts/full-cycle.sh feature shared slice-planning --mode integration --issue BRI-149 "bootstrap integration branch flow"`
 
 - `./scripts/program-test-stack.sh`
   - Ensures Rust test stack for Solana programs in `/programs`:

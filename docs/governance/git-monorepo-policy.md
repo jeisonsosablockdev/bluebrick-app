@@ -28,7 +28,7 @@ No business logic outside defined boundaries.
 Main Rules
 	1.	main is protected.
 	2.	develop is the default integration branch for day-to-day work.
-	3.	All feature/fix/security/refactor/nft branches MUST start from latest `develop`.
+	3.	Parent work branches (`feature/*`, `fix/*`, `security/*`, `refactor/*`, `nft/*`) MUST start from latest `develop`.
 	4.	No direct commits to main.
 	5.	No direct commits to develop.
 	6.	All changes go through Pull Request.
@@ -123,6 +123,7 @@ refactor/shared-<name>-bri-<id>-s04-<slice-slug>
 Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
+	•	Integration branches start from latest `develop`.
 	•	Slice branches start from the parent integration branch, not directly from `develop`.
 
 Examples:

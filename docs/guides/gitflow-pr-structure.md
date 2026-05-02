@@ -49,6 +49,7 @@ Use the parent issue to store:
 - Final integration PR targets `develop`.
 - Slice PRs must still pass `npm run validate` and the required docs sync check.
 - Final PRs to `develop` continue to use the full governance workflow and metadata policy.
+- `scripts/git-start.sh`, `scripts/git-flow.sh`, and `scripts/full-cycle.sh` must generate branches that follow this target model.
 
 Example slice PR opener:
 ```bash
@@ -59,6 +60,12 @@ npm run pr:open -- \
   --type type:feature \
   --risk risk:low \
   --base feature/shared-single-issue-slice-planning-bri-149-integration
+```
+
+Example integration/slice branch creation:
+```bash
+./scripts/git-start.sh feature shared single-issue-slice-planning --mode integration --issue BRI-149
+./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug governance-policy
 ```
 
 Example final PR opener:

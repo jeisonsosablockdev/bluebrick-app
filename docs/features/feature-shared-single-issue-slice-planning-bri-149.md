@@ -27,3 +27,11 @@ Institutionalize a default planning flow where non-trivial work uses one parent 
 - Better planning discipline before coding starts.
 - Smaller PRs with explicit execution order.
 - Stronger traceability between Linear, branches, PRs, and feature notes without exploding the number of Linear entries.
+
+## Drift Fix Follow-up
+- Closed the branch-policy contradiction between “everything starts from develop” and “slice branches start from the integration branch”.
+- Updated the `scripts/git-*.sh` workflow so the operational helpers now support:
+  - direct single branches
+  - `*-integration` branches
+  - `-sNN-` slice branches
+- Added regression tests so invalid branch generation and wrong PR target guidance fail fast in CI-oriented test runs instead of silently drifting again.
