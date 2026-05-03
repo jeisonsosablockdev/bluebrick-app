@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { clearNonceCookie, getNonceFromRequest, getRequestHost, setSessionCookie, verifySiwsPayload } from "@/lib/auth";
 import { isWalletRegistered } from "@/lib/compliance/profile-repository";
+import { normalizeReferralAttributionSource } from "@/lib/referrals/domain";
+import { bindReferralAtFirstAuth } from "@/lib/referrals/repository";
 
 type VerifyRequestBody = {
   message?: unknown;
   signature?: unknown;
   publicKey?: unknown;
+  referralCode?: unknown;
+  attributionSource?: unknown;
+  attributionMetadata?: unknown;
 };
+
+function sanitizeReferralMetadata(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return { ...(value as Record<string, unknown>) };
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = (await request.json().catch(() => null)) as VerifyRequestBody | null;
@@ -34,8 +47,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const isNewUser = !(await isWalletRegistered(verification.publicKey));
+  const normalizedReferralCode = typeof body.referralCode === "string" ? body.referralCode.trim() : "";
+  let referralBindingOutcome: string | null = null;
 
-  const response = NextResponse.json({ ok: true, publicKey: verification.publicKey, isNewUser });
+  if (isNewUser && normalizedReferralCode) {
+    const referralBinding = await bindReferralAtFirstAuth({
+      inviteeWalletPublicKey: verification.publicKey,
+      referralCode: normalizedReferralCode,
+      attributionSource: normalizeReferralAttributionSource(
+        typeof body.attributionSource === "string" ? body.attributionSource : "unknown"
+      ),
+      metadata: sanitizeReferralMetadata(body.attributionMetadata)
+    });
+
+    referralBindingOutcome = referralBinding.outcome;
+  } else if (!isNewUser && normalizedReferralCode) {
+    referralBindingOutcome = "skipped_existing_wallet";
+  }
+
+  const response = NextResponse.json({
+    ok: true,
+    publicKey: verification.publicKey,
+    isNewUser,
+    referralBindingOutcome
+  });
   setSessionCookie(response, verification.sessionToken);
   clearNonceCookie(response);
   return response;

@@ -7,7 +7,9 @@ const handlerMocks = vi.hoisted(() => ({
   recordComplianceAuditEvent: vi.fn(),
   registerKycWebhookEvent: vi.fn(),
   updateKycStatusFromProvider: vi.fn(),
-  runWalletAmlScreening: vi.fn()
+  runWalletAmlScreening: vi.fn(),
+  markReferralAttributionKycApproved: vi.fn(),
+  promotePendingQualificationRewardsForInvitee: vi.fn()
 }));
 
 vi.mock("@/lib/compliance/profile-repository", () => ({
@@ -19,6 +21,14 @@ vi.mock("@/lib/compliance/profile-repository", () => ({
 
 vi.mock("@/lib/compliance/aml-screening-service", () => ({
   runWalletAmlScreening: handlerMocks.runWalletAmlScreening
+}));
+
+vi.mock("@/lib/referrals/repository", () => ({
+  markReferralAttributionKycApproved: handlerMocks.markReferralAttributionKycApproved
+}));
+
+vi.mock("@/lib/referrals/reward-engine", () => ({
+  promotePendingQualificationRewardsForInvitee: handlerMocks.promotePendingQualificationRewardsForInvitee
 }));
 
 import { processStripeIdentityWebhook } from "@/lib/kyc/stripe-webhook-handler";
@@ -39,6 +49,8 @@ describe("processStripeIdentityWebhook AML trigger", () => {
     handlerMocks.registerKycWebhookEvent.mockResolvedValue(true);
     handlerMocks.updateKycStatusFromProvider.mockResolvedValue(undefined);
     handlerMocks.runWalletAmlScreening.mockResolvedValue(undefined);
+    handlerMocks.markReferralAttributionKycApproved.mockResolvedValue(undefined);
+    handlerMocks.promotePendingQualificationRewardsForInvitee.mockResolvedValue([]);
   });
 
   it("runs AML screening when Stripe event verifies KYC", async () => {
@@ -65,6 +77,12 @@ describe("processStripeIdentityWebhook AML trigger", () => {
     });
 
     expect(result.processed).toBe(true);
+    expect(handlerMocks.markReferralAttributionKycApproved).toHaveBeenCalledWith({
+      inviteeWalletPublicKey: "Wallet11111111111111111111111111111111111"
+    });
+    expect(handlerMocks.promotePendingQualificationRewardsForInvitee).toHaveBeenCalledWith({
+      inviteeWalletPublicKey: "Wallet11111111111111111111111111111111111"
+    });
     expect(handlerMocks.runWalletAmlScreening).toHaveBeenCalledWith({
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       trigger: "kyc_verified_webhook",
@@ -95,6 +113,8 @@ describe("processStripeIdentityWebhook AML trigger", () => {
       webhookSecret: secret
     });
 
+    expect(handlerMocks.markReferralAttributionKycApproved).not.toHaveBeenCalled();
+    expect(handlerMocks.promotePendingQualificationRewardsForInvitee).not.toHaveBeenCalled();
     expect(handlerMocks.runWalletAmlScreening).not.toHaveBeenCalled();
   });
 });

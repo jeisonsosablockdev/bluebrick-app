@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -15,6 +15,17 @@ import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { fetchAuthMe, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import {
+  buildPhantomBrowseDeepLink,
+  buildReferralAuthMetadata,
+  buildStoredReferralHint,
+  clearStoredReferralHint,
+  deriveReferralAttributionSource,
+  normalizeReferralCodeInput,
+  readStoredReferralHint,
+  type ReferralHintOrigin,
+  writeStoredReferralHint
+} from "@/lib/referrals/client-state";
 import {
   AUTH_SYNC_STORAGE_KEY,
   broadcastAuthSync,
@@ -138,10 +149,6 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function buildPhantomDeepLink(siteUrl: string): string {
-  return `https://phantom.app/ul/browse/${encodeURIComponent(siteUrl)}`;
-}
-
 function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSignerWalletAdapter {
   return typeof (adapter as { signMessage?: unknown } | null)?.signMessage === "function";
 }
@@ -150,12 +157,15 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const { t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralOrigin, setReferralOrigin] = useState<ReferralHintOrigin>("auto");
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const inactivityTimeoutRef = useRef<number | null>(null);
   const phantomFallbackTimerRef = useRef<number | null>(null);
@@ -179,6 +189,14 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           ? t({ en: "Disconnecting...", es: "Desconectando...", pt: "Desconectando..." })
           : null
     );
+  const queryReferralCode = useMemo(() => {
+    const raw = searchParams.get("ref");
+    return raw ? normalizeReferralCodeInput(raw) : "";
+  }, [searchParams]);
+  const currentLandingPath = useMemo(() => {
+    const query = searchParams.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [pathname, searchParams]);
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
@@ -313,6 +331,32 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   useEffect(() => {
     setAuthState(initialAuth);
   }, [initialAuth]);
+
+  useEffect(() => {
+    if (queryReferralCode) {
+      const hint = buildStoredReferralHint({
+        referralCode: queryReferralCode,
+        origin: "auto",
+        landingPath: currentLandingPath
+      });
+
+      if (hint) {
+        writeStoredReferralHint(hint);
+        setReferralCode(hint.referralCode);
+        setReferralOrigin("auto");
+      }
+
+      return;
+    }
+
+    const storedHint = readStoredReferralHint();
+    if (!storedHint) {
+      return;
+    }
+
+    setReferralCode(storedHint.referralCode);
+    setReferralOrigin(storedHint.origin);
+  }, [currentLandingPath, queryReferralCode]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -495,12 +539,35 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Current wallet does not support message signing.");
       }
 
+      const normalizedReferralCode = normalizeReferralCodeInput(referralCode);
+      const referralSource =
+        normalizedReferralCode
+          ? deriveReferralAttributionSource({
+              origin: referralOrigin,
+              isMobileWalletFlow: isMobileUserAgent || isInPhantomApp
+            })
+          : undefined;
+
       const verifiedResult = await startSiws({
         publicKey: activePublicKey,
         signMessage: activeSignMessage,
         statement: signInStatement,
+        referralCode: normalizedReferralCode || undefined,
+        attributionSource: referralSource,
+        attributionMetadata:
+          normalizedReferralCode && referralSource
+            ? buildReferralAuthMetadata({
+                landingPath: currentLandingPath,
+                origin: referralOrigin,
+                source: referralSource
+              })
+            : undefined,
         onStatus: (status) => setPhase(status)
       });
+
+      if (normalizedReferralCode && verifiedResult.referralBindingOutcome) {
+        clearStoredReferralHint();
+      }
 
       setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
       broadcastAuthSync("login", verifiedResult.publicKey);
@@ -642,7 +709,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       phantomFallbackTimerRef.current = null;
     }
 
-    const deeplink = buildPhantomDeepLink(window.location.href);
+    const deeplink = buildPhantomBrowseDeepLink(window.location.href);
     let phantomOpened = false;
 
     const onVisibilityChange = (): void => {
@@ -909,6 +976,53 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                   {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
                 </p>
               ) : null}
+
+              <div className="space-y-2">
+                <label htmlFor="wallet-referral-code" className="block text-sm font-medium text-white">
+                  {t({ en: "Referral code (optional)", es: "Codigo de referido (opcional)", pt: "Codigo de referido (opcional)" })}
+                </label>
+                <input
+                  id="wallet-referral-code"
+                  type="text"
+                  value={referralCode}
+                  onChange={(event) => {
+                    const nextValue = normalizeReferralCodeInput(event.target.value);
+                    setReferralCode(nextValue);
+                    setReferralOrigin("manual");
+
+                    if (!nextValue) {
+                      clearStoredReferralHint();
+                      return;
+                    }
+
+                    const hint = buildStoredReferralHint({
+                      referralCode: nextValue,
+                      origin: "manual",
+                      landingPath: currentLandingPath
+                    });
+
+                    if (hint) {
+                      writeStoredReferralHint(hint);
+                    }
+                  }}
+                  placeholder={t({
+                    en: "Paste or edit your invite code",
+                    es: "Pega o edita tu codigo de invitacion",
+                    pt: "Cole ou edite seu codigo de convite"
+                  })}
+                  className="min-h-11 w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300/45 focus:bg-white/15"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+                <p className="text-xs text-white/60">
+                  {t({
+                    en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                    es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                    pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+                  })}
+                </p>
+              </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button onClick={handlePrimaryAction} disabled={isBusy || authState.authenticated || !isPhantomInstalled} className="min-h-11 w-full">

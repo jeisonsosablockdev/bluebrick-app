@@ -8,6 +8,9 @@
 - Cookie type: `httpOnly`, `secure` (production), `sameSite=lax`.
 - Nonce cookie:
   - `siws_nonce` (signed, short-lived, 5 minutes).
+- Pre-auth referral hint:
+  - Public referral route `/r/<referralCode>` is metadata-first and redirects users into `/?ref=<referralCode>` before auth begins.
+  - Client-only `localStorage` entry (`brids_referral_hint`) used to persist `referralCode`, capture origin, and landing path until first auth payload is sent.
 - Expiration:
   - 24 hours (`maxAge` + matching server-side expiry).
 - Rotation policy:
@@ -16,6 +19,8 @@
 ## Session Lifecycle
 1. Create session:
    - Server verifies SIWS message signature and validates nonce against signed nonce cookie.
+   - On the same first auth payload, server may process optional referral fields (`referralCode`, `attributionSource`, `attributionMetadata`) before final response emission.
+   - Referral binding is only attempted when the wallet is still considered new; existing wallets are explicitly skipped to prevent late referral attachment.
    - Server creates signed session token (`siws_session`) with 24h expiration.
    - Cookie `siws_session` written with path `/`.
 2. Refresh session:
@@ -32,6 +37,10 @@
   - Role is never trusted from client state.
 - Server-side checks per request:
   - `GET /api/auth/me` exposes `{ authenticated, pubkey, role }`.
+  - `POST /api/auth/verify` may bind a referral only during first-auth wallet creation semantics and never for already-registered wallets.
+  - `GET /api/referrals/preview` is intentionally public and only returns truncated referrer display data for a valid referral code.
+  - `GET /api/protected/referrals/summary` requires a valid SIWS session and always binds aggregate referral metrics to the authenticated wallet.
+  - `GET /api/protected/referrals/invitees` requires a valid SIWS session and always returns a backend-paginated, privacy-safe invitee feed for the authenticated wallet.
   - `GET /api/protected/me` requires a valid session and returns `401` otherwise.
   - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session and always bind writes to session wallet.
   - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
@@ -64,6 +73,7 @@
 ## Authorization Layers
 1. Session layer:
    - Cookie `siws_session` carries signed server token validated on each request.
+   - Pre-auth referral hint is client-only presentation state and never authenticates or authorizes requests by itself.
 2. Role layer:
    - Role is derived from `ADMIN_WALLETS` and wallet pubkey.
 3. Middleware layer:
@@ -71,6 +81,7 @@
 4. Handler/page layer:
   - `/api/admin/ping` and `app/admin/page.tsx` repeat the role check (defense in depth).
   - `/api/protected/profile`, `/api/protected/kyc/status`, and `/api/protected/kyc/stripe/session` require authenticated wallet and never trust wallet identity from client payload.
+  - `/api/protected/referrals/summary` and `/api/protected/referrals/invitees` require authenticated wallet and never trust referrer identity from client payload.
   - `/api/purchase/challenge`, `/api/purchase/prepare`, and `/api/purchase/submit` require authenticated wallet and never trust client-provided payer identity.
   - `/api/checkout/cart`, `/api/checkout/order`, `/api/checkout/order/:orderId`, and `/api/checkout/payment/start` require authenticated wallet and never trust client-provided wallet identity.
   - `/api/purchase/prepare` requires valid purchase challenge signature and backend-side anti-replay/rate-limit checks, including quantity context match from challenge payload.

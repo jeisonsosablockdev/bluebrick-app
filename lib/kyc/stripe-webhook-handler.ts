@@ -8,6 +8,8 @@ import {
 } from "@/lib/compliance/profile-repository";
 import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
 import { type KycStatus } from "@/lib/compliance/compliance-status-projector";
+import { markReferralAttributionKycApproved } from "@/lib/referrals/repository";
+import { promotePendingQualificationRewardsForInvitee } from "@/lib/referrals/reward-engine";
 
 export class InvalidStripeWebhookSignatureError extends Error {}
 export class InvalidStripeWebhookPayloadError extends Error {}
@@ -290,6 +292,12 @@ export async function processStripeIdentityWebhook(
   });
 
   if (mappedStatus === "verified") {
+    await markReferralAttributionKycApproved({
+      inviteeWalletPublicKey: walletPublicKey
+    });
+    await promotePendingQualificationRewardsForInvitee({
+      inviteeWalletPublicKey: walletPublicKey
+    });
     await runWalletAmlScreening({
       walletPublicKey,
       trigger: "kyc_verified_webhook",

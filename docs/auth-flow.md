@@ -11,9 +11,14 @@
    - `GET /api/auth/nonce` returns a nonce (5-minute TTL) and writes an `httpOnly` signed nonce cookie (`siws_nonce`).
 2. Message signed by wallet:
    - Client builds deterministic SIWS message with `domain`, `address`, `statement`, `nonce`, `issuedAt`.
+   - Public referral shares may enter through `/r/<referralCode>`, which exposes dynamic social metadata and then redirects users to `/?ref=<referralCode>` before wallet sign-in.
+   - Before sign-in, wallet modal captures `?ref=` from the current URL, persists a local referral hint, and keeps a visible editable `Referral code` field as manual fallback.
+   - Phantom mobile deep-link handoff preserves the full current URL (`window.location.href`), including `?ref=...`, when opening `phantom.app/ul/browse/...`.
    - Wallet signs message bytes via `signMessage()`.
 3. Signature verified server-side:
    - `POST /api/auth/verify` validates format, host/domain, issuedAt freshness, signature, and nonce equality against signed nonce cookie.
+   - The same first auth payload may also carry optional referral fields (`referralCode`, `attributionSource`, `attributionMetadata`).
+   - Referral binding is attempted only for wallets that are still new at auth time; previously registered wallets skip referral attachment to avoid late attribution.
    - Nonce cookie is cleared after verify success/failure to force fresh challenge on retry.
 4. Session established:
    - Server creates a signed session token and sets `httpOnly` cookie (`siws_session`).
@@ -131,7 +136,10 @@
 | `/api/auth/verify` | `POST` | No | None | Verifies SIWS signature against signed nonce cookie, sets `siws_session`, and clears `siws_nonce` |
 | `/api/auth/me` | `GET` | Optional | None | Returns current auth payload and server-computed role |
 | `/api/auth/logout` | `POST` | Optional | None | Revokes session token and clears cookie |
+| `/api/referrals/preview` | `GET` | No | None | Returns truncated referrer preview for a valid referral code so invitee arrival UX can stay privacy-safe |
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
+| `/api/protected/referrals/summary` | `GET` | Yes | `user` or `admin` | Returns aggregate referral metrics for the authenticated wallet: referral code, share path, counts, reward totals, and milestone progress |
+| `/api/protected/referrals/invitees` | `GET` | Yes | `user` or `admin` | Returns a paginated, privacy-safe invitee feed (`limit` + `offset`) with truncated identities and day-level timestamps only |
 | `/api/protected/profile` | `GET` | Yes | `user` or `admin` | Returns wallet-bound profile + KYC/compliance summary |
 | `/api/protected/profile` | `PUT` | Yes | `user` or `admin` | Updates wallet-bound `username`, `bio`, and `avatarUrl` |
 | `/api/protected/kyc/status` | `GET` | Yes | `user` or `admin` | Returns KYC status + denormalized compliance status |

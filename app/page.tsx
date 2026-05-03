@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { WalletModal } from "@/components/WalletModal";
+import { InviteeWelcomeBanner } from "@/components/referrals/invitee-welcome-banner";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
@@ -57,6 +58,7 @@ export default async function HomePage() {
           role: authenticatedPublicKey ? getRoleForWallet(authenticatedPublicKey) : undefined
         }}
       />
+      <InviteeWelcomeBanner />
       <HeroSection />
       <WelcomeSection />
       <FeaturesSection />

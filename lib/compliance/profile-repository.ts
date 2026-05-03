@@ -620,6 +620,27 @@ export async function isWalletRegistered(walletPublicKey: string): Promise<boole
   });
 }
 
+export async function ensureProfileExists(
+  walletPublicKey: string,
+  options?: {
+    client?: PoolClient;
+  }
+): Promise<void> {
+  if (!isProfileDatabaseConfigured()) {
+    getOrCreateInMemoryProfile(walletPublicKey);
+    return;
+  }
+
+  if (options?.client) {
+    await ensureProfileExistsWithClient(options.client, walletPublicKey);
+    return;
+  }
+
+  await withDbClient(async (client) => {
+    await ensureProfileExistsWithClient(client, walletPublicKey);
+  });
+}
+
 export async function getOrCreateProfileBundle(walletPublicKey: string): Promise<ProfileBundle> {
   if (!isProfileDatabaseConfigured()) {
     return mapInMemoryToBundle(getOrCreateInMemoryProfile(walletPublicKey));

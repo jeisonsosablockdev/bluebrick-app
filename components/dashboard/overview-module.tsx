@@ -6,6 +6,7 @@ import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { ReferralProgramModule } from "@/components/dashboard/referral-program-module";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -133,7 +134,10 @@ export function OverviewModule(): ReactElement {
       </div>
 
       {isEmpty ? (
-        <EmptyState t={t} />
+        <>
+          <EmptyState t={t} />
+          <ReferralProgramModule />
+        </>
       ) : (
         <>
           <Card className="space-y-2">
@@ -146,6 +150,7 @@ export function OverviewModule(): ReactElement {
               })}
             </p>
           </Card>
+          <ReferralProgramModule />
           <DashboardCharts context="user" />
         </>
       )}

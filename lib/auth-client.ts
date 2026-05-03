@@ -8,6 +8,7 @@ type VerifyResponse = {
   error?: string;
   publicKey?: string;
   isNewUser?: boolean;
+  referralBindingOutcome?: string | null;
 };
 
 export type AuthMeResponse = {
@@ -20,6 +21,9 @@ type StartSiwsArgs = {
   publicKey: string;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
   statement: string;
+  referralCode?: string;
+  attributionSource?: "link" | "manual" | "deep_link" | "unknown";
+  attributionMetadata?: Record<string, unknown>;
   onStatus?: (status: "signing" | "verifying") => void;
 };
 
@@ -48,7 +52,14 @@ export async function fetchNonce(): Promise<string> {
   return payload.nonce;
 }
 
-export async function verifySiwsMessage(input: { message: string; signature: string; publicKey: string }): Promise<{ publicKey: string; isNewUser: boolean }> {
+export async function verifySiwsMessage(input: {
+  message: string;
+  signature: string;
+  publicKey: string;
+  referralCode?: string;
+  attributionSource?: "link" | "manual" | "deep_link" | "unknown";
+  attributionMetadata?: Record<string, unknown>;
+}): Promise<{ publicKey: string; isNewUser: boolean; referralBindingOutcome?: string | null }> {
   const response = await fetch("/api/auth/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -64,10 +75,16 @@ export async function verifySiwsMessage(input: { message: string; signature: str
     throw new Error("Auth response did not include public key.");
   }
 
-  return { publicKey: payload.publicKey, isNewUser: payload.isNewUser ?? false };
+  return {
+    publicKey: payload.publicKey,
+    isNewUser: payload.isNewUser ?? false,
+    referralBindingOutcome: payload.referralBindingOutcome ?? null
+  };
 }
 
-export async function startSiws(args: StartSiwsArgs): Promise<{ publicKey: string; isNewUser: boolean }> {
+export async function startSiws(
+  args: StartSiwsArgs
+): Promise<{ publicKey: string; isNewUser: boolean; referralBindingOutcome?: string | null }> {
   const nonce = await fetchNonce();
   const message = buildSiwsMessage({
     domain: window.location.host,
@@ -84,6 +101,9 @@ export async function startSiws(args: StartSiwsArgs): Promise<{ publicKey: strin
   return verifySiwsMessage({
     message,
     signature: toBase64(signature),
-    publicKey: args.publicKey
+    publicKey: args.publicKey,
+    referralCode: args.referralCode,
+    attributionSource: args.attributionSource,
+    attributionMetadata: args.attributionMetadata
   });
 }
