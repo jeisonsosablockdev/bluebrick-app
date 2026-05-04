@@ -74,32 +74,23 @@ Use the generator to produce:
 - the proposed integration branch
 - the proposed slice branches
 
-Example:
-
 ```bash
-npm run linear:plan -- \
-  --issue BRI-149 \
-  --type feature \
-  --scope shared \
-  --slug single-issue-slice-planning \
-  --title "Single-issue slice planning with integration branches" \
-  --goal "Institutionalize issue-only slice planning without Linear subissue noise." \
-  --scope-item "Governance summaries and canonical git policy" \
-  --scope-item "Operator guides and Linear issue template" \
-  --non-goal "No product UI or blockchain behavior changes" \
-  --risk "Over-documenting the flow without enough automation" \
-  --slice "S01|Formalize governance and AGENTS summaries|AGENTS.md, docs/governance/git-monorepo-policy.md|npm run validate:docs-governance" \
-  --slice "S02|Publish guide and canonical template|docs/guides, docs/templates|npm run validate:docs-governance" \
-  --body-file /tmp/bri-149.md
+npm run linear:plan -- --issue BRI-149 --type feature --scope shared --slug <slug> --title "<title>" --goal "<goal>" --body-file /tmp/bri-149.md
 ```
 
-## Optional Local Skill
+## Preferred Planning Path
 
-If your Codex environment has the local skill `@jsbd-linear-integration-slice-planner`, use it to:
+If your Codex environment has `@jsbd-linear-integration-slice-planner`, use it as the default operator for planning non-trivial single-issue slice work.
 
-- split the initiative into atomic slices
+It should:
+
+- decide whether the task stays in one parent issue or needs real subissues
+- split the initiative into atomic, reviewable slices
 - order slices by technical dependency
-- produce Linear-ready Markdown
-- propose integration and slice branch names
+- produce the Linear-ready Markdown body
+- propose the integration branch and every slice branch
+- map the primary validation target for each slice
 
-That skill is an execution aid, not the policy source of truth.
+The full worked example belongs to the skill references, not this repo guide.
+
+If the skill is unavailable, use the template plus `npm run linear:plan -- ...` and apply the same policy manually.
