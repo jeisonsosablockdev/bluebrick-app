@@ -1,23 +1,45 @@
 # Linear Single-Issue Slice Planning
 
-## Objective
-Keep work small and reviewable without filling Linear with subissues that only exist to track implementation slices.
+## Purpose
 
-## Default Model
-Use one parent Linear issue for the initiative and keep the implementation breakdown inside that issue as Markdown.
+Use this guide as the shared repo reference for planning non-trivial work with:
 
-This model is the default for non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work when the change should be split into more than one slice.
+- one parent Linear issue
+- one `*-integration` branch
+- one reviewable branch per slice
+
+This guide is intentionally short. The detailed operating heuristics can live in local tooling or local skills, but the repo keeps the canonical policy, template, and generator in version control.
+
+## Canonical Sources
+
+- Policy: `docs/governance/git-monorepo-policy.md`
+- Template: `docs/templates/linear-single-issue-slices.template.md`
+- Generator: `npm run linear:plan -- ...`
+
+If any explanation in this guide conflicts with governance, governance wins.
+
+## When To Use This Model
+
+Use the single-issue model for non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work when the task:
+
+- needs more than one logical slice
+- needs more than one PR before `develop`
+- touches more than one technical area
 
 ## When To Use Real Subissues
-Create separate Linear subissues only when at least one of these is true:
+
+Create separate Linear subissues only when at least one is true:
+
 - more than one owner is working independently
 - cross-team dependencies need separate tracking
-- the work spans enough time that one issue becomes operationally unclear
+- the initiative is long enough that one issue becomes operationally unclear
 
-If none of those apply, stay on the single-issue model.
+If none apply, keep planning inside the parent issue.
 
 ## Required Parent Issue Structure
-The parent issue should contain these sections:
+
+The parent issue must contain:
+
 - `# Objective`
 - `# Scope`
 - `# Non-goals`
@@ -27,59 +49,32 @@ The parent issue should contain these sections:
 - `# Risks`
 - `# Completion Gate`
 
-Use `docs/templates/linear-single-issue-slices.template.md` as the canonical Markdown skeleton.
+Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skeleton.
 
-## Slice Rules
-Each slice should have:
-- one dominant responsibility
-- one proposed branch
-- one validation target
-- one reviewable unit of change
+## Minimum Branch Rules
 
-Good slices:
-- contract and types
-- API route or server action
-- UI shell
-- wallet / auth verification
-- docs and QA closeout
+- The integration branch starts from latest `develop`.
+- Slice branches start from the integration branch, not from `develop`.
+- Slice PRs target the integration branch.
+- The final integration PR targets `develop`.
+- Slice ids must be zero-padded: `s01`, `s02`, `s03`.
+- Use the lowercase Linear key in the branch name, for example `bri-149`.
 
-Bad slices:
-- mixed frontend + backend + docs + QA when they can be separated
-- broad "finish feature" branches
-- unrelated cleanup folded into a feature slice
-
-## Branch Convention
-The parent issue proposes an integration branch:
-
-```text
-feature/shared-single-issue-slice-planning-bri-149-integration
-```
-
-Each slice uses its own branch from that integration branch:
-
-```text
-feature/shared-single-issue-slice-planning-bri-149-s01-governance-policy
-feature/shared-single-issue-slice-planning-bri-149-s02-guides-and-template
-feature/shared-single-issue-slice-planning-bri-149-s03-tooling-and-ci
-```
-
-Rules:
-- use the lowercase Linear key in the branch name (`bri-149`)
-- use zero-padded slice ids (`s01`, `s02`, `s03`)
-- keep the parent slug stable across the integration branch and all slice branches
-
-## PR Flow
-1. Create the integration branch from latest `develop`.
-2. Create a slice branch from the integration branch.
-3. Open a PR from the slice branch into the integration branch.
-4. Merge reviewed slices into the integration branch.
-5. Open the final PR from the integration branch into `develop`.
+See `docs/governance/git-monorepo-policy.md` for the canonical naming rules.
 
 ## Feature Notes
-If the work touches product code and requires `docs/features/*.md`, prefer one accumulated feature-note file for the parent issue and update that same file across slices.
+
+If the initiative touches product code and requires `docs/features/*.md`, prefer one accumulated feature note for the full parent issue and update that same file across slices.
 
 ## Generator
-Use the generator to produce the parent issue Markdown and the exact branch suggestions:
+
+Use the generator to produce:
+
+- the parent issue Markdown body
+- the proposed integration branch
+- the proposed slice branches
+
+Example:
 
 ```bash
 npm run linear:plan -- \
@@ -91,13 +86,20 @@ npm run linear:plan -- \
   --goal "Institutionalize issue-only slice planning without Linear subissue noise." \
   --scope-item "Governance summaries and canonical git policy" \
   --scope-item "Operator guides and Linear issue template" \
-  --scope-item "Tooling and CI support for integration-target PRs" \
   --non-goal "No product UI or blockchain behavior changes" \
   --risk "Over-documenting the flow without enough automation" \
-  --slice "S01|Formalize governance and AGENTS summaries|AGENTS.md, docs/governance/git-monorepo-policy.md, docs/governance/documentation-policy.md|npm run validate:docs-governance" \
-  --slice "S02|Publish guide and canonical template|docs/guides/gitflow-pr-structure.md, docs/guides/linear-single-issue-slice-planning.md, docs/templates/linear-single-issue-slices.template.md|npm run validate:docs-governance" \
-  --slice "S03|Add plan generator and integration-target CI|scripts/linear-plan-core.js, scripts/linear-plan.js, package.json, .github/workflows, tests/lib|npm run validate" \
+  --slice "S01|Formalize governance and AGENTS summaries|AGENTS.md, docs/governance/git-monorepo-policy.md|npm run validate:docs-governance" \
+  --slice "S02|Publish guide and canonical template|docs/guides, docs/templates|npm run validate:docs-governance" \
   --body-file /tmp/bri-149.md
 ```
 
-The command writes the Markdown body and prints the `git checkout -b ...` commands for the integration branch and each slice branch.
+## Optional Local Skill
+
+If your Codex environment has the local skill `@jsbd-linear-integration-slice-planner`, use it to:
+
+- split the initiative into atomic slices
+- order slices by technical dependency
+- produce Linear-ready Markdown
+- propose integration and slice branch names
+
+That skill is an execution aid, not the policy source of truth.
