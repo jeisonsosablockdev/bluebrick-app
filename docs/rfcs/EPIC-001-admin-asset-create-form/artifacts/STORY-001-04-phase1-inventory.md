@@ -1,7 +1,7 @@
 # STORY-001-04 Phase 1 Inventory (Peer-Review Artifact)
 
 ## Purpose
-Formal inventory of implicit logic currently embedded in [`components/admin/asset-creation-form.tsx`](/Users/jaymusicmachine/Documents/Desarrollo/solana-test-1/components/admin/asset-creation-form.tsx) to reduce risk of functional drift during refactor.
+Formal inventory of implicit logic currently embedded in [`components/admin/asset-creation-form.tsx`](/Users/jaymusicmachine/Documents/Desarrollo/brids/components/admin/asset-creation-form.tsx) to reduce risk of functional drift during refactor.
 
 ## Legacy Logic Map
 | Legacy concern | Current location | Target module | Risk if omitted |

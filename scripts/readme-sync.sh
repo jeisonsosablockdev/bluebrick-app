@@ -11,7 +11,7 @@ END_MARKER="<!-- DOCS-AUTO:END -->"
 
 if [[ ! -f "$README_FILE" ]]; then
   cat > "$README_FILE" <<'BASE'
-# Solana Fullstack App
+# BRIDS
 
 This README includes an auto-generated snapshot of project documentation.
 

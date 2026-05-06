@@ -1,5 +1,11 @@
 # NFT Spec
 
+Last Updated: 2026-05-06
+
+## BRIDS Technical Rename
+- Technical project slug references were renamed from `solana-test-1` to `brids`.
+- Active metadata pinning tags for Core Candy Machine and Pinata flows now emit `app: "brids"` while preserving the existing mint, authority, and devnet execution model.
+
 ## Scope
 - Feature: Admin-driven batch minting on Solana devnet using Metaplex Core.
 - Collection: One Core collection per mint run. Assets are minted as numbered fractions under that collection.

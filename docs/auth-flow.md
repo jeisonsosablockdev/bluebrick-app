@@ -1,5 +1,11 @@
 # Auth Flow (SIWS)
 
+Last Updated: 2026-05-06
+
+## BRIDS Technical Rename
+- Technical project slug references were renamed from `solana-test-1` to `brids`.
+- This change does not alter the SIWS auth contract, session boundaries, referral behavior, or role resolution rules described below.
+
 ## Scope
 - Feature: Phantom wallet connection + Sign-In With Solana (SIWS) via message signing only.
 - Wallet integration: `@solana/wallet-adapter-react` with Phantom as primary wallet.

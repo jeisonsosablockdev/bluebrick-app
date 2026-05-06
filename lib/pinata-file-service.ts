@@ -407,7 +407,7 @@ export async function createCoreCandyMachinePinataMetadataUris(
       name: collectionObjectName,
       json: input.collectionMetadata,
       keyValues: {
-        app: "solana-test-1",
+        app: "brids",
         scope: "core-candy-machine",
         kind: "collection"
       }
@@ -416,7 +416,7 @@ export async function createCoreCandyMachinePinataMetadataUris(
       name: assetObjectName,
       json: input.assetMetadata,
       keyValues: {
-        app: "solana-test-1",
+        app: "brids",
         scope: "core-candy-machine",
         kind: "asset"
       }

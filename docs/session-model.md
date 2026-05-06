@@ -1,5 +1,11 @@
 # Session Model
 
+Last Updated: 2026-05-06
+
+## BRIDS Technical Rename
+- Technical project slug references were renamed from `solana-test-1` to `brids`.
+- This change does not modify cookie names, token semantics, session expiration, or server-side authorization rules.
+
 ## Scope
 - Feature: SIWS-backed wallet session for Next.js App Router frontend.
 - Roles: `user` and `admin` resolved from wallet allowlist on the server.

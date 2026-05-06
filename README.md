@@ -1,4 +1,4 @@
-# Solana Fullstack App
+# BRIDS
 
 This README includes an auto-generated snapshot of project documentation.
 
