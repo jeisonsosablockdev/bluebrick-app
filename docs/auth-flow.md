@@ -2,6 +2,17 @@
 
 Last Updated: 2026-05-09
 
+## BRI-153 UI Slice Notes
+- The wallet CTA in the top navigation now reflects auth state:
+  - before SIWS session: `Ingresar`
+  - after SIWS session is active: `Wallet`
+- This is a presentation change only. The SIWS challenge, verification, cookie issuance, and role resolution flow remain unchanged.
+- The profile quick tour now emphasizes key completion phrases (`Editar perfil`, `nombre y apellido`, contact/email, bio, address, `Guardar cambios`) with bold styling only.
+- Marketplace placeholder analytics charts are now treated as development-only UI:
+  - visible by default outside production
+  - hidden in RC/release-like environments
+  - re-enabled only with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`
+
 ## BRI-152 Release Visibility Guard
 - Development-only dashboard/admin modules now follow a release visibility policy.
 - In RC/release-like environments, the following routes are intentionally hidden from navigation and return `404` on direct access:

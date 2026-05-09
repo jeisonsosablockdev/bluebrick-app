@@ -12,6 +12,7 @@ import { localize } from "@/lib/i18n";
 import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
 import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
+import { isMarketplaceReleaseControlledElementVisible } from "@/lib/release-module-visibility";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -120,9 +121,11 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         ) : <MarketplaceGridClient properties={properties} />}
       </section>
 
-      <section className="mt-8">
-        <DashboardCharts context="marketplace" />
-      </section>
+      {isMarketplaceReleaseControlledElementVisible("placeholder-charts") ? (
+        <section className="mt-8">
+          <DashboardCharts context="marketplace" />
+        </section>
+      ) : null}
     </main>
   );
 }

@@ -64,6 +64,34 @@ type NavEntry = {
 
 type Translate = (text: LocaleText) => string;
 
+function WalletCtaIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3.75 7.5A2.25 2.25 0 0 1 6 5.25h10.5A2.25 2.25 0 0 1 18.75 7.5v1.125H6A2.25 2.25 0 0 0 3.75 10.875V7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18 8.625H6A2.25 2.25 0 0 0 3.75 10.875v5.625A2.25 2.25 0 0 0 6 18.75h12A2.25 2.25 0 0 0 20.25 16.5v-5.625A2.25 2.25 0 0 0 18 8.625Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16.125 13.5h.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 type OnboardingRewardSnapshot = {
   status: OnboardingRewardStatus;
   rewardAmountUsdSnapshot: number;
@@ -249,6 +277,10 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
     return entries;
   }, [authState.authenticated, authState.role, t]);
+
+  const headerWalletCtaLabel = authState.authenticated
+    ? t({ en: "Wallet", es: "Wallet", pt: "Wallet" })
+    : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
 
   const primaryLabel = useMemo(() => {
     if (authState.authenticated) {
@@ -866,7 +898,10 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
             <div className="group relative shrink-0">
               <Button onClick={() => setIsOpen(true)} className="min-h-11 px-4">
-                {t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
+                <span className="inline-flex items-center gap-2">
+                  <WalletCtaIcon />
+                  <span>{headerWalletCtaLabel}</span>
+                </span>
               </Button>
               {authState.authenticated && authState.pubkey ? (
                 <div

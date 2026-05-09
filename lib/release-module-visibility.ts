@@ -14,6 +14,10 @@ const ADMIN_RELEASE_CONTROLLED_ROUTES = new Set([
   "/admin/settings"
 ]);
 
+const MARKETPLACE_RELEASE_CONTROLLED_ELEMENTS = new Set([
+  "placeholder-charts"
+]);
+
 function parseBooleanEnv(rawValue: string | undefined): boolean | null {
   if (!rawValue) {
     return null;
@@ -52,6 +56,18 @@ export function isAdminReleaseControlledRoute(route: string): boolean {
 
 export function isReleaseControlledRouteVisible(route: string): boolean {
   if (!isProtectedReleaseControlledRoute(route) && !isAdminReleaseControlledRoute(route)) {
+    return true;
+  }
+
+  return areDevOnlyModulesVisible();
+}
+
+export function isMarketplaceReleaseControlledElement(element: string): boolean {
+  return MARKETPLACE_RELEASE_CONTROLLED_ELEMENTS.has(element);
+}
+
+export function isMarketplaceReleaseControlledElementVisible(element: string): boolean {
+  if (!isMarketplaceReleaseControlledElement(element)) {
     return true;
   }
 

@@ -2,6 +2,17 @@
 
 Last Updated: 2026-05-09
 
+## BRI-153 UI Slice Notes
+- No new session token, cookie, role, or refresh path was introduced by the wallet CTA rename or the profile quick tour emphasis updates.
+- Header CTA label is now derived from existing SIWS session state:
+  - unauthenticated: `Ingresar`
+  - authenticated: `Wallet`
+- Marketplace placeholder charts are now bound to the same public release-visibility flag used by other dev-only UI:
+  - hidden by default in `production`/RC
+  - visible by default outside production
+  - explicitly re-enabled with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`
+- These controls only affect presentation. Session validation, wallet ownership, and route authorization remain server-authoritative.
+
 ## BRI-152 Release Visibility Guard
 - Session policy is unchanged, but selected dashboard/admin routes are now hidden in RC/release-like environments.
 - Hidden routes are removed from navigation and fail closed with `404` on direct access instead of exposing development-only UI.

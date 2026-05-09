@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   areDevOnlyModulesVisible,
   isAdminReleaseControlledRoute,
+  isMarketplaceReleaseControlledElement,
+  isMarketplaceReleaseControlledElementVisible,
   isProtectedReleaseControlledRoute,
   isReleaseControlledRouteVisible
 } from "@/lib/release-module-visibility";
@@ -11,10 +13,14 @@ const originalNodeEnv = process.env.NODE_ENV;
 const originalFlag = process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
 
 function setNodeEnv(value: string | undefined): void {
-  Object.defineProperty(process.env, "NODE_ENV", {
-    value,
-    configurable: true
-  });
+  const env = process.env as Record<string, string | undefined>;
+
+  if (value === undefined) {
+    delete env.NODE_ENV;
+    return;
+  }
+
+  env.NODE_ENV = value;
 }
 
 describe("lib/release-module-visibility", () => {
@@ -64,5 +70,18 @@ describe("lib/release-module-visibility", () => {
     expect(isReleaseControlledRouteVisible("/admin/dashboard")).toBe(true);
     expect(isReleaseControlledRouteVisible("/protected/historial")).toBe(false);
     expect(isReleaseControlledRouteVisible("/admin/treasury")).toBe(false);
+  });
+
+  it("identifies release-controlled marketplace elements", () => {
+    expect(isMarketplaceReleaseControlledElement("placeholder-charts")).toBe(true);
+    expect(isMarketplaceReleaseControlledElement("property-grid")).toBe(false);
+  });
+
+  it("hides release-controlled marketplace placeholders in production-like builds", () => {
+    setNodeEnv("production");
+    delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+
+    expect(isMarketplaceReleaseControlledElementVisible("property-grid")).toBe(true);
+    expect(isMarketplaceReleaseControlledElementVisible("placeholder-charts")).toBe(false);
   });
 });
