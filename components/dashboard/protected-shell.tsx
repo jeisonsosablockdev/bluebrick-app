@@ -7,10 +7,12 @@ import { useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { WalletModal } from "@/components/WalletModal";
+import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
 import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";
+import type { LocaleText } from "@/lib/i18n";
 
 type ProtectedShellProps = {
   authenticatedPublicKey: string;
@@ -25,12 +27,102 @@ type NavItem = {
   description: string;
 };
 
+type TranslateNavFn = (text: LocaleText) => string;
+
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
 }
 
 function isActive(pathname: string, href: string): boolean {
+  if (href === "/protected") {
+    return pathname === href;
+  }
+
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
+  return [
+    {
+      href: "/protected",
+      label: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
+      title: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
+      description: t({
+        en: "General account summary and main KPIs.",
+        es: "Resumen general de cuenta y KPIs principales.",
+        pt: "Resumo geral da conta e principais KPIs."
+      })
+    },
+    {
+      href: "/protected/referrals",
+      label: t({ en: "Referral Rewards", es: "Recompensas por referidos", pt: "Recompensas por indicacoes" }),
+      title: t({ en: "Referral Rewards", es: "Recompensas por referidos", pt: "Recompensas por indicacoes" }),
+      description: t({
+        en: "Share your referral code, track invitee progress, and review earned rewards.",
+        es: "Comparte tu codigo de referido, sigue el progreso de invitados y revisa recompensas ganadas.",
+        pt: "Compartilhe seu codigo de indicacao, acompanhe o progresso dos convidados e revise recompensas ganhas."
+      })
+    },
+    {
+      href: "/protected/portfolio",
+      label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
+      title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
+      description: t({
+        en: "Review your Fractions, valuation and position status.",
+        es: "Consulta tus Fracciones, valor y estado de posiciones.",
+        pt: "Consulte seus Frações, valor e estado das posicoes."
+      })
+    },
+    {
+      href: "/protected/stake",
+      label: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
+      title: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
+      description: t({
+        en: "Manage staking status for your assets.",
+        es: "Gestiona el estado de staking de tus activos.",
+        pt: "Gerencie o status de staking dos seus ativos."
+      })
+    },
+    {
+      href: "/protected/rentas",
+      label: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
+      title: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
+      description: t({
+        en: "Track available yield and claim actions.",
+        es: "Monitorea rentas disponibles y acciones de claim.",
+        pt: "Monitore rendas disponiveis e acoes de claim."
+      })
+    },
+    {
+      href: "/protected/historial",
+      label: t({ en: "History", es: "Historial", pt: "Historico" }),
+      title: t({ en: "History", es: "Historial", pt: "Historico" }),
+      description: t({
+        en: "Audit recent events and account movements.",
+        es: "Audita eventos recientes y movimientos de cuenta.",
+        pt: "Audite eventos recentes e movimentacoes da conta."
+      })
+    },
+    {
+      href: "/protected/perfil",
+      label: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
+      title: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
+      description: t({
+        en: "Manage profile settings and support channels.",
+        es: "Administra configuracion de perfil y canales de soporte.",
+        pt: "Gerencie configuracoes de perfil e canais de suporte."
+      })
+    }
+  ];
+}
+
+export function isProtectedRouteActive(pathname: string, href: string): boolean {
+  return isActive(pathname, href);
+}
+
+export function resolveCurrentProtectedModule(pathname: string, navigation: NavItem[]): NavItem {
+  const active = navigation.find((item) => isProtectedRouteActive(pathname, item.href));
+  return active ?? navigation[0];
 }
 
 export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, children }: ProtectedShellProps): ReactElement {
@@ -38,75 +130,10 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const dashboardNav = useMemo<NavItem[]>(
-    () => [
-      {
-        href: "/protected",
-        label: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
-        title: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
-        description: t({
-          en: "General account summary and main KPIs.",
-          es: "Resumen general de cuenta y KPIs principales.",
-          pt: "Resumo geral da conta e principais KPIs."
-        })
-      },
-      {
-        href: "/protected/portfolio",
-        label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
-        title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
-        description: t({
-          en: "Review your Fractions, valuation and position status.",
-          es: "Consulta tus Fracciones, valor y estado de posiciones.",
-          pt: "Consulte seus Frações, valor e estado das posicoes."
-        })
-      },
-      {
-        href: "/protected/stake",
-        label: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
-        title: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
-        description: t({
-          en: "Manage staking status for your assets.",
-          es: "Gestiona el estado de staking de tus activos.",
-          pt: "Gerencie o status de staking dos seus ativos."
-        })
-      },
-      {
-        href: "/protected/rentas",
-        label: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
-        title: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
-        description: t({
-          en: "Track available yield and claim actions.",
-          es: "Monitorea rentas disponibles y acciones de claim.",
-          pt: "Monitore rendas disponiveis e acoes de claim."
-        })
-      },
-      {
-        href: "/protected/historial",
-        label: t({ en: "History", es: "Historial", pt: "Historico" }),
-        title: t({ en: "History", es: "Historial", pt: "Historico" }),
-        description: t({
-          en: "Audit recent events and account movements.",
-          es: "Audita eventos recientes y movimientos de cuenta.",
-          pt: "Audite eventos recentes e movimentacoes da conta."
-        })
-      },
-      {
-        href: "/protected/perfil",
-        label: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
-        title: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
-        description: t({
-          en: "Manage profile settings and support channels.",
-          es: "Administra configuracion de perfil y canales de soporte.",
-          pt: "Gerencie configuracoes de perfil e canais de suporte."
-        })
-      }
-    ],
-    [t]
-  );
+  const dashboardNav = useMemo<NavItem[]>(() => buildProtectedNavigation(t), [t]);
 
   const currentModule = useMemo<NavItem>(() => {
-    const active = dashboardNav.find((item) => isActive(pathname, item.href));
-    return active ?? dashboardNav[0];
+    return resolveCurrentProtectedModule(pathname, dashboardNav);
   }, [dashboardNav, pathname]);
 
   return (
@@ -178,6 +205,8 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
               <p className="mt-1 text-sm text-white/70">{currentModule.description}</p>
             </div>
           </header>
+
+          <OnboardingRewardReminder />
 
           {children}
         </section>

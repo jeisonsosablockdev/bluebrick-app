@@ -218,7 +218,42 @@ Last Updated: 2026-05-06
 
 ## Traceability
 - Linear issue: `BRI-151`
+- 2026-05-07: referral rewards were moved out of `Overview` into a dedicated protected dashboard tab at `/protected/referrals` so the onboarding reward flow does not compete with the referral program surface.
+- 2026-05-09: the post-auth onboarding decision modal was visually reworked to match the wallet modal's crystal language more closely, reduce secondary type scale, and center the mobile presentation instead of anchoring it low in the viewport.
 - Integration branch: `feature/app-profile-completion-reward-prompt-bri-151-integration`
+
+## Implementation Status
+- Status: `implemented in integration branch`
+- Delivered slices in code:
+  - `S01`: post-auth decision modal, animated CTA, and protected-shell reminder path
+  - `S02`: reward program + reward ledger persistence, registration timestamp, deadline snapshot, and order pricing schema extension
+  - `S03`: server-side reward qualification engine for profile completion, KYC submission, review grace, earned, and expired transitions
+  - `S04`: checkout reservation/release/consume flow with server-computed discount and order linkage
+  - `S05`: auth/session docs sync and targeted regression tests for reward registration and KYC-driven transitions
+- Implemented backend surfaces:
+  - reward registration on `POST /api/auth/verify`
+  - reward snapshot on `GET/PUT /api/protected/profile`
+  - reward recalculation on Stripe session start, Stripe webhook processing, and admin KYC decision
+  - reward reservation via `POST /api/checkout/order`
+- Implemented persistence:
+  - `db/migrations/024_onboarding_profile_completion_rewards.sql`
+  - `onboarding_reward_programs`
+  - `user_onboarding_rewards`
+  - `orders.subtotal_amount_usd`
+  - `orders.discount_amount_usd`
+  - `orders.applied_onboarding_reward_id`
+- Verification implemented in repo:
+  - migration test for reward schema
+  - reward service tests for profile completeness and KYC grace timing
+  - route-level tests for auth verify, profile route, Stripe KYC session route, Stripe webhook handling, and admin KYC decisions
+- Post-implementation follow-up:
+  - `ThemeToggle` now hydrates from the default server theme and resolves browser theme after mount, preventing the home-shell hydration mismatch caused by client-only theme state.
+  - admin collections Playwright flow now asserts the mounted `Blockchain panel` heading so the smoke suite matches the current read-only blockchain shell copy.
+  - Synpress runtime now declares `playwright-core` and `esbuild` explicitly so Phantom cache bootstrap can resolve the packages it imports before the wallet smoke suite starts.
+  - `auth-client` now guards wallet/auth JSON parsing so empty or malformed auth responses surface controlled errors instead of the raw `Unexpected end of JSON input` message inside the wallet modal.
+  - onboarding reward registration and lookup are now best-effort on auth/profile routes so missing reward tables do not block SIWS login or profile reads while the reward schema is being rolled out.
+  - `db:migrate` now ignores untracked local migration drafts by default, preventing unrelated workspace-only referral SQL files from blocking the onboarding reward schema rollout.
+  - onboarding reward UI copy is now localized across `en/es/pt` in the wallet decision modal, dashboard reminder, profile status card, checkout credit block, and localized deadline/window formatting.
 
 ## Critique (Staff Engineer)
 - **Reviewer(s)**: `Gemini Code Assist (Staff Engineer)`
@@ -289,3 +324,12 @@ Last Updated: 2026-05-06
 - **Verdict**: `approved`
   - La arquitectura es sólida y lista para implementación por Slices.
   - Pueden proceder con los PRs.
+
+## Implementation Notes
+- `2026-05-09`: The onboarding decision modal received a second responsive layout pass on `fix/app-onboarding-reward-modal-clean-rework`.
+  - The informational card now switches to a text-left / actions-right structure from `md` upward instead of waiting for `lg`, which removes the half-empty medium breakpoint state.
+  - The informational surface was darkened to match the wallet modal's crystal language and avoid the washed-out intermediate tone.
+  - The reward card headline and supporting copy were reduced on mobile so the value proposition lands in the first viewport without clipping or oversized body copy.
+- `2026-05-09`: The post-auth onboarding decision flow corrected the explore route on `fix/app-onboarding-explore-route`.
+  - `Explore now` and modal close now route to `/marketplace` instead of re-entering `/protected`, which had been collapsing back into the profile flow.
+  - `Continue with my profile` remains routed to `/protected/perfil`.

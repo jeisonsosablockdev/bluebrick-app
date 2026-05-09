@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { clearNonceCookie, getNonceFromRequest, getRequestHost, setSessionCookie, verifySiwsPayload } from "@/lib/auth";
 import { isWalletRegistered } from "@/lib/compliance/profile-repository";
+import { ensureOnboardingRewardRegistered } from "@/lib/onboarding-reward-service";
 import { normalizeReferralAttributionSource } from "@/lib/referrals/domain";
 import { bindReferralAtFirstAuth } from "@/lib/referrals/repository";
 
@@ -20,6 +21,10 @@ function sanitizeReferralMetadata(value: unknown): Record<string, unknown> {
   }
 
   return { ...(value as Record<string, unknown>) };
+}
+
+async function registerOnboardingRewardSafely(walletPublicKey: string): Promise<void> {
+  await ensureOnboardingRewardRegistered(walletPublicKey).catch(() => undefined);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -64,6 +69,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } else if (!isNewUser && normalizedReferralCode) {
     referralBindingOutcome = "skipped_existing_wallet";
   }
+
+  await registerOnboardingRewardSafely(verification.publicKey);
 
   const response = NextResponse.json({
     ok: true,

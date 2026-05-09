@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/lib/countries";
 import { TOUR_STEP_IDS } from "@/components/dashboard/quick-tour-overlay";
+import {
+  formatOnboardingRewardRemainingWindow,
+  formatUsdByLocale,
+  ONBOARDING_REWARD_STATUS_LABELS,
+  type OnboardingRewardStatus
+} from "@/lib/onboarding-reward-copy";
 
 type KycStatus = "not_started" | "pending" | "verified" | "rejected";
 type ComplianceStatus =
@@ -34,6 +40,24 @@ type ProfileBundle = {
   kycStatus: KycStatus;
   complianceStatus: ComplianceStatus;
   rejectionReasonCode: string | null;
+  onboardingReward: OnboardingRewardSnapshot | null;
+};
+
+type OnboardingRewardSnapshot = {
+  status: OnboardingRewardStatus;
+  rewardAmountUsdSnapshot: number;
+  qualificationDeadlineAt: string;
+  profileCompletedAt: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewGraceDeadlineAt: string | null;
+  kycVerifiedAt: string | null;
+  earnedAt: string | null;
+  consumedAt: string | null;
+  expiredAt: string | null;
+  nextDeadlineAt: string | null;
+  remainingSeconds: number | null;
+  shouldShowReminder: boolean;
+  canUseInCheckout: boolean;
 };
 
 type ProfileKycModuleProps = {
@@ -57,6 +81,7 @@ type ProfileApiPayload = {
     kycStatus: KycStatus;
     complianceStatus: ComplianceStatus;
     rejectionReasonCode: string | null;
+    onboardingReward?: OnboardingRewardSnapshot | null;
   };
   error?: {
     message?: string;
@@ -159,6 +184,22 @@ function complianceBadgeClass(status: ComplianceStatus): string {
   return "bg-indigo-500/20 text-indigo-100";
 }
 
+function onboardingRewardBadgeClass(status: OnboardingRewardSnapshot["status"]): string {
+  if (status === "earned" || status === "consumed") {
+    return "bg-emerald-500/20 text-emerald-100";
+  }
+
+  if (status === "expired") {
+    return "bg-rose-500/20 text-rose-100";
+  }
+
+  if (status === "reserved") {
+    return "bg-cyan-500/20 text-cyan-100";
+  }
+
+  return "bg-amber-500/20 text-amber-100";
+}
+
 function LoadingState(): ReactElement {
   return (
     <div className="space-y-4">
@@ -247,7 +288,7 @@ function buildWalletSuggestedUsername({
 }
 
 export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): ReactElement {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { wallet } = useWallet();
 
   const [profile, setProfile] = useState<ProfileBundle | null>(null);
@@ -387,7 +428,8 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           phone: profilePayload.data.phone,
           kycStatus,
           complianceStatus,
-          rejectionReasonCode
+          rejectionReasonCode,
+          onboardingReward: profilePayload.data.onboardingReward ?? null
         };
 
         setProfile(nextProfile);
@@ -482,7 +524,8 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           phone: payload.data?.phone ?? current.phone,
           kycStatus: payload.data?.kycStatus ?? current.kycStatus,
           complianceStatus: payload.data?.complianceStatus ?? current.complianceStatus,
-          rejectionReasonCode: payload.data?.rejectionReasonCode ?? null
+          rejectionReasonCode: payload.data?.rejectionReasonCode ?? null,
+          onboardingReward: payload.data?.onboardingReward ?? current.onboardingReward
         };
       });
       setIsEditing(false);
@@ -942,6 +985,82 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           )}
         </div>
       </Card>
+
+      {profile.onboardingReward ? (
+        <Card className="space-y-3 border-emerald-400/25 bg-emerald-500/8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
+                {t({ en: "Onboarding reward", es: "Beneficio de onboarding", pt: "Benefício de onboarding" })}
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-white">
+                {t({
+                  en: `Complete your profile and unlock ${formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)} USD`,
+                  es: `Completa tu perfil y desbloquea ${formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)} USD`,
+                  pt: `Complete seu perfil e desbloqueie ${formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)} USD`
+                })}
+              </h3>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-xs ${onboardingRewardBadgeClass(profile.onboardingReward.status)}`}>
+              {t(ONBOARDING_REWARD_STATUS_LABELS[profile.onboardingReward.status])}
+            </span>
+          </div>
+
+          <p className="text-sm text-white/80">
+            {profile.onboardingReward.status === "earned"
+              ? t({
+                  en: "Your reward is ready and will apply as a one-time discount in checkout.",
+                  es: "Tu beneficio ya está listo y se aplicará una sola vez como descuento en checkout.",
+                  pt: "Seu benefício já está pronto e será aplicado uma única vez no checkout."
+                })
+              : profile.onboardingReward.status === "pending_review"
+                ? t({
+                    en: "Your KYC is under review. If Stripe verifies it inside the allowed review window, the benefit is earned automatically.",
+                    es: "Tu KYC está en revisión. Si Stripe lo verifica dentro de la ventana permitida, el beneficio se gana automáticamente.",
+                    pt: "Seu KYC está em revisão. Se a Stripe verificar dentro da janela permitida, o benefício é ganho automaticamente."
+                  })
+                : profile.onboardingReward.status === "expired"
+                  ? t({
+                      en: "This benefit expired before the full profile + KYC flow was completed.",
+                      es: "Este beneficio expiró antes de completar el flujo de perfil + KYC.",
+                      pt: "Este benefício expirou antes da conclusão do fluxo de perfil + KYC."
+                    })
+                  : t({
+                      en: "Finish the remaining onboarding steps to convert this into a one-time checkout discount.",
+                      es: "Completa los pasos restantes del onboarding para convertirlo en un descuento único de checkout.",
+                      pt: "Conclua as etapas restantes do onboarding para transformar isso em um desconto único no checkout."
+                    })}
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Status", es: "Estado", pt: "Status" })}</p>
+              <p className="mt-1 text-sm font-medium text-white">{t(ONBOARDING_REWARD_STATUS_LABELS[profile.onboardingReward.status])}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Amount", es: "Monto", pt: "Valor" })}</p>
+              <p className="mt-1 text-sm font-medium text-white">{formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Window", es: "Ventana", pt: "Janela" })}</p>
+              <p className="mt-1 text-sm font-medium text-white">
+                {formatOnboardingRewardRemainingWindow(profile.onboardingReward.remainingSeconds, locale)
+                  ?? t({ en: "Closed", es: "Cerrada", pt: "Encerrada" })}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Usage", es: "Uso", pt: "Uso" })}</p>
+              <p className="mt-1 text-sm font-medium text-white">
+                {profile.onboardingReward.consumedAt
+                  ? t({ en: "Used", es: "Usado", pt: "Usado" })
+                  : profile.onboardingReward.canUseInCheckout
+                    ? t({ en: "Available in checkout", es: "Disponible en checkout", pt: "Disponível no checkout" })
+                    : t({ en: "Pending", es: "Pendiente", pt: "Pendente" })}
+              </p>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       <Card id={TOUR_STEP_IDS.KYC} className="space-y-3 scroll-mt-28">
         <div className="flex flex-wrap items-center justify-between gap-2">

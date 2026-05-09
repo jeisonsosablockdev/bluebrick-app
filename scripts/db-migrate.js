@@ -2,6 +2,7 @@
 const fsSync = require("node:fs");
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const { Pool } = require("pg");
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), "db", "migrations");
@@ -82,10 +83,57 @@ async function ensureMigrationTable(client) {
 
 async function listMigrationFiles() {
   const entries = await fs.readdir(MIGRATIONS_DIR, { withFileTypes: true });
-  return entries
+  const allFiles = entries
     .filter((entry) => entry.isFile() && /^[0-9]+_.*\.sql$/i.test(entry.name))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
+
+  if (process.env.DB_MIGRATE_INCLUDE_UNTRACKED === "1") {
+    return {
+      files: allFiles,
+      skippedUntracked: []
+    };
+  }
+
+  const trackedFiles = getTrackedMigrationFiles();
+  if (!trackedFiles) {
+    return {
+      files: allFiles,
+      skippedUntracked: []
+    };
+  }
+
+  return filterTrackedMigrationFiles(allFiles, trackedFiles);
+}
+
+function getTrackedMigrationFiles() {
+  try {
+    const output = execFileSync("git", ["ls-files", "--", path.join("db", "migrations")], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    });
+
+    return new Set(
+      output
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((filePath) => path.basename(filePath))
+    );
+  } catch {
+    return null;
+  }
+}
+
+function filterTrackedMigrationFiles(allFiles, trackedFiles) {
+  const files = allFiles.filter((file) => trackedFiles.has(file));
+  const skippedUntracked = allFiles.filter((file) => !trackedFiles.has(file));
+
+  return {
+    files,
+    skippedUntracked
+  };
 }
 
 async function hasMigration(client, id) {
@@ -116,11 +164,15 @@ async function main() {
 
   try {
     await ensureMigrationTable(client);
-    const files = await listMigrationFiles();
+    const { files, skippedUntracked } = await listMigrationFiles();
 
     if (files.length === 0) {
       console.log("No migration files found.");
       return;
+    }
+
+    for (const file of skippedUntracked) {
+      console.log(`Ignored untracked migration: ${file}`);
     }
 
     for (const file of files) {
@@ -137,7 +189,16 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  filterTrackedMigrationFiles,
+  getTrackedMigrationFiles,
+  listMigrationFiles,
+  parseEnvValue
+};

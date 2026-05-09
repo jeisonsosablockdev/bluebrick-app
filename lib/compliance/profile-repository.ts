@@ -32,6 +32,8 @@ export type ProfileBundle = {
   rejectionReasonCode: string | null;
   kycProviderSessionId: string | null;
   kycProviderReportId: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
   isSuspended: boolean;
   complianceStatusUpdatedAt: string;
   createdAt: string;
@@ -236,6 +238,8 @@ type ProfileBundleRow = {
   rejection_reason_code: string | null;
   kyc_provider_session_id: string | null;
   kyc_provider_report_id: string | null;
+  kyc_submitted_at: string | Date | null;
+  kyc_reviewed_at: string | Date | null;
   is_suspended: boolean;
   compliance_status_updated_at: string | Date;
   created_at: string | Date;
@@ -264,6 +268,8 @@ type InMemoryProfileState = {
   rejectionReasonCode: string | null;
   kycProviderSessionId: string | null;
   kycProviderReportId: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
   isSuspended: boolean;
   complianceStatus: ComplianceStatus;
   complianceStatusUpdatedAt: string;
@@ -435,6 +441,8 @@ function buildDefaultInMemoryProfile(walletPublicKey: string): InMemoryProfileSt
     rejectionReasonCode: null,
     kycProviderSessionId: null,
     kycProviderReportId: null,
+    kycSubmittedAt: null,
+    kycReviewedAt: null,
     isSuspended: false,
     complianceStatus: projectComplianceStatus({
       kycStatus: "not_started",
@@ -466,6 +474,8 @@ function mapInMemoryToBundle(profile: InMemoryProfileState): ProfileBundle {
     rejectionReasonCode: profile.rejectionReasonCode,
     kycProviderSessionId: profile.kycProviderSessionId,
     kycProviderReportId: profile.kycProviderReportId,
+    kycSubmittedAt: profile.kycSubmittedAt,
+    kycReviewedAt: profile.kycReviewedAt,
     isSuspended: profile.isSuspended,
     complianceStatusUpdatedAt: profile.complianceStatusUpdatedAt,
     createdAt: profile.createdAt,
@@ -504,6 +514,8 @@ function toBundle(row: ProfileBundleRow): ProfileBundle {
     rejectionReasonCode: row.rejection_reason_code,
     kycProviderSessionId: row.kyc_provider_session_id,
     kycProviderReportId: row.kyc_provider_report_id,
+    kycSubmittedAt: normalizeOptionalIso(row.kyc_submitted_at),
+    kycReviewedAt: normalizeOptionalIso(row.kyc_reviewed_at),
     isSuspended: Boolean(row.is_suspended),
     complianceStatusUpdatedAt: normalizeIso(row.compliance_status_updated_at),
     createdAt: normalizeIso(row.created_at),
@@ -566,6 +578,8 @@ async function getProfileBundleWithClient(
        k.rejection_reason_code,
        p.kyc_provider_session_id,
        p.kyc_provider_report_id,
+       k.submitted_at AS kyc_submitted_at,
+       k.reviewed_at AS kyc_reviewed_at,
        p.is_suspended,
        p.compliance_status_updated_at,
        p.created_at,
@@ -724,6 +738,7 @@ export async function markKycSessionPending(input: MarkKycSessionPendingInput): 
     profile.kycStatus = "pending";
     profile.kycProviderSessionId = input.providerSessionId;
     profile.rejectionReasonCode = null;
+    profile.kycSubmittedAt = profile.kycSubmittedAt ?? updatedAt;
     profile.complianceStatus = projectComplianceStatus({
       kycStatus: profile.kycStatus,
       amlStatus: profile.amlStatus,
@@ -832,6 +847,7 @@ export async function updateKycStatusFromProvider(
     profile.kycProviderSessionId = input.providerSessionId;
     profile.kycProviderReportId = input.providerReportId ?? null;
     profile.rejectionReasonCode = input.rejectionReasonCode ?? null;
+    profile.kycReviewedAt = input.kycStatus === "verified" || input.kycStatus === "rejected" ? updatedAt : profile.kycReviewedAt;
     profile.complianceStatus = projectComplianceStatus({
       kycStatus: profile.kycStatus,
       amlStatus: profile.amlStatus,
@@ -1462,6 +1478,13 @@ export async function getComplianceCaseDetailForAdmin(
          p.username,
          p.bio,
          p.avatar_url,
+         p.first_name,
+         p.last_name,
+         p.email,
+         p.country,
+         p.state_province,
+         p.address,
+         p.phone,
          k.kyc_status,
          p.aml_status,
          p.aml_risk_score,
@@ -1473,6 +1496,8 @@ export async function getComplianceCaseDetailForAdmin(
          k.rejection_reason_code,
          p.kyc_provider_session_id,
          p.kyc_provider_report_id,
+         k.submitted_at AS kyc_submitted_at,
+         k.reviewed_at AS kyc_reviewed_at,
          p.is_suspended,
          p.compliance_status_updated_at,
          p.created_at,

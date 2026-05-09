@@ -8,6 +8,7 @@ import {
 } from "@/lib/compliance/profile-repository";
 import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
 import { type KycStatus } from "@/lib/compliance/compliance-status-projector";
+import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 import { markReferralAttributionKycApproved } from "@/lib/referrals/repository";
 import { promotePendingQualificationRewardsForInvitee } from "@/lib/referrals/reward-engine";
 
@@ -292,6 +293,7 @@ export async function processStripeIdentityWebhook(
   });
 
   if (mappedStatus === "verified") {
+    await getOnboardingRewardForWallet(walletPublicKey);
     await markReferralAttributionKycApproved({
       inviteeWalletPublicKey: walletPublicKey
     });
@@ -304,6 +306,8 @@ export async function processStripeIdentityWebhook(
       actorType: "provider",
       actorId: "stripe_identity"
     });
+  } else {
+    await getOnboardingRewardForWallet(walletPublicKey);
   }
 
   return {

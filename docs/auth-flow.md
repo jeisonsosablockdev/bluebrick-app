@@ -6,6 +6,15 @@ Last Updated: 2026-05-06
 - Technical project slug references were renamed from `solana-test-1` to `brids`.
 - This change does not alter the SIWS auth contract, session boundaries, referral behavior, or role resolution rules described below.
 
+## BRI-151 Onboarding Reward Decision Flow
+- First successful wallet auth now ensures a wallet-bound onboarding reward row exists for the authenticated profile.
+- New users are no longer forced into `/protected/perfil` immediately after wallet connection.
+- After `POST /api/auth/verify`, the wallet modal fetches `GET /api/protected/profile` and either:
+  - opens a decision modal with `Explorar ahora` and `Completar perfil`, or
+  - routes normally into the protected area when no reward reminder is needed.
+- The modal is UX only. Reward registration, qualification, expiration, reservation, and consumption stay server-authoritative.
+- The initial active campaign grants `$10 USD` as a one-time checkout discount for the tokenized fraction flow after the user completes the required profile fields and verified KYC inside the allowed window.
+
 ## Scope
 - Feature: Phantom wallet connection + Sign-In With Solana (SIWS) via message signing only.
 - Wallet integration: `@solana/wallet-adapter-react` with Phantom as primary wallet.
@@ -70,11 +79,13 @@ Last Updated: 2026-05-06
    - UI and backend exchange optional `x-flow-id` to correlate full request timeline in `purchase_flow_events`.
 15. Profile + KYC bootstrap flow (STORY-004-02/003):
    - `GET /api/protected/profile` and `PUT /api/protected/profile` require SIWS session and are wallet-bound server-side.
+   - Profile responses now include `onboardingReward` so the authenticated wallet can see reward status, amount, deadlines, and one-time usage state.
    - `POST /api/protected/kyc/stripe/session` requires SIWS session, applies wallet/IP rate-limit, and creates Stripe Identity verification session.
    - KYC bootstrap also triggers AML screening (`kyc_session_started`) to keep compliance evaluation warm from session kickoff.
    - Identity documents are captured by Stripe; this app stores only provider metadata and status fields.
    - `POST /api/webhooks/stripe/identity` validates Stripe signature header and applies idempotent status projection into `compliance_status`.
    - Stripe `identity.verification_session.verified` triggers AML screening (`kyc_verified_webhook`) before returning webhook processing result.
+   - Reward state is re-evaluated server-side after profile saves, KYC session creation, Stripe KYC webhook processing, and admin KYC decisions.
 16. AML operational endpoints (STORY-004-04):
    - `POST /api/internal/compliance/aml/screen` accepts admin SIWS session or `Authorization: Bearer <COMPLIANCE_INTERNAL_TOKEN>`.
    - `GET /api/admin/compliance/cases/:walletPublicKey/aml` returns AML snapshot + recent screenings for admin review.
@@ -146,8 +157,8 @@ Last Updated: 2026-05-06
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
 | `/api/protected/referrals/summary` | `GET` | Yes | `user` or `admin` | Returns aggregate referral metrics for the authenticated wallet: referral code, share path, counts, reward totals, and milestone progress |
 | `/api/protected/referrals/invitees` | `GET` | Yes | `user` or `admin` | Returns a paginated, privacy-safe invitee feed (`limit` + `offset`) with truncated identities and day-level timestamps only |
-| `/api/protected/profile` | `GET` | Yes | `user` or `admin` | Returns wallet-bound profile + KYC/compliance summary |
-| `/api/protected/profile` | `PUT` | Yes | `user` or `admin` | Updates wallet-bound `username`, `bio`, and `avatarUrl` |
+| `/api/protected/profile` | `GET` | Yes | `user` or `admin` | Returns wallet-bound profile + KYC/compliance summary + onboarding reward snapshot |
+| `/api/protected/profile` | `PUT` | Yes | `user` or `admin` | Updates wallet-bound profile fields and returns refreshed onboarding reward snapshot |
 | `/api/protected/kyc/status` | `GET` | Yes | `user` or `admin` | Returns KYC status + denormalized compliance status |
 | `/api/protected/kyc/stripe/session` | `POST` | Yes | `user` or `admin` | Creates Stripe Identity verification session server-side |
 | `/api/internal/compliance/aml/screen` | `POST` | SIWS admin or internal token | `admin` (session mode) | Executes AML screening pipeline for a wallet and persists projection |
@@ -159,10 +170,10 @@ Last Updated: 2026-05-06
 | `/api/checkout/cart` | `GET` | Yes | `user` or `admin` | Returns current wallet active cart with normalized totals |
 | `/api/checkout/cart` | `POST/PATCH` | Yes | `user` or `admin` | Upserts item quantity in wallet active cart (server validates property + quantity) |
 | `/api/checkout/cart` | `DELETE` | Yes | `user` or `admin` | Removes item from wallet active cart |
-| `/api/checkout/order` | `POST` | Yes | `user` or `admin` | Converts active cart into order (`pending_payment`) with selected payment method |
+| `/api/checkout/order` | `POST` | Yes | `user` or `admin` | Converts active cart into order (`pending_payment`) with selected payment method and optional server-computed onboarding reward discount. `airwallex` is currently suspended and returns `PAYMENT_METHOD_DISABLED`. |
 | `/api/checkout/order/:orderId` | `GET` | Yes | `user` or `admin` | Returns wallet-owned order snapshot |
-| `/api/checkout/payment/start` | `POST` | Yes | `user` or `admin` | Starts payment attempt (crypto existing flow or Airwallex PaymentIntent) |
-| `/api/webhooks/airwallex` | `POST` | No (SIWS) | None | Validates Airwallex HMAC signature + timestamp, dedupes event, reconciles payment/order status |
+| `/api/checkout/payment/start` | `POST` | Yes | `user` or `admin` | Starts payment attempt for enabled methods. Crypto remains active; `airwallex` is currently suspended and returns `PAYMENT_METHOD_DISABLED`. |
+| `/api/webhooks/airwallex` | `POST` | No (SIWS) | None | Validates Airwallex HMAC signature + timestamp, dedupes event, reconciles payment/order status for retained provider infrastructure while card checkout is suspended |
 | `/api/admin/ping` | `GET` | Yes | `admin` | Returns `403` unless wallet is allowlisted |
 | `/api/admin/mint-orchestrator/jobs` | `POST` | Yes | `admin` | Creates a server-side mint job (`job_id`) |
 | `/api/admin/mint-orchestrator/jobs` | `GET` | Yes | `admin` | Lists recent mint jobs with server progress |
@@ -191,6 +202,7 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Request purchase challenge, sign canonical challenge message, and attach signature in prepare request.
   - Edit profile fields from UI, while ownership and validation remain server-enforced.
   - Trigger Stripe-hosted verification flow using server-issued session URL.
+  - Choose between `Explorar ahora` and `Completar perfil` after first auth; that decision affects navigation only.
   - Request next batch, sign tx payloads, send signed payloads back, render progress.
   - In H6 console, collect signatures and optional expected addresses per batch item before submit.
 - Server responsibilities:
@@ -202,11 +214,13 @@ See reusable tracing playbook: `docs/purchase-tracing.md`.
   - Trigger AML screening on KYC kickoff and on Stripe verified webhooks.
   - Gate internal AML execution route with admin SIWS or `COMPLIANCE_INTERNAL_TOKEN`.
   - In purchase flow, quote cache delivery + challenge issuance + challenge signature verification + rate-limiting + on-chain revalidation in prepare + submit ownership checks.
-  - In checkout flow, cart/order/payment APIs are wallet-bound server-side and never trust client-provided authority.
+  - In checkout flow, cart/order/payment APIs are wallet-bound server-side, never trust client-provided authority, and derive any onboarding reward discount from persisted reward state only.
   - Airwallex session is server-to-server (`client_id/api_key` -> bearer token), and webhook outcomes are only accepted after HMAC signature verification.
   - Backend signs purchase transactions as mandatory Candy Guard `thirdPartySigner`.
   - Enforce permanent job mutation authority: admin actor for manual mutations must match job `createdBy`.
   - Persist final Core Candy Machine snapshot + on-chain proof evidence and compute `Create Asset` eligibility.
+  - Persist the onboarding reward ledger, enforce the 7-day qualification deadline plus 72-hour KYC review grace, and move reward state through `pending_profile`, `pending_kyc`, `pending_review`, `earned`, `reserved`, `consumed`, or `expired`.
+  - Reserve, release, and consume the reward atomically with order state transitions so the discount remains one-time-use.
   - For admin asset uploads, validate admin session first and treat optional `editSessionId` as server-checked lifecycle metadata, never as client authority.
   - For admin collection detail writes, validate the section payload server-side, reject immutable cover changes, and bind updates to the authenticated admin wallet through ownership evidence.
 - External webhook responsibilities:

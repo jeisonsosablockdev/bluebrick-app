@@ -5,6 +5,7 @@ const routeMocks = vi.hoisted(() => ({
   getAuthenticatedPublicKeyFromRequest: vi.fn(),
   getOrCreateProfileBundle: vi.fn(),
   updateProfileBasics: vi.fn(),
+  getOnboardingRewardForWallet: vi.fn(),
   MockProfileRepositoryError: class MockProfileRepositoryError extends Error {
     code: string;
 
@@ -23,6 +24,10 @@ vi.mock("@/lib/compliance/profile-repository", () => ({
   getOrCreateProfileBundle: routeMocks.getOrCreateProfileBundle,
   updateProfileBasics: routeMocks.updateProfileBasics,
   ProfileRepositoryError: routeMocks.MockProfileRepositoryError
+}));
+
+vi.mock("@/lib/onboarding-reward-service", () => ({
+  getOnboardingRewardForWallet: routeMocks.getOnboardingRewardForWallet
 }));
 
 import { GET, PUT } from "@/app/api/protected/profile/route";
@@ -45,6 +50,23 @@ describe("/api/protected/profile route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     routeMocks.getAuthenticatedPublicKeyFromRequest.mockReturnValue("Wallet11111111111111111111111111111111111");
+    routeMocks.getOnboardingRewardForWallet.mockResolvedValue({
+      id: "reward-1",
+      status: "pending_profile",
+      rewardAmountUsdSnapshot: 10,
+      qualificationDeadlineAt: "2026-03-31T00:00:00.000Z",
+      profileCompletedAt: null,
+      kycSubmittedAt: null,
+      kycReviewGraceDeadlineAt: null,
+      kycVerifiedAt: null,
+      earnedAt: null,
+      consumedAt: null,
+      expiredAt: null,
+      nextDeadlineAt: "2026-03-31T00:00:00.000Z",
+      remainingSeconds: 60,
+      shouldShowReminder: true,
+      canUseInCheckout: false
+    });
     routeMocks.getOrCreateProfileBundle.mockResolvedValue({
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       username: "user_one",
@@ -56,6 +78,8 @@ describe("/api/protected/profile route", () => {
       rejectionReasonCode: null,
       kycProviderSessionId: null,
       kycProviderReportId: null,
+      kycSubmittedAt: null,
+      kycReviewedAt: null,
       isSuspended: false,
       complianceStatusUpdatedAt: "2026-03-24T00:00:00.000Z",
       createdAt: "2026-03-24T00:00:00.000Z",
@@ -81,6 +105,19 @@ describe("/api/protected/profile route", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.walletPublicKey).toBe("Wallet11111111111111111111111111111111111");
     expect(payload.data.kycStatus).toBe("pending");
+    expect(payload.data.onboardingReward.status).toBe("pending_profile");
+  });
+
+  it("returns profile bundle even when onboarding reward lookup fails", async () => {
+    routeMocks.getOnboardingRewardForWallet.mockRejectedValueOnce(new Error("relation user_onboarding_rewards does not exist"));
+
+    const response = await GET(createGetRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.walletPublicKey).toBe("Wallet11111111111111111111111111111111111");
+    expect(payload.data.onboardingReward).toBeNull();
   });
 
   it("returns 400 for invalid profile payload", async () => {
@@ -122,6 +159,8 @@ describe("/api/protected/profile route", () => {
       rejectionReasonCode: null,
       kycProviderSessionId: null,
       kycProviderReportId: null,
+      kycSubmittedAt: null,
+      kycReviewedAt: null,
       isSuspended: false,
       complianceStatusUpdatedAt: "2026-03-24T00:00:00.000Z",
       createdAt: "2026-03-24T00:00:00.000Z",
@@ -140,6 +179,7 @@ describe("/api/protected/profile route", () => {
     expect(response.status).toBe(200);
     expect(payload.ok).toBe(true);
     expect(payload.data.username).toBe("valid_user");
+    expect(payload.data.onboardingReward.status).toBe("pending_profile");
     expect(routeMocks.updateProfileBasics).toHaveBeenCalledWith({
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       username: "valid_user",
@@ -153,5 +193,41 @@ describe("/api/protected/profile route", () => {
       address: null,
       phone: null
     });
+  });
+
+  it("updates profile even when onboarding reward lookup fails", async () => {
+    routeMocks.updateProfileBasics.mockResolvedValueOnce({
+      walletPublicKey: "Wallet11111111111111111111111111111111111",
+      username: "valid_user",
+      bio: "Updated bio",
+      avatarUrl: "https://example.com/new-avatar.png",
+      kycStatus: "pending",
+      amlStatus: "not_started",
+      complianceStatus: "pending_kyc",
+      rejectionReasonCode: null,
+      kycProviderSessionId: null,
+      kycProviderReportId: null,
+      kycSubmittedAt: null,
+      kycReviewedAt: null,
+      isSuspended: false,
+      complianceStatusUpdatedAt: "2026-03-24T00:00:00.000Z",
+      createdAt: "2026-03-24T00:00:00.000Z",
+      updatedAt: "2026-03-24T00:01:00.000Z"
+    });
+    routeMocks.getOnboardingRewardForWallet.mockRejectedValueOnce(new Error("relation user_onboarding_rewards does not exist"));
+
+    const response = await PUT(
+      createPutRequest({
+        username: "valid_user",
+        bio: "Updated bio",
+        avatarUrl: "https://example.com/new-avatar.png"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.username).toBe("valid_user");
+    expect(payload.data.onboardingReward).toBeNull();
   });
 });

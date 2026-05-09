@@ -41,6 +41,6 @@ test.describe("admin collections primary flow", () => {
     await expect(page.getByRole("button", { name: /Save property information/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Save location/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Save documents/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Blockchain addresses/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Blockchain panel/i })).toBeVisible();
   });
 });

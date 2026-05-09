@@ -10,6 +10,7 @@ import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { OnboardingRewardDecisionModal } from "@/components/onboarding/onboarding-reward-decision-modal";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
@@ -34,6 +35,14 @@ import {
   parseAuthSyncPayloadFromUnknown
 } from "@/lib/auth-sync";
 import { getWalletModalAutoClose } from "@/lib/solana";
+import {
+  formatOnboardingRewardDeadlineLabel,
+  type OnboardingRewardStatus
+} from "@/lib/onboarding-reward-copy";
+import {
+  ONBOARDING_REWARD_COMPLETE_PROFILE_HREF,
+  ONBOARDING_REWARD_EXPLORE_HREF
+} from "@/lib/onboarding-reward-navigation";
 
 type WalletModalProps = {
   initialAuth: AuthMeResponse;
@@ -54,6 +63,24 @@ type NavEntry = {
 };
 
 type Translate = (text: LocaleText) => string;
+
+type OnboardingRewardSnapshot = {
+  status: OnboardingRewardStatus;
+  rewardAmountUsdSnapshot: number;
+  qualificationDeadlineAt: string;
+  shouldShowReminder: boolean;
+  isProfileComplete: boolean;
+};
+
+type ProtectedProfileResponse = {
+  ok?: boolean;
+  data?: {
+    firstName: string | null;
+    email: string | null;
+    phone: string | null;
+    onboardingReward?: OnboardingRewardSnapshot | null;
+  };
+};
 
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
@@ -118,6 +145,14 @@ function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
     });
   }
 
+  if (message.includes("authentication failed")) {
+    return t({
+      en: "Authentication failed.",
+      es: "La autenticacion fallo.",
+      pt: "A autenticacao falhou."
+    });
+  }
+
   return error.message;
 }
 
@@ -154,7 +189,7 @@ function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSign
 }
 
 export function WalletModal({ initialAuth }: WalletModalProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -164,6 +199,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
+  const [postAuthDecisionReward, setPostAuthDecisionReward] = useState<OnboardingRewardSnapshot | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [referralOrigin, setReferralOrigin] = useState<ReferralHintOrigin>("auto");
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -576,15 +612,31 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       try {
         const profileRes = await fetch("/api/protected/profile");
         if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          if (!profileData.firstName || !profileData.email || !profileData.phone) {
+          const profileData = (await profileRes.json()) as ProtectedProfileResponse;
+          const onboardingReward = profileData.data?.onboardingReward ?? null;
+          const shouldShowDecision =
+            Boolean(onboardingReward?.shouldShowReminder)
+            || onboardingReward?.isProfileComplete === false
+            || Boolean(
+              !profileData.data?.firstName ||
+              !profileData.data?.email ||
+              !profileData.data?.phone
+            );
+
+          if (shouldShowDecision) {
+            setPostAuthDecisionReward(onboardingReward);
             setIsOpen(false);
-            router.push("/protected/perfil");
             return;
           }
         } else if (profileRes.status === 404) {
+          setPostAuthDecisionReward({
+            status: "pending_profile",
+            rewardAmountUsdSnapshot: 10,
+            qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            shouldShowReminder: true,
+            isProfileComplete: false
+          });
           setIsOpen(false);
-          router.push("/protected/perfil");
           return;
         }
       } catch {
@@ -593,7 +645,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
       if (verifiedResult.isNewUser) {
         setIsOpen(false);
-        router.push("/protected/perfil");
+        setPostAuthDecisionReward(null);
+        router.push("/protected");
       }
     } catch (error) {
       setLastError(getFriendlyWalletErrorMessage(error, t));
@@ -645,6 +698,16 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     } finally {
       setPhase("idle");
     }
+  }
+
+  function handleExploreAfterAuth(): void {
+    setPostAuthDecisionReward(null);
+    router.push(ONBOARDING_REWARD_EXPLORE_HREF);
+  }
+
+  function handleCompleteProfileAfterAuth(): void {
+    setPostAuthDecisionReward(null);
+    router.push(ONBOARDING_REWARD_COMPLETE_PROFILE_HREF);
   }
 
   async function copyAddress(): Promise<void> {
@@ -1042,6 +1105,15 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           </div>
         </div>
       ) : null}
+
+      <OnboardingRewardDecisionModal
+        open={Boolean(postAuthDecisionReward)}
+        qualificationDeadlineLabel={formatOnboardingRewardDeadlineLabel(postAuthDecisionReward?.qualificationDeadlineAt ?? null, locale)}
+        rewardAmountUsd={postAuthDecisionReward?.rewardAmountUsdSnapshot ?? 10}
+        onClose={handleExploreAfterAuth}
+        onExplore={handleExploreAfterAuth}
+        onCompleteProfile={handleCompleteProfileAfterAuth}
+      />
     </>
   );
 }

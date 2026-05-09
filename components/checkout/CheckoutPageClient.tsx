@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useI18n } from "@/components/i18n/locale-provider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  formatUsdByLocale,
+  type OnboardingRewardStatus
+} from "@/lib/onboarding-reward-copy";
 
 type CartItem = {
   propertyId: string;
@@ -21,6 +26,12 @@ type CartPayload = {
   items: CartItem[];
   totalItems: number;
   totalAmountUsd: number;
+  onboardingReward: {
+    id: string;
+    status: OnboardingRewardStatus;
+    rewardAmountUsdSnapshot: number;
+    shouldShowReminder: boolean;
+  } | null;
 };
 
 type OrderPayload = {
@@ -28,7 +39,10 @@ type OrderPayload = {
   status: string;
   paymentMethod: "crypto" | "airwallex" | null;
   currency: string;
+  subtotalAmountUsd: number;
+  discountAmountUsd: number;
   totalAmountUsd: number;
+  appliedOnboardingRewardId: string | null;
   expiresAt: string | null;
   items: Array<{
     propertyId: string;
@@ -40,17 +54,9 @@ type OrderPayload = {
 
 type StartPaymentPayload = {
   orderId: string;
-  paymentMethod: "crypto" | "airwallex";
+  paymentMethod: "crypto";
   paymentAttemptId: string;
   status: string;
-  airwallex?: {
-    intentId: string;
-    clientSecret: string;
-    amount: number;
-    currency: string;
-    env: "demo" | "prod";
-    successUrl: string;
-  };
   crypto?: {
     mode: "existing_flow";
     message: string;
@@ -66,76 +72,17 @@ type ApiResponse<T> = {
   };
 };
 
-declare global {
-  interface Window {
-    AirwallexComponentsSDK?: {
-      init: (input: {
-        env: "demo" | "prod";
-        enabledElements: string[];
-      }) => Promise<{
-        payments: {
-          redirectToCheckout: (input: {
-            env: "demo" | "prod";
-            mode: "payment";
-            currency: string;
-            intent_id: string;
-            client_secret: string;
-            successUrl: string;
-          }) => void;
-        };
-      }>;
-    };
-  }
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
-}
-
 async function parseJson<T>(response: Response): Promise<ApiResponse<T>> {
   return (await response.json().catch(() => null)) as ApiResponse<T>;
 }
 
-function loadAirwallexScript(): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.resolve();
-  }
-
-  if (window.AirwallexComponentsSDK) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-airwallex-sdk='1']");
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Could not load Airwallex SDK.")), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://static.airwallex.com/components/sdk/v1/index.js";
-    script.async = true;
-    script.dataset.airwallexSdk = "1";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Could not load Airwallex SDK."));
-    document.head.appendChild(script);
-  });
-}
-
 export function CheckoutPageClient() {
+  const { locale, t } = useI18n();
   const [cart, setCart] = useState<CartPayload | null>(null);
   const [order, setOrder] = useState<OrderPayload | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"crypto" | "airwallex">("airwallex");
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  // HARDENING-PREPROD: remove this UI toggle and force live mode only before production release.
-  const [isSandboxModeEnabled, setIsSandboxModeEnabled] = useState(true);
+  const [applyOnboardingReward, setApplyOnboardingReward] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
@@ -148,17 +95,24 @@ export function CheckoutPageClient() {
       const payload = await parseJson<CartPayload>(response);
 
       if (!response.ok || !payload.data) {
-        throw new Error(payload.error?.message ?? "Could not load cart.");
+        throw new Error(
+          payload.error?.message
+          ?? t({ en: "Could not load cart.", es: "No se pudo cargar el carrito.", pt: "Nao foi possivel carregar o carrinho." })
+        );
       }
 
       setCart(payload.data);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not load cart.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : t({ en: "Could not load cart.", es: "No se pudo cargar el carrito.", pt: "Nao foi possivel carregar o carrinho." })
+      );
       setCart(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadCart();
@@ -169,8 +123,12 @@ export function CheckoutPageClient() {
       return "--";
     }
 
-    return formatUsd(cart.totalAmountUsd);
-  }, [cart]);
+    const rewardDiscount =
+      applyOnboardingReward && cart.onboardingReward?.status === "earned"
+        ? Math.min(cart.onboardingReward.rewardAmountUsdSnapshot, cart.totalAmountUsd)
+        : 0;
+    return formatUsdByLocale(Math.max(0, cart.totalAmountUsd - rewardDiscount), locale);
+  }, [applyOnboardingReward, cart, locale]);
 
   async function handleRemoveItem(propertyId: string): Promise<void> {
     setError(null);
@@ -186,7 +144,10 @@ export function CheckoutPageClient() {
 
     const payload = await parseJson<CartPayload>(response);
     if (!response.ok || !payload.data) {
-      setError(payload.error?.message ?? "Could not remove item.");
+      setError(
+        payload.error?.message
+        ?? t({ en: "Could not remove item.", es: "No se pudo quitar el item.", pt: "Nao foi possivel remover o item." })
+      );
       return;
     }
 
@@ -196,7 +157,7 @@ export function CheckoutPageClient() {
 
   async function handleCreateOrder(): Promise<void> {
     if (!cart || cart.items.length === 0) {
-      setError("Cart is empty.");
+      setError(t({ en: "Cart is empty.", es: "El carrito está vacío.", pt: "O carrinho está vazio." }));
       return;
     }
 
@@ -210,16 +171,25 @@ export function CheckoutPageClient() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ paymentMethod })
+        body: JSON.stringify({ paymentMethod: "crypto", applyOnboardingReward })
       });
 
       const payload = await parseJson<OrderPayload>(response);
       if (!response.ok || !payload.data) {
-        throw new Error(payload.error?.message ?? "Could not create order.");
+        throw new Error(
+          payload.error?.message
+          ?? t({ en: "Could not create order.", es: "No se pudo crear la orden.", pt: "Nao foi possivel criar o pedido." })
+        );
       }
 
       setOrder(payload.data);
-      setInfo(`Order ${payload.data.orderId} created. Starting payment...`);
+      setInfo(
+        t({
+          en: `Order ${payload.data.orderId} created. Starting payment...`,
+          es: `Orden ${payload.data.orderId} creada. Iniciando pago...`,
+          pt: `Pedido ${payload.data.orderId} criado. Iniciando pagamento...`
+        })
+      );
 
       const startPaymentResponse = await fetch("/api/checkout/payment/start", {
         method: "POST",
@@ -228,46 +198,32 @@ export function CheckoutPageClient() {
         },
         body: JSON.stringify({
           orderId: payload.data.orderId,
-          paymentMethod,
-          runtimeMode: isSandboxModeEnabled ? "sandbox" : "live"
+          paymentMethod: "crypto"
         })
       });
 
       const startPaymentPayload = await parseJson<StartPaymentPayload>(startPaymentResponse);
       if (!startPaymentResponse.ok || !startPaymentPayload.data) {
-        throw new Error(startPaymentPayload.error?.message ?? "Could not start payment.");
+        throw new Error(
+          startPaymentPayload.error?.message
+          ?? t({ en: "Could not start payment.", es: "No se pudo iniciar el pago.", pt: "Nao foi possivel iniciar o pagamento." })
+        );
       }
 
-      if (startPaymentPayload.data.paymentMethod === "crypto") {
-        setInfo(startPaymentPayload.data.crypto?.message ?? "Crypto flow is available from property detail for now.");
-        return;
-      }
-
-      const awx = startPaymentPayload.data.airwallex;
-      if (!awx) {
-        throw new Error("Airwallex payload was not returned.");
-      }
-
-      await loadAirwallexScript();
-      if (!window.AirwallexComponentsSDK) {
-        throw new Error("Airwallex SDK is not available.");
-      }
-
-      const sdk = await window.AirwallexComponentsSDK.init({
-        env: awx.env,
-        enabledElements: ["payments"]
-      });
-
-      sdk.payments.redirectToCheckout({
-        env: awx.env,
-        mode: "payment",
-        currency: awx.currency,
-        intent_id: awx.intentId,
-        client_secret: awx.clientSecret,
-        successUrl: awx.successUrl
-      });
+      setInfo(
+        startPaymentPayload.data.crypto?.message
+        ?? t({
+          en: "Crypto flow is available from property detail for now.",
+          es: "El flujo crypto está disponible por ahora desde el detalle de la propiedad.",
+          pt: "O fluxo cripto está disponível por enquanto a partir do detalhe da propriedade."
+        })
+      );
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not continue checkout.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : t({ en: "Could not continue checkout.", es: "No se pudo continuar con el checkout.", pt: "Nao foi possivel continuar com o checkout." })
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -276,7 +232,7 @@ export function CheckoutPageClient() {
   if (isLoading) {
     return (
       <Card className="p-4 text-sm text-slate-300">
-        Loading cart...
+        {t({ en: "Loading cart...", es: "Cargando carrito...", pt: "Carregando carrinho..." })}
       </Card>
     );
   }
@@ -296,6 +252,34 @@ export function CheckoutPageClient() {
           <span className="text-sm text-slate-300">{totalAmountLabel}</span>
         </div>
 
+        {cart?.onboardingReward?.status === "earned" ? (
+          <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+              {t({ en: "Onboarding credit", es: "Crédito de onboarding", pt: "Crédito de onboarding" })}
+            </p>
+            <p className="mt-1 text-sm text-white">
+              {t({
+                en: `You have ${formatUsdByLocale(cart.onboardingReward.rewardAmountUsdSnapshot, locale)} available for a one-time discount on this purchase.`,
+                es: `Tienes ${formatUsdByLocale(cart.onboardingReward.rewardAmountUsdSnapshot, locale)} disponibles para un descuento único en esta compra.`,
+                pt: `Você tem ${formatUsdByLocale(cart.onboardingReward.rewardAmountUsdSnapshot, locale)} disponíveis para um desconto único nesta compra.`
+              })}
+            </p>
+            <label className="mt-3 flex min-h-11 items-center gap-3 text-sm text-white/85">
+              <input
+                checked={applyOnboardingReward}
+                className="h-4 w-4"
+                onChange={(event) => setApplyOnboardingReward(event.target.checked)}
+                type="checkbox"
+              />
+              {t({
+                en: "Apply onboarding credit to this order",
+                es: "Aplicar crédito de onboarding a esta orden",
+                pt: "Aplicar crédito de onboarding neste pedido"
+              })}
+            </label>
+          </div>
+        ) : null}
+
         {!cart || cart.items.length === 0 ? (
           <p className="text-sm text-slate-300">Your cart is empty. Add items from property details.</p>
         ) : (
@@ -304,7 +288,7 @@ export function CheckoutPageClient() {
               <div key={item.propertyId} className="rounded-lg border border-white/15 bg-white/[0.02] p-3">
                 <p className="text-sm font-semibold text-slate-100">{item.title}</p>
                 <p className="text-xs text-slate-400">{item.locationLabel}</p>
-                <p className="mt-1 text-sm text-slate-200">{item.quantity} x {formatUsd(item.unitPriceUsd)} = {formatUsd(item.lineTotalUsd)}</p>
+                <p className="mt-1 text-sm text-slate-200">{item.quantity} x {formatUsdByLocale(item.unitPriceUsd, locale)} = {formatUsdByLocale(item.lineTotalUsd, locale)}</p>
                 <Button
                   className="mt-2 min-h-11"
                   variant="outline"
@@ -321,39 +305,39 @@ export function CheckoutPageClient() {
       </Card>
 
       <Card className="space-y-4 p-4">
+        {cart ? (
+          <div className="space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-200">
+            <div className="flex items-center justify-between gap-3">
+              <span>Subtotal</span>
+              <span>{formatUsdByLocale(cart.totalAmountUsd, locale)}</span>
+            </div>
+            {applyOnboardingReward && cart.onboardingReward?.status === "earned" ? (
+              <div className="flex items-center justify-between gap-3 text-emerald-200">
+                <span>{t({ en: "Onboarding discount", es: "Descuento de onboarding", pt: "Desconto de onboarding" })}</span>
+                <span>-{formatUsdByLocale(Math.min(cart.onboardingReward.rewardAmountUsdSnapshot, cart.totalAmountUsd), locale)}</span>
+              </div>
+            ) : null}
+            <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-2 font-semibold text-white">
+              <span>Total due</span>
+              <span>{totalAmountLabel}</span>
+            </div>
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold text-white">Payment method</h2>
-          <Button
-            className="min-h-11"
-            variant={isSandboxModeEnabled ? "outline" : "ghost"}
-            onClick={() => {
-              setIsSandboxModeEnabled((current) => !current);
-            }}
-          >
-            {isSandboxModeEnabled ? "Modo pruebas: ON (Sandbox)" : "Modo pruebas: OFF (Live)"}
-          </Button>
+          <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-100">
+            {t({ en: "Crypto only", es: "Solo crypto", pt: "Somente crypto" })}
+          </span>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Button
-            className="min-h-11"
-            variant={paymentMethod === "airwallex" ? "primary" : "outline"}
-            onClick={() => {
-              setPaymentMethod("airwallex");
-            }}
-          >
-            Card / Account (Airwallex)
-          </Button>
-          <Button
-            className="min-h-11"
-            variant={paymentMethod === "crypto" ? "primary" : "outline"}
-            onClick={() => {
-              setPaymentMethod("crypto");
-            }}
-          >
-            Crypto
-          </Button>
-        </div>
+        <p className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-200">
+          {t({
+            en: "Card payments are temporarily unavailable. Checkout remains active for crypto orders.",
+            es: "Los pagos con tarjeta están temporalmente inactivos. El checkout sigue activo para órdenes crypto.",
+            pt: "Os pagamentos com cartão estão temporariamente indisponíveis. O checkout continua ativo para pedidos crypto."
+          })}
+        </p>
 
         <Button
           className="min-h-11 w-full"
@@ -362,12 +346,18 @@ export function CheckoutPageClient() {
             void handleCreateOrder();
           }}
         >
-          {isProcessing ? "Processing..." : "Create order and continue"}
+          {isProcessing
+            ? t({ en: "Processing...", es: "Procesando...", pt: "Processando..." })
+            : t({ en: "Create crypto order and continue", es: "Crear orden crypto y continuar", pt: "Criar pedido crypto e continuar" })}
         </Button>
 
         {order ? (
           <p className="text-xs text-slate-400">
-            Current order: {order.orderId} ({order.status})
+            {t({
+              en: `Current order: ${order.orderId} (${order.status}) • subtotal ${formatUsdByLocale(order.subtotalAmountUsd, locale)} • discount ${formatUsdByLocale(order.discountAmountUsd, locale)} • total ${formatUsdByLocale(order.totalAmountUsd, locale)}`,
+              es: `Orden actual: ${order.orderId} (${order.status}) • subtotal ${formatUsdByLocale(order.subtotalAmountUsd, locale)} • descuento ${formatUsdByLocale(order.discountAmountUsd, locale)} • total ${formatUsdByLocale(order.totalAmountUsd, locale)}`,
+              pt: `Pedido atual: ${order.orderId} (${order.status}) • subtotal ${formatUsdByLocale(order.subtotalAmountUsd, locale)} • desconto ${formatUsdByLocale(order.discountAmountUsd, locale)} • total ${formatUsdByLocale(order.totalAmountUsd, locale)}`
+            })}
           </p>
         ) : null}
       </Card>

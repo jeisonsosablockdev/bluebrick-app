@@ -31,6 +31,20 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
+async function readJsonPayload<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const rawBody = await response.text();
+
+  if (!rawBody.trim()) {
+    throw new Error(fallbackMessage);
+  }
+
+  try {
+    return JSON.parse(rawBody) as T;
+  } catch {
+    throw new Error(fallbackMessage);
+  }
+}
+
 export async function fetchAuthMe(): Promise<AuthMeResponse> {
   const response = await fetch("/api/auth/me", { method: "GET", cache: "no-store" });
 
@@ -38,12 +52,12 @@ export async function fetchAuthMe(): Promise<AuthMeResponse> {
     throw new Error("Could not read auth session.");
   }
 
-  return (await response.json()) as AuthMeResponse;
+  return readJsonPayload<AuthMeResponse>(response, "Could not check current session.");
 }
 
 export async function fetchNonce(): Promise<string> {
   const response = await fetch("/api/auth/nonce", { method: "GET" });
-  const payload = (await response.json()) as NonceResponse;
+  const payload = await readJsonPayload<NonceResponse>(response, "Could not fetch nonce.");
 
   if (!response.ok || !payload.nonce) {
     throw new Error("Could not fetch nonce.");
@@ -65,7 +79,7 @@ export async function verifySiwsMessage(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input)
   });
-  const payload = (await response.json()) as VerifyResponse;
+  const payload = await readJsonPayload<VerifyResponse>(response, "Authentication failed.");
 
   if (!response.ok) {
     throw new Error(payload.error ?? "Authentication failed.");

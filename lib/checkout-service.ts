@@ -5,6 +5,7 @@ import {
   type AirwallexRuntimeMode,
   retrieveAirwallexPaymentIntent
 } from "@/lib/airwallex-client";
+import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
 import {
   ensureNonNegativeAmount,
   ensurePositiveQuantity,
@@ -37,6 +38,13 @@ import {
   type OrderRecord,
   type OrderItemRecord
 } from "@/lib/checkout-repository";
+import {
+  consumeOnboardingRewardReservationForOrder,
+  getOnboardingRewardForWallet,
+  releaseOnboardingRewardReservationForOrder,
+  reserveOnboardingRewardForOrder,
+  type OnboardingRewardSnapshot
+} from "@/lib/onboarding-reward-service";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 const ORDER_EXPIRY_MINUTES = 30;
@@ -71,6 +79,7 @@ export type CheckoutCart = {
   items: CheckoutCartItem[];
   totalItems: number;
   totalAmountUsd: number;
+  onboardingReward: OnboardingRewardSnapshot | null;
 };
 
 export type CheckoutOrder = {
@@ -78,7 +87,10 @@ export type CheckoutOrder = {
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod | null;
   currency: string;
+  subtotalAmountUsd: number;
+  discountAmountUsd: number;
   totalAmountUsd: number;
+  appliedOnboardingRewardId: string | null;
   expiresAt: string | null;
   items: Array<{
     propertyId: string;
@@ -144,13 +156,15 @@ async function buildCart(walletPublicKey: string): Promise<CheckoutCart> {
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalAmountUsd = roundMoney(items.reduce((acc, item) => acc + item.lineTotalUsd, 0));
+  const onboardingReward = await getOnboardingRewardForWallet(walletPublicKey).catch(() => null);
 
   return {
     cartId: cart.id,
     walletPublicKey: cart.walletPublicKey,
     items,
     totalItems,
-    totalAmountUsd
+    totalAmountUsd,
+    onboardingReward
   };
 }
 
@@ -208,7 +222,10 @@ function toOrderView(order: OrderRecord, items: OrderItemRecord[]): CheckoutOrde
     status: order.status,
     paymentMethod: order.paymentMethod,
     currency: order.currency,
+    subtotalAmountUsd: roundMoney(order.subtotalAmountUsd),
+    discountAmountUsd: roundMoney(order.discountAmountUsd),
     totalAmountUsd: roundMoney(order.totalAmountUsd),
+    appliedOnboardingRewardId: order.appliedOnboardingRewardId,
     expiresAt: order.expiresAt,
     items: items.map((item) => ({
       propertyId: item.propertyId,
@@ -227,10 +244,20 @@ export async function createOrderFromCart(input: {
   walletPublicKey: string;
   paymentMethod: CheckoutPaymentMethod;
   idempotencyKey?: string;
+  applyOnboardingReward?: boolean;
 }): Promise<CheckoutOrder> {
   const method = input.paymentMethod;
   if (method !== "crypto" && method !== "airwallex") {
     throw new CheckoutError("PAYMENT_METHOD_INVALID", "Unsupported payment method.", 400);
+  }
+
+  const disabledMethodError = getCheckoutPaymentMethodDisabledError(method);
+  if (disabledMethodError) {
+    throw new CheckoutError(
+      disabledMethodError.code,
+      disabledMethodError.message,
+      disabledMethodError.status
+    );
   }
 
   const idempotencyKey = input.idempotencyKey?.trim() || generateUuidV7();
@@ -243,17 +270,31 @@ export async function createOrderFromCart(input: {
       throw new CheckoutError("CART_EMPTY", "Cart is empty.", 400);
     }
 
-    const totalAmountUsd = roundMoney(
+    const subtotalAmountUsd = roundMoney(
       items.reduce((acc, item) => acc + roundMoney(item.quantity * item.unitPriceUsd), 0)
     );
+    const orderId = generateUuidV7();
+    const reservedReward =
+      input.applyOnboardingReward === false
+        ? null
+        : await reserveOnboardingRewardForOrder({
+            walletPublicKey: input.walletPublicKey,
+            orderId,
+            subtotalAmountUsd
+          }, { client });
+    const discountAmountUsd = roundMoney(reservedReward?.discountAmountUsd ?? 0);
+    const totalAmountUsd = roundMoney(Math.max(0, subtotalAmountUsd - discountAmountUsd));
 
     const order = await createOrder({
-      id: generateUuidV7(),
+      id: orderId,
       walletPublicKey: input.walletPublicKey,
       sourceCartId: cart.id,
       status: "pending_payment",
       paymentMethod: method,
+      subtotalAmountUsd,
+      discountAmountUsd,
       totalAmountUsd,
+      appliedOnboardingRewardId: reservedReward?.rewardId ?? null,
       currency: "USD",
       expiresAt: resolveOrderExpiryIso(),
       idempotencyKey
@@ -365,6 +406,15 @@ export async function startOrderPayment(input: {
   paymentMethod: CheckoutPaymentMethod;
   runtimeMode?: AirwallexRuntimeMode;
 }): Promise<StartPaymentResult> {
+  const disabledMethodError = getCheckoutPaymentMethodDisabledError(input.paymentMethod);
+  if (disabledMethodError) {
+    throw new CheckoutError(
+      disabledMethodError.code,
+      disabledMethodError.message,
+      disabledMethodError.status
+    );
+  }
+
   const order = await assertOrderOwnedByWallet(input.orderId, input.walletPublicKey);
   assertOrderIsPayable(order);
 
@@ -416,10 +466,20 @@ export async function startOrderPayment(input: {
       }
     }, runtimeMode);
   } catch (reason) {
+    await releaseOnboardingRewardReservationForOrder(order.id);
+    await updateOrderStatus({
+      orderId: order.id,
+      status: "failed"
+    });
     throw toPaymentProviderCheckoutError(reason);
   }
 
   if (!intent.clientSecret) {
+    await releaseOnboardingRewardReservationForOrder(order.id);
+    await updateOrderStatus({
+      orderId: order.id,
+      status: "failed"
+    });
     throw new CheckoutError(
       "PAYMENT_PROVIDER_ERROR",
       "Airwallex did not return client_secret. Verify the PaymentIntent response.",
@@ -582,6 +642,12 @@ export async function reconcileAirwallexPaymentIntent(input: {
       orderId: order.id,
       status: orderTransition.value
     }, { client });
+
+    if (orderTransition.value === "paid") {
+      await consumeOnboardingRewardReservationForOrder(order.id, { client });
+    } else if (["failed", "expired", "canceled"].includes(orderTransition.value)) {
+      await releaseOnboardingRewardReservationForOrder(order.id, { client });
+    }
 
     return { processed: true };
   });

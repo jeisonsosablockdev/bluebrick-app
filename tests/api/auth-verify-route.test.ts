@@ -8,7 +8,8 @@ const routeMocks = vi.hoisted(() => ({
   setSessionCookie: vi.fn(),
   clearNonceCookie: vi.fn(),
   isWalletRegistered: vi.fn(),
-  bindReferralAtFirstAuth: vi.fn()
+  bindReferralAtFirstAuth: vi.fn(),
+  ensureOnboardingRewardRegistered: vi.fn()
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -25,6 +26,10 @@ vi.mock("@/lib/compliance/profile-repository", () => ({
 
 vi.mock("@/lib/referrals/repository", () => ({
   bindReferralAtFirstAuth: routeMocks.bindReferralAtFirstAuth
+}));
+
+vi.mock("@/lib/onboarding-reward-service", () => ({
+  ensureOnboardingRewardRegistered: routeMocks.ensureOnboardingRewardRegistered
 }));
 
 import { POST } from "@/app/api/auth/verify/route";
@@ -52,6 +57,9 @@ describe("POST /api/auth/verify", () => {
     routeMocks.isWalletRegistered.mockResolvedValue(false);
     routeMocks.clearNonceCookie.mockImplementation((response: NextResponse) => response);
     routeMocks.setSessionCookie.mockImplementation((response: NextResponse) => response);
+    routeMocks.ensureOnboardingRewardRegistered.mockResolvedValue({
+      id: "reward-1"
+    });
     routeMocks.bindReferralAtFirstAuth.mockResolvedValue({
       outcome: "bound",
       attribution: {
@@ -97,6 +105,7 @@ describe("POST /api/auth/verify", () => {
         utmSource: "telegram"
       }
     });
+    expect(routeMocks.ensureOnboardingRewardRegistered).toHaveBeenCalledWith("Wallet11111111111111111111111111111111111");
   });
 
   it("does not bind a referral for an already registered wallet", async () => {
@@ -118,6 +127,23 @@ describe("POST /api/auth/verify", () => {
     expect(payload.isNewUser).toBe(false);
     expect(payload.referralBindingOutcome).toBe("skipped_existing_wallet");
     expect(routeMocks.bindReferralAtFirstAuth).not.toHaveBeenCalled();
+  });
+
+  it("keeps authentication successful when onboarding reward registration fails", async () => {
+    routeMocks.ensureOnboardingRewardRegistered.mockRejectedValueOnce(new Error("relation user_onboarding_rewards does not exist"));
+
+    const response = await POST(
+      createRequest({
+        message: "signed-message",
+        signature: "signature-1",
+        publicKey: "Wallet11111111111111111111111111111111111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.publicKey).toBe("Wallet11111111111111111111111111111111111");
   });
 
   it("clears nonce cookie and returns verification error when SIWS verification fails", async () => {

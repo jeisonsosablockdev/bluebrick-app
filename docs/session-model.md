@@ -6,6 +6,12 @@ Last Updated: 2026-05-06
 - Technical project slug references were renamed from `solana-test-1` to `brids`.
 - This change does not modify cookie names, token semantics, session expiration, or server-side authorization rules.
 
+## BRI-151 Onboarding Reward Session Notes
+- The onboarding reward feature does not introduce a new auth token, cookie, or role.
+- Reward registration happens after successful SIWS verification and is bound to the authenticated `wallet_public_key`.
+- The post-auth decision modal is client-side navigation UX only; it never mutates, extends, or bypasses `siws_session`.
+- Reward qualification and checkout consumption remain server-authoritative and are derived from persisted profile, KYC, and order state.
+
 ## Scope
 - Feature: SIWS-backed wallet session for Next.js App Router frontend.
 - Roles: `user` and `admin` resolved from wallet allowlist on the server.
@@ -44,19 +50,23 @@ Last Updated: 2026-05-06
 - Server-side checks per request:
   - `GET /api/auth/me` exposes `{ authenticated, pubkey, role }`.
   - `POST /api/auth/verify` may bind a referral only during first-auth wallet creation semantics and never for already-registered wallets.
+  - `POST /api/auth/verify` also ensures a wallet-bound onboarding reward record exists for the authenticated profile without changing session semantics.
   - `GET /api/referrals/preview` is intentionally public and only returns truncated referrer display data for a valid referral code.
   - `GET /api/protected/referrals/summary` requires a valid SIWS session and always binds aggregate referral metrics to the authenticated wallet.
   - `GET /api/protected/referrals/invitees` requires a valid SIWS session and always returns a backend-paginated, privacy-safe invitee feed for the authenticated wallet.
   - `GET /api/protected/me` requires a valid session and returns `401` otherwise.
-  - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session and always bind writes to session wallet.
+  - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session, always bind writes to session wallet, and include the current onboarding reward snapshot for that wallet.
   - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
   - `POST /api/protected/kyc/stripe/session` requires valid SIWS session and applies wallet/IP rate limit before creating provider session.
   - `POST /api/protected/kyc/stripe/session` also triggers AML screening (`kyc_session_started`) server-side.
+  - Reward status is recalculated server-side after profile updates, KYC session creation, Stripe KYC webhooks, and admin KYC decisions.
   - `/admin/**` proxy redirects unauthorized requests to `/403`.
   - Admin pages and `/api/admin/*` handlers perform explicit role re-checks.
   - Purchase challenge endpoint (`/api/purchase/challenge`) requires valid SIWS session.
   - Purchase mutation endpoints (`/api/purchase/prepare`, `/api/purchase/submit`) require valid SIWS session, challenge verification, and wallet ownership checks.
   - Checkout endpoints (`/api/checkout/cart`, `/api/checkout/order`, `/api/checkout/order/:orderId`, `/api/checkout/payment/start`) require valid SIWS session and wallet ownership checks.
+  - `POST /api/checkout/order` may reserve an earned onboarding reward, but the client only sends intent (`applyOnboardingReward`); the backend computes and locks the actual discount.
+  - `airwallex` is intentionally suspended at the application layer; order creation and payment start return `PAYMENT_METHOD_DISABLED`, while crypto checkout remains active.
   - H6 signing console in `/admin` orchestrates batch signature submission, but never bypasses backend checks.
   - Mint orchestrator endpoints enforce `admin` role at handler level before any state transition.
   - H7 permanent-authority gate freezes manual job mutations to the creator wallet (`createdBy`).
@@ -87,6 +97,7 @@ Last Updated: 2026-05-06
 4. Handler/page layer:
   - `/api/admin/ping` and `app/admin/page.tsx` repeat the role check (defense in depth).
   - `/api/protected/profile`, `/api/protected/kyc/status`, and `/api/protected/kyc/stripe/session` require authenticated wallet and never trust wallet identity from client payload.
+  - Onboarding reward status shown in protected UI is informational only; profile completion, KYC timing, reward earning, reservation, release, and consumption are computed server-side.
   - `/api/protected/referrals/summary` and `/api/protected/referrals/invitees` require authenticated wallet and never trust referrer identity from client payload.
   - `/api/purchase/challenge`, `/api/purchase/prepare`, and `/api/purchase/submit` require authenticated wallet and never trust client-provided payer identity.
   - `/api/checkout/cart`, `/api/checkout/order`, `/api/checkout/order/:orderId`, and `/api/checkout/payment/start` require authenticated wallet and never trust client-provided wallet identity.
@@ -105,7 +116,7 @@ Last Updated: 2026-05-06
   - `POST /api/webhooks/helius/mint-orchestrator` optionally enforces `HELIUS_WEBHOOK_SECRET`.
   - Replay retries are deduplicated before signature reconciliation.
   - `POST /api/webhooks/stripe/identity` requires valid Stripe signature and idempotent event ingestion by `provider_event_id`.
-  - `POST /api/webhooks/airwallex` requires `x-timestamp` + `x-signature`, validates `HMAC_SHA256(timestamp + rawBody)` with `AIRWALLEX_WEBHOOK_SECRET`, enforces freshness tolerance, and deduplicates provider event ids.
+  - `POST /api/webhooks/airwallex` requires `x-timestamp` + `x-signature`, validates `HMAC_SHA256(timestamp + rawBody)` with `AIRWALLEX_WEBHOOK_SECRET`, enforces freshness tolerance, and deduplicates provider event ids. The webhook stays available even while card checkout is suspended.
   - Internal AML route accepts either SIWS-admin or internal service token and never trusts client role payload.
 6. DAS read layer:
   - `POST /api/admin/mint-orchestrator/jobs/:jobId/reconcile/das` queries devnet DAS with bounded pagination.
@@ -150,6 +161,8 @@ Last Updated: 2026-05-06
   - Manual state mutations are denied with `403` when admin actor differs from immutable job authority (`createdBy`).
   - Webhook events are deduplicated by provider event id/fingerprint.
   - Stripe KYC events are deduplicated by `provider_event_id` and do not store raw payload PII fields.
+  - Onboarding reward reservation and consumption are row-locked against the persisted reward record so one earned discount cannot back multiple orders.
+  - Reward state transitions are recalculated from persisted timestamps (`initial_registration_at`, `qualification_deadline_at`, `kyc_submitted_at`, `kyc_review_grace_deadline_at`, `kyc_verified_at`) instead of client clocks.
   - DAS reconciliation only confirms submitted items with known `expectedAddress`.
   - Snapshot persistence is idempotent at DB level via `asset_mint_snapshots.mint_job_id UNIQUE`.
   - Session-linked asset uploads can be canceled or promoted only through server-side repository helpers; promoted uploads are then excluded from orphan cleanup.
