@@ -79,6 +79,18 @@ npm run pr:open -- \
   --base develop
 ```
 
+## Shared Learning Loop
+If a branch discovers a reusable workflow, command, anti-pattern, or repeated source of friction:
+- capture it under `docs/knowledge/inbox/*`,
+- refresh the shared index with `npm run knowledge:index`,
+- and keep promotion to `guide`, `governance`, or `automation` behind human review.
+
+Supporting commands:
+- `npm run knowledge:scan -- --base develop`
+- `npm run knowledge:index`
+- `npm run knowledge:drift`
+- `npm run validate:knowledge`
+
 ## New Automation Commands
 ### `npm run pr:metadata -- ...`
 Local metadata lint for PR body and labels.
