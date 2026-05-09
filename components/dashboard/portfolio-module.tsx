@@ -10,6 +10,7 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 type PortfolioStatus = "available" | "staked" | "frozen";
 
@@ -295,6 +296,7 @@ function DetailModal({
   onClose: () => void;
 }): ReactElement {
   const { t } = useI18n();
+  const showYieldLink = isReleaseControlledRouteVisible("/protected/rentas");
   const canStake = item.status === "available";
   const canUnstake = item.status === "staked";
   const showOnlyYield = item.status === "frozen";
@@ -428,7 +430,7 @@ function DetailModal({
                   Unstake
                 </Button>
               )}
-              {(showOnlyYield || canStake || canUnstake) && (
+              {(showOnlyYield || canStake || canUnstake) && showYieldLink && (
                 <Link
                   className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 text-sm text-white/90 hover:bg-white/10"
                   href="/protected/rentas"

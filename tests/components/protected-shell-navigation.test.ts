@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   buildProtectedNavigation,
@@ -11,8 +11,31 @@ function english(text: LocaleText): string {
   return text.en;
 }
 
+const originalNodeEnv = process.env.NODE_ENV;
+const originalFlag = process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+
+function setNodeEnv(value: string | undefined): void {
+  Object.defineProperty(process.env, "NODE_ENV", {
+    value,
+    configurable: true
+  });
+}
+
 describe("components/dashboard/protected-shell", () => {
+  afterEach(() => {
+    setNodeEnv(originalNodeEnv);
+
+    if (originalFlag === undefined) {
+      delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+    } else {
+      process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES = originalFlag;
+    }
+  });
+
   it("includes a dedicated referral rewards tab in protected navigation", () => {
+    setNodeEnv("development");
+    delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+
     const navigation = buildProtectedNavigation(english);
 
     expect(navigation[0]?.href).toBe("/protected");
@@ -27,9 +50,26 @@ describe("components/dashboard/protected-shell", () => {
   });
 
   it("resolves the current protected module from the active route", () => {
+    setNodeEnv("development");
+    delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+
     const navigation = buildProtectedNavigation(english);
 
     expect(resolveCurrentProtectedModule("/protected/referrals", navigation).label).toBe("Referral Rewards");
     expect(resolveCurrentProtectedModule("/unknown", navigation).label).toBe("Overview");
+  });
+
+  it("hides release-controlled protected modules in production-like builds", () => {
+    setNodeEnv("production");
+    delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
+
+    const navigation = buildProtectedNavigation(english);
+    const routes = navigation.map((item) => item.href);
+
+    expect(routes).toEqual([
+      "/protected",
+      "/protected/referrals",
+      "/protected/perfil"
+    ]);
   });
 });

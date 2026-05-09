@@ -2,12 +2,14 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 
 import type { LocaleText } from "@/lib/i18n";
+import { areDevOnlyModulesVisible } from "@/lib/release-module-visibility";
 
 type AdminNavigationItemDefinition = {
   label: LocaleText;
   route: string;
   icon: string;
   badgeCount?: number;
+  releaseControlled?: boolean;
 };
 
 type AdminNavigationSectionDefinition = {
@@ -39,19 +41,19 @@ const ADMIN_NAVIGATION_DEFINITIONS: AdminNavigationSectionDefinition[] = [
   {
     section: { en: "Operations", es: "Operacion", pt: "Operacao" },
     items: [
-      { label: { en: "Mint", es: "Mint", pt: "Mint" }, route: "/admin/mint", icon: "MI" },
+      { label: { en: "Mint", es: "Mint", pt: "Mint" }, route: "/admin/mint", icon: "MI", releaseControlled: true },
       { label: { en: "Compliance", es: "Cumplimiento", pt: "Compliance" }, route: "/admin/compliance", icon: "CP" },
       { label: { en: "Collections", es: "Colecciones", pt: "Colecoes" }, route: "/admin/collections", icon: "CO" },
       { label: { en: "Collections health", es: "Salud de colecciones", pt: "Saude de colecoes" }, route: "/admin/health/collections", icon: "HL" },
       { label: { en: "Sales", es: "Ventas", pt: "Vendas" }, route: "/admin/sales", icon: "VE" },
-      { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", icon: "TE" },
-      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "DI" },
+      { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", icon: "TE", releaseControlled: true },
+      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "DI", releaseControlled: true },
       { label: { en: "Monitoring", es: "Monitoreo", pt: "Monitoramento" }, route: "/admin/monitoring", icon: "MO", badgeCount: 3 }
     ]
   },
   {
     section: { en: "System", es: "Sistema", pt: "Sistema" },
-    items: [{ label: { en: "Settings", es: "Configuracion", pt: "Configuracao" }, route: "/admin/settings", icon: "CF" }]
+    items: [{ label: { en: "Settings", es: "Configuracion", pt: "Configuracao" }, route: "/admin/settings", icon: "CF", releaseControlled: true }]
   }
 ];
 
@@ -124,15 +126,19 @@ export function isAdminRouteActive(pathname: string, route: string): boolean {
 export function buildAdminNavigation(
   localizeText: (text: LocaleText) => string
 ): AdminNavigationSection[] {
+  const showDevOnlyModules = areDevOnlyModulesVisible();
+
   return ADMIN_NAVIGATION_DEFINITIONS.map((section) => ({
     section: localizeText(section.section),
-    items: section.items.map((item) => ({
-      label: localizeText(item.label),
-      route: item.route,
-      icon: item.icon,
-      badgeCount: item.badgeCount
-    }))
-  }));
+    items: section.items
+      .filter((item) => showDevOnlyModules || !item.releaseControlled)
+      .map((item) => ({
+        label: localizeText(item.label),
+        route: item.route,
+        icon: item.icon,
+        badgeCount: item.badgeCount
+      }))
+  })).filter((section) => section.items.length > 0);
 }
 
 export function resolveCurrentAdminLabel(pathname: string, navigation: AdminNavigationSection[]): string {

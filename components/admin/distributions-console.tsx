@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 type DistributionStatus = "draft" | "calculated" | "ready" | "executing" | "completed" | "failed";
 
@@ -63,6 +64,7 @@ function statusLabel(status: DistributionStatus, t: ReturnType<typeof useI18n>["
 
 export function DistributionsConsole(): ReactElement {
   const { t } = useI18n();
+  const showTreasuryLink = isReleaseControlledRouteVisible("/admin/treasury");
   const [selected, setSelected] = useState<DistributionBatch | null>(null);
 
   return (
@@ -133,11 +135,13 @@ export function DistributionsConsole(): ReactElement {
           {t({ en: "Planned integrations", es: "Integraciones previstas", pt: "Integracoes previstas" })}: <span className="font-semibold text-white">Squads</span> ({t({ en: "proposals", es: "propuestas", pt: "propostas" })}){" "}
           {t({ en: "and", es: "y", pt: "e" })} <span className="font-semibold text-white">Streamflow</span> ({t({ en: "streams by wallet", es: "streams por wallet", pt: "streams por wallet" })}).
         </p>
-        <Link href="/admin/treasury">
-          <Button className="min-h-11" variant="outline">
-            {t({ en: "Go to treasury", es: "Ir a tesoreria", pt: "Ir para tesouraria" })}
-          </Button>
-        </Link>
+        {showTreasuryLink ? (
+          <Link href="/admin/treasury">
+            <Button className="min-h-11" variant="outline">
+              {t({ en: "Go to treasury", es: "Ir a tesoreria", pt: "Ir para tesouraria" })}
+            </Button>
+          </Link>
+        ) : null}
       </Card>
 
       {selected && (

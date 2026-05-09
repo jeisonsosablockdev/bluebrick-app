@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 
 import { Card } from "@/components/ui/card";
 import { localize, type AppLocale } from "@/lib/i18n";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 function StateActionLink({
   href,
@@ -113,6 +114,8 @@ export function AdminCollectionsEmptyState({
 }: {
   locale: AppLocale;
 }): ReactElement {
+  const showMintLink = isReleaseControlledRouteVisible("/admin/mint");
+
   return (
     <div aria-live="polite">
       <CollectionsStatePanel
@@ -134,11 +137,13 @@ export function AdminCollectionsEmptyState({
             href="/admin/assets/new"
             label={localize(locale, { en: "Start a collection", es: "Crear coleccion", pt: "Criar colecao" })}
           />
-          <StateActionLink
-            href="/admin/mint"
-            label={localize(locale, { en: "Review mint tools", es: "Revisar herramientas mint", pt: "Revisar ferramentas mint" })}
-            variant="outline"
-          />
+          {showMintLink ? (
+            <StateActionLink
+              href="/admin/mint"
+              label={localize(locale, { en: "Review mint tools", es: "Revisar herramientas mint", pt: "Revisar ferramentas mint" })}
+              variant="outline"
+            />
+          ) : null}
         </div>
       </CollectionsStatePanel>
     </div>

@@ -1,6 +1,20 @@
 # Auth Flow (SIWS)
 
-Last Updated: 2026-05-06
+Last Updated: 2026-05-09
+
+## BRI-152 Release Visibility Guard
+- Development-only dashboard/admin modules now follow a release visibility policy.
+- In RC/release-like environments, the following routes are intentionally hidden from navigation and return `404` on direct access:
+  - `/protected/portfolio`
+  - `/protected/stake`
+  - `/protected/rentas`
+  - `/protected/historial`
+  - `/admin/mint`
+  - `/admin/treasury`
+  - `/admin/distributions`
+  - `/admin/settings`
+- Local development keeps those modules visible by default.
+- Internal non-release environments can explicitly re-enable them with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`.
 
 ## BRIDS Technical Rename
 - Technical project slug references were renamed from `solana-test-1` to `brids`.

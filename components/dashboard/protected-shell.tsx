@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";
 import type { LocaleText } from "@/lib/i18n";
+import { areDevOnlyModulesVisible } from "@/lib/release-module-visibility";
 
 type ProtectedShellProps = {
   authenticatedPublicKey: string;
@@ -25,6 +26,7 @@ type NavItem = {
   label: string;
   title: string;
   description: string;
+  releaseControlled?: boolean;
 };
 
 type TranslateNavFn = (text: LocaleText) => string;
@@ -42,6 +44,8 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
+  const showDevOnlyModules = areDevOnlyModulesVisible();
+
   return [
     {
       href: "/protected",
@@ -71,7 +75,8 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         en: "Review your Fractions, valuation and position status.",
         es: "Consulta tus Fracciones, valor y estado de posiciones.",
         pt: "Consulte seus Frações, valor e estado das posicoes."
-      })
+      }),
+      releaseControlled: true
     },
     {
       href: "/protected/stake",
@@ -81,7 +86,8 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         en: "Manage staking status for your assets.",
         es: "Gestiona el estado de staking de tus activos.",
         pt: "Gerencie o status de staking dos seus ativos."
-      })
+      }),
+      releaseControlled: true
     },
     {
       href: "/protected/rentas",
@@ -91,7 +97,8 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         en: "Track available yield and claim actions.",
         es: "Monitorea rentas disponibles y acciones de claim.",
         pt: "Monitore rendas disponiveis e acoes de claim."
-      })
+      }),
+      releaseControlled: true
     },
     {
       href: "/protected/historial",
@@ -101,7 +108,8 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         en: "Audit recent events and account movements.",
         es: "Audita eventos recientes y movimientos de cuenta.",
         pt: "Audite eventos recentes e movimentacoes da conta."
-      })
+      }),
+      releaseControlled: true
     },
     {
       href: "/protected/perfil",
@@ -113,7 +121,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         pt: "Gerencie configuracoes de perfil e canais de suporte."
       })
     }
-  ];
+  ].filter((item) => showDevOnlyModules || !item.releaseControlled);
 }
 
 export function isProtectedRouteActive(pathname: string, href: string): boolean {
