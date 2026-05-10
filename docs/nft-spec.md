@@ -1,6 +1,16 @@
 # NFT Spec
 
-Last Updated: 2026-05-09
+Last Updated: 2026-05-10
+
+## Codex Orchestration Baseline Compatibility
+- No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.
+- The protected NFT avatar route keeps the same server-side contract:
+  - wallet authentication remains mandatory
+  - DAS failures still surface through the route error contract
+  - IPFS image normalization still resolves to the configured HTTPS gateway
+- Test harness compatibility was updated so the route continues to be verified correctly under the current repo baseline (`Vitest 4` + modern Node runtime):
+  - the DAS client mock now uses a class-shaped constructor mock because the route instantiates `new DasClient()`
+  - NFT avatar route assertions continue to verify the same response semantics, not a different implementation contract
 
 ## BRI-152 Release Visibility Guard
 - The admin mint console remains part of the development/operations toolset, but it is intentionally hidden in RC/release-like environments.

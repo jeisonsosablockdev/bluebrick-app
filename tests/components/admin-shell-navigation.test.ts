@@ -15,10 +15,14 @@ const originalNodeEnv = process.env.NODE_ENV;
 const originalFlag = process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
 
 function setNodeEnv(value: string | undefined): void {
-  Object.defineProperty(process.env, "NODE_ENV", {
-    value,
-    configurable: true
-  });
+  const env = process.env as Record<string, string | undefined>;
+
+  if (typeof value === "undefined") {
+    delete env.NODE_ENV;
+    return;
+  }
+
+  env.NODE_ENV = value;
 }
 
 describe("components/admin/admin-shell-navigation", () => {

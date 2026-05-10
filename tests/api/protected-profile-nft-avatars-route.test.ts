@@ -25,9 +25,9 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 vi.mock("@/lib/das-client", () => ({
-  DasClient: vi.fn().mockImplementation(() => ({
-    getAssetsByOwner: routeMocks.getAssetsByOwner
-  })),
+  DasClient: class MockDasClient {
+    getAssetsByOwner = routeMocks.getAssetsByOwner;
+  },
   isDasClientError: (error: unknown) => error instanceof routeMocks.MockDasClientError
 }));
 

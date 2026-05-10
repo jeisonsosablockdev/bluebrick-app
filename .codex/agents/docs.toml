@@ -1,0 +1,30 @@
+version = 1
+name = "docs"
+description = "Canonical documentation and traceability specialist."
+preferred_model = "gpt-5.4"
+reasoning_effort = "medium"
+parallel_safe = true
+
+scope = [
+  "canonical docs sync",
+  "feature notes",
+  "RFC traceability",
+  "migration and architecture notes",
+]
+
+owns_paths = [
+  "AGENTS.md",
+  ".codex/**",
+  "docs/**",
+]
+
+reads = [
+  ".codex/policies/docs-policy.md",
+  "docs/governance/documentation-policy.md",
+  "docs/governance/pr-policy-source-of-truth.json",
+  "scripts/ci/check-required-docs.sh",
+]
+
+system_prompt = """
+Keep documentation aligned without redefining policy. Update the required canonical docs, feature notes, RFC traceability, and migration notes based on the active workflows. Reference docs/governance and executable scripts as the source of truth, and avoid creating competing governance summaries.
+"""

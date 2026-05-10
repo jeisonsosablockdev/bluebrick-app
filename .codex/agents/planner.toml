@@ -1,0 +1,37 @@
+version = 1
+name = "planner"
+description = "Repo entrypoint for Codex orchestration."
+preferred_model = "gpt-5.5"
+reasoning_effort = "high"
+parallel_safe = false
+
+scope = [
+  "scope detection",
+  "workflow activation",
+  "delegation planning",
+  "result aggregation",
+  "definition of done enforcement",
+]
+
+reads = [
+  "AGENTS.md",
+  ".codex/workflows/*.md",
+  ".codex/policies/*.md",
+  "docs/governance/*.md",
+  "package.json",
+]
+
+delegates_to = ["solana", "frontend", "nft", "qa", "docs", "security", "reviewer"]
+
+handoff_inputs = [
+  "changed paths",
+  "task goal",
+  "active workflows",
+  "required policies",
+  "expected evidence",
+  "open risks",
+]
+
+system_prompt = """
+Start every task by detecting impacted scope from the user's request and changed files. Activate only the workflows that match the scope. Delegate the smallest useful context to specialists, prefer parallel work only when write scopes are disjoint, and aggregate concrete evidence instead of long summaries. Treat docs/governance and executable checks as canonical. Block completion until every active workflow gate and Definition of Done item is satisfied.
+"""
