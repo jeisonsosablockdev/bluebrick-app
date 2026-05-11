@@ -2,6 +2,7 @@
 const fsSync = require("node:fs");
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const { Pool } = require("pg");
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), "db", "migrations");
@@ -60,15 +61,17 @@ function loadLocalEnv() {
   loadEnvFile(".env.local");
 }
 
-function requireDatabaseUrl() {
+function hasDatabaseUrlConfigured() {
   loadLocalEnv();
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  return Boolean(process.env.DATABASE_URL?.trim());
+}
 
-  if (!databaseUrl) {
+function requireDatabaseUrl() {
+  if (!hasDatabaseUrlConfigured()) {
     throw new Error("DATABASE_URL is required for db:migrate.");
   }
 
-  return databaseUrl;
+  return process.env.DATABASE_URL.trim();
 }
 
 async function ensureMigrationTable(client) {
@@ -82,15 +85,75 @@ async function ensureMigrationTable(client) {
 
 async function listMigrationFiles() {
   const entries = await fs.readdir(MIGRATIONS_DIR, { withFileTypes: true });
-  return entries
+  const allFiles = entries
     .filter((entry) => entry.isFile() && /^[0-9]+_.*\.sql$/i.test(entry.name))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
+
+  if (process.env.DB_MIGRATE_INCLUDE_UNTRACKED === "1") {
+    return {
+      files: allFiles,
+      skippedUntracked: []
+    };
+  }
+
+  const trackedFiles = getTrackedMigrationFiles();
+  if (!trackedFiles) {
+    return {
+      files: allFiles,
+      skippedUntracked: []
+    };
+  }
+
+  return filterTrackedMigrationFiles(allFiles, trackedFiles);
 }
 
-async function hasMigration(client, id) {
-  const result = await client.query("SELECT 1 FROM schema_migrations WHERE id = $1 LIMIT 1", [id]);
-  return result.rowCount > 0;
+function getTrackedMigrationFiles() {
+  try {
+    const output = execFileSync("git", ["ls-files", "--", path.join("db", "migrations")], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    });
+
+    return new Set(
+      output
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((filePath) => path.basename(filePath))
+    );
+  } catch {
+    return null;
+  }
+}
+
+function filterTrackedMigrationFiles(allFiles, trackedFiles) {
+  const files = allFiles.filter((file) => trackedFiles.has(file));
+  const skippedUntracked = allFiles.filter((file) => !trackedFiles.has(file));
+
+  return {
+    files,
+    skippedUntracked
+  };
+}
+
+async function hasMigrationTable(client) {
+  const result = await client.query("SELECT to_regclass('public.schema_migrations') AS table_name");
+  return Boolean(result.rows[0]?.table_name);
+}
+
+async function listAppliedMigrationIds(client) {
+  if (!(await hasMigrationTable(client))) {
+    return new Set();
+  }
+
+  const result = await client.query("SELECT id FROM schema_migrations ORDER BY id ASC");
+  return new Set(result.rows.map((row) => String(row.id)));
+}
+
+function diffPendingMigrationFiles(files, appliedMigrationIds) {
+  return files.filter((file) => !appliedMigrationIds.has(file));
 }
 
 async function applyMigration(client, id) {
@@ -110,34 +173,123 @@ async function applyMigration(client, id) {
   }
 }
 
-async function main() {
+async function getMigrationStatus(client) {
+  const { files, skippedUntracked } = await listMigrationFiles();
+  const appliedMigrationIds = await listAppliedMigrationIds(client);
+  const pendingFiles = diffPendingMigrationFiles(files, appliedMigrationIds);
+
+  return {
+    files,
+    skippedUntracked,
+    appliedMigrationIds,
+    pendingFiles
+  };
+}
+
+function logSkippedUntrackedMigrations(skippedUntracked) {
+  for (const file of skippedUntracked) {
+    console.log(`Ignored untracked migration: ${file}`);
+  }
+}
+
+async function runMigrations() {
   const pool = new Pool({ connectionString: requireDatabaseUrl() });
   const client = await pool.connect();
 
   try {
     await ensureMigrationTable(client);
-    const files = await listMigrationFiles();
+    const { files, skippedUntracked, appliedMigrationIds } = await getMigrationStatus(client);
 
     if (files.length === 0) {
       console.log("No migration files found.");
-      return;
+      return {
+        files,
+        skippedUntracked,
+        appliedMigrationIds,
+        pendingFiles: []
+      };
     }
 
+    logSkippedUntrackedMigrations(skippedUntracked);
+
     for (const file of files) {
-      if (await hasMigration(client, file)) {
+      if (appliedMigrationIds.has(file)) {
         console.log(`Skipped migration: ${file}`);
         continue;
       }
 
       await applyMigration(client, file);
+      appliedMigrationIds.add(file);
     }
+
+    return {
+      files,
+      skippedUntracked,
+      appliedMigrationIds,
+      pendingFiles: []
+    };
   } finally {
     client.release();
     await pool.end();
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+async function checkPendingMigrations() {
+  const pool = new Pool({ connectionString: requireDatabaseUrl() });
+  const client = await pool.connect();
+
+  try {
+    const status = await getMigrationStatus(client);
+
+    if (status.files.length === 0) {
+      console.log("No migration files found.");
+      return status;
+    }
+
+    logSkippedUntrackedMigrations(status.skippedUntracked);
+
+    if (status.pendingFiles.length > 0) {
+      const pendingList = status.pendingFiles.map((file) => `- ${file}`).join("\n");
+      throw new Error(
+        `Pending tracked migrations detected. Run npm run db:migrate before continuing.\n${pendingList}`
+      );
+    }
+
+    console.log(`Database migrations are current (${status.files.length} tracked files).`);
+    return status;
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
+
+async function main() {
+  const checkOnly = process.argv.slice(2).includes("--check");
+
+  if (checkOnly) {
+    await checkPendingMigrations();
+    return;
+  }
+
+  await runMigrations();
+}
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  checkPendingMigrations,
+  diffPendingMigrationFiles,
+  filterTrackedMigrationFiles,
+  getMigrationStatus,
+  getTrackedMigrationFiles,
+  hasDatabaseUrlConfigured,
+  listMigrationFiles,
+  parseEnvValue,
+  requireDatabaseUrl,
+  runMigrations
+};

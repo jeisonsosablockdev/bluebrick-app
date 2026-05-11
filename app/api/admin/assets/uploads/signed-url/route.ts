@@ -100,6 +100,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const signed = await buildSignedPutUrl({
       config,
+      uploadId,
       objectKey,
       mimeType: payload.mimeType,
       sizeBytes: payload.sizeBytes,
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       uploadId,
       actorPubkey: roleResult.pubkey,
       draftId: payload.draftId,
+      editSessionId: payload.editSessionId,
       category: payload.category,
       originalFileName: payload.fileName,
       sanitizedFileName: sanitized.sanitizedFileName,

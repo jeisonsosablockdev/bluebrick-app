@@ -2,28 +2,63 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { WalletReadyState } from "@solana/wallet-adapter-base";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { OnboardingRewardDecisionModal } from "@/components/onboarding/onboarding-reward-decision-modal";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { fetchAuthMe, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import { fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import {
+  buildPhantomBrowseDeepLink,
+  buildReferralAuthMetadata,
+  buildStoredReferralHint,
+  clearStoredReferralHint,
+  deriveReferralAttributionSource,
+  normalizeReferralCodeInput,
+  readStoredReferralHint,
+  type ReferralHintOrigin,
+  writeStoredReferralHint
+} from "@/lib/referrals/client-state";
+import {
+  AUTH_SYNC_STORAGE_KEY,
+  broadcastAuthSync,
+  createAuthSyncBroadcastChannel,
+  parseAuthSyncPayload,
+  parseAuthSyncPayloadFromUnknown
+} from "@/lib/auth-sync";
 import { getWalletModalAutoClose } from "@/lib/solana";
+import {
+  formatOnboardingRewardDeadlineLabel,
+  type OnboardingRewardStatus
+} from "@/lib/onboarding-reward-copy";
+import {
+  ONBOARDING_REWARD_COMPLETE_PROFILE_HREF,
+  ONBOARDING_REWARD_EXPLORE_HREF
+} from "@/lib/onboarding-reward-navigation";
+import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
 
 type WalletModalProps = {
   initialAuth: AuthMeResponse;
 };
 
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
+const PHANTOM_INSTALL_URL = "https://phantom.app/download";
+const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
+const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
+const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
+const POST_AUTH_DECISION_QUERY_PARAM = "postAuthDecision";
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
+type MessageSigner = (message: Uint8Array) => Promise<Uint8Array>;
+type LoginMethod = "mail" | "wallet";
 
 type NavEntry = {
   href: string;
@@ -32,8 +67,94 @@ type NavEntry = {
 
 type Translate = (text: LocaleText) => string;
 
+function WalletCtaIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3.75 7.5A2.25 2.25 0 0 1 6 5.25h10.5A2.25 2.25 0 0 1 18.75 7.5v1.125H6A2.25 2.25 0 0 0 3.75 10.875V7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18 8.625H6A2.25 2.25 0 0 0 3.75 10.875v5.625A2.25 2.25 0 0 0 6 18.75h12A2.25 2.25 0 0 0 20.25 16.5v-5.625A2.25 2.25 0 0 0 18 8.625Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16.125 13.5h.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function MailMethodIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4.5 6.75h15A1.5 1.5 0 0 1 21 8.25v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 15.75v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m4.5 8.25 7.5 5.25 7.5-5.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+type OnboardingRewardSnapshot = {
+  status: OnboardingRewardStatus;
+  rewardAmountUsdSnapshot: number;
+  qualificationDeadlineAt: string;
+  shouldShowReminder: boolean;
+  isProfileComplete: boolean;
+};
+
+type ProtectedProfileResponse = {
+  ok?: boolean;
+  data?: {
+    firstName: string | null;
+    email: string | null;
+    phone: string | null;
+    onboardingReward?: OnboardingRewardSnapshot | null;
+  };
+};
+
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+}
+
+function buildPathWithoutQueryParam(pathname: string, searchParams: URLSearchParams, paramName: string): string {
+  const nextParams = new URLSearchParams(searchParams.toString());
+  nextParams.delete(paramName);
+  const query = nextParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildPathWithQueryParam(
+  pathname: string,
+  searchParams: URLSearchParams,
+  paramName: string,
+  value: string
+): string {
+  const nextParams = new URLSearchParams(searchParams.toString());
+  nextParams.set(paramName, value);
+  const query = nextParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
@@ -95,6 +216,14 @@ function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
     });
   }
 
+  if (message.includes("authentication failed")) {
+    return t({
+      en: "Authentication failed.",
+      es: "La autenticacion fallo.",
+      pt: "A autenticacao falhou."
+    });
+  }
+
   return error.message;
 }
 
@@ -126,20 +255,39 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSignerWalletAdapter {
+  return typeof (adapter as { signMessage?: unknown } | null)?.signMessage === "function";
+}
+
 export function WalletModal({ initialAuth }: WalletModalProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
+  const [postAuthDecisionReward, setPostAuthDecisionReward] = useState<OnboardingRewardSnapshot | null>(null);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralOrigin, setReferralOrigin] = useState<ReferralHintOrigin>("auto");
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const inactivityTimeoutRef = useRef<number | null>(null);
+  const phantomFallbackTimerRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
+  const authRefreshPromiseRef = useRef<Promise<void> | null>(null);
+  const persistedReferralIntentSignatureRef = useRef<string | null>(null);
   const autoCloseOnConnect = useMemo(() => getWalletModalAutoClose(), []);
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
+  const [isMobileUserAgent, setIsMobileUserAgent] = useState(false);
+  const [isInPhantomApp, setIsInPhantomApp] = useState(false);
+  const [showPhantomFallback, setShowPhantomFallback] = useState(false);
+  const [selectedLoginMethod, setSelectedLoginMethod] = useState<LoginMethod>(
+    initialAuth.federatedAuthenticated ? "wallet" : initialAuth.federatedAvailable ? "mail" : "wallet"
+  );
+  const [isReferralFieldVisible, setIsReferralFieldVisible] = useState(false);
   const walletPublicKey = publicKey?.toBase58() ?? null;
   const phantomWallet = useMemo(() => wallets.find((item) => item.adapter.name === PhantomWalletName), [wallets]);
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
@@ -153,25 +301,56 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
           ? t({ en: "Disconnecting...", es: "Desconectando...", pt: "Desconectando..." })
           : null
     );
+  const queryReferralCode = useMemo(() => {
+    const raw = searchParams.get("ref");
+    return raw ? normalizeReferralCodeInput(raw) : "";
+  }, [searchParams]);
+  const shouldPromptPostAuthDecision = searchParams.get(POST_AUTH_DECISION_QUERY_PARAM) === "1";
+  const cleanCurrentLandingPath = useMemo(
+    () => buildPathWithoutQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM),
+    [pathname, searchParams]
+  );
+  const currentLandingPath = useMemo(() => {
+    const query = searchParams.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [pathname, searchParams]);
+  const federatedSignInReturnTo = useMemo(
+    () => buildPathWithQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM, "1"),
+    [pathname, searchParams]
+  );
+  const hasWalletSession = authState.walletAuthenticated ?? authState.authenticated;
+  const hasFederatedSession = Boolean(authState.federatedAuthenticated);
+  const hasAccountSession = authState.accountAuthenticated ?? (hasWalletSession || hasFederatedSession);
+  const isFederatedLoginAvailable = Boolean(authState.federatedAvailable);
+  const shouldShowLoginMethodSwitcher = isFederatedLoginAvailable && !hasWalletSession && !hasFederatedSession;
+  const showWalletPanel = !isFederatedLoginAvailable || selectedLoginMethod === "wallet" || hasWalletSession || hasFederatedSession;
+  const showMailPanel = isFederatedLoginAvailable && selectedLoginMethod === "mail" && !hasWalletSession && !hasFederatedSession;
+  const shouldShowDisconnectButton = hasAccountSession || isConnected;
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
 
-    if (!authState.authenticated) {
+    if (!hasAccountSession) {
       return entries;
     }
 
     entries.push({ href: "/protected", label: t({ en: "Profile", es: "Perfil", pt: "Perfil" }) });
 
-    if (authState.role === "admin") {
+    if (hasWalletSession && authState.role === "admin") {
       entries.push({ href: "/admin", label: t({ en: "Dashboard", es: "Dashboard", pt: "Dashboard" }) });
     }
 
     return entries;
-  }, [authState.authenticated, authState.role, t]);
+  }, [authState.role, hasAccountSession, hasWalletSession, t]);
+
+  const headerWalletCtaLabel = hasWalletSession
+    ? t({ en: "Wallet", es: "Wallet", pt: "Wallet" })
+    : hasAccountSession
+      ? t({ en: "Account", es: "Cuenta", pt: "Conta" })
+      : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
 
   const primaryLabel = useMemo(() => {
-    if (authState.authenticated) {
+    if (hasWalletSession) {
       return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
     }
 
@@ -180,17 +359,280 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     }
 
     return t({ en: "Connect & Sign in", es: "Conectar e iniciar sesion", pt: "Conectar e entrar" });
-  }, [authState.authenticated, isConnected, t]);
+  }, [hasWalletSession, isConnected, t]);
+
+  const disconnectLabel = hasFederatedSession && !hasWalletSession && !isConnected
+    ? t({ en: "Sign out", es: "Cerrar sesion", pt: "Sair" })
+    : hasWalletSession || isConnected
+      ? t({ en: "Sign out & disconnect wallet", es: "Cerrar sesion y desconectar wallet", pt: "Sair e desconectar carteira" })
+      : t({ en: "Disconnect wallet", es: "Desconectar wallet", pt: "Desconectar carteira" });
 
   const signInStatement = t({
     en: "Sign this message to authenticate with the app.",
     es: "Firma este mensaje para autenticarte en la app.",
     pt: "Assine esta mensagem para se autenticar no app."
   });
+  const walletLinkStatement = t({
+    en: "Sign this message to link your wallet to this BRIDS account.",
+    es: "Firma este mensaje para vincular tu wallet a esta cuenta BRIDS.",
+    pt: "Assine esta mensagem para vincular sua carteira a esta conta BRIDS."
+  });
+
+  const resolveCurrentWalletPublicKey = useCallback((): string | null => {
+    return (
+      publicKey?.toBase58()
+      ?? wallet?.adapter.publicKey?.toBase58()
+      ?? wallets.find((item) => item.adapter.name === PhantomWalletName)?.adapter.publicKey?.toBase58()
+      ?? null
+    );
+  }, [publicKey, wallet, wallets]);
+
+  const waitForWalletPublicKey = useCallback(async (): Promise<string | null> => {
+    const immediatePublicKey = resolveCurrentWalletPublicKey();
+    if (immediatePublicKey) {
+      return immediatePublicKey;
+    }
+
+    const maxAttempts = 20;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+      const nextPublicKey = resolveCurrentWalletPublicKey();
+      if (nextPublicKey) {
+        return nextPublicKey;
+      }
+    }
+
+    return null;
+  }, [resolveCurrentWalletPublicKey]);
+
+  const resolveCurrentSignMessage = useCallback((): MessageSigner | null => {
+    if (signMessage) {
+      return signMessage;
+    }
+
+    if (wallet && adapterSupportsMessageSigning(wallet.adapter)) {
+      return wallet.adapter.signMessage.bind(wallet.adapter);
+    }
+
+    const phantomAdapter = wallets.find((item) => item.adapter.name === PhantomWalletName)?.adapter;
+    if (phantomAdapter && adapterSupportsMessageSigning(phantomAdapter)) {
+      return phantomAdapter.signMessage.bind(phantomAdapter);
+    }
+
+    return null;
+  }, [signMessage, wallet, wallets]);
+
+  const waitForSignMessage = useCallback(async (): Promise<MessageSigner | null> => {
+    const immediateSignMessage = resolveCurrentSignMessage();
+    if (immediateSignMessage) {
+      return immediateSignMessage;
+    }
+
+    const maxAttempts = 20;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+      const nextSignMessage = resolveCurrentSignMessage();
+      if (nextSignMessage) {
+        return nextSignMessage;
+      }
+    }
+
+    return null;
+  }, [resolveCurrentSignMessage]);
+
+  const refreshAuthState = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
+    if (authRefreshPromiseRef.current) {
+      return authRefreshPromiseRef.current;
+    }
+
+    const silent = Boolean(options?.silent);
+    const refreshPromise = (async () => {
+      try {
+        const currentAuth = await fetchAuthMe();
+        setAuthState((previous) => (
+          previous.authenticated === currentAuth.authenticated
+          && previous.federatedAvailable === currentAuth.federatedAvailable
+          && previous.accountAuthenticated === currentAuth.accountAuthenticated
+          && previous.federatedAuthenticated === currentAuth.federatedAuthenticated
+          && previous.walletAuthenticated === currentAuth.walletAuthenticated
+          && previous.authMethod === currentAuth.authMethod
+          && previous.accountId === currentAuth.accountId
+          && previous.workosUserId === currentAuth.workosUserId
+          && previous.federatedAvailable === currentAuth.federatedAvailable
+          && previous.email === currentAuth.email
+          && previous.pubkey === currentAuth.pubkey
+          && previous.role === currentAuth.role
+            ? previous
+            : currentAuth
+        ));
+
+        if (!silent) {
+          setLastError(null);
+        }
+      } catch (error) {
+        if (!silent) {
+          setLastError(getFriendlyWalletErrorMessage(error, t));
+        }
+      }
+    })();
+
+    authRefreshPromiseRef.current = refreshPromise.finally(() => {
+      authRefreshPromiseRef.current = null;
+    });
+
+    return authRefreshPromiseRef.current;
+  }, [t]);
 
   useEffect(() => {
     setAuthState(initialAuth);
   }, [initialAuth]);
+
+  useEffect(() => {
+    if (!isFederatedLoginAvailable) {
+      setSelectedLoginMethod("wallet");
+      return;
+    }
+
+    if (hasFederatedSession && !hasWalletSession) {
+      setSelectedLoginMethod("wallet");
+    }
+  }, [hasFederatedSession, hasWalletSession, isFederatedLoginAvailable]);
+
+  useEffect(() => {
+    if (queryReferralCode) {
+      const hint = buildStoredReferralHint({
+        referralCode: queryReferralCode,
+        origin: "auto",
+        landingPath: cleanCurrentLandingPath
+      });
+
+      if (hint) {
+        writeStoredReferralHint(hint);
+        setReferralCode(hint.referralCode);
+        setReferralOrigin("auto");
+      }
+
+      return;
+    }
+
+    const storedHint = readStoredReferralHint();
+    if (!storedHint) {
+      return;
+    }
+
+    setReferralCode(storedHint.referralCode);
+    setReferralOrigin(storedHint.origin);
+  }, [cleanCurrentLandingPath, queryReferralCode]);
+
+  useEffect(() => {
+    if (referralCode) {
+      setIsReferralFieldVisible(true);
+    }
+  }, [referralCode]);
+
+  useEffect(() => {
+    if (!authState.federatedAuthenticated || authState.walletAuthenticated || !authState.accountId) {
+      return;
+    }
+
+    const storedHint = readStoredReferralHint();
+    if (!storedHint) {
+      return;
+    }
+
+    const normalizedReferralCode = normalizeReferralCodeInput(storedHint.referralCode);
+    if (!normalizedReferralCode) {
+      clearStoredReferralHint();
+      return;
+    }
+
+    const attributionSource = deriveReferralAttributionSource({
+      origin: storedHint.origin,
+      isMobileWalletFlow: false
+    });
+    const signature = [
+      authState.accountId,
+      normalizedReferralCode,
+      storedHint.capturedAt,
+      storedHint.origin,
+      storedHint.landingPath ?? ""
+    ].join(":");
+
+    if (persistedReferralIntentSignatureRef.current === signature) {
+      return;
+    }
+
+    persistedReferralIntentSignatureRef.current = signature;
+
+    void persistReferralIntent({
+      referralCode: normalizedReferralCode,
+      attributionSource,
+      capturedAt: storedHint.capturedAt,
+      metadata: buildReferralAuthMetadata({
+        landingPath: storedHint.landingPath,
+        origin: storedHint.origin,
+        source: attributionSource
+      })
+    })
+      .then(() => {
+        clearStoredReferralHint();
+      })
+      .catch(() => {
+        persistedReferralIntentSignatureRef.current = null;
+      });
+  }, [authState.accountId, authState.federatedAuthenticated, authState.walletAuthenticated]);
+
+  useEffect(() => {
+    if (!shouldPromptPostAuthDecision || !hasFederatedSession || hasWalletSession || postAuthDecisionReward) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fallbackReward: OnboardingRewardSnapshot = {
+      status: "pending_profile",
+      rewardAmountUsdSnapshot: 10,
+      qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      shouldShowReminder: true,
+      isProfileComplete: false
+    };
+
+    const openDecisionModal = async (): Promise<void> => {
+      try {
+        const profileRes = await fetch("/api/protected/profile");
+        if (cancelled) {
+          return;
+        }
+
+        if (profileRes.ok) {
+          const profileData = (await profileRes.json()) as ProtectedProfileResponse;
+          setPostAuthDecisionReward(profileData.data?.onboardingReward ?? fallbackReward);
+        } else {
+          setPostAuthDecisionReward(fallbackReward);
+        }
+      } catch {
+        if (!cancelled) {
+          setPostAuthDecisionReward(fallbackReward);
+        }
+      } finally {
+        if (!cancelled && typeof window !== "undefined") {
+          window.history.replaceState(null, "", cleanCurrentLandingPath);
+        }
+      }
+    };
+
+    void openDecisionModal();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    cleanCurrentLandingPath,
+    hasFederatedSession,
+    hasWalletSession,
+    postAuthDecisionReward,
+    shouldPromptPostAuthDecision
+  ]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -217,6 +659,30 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleExternalOpen = (event: Event): void => {
+      const customEvent = event as CustomEvent<WalletModalOpenDetail>;
+      const nextLoginMethod = customEvent.detail?.loginMethod;
+
+      if (nextLoginMethod === "mail" || nextLoginMethod === "wallet") {
+        setSelectedLoginMethod(nextLoginMethod);
+      }
+
+      setIsOpen(true);
+      setLastError(null);
+    };
+
+    window.addEventListener(WALLET_MODAL_OPEN_EVENT, handleExternalOpen as EventListener);
+
+    return () => {
+      window.removeEventListener(WALLET_MODAL_OPEN_EVENT, handleExternalOpen as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -266,21 +732,64 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       return;
     }
 
-    void (async () => {
-      try {
-        const currentAuth = await fetchAuthMe();
-        setAuthState(currentAuth);
-      } catch {
-        setLastError(
-          t({
-            en: "Could not check current session.",
-            es: "No se pudo verificar la sesion actual.",
-            pt: "Nao foi possivel verificar a sessao atual."
-          })
-        );
+    void refreshAuthState();
+  }, [isOpen, refreshAuthState]);
+
+  useEffect(() => {
+    void refreshAuthState({ silent: true });
+  }, [refreshAuthState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const handleFocus = (): void => {
+      void refreshAuthState({ silent: true });
+    };
+
+    const handleVisibilityChange = (): void => {
+      if (!document.hidden) {
+        void refreshAuthState({ silent: true });
       }
-    })();
-  }, [isOpen, t]);
+    };
+
+    const handleStorage = (event: StorageEvent): void => {
+      if (event.key !== AUTH_SYNC_STORAGE_KEY) {
+        return;
+      }
+
+      if (!parseAuthSyncPayload(event.newValue)) {
+        return;
+      }
+
+      void refreshAuthState({ silent: true });
+    };
+
+    const channel = createAuthSyncBroadcastChannel();
+    const handleChannelMessage = (event: MessageEvent<unknown>): void => {
+      if (!parseAuthSyncPayloadFromUnknown(event.data)) {
+        return;
+      }
+
+      void refreshAuthState({ silent: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("storage", handleStorage);
+    channel?.addEventListener("message", handleChannelMessage);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorage);
+      if (channel) {
+        channel.removeEventListener("message", handleChannelMessage);
+        channel.close();
+      }
+    };
+  }, [refreshAuthState]);
 
   useEffect(() => {
     const hasConnectedNow = connected && Boolean(walletPublicKey);
@@ -296,7 +805,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   }, [autoCloseOnConnect, connected, isOpen, walletPublicKey]);
 
   async function handlePrimaryAction(): Promise<void> {
-    if (authState.authenticated) {
+    if (hasWalletSession) {
       return;
     }
 
@@ -307,7 +816,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         throw new Error("Phantom wallet was not found in this browser.");
       }
 
-      let activePublicKey = walletPublicKey;
+      let activePublicKey = resolveCurrentWalletPublicKey();
 
       if (!activePublicKey) {
         setPhase("connecting");
@@ -318,52 +827,113 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         }
 
         await connect();
-        activePublicKey = publicKey?.toBase58() ?? null;
+        activePublicKey = await waitForWalletPublicKey();
       }
 
       if (!activePublicKey) {
         throw new Error("Wallet connected but public key is unavailable.");
       }
 
-      if (!signMessage) {
+      const activeSignMessage = await waitForSignMessage();
+      if (!activeSignMessage) {
         throw new Error("Current wallet does not support message signing.");
+      }
+
+      const normalizedReferralCode = normalizeReferralCodeInput(referralCode);
+      const referralSource =
+        normalizedReferralCode
+          ? deriveReferralAttributionSource({
+              origin: referralOrigin,
+              isMobileWalletFlow: isMobileUserAgent || isInPhantomApp
+            })
+          : undefined;
+      const referralMetadata =
+        normalizedReferralCode && referralSource
+          ? buildReferralAuthMetadata({
+              landingPath: currentLandingPath,
+              origin: referralOrigin,
+              source: referralSource
+            })
+          : undefined;
+
+      if (hasFederatedSession && normalizedReferralCode && referralSource) {
+        await persistReferralIntent({
+          referralCode: normalizedReferralCode,
+          attributionSource: referralSource,
+          metadata: referralMetadata
+        });
       }
 
       const verifiedResult = await startSiws({
         publicKey: activePublicKey,
-        signMessage,
-        statement: signInStatement,
+        signMessage: activeSignMessage,
+        statement: hasFederatedSession ? walletLinkStatement : signInStatement,
+        noncePath: hasFederatedSession ? "/api/auth/link/wallet/nonce" : "/api/auth/nonce",
+        verifyPath: hasFederatedSession ? "/api/auth/link/wallet/verify" : "/api/auth/verify",
+        referralCode: normalizedReferralCode || undefined,
+        attributionSource: referralSource,
+        attributionMetadata: referralMetadata,
         onStatus: (status) => setPhase(status)
       });
 
-      try {
-        const currentAuth = await fetchAuthMe();
-        setAuthState(currentAuth);
-      } catch {
-        setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
+      if (normalizedReferralCode && verifiedResult.referralBindingOutcome) {
+        clearStoredReferralHint();
       }
+
+      setAuthState((previous) => ({
+        authenticated: true,
+        accountAuthenticated: true,
+        federatedAuthenticated: previous.federatedAuthenticated,
+        walletAuthenticated: true,
+        authMethod: previous.federatedAuthenticated ? "hybrid" : "wallet",
+        accountId: previous.accountId ?? null,
+        workosUserId: previous.workosUserId ?? null,
+        email: previous.email ?? null,
+        pubkey: verifiedResult.publicKey,
+        role: "user"
+      }));
+      broadcastAuthSync("login", verifiedResult.publicKey);
+      void refreshAuthState({ silent: true });
+      router.refresh();
 
       try {
         const profileRes = await fetch("/api/protected/profile");
         if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          if (!profileData.firstName || !profileData.email || !profileData.phone) {
+          const profileData = (await profileRes.json()) as ProtectedProfileResponse;
+          const onboardingReward = profileData.data?.onboardingReward ?? null;
+          const shouldShowDecision =
+            Boolean(onboardingReward?.shouldShowReminder)
+            || onboardingReward?.isProfileComplete === false
+            || Boolean(
+              !profileData.data?.firstName ||
+              !profileData.data?.email ||
+              !profileData.data?.phone
+            );
+
+          if (shouldShowDecision) {
+            setPostAuthDecisionReward(onboardingReward);
             setIsOpen(false);
-            router.push("/protected/perfil");
             return;
           }
         } else if (profileRes.status === 404) {
+          setPostAuthDecisionReward({
+            status: "pending_profile",
+            rewardAmountUsdSnapshot: 10,
+            qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            shouldShowReminder: true,
+            isProfileComplete: false
+          });
           setIsOpen(false);
-          router.push("/protected/perfil");
           return;
         }
-      } catch (err) {
-        console.error("Failed to check profile completion during auth", err);
+      } catch {
+        // Fail-open here: profile completion is checked server-side on protected routes.
       }
 
       if (verifiedResult.isNewUser) {
         setIsOpen(false);
-        router.push("/protected/perfil");
+        setPostAuthDecisionReward(null);
+        router.push("/protected");
       }
     } catch (error) {
       setLastError(getFriendlyWalletErrorMessage(error, t));
@@ -408,12 +978,35 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
       if (disconnectError || logoutError) {
         setLastError(disconnectError ?? logoutError);
+      } else if (hasFederatedSession && typeof window !== "undefined") {
+        window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
       } else {
-        setAuthState({ authenticated: false, pubkey: null });
+        setAuthState({
+          authenticated: false,
+          accountAuthenticated: false,
+          federatedAuthenticated: false,
+          walletAuthenticated: false,
+          authMethod: "anonymous",
+          accountId: null,
+          workosUserId: null,
+          email: null,
+          pubkey: null
+        });
+        broadcastAuthSync("logout", walletPublicKey);
       }
     } finally {
       setPhase("idle");
     }
+  }
+
+  function handleExploreAfterAuth(): void {
+    setPostAuthDecisionReward(null);
+    router.push(ONBOARDING_REWARD_EXPLORE_HREF);
+  }
+
+  function handleCompleteProfileAfterAuth(): void {
+    setPostAuthDecisionReward(null);
+    router.push(ONBOARDING_REWARD_COMPLETE_PROFILE_HREF);
   }
 
   async function copyAddress(): Promise<void> {
@@ -424,11 +1017,91 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     await navigator.clipboard.writeText(walletPublicKey);
   }
 
-  const accountStatusText = authState.authenticated && authState.pubkey
+  const accountStatusText = hasWalletSession && authState.pubkey
     ? `${authState.role === "admin" ? t({ en: "Admin", es: "Admin", pt: "Admin" }) : t({ en: "User", es: "Usuario", pt: "Usuario" })}: ${truncatePublicKey(authState.pubkey)}`
-    : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
+    : hasFederatedSession
+      ? `${t({ en: "Account", es: "Cuenta", pt: "Conta" })}: ${authState.email ?? t({ en: "Federated session", es: "Sesion federada", pt: "Sessao federada" })}`
+      : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
   const topFeedbackText = statusText ?? lastError;
   const isTopFeedbackStatus = Boolean(statusText);
+  const shouldShowPhantomOpenPill = isSmallViewport && isMobileUserAgent && !isInPhantomApp;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const updateMobileSignals = (): void => {
+      const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+      const userAgent = window.navigator.userAgent ?? "";
+      const phantomWindow = window as Window & {
+        phantom?: { solana?: { isPhantom?: boolean } };
+      };
+      const providerSaysPhantom = Boolean(phantomWindow.phantom?.solana?.isPhantom);
+
+      setIsSmallViewport(mediaQuery.matches);
+      setIsMobileUserAgent(MOBILE_USER_AGENT_PATTERN.test(userAgent));
+      setIsInPhantomApp(providerSaysPhantom || PHANTOM_USER_AGENT_PATTERN.test(userAgent));
+    };
+
+    updateMobileSignals();
+    window.addEventListener("resize", updateMobileSignals);
+
+    return () => {
+      window.removeEventListener("resize", updateMobileSignals);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (phantomFallbackTimerRef.current !== null) {
+        window.clearTimeout(phantomFallbackTimerRef.current);
+        phantomFallbackTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  function handleOpenInPhantom(): void {
+    if (!shouldShowPhantomOpenPill || typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    setShowPhantomFallback(false);
+
+    if (phantomFallbackTimerRef.current !== null) {
+      window.clearTimeout(phantomFallbackTimerRef.current);
+      phantomFallbackTimerRef.current = null;
+    }
+
+    const deeplink = buildPhantomBrowseDeepLink(window.location.href);
+    let phantomOpened = false;
+
+    const onVisibilityChange = (): void => {
+      if (document.hidden) {
+        phantomOpened = true;
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+
+        if (phantomFallbackTimerRef.current !== null) {
+          window.clearTimeout(phantomFallbackTimerRef.current);
+          phantomFallbackTimerRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    phantomFallbackTimerRef.current = window.setTimeout(() => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+
+      if (!phantomOpened && !document.hidden) {
+        setShowPhantomFallback(true);
+      }
+
+      phantomFallbackTimerRef.current = null;
+    }, 1800);
+
+    window.location.assign(deeplink);
+  }
 
   return (
     <>
@@ -494,9 +1167,12 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
             <div className="group relative shrink-0">
               <Button onClick={() => setIsOpen(true)} className="min-h-11 px-4">
-                {t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
+                <span className="inline-flex items-center gap-2">
+                  <WalletCtaIcon />
+                  <span>{headerWalletCtaLabel}</span>
+                </span>
               </Button>
-              {authState.authenticated && authState.pubkey ? (
+              {hasAccountSession ? (
                 <div
                   className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-max max-w-[22rem] rounded-xl border border-white/20 bg-slate-950/90 px-3 py-2 text-xs text-white/80 opacity-0 shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition group-hover:opacity-100 group-focus-within:opacity-100"
                   role="status"
@@ -535,6 +1211,51 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               })}
             </nav>
           ) : null}
+
+          {shouldShowPhantomOpenPill ? (
+            <div className="relative z-10 mt-3 sm:hidden">
+              <button
+                type="button"
+                onClick={handleOpenInPhantom}
+                className="quick-tour-pill inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-medium"
+              >
+                {t({
+                  en: "Do you use Phantom? Open in app.",
+                  es: "¿Usas Phantom? Abrir en la app.",
+                  pt: "Usa Phantom? Abrir no app."
+                })}
+              </button>
+            </div>
+          ) : null}
+
+          {showPhantomFallback && shouldShowPhantomOpenPill ? (
+            <div className="relative z-10 mt-2 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100 sm:hidden">
+              <p>
+                {t({
+                  en: "Could not open Phantom automatically.",
+                  es: "No se pudo abrir Phantom automaticamente.",
+                  pt: "Nao foi possivel abrir o Phantom automaticamente."
+                })}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <a
+                  href={PHANTOM_INSTALL_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/50 px-4 font-medium text-amber-50 transition hover:bg-amber-200/10"
+                >
+                  {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowPhantomFallback(false)}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 font-medium text-white/90 transition hover:bg-white/10"
+                >
+                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       </header>
 
@@ -554,15 +1275,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
-                    {t({ en: "Wallet Authentication", es: "Autenticacion de Wallet", pt: "Autenticacao de Wallet" })}
+                    {t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
                   </h2>
-                  <p className="text-sm text-white/70">
-                    {t({
-                      en: "Connect Phantom and sign in with SIWS.",
-                      es: "Conecta Phantom e inicia sesion con SIWS.",
-                      pt: "Conecte a Phantom e entre com SIWS."
-                    })}
-                  </p>
                 </div>
                 <button
                   ref={closeButtonRef}
@@ -593,54 +1307,185 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 </div>
               ) : null}
 
-              {isConnected ? (
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-sm text-white/85">
-                    {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+              {shouldShowLoginMethodSwitcher ? (
+                <div className="rounded-[28px] border border-white/15 bg-white/10 p-5 sm:p-6">
+                  <p className="text-base font-semibold text-white md:text-xl md:leading-tight lg:text-2xl lg:leading-tight">
+                    {t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
                   </p>
+                  <div
+                    className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                    role="tablist"
+                    aria-label={t({ en: "Login method", es: "Metodo de ingreso", pt: "Metodo de entrada" })}
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedLoginMethod === "mail"}
+                      onClick={() => setSelectedLoginMethod("mail")}
+                      className={cn(
+                        "inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full border px-5 text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80",
+                        selectedLoginMethod === "mail"
+                          ? "border-transparent bg-gradientPrimary text-white shadow-glow hover:opacity-95"
+                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                      )}
+                    >
+                      <MailMethodIcon />
+                      <span>{t({ en: "Mail", es: "Mail", pt: "Mail" })}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedLoginMethod === "wallet"}
+                      onClick={() => setSelectedLoginMethod("wallet")}
+                      className={cn(
+                        "inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full border px-5 text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80",
+                        selectedLoginMethod === "wallet"
+                          ? "border-transparent bg-gradientPrimary text-white shadow-glow hover:opacity-95"
+                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                      )}
+                    >
+                      <WalletCtaIcon />
+                      <span>{t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}</span>
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <p className="rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/70">
-                  {t({
-                    en: "Connect Phantom to continue with SIWS authentication.",
-                    es: "Conecta Phantom para continuar con la autenticacion SIWS.",
-                    pt: "Conecte a Phantom para continuar com a autenticacao SIWS."
-                  })}
-                </p>
-              )}
-
-              {!isPhantomInstalled ? (
-                <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                  {t({
-                    en: "Phantom is not installed.",
-                    es: "Phantom no esta instalada.",
-                    pt: "A Phantom nao esta instalada."
-                  })}{" "}
-                  <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href="https://phantom.app/" target="_blank" rel="noreferrer">
-                    {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
-                  </a>{" "}
-                  {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
-                </p>
               ) : null}
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button onClick={handlePrimaryAction} disabled={isBusy || authState.authenticated || !isPhantomInstalled} className="min-h-11 w-full">
-                  {primaryLabel}
-                </Button>
+              {showMailPanel ? (
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <p className="text-sm font-medium text-white">
+                    {t({ en: "Continue with email", es: "Continuar con email", pt: "Continuar com email" })}
+                  </p>
+                  <p className="mt-1 text-sm text-white/70">
+                    {t({
+                      en: "Use a familiar sign-in method first, then link your wallet later from the same BRIDS account.",
+                      es: "Usa primero un metodo de ingreso familiar y luego vincula tu wallet desde la misma cuenta BRIDS.",
+                      pt: "Use primeiro um metodo de entrada familiar e depois vincule sua carteira na mesma conta BRIDS."
+                    })}
+                  </p>
+                  <a
+                    href={`/sign-in?returnTo=${encodeURIComponent(federatedSignInReturnTo)}`}
+                    className="mt-3 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95"
+                  >
+                    <MailMethodIcon />
+                    <span>{t({ en: "Continue with email", es: "Continuar con email", pt: "Continuar com email" })}</span>
+                  </a>
+                </div>
+              ) : null}
 
-                <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                  {t({ en: "Logout & Disconnect", es: "Cerrar sesion y desconectar", pt: "Sair e desconectar" })}
-                </Button>
-              </div>
+              {showWalletPanel ? (
+                <>
+                  {isConnected ? (
+                    <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-sm text-white/85">
+                        {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+                      </p>
+                    </div>
+                  ) : null}
 
-              <Button variant="ghost" onClick={copyAddress} disabled={!walletPublicKey} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
-                {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
-              </Button>
+                  {!isPhantomInstalled ? (
+                    <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+                      {t({
+                        en: "Phantom is not installed.",
+                        es: "Phantom no esta instalada.",
+                        pt: "A Phantom nao esta instalada."
+                      })}{" "}
+                      <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href={PHANTOM_INSTALL_URL} target="_blank" rel="noreferrer">
+                        {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
+                      </a>{" "}
+                      {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
+                    </p>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsReferralFieldVisible((previous) => !previous)}
+                      className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white/85 transition hover:text-white"
+                    >
+                      <span>{t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}</span>
+                    </button>
+                    {isReferralFieldVisible ? (
+                      <>
+                        <input
+                          id="wallet-referral-code"
+                          type="text"
+                          value={referralCode}
+                          onChange={(event) => {
+                            const nextValue = normalizeReferralCodeInput(event.target.value);
+                            setReferralCode(nextValue);
+                            setReferralOrigin("manual");
+
+                            if (!nextValue) {
+                              clearStoredReferralHint();
+                              return;
+                            }
+
+                            const hint = buildStoredReferralHint({
+                              referralCode: nextValue,
+                              origin: "manual",
+                              landingPath: cleanCurrentLandingPath
+                            });
+
+                            if (hint) {
+                              writeStoredReferralHint(hint);
+                            }
+                          }}
+                          placeholder={t({
+                            en: "Paste or edit your invite code",
+                            es: "Pega o edita tu codigo de invitacion",
+                            pt: "Cole ou edite seu codigo de convite"
+                          })}
+                          className="min-h-11 w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300/45 focus:bg-white/15"
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
+                        />
+                        <p className="text-xs text-white/60">
+                          {t({
+                            en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                            es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                            pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+                          })}
+                        </p>
+                      </>
+                    ) : null}
+                  </div>
+
+                  <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                    <Button onClick={handlePrimaryAction} disabled={isBusy || hasWalletSession || !isPhantomInstalled} className="min-h-11 w-full">
+                      {primaryLabel}
+                    </Button>
+
+                    {shouldShowDisconnectButton ? (
+                      <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
+                        {disconnectLabel}
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {walletPublicKey ? (
+                    <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
+                      {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
+                    </Button>
+                  ) : null}
+                </>
+              ) : null}
 
             </div>
           </div>
         </div>
       ) : null}
+
+      <OnboardingRewardDecisionModal
+        open={Boolean(postAuthDecisionReward)}
+        qualificationDeadlineLabel={formatOnboardingRewardDeadlineLabel(postAuthDecisionReward?.qualificationDeadlineAt ?? null, locale)}
+        rewardAmountUsd={postAuthDecisionReward?.rewardAmountUsdSnapshot ?? 10}
+        walletConnected={hasWalletSession}
+        onClose={handleExploreAfterAuth}
+        onExplore={handleExploreAfterAuth}
+        onCompleteProfile={handleCompleteProfileAfterAuth}
+      />
     </>
   );
 }

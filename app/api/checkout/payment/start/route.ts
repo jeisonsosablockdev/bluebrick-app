@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
+import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
 import {
   CheckoutError,
   startOrderPayment
@@ -63,6 +64,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = parseBody(await request.json().catch(() => null));
+    const disabledMethodError = getCheckoutPaymentMethodDisabledError(body.paymentMethod);
+    if (disabledMethodError) {
+      throw new CheckoutError(
+        disabledMethodError.code,
+        disabledMethodError.message,
+        disabledMethodError.status
+      );
+    }
 
     // HARDENING-PREPROD: remove sandbox runtime override support from public API payload.
     // In production we enforce live mode only to prevent accidental sandbox payment calls.

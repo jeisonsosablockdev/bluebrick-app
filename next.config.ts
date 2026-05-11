@@ -1,8 +1,13 @@
 import type { NextConfig } from "next";
 
+import { getAllowedDevOrigins } from "./lib/dev-origins";
+import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./lib/security/headers";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
   outputFileTracingRoot: process.cwd(),
+  allowedDevOrigins: getAllowedDevOrigins(),
   images: {
     remotePatterns: [
       {
@@ -18,6 +23,17 @@ const nextConfig: NextConfig = {
         hostname: "storage.googleapis.com"
       }
     ]
+  },
+  async headers() {
+    const securityOptions = readSecurityHeadersOptionsFromEnv();
+    const securityHeaders = buildSecurityHeaders(securityOptions);
+
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders
+      }
+    ];
   }
 };
 

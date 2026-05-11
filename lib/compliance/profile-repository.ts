@@ -32,6 +32,8 @@ export type ProfileBundle = {
   rejectionReasonCode: string | null;
   kycProviderSessionId: string | null;
   kycProviderReportId: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
   isSuspended: boolean;
   complianceStatusUpdatedAt: string;
   createdAt: string;
@@ -50,6 +52,11 @@ export type UpdateProfileBasicsInput = {
   email: string | null;
   address: string | null;
   phone: string | null;
+};
+
+export type ApplyFederatedEmailPrefillInput = {
+  walletPublicKey: string;
+  email: string | null;
 };
 
 export type MarkKycSessionPendingInput = {
@@ -236,6 +243,8 @@ type ProfileBundleRow = {
   rejection_reason_code: string | null;
   kyc_provider_session_id: string | null;
   kyc_provider_report_id: string | null;
+  kyc_submitted_at: string | Date | null;
+  kyc_reviewed_at: string | Date | null;
   is_suspended: boolean;
   compliance_status_updated_at: string | Date;
   created_at: string | Date;
@@ -264,6 +273,8 @@ type InMemoryProfileState = {
   rejectionReasonCode: string | null;
   kycProviderSessionId: string | null;
   kycProviderReportId: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
   isSuspended: boolean;
   complianceStatus: ComplianceStatus;
   complianceStatusUpdatedAt: string;
@@ -276,6 +287,13 @@ const inMemoryWebhookEventIds = new Set<string>();
 const inMemoryAuditEvents: Array<RecordComplianceAuditEventInput & { id: string; createdAt: string }> = [];
 const inMemoryNotes = new Map<string, ComplianceNoteRecord[]>();
 
+export function __resetProfileRepositoryStateForTests(): void {
+  inMemoryProfiles.clear();
+  inMemoryWebhookEventIds.clear();
+  inMemoryAuditEvents.length = 0;
+  inMemoryNotes.clear();
+}
+
 function nowIso(): string {
   return new Date().toISOString();
 }
@@ -286,6 +304,15 @@ function normalizeIso(value: string | Date): string {
   }
 
   return new Date(value).toISOString();
+}
+
+function normalizeOptionalEmail(value: string | null | undefined): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized || null;
 }
 
 function normalizeOptionalIso(value: string | Date | null): string | null {
@@ -435,6 +462,8 @@ function buildDefaultInMemoryProfile(walletPublicKey: string): InMemoryProfileSt
     rejectionReasonCode: null,
     kycProviderSessionId: null,
     kycProviderReportId: null,
+    kycSubmittedAt: null,
+    kycReviewedAt: null,
     isSuspended: false,
     complianceStatus: projectComplianceStatus({
       kycStatus: "not_started",
@@ -466,6 +495,8 @@ function mapInMemoryToBundle(profile: InMemoryProfileState): ProfileBundle {
     rejectionReasonCode: profile.rejectionReasonCode,
     kycProviderSessionId: profile.kycProviderSessionId,
     kycProviderReportId: profile.kycProviderReportId,
+    kycSubmittedAt: profile.kycSubmittedAt,
+    kycReviewedAt: profile.kycReviewedAt,
     isSuspended: profile.isSuspended,
     complianceStatusUpdatedAt: profile.complianceStatusUpdatedAt,
     createdAt: profile.createdAt,
@@ -504,6 +535,8 @@ function toBundle(row: ProfileBundleRow): ProfileBundle {
     rejectionReasonCode: row.rejection_reason_code,
     kycProviderSessionId: row.kyc_provider_session_id,
     kycProviderReportId: row.kyc_provider_report_id,
+    kycSubmittedAt: normalizeOptionalIso(row.kyc_submitted_at),
+    kycReviewedAt: normalizeOptionalIso(row.kyc_reviewed_at),
     isSuspended: Boolean(row.is_suspended),
     complianceStatusUpdatedAt: normalizeIso(row.compliance_status_updated_at),
     createdAt: normalizeIso(row.created_at),
@@ -566,6 +599,8 @@ async function getProfileBundleWithClient(
        k.rejection_reason_code,
        p.kyc_provider_session_id,
        p.kyc_provider_report_id,
+       k.submitted_at AS kyc_submitted_at,
+       k.reviewed_at AS kyc_reviewed_at,
        p.is_suspended,
        p.compliance_status_updated_at,
        p.created_at,
@@ -617,6 +652,27 @@ export async function isWalletRegistered(walletPublicKey: string): Promise<boole
       [walletPublicKey]
     );
     return res.rows[0]?.exists ?? false;
+  });
+}
+
+export async function ensureProfileExists(
+  walletPublicKey: string,
+  options?: {
+    client?: PoolClient;
+  }
+): Promise<void> {
+  if (!isProfileDatabaseConfigured()) {
+    getOrCreateInMemoryProfile(walletPublicKey);
+    return;
+  }
+
+  if (options?.client) {
+    await ensureProfileExistsWithClient(options.client, walletPublicKey);
+    return;
+  }
+
+  await withDbClient(async (client) => {
+    await ensureProfileExistsWithClient(client, walletPublicKey);
   });
 }
 
@@ -695,6 +751,50 @@ export async function updateProfileBasics(input: UpdateProfileBasicsInput): Prom
   }
 }
 
+export async function applyFederatedEmailPrefill(input: ApplyFederatedEmailPrefillInput): Promise<ProfileBundle> {
+  const normalizedEmail = normalizeOptionalEmail(input.email);
+
+  if (!normalizedEmail) {
+    if (!isProfileDatabaseConfigured()) {
+      return mapInMemoryToBundle(getOrCreateInMemoryProfile(input.walletPublicKey));
+    }
+
+    return getOrCreateProfileBundle(input.walletPublicKey);
+  }
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = getOrCreateInMemoryProfile(input.walletPublicKey);
+
+    if (!profile.email) {
+      profile.email = normalizedEmail;
+      profile.updatedAt = nowIso();
+      inMemoryProfiles.set(profile.walletPublicKey, profile);
+    }
+
+    return mapInMemoryToBundle(profile);
+  }
+
+  return withDbClient(async (client) => {
+    await ensureProfileExistsWithClient(client, input.walletPublicKey);
+
+    await client.query(
+      `UPDATE user_profiles
+          SET email = $2,
+              updated_at = NOW()
+        WHERE wallet_public_key = $1
+          AND COALESCE(NULLIF(BTRIM(email), ''), NULL) IS NULL`,
+      [input.walletPublicKey, normalizedEmail]
+    );
+
+    const profile = await getProfileBundleWithClient(client, input.walletPublicKey);
+    if (!profile) {
+      throw new Error("Could not read wallet profile after federated email prefill.");
+    }
+
+    return profile;
+  });
+}
+
 export async function markKycSessionPending(input: MarkKycSessionPendingInput): Promise<void> {
   if (!isProfileDatabaseConfigured()) {
     const profile = getOrCreateInMemoryProfile(input.walletPublicKey);
@@ -703,6 +803,7 @@ export async function markKycSessionPending(input: MarkKycSessionPendingInput): 
     profile.kycStatus = "pending";
     profile.kycProviderSessionId = input.providerSessionId;
     profile.rejectionReasonCode = null;
+    profile.kycSubmittedAt = profile.kycSubmittedAt ?? updatedAt;
     profile.complianceStatus = projectComplianceStatus({
       kycStatus: profile.kycStatus,
       amlStatus: profile.amlStatus,
@@ -811,6 +912,7 @@ export async function updateKycStatusFromProvider(
     profile.kycProviderSessionId = input.providerSessionId;
     profile.kycProviderReportId = input.providerReportId ?? null;
     profile.rejectionReasonCode = input.rejectionReasonCode ?? null;
+    profile.kycReviewedAt = input.kycStatus === "verified" || input.kycStatus === "rejected" ? updatedAt : profile.kycReviewedAt;
     profile.complianceStatus = projectComplianceStatus({
       kycStatus: profile.kycStatus,
       amlStatus: profile.amlStatus,
@@ -1441,6 +1543,13 @@ export async function getComplianceCaseDetailForAdmin(
          p.username,
          p.bio,
          p.avatar_url,
+         p.first_name,
+         p.last_name,
+         p.email,
+         p.country,
+         p.state_province,
+         p.address,
+         p.phone,
          k.kyc_status,
          p.aml_status,
          p.aml_risk_score,
@@ -1452,6 +1561,8 @@ export async function getComplianceCaseDetailForAdmin(
          k.rejection_reason_code,
          p.kyc_provider_session_id,
          p.kyc_provider_report_id,
+         k.submitted_at AS kyc_submitted_at,
+         k.reviewed_at AS kyc_reviewed_at,
          p.is_suspended,
          p.compliance_status_updated_at,
          p.created_at,

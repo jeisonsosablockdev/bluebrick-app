@@ -1,13 +1,27 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { PublicKey } from "@solana/web3.js";
+import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
-import { consumeNonce, createSession, getSessionMaxAgeSeconds, getSessionPublicKey, hasUsableNonce, revokeSession } from "@/lib/auth-store";
+import {
+  clearWalletLinkContext,
+  createWalletLinkContext,
+  createSession,
+  createNonceToken,
+  getNonceMaxAgeSeconds,
+  getSessionMaxAgeSeconds,
+  getSessionPublicKey,
+  readWalletLinkContext,
+  readNonceFromToken,
+  revokeSession
+} from "@/lib/auth-store";
 import { parseSiwsMessage } from "@/lib/siws";
 
 const AUTH_COOKIE_NAME = "siws_session";
+const NONCE_COOKIE_NAME = "siws_nonce";
+const WALLET_LINK_COOKIE_NAME = "wallet_link_context";
 const SIWS_MAX_AGE_MS = 5 * 60 * 1000;
+const addressEncoder = getAddressEncoder();
 
 type VerifyPayload = {
   message: string;
@@ -37,7 +51,7 @@ export function isIssuedAtValid(issuedAt: string): boolean {
   return Math.abs(Date.now() - timestamp) <= SIWS_MAX_AGE_MS;
 }
 
-export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): VerifyResult {
+export function verifySiwsPayload(payload: VerifyPayload, requestHost: string, expectedNonce: string | null): VerifyResult {
   const parsed = parseSiwsMessage(payload.message);
 
   if (!parsed) {
@@ -48,7 +62,7 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
     return { ok: false, status: 400, error: "Public key mismatch." };
   }
 
-  if (!hasUsableNonce(parsed.nonce)) {
+  if (!expectedNonce || parsed.nonce !== expectedNonce) {
     return { ok: false, status: 409, error: "Invalid or expired nonce." };
   }
 
@@ -61,27 +75,59 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string): 
   }
 
   let signatureBytes: Uint8Array;
-  let walletPublicKey: PublicKey;
+  let walletPublicKeyBytes: Uint8Array;
+  let normalizedPublicKey: string;
 
   try {
     signatureBytes = Uint8Array.from(Buffer.from(payload.signature, "base64"));
-    walletPublicKey = new PublicKey(payload.publicKey);
+    const walletAddress = address(payload.publicKey);
+    walletPublicKeyBytes = Uint8Array.from(addressEncoder.encode(walletAddress));
+    normalizedPublicKey = walletAddress;
   } catch {
     return { ok: false, status: 400, error: "Malformed signature or public key." };
   }
 
   const messageBytes = new TextEncoder().encode(payload.message);
-  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKey.toBytes());
+  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKeyBytes);
 
   if (!isValid) {
     return { ok: false, status: 401, error: "Signature verification failed." };
   }
 
-  if (!consumeNonce(parsed.nonce)) {
-    return { ok: false, status: 409, error: "Nonce already consumed." };
+  return { ok: true, publicKey: normalizedPublicKey, sessionToken: createSession(normalizedPublicKey) };
+}
+
+export function setNonceCookie(response: NextResponse, nonce: string): void {
+  response.cookies.set({
+    name: NONCE_COOKIE_NAME,
+    value: createNonceToken(nonce),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: getNonceMaxAgeSeconds()
+  });
+}
+
+export function clearNonceCookie(response: NextResponse): void {
+  response.cookies.set({
+    name: NONCE_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0
+  });
+}
+
+export function getNonceFromRequest(request: NextRequest): string | null {
+  const nonceToken = request.cookies.get(NONCE_COOKIE_NAME)?.value;
+  if (!nonceToken) {
+    return null;
   }
 
-  return { ok: true, publicKey: payload.publicKey, sessionToken: createSession(payload.publicKey) };
+  return readNonceFromToken(nonceToken);
 }
 
 export function setSessionCookie(response: NextResponse, sessionToken: string): void {
@@ -106,6 +152,58 @@ export function clearSessionCookie(response: NextResponse): void {
     path: "/",
     maxAge: 0
   });
+}
+
+export function setWalletLinkContextCookie(
+  response: NextResponse,
+  input: {
+    accountId: string;
+    workosUserId: string;
+    workosSessionId?: string | null;
+  }
+): { nonce: string; expiresAt: number } {
+  const context = createWalletLinkContext(input);
+
+  response.cookies.set({
+    name: WALLET_LINK_COOKIE_NAME,
+    value: context.token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: getNonceMaxAgeSeconds()
+  });
+
+  return {
+    nonce: context.nonce,
+    expiresAt: context.expiresAt
+  };
+}
+
+export function clearWalletLinkContextCookie(response: NextResponse, contextId?: string | null): void {
+  if (contextId) {
+    clearWalletLinkContext(contextId);
+  }
+
+  response.cookies.set({
+    name: WALLET_LINK_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0
+  });
+}
+
+export function getWalletLinkContextFromRequest(request: NextRequest) {
+  const token = request.cookies.get(WALLET_LINK_COOKIE_NAME)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  return readWalletLinkContext(token);
 }
 
 export function revokeRequestSession(request: NextRequest): void {

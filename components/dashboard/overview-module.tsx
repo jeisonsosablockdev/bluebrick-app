@@ -47,10 +47,20 @@ function EmptyState({ t }: { t: TranslateFn }): ReactElement {
           pt: "Quando voce concluir seu primeiro investimento, aqui voce vera seus Frações, rendas acumuladas e eventos recentes."
         })}
       </p>
+      <p className="text-sm text-white/70">
+        {t({
+          en: "Referral rewards now live in their own dashboard tab so you can review them separately from your account summary.",
+          es: "Las recompensas por referidos ahora viven en su propia pestana del dashboard para revisarlas por separado del resumen de cuenta.",
+          pt: "As recompensas por indicacoes agora ficam em sua propria aba do dashboard para revisa-las separadamente do resumo da conta."
+        })}
+      </p>
       <div className="flex flex-wrap gap-2">
         <Button className="min-h-11" variant="primary">
           {t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar propriedades" })}
         </Button>
+        <Link href="/protected/referrals" className="inline-flex min-h-11 items-center text-sm text-cyan-300 hover:text-cyan-200">
+          {t({ en: "Open referral rewards", es: "Abrir recompensas por referidos", pt: "Abrir recompensas por indicacoes" })}
+        </Link>
         <Link href="/" className="inline-flex min-h-11 items-center text-sm text-cyan-300 hover:text-cyan-200">
           {t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar ao inicio" })}
         </Link>

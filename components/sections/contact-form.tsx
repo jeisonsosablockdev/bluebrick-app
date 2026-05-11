@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { COUNTRIES } from "@/lib/countries";
 
+export const CONTACT_FORM_SECTION_ID = "contact-form";
+
 export function ContactFormSection() {
   const { t } = useI18n();
   const [phone, setPhone] = useState("");
@@ -22,7 +24,10 @@ export function ContactFormSection() {
   })();
 
   return (
-    <section className="mt-12 mb-10 w-full rounded-3xl border border-white/5 bg-slate-900/40 p-8 sm:p-12 glass-surface transition hover:bg-slate-900/60 max-w-5xl mx-auto shadow-2xl relative overflow-hidden group">
+    <section
+      id={CONTACT_FORM_SECTION_ID}
+      className="mt-12 mb-10 w-full scroll-mt-24 rounded-3xl border border-white/5 bg-slate-900/40 p-8 sm:p-12 glass-surface transition hover:bg-slate-900/60 max-w-5xl mx-auto shadow-2xl relative overflow-hidden group"
+    >
       <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/0 via-fuchsia-500/0 to-blue-500/0 opacity-0 blur-3xl transition-all duration-700 group-hover:opacity-20 group-hover:from-cyan-500/10 group-hover:to-blue-500/10"></div>
       
       <div className="relative z-10 max-w-3xl mx-auto">

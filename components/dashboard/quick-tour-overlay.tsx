@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -48,9 +48,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Esta é a informação do seu perfil",
     },
     description: {
-      en: "Here you can manage all your personal data. Press 'Edit profile' to start — you'll only need to do this once.",
-      es: "Aquí puedes gestionar toda tu información personal. Presiona 'Editar perfil' para comenzar — solo tendrás que hacerlo esta primera vez.",
-      pt: "Aqui você pode gerenciar todos os seus dados pessoais. Pressione 'Editar perfil' para comenzar — você só precisará fazer isso uma vez.",
+      en: "Here you can manage all your personal data. Press '**Edit profile**' to start — you'll only need to do this once.",
+      es: "Aquí puedes gestionar toda tu información personal. Presiona '**Editar perfil**' para comenzar — solo tendrás que hacerlo esta primera vez.",
+      pt: "Aqui você pode gerenciar todos os seus dados pessoais. Pressione '**Editar perfil**' para começar — você só precisará fazer isso uma vez.",
     },
     cta: { en: "Got it, show me what to fill", es: "Entendido, muéstrame qué llenar", pt: "Entendido, mostre-me o que preencher" },
   },
@@ -64,9 +64,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Seu nome e e-mail",
     },
     description: {
-      en: "Fill in your first and last name, and your email address. This helps us keep you informed and updated about your investments.",
-      es: "Llena tus campos de nombre y apellido, y tu correo electrónico. Nos ayudará a tenerte actualizado sobre tus inversiones.",
-      pt: "Preencha seus campos de nome e sobrenome, e seu e-mail. Isso nos ajuda a mantê-lo atualizado sobre seus investimentos.",
+      en: "Fill in your **first and last name**, and your email address. This helps us keep you informed and updated about your investments.",
+      es: "Llena tus campos de **nombre y apellido**, y tu correo electrónico. Nos ayudará a tenerte actualizado sobre tus inversiones.",
+      pt: "Preencha seus campos de **nome e sobrenome**, e seu e-mail. Isso nos ajuda a mantê-lo atualizado sobre seus investimentos.",
     },
     cta: { en: "Next: phone", es: "Siguiente: teléfono", pt: "Próximo: telefone" },
   },
@@ -80,9 +80,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Seu telefone de contato",
     },
     description: {
-      en: "Add a contact number where you'd like to receive project updates and investment information. Your number is kept secure and private.",
-      es: "Agrega un número de contacto en el cual deseas recibir información sobre proyectos e inversiones. Tu número se mantiene seguro y privado.",
-      pt: "Adicione um número de contato para receber atualizações de projetos e informações de investimentos. Seu número é mantido seguro e privado.",
+      en: "**Add a contact number and email** so we can share project updates and investment information with you. Your contact details are kept secure and private.",
+      es: "**Agrega un número de contacto y email** para que podamos compartirte información sobre proyectos e inversiones. Tus datos de contacto se mantienen seguros y privados.",
+      pt: "**Adicione um número de contato e e-mail** para que possamos compartilhar atualizações de projetos e informações de investimentos com você. Seus dados de contato são mantidos seguros e privados.",
     },
     cta: { en: "Next: your bio", es: "Siguiente: tu biografía", pt: "Próximo: sua bio" },
   },
@@ -96,9 +96,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Conte-nos quem você é",
     },
     description: {
-      en: "In your bio, tell us a little about who you are. We'd love to get to know you — what drives you to invest, your interests, or anything you'd like to share.",
-      es: "En tu biografía, cuéntanos un poco de quién eres. Nos encantaría conocerte — qué te motiva a invertir, tus intereses, o lo que desees compartir.",
-      pt: "Em sua bio, conte-nos um pouco sobre quem você é. Adoraríamos conhecê-lo — o que o motiva a investir, seus interesses ou o que desejar compartilhar.",
+      en: "In your bio, **tell us a little about who you are**. We'd love to get to know you — what drives you to invest, your interests, or anything you'd like to share.",
+      es: "En tu biografía, **cuéntanos un poco de quién eres**. Nos encantaría conocerte — qué te motiva a invertir, tus intereses, o lo que desees compartir.",
+      pt: "Em sua bio, **conte-nos um pouco sobre quem você é**. Adoraríamos conhecê-lo — o que o motiva a investir, seus interesses ou o que desejar compartilhar.",
     },
     cta: { en: "Next: address", es: "Siguiente: dirección", pt: "Próximo: endereço" },
   },
@@ -112,9 +112,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Seu endereço (opcional)",
     },
     description: {
-      en: "Adding your address is optional, but it helps us find and show you real estate projects close to where you live. The more specific, the better the recommendations.",
-      es: "Agregar tu dirección es opcional, pero nos ayudará a encontrar y mostrarte proyectos inmobiliarios cerca de donde vives. Entre más específica, mejores recomendaciones.",
-      pt: "Adicionar seu endereço é opcional, mas nos ajudará a encontrar e mostrar projetos imobiliários perto de onde você mora. Quanto mais específico, melhores as recomendações.",
+      en: "Adding **your address** is optional, but it helps us find and show you real estate projects close to where you live. The more specific, the better the recommendations.",
+      es: "Agregar **tu dirección** es opcional, pero nos ayudará a encontrar y mostrarte proyectos inmobiliarios cerca de donde vives. Entre más específica, mejores recomendaciones.",
+      pt: "Adicionar **seu endereço** é opcional, mas nos ajudará a encontrar e mostrar projetos imobiliários perto de onde você mora. Quanto mais específico, melhores as recomendações.",
     },
     cta: { en: "Next: save your profile", es: "Siguiente: guarda tu perfil", pt: "Próximo: salve seu perfil" },
   },
@@ -128,9 +128,9 @@ const TOUR_STEPS: TourStep[] = [
       pt: "Salve os dados do seu perfil",
     },
     description: {
-      en: "To keep your profile information up to date, press Save changes.",
-      es: "Para dejar tus datos de perfil actualizados presiona Guardar cambios.",
-      pt: "Para manter seus dados de perfil atualizados, pressione Salvar alterações.",
+      en: "To keep your profile information up to date, press **Save changes**.",
+      es: "Para dejar tus datos de perfil actualizados presiona **Guardar cambios**.",
+      pt: "Para manter seus dados de perfil atualizados, pressione **Salvar alterações**.",
     },
     cta: { en: "Last step: verify identity", es: "Último paso: verificar identidad", pt: "Último passo: verificar identidade" },
   },
@@ -156,6 +156,26 @@ const TOUR_STEPS: TourStep[] = [
 const TOUR_DISMISSED_KEY = "bb_quick_tour_v2_dismissed";
 const HORIZONTAL_MARGIN = 12;
 const VERTICAL_GAP = 14;
+
+function renderTourDescription(description: string) {
+  return description
+    .split(/(\*\*[^*]+\*\*)/g)
+    .filter(Boolean)
+    .map((segment, index) => {
+      const isEmphasis = segment.startsWith("**") && segment.endsWith("**");
+      const text = isEmphasis ? segment.slice(2, -2) : segment;
+
+      if (isEmphasis) {
+        return (
+          <strong key={`${text}-${index}`} className="font-semibold text-white">
+            {text}
+          </strong>
+        );
+      }
+
+      return <Fragment key={`${text}-${index}`}>{text}</Fragment>;
+    });
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -395,7 +415,7 @@ export function QuickTourOverlay() {
             </button>
           </div>
 
-          <p className="quick-tour-description">{t(step.description)}</p>
+          <p className="quick-tour-description">{renderTourDescription(t(step.description))}</p>
 
           <div className="quick-tour-footer">
             <div className="quick-tour-progress-group">

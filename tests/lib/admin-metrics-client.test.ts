@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  fetchAdminAnalyticsMonitoring,
   fetchAdminDashboardOverview,
   fetchAdminMonitoringEvents,
+  fetchAdminOperabilityLogs,
   fetchAdminSalesOverview,
   reprocessAdminMonitoringEvent
 } from "@/lib/admin-metrics-client";
@@ -89,5 +91,55 @@ describe("lib/admin-metrics-client", () => {
       expect.objectContaining({ method: "POST", cache: "no-store" })
     );
     expect(response.reconciled).toBe(true);
+  });
+
+  it("calls admin analytics monitoring endpoint with window and limit", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      createJsonResponse({
+        ok: true,
+        data: {
+          summary: {
+            windowMinutes: 90,
+            totalEvents: 0,
+            byType: {
+              page_view: 0,
+              route_change: 0,
+              scroll_depth: 0,
+              cta_click: 0,
+              client_error: 0
+            },
+            topPaths: [],
+            topCtas: [],
+            latestEventAt: null
+          },
+          recentEvents: []
+        }
+      })
+    );
+
+    await fetchAdminAnalyticsMonitoring({ minutes: 90, limit: 25 });
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/admin/monitoring/analytics?minutes=90&limit=25",
+      expect.objectContaining({ method: "GET", cache: "no-store" })
+    );
+  });
+
+  it("calls admin operability logs endpoint with limit", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      createJsonResponse({
+        ok: true,
+        data: {
+          entries: []
+        }
+      })
+    );
+
+    await fetchAdminOperabilityLogs({ limit: 15 });
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/admin/monitoring/logs?limit=15",
+      expect.objectContaining({ method: "GET", cache: "no-store" })
+    );
   });
 });

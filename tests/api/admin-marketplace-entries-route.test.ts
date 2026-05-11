@@ -69,6 +69,30 @@ describe("POST /api/admin/marketplace/entries", () => {
     expect(payload.error.code).toBe("INVALID_MARKETPLACE_ENTRY");
   });
 
+  it("returns 400 when canonical location payload is not mappable", async () => {
+    const response = await POST(
+      createRequest({
+        entryId: "asset-001",
+        title: "Central Tower",
+        city: "Bogota",
+        country: "Latam",
+        address: "Calle 10 #12-34",
+        imageUrl: "https://cdn.example.com/cover.jpg",
+        shortDescription: "Tokenized building",
+        supplyTotal: 1200,
+        nftPriceUsd: 150,
+        annualRoiPct: 12.5,
+        collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
+        candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error.code).toBe("INVALID_MARKETPLACE_ENTRY");
+    expect(routeMocks.createMarketplacePropertyEntryPersistent).not.toHaveBeenCalled();
+  });
+
   it("returns 200 when marketplace entry is created", async () => {
     routeMocks.createMarketplacePropertyEntryPersistent.mockReturnValueOnce({
       id: "asset-001",
@@ -81,8 +105,11 @@ describe("POST /api/admin/marketplace/entries", () => {
         entryId: "asset-001",
         title: "Central Tower",
         city: "Bogota",
-        country: "CO",
+        country: "Colombia",
+        stateProvince: "DC",
         address: "Calle 10 #12-34",
+        geoLat: "4.711",
+        geoLng: "-74.072",
         imageUrl: "https://cdn.example.com/cover.jpg",
         shortDescription: "Tokenized building",
         highlights: ["Project stage: construction"],
@@ -102,6 +129,16 @@ describe("POST /api/admin/marketplace/entries", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.id).toBe("asset-001");
     expect(routeMocks.createMarketplacePropertyEntryPersistent).toHaveBeenCalledTimes(1);
+    expect(routeMocks.createMarketplacePropertyEntryPersistent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        city: "Bogota",
+        country: "CO",
+        stateProvince: "Bogotá D.C.",
+        detailedLocation: "Calle 10 #12-34",
+        geoLat: 4.711,
+        geoLng: -74.072
+      })
+    );
   });
 
   it("returns 409 when entry already exists", async () => {

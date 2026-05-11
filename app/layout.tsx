@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 
 import { AppProviders } from "@/app/providers";
+import { AppSplashScreen } from "@/components/brand/app-splash-screen";
+import { ClientAnalytics } from "@/components/observability/client-analytics";
 import { getServerLocale } from "@/lib/i18n-server";
+import { createRootMetadata } from "@/lib/seo";
 import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
 
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "BRIDS UI Demo",
-  description: "UI-only App Router demo inspired by the provided design"
-};
+export const metadata: Metadata = createRootMetadata({
+  title: "BRIDS",
+  description: "AI discovery infrastructure and public platform pages for BRIDS."
+});
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getServerLocale();
@@ -26,11 +29,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   `;
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <ClientAnalytics />
+        <AppSplashScreen />
         <AppProviders locale={locale}>{children}</AppProviders>
       </body>
     </html>

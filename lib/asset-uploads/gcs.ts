@@ -1,31 +1,10 @@
-import { createHmac } from "node:crypto";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-type HttpMethod = "PUT" | "HEAD";
-
-const execFileAsync = promisify(execFile);
-
-type SignedUrlInput = {
-  method: HttpMethod;
-  bucketName: string;
-  objectKey: string;
-  accessId: string;
-  secret: string | null;
-  expiresAtEpochSeconds: number;
-  contentType?: string;
-  contentMd5Base64?: string;
-  storageBaseUrl: string;
-};
+import { del, head, put } from "@vercel/blob";
 
 export type GcsUploadConfig = {
   bucketName: string;
-  cdnBaseUrl: string;
-  signingAccessId: string;
-  signingSecret: string | null;
-  signingMode: "hmac" | "iam";
+  cdnBaseUrl: string | null;
   signedUrlTtlSeconds: number;
-  storageBaseUrl: string;
+  blobReadWriteToken: string;
 };
 
 export type GcsObjectMetadata = {
@@ -34,6 +13,27 @@ export type GcsObjectMetadata = {
   sizeBytes: number | null;
   etag: string | null;
   md5Base64: string | null;
+  url: string | null;
+};
+
+export type DeleteGcsObjectResult = {
+  deleted: boolean;
+  notFound: boolean;
+};
+
+type BuildSignedPutUrlInput = {
+  config: GcsUploadConfig;
+  uploadId: string;
+  objectKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  contentMd5Base64: string;
+};
+
+export type SignedPutUrl = {
+  uploadUrl: string;
+  expiresAt: string;
+  requiredHeaders: Record<"Content-Type" | "Content-Length" | "Content-MD5", string>;
 };
 
 function requireEnv(name: string): string {
@@ -72,28 +72,6 @@ function parseSignedUrlTtlSeconds(): number {
   return normalized;
 }
 
-export function getGcsUploadConfig(): GcsUploadConfig {
-  const signingAccessId = requireEnv("GCS_UPLOAD_SIGNING_ACCESS_ID");
-  const signingSecret = optionalEnv("GCS_UPLOAD_SIGNING_SECRET");
-  const signingMode = signingSecret ? "hmac" : "iam";
-
-  if (signingMode === "iam" && !signingAccessId.includes("@")) {
-    throw new Error(
-      "GCS_UPLOAD_SIGNING_ACCESS_ID must be a service account email when GCS_UPLOAD_SIGNING_SECRET is not set."
-    );
-  }
-
-  return {
-    bucketName: requireEnv("GCS_UPLOAD_BUCKET"),
-    cdnBaseUrl: normalizeBaseUrl(requireEnv("GCS_UPLOAD_CDN_BASE_URL")),
-    signingAccessId,
-    signingSecret,
-    signingMode,
-    signedUrlTtlSeconds: parseSignedUrlTtlSeconds(),
-    storageBaseUrl: normalizeBaseUrl(process.env.GCS_STORAGE_BASE_URL?.trim() || "https://storage.googleapis.com")
-  };
-}
-
 function encodeObjectPath(objectKey: string): string {
   return objectKey
     .split("/")
@@ -102,124 +80,26 @@ function encodeObjectPath(objectKey: string): string {
     .join("/");
 }
 
-function buildStringToSign(input: SignedUrlInput): string {
-  return [
-    input.method,
-    input.contentMd5Base64 ?? "",
-    input.contentType ?? "",
-    String(input.expiresAtEpochSeconds),
-    `/${input.bucketName}/${input.objectKey}`
-  ].join("\n");
-}
+export function getGcsUploadConfig(): GcsUploadConfig {
+  const blobReadWriteToken = requireEnv("BLOB_READ_WRITE_TOKEN");
+  const explicitCdnBaseUrl = optionalEnv("BLOB_CDN_BASE_URL") || optionalEnv("GCS_UPLOAD_CDN_BASE_URL");
+  const explicitBucket = optionalEnv("BLOB_STORE_ID") || optionalEnv("GCS_UPLOAD_BUCKET");
 
-function signStringToSign(secret: string, stringToSign: string): string {
-  return createHmac("sha1", secret).update(stringToSign).digest("base64");
-}
-
-let cachedGcloudAccessToken: { value: string; expiresAtMs: number } | null = null;
-
-async function getGcloudAccessToken(): Promise<string> {
-  const now = Date.now();
-  if (cachedGcloudAccessToken && now < cachedGcloudAccessToken.expiresAtMs) {
-    return cachedGcloudAccessToken.value;
-  }
-
-  const { stdout } = await execFileAsync("gcloud", ["auth", "print-access-token"], {
-    encoding: "utf8"
-  });
-
-  const token = stdout.trim();
-  if (!token) {
-    throw new Error("Could not obtain a GCP access token from gcloud auth.");
-  }
-
-  cachedGcloudAccessToken = {
-    value: token,
-    expiresAtMs: now + 50 * 60 * 1000
+  return {
+    bucketName: explicitBucket || "vercel-blob",
+    cdnBaseUrl: explicitCdnBaseUrl ? normalizeBaseUrl(explicitCdnBaseUrl) : null,
+    signedUrlTtlSeconds: parseSignedUrlTtlSeconds(),
+    blobReadWriteToken
   };
-
-  return token;
 }
-
-async function signStringToSignWithIam(accessId: string, stringToSign: string): Promise<string> {
-  const accessToken = await getGcloudAccessToken();
-  const payloadBase64 = Buffer.from(stringToSign, "utf8").toString("base64");
-
-  const response = await fetch(
-    `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(accessId)}:signBlob`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ payload: payloadBase64 }),
-      cache: "no-store"
-    }
-  );
-
-  const payload = await response
-    .json()
-    .catch(() => ({})) as { signedBlob?: unknown; error?: { message?: unknown } };
-
-  if (!response.ok) {
-    const reason =
-      payload?.error && typeof payload.error.message === "string"
-        ? payload.error.message
-        : `IAM signBlob failed with status ${response.status}.`;
-    throw new Error(reason);
-  }
-
-  if (typeof payload.signedBlob !== "string" || !payload.signedBlob.trim()) {
-    throw new Error("IAM signBlob did not return a valid signedBlob.");
-  }
-
-  return payload.signedBlob.trim();
-}
-
-export async function buildGcsSignedUrl(input: SignedUrlInput): Promise<string> {
-  const stringToSign = buildStringToSign(input);
-  const signature = input.secret
-    ? signStringToSign(input.secret, stringToSign)
-    : await signStringToSignWithIam(input.accessId, stringToSign);
-  const encodedPath = encodeObjectPath(input.objectKey);
-  const encodedAccessId = encodeURIComponent(input.accessId);
-  const encodedSignature = encodeURIComponent(signature);
-
-  return `${input.storageBaseUrl}/${input.bucketName}/${encodedPath}` +
-    `?GoogleAccessId=${encodedAccessId}&Expires=${input.expiresAtEpochSeconds}&Signature=${encodedSignature}`;
-}
-
-export type SignedPutUrl = {
-  uploadUrl: string;
-  expiresAt: string;
-  requiredHeaders: Record<"Content-Type" | "Content-Length" | "Content-MD5", string>;
-};
-
-type BuildSignedPutUrlInput = {
-  config: GcsUploadConfig;
-  objectKey: string;
-  mimeType: string;
-  sizeBytes: number;
-  contentMd5Base64: string;
-};
 
 export async function buildSignedPutUrl(input: BuildSignedPutUrlInput): Promise<SignedPutUrl> {
   const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + input.config.signedUrlTtlSeconds;
-  const uploadUrl = await buildGcsSignedUrl({
-    method: "PUT",
-    bucketName: input.config.bucketName,
-    objectKey: input.objectKey,
-    accessId: input.config.signingAccessId,
-    secret: input.config.signingSecret,
-    expiresAtEpochSeconds,
-    contentType: input.mimeType,
-    contentMd5Base64: input.contentMd5Base64,
-    storageBaseUrl: input.config.storageBaseUrl
-  });
 
   return {
-    uploadUrl,
+    // Keep signed-url contract stable for the frontend:
+    // upload directly to an internal route that streams to Vercel Blob.
+    uploadUrl: `/api/admin/assets/uploads/${input.uploadId}/binary`,
     expiresAt: new Date(expiresAtEpochSeconds * 1000).toISOString(),
     requiredHeaders: {
       "Content-Type": input.mimeType,
@@ -229,68 +109,84 @@ export async function buildSignedPutUrl(input: BuildSignedPutUrlInput): Promise<
   };
 }
 
-function parseMd5FromXGoogHash(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
+export async function putBlobObject(input: {
+  config: GcsUploadConfig;
+  objectKey: string;
+  mimeType: string;
+  body: Buffer;
+}): Promise<{ url: string; pathname: string; etag: string | null }> {
+  const result = await put(input.objectKey, input.body, {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: input.mimeType,
+    token: input.config.blobReadWriteToken
+  });
 
-  const chunks = value.split(",").map((part) => part.trim());
-  for (const chunk of chunks) {
-    if (chunk.startsWith("md5=")) {
-      return chunk.slice(4);
-    }
-  }
-
-  return null;
-}
-
-function normalizeEtag(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-  return value.replace(/^"+|"+$/g, "");
+  return {
+    url: result.url,
+    pathname: result.pathname,
+    etag: result.etag ?? null
+  };
 }
 
 export async function headGcsObject(config: GcsUploadConfig, objectKey: string): Promise<GcsObjectMetadata> {
-  const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + 120;
-  const signedHeadUrl = await buildGcsSignedUrl({
-    method: "HEAD",
-    bucketName: config.bucketName,
-    objectKey,
-    accessId: config.signingAccessId,
-    secret: config.signingSecret,
-    expiresAtEpochSeconds,
-    storageBaseUrl: config.storageBaseUrl
-  });
+  try {
+    const metadata = await head(objectKey, {
+      token: config.blobReadWriteToken
+    });
 
-  const response = await fetch(signedHeadUrl, { method: "HEAD", cache: "no-store" });
-
-  if (response.status === 404) {
     return {
-      found: false,
-      mimeType: null,
-      sizeBytes: null,
-      etag: null,
-      md5Base64: null
+      found: true,
+      mimeType: metadata.contentType || null,
+      sizeBytes: Number.isFinite(metadata.size) ? Math.floor(metadata.size) : null,
+      etag: metadata.etag || null,
+      md5Base64: null,
+      url: metadata.url || null
+    };
+  } catch (error) {
+    if (error instanceof Error && error.name === "BlobNotFoundError") {
+      return {
+        found: false,
+        mimeType: null,
+        sizeBytes: null,
+        etag: null,
+        md5Base64: null,
+        url: null
+      };
+    }
+    throw error;
+  }
+}
+
+export async function deleteGcsObjectIfPresent(
+  config: GcsUploadConfig,
+  objectKey: string
+): Promise<DeleteGcsObjectResult> {
+  const metadata = await headGcsObject(config, objectKey);
+
+  if (!metadata.found || !metadata.url) {
+    return {
+      deleted: false,
+      notFound: true
     };
   }
 
-  if (!response.ok) {
-    throw new Error(`GCS HEAD request failed with status ${response.status}.`);
-  }
-
-  const sizeHeader = response.headers.get("content-length");
-  const parsedSize = sizeHeader ? Number(sizeHeader) : NaN;
+  await del(metadata.url, {
+    token: config.blobReadWriteToken
+  });
 
   return {
-    found: true,
-    mimeType: response.headers.get("content-type"),
-    sizeBytes: Number.isFinite(parsedSize) ? Math.floor(parsedSize) : null,
-    etag: normalizeEtag(response.headers.get("etag")),
-    md5Base64: parseMd5FromXGoogHash(response.headers.get("x-goog-hash"))
+    deleted: true,
+    notFound: false
   };
 }
 
 export function buildCdnUrl(config: GcsUploadConfig, objectKey: string): string {
+  if (!config.cdnBaseUrl) {
+    throw new Error(
+      "Could not build CDN URL from config. Use head metadata URL or set BLOB_CDN_BASE_URL."
+    );
+  }
   return `${config.cdnBaseUrl}/${encodeObjectPath(objectKey)}`;
 }

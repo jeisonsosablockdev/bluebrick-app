@@ -1,8 +1,15 @@
+import { notFound } from "next/navigation";
+
 import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 export default async function AdminSettingsPage() {
+  if (!isReleaseControlledRouteVisible("/admin/settings")) {
+    notFound();
+  }
+
   const locale = await getServerLocale();
 
   return (

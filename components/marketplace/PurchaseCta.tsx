@@ -638,9 +638,9 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
         error instanceof Error
           ? error.message
           : t({
-            en: "Could not start card checkout.",
-            es: "No se pudo iniciar la compra con tarjeta.",
-            pt: "Nao foi possivel iniciar a compra com cartao."
+            en: "Could not continue to checkout.",
+            es: "No se pudo continuar al checkout.",
+            pt: "Nao foi possivel continuar para o checkout."
           })
       );
     } finally {
@@ -798,7 +798,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
         >
           {isAddingToCart
             ? t({ en: "Starting...", es: "Iniciando...", pt: "Iniciando..." })
-            : t({ en: "Buy with card", es: "Comprar con tarjeta", pt: "Comprar com cartão" })}
+            : t({ en: "Add to cart", es: "Agregar al carrito", pt: "Adicionar ao carrinho" })}
         </Button>
       </div>
     </div>

@@ -6,7 +6,8 @@ const routeMocks = vi.hoisted(() => ({
   consumeStripeSessionRateLimit: vi.fn(),
   createStripeIdentityVerificationSession: vi.fn(),
   markKycSessionPending: vi.fn(),
-  runWalletAmlScreening: vi.fn()
+  runWalletAmlScreening: vi.fn(),
+  getOnboardingRewardForWallet: vi.fn()
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -24,6 +25,10 @@ vi.mock("@/lib/compliance/profile-repository", () => ({
 
 vi.mock("@/lib/compliance/aml-screening-service", () => ({
   runWalletAmlScreening: routeMocks.runWalletAmlScreening
+}));
+
+vi.mock("@/lib/onboarding-reward-service", () => ({
+  getOnboardingRewardForWallet: routeMocks.getOnboardingRewardForWallet
 }));
 
 import { POST } from "@/app/api/protected/kyc/stripe/session/route";
@@ -50,6 +55,7 @@ describe("POST /api/protected/kyc/stripe/session", () => {
       status: "requires_input"
     });
     routeMocks.markKycSessionPending.mockResolvedValue(undefined);
+    routeMocks.getOnboardingRewardForWallet.mockResolvedValue({ id: "reward-1" });
     routeMocks.runWalletAmlScreening.mockResolvedValue({
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       amlStatus: "pending",
@@ -99,6 +105,7 @@ describe("POST /api/protected/kyc/stripe/session", () => {
       provider: "stripe_identity",
       providerSessionId: "vs_123"
     });
+    expect(routeMocks.getOnboardingRewardForWallet).toHaveBeenCalledWith("Wallet11111111111111111111111111111111111");
     expect(routeMocks.runWalletAmlScreening).toHaveBeenCalledWith({
       walletPublicKey: "Wallet11111111111111111111111111111111111",
       trigger: "kyc_session_started",

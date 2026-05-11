@@ -4,14 +4,6 @@ on:
   push:
     branches:
       - develop
-  pull_request_target:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-      - unlabeled
-      - closed
   workflow_dispatch:
 
 permissions:
@@ -23,6 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update draft release notes
-        uses: release-drafter/release-drafter@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: release-drafter/release-drafter@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

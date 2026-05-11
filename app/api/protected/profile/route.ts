@@ -7,6 +7,7 @@ import {
   updateProfileBasics
 } from "@/lib/compliance/profile-repository";
 import { COUNTRIES } from "@/lib/countries";
+import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 
 type ProfileRequestBody = {
   username?: unknown;
@@ -58,6 +59,10 @@ function invalidPayloadResponse(message: string): NextResponse {
     },
     { status: 400 }
   );
+}
+
+async function getOnboardingRewardSafely(walletPublicKey: string) {
+  return getOnboardingRewardForWallet(walletPublicKey).catch(() => null);
 }
 
 function normalizeProfileInput(raw: unknown): NormalizedProfileInput {
@@ -148,11 +153,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const profile = await getOrCreateProfileBundle(walletPublicKey);
+    const [profile, onboardingReward] = await Promise.all([
+      getOrCreateProfileBundle(walletPublicKey),
+      getOnboardingRewardSafely(walletPublicKey)
+    ]);
 
     return NextResponse.json({
       ok: true,
-      data: profile
+      data: {
+        ...profile,
+        onboardingReward
+      }
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not load profile.";
@@ -200,9 +211,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       phone: normalizedInput.phone
     });
 
+    const onboardingReward = await getOnboardingRewardSafely(walletPublicKey);
+
     return NextResponse.json({
       ok: true,
-      data: updated
+      data: {
+        ...updated,
+        onboardingReward
+      }
     });
   } catch (error) {
     if (error instanceof ProfileRepositoryError && error.code === "USERNAME_TAKEN") {

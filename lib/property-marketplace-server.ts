@@ -2,10 +2,11 @@ import "server-only";
 
 import { Connection, PublicKey } from "@solana/web3.js";
 
+import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
+import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
-  createMarketplacePropertyEntry as createMarketplacePropertyEntryInMemory,
   listPropertyDetailsSnapshot,
   PropertyRpcError,
   type BlockchainSyncStatus,
@@ -219,6 +220,42 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
   };
 }
 
+function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): PropertyDetail {
+  return {
+    id: input.id,
+    title: input.title,
+    city: input.city,
+    country: input.country,
+    locationLabel: `${input.city}, ${input.country}`,
+    listingStatus: input.listingStatus,
+    image: input.image,
+    shortDescription: input.shortDescription,
+    detailedLocation: input.detailedLocation,
+    highlights: [...input.highlights],
+    investmentNotes: input.investmentNotes,
+    investment: {
+      supplyTotal: input.supplyTotal,
+      mintedOrSold: input.mintedOrSold,
+      nftPriceUsd: input.nftPriceUsd,
+      annualRoiPct: input.annualRoiPct,
+      availabilityLabel: input.availabilityLabel
+    },
+    documents: input.documents.map((document, index) => ({
+      id: toDocumentId(document.label, index),
+      label: document.label,
+      url: document.url
+    })),
+    blockchain: {
+      network: "Solana Devnet",
+      collectionAddress: input.collectionAddress,
+      assetMintAddress: input.assetMintAddress,
+      explorerUrl: input.explorerUrl,
+      lastOnchainUpdate: input.lastOnchainUpdate,
+      syncStatus: input.syncStatus
+    }
+  };
+}
+
 function filterPropertyDetails(records: PropertyDetail[], filters: PropertyFilters): PropertyDetail[] {
   const normalizedSearch = filters.search?.trim().toLowerCase();
 
@@ -258,22 +295,6 @@ function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
     nftPriceUsd: property.investment.nftPriceUsd,
     annualRoiPct: property.investment.annualRoiPct
   }));
-}
-
-function mergePropertyRecords(primary: PropertyDetail[], secondary: PropertyDetail[]): PropertyDetail[] {
-  const seen = new Set<string>();
-  const merged: PropertyDetail[] = [];
-
-  for (const property of [...primary, ...secondary]) {
-    if (seen.has(property.id)) {
-      continue;
-    }
-
-    seen.add(property.id);
-    merged.push(clonePropertyDetail(property));
-  }
-
-  return merged;
 }
 
 async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
@@ -320,8 +341,11 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
 
 async function readMarketplaceRecordsForServer(): Promise<PropertyDetail[]> {
   const persisted = await readPersistedMarketplaceEntries();
-  const inMemory = listPropertyDetailsSnapshot();
-  return mergePropertyRecords(persisted, inMemory);
+  if (persisted.length > 0) {
+    return persisted;
+  }
+
+  return listPropertyDetailsSnapshot();
 }
 
 export async function createMarketplacePropertyEntryPersistent(input: CreateMarketplaceEntryPersistentInput): Promise<PropertyDetail> {
@@ -337,82 +361,76 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
 
   try {
     await withDbClient(async (client) => {
+      const support = await getMarketplaceEntryLocationColumnSupport(client);
+      const columns = [
+        "id",
+        "title",
+        "city",
+        "country",
+        ...(support.stateProvince ? ["state_province"] : []),
+        "location_label",
+        "listing_status",
+        "image_url",
+        "short_description",
+        "detailed_location",
+        ...(support.geoLat ? ["geo_lat"] : []),
+        ...(support.geoLng ? ["geo_lng"] : []),
+        "highlights_json",
+        "investment_notes",
+        "supply_total",
+        "minted_or_sold",
+        "nft_price_usd",
+        "annual_roi_pct",
+        "availability_label",
+        "documents_json",
+        "collection_address",
+        "asset_mint_address",
+        "explorer_url",
+        "last_onchain_update",
+        "sync_status",
+        "created_by"
+      ];
+      const values = [
+        input.id,
+        input.title,
+        input.city,
+        input.country,
+        ...(support.stateProvince ? [input.stateProvince ?? null] : []),
+        deriveAdminCanonicalLocationLabel({
+          city: input.city,
+          country: input.country,
+          stateProvince: input.stateProvince ?? null
+        }),
+        input.listingStatus,
+        input.image,
+        input.shortDescription,
+        input.detailedLocation,
+        ...(support.geoLat ? [input.geoLat ?? null] : []),
+        ...(support.geoLng ? [input.geoLng ?? null] : []),
+        toJsonbValue(input.highlights),
+        input.investmentNotes,
+        input.supplyTotal,
+        input.mintedOrSold,
+        input.nftPriceUsd,
+        input.annualRoiPct,
+        input.availabilityLabel,
+        toJsonbValue(documentsPayload),
+        input.collectionAddress,
+        input.assetMintAddress,
+        input.explorerUrl,
+        input.lastOnchainUpdate,
+        input.syncStatus,
+        input.createdBy
+      ];
+
       await client.query(
         `INSERT INTO marketplace_entries (
-           id,
-           title,
-           city,
-           country,
-           location_label,
-           listing_status,
-           image_url,
-           short_description,
-           detailed_location,
-           highlights_json,
-           investment_notes,
-           supply_total,
-           minted_or_sold,
-           nft_price_usd,
-           annual_roi_pct,
-           availability_label,
-           documents_json,
-           collection_address,
-           asset_mint_address,
-           explorer_url,
-           last_onchain_update,
-           sync_status,
-           created_by
+           ${columns.join(",\n           ")}
          )
          VALUES (
-           $1,
-           $2,
-           $3,
-           $4,
-           $5,
-           $6,
-           $7,
-           $8,
-           $9,
-           $10,
-           $11,
-           $12,
-           $13,
-           $14,
-           $15,
-           $16,
-           $17,
-           $18,
-           $19,
-           $20,
-           $21,
-           $22,
-           $23
+           ${values.map((_, index) => `$${index + 1}`).join(",\n           ")}
          )`,
-        [
-          input.id,
-          input.title,
-          input.city,
-          input.country,
-          `${input.city}, ${input.country}`,
-          input.listingStatus,
-          input.image,
-          input.shortDescription,
-          input.detailedLocation,
-          toJsonbValue(input.highlights),
-          input.investmentNotes,
-          input.supplyTotal,
-          input.mintedOrSold,
-          input.nftPriceUsd,
-          input.annualRoiPct,
-          input.availabilityLabel,
-          toJsonbValue(documentsPayload),
-          input.collectionAddress,
-          input.assetMintAddress,
-          input.explorerUrl,
-          input.lastOnchainUpdate,
-          input.syncStatus,
-          input.createdBy
-        ]
+        values
       );
     });
   } catch (error) {
@@ -424,7 +442,7 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
     throw error;
   }
 
-  return createMarketplacePropertyEntryInMemory(input);
+  return mapCreateInputToPropertyDetail(input);
 }
 
 export async function listMarketplaceProperties(filters: PropertyFilters): Promise<PropertyListItem[]> {

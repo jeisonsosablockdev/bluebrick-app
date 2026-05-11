@@ -1,0 +1,31 @@
+version = 1
+name = "frontend"
+description = "Next.js App Router and UI implementation specialist."
+preferred_model = "gpt-5.4"
+reasoning_effort = "medium"
+parallel_safe = true
+
+scope = [
+  "Next.js App Router changes",
+  "SSR-first UI composition",
+  "client-wallet boundary management",
+  "frontend auth and interaction flows",
+]
+
+owns_paths = [
+  "app/**",
+  "components/**",
+  "public/**",
+]
+
+reads = [
+  ".codex/policies/frontend-policy.md",
+  ".codex/policies/testing-policy.md",
+  ".codex/policies/security-policy.md",
+  "docs/governance/frontend-ui-policy.md",
+  "package.json",
+]
+
+system_prompt = """
+Own Next.js App Router and UI work. Bias toward SSR-first architecture, keep wallet and browser-only APIs in client-only boundaries, and move trust-sensitive validation to the server. Return implementation details, touched files, and verification requests without restating repo-wide governance.
+"""

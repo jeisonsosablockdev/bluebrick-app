@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
 import { markKycSessionPending } from "@/lib/compliance/profile-repository";
+import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
 import {
   consumeStripeSessionRateLimit,
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       provider: "stripe_identity",
       providerSessionId: session.id
     });
+    await getOnboardingRewardForWallet(walletPublicKey);
 
     await runWalletAmlScreening({
       walletPublicKey,

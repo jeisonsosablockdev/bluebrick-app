@@ -31,7 +31,11 @@ export function FooterSection() {
         <div>
           <h4 className="mb-2 text-base font-semibold text-white">{t({ en: "Product", es: "Producto", pt: "Produto" })}</h4>
           <ul className="space-y-1">
-            <li>{t({ en: "Properties", es: "Propiedades", pt: "Imoveis" })}</li>
+            <li>
+              <Link href="/marketplace" className="transition hover:text-white">
+                {t({ en: "Properties", es: "Propiedades", pt: "Imoveis" })}
+              </Link>
+            </li>
             <li>{t({ en: "Yield", es: "Rentabilidad", pt: "Rentabilidade" })}</li>
             <li>{t({ en: "Community", es: "Comunidad", pt: "Comunidade" })}</li>
           </ul>
@@ -53,7 +57,11 @@ export function FooterSection() {
           <h4 className="mb-2 text-base font-semibold text-white">{t({ en: "Support", es: "Soporte", pt: "Suporte" })}</h4>
           <ul className="space-y-1">
             <li>{t({ en: "Help center", es: "Centro de ayuda", pt: "Central de ajuda" })}</li>
-            <li>{t({ en: "Contact", es: "Contacto", pt: "Contato" })}</li>
+            <li>
+              <Link href="/transparencia#contact-form" className="transition hover:text-white">
+                {t({ en: "Contact", es: "Contacto", pt: "Contato" })}
+              </Link>
+            </li>
             <li>{t({ en: "Status", es: "Estado", pt: "Status" })}</li>
           </ul>
         </div>

@@ -6,6 +6,7 @@ import type { ReactElement } from "react";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 const MOVEMENTS = [
   {
@@ -39,6 +40,7 @@ const MOVEMENTS = [
 
 export function TreasuryConsole(): ReactElement {
   const { t } = useI18n();
+  const showDistributionsLink = isReleaseControlledRouteVisible("/admin/distributions");
 
   return (
     <div className="space-y-4">
@@ -103,9 +105,11 @@ export function TreasuryConsole(): ReactElement {
           <Button className="min-h-11" variant="outline">
             {t({ en: "View proposal in Squads", es: "Ver propuesta en Squads", pt: "Ver proposta no Squads" })}
           </Button>
-          <Link href="/admin/distributions">
-            <Button className="min-h-11">{t({ en: "Go to distribution", es: "Ir a distribucion", pt: "Ir para distribuicao" })}</Button>
-          </Link>
+          {showDistributionsLink ? (
+            <Link href="/admin/distributions">
+              <Button className="min-h-11">{t({ en: "Go to distribution", es: "Ir a distribucion", pt: "Ir para distribuicao" })}</Button>
+            </Link>
+          ) : null}
         </div>
       </Card>
     </div>

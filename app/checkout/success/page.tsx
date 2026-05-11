@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Checkout Success",
+  description: "Payment redirect confirmation page pending asynchronous webhook finalization.",
+  path: "/checkout/success",
+  section: "checkout",
+  explicitNoIndex: true
+});
 
 type SuccessPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

@@ -150,7 +150,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           imageUri: image
         }),
         keyValues: {
-          app: "solana-test-1",
+          app: "brids",
           scope: "core-candy-machine",
           kind: "image",
           ...(internalCode ? { internalCode } : {})

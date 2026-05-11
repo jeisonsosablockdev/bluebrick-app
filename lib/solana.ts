@@ -1,6 +1,4 @@
-import { clusterApiUrl } from "@solana/web3.js";
-
-const DEFAULT_DEVNET_RPC = clusterApiUrl("devnet");
+const DEFAULT_DEVNET_RPC = "https://api.devnet.solana.com";
 const FORBIDDEN_RPC_MARKERS = ["mainnet", "testnet", "localnet", "localhost", "127.0.0.1"];
 const SOLSCAN_BASE_URL = "https://solscan.io";
 const SOLSCAN_DEVNET_QUERY = "cluster=devnet";

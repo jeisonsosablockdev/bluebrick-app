@@ -31,7 +31,10 @@ export type OrderRecord = {
   sourceCartId: string | null;
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod | null;
+  subtotalAmountUsd: number;
+  discountAmountUsd: number;
   totalAmountUsd: number;
+  appliedOnboardingRewardId: string | null;
   currency: string;
   expiresAt: string | null;
   idempotencyKey: string;
@@ -98,7 +101,10 @@ const orderColumns = `
   source_cart_id,
   status,
   payment_method,
+  subtotal_amount_usd,
+  discount_amount_usd,
   total_amount_usd,
+  applied_onboarding_reward_id,
   currency,
   expires_at,
   idempotency_key,
@@ -195,7 +201,10 @@ function mapOrderRow(row: {
   source_cart_id: string | null;
   status: OrderStatus;
   payment_method: CheckoutPaymentMethod | null;
+  subtotal_amount_usd: string | number;
+  discount_amount_usd: string | number;
   total_amount_usd: string | number;
+  applied_onboarding_reward_id: string | null;
   currency: string;
   expires_at: string | Date | null;
   idempotency_key: string;
@@ -208,7 +217,10 @@ function mapOrderRow(row: {
     sourceCartId: row.source_cart_id,
     status: row.status,
     paymentMethod: row.payment_method,
+    subtotalAmountUsd: toNumber(row.subtotal_amount_usd),
+    discountAmountUsd: toNumber(row.discount_amount_usd),
     totalAmountUsd: toNumber(row.total_amount_usd),
+    appliedOnboardingRewardId: row.applied_onboarding_reward_id,
     currency: row.currency,
     expiresAt: toIso(row.expires_at),
     idempotencyKey: row.idempotency_key,
@@ -434,7 +446,10 @@ export async function createOrder(input: {
   sourceCartId: string;
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod;
+  subtotalAmountUsd: number;
+  discountAmountUsd: number;
   totalAmountUsd: number;
+  appliedOnboardingRewardId: string | null;
   currency: string;
   expiresAt: string | null;
   idempotencyKey: string;
@@ -446,7 +461,10 @@ export async function createOrder(input: {
       source_cart_id: string | null;
       status: OrderStatus;
       payment_method: CheckoutPaymentMethod | null;
+      subtotal_amount_usd: string | number;
+      discount_amount_usd: string | number;
       total_amount_usd: string | number;
+      applied_onboarding_reward_id: string | null;
       currency: string;
       expires_at: string | Date | null;
       idempotency_key: string;
@@ -459,12 +477,15 @@ export async function createOrder(input: {
          source_cart_id,
          status,
          payment_method,
+         subtotal_amount_usd,
+         discount_amount_usd,
          total_amount_usd,
+         applied_onboarding_reward_id,
          currency,
          expires_at,
          idempotency_key
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT (wallet_public_key, idempotency_key)
        DO UPDATE SET updated_at = NOW()
        RETURNING ${orderColumns}`,
@@ -474,7 +495,10 @@ export async function createOrder(input: {
         input.sourceCartId,
         input.status,
         input.paymentMethod,
+        input.subtotalAmountUsd,
+        input.discountAmountUsd,
         input.totalAmountUsd,
+        input.appliedOnboardingRewardId,
         input.currency,
         input.expiresAt,
         input.idempotencyKey
@@ -541,7 +565,10 @@ export async function getOrderById(orderId: string, options?: DbOptions): Promis
       source_cart_id: string | null;
       status: OrderStatus;
       payment_method: CheckoutPaymentMethod | null;
+      subtotal_amount_usd: string | number;
+      discount_amount_usd: string | number;
       total_amount_usd: string | number;
+      applied_onboarding_reward_id: string | null;
       currency: string;
       expires_at: string | Date | null;
       idempotency_key: string;
@@ -571,7 +598,10 @@ export async function updateOrderStatus(input: {
       source_cart_id: string | null;
       status: OrderStatus;
       payment_method: CheckoutPaymentMethod | null;
+      subtotal_amount_usd: string | number;
+      discount_amount_usd: string | number;
       total_amount_usd: string | number;
+      applied_onboarding_reward_id: string | null;
       currency: string;
       expires_at: string | Date | null;
       idempotency_key: string;

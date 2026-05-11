@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
 import { applyKycDecisionForComplianceCase, ComplianceCaseServiceError } from "@/lib/compliance/case-service";
+import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 
 type RouteParams = {
   params: Promise<{
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       decision: body.decision,
       reason: body.reason
     });
+    await getOnboardingRewardForWallet(walletPublicKey);
 
     return NextResponse.json({
       ok: true,

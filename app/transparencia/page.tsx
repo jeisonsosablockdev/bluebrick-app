@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
+
 import { WalletModal } from "@/components/WalletModal";
 import { TransparencyContent } from "@/app/transparencia/client";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getRoleForWallet } from "@/lib/rbac";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Transparencia",
+  description: "Transparency dashboard with verifiable public platform metrics.",
+  path: "/transparencia",
+  section: "transparency"
+});
 
 export default async function TransparencyPage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();

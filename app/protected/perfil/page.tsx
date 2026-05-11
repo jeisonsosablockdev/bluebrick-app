@@ -1,14 +1,19 @@
 import { redirect } from "next/navigation";
 
+import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
 import { ProfileKycModule } from "@/components/dashboard/profile-kyc-module";
-import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { resolveAppAuthContext } from "@/lib/app-auth";
 
 export default async function PerfilPage() {
-  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const auth = await resolveAppAuthContext();
 
-  if (!authenticatedPublicKey) {
+  if (!auth.accountAuthenticated) {
     redirect("/");
   }
 
-  return <ProfileKycModule walletPublicKey={authenticatedPublicKey} />;
+  if (!auth.walletAuthenticated || !auth.walletPublicKey) {
+    return <AccountProfileSupportModule email={auth.workosEmail} />;
+  }
+
+  return <ProfileKycModule walletPublicKey={auth.walletPublicKey} />;
 }

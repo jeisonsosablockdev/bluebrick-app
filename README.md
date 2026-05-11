@@ -1,4 +1,4 @@
-# Solana Fullstack App
+# BRIDS
 
 This README includes an auto-generated snapshot of project documentation.
 
@@ -26,6 +26,55 @@ Updated: 2026-04-01 08:20:34 UTC
 - Frontend/Auth (/app): `auth-flow.md`, `session-model.md`
 - NFT features: `nft-spec.md`
 <!-- DOCS-AUTO:END -->
+
+## Operational Map
+
+This repository is currently a Next.js application with Solana integrations and governance automation around it. The governance documents still define `/programs` and `/packages`, but the active implementation today lives mainly in `app/`, `components/`, `lib/`, `tests/`, `e2e/`, and `scripts/`.
+
+### Main Modules
+
+- `app/`: App Router pages and route handlers. Use this first when the change affects URLs, API contracts, server-rendered pages, auth endpoints, admin endpoints, checkout, marketplace, feeds, or webhooks.
+- `components/`: UI composition layer. Use this for visual changes, client interactions, dashboards, admin panels, modals, filters, and page-specific presentation logic.
+- `lib/`: Core domain and server logic. This is the main backend layer of the repo: auth, SIWS, RBAC, Solana RPC helpers, Metaplex/Core Candy Machine flows, purchases, checkout, compliance, referrals, observability, content, SEO, and admin services.
+- `db/`: SQL migrations and database evolution. Start here when a feature needs new persistence, audit tables, queue state, idempotency storage, or read-model support.
+- `tests/`: Unit and route-level verification with Vitest. This is the first place to update for TDD and regression coverage on application logic.
+- `e2e/`: Playwright and Synpress coverage for browser, auth, admin, wallet, and responsive flows. Use this when the change affects critical UI journeys or wallet-connected behavior.
+- `docs/`: Canonical architecture, security, auth, NFT, feature-note, RFC, and workflow documentation. Update this alongside code according to `docs/governance/documentation-policy.md`.
+- `scripts/`: Repo automation for docs sync, PR governance, RFC scaffolding, devnet proof helpers, migrations, and workflow bootstrap. Check here before inventing a new one-off command.
+- `.mcp.json`: Solana MCP and Helius MCP project wiring. Review this when the task depends on MCP-backed Solana guidance or Helius asset/transaction inspection.
+
+### Where To Start By Change Type
+
+- Landing, marketplace, checkout, protected pages, admin screens, or page routing: start in `app/`, then follow imports into `components/` and `lib/`.
+- Auth, session, wallet sign-in, admin gating, referral binding, or role logic: start in `app/api/auth/*`, `lib/auth.ts`, `lib/auth-store.ts`, `lib/auth-session.ts`, `lib/siws.ts`, `lib/rbac.ts`, and `proxy.ts`.
+- Solana RPC policy, explorer links, wallet client behavior, or network restrictions: start in `lib/solana.ts` and then the feature service using it.
+- Marketplace read paths, property listing/detail data, or collection-backed listing synchronization: start in `lib/property-marketplace-server.ts`, `lib/property-service.ts`, and the relevant `app/marketplace*` routes/pages.
+- Purchase flow, anti-bot challenge, idempotency, or webhook reconciliation: start in `lib/purchase-service.ts`, `lib/purchase-anti-bot.ts`, `lib/purchase-flow-trace.ts`, `lib/purchase-attempts-repository.ts`, and `app/api/purchase/*`.
+- Checkout cart, order lifecycle, Airwallex handoff, or onboarding reward discount usage: start in `lib/checkout-service.ts`, `lib/checkout-domain.ts`, `lib/checkout-repository.ts`, `lib/airwallex-client.ts`, and `app/api/checkout/*`.
+- Admin collection editing, uploads, collection health, or marketplace entry creation: start in `lib/admin/*`, `components/admin/*`, and `app/api/admin/collections/*` or `app/api/admin/assets/*`.
+- Core Candy Machine, Metaplex Core minting, authority rotation, snapshots, or devnet mint/admin tooling: start in `lib/core-candy-machine-admin.ts`, `lib/metaplex-core-admin.ts`, `lib/core-authority-lifecycle.ts`, and the matching `app/api/admin/core-candy-machine/*` or `app/api/admin/metaplex-core/*` handlers.
+- Compliance, KYC, AML, suspension, or operational review queues: start in `lib/compliance/*`, `lib/kyc/*`, `app/api/internal/compliance/*`, and `app/api/admin/compliance/*`.
+- Content, AI-readable endpoints, knowledge pages, feeds, or SEO/schema output: start in `lib/content/*`, `lib/knowledge*`, `lib/schema/*`, `lib/seo/*`, and the related route handlers under `app/api`, `app/feeds`, `app/knowledge`, `app/ai.txt`, and `app/llms.txt`.
+- Governance, docs sync, PR policy, RFC enforcement, or branch/PR automation: start in `scripts/ci/*`, `scripts/docs-sync.sh`, `scripts/rfc-new*.js`, `scripts/linear-plan*.js`, and `docs/governance/*`.
+
+### Current Architectural Notes
+
+- The repo is governed as a Solana-first fullstack project, but there is no active `/programs` directory in the current tree. The blockchain behavior in this repository is implemented primarily through TypeScript services and admin routes.
+- Sessions are currently process-local in-memory tokens in `lib/auth-store.ts`. This is acceptable for local/dev workflows but not enough for multi-instance production.
+- `npm run validate` is the top-level quality gate. It already includes docs governance checks, route/content/schema contracts, observability contracts, and type/lint validation.
+- Critical browser coverage lives in `e2e/` and should be the default verification path for frontend, auth, wallet, and responsive changes.
+
+### Dependency Graph Snapshot
+
+The following screenshots were exported with VS Code's `Dependency Graph Viewer` extension using `lib/purchase-service.ts` as a representative service map.
+
+Graph view:
+
+![Dependency Graph Viewer graph export for purchase-service.ts](./docs/images/purchase-service-ts-graph.png)
+
+Sequential view:
+
+![Dependency Graph Viewer sequential export for purchase-service.ts](./docs/images/purchase-service-ts-sequential.png)
 
 ## Auth Persistence Note
 

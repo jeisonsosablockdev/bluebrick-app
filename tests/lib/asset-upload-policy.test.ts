@@ -10,6 +10,7 @@ import {
 } from "@/lib/asset-uploads/policy";
 
 const DRAFT_ID = "9f7d9f5d-536f-4fe2-bf8b-9155db01a3f6";
+const EDIT_SESSION_ID = "0f9748d3-a4c8-4058-930d-b6949f43d18c";
 
 describe("lib/asset-uploads/policy", () => {
   it("generates UUIDv4 upload ids", () => {
@@ -32,7 +33,8 @@ describe("lib/asset-uploads/policy", () => {
       mimeType: "image/png",
       sizeBytes: 512_000,
       contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
-      draftId: DRAFT_ID
+      draftId: DRAFT_ID,
+      editSessionId: EDIT_SESSION_ID
     });
 
     expect(parsed.ok).toBe(true);
@@ -42,6 +44,26 @@ describe("lib/asset-uploads/policy", () => {
 
     expect(parsed.value.category).toBe("galleryImage");
     expect(parsed.value.mimeType).toBe("image/png");
+    expect(parsed.value.editSessionId).toBe(EDIT_SESSION_ID);
+  });
+
+  it("rejects signed-url requests with invalid editSessionId", () => {
+    const parsed = parseSignedUrlRequest({
+      category: "galleryImage",
+      fileName: "front-view.pdf",
+      mimeType: "image/png",
+      sizeBytes: 1000,
+      contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
+      draftId: DRAFT_ID,
+      editSessionId: "invalid"
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+
+    expect(parsed.code).toBe("INVALID_UPLOAD_REQUEST");
   });
 
   it("rejects signed-url requests with mismatched extension and mime type", () => {
@@ -85,6 +107,7 @@ describe("lib/asset-uploads/policy", () => {
       sizeBytes: 1024,
       mimeType: "application/pdf",
       contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
+      editSessionId: EDIT_SESSION_ID,
       etag: "\"abcd1234\"",
       previousCdnUrl: "https://cdn.example.com/admin-assets/legalDoc/file-a.pdf"
     });
@@ -95,7 +118,26 @@ describe("lib/asset-uploads/policy", () => {
     }
 
     expect(parsed.value.etag).toBe("abcd1234");
+    expect(parsed.value.editSessionId).toBe(EDIT_SESSION_ID);
     expect(parsed.value.previousCdnUrl).toBe("https://cdn.example.com/admin-assets/legalDoc/file-a.pdf");
+  });
+
+  it("rejects finalize payload with invalid editSessionId type", () => {
+    const parsed = parseFinalizeUploadRequest({
+      draftId: DRAFT_ID,
+      editSessionId: 123,
+      sizeBytes: 1024,
+      mimeType: "application/pdf",
+      contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
+      previousCdnUrl: 123
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+
+    expect(parsed.code).toBe("INVALID_UPLOAD_REQUEST");
   });
 
   it("rejects finalize payload with invalid previousCdnUrl type", () => {

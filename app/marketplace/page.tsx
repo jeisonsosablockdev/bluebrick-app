@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { WalletModal } from "@/components/WalletModal";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
@@ -10,10 +12,35 @@ import { localize } from "@/lib/i18n";
 import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
 import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
+import { isMarketplaceReleaseControlledElementVisible } from "@/lib/release-module-visibility";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Marketplace",
+  description: "Browse tokenized property listings with pricing, supply, and ROI context.",
+  path: "/marketplace",
+  section: "marketplace"
+});
 
 type MarketplacePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+async function safeListMarketplaceProperties(filters: PropertyFilters) {
+  try {
+    return await listMarketplaceProperties(filters);
+  } catch {
+    return [];
+  }
+}
+
+async function safeListMarketplacePropertyCities() {
+  try {
+    return await listMarketplacePropertyCities();
+  } catch {
+    return [];
+  }
+}
 
 function readValue(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) {
@@ -45,8 +72,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
   const locale = await getServerLocale();
   const filters = parseFilters(await searchParams);
-  const properties = await listMarketplaceProperties(filters);
-  const cityOptions = await listMarketplacePropertyCities();
+  const properties = await safeListMarketplaceProperties(filters);
+  const cityOptions = await safeListMarketplacePropertyCities();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
@@ -94,9 +121,11 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         ) : <MarketplaceGridClient properties={properties} />}
       </section>
 
-      <section className="mt-8">
-        <DashboardCharts context="marketplace" />
-      </section>
+      {isMarketplaceReleaseControlledElementVisible("placeholder-charts") ? (
+        <section className="mt-8">
+          <DashboardCharts context="marketplace" />
+        </section>
+      ) : null}
     </main>
   );
 }

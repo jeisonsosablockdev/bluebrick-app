@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const routeMocks = vi.hoisted(() => ({
   getRequestRole: vi.fn(),
   applyKycDecisionForComplianceCase: vi.fn(),
+  getOnboardingRewardForWallet: vi.fn(),
   MockComplianceCaseServiceError: class MockComplianceCaseServiceError extends Error {
     code: string;
     status: number;
@@ -25,6 +26,10 @@ vi.mock("@/lib/auth-session", () => ({
 vi.mock("@/lib/compliance/case-service", () => ({
   ComplianceCaseServiceError: routeMocks.MockComplianceCaseServiceError,
   applyKycDecisionForComplianceCase: routeMocks.applyKycDecisionForComplianceCase
+}));
+
+vi.mock("@/lib/onboarding-reward-service", () => ({
+  getOnboardingRewardForWallet: routeMocks.getOnboardingRewardForWallet
 }));
 
 import { POST } from "@/app/api/admin/compliance/cases/[walletPublicKey]/kyc-decision/route";
@@ -66,6 +71,7 @@ describe("POST /api/admin/compliance/cases/:walletPublicKey/kyc-decision", () =>
       },
       idempotent: false
     });
+    routeMocks.getOnboardingRewardForWallet.mockResolvedValue({ id: "reward-1" });
   });
 
   it("returns 403 for non-admin users", async () => {
@@ -108,5 +114,6 @@ describe("POST /api/admin/compliance/cases/:walletPublicKey/kyc-decision", () =>
       decision: "rejected",
       reason: "document mismatch"
     });
+    expect(routeMocks.getOnboardingRewardForWallet).toHaveBeenCalledWith("Wallet11111111111111111111111111111111111");
   });
 });

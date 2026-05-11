@@ -1,10 +1,17 @@
+import { notFound } from "next/navigation";
+
 import { CoreCandyMachinePanel } from "@/components/admin/core-candy-machine-panel";
 import { MintOrchestratorSigningPanel } from "@/components/admin/mint-orchestrator-signing-panel";
 import { Card } from "@/components/ui/card";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
+import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 export default async function AdminMintPage() {
+  if (!isReleaseControlledRouteVisible("/admin/mint")) {
+    notFound();
+  }
+
   const locale = await getServerLocale();
 
   return (

@@ -28,11 +28,11 @@ No business logic outside defined boundaries.
 Main Rules
 	1.	main is protected.
 	2.	develop is the default integration branch for day-to-day work.
-	3.	All feature/fix/security/refactor branches MUST start from latest `develop`.
+	3.	Parent work branches (`feature/*`, `fix/*`, `security/*`, `refactor/*`, `nft/*`) MUST start from latest `develop`.
 	4.	No direct commits to main.
 	5.	No direct commits to develop.
 	6.	All changes go through Pull Request.
-	7.	Regular PRs target `develop` (not `main`).
+	7.	Direct single-branch work targets `develop`; slice PRs target the parent `*-integration` branch.
 	8.	Only release PRs may target `main` (source branch: `develop`).
 	9.	Squash and merge only.
 	10.	No merge commits.
@@ -66,6 +66,30 @@ For every story branch (`h1`, `h2`, `h3`, ... and independent stories):
 
 ⸻
 
+🧩 SINGLE-ISSUE SLICE PLANNING (MANDATORY FOR NON-TRIVIAL WORK)
+
+Applies to `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work that is expected to:
+	•	require more than one logical slice,
+	•	require more than one PR before `develop`,
+	•	or touch more than one technical area.
+
+Rules
+	1.	Use one parent Linear issue as the planning and tracking container.
+	2.	Do not create multiple Linear subissues by default.
+	3.	The parent issue must contain:
+	•	Objective
+	•	Scope
+	•	Non-goals
+	•	Integration branch
+	•	Slice plan table
+	•	Order of execution
+	•	Risks
+	•	Completion gate
+	4.	Each slice must have one dominant responsibility and one proposed branch.
+	5.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+
+⸻
+
 Branch Naming Convention (Scope Required)
 
 feature/program-<name>
@@ -73,10 +97,34 @@ feature/app-<name>
 feature/shared-<name>
 fix/program-<name>
 fix/app-<name>
+fix/shared-<name>
 security/program-<issue>
 security/app-<issue>
+security/shared-<issue>
 nft/program-<feature>
-refactor/<area>
+refactor/program-<name>
+refactor/app-<name>
+refactor/shared-<name>
+
+Integration branches (same type/scope family as the parent issue):
+
+feature/shared-<name>-bri-<id>-integration
+fix/app-<name>-bri-<id>-integration
+security/program-<issue>-bri-<id>-integration
+refactor/shared-<name>-bri-<id>-integration
+
+Slice branches:
+
+feature/shared-<name>-bri-<id>-s01-<slice-slug>
+fix/app-<name>-bri-<id>-s02-<slice-slug>
+security/program-<issue>-bri-<id>-s03-<slice-slug>
+refactor/shared-<name>-bri-<id>-s04-<slice-slug>
+
+Rules:
+	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
+	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
+	•	Integration branches start from latest `develop`.
+	•	Slice branches start from the parent integration branch, not directly from `develop`.
 
 Examples:
 
@@ -84,6 +132,19 @@ feature/program-staking
 feature/app-wallet-login
 nft/program-collection-mint
 security/program-authority-check
+feature/shared-knowledge-promotion-bri-143-integration
+feature/shared-knowledge-promotion-bri-143-s01-governance-policy
+
+⸻
+
+🔀 INTEGRATION BRANCH FLOW (MANDATORY WHEN USING SLICES)
+
+	1.	Create the integration branch from latest `develop`.
+	2.	Create each slice branch from the integration branch.
+	3.	Open slice PRs into the integration branch.
+	4.	Merge reviewed slices into the integration branch.
+	5.	Open the final integration PR from the integration branch into `develop`.
+	6.	Delete the temporary integration branch after the final merge.
 
 ⸻
 
@@ -137,8 +198,20 @@ PR must include:
 	•	Risk analysis section
 	•	Rollback plan section
 	•	Feature note path under `/docs/features/*.md` for small/iterative feature/fix/refactor/nft product changes
+	•	For slice PRs, the slice id and parent integration branch reference
 
 No PR allowed without macro completion.
+
+⸻
+
+🔒 INTEGRATION-TARGET PR GATES (MANDATORY)
+
+Every PR targeting a `*-integration` branch must pass:
+	1.	`npm run validate`
+	2.	Required docs scope check
+	3.	Local preflight against the integration branch base (`npm run pr:ready -- --base <integration-branch>`)
+
+Full label/template governance remains mandatory for PRs targeting `develop`.
 
 ⸻
 
@@ -175,7 +248,8 @@ Every PR must:
 	6.	Build Next.js app
 	7.	Full repo type-check
 	8.	Lint entire repo
-	9.	Run security scans
+	9.	Run DB migration validation against clean Postgres when schema or persistence work is in scope
+	10.	Run security scans
 
 If any fails → block merge.
 

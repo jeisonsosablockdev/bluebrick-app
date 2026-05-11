@@ -8,6 +8,12 @@ Documentation must be created and updated alongside development.
 
 No feature is complete without documentation.
 
+Canonical precedence and drift control:
+	•	This file is the canonical documentation policy for the repository.
+	•	`AGENTS.md`, guides, helper scripts, and workflow summaries may reference this policy, but must not redefine it with conflicting or looser rules.
+	•	The executable enforcement source is `scripts/ci/check-required-docs.sh`.
+	•	If a summary drifts from this file, this file and the enforcement scripts govern.
+
 ⸻
 
 For Blockchain Changes (`/programs`)
@@ -78,6 +84,8 @@ If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests
 
 Enforcement:
 	•	If no `/docs/features/*.md` file is updated for qualifying changes, documentation is considered incomplete.
+	•	For single-issue slice flows, multiple slice branches may update the same parent feature-note file incrementally instead of creating one near-duplicate file per slice.
+	•	Prefer one accumulated feature note per parent Linear issue when the slices belong to the same initiative.
 
 ⸻
 
@@ -103,16 +111,19 @@ Allowed status values:
 	•	`in-review`
 	•	`approved`
 	•	`implemented`
+	•	`rejected`
 
 Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
+	•	`docs/rfcs/000-manifest.md` is intentionally blank as a bootstrap scaffold and is excluded from story/epic RFC content requirements.
 
 Automated enforcement in project flow:
 	•	`npm run validate` now includes docs governance validation (`scripts/ci/validate-doc-governance.sh`).
-	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with `epic-<id>-story-<id>` when product code is touched:
+	•	`scripts/ci/check-required-docs.sh` validates RFC sync for story branches named with either `epic-<id>-story-<story-id>` or `epic-<id>-story-<epic-id>-<story-id>` when product code is touched:
 		•	Story RFC file and EPIC `README.md` must both be updated in the same PR.
 		•	Required story sections must exist.
 		•	If story status is `implemented`, traceability cannot remain in `TBD` or `pending/open`.
-		•	Story status in EPIC Story Index must match story RFC status.
+		•	Story status in EPIC Story Index must match story RFC status, ignoring markdown-only wrapping like backticks.
+		•	Local preflight includes uncommitted and untracked working-tree changes so docs validation reflects the author’s current edits before commit/PR creation.

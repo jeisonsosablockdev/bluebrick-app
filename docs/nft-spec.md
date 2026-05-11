@@ -1,5 +1,27 @@
 # NFT Spec
 
+Last Updated: 2026-05-10
+
+## Codex Orchestration Baseline Compatibility
+- No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.
+- The protected NFT avatar route keeps the same server-side contract:
+  - wallet authentication remains mandatory
+  - DAS failures still surface through the route error contract
+  - IPFS image normalization still resolves to the configured HTTPS gateway
+- Test harness compatibility was updated so the route continues to be verified correctly under the current repo baseline (`Vitest 4` + modern Node runtime):
+  - the DAS client mock now uses a class-shaped constructor mock because the route instantiates `new DasClient()`
+  - NFT avatar route assertions continue to verify the same response semantics, not a different implementation contract
+
+## BRI-152 Release Visibility Guard
+- The admin mint console remains part of the development/operations toolset, but it is intentionally hidden in RC/release-like environments.
+- `/admin/mint` is removed from admin navigation and returns `404` on direct access when the release visibility guard is active.
+- This is a surface-area control only; the Solana devnet authority model, mint contracts, and NFT operational policies remain unchanged.
+- Internal non-release environments can re-enable the console with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`.
+
+## BRIDS Technical Rename
+- Technical project slug references were renamed from `solana-test-1` to `brids`.
+- Active metadata pinning tags for Core Candy Machine and Pinata flows now emit `app: "brids"` while preserving the existing mint, authority, and devnet execution model.
+
 ## Scope
 - Feature: Admin-driven batch minting on Solana devnet using Metaplex Core.
 - Collection: One Core collection per mint run. Assets are minted as numbered fractions under that collection.
@@ -61,6 +83,22 @@
 - Rotation/revocation:
   - Admin wallet allowlist is managed through `ADMIN_WALLETS`.
   - Revoking admin rights is immediate once wallet is removed from allowlist.
+
+## BRI-12 Wallet/Auth Migration Impact (NFT Scope)
+- Change summary:
+  - Wallet auth boundary migrated public key byte handling from `@solana/web3.js` to `@solana/kit` (`address` + `getAddressEncoder`) in SIWS verification path.
+  - Wallet modal auth sync between browser contexts was hardened (`BroadcastChannel` + `storage` + `focus`/`visibilitychange` revalidation).
+- NFT authority impact:
+  - No change in authority model for NFT operations.
+  - Admin NFT endpoints continue to derive authority only from server-side SIWS session (`ADMIN_WALLETS` allowlist), never from client wallet state.
+  - `payerPublicKey` checks remain server-authoritative in prepare/submit flows.
+- Metadata and collection impact:
+  - No change to metadata ownership semantics.
+  - No change to collection `updateAuthority` policy or delegate lifecycle requirements.
+- Security invariants (unchanged):
+  - No client-side authority validation is accepted as final decision.
+  - No mocked signatures/RPC are valid acceptance evidence.
+  - Devnet-only execution policy remains mandatory for NFT proof flows.
 
 ## Metadata Ownership
 - Metadata PDA seeds:
@@ -164,6 +202,14 @@
 - Persisted datasets:
   - `asset_mint_snapshots`: form snapshot, blockchain snapshot, verification result, handoff status.
   - `asset_mint_onchain_proofs`: deploy/mint signatures with confirmation status, slot, and error.
+- Collection editor bootstrap contract (EPIC-011 STORY-011-03):
+  - `form_snapshot.uploadRefs` is the primary ordering source for gallery/property/document bootstrap into marketplace editable fields.
+  - Finalized uploads from `asset_uploaded_files` joined with `asset_upload_contracts.category` are matched by `fileRefId`; raw snapshot URLs are fallback-only when the referenced finalized upload is missing.
+  - Corrupt snapshot shapes must not invent collection editor data. Malformed arrays, unresolved upload refs without fallback URLs, or invalid reduced Maps payloads are routed to manual review instead of silent persistence.
+  - The approved bootstrap runner is versioned (`2026-04-23-v1`) and exposed through `npm run collection:bootstrap:dry-run -- [--actor-pubkey <pubkey>] [--entry-id <id>] [--output-file <path>]`.
+  - Dry-run output is a manifest with explicit `successes`, `manualReviewRequired`, and `failures` buckets so operations can audit bootstrap readiness before any write slice lands.
+  - Collection-editor uploads can now carry an optional `editSessionId` in `asset_upload_contracts` so temporary edit media is distinguishable from promoted marketplace media.
+  - Promotion on save is modeled server-side (`promoted_at` / `promoted_by`); orphan cleanup only purges session-linked uploads that were never promoted, and it attempts blob deletion before removing DB rows.
 - Verification policy:
   - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.
@@ -226,7 +272,7 @@
 | Write initial AppData | `3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC` | `https://explorer.solana.com/tx/3pvRzuw6LvrrY61zpRGCHSjcbgfTd5MY2Tm5b84Q1Nw5wiyFTCr1iD9hiRgmNkJPktzxcdYk1UoujfYxpCXvuYFC?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 | Update AppData | `rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX` | `https://explorer.solana.com/tx/rrPY2Fp1hVHYojhLwhuzbCAid1796FzGaSbiw21PfBEAoTMZCTZJRPbnazBp45RhTtMPRRHqVhvPAri9oVbKdcX?cluster=devnet` | `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK` |
 
-Last Updated: 2026-04-01 10:45:00 UTC
+Last Updated: 2026-04-12 21:07:07 UTC
 
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)

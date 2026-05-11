@@ -1,0 +1,82 @@
+import type { ReactElement } from "react";
+import Link from "next/link";
+
+import { AdminCollectionDetailShell } from "@/components/admin/admin-collection-detail-shell";
+import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
+import { Card } from "@/components/ui/card";
+import { loadAdminCollectionDetailPageState } from "@/lib/admin/collection-detail-page-state";
+import { localize } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
+
+type AdminCollectionDetailPageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default async function AdminCollectionDetailPage({
+  params
+}: AdminCollectionDetailPageProps): Promise<ReactElement> {
+  const locale = await getServerLocale();
+  const { id } = await params;
+  const state = await loadAdminCollectionDetailPageState(id);
+
+  if (state.kind === "error") {
+    return (
+      <AdminModulePlaceholder
+        highlights={[
+          localize(locale, { en: "Route contract is live", es: "El contrato de ruta ya esta activo", pt: "O contrato de rota ja esta ativo" }),
+          localize(locale, { en: "Ownership stays server-side", es: "El ownership sigue server-side", pt: "O ownership permanece server-side" }),
+          localize(locale, { en: "Editor UI remains deferred", es: "La UI del editor sigue diferida", pt: "A UI do editor permanece adiada" })
+        ]}
+        listTitle={localize(locale, { en: "Detail handoff", es: "Handoff de detalle", pt: "Handoff de detalhe" })}
+        subtitle={localize(locale, {
+          en: "This route now exists, but it only exposes a safe handoff while the modular editor arrives in the next story slices.",
+          es: "Esta ruta ya existe, pero por ahora solo expone un handoff seguro mientras el editor modular llega en los siguientes slices.",
+          pt: "Esta rota ja existe, mas por enquanto expoe apenas um handoff seguro enquanto o editor modular chega nos proximos slices."
+        })}
+        title={localize(locale, { en: "Collection detail", es: "Detalle de coleccion", pt: "Detalhe da colecao" })}
+      >
+        <Card className="space-y-4">
+          <p className="rounded-2xl border border-rose-300/20 bg-rose-400/10 p-4 text-sm text-rose-100">{state.message}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/85 transition-all hover:bg-white/15"
+              href="/admin/collections"
+            >
+              {localize(locale, { en: "Back to collections", es: "Volver a colecciones", pt: "Voltar para colecoes" })}
+            </Link>
+          </div>
+        </Card>
+      </AdminModulePlaceholder>
+    );
+  }
+
+  return (
+    <AdminModulePlaceholder
+      highlights={[
+        localize(locale, { en: "Summary editor mounted", es: "Editor de summary montado", pt: "Editor de summary montado" }),
+        localize(locale, { en: "Property information editor mounted", es: "Editor de property information montado", pt: "Editor de property information montado" }),
+        localize(locale, { en: "Gallery tabs shell mounted", es: "Shell de tabs de gallery montado", pt: "Shell de abas de gallery montado" }),
+        localize(locale, { en: "Documents editor mounted", es: "Editor de documents montado", pt: "Editor de documents montado" }),
+        localize(locale, { en: "Blockchain addresses panel mounted", es: "Panel de direcciones blockchain montado", pt: "Painel de enderecos blockchain montado" }),
+        localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" }),
+        localize(locale, { en: "Gallery mutations remain staged for the next slice", es: "Las mutaciones de gallery quedan para el siguiente slice", pt: "As mutacoes de gallery ficam para o proximo slice" })
+      ]}
+      listTitle={localize(locale, { en: "Detail shell", es: "Shell de detalle", pt: "Shell de detalhe" })}
+      subtitle={localize(locale, {
+        en: "Detail layout over the approved contract, now with summary, property, and documents edit loops live plus a dedicated gallery tabs shell staged for the next media mutation slice.",
+        es: "Layout de detalle sobre el contrato aprobado, ahora con los loops de edicion de summary, property information y documents activos mas un shell dedicado de tabs para gallery preparado para el siguiente slice de mutaciones de media.",
+        pt: "Layout de detalhe sobre o contrato aprovado, agora com os loops de edicao de summary, property information e documents ativos mais um shell dedicado de abas para gallery preparado para o proximo slice de mutacoes de midia."
+        })}
+      title={state.content.title}
+    >
+      <AdminCollectionDetailShell
+        blockchain={state.blockchain}
+        content={state.content}
+        locale={locale}
+        ownership={state.ownership}
+      />
+    </AdminModulePlaceholder>
+  );
+}

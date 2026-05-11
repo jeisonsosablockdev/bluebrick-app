@@ -29,6 +29,22 @@ If tests are missing or failing → story is incomplete.
 
 ⸻
 
+🗃 DATABASE SCHEMA CHANGE GATE (MANDATORY)
+
+Applies when changes affect:
+	•	`/db/migrations`
+	•	`/lib/db`
+	•	DB-backed repositories, persistence adapters, or SQL assumptions
+
+Rules:
+	•	Tracked SQL migrations must exist before DB-backed schema changes are considered complete.
+	•	Local development must not depend on remembering manual migration runs; the canonical dev flow must apply tracked migrations automatically when `DATABASE_URL` is configured.
+	•	`npm run validate` must include DB migration validation.
+	•	PR CI must exercise migration application against a clean Postgres instance.
+	•	If tracked migrations are pending on the target database, task completion is blocked until `npm run db:migrate` is applied successfully.
+
+⸻
+
 🏁 PRE-MAINNET CHECKLIST
 	•	All Anchor tests executed on devnet.
 	•	All transactions confirmed on-chain.
@@ -74,8 +90,9 @@ If change affects NFT logic:
 
 🧬 DEVELOPMENT PHILOSOPHY
 	•	Devnet-first execution.
-	•	Zero simulation.
-	•	Zero mocks.
+	•	Zero simulation as final blockchain acceptance evidence.
+	•	Zero mocked blockchain RPC, signatures, accounts, balances, or on-chain data as final acceptance evidence.
+	•	Application-layer mocks remain allowed for non-blockchain tests when they do not replace required devnet execution proof.
 	•	Real signatures only.
 	•	Clean Code always.
 	•	Security before features.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { DEFAULT_THEME_MODE, sanitizeThemeMode, THEME_STORAGE_KEY, type ThemeMode } from "@/lib/theme";
@@ -10,31 +10,50 @@ function applyTheme(theme: ThemeMode): void {
   document.documentElement.setAttribute("data-theme", theme);
 }
 
+const THEME_CHANGE_EVENT = "brids-theme-change";
+
+function readThemeSnapshot(): ThemeMode {
+  if (typeof window === "undefined") {
+    return DEFAULT_THEME_MODE;
+  }
+
+  return sanitizeThemeMode(
+    document.documentElement.getAttribute("data-theme")
+    ?? window.localStorage.getItem(THEME_STORAGE_KEY)
+  );
+}
+
+function subscribeToThemeChange(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleThemeChange = (): void => {
+    onStoreChange();
+  };
+
+  window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+  window.addEventListener("storage", handleThemeChange);
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+    window.removeEventListener("storage", handleThemeChange);
+  };
+}
+
 type ThemeToggleProps = {
   className?: string;
 };
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { t } = useI18n();
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") {
-      return DEFAULT_THEME_MODE;
-    }
-
-    return sanitizeThemeMode(
-      document.documentElement.getAttribute("data-theme")
-      ?? window.localStorage.getItem(THEME_STORAGE_KEY)
-    );
-  });
-
-  useEffect(() => {
-    applyTheme(theme);
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
+  const theme = useSyncExternalStore(subscribeToThemeChange, readThemeSnapshot, () => DEFAULT_THEME_MODE);
 
   const toggleTheme = (): void => {
     const nextTheme: ThemeMode = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+    applyTheme(nextTheme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   };
 
   return (

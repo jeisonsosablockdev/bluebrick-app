@@ -7,6 +7,7 @@ import {
   markPurchaseAttemptConfirmed,
   markPurchaseAttemptFailedBySignature
 } from "@/lib/purchase-attempts-repository";
+import { recordReferralPurchaseSignal } from "@/lib/referrals/reward-engine";
 import { invalidatePurchaseQuoteCache } from "@/lib/purchase-service";
 
 export type PurchaseWebhookStatus = "confirmed" | "failed";
@@ -152,6 +153,68 @@ function buildFingerprint(input: {
 }): string {
   const slotKey = Number.isInteger(input.slot) ? String(input.slot) : "no-slot";
   return `${input.signature}|${slotKey}|${input.eventType}`;
+}
+
+function collectMintAddress(set: Set<string>, value: unknown): void {
+  if (typeof value !== "string") {
+    return;
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    return;
+  }
+
+  set.add(normalized);
+}
+
+function extractNftMintAddressesFromHeliusPayload(payload: unknown): string[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const mintAddresses = new Set<string>();
+  const record = payload as {
+    events?: {
+      nft?: {
+        nfts?: Array<{
+          mint?: unknown;
+        }>;
+      };
+    };
+    tokenTransfers?: Array<{
+      mint?: unknown;
+      tokenStandard?: unknown;
+    }>;
+    accountData?: Array<{
+      tokenBalanceChanges?: Array<{
+        mint?: unknown;
+        rawTokenAmount?: {
+          decimals?: unknown;
+        };
+      }>;
+    }>;
+  };
+
+  for (const nft of record.events?.nft?.nfts ?? []) {
+    collectMintAddress(mintAddresses, nft.mint);
+  }
+
+  for (const transfer of record.tokenTransfers ?? []) {
+    if (transfer.tokenStandard === "NonFungible") {
+      collectMintAddress(mintAddresses, transfer.mint);
+    }
+  }
+
+  for (const account of record.accountData ?? []) {
+    for (const change of account.tokenBalanceChanges ?? []) {
+      if (change.rawTokenAmount?.decimals === 0) {
+        collectMintAddress(mintAddresses, change.mint);
+      }
+    }
+  }
+
+  return Array.from(mintAddresses);
 }
 
 function normalizeHeliusEvent(raw: unknown): PurchaseHeliusEventInput | null {
@@ -458,6 +521,24 @@ export async function processPurchaseHeliusWebhookPayload(payload: unknown): Pro
       if (updated) {
         result.reconciled += 1;
         invalidatePurchaseQuoteCache(updated.candyMachineAddress);
+
+        const nftMintAddresses = extractNftMintAddressesFromHeliusPayload(event.payload);
+        for (const nftMintAddress of nftMintAddresses) {
+          await recordReferralPurchaseSignal({
+            inviteeWalletPublicKey: updated.walletPublicKey,
+            purchaseAttemptId: updated.id,
+            purchaseWebhookEventId: recorded.event.id,
+            transactionSignature: event.signature,
+            collectionAddress: updated.collectionAddress,
+            nftMintAddress,
+            confirmedAt: updated.confirmedAt ?? recorded.event.processedAt ?? recorded.event.receivedAt,
+            auditPayload: {
+              heliusEventType: event.eventType,
+              slot: event.slot,
+              purchaseWebhookEventId: recorded.event.id
+            }
+          });
+        }
       }
       continue;
     }

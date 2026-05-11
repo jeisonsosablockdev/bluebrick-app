@@ -37,6 +37,143 @@ a {
   text-decoration: none;
 }
 
+.app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 176, 249, 0.14), transparent 26%),
+    radial-gradient(circle at 50% 56%, rgba(207, 132, 249, 0.1), transparent 30%),
+    linear-gradient(180deg, #050813 0%, #03050b 55%, #02040a 100%);
+  color: #f8fbff;
+  pointer-events: auto;
+  transition: opacity 520ms ease-out, visibility 520ms ease-out;
+}
+
+.app-splash--exiting {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.app-splash__halo {
+  position: absolute;
+  width: min(62vw, 520px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(125, 149, 249, 0.14);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 52%),
+    conic-gradient(from 130deg, rgba(0, 176, 249, 0), rgba(0, 176, 249, 0.2), rgba(207, 132, 249, 0.18), rgba(0, 176, 249, 0));
+  filter: blur(0.2px);
+  opacity: 0.72;
+  transform: scale(0.84);
+  animation: app-splash-halo 1000ms ease-out forwards;
+}
+
+.app-splash__content {
+  position: relative;
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.app-splash__name {
+  margin: 0;
+  letter-spacing: 0.52em;
+  padding-left: 0.52em;
+  color: rgba(248, 251, 255, 0);
+  font-size: clamp(0.86rem, 2vw, 1.02rem);
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  transform: translateY(18px);
+  animation: app-splash-name 1000ms ease-out forwards;
+}
+
+.app-splash__mark-wrap {
+  display: grid;
+  width: clamp(58px, 8vw, 76px);
+  aspect-ratio: 0.59;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.95) translateY(-2px);
+  animation: app-splash-mark 620ms ease-out 420ms forwards;
+}
+
+.app-splash__mark {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter:
+    drop-shadow(0 18px 34px rgba(0, 176, 249, 0.22))
+    drop-shadow(0 10px 26px rgba(207, 132, 249, 0.18));
+}
+
+@keyframes app-splash-name {
+  0% {
+    color: rgba(248, 251, 255, 0);
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  40% {
+    color: rgba(248, 251, 255, 0.92);
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  62% {
+    color: rgba(248, 251, 255, 0.9);
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    color: rgba(248, 251, 255, 0.42);
+    opacity: 0.42;
+    transform: translateY(-22px);
+  }
+}
+
+@keyframes app-splash-mark {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes app-splash-halo {
+  from {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+
+  to {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-splash,
+  .app-splash__halo,
+  .app-splash__name,
+  .app-splash__mark-wrap {
+    animation-duration: 1ms;
+    transition-duration: 1ms;
+  }
+}
+
 @layer components {
   html[data-theme="light"] .bg-gradientHero {
     background:
@@ -732,6 +869,22 @@ a {
   html[data-theme="light"] .quick-tour-prev-btn {
     color: #0f172a;
     background: rgba(15, 23, 42, 0.05);
+  }
+
+  @keyframes rewardPulse {
+    0%, 100% {
+      transform: translateY(0);
+      box-shadow: 0 18px 45px rgba(16, 185, 129, 0.16);
+    }
+
+    50% {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 60px rgba(16, 185, 129, 0.28);
+    }
+  }
+
+  .reward-cta-pulse {
+    animation: rewardPulse 2.8s ease-in-out infinite;
   }
 
   @media (max-width: 767px) {

@@ -94,6 +94,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
   file: File;
   category: AssetUploadCategory;
   draftId: string;
+  editSessionId?: string | null;
   previousCdnUrl?: string | null;
 }): Promise<FinalizeResponse> {
   const contentMd5Base64 = await calculateContentMd5Base64(input.file);
@@ -109,7 +110,8 @@ export async function uploadAssetFileViaSignedUrl(input: {
       mimeType: input.file.type,
       sizeBytes: input.file.size,
       contentMd5Base64,
-      draftId: input.draftId
+      draftId: input.draftId,
+      editSessionId: input.editSessionId?.trim() || null
     })
   });
 
@@ -137,6 +139,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
     },
     body: JSON.stringify({
       draftId: input.draftId,
+      editSessionId: input.editSessionId?.trim() || null,
       etag: putResponse.headers.get("etag"),
       sizeBytes: input.file.size,
       mimeType: input.file.type,

@@ -1,5 +1,5 @@
 {
-  description = "solana-test-1 reproducible development environment";
+  description = "brids reproducible development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -15,7 +15,7 @@
         };
       in {
         devShells.default = pkgs.mkShell {
-          name = "solana-test-1-devshell";
+          name = "brids-devshell";
 
           packages = with pkgs; [
             bashInteractive

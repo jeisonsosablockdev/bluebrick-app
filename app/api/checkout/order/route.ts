@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
+import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
 import {
   CheckoutError,
   createOrderFromCart
@@ -9,9 +10,10 @@ import {
 type CreateOrderBody = {
   paymentMethod?: unknown;
   idempotencyKey?: unknown;
+  applyOnboardingReward?: unknown;
 };
 
-function parseBody(raw: unknown): { paymentMethod: "crypto" | "airwallex"; idempotencyKey?: string } {
+function parseBody(raw: unknown): { paymentMethod: "crypto" | "airwallex"; idempotencyKey?: string; applyOnboardingReward?: boolean } {
   if (!raw || typeof raw !== "object") {
     throw new CheckoutError("INVALID_BODY", "Request body must be an object.", 400);
   }
@@ -29,7 +31,8 @@ function parseBody(raw: unknown): { paymentMethod: "crypto" | "airwallex"; idemp
 
   return {
     paymentMethod,
-    idempotencyKey
+    idempotencyKey,
+    applyOnboardingReward: typeof body.applyOnboardingReward === "boolean" ? body.applyOnboardingReward : undefined
   };
 }
 
@@ -53,10 +56,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = parseBody(await request.json().catch(() => null));
+    const disabledMethodError = getCheckoutPaymentMethodDisabledError(body.paymentMethod);
+    if (disabledMethodError) {
+      throw new CheckoutError(
+        disabledMethodError.code,
+        disabledMethodError.message,
+        disabledMethodError.status
+      );
+    }
+
     const order = await createOrderFromCart({
       walletPublicKey: role.pubkey,
       paymentMethod: body.paymentMethod,
-      idempotencyKey: body.idempotencyKey
+      idempotencyKey: body.idempotencyKey,
+      applyOnboardingReward: body.applyOnboardingReward
     });
 
     return NextResponse.json({ ok: true, data: order });

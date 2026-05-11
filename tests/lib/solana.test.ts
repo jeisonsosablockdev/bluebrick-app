@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { clusterApiUrl } from "@solana/web3.js";
 
 import { getSolanaRpcUrl, getWalletModalAutoClose } from "@/lib/solana";
 
@@ -32,7 +31,7 @@ describe("lib/solana", () => {
     delete process.env.SOLANA_RPC_URL;
     delete process.env.NEXT_PUBLIC_SOLANA_RPC;
 
-    expect(getSolanaRpcUrl()).toBe(clusterApiUrl("devnet"));
+    expect(getSolanaRpcUrl()).toBe("https://api.devnet.solana.com");
   });
 
   it("prioritizes SOLANA_RPC_URL over NEXT_PUBLIC_SOLANA_RPC", () => {

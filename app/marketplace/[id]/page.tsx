@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -7,6 +8,7 @@ import { getServerLocale } from "@/lib/i18n-server";
 import { localize } from "@/lib/i18n";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { getRoleForWallet } from "@/lib/rbac";
+import { createPageMetadata } from "@/lib/seo";
 import { PropertyDetailContent } from "@/components/marketplace/PropertyDetailContent";
 
 type MarketplaceDetailPageProps = {
@@ -14,6 +16,21 @@ type MarketplaceDetailPageProps = {
     id: string;
   }>;
 };
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  return createPageMetadata({
+    title: `Property ${id}`,
+    description: "Tokenized property detail with yield, supply, and legal summary data.",
+    path: `/marketplace/${id}`,
+    section: "marketplace"
+  });
+}
 
 export default async function MarketplaceDetailPage({ params }: MarketplaceDetailPageProps) {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();

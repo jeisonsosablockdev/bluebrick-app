@@ -1,16 +1,52 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 2 ]]; then
+if [[ $# -lt 1 ]]; then
   echo "Uso: ./scripts/git-save.sh <scope> \"mensaje\""
+  echo "Uso: ./scripts/git-save.sh --message \"mensaje\" [--scope <scope>]"
   echo "Ej:  ./scripts/git-save.sh app \"initial UI scaffold\""
   exit 1
 fi
 
-SCOPE="$1"
-MSG="$2"
+SCOPE=""
+MSG=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --scope)
+      SCOPE="$2"
+      shift 2
+      ;;
+    --message)
+      MSG="$2"
+      shift 2
+      ;;
+    *)
+      if [[ -z "${SCOPE}" ]]; then
+        SCOPE="$1"
+      elif [[ -z "${MSG}" ]]; then
+        MSG="$1"
+      else
+        echo "❌ Argumento desconocido: $1"
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
 
 CURRENT_BRANCH="$(git branch --show-current)"
+
+if [[ -z "${MSG}" ]]; then
+  echo "❌ Mensaje de commit obligatorio."
+  exit 1
+fi
+
+if [[ -z "${SCOPE}" ]]; then
+  if [[ "${CURRENT_BRANCH}" =~ ^(feature|fix|security|nft|refactor|docs|chore)/([a-z]+)- ]]; then
+    SCOPE="${BASH_REMATCH[2]}"
+  fi
+fi
 
 has_npm_script() {
   local script_name="$1"

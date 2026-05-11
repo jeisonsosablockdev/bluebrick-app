@@ -15,10 +15,12 @@ export type SignedUrlRequest = {
   sizeBytes: number;
   contentMd5Base64: string;
   draftId: string;
+  editSessionId: string | null;
 };
 
 export type FinalizeUploadRequest = {
   draftId: string;
+  editSessionId: string | null;
   etag: string | null;
   sizeBytes: number;
   mimeType: string;
@@ -42,6 +44,7 @@ export type SignedUploadContract = {
   createdAt: string;
   finalizedAt: string | null;
   finalFileRefId: string | null;
+  editSessionId: string | null;
 };
 
 export type UploadedFileRef = {
@@ -58,4 +61,8 @@ export type UploadedFileRef = {
   etag: string | null;
   uploadedAt: string;
   createdAt: string;
+};
+
+export type UploadedFileRefWithCategory = UploadedFileRef & {
+  category: AssetUploadCategory;
 };

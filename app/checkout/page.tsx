@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { WalletModal } from "@/components/WalletModal";
 import { CheckoutPageClient } from "@/components/checkout/CheckoutPageClient";
 import { H1, Lead } from "@/components/ui/typography";
@@ -5,6 +7,15 @@ import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getServerLocale } from "@/lib/i18n-server";
 import { localize } from "@/lib/i18n";
 import { getRoleForWallet } from "@/lib/rbac";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Checkout",
+  description: "Secure checkout flow for cart confirmation and payment handoff.",
+  path: "/checkout",
+  section: "checkout",
+  explicitNoIndex: true
+});
 
 export default async function CheckoutPage() {
   const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
