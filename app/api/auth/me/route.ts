@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { getRequestRole } from "@/lib/auth-session";
+import { resolveAppAuthContext } from "@/lib/app-auth";
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  const requestRole = getRequestRole(request);
-
-  if (!requestRole.authenticated) {
-    return NextResponse.json({ authenticated: false, pubkey: null });
-  }
+export async function GET(): Promise<NextResponse> {
+  const auth = await resolveAppAuthContext();
 
   return NextResponse.json({
-    authenticated: true,
-    pubkey: requestRole.pubkey,
-    role: requestRole.role
+    authenticated: auth.walletAuthenticated,
+    federatedAvailable: auth.federatedAvailable,
+    accountAuthenticated: auth.accountAuthenticated,
+    federatedAuthenticated: auth.federatedAuthenticated,
+    walletAuthenticated: auth.walletAuthenticated,
+    sessionConflict: auth.sessionConflict,
+    authMethod: auth.authMethod,
+    accountId: auth.accountId,
+    workosUserId: auth.workosUserId,
+    email: auth.workosEmail,
+    pubkey: auth.walletPublicKey,
+    role: auth.role
   });
 }

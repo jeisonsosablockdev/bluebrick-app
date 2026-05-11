@@ -40,6 +40,25 @@ export type ReferralAttributionRecord = {
   metadata: ReferralMetadata;
 };
 
+export type ReferralIntentStatus =
+  | "active"
+  | "promoted"
+  | "discarded_invalid_code"
+  | "discarded_self_referral"
+  | "discarded_wallet_already_attributed";
+
+export type ReferralIntentRecord = {
+  id: string;
+  accountId: string;
+  referralCode: string;
+  attributionSource: ReferralAttributionSource;
+  capturedAt: string;
+  status: ReferralIntentStatus;
+  metadata: ReferralMetadata;
+  resolvedAt: string | null;
+  promotedAttributionId: string | null;
+};
+
 export type ReferralAttributionPage = {
   items: ReferralAttributionRecord[];
   totalCount: number;
@@ -75,12 +94,62 @@ export type BindReferralAtFirstAuthResult =
       referralCode: string;
     };
 
+export type UpsertReferralIntentInput = {
+  accountId: string;
+  referralCode: string;
+  attributionSource: ReferralAttributionSource;
+  capturedAt?: string;
+  metadata?: ReferralMetadata;
+};
+
+export type UpsertReferralIntentResult =
+  | {
+      outcome: "stored";
+      intent: ReferralIntentRecord;
+    }
+  | {
+      outcome: "rejected_invalid_code";
+      referralCode: string;
+    };
+
+export type PromoteReferralIntentInput = {
+  accountId: string;
+  walletPublicKey: string;
+  promotedAt?: string;
+};
+
+export type PromoteReferralIntentResult =
+  | {
+      outcome: "no_intent";
+    }
+  | {
+      outcome: "promoted";
+      intent: ReferralIntentRecord;
+      attribution: ReferralAttributionRecord;
+    }
+  | {
+      outcome: "discarded_invalid_code";
+      intent: ReferralIntentRecord;
+    }
+  | {
+      outcome: "discarded_self_referral";
+      intent: ReferralIntentRecord;
+      referrerWalletPublicKey: string;
+    }
+  | {
+      outcome: "discarded_wallet_already_attributed";
+      intent: ReferralIntentRecord;
+      attribution: ReferralAttributionRecord;
+    };
+
 export function __resetReferralRepositoryStateForTests(): void {
   inMemoryReferralCodesById.clear();
   inMemoryReferralCodeIdByWallet.clear();
   inMemoryReferralCodeIdByCode.clear();
   inMemoryAttributionsById.clear();
   inMemoryActiveAttributionIdByInviteeWallet.clear();
+  inMemoryReferralIntentsById.clear();
+  inMemoryActiveReferralIntentIdByAccount.clear();
 }
 
 type ReferralCodeRow = {
@@ -104,6 +173,18 @@ type ReferralAttributionRow = {
   closed_at: string | Date | null;
   status: ReferralAttributionStatus;
   metadata_json: unknown;
+};
+
+type ReferralIntentRow = {
+  id: string;
+  account_id: string;
+  referral_code: string;
+  attribution_source: ReferralAttributionSource;
+  captured_at: string | Date;
+  status: ReferralIntentStatus;
+  metadata_json: unknown;
+  resolved_at: string | Date | null;
+  promoted_attribution_id: string | null;
 };
 
 const REFERRAL_CODE_SELECT = `
@@ -133,12 +214,26 @@ const REFERRAL_ATTRIBUTION_SELECT = `
   a.metadata_json
 `;
 
+const REFERRAL_INTENT_SELECT = `
+  id,
+  account_id,
+  referral_code,
+  attribution_source,
+  captured_at,
+  status,
+  metadata_json,
+  resolved_at,
+  promoted_attribution_id
+`;
+
 const inMemoryReferralCodesById = new Map<string, ReferralCodeRecord>();
 const inMemoryReferralCodeIdByWallet = new Map<string, string>();
 const inMemoryReferralCodeIdByCode = new Map<string, string>();
 
 const inMemoryAttributionsById = new Map<string, ReferralAttributionRecord>();
 const inMemoryActiveAttributionIdByInviteeWallet = new Map<string, string>();
+const inMemoryReferralIntentsById = new Map<string, ReferralIntentRecord>();
+const inMemoryActiveReferralIntentIdByAccount = new Map<string, string>();
 
 function isReferralDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
@@ -177,6 +272,11 @@ function sanitizeMetadata(value: unknown): ReferralMetadata {
   return { ...(value as Record<string, unknown>) };
 }
 
+function normalizeReferralIntentCode(input: string): string {
+  const normalized = normalizeReferralCode(input);
+  return normalized.length >= 1 ? normalized : "";
+}
+
 function mapReferralCodeRow(row: ReferralCodeRow): ReferralCodeRecord {
   return {
     id: row.id,
@@ -204,6 +304,20 @@ function mapReferralAttributionRow(row: ReferralAttributionRow): ReferralAttribu
   };
 }
 
+function mapReferralIntentRow(row: ReferralIntentRow): ReferralIntentRecord {
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    referralCode: row.referral_code,
+    attributionSource: normalizeReferralAttributionSource(row.attribution_source),
+    capturedAt: toIso(row.captured_at) ?? nowIso(),
+    status: row.status,
+    metadata: sanitizeMetadata(row.metadata_json),
+    resolvedAt: toIso(row.resolved_at),
+    promotedAttributionId: row.promoted_attribution_id
+  };
+}
+
 function setInMemoryReferralCode(record: ReferralCodeRecord): void {
   inMemoryReferralCodesById.set(record.id, { ...record });
   inMemoryReferralCodeIdByWallet.set(record.referrerWalletPublicKey, record.id);
@@ -220,6 +334,19 @@ function setInMemoryAttribution(record: ReferralAttributionRecord): void {
     inMemoryActiveAttributionIdByInviteeWallet.set(record.inviteeWalletPublicKey, record.id);
   } else {
     inMemoryActiveAttributionIdByInviteeWallet.delete(record.inviteeWalletPublicKey);
+  }
+}
+
+function setInMemoryReferralIntent(record: ReferralIntentRecord): void {
+  inMemoryReferralIntentsById.set(record.id, {
+    ...record,
+    metadata: { ...record.metadata }
+  });
+
+  if (record.status === "active") {
+    inMemoryActiveReferralIntentIdByAccount.set(record.accountId, record.id);
+  } else {
+    inMemoryActiveReferralIntentIdByAccount.delete(record.accountId);
   }
 }
 
@@ -258,6 +385,48 @@ function getInMemoryAttributionById(id: string): ReferralAttributionRecord | nul
     ...found,
     metadata: { ...found.metadata }
   };
+}
+
+function getInMemoryActiveReferralIntentByAccount(accountId: string): ReferralIntentRecord | null {
+  const id = inMemoryActiveReferralIntentIdByAccount.get(accountId);
+  if (!id) {
+    return null;
+  }
+
+  const found = inMemoryReferralIntentsById.get(id);
+  if (!found) {
+    inMemoryActiveReferralIntentIdByAccount.delete(accountId);
+    return null;
+  }
+
+  return {
+    ...found,
+    metadata: { ...found.metadata }
+  };
+}
+
+async function getActiveReferralIntentByAccountWithClient(
+  client: PoolClient,
+  input: {
+    accountId: string;
+    forUpdate?: boolean;
+  }
+): Promise<ReferralIntentRecord | null> {
+  const result = await client.query<ReferralIntentRow>(
+    `SELECT ${REFERRAL_INTENT_SELECT}
+       FROM account_referral_intents
+      WHERE account_id = $1
+        AND status = 'active'
+      LIMIT 1
+      ${input.forUpdate ? "FOR UPDATE" : ""}`,
+    [input.accountId]
+  );
+
+  if ((result.rowCount ?? 0) === 0) {
+    return null;
+  }
+
+  return mapReferralIntentRow(result.rows[0] as ReferralIntentRow);
 }
 
 async function getReferralCodeByValueWithClient(client: PoolClient, code: string): Promise<ReferralCodeRecord | null> {
@@ -425,6 +594,239 @@ export async function getReferralAttributionById(input: {
   );
 }
 
+export async function getActiveReferralIntentForAccount(input: {
+  accountId: string;
+}): Promise<ReferralIntentRecord | null> {
+  const accountId = input.accountId.trim();
+  if (!accountId) {
+    return null;
+  }
+
+  if (!isReferralDatabaseConfigured()) {
+    return getInMemoryActiveReferralIntentByAccount(accountId);
+  }
+
+  return withDbClient((client) =>
+    getActiveReferralIntentByAccountWithClient(client, {
+      accountId
+    })
+  );
+}
+
+export async function upsertReferralIntentForAccount(
+  input: UpsertReferralIntentInput
+): Promise<UpsertReferralIntentResult> {
+  const accountId = input.accountId.trim();
+  const referralCode = normalizeReferralIntentCode(input.referralCode);
+  const attributionSource = normalizeReferralAttributionSource(input.attributionSource);
+  const capturedAt = input.capturedAt ? new Date(input.capturedAt).toISOString() : nowIso();
+  const metadata = cloneMetadata(input.metadata);
+
+  if (!accountId || !referralCode) {
+    return {
+      outcome: "rejected_invalid_code",
+      referralCode
+    };
+  }
+
+  if (!isReferralDatabaseConfigured()) {
+    const existingCodeId = inMemoryReferralCodeIdByCode.get(referralCode);
+    const existingCode = existingCodeId ? getInMemoryReferralCodeById(existingCodeId) : null;
+    if (!existingCode || existingCode.disabledAt) {
+      return {
+        outcome: "rejected_invalid_code",
+        referralCode
+      };
+    }
+
+    const existing = getInMemoryActiveReferralIntentByAccount(accountId);
+    const intent: ReferralIntentRecord = {
+      id: existing?.id ?? randomUUID(),
+      accountId,
+      referralCode,
+      attributionSource,
+      capturedAt,
+      status: "active",
+      metadata,
+      resolvedAt: null,
+      promotedAttributionId: null
+    };
+
+    setInMemoryReferralIntent(intent);
+    return {
+      outcome: "stored",
+      intent: {
+        ...intent,
+        metadata: { ...intent.metadata }
+      }
+    };
+  }
+
+  return withDbClient(async (client) => {
+    const existingCode = await getReferralCodeByValueWithClient(client, referralCode);
+    if (!existingCode) {
+      return {
+        outcome: "rejected_invalid_code",
+        referralCode
+      } satisfies UpsertReferralIntentResult;
+    }
+
+    await client.query("BEGIN");
+
+    try {
+      const existing = await getActiveReferralIntentByAccountWithClient(client, {
+        accountId,
+        forUpdate: true
+      });
+
+      let intentId = existing?.id ?? randomUUID();
+
+      if (existing) {
+        await client.query(
+          `UPDATE account_referral_intents
+              SET referral_code = $2,
+                  attribution_source = $3,
+                  metadata_json = $4::jsonb,
+                  captured_at = $5,
+                  resolved_at = NULL,
+                  promoted_attribution_id = NULL
+            WHERE id = $1`,
+          [intentId, referralCode, attributionSource, JSON.stringify(metadata), capturedAt]
+        );
+      } else {
+        await client.query(
+          `INSERT INTO account_referral_intents (
+             id,
+             account_id,
+             referral_code,
+             attribution_source,
+             captured_at,
+             status,
+             metadata_json
+           ) VALUES ($1, $2, $3, $4, $5, 'active', $6::jsonb)`,
+          [intentId, accountId, referralCode, attributionSource, capturedAt, JSON.stringify(metadata)]
+        );
+      }
+
+      await client.query("COMMIT");
+
+      const stored = await getActiveReferralIntentByAccountWithClient(client, {
+        accountId
+      });
+
+      if (!stored) {
+        throw new Error("Could not reload active referral intent.");
+      }
+
+      return {
+        outcome: "stored",
+        intent: stored
+      } satisfies UpsertReferralIntentResult;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  });
+}
+
+async function bindReferralAtFirstAuthWithClient(
+  client: PoolClient,
+  input: BindReferralAtFirstAuthInput
+): Promise<BindReferralAtFirstAuthResult> {
+  const normalizedCode = normalizeReferralCode(input.referralCode);
+  const boundAt = input.boundAt ? new Date(input.boundAt).toISOString() : nowIso();
+  const attributionSource = normalizeReferralAttributionSource(input.attributionSource);
+  const metadata = cloneMetadata(input.metadata);
+
+  const referralCodeRecord = await getReferralCodeByValueWithClient(client, normalizedCode);
+  if (!referralCodeRecord) {
+    return {
+      outcome: "rejected_invalid_code",
+      referralCode: normalizedCode
+    } satisfies BindReferralAtFirstAuthResult;
+  }
+
+  if (referralCodeRecord.referrerWalletPublicKey === input.inviteeWalletPublicKey) {
+    return {
+      outcome: "rejected_self_referral",
+      referrerWalletPublicKey: referralCodeRecord.referrerWalletPublicKey,
+      inviteeWalletPublicKey: input.inviteeWalletPublicKey,
+      referralCode: normalizedCode
+    } satisfies BindReferralAtFirstAuthResult;
+  }
+
+  await ensureProfileExists(referralCodeRecord.referrerWalletPublicKey, { client });
+  await ensureProfileExists(input.inviteeWalletPublicKey, { client });
+
+  const activeBeforeInsert = await getActiveReferralAttributionByInviteeWalletWithClient(client, {
+    inviteeWalletPublicKey: input.inviteeWalletPublicKey,
+    forUpdate: true
+  });
+
+  if (activeBeforeInsert) {
+    return {
+      outcome: "already_bound",
+      attribution: activeBeforeInsert
+    } satisfies BindReferralAtFirstAuthResult;
+  }
+
+  try {
+    const inserted = await client.query<{ id: string }>(
+      `INSERT INTO referral_attributions (
+         referral_code_id,
+         referrer_wallet_public_key,
+         invitee_wallet_public_key,
+         attribution_source,
+         bound_at,
+         eligibility_window_ends_at,
+         metadata_json
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+       RETURNING id`,
+      [
+        referralCodeRecord.id,
+        referralCodeRecord.referrerWalletPublicKey,
+        input.inviteeWalletPublicKey,
+        attributionSource,
+        boundAt,
+        buildWindowEndIso(boundAt, DEFAULT_REFERRAL_ELIGIBILITY_WINDOW_DAYS),
+        JSON.stringify(metadata)
+      ]
+    );
+
+    const created = await getReferralAttributionByIdWithClient(client, {
+      id: inserted.rows[0]?.id ?? ""
+    });
+
+    if (!created) {
+      throw new Error("Could not read inserted referral attribution.");
+    }
+
+    return {
+      outcome: "bound",
+      attribution: created
+    } satisfies BindReferralAtFirstAuthResult;
+  } catch (error) {
+    const pgError = error as { code?: string };
+    if (pgError.code !== "23505") {
+      throw error;
+    }
+
+    const activeAfterConflict = await getActiveReferralAttributionByInviteeWalletWithClient(client, {
+      inviteeWalletPublicKey: input.inviteeWalletPublicKey,
+      forUpdate: true
+    });
+
+    if (!activeAfterConflict) {
+      throw error;
+    }
+
+    return {
+      outcome: "already_bound",
+      attribution: activeAfterConflict
+    } satisfies BindReferralAtFirstAuthResult;
+  }
+}
+
 export async function listReferralAttributionsForReferrer(input: {
   referrerWalletPublicKey: string;
 }): Promise<ReferralAttributionRecord[]> {
@@ -581,93 +983,166 @@ export async function bindReferralAtFirstAuth(
     };
   }
 
-  return withDbClient(async (client) => {
-    const referralCodeRecord = await getReferralCodeByValueWithClient(client, normalizedCode);
-    if (!referralCodeRecord) {
-      return {
-        outcome: "rejected_invalid_code",
-        referralCode: normalizedCode
-      } satisfies BindReferralAtFirstAuthResult;
+  return withDbClient((client) => bindReferralAtFirstAuthWithClient(client, input));
+}
+
+export async function promoteReferralIntentForAccountWallet(
+  input: PromoteReferralIntentInput
+): Promise<PromoteReferralIntentResult> {
+  const accountId = input.accountId.trim();
+  const walletPublicKey = input.walletPublicKey.trim();
+  const promotedAt = input.promotedAt ? new Date(input.promotedAt).toISOString() : nowIso();
+
+  if (!accountId || !walletPublicKey) {
+    return { outcome: "no_intent" };
+  }
+
+  if (!isReferralDatabaseConfigured()) {
+    const activeIntent = getInMemoryActiveReferralIntentByAccount(accountId);
+    if (!activeIntent) {
+      return { outcome: "no_intent" };
     }
 
-    if (referralCodeRecord.referrerWalletPublicKey === input.inviteeWalletPublicKey) {
-      return {
-        outcome: "rejected_self_referral",
-        referrerWalletPublicKey: referralCodeRecord.referrerWalletPublicKey,
-        inviteeWalletPublicKey: input.inviteeWalletPublicKey,
-        referralCode: normalizedCode
-      } satisfies BindReferralAtFirstAuthResult;
-    }
-
-    await ensureProfileExists(referralCodeRecord.referrerWalletPublicKey, { client });
-    await ensureProfileExists(input.inviteeWalletPublicKey, { client });
-
-    const activeBeforeInsert = await getActiveReferralAttributionByInviteeWalletWithClient(client, {
-      inviteeWalletPublicKey: input.inviteeWalletPublicKey,
-      forUpdate: true
+    const bound = await bindReferralAtFirstAuth({
+      inviteeWalletPublicKey: walletPublicKey,
+      referralCode: activeIntent.referralCode,
+      attributionSource: activeIntent.attributionSource,
+      boundAt: promotedAt,
+      metadata: activeIntent.metadata
     });
 
-    if (activeBeforeInsert) {
-      return {
-        outcome: "already_bound",
-        attribution: activeBeforeInsert
-      } satisfies BindReferralAtFirstAuthResult;
+    if (bound.outcome === "bound") {
+      const nextIntent: ReferralIntentRecord = {
+        ...activeIntent,
+        status: "promoted",
+        resolvedAt: promotedAt,
+        promotedAttributionId: bound.attribution.id
+      };
+      setInMemoryReferralIntent(nextIntent);
+      return { outcome: "promoted", intent: nextIntent, attribution: bound.attribution };
     }
 
-    try {
-      const inserted = await client.query<{ id: string }>(
-        `INSERT INTO referral_attributions (
-           referral_code_id,
-           referrer_wallet_public_key,
-           invitee_wallet_public_key,
-           attribution_source,
-           bound_at,
-           eligibility_window_ends_at,
-           metadata_json
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
-         RETURNING id`,
-        [
-          referralCodeRecord.id,
-          referralCodeRecord.referrerWalletPublicKey,
-          input.inviteeWalletPublicKey,
-          attributionSource,
-          boundAt,
-          buildWindowEndIso(boundAt, DEFAULT_REFERRAL_ELIGIBILITY_WINDOW_DAYS),
-          JSON.stringify(metadata)
-        ]
-      );
+    if (bound.outcome === "already_bound") {
+      const nextIntent: ReferralIntentRecord = {
+        ...activeIntent,
+        status: "discarded_wallet_already_attributed",
+        resolvedAt: promotedAt,
+        promotedAttributionId: bound.attribution.id
+      };
+      setInMemoryReferralIntent(nextIntent);
+      return { outcome: "discarded_wallet_already_attributed", intent: nextIntent, attribution: bound.attribution };
+    }
 
-      const created = await getReferralAttributionByIdWithClient(client, {
-        id: inserted.rows[0]?.id ?? ""
-      });
-
-      if (!created) {
-        throw new Error("Could not read inserted referral attribution.");
-      }
-
+    if (bound.outcome === "rejected_self_referral") {
+      const nextIntent: ReferralIntentRecord = {
+        ...activeIntent,
+        status: "discarded_self_referral",
+        resolvedAt: promotedAt,
+        promotedAttributionId: null
+      };
+      setInMemoryReferralIntent(nextIntent);
       return {
-        outcome: "bound",
-        attribution: created
-      } satisfies BindReferralAtFirstAuthResult;
-    } catch (error) {
-      const pgError = error as { code?: string };
-      if (pgError.code !== "23505") {
-        throw error;
-      }
+        outcome: "discarded_self_referral",
+        intent: nextIntent,
+        referrerWalletPublicKey: bound.referrerWalletPublicKey
+      };
+    }
 
-      const activeAfterConflict = await getActiveReferralAttributionByInviteeWalletWithClient(client, {
-        inviteeWalletPublicKey: input.inviteeWalletPublicKey,
+    const nextIntent: ReferralIntentRecord = {
+      ...activeIntent,
+      status: "discarded_invalid_code",
+      resolvedAt: promotedAt,
+      promotedAttributionId: null
+    };
+    setInMemoryReferralIntent(nextIntent);
+    return {
+      outcome: "discarded_invalid_code",
+      intent: nextIntent
+    };
+  }
+
+  return withDbClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      const activeIntent = await getActiveReferralIntentByAccountWithClient(client, {
+        accountId,
         forUpdate: true
       });
 
-      if (!activeAfterConflict) {
-        throw error;
+      if (!activeIntent) {
+        await client.query("COMMIT");
+        return { outcome: "no_intent" } satisfies PromoteReferralIntentResult;
+      }
+
+      const bound = await bindReferralAtFirstAuthWithClient(client, {
+        inviteeWalletPublicKey: walletPublicKey,
+        referralCode: activeIntent.referralCode,
+        attributionSource: activeIntent.attributionSource,
+        boundAt: promotedAt,
+        metadata: activeIntent.metadata
+      });
+
+      let status: Exclude<ReferralIntentStatus, "active">;
+      let promotedAttributionId: string | null = null;
+
+      if (bound.outcome === "bound") {
+        status = "promoted";
+        promotedAttributionId = bound.attribution.id;
+      } else if (bound.outcome === "already_bound") {
+        status = "discarded_wallet_already_attributed";
+        promotedAttributionId = bound.attribution.id;
+      } else if (bound.outcome === "rejected_self_referral") {
+        status = "discarded_self_referral";
+      } else {
+        status = "discarded_invalid_code";
+      }
+
+      await client.query(
+        `UPDATE account_referral_intents
+            SET status = $2,
+                resolved_at = $3,
+                promoted_attribution_id = $4
+          WHERE id = $1`,
+        [activeIntent.id, status, promotedAt, promotedAttributionId]
+      );
+
+      await client.query("COMMIT");
+
+      const resolvedIntent: ReferralIntentRecord = {
+        ...activeIntent,
+        status,
+        resolvedAt: promotedAt,
+        promotedAttributionId
+      };
+
+      if (bound.outcome === "bound") {
+        return { outcome: "promoted", intent: resolvedIntent, attribution: bound.attribution } satisfies PromoteReferralIntentResult;
+      }
+
+      if (bound.outcome === "already_bound") {
+        return {
+          outcome: "discarded_wallet_already_attributed",
+          intent: resolvedIntent,
+          attribution: bound.attribution
+        } satisfies PromoteReferralIntentResult;
+      }
+
+      if (bound.outcome === "rejected_self_referral") {
+        return {
+          outcome: "discarded_self_referral",
+          intent: resolvedIntent,
+          referrerWalletPublicKey: bound.referrerWalletPublicKey
+        } satisfies PromoteReferralIntentResult;
       }
 
       return {
-        outcome: "already_bound",
-        attribution: activeAfterConflict
-      } satisfies BindReferralAtFirstAuthResult;
+        outcome: "discarded_invalid_code",
+        intent: resolvedIntent
+      } satisfies PromoteReferralIntentResult;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
     }
   });
 }

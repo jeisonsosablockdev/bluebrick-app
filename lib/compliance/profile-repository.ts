@@ -54,6 +54,11 @@ export type UpdateProfileBasicsInput = {
   phone: string | null;
 };
 
+export type ApplyFederatedEmailPrefillInput = {
+  walletPublicKey: string;
+  email: string | null;
+};
+
 export type MarkKycSessionPendingInput = {
   walletPublicKey: string;
   provider: string;
@@ -282,6 +287,13 @@ const inMemoryWebhookEventIds = new Set<string>();
 const inMemoryAuditEvents: Array<RecordComplianceAuditEventInput & { id: string; createdAt: string }> = [];
 const inMemoryNotes = new Map<string, ComplianceNoteRecord[]>();
 
+export function __resetProfileRepositoryStateForTests(): void {
+  inMemoryProfiles.clear();
+  inMemoryWebhookEventIds.clear();
+  inMemoryAuditEvents.length = 0;
+  inMemoryNotes.clear();
+}
+
 function nowIso(): string {
   return new Date().toISOString();
 }
@@ -292,6 +304,15 @@ function normalizeIso(value: string | Date): string {
   }
 
   return new Date(value).toISOString();
+}
+
+function normalizeOptionalEmail(value: string | null | undefined): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized || null;
 }
 
 function normalizeOptionalIso(value: string | Date | null): string | null {
@@ -728,6 +749,50 @@ export async function updateProfileBasics(input: UpdateProfileBasicsInput): Prom
 
     throw error;
   }
+}
+
+export async function applyFederatedEmailPrefill(input: ApplyFederatedEmailPrefillInput): Promise<ProfileBundle> {
+  const normalizedEmail = normalizeOptionalEmail(input.email);
+
+  if (!normalizedEmail) {
+    if (!isProfileDatabaseConfigured()) {
+      return mapInMemoryToBundle(getOrCreateInMemoryProfile(input.walletPublicKey));
+    }
+
+    return getOrCreateProfileBundle(input.walletPublicKey);
+  }
+
+  if (!isProfileDatabaseConfigured()) {
+    const profile = getOrCreateInMemoryProfile(input.walletPublicKey);
+
+    if (!profile.email) {
+      profile.email = normalizedEmail;
+      profile.updatedAt = nowIso();
+      inMemoryProfiles.set(profile.walletPublicKey, profile);
+    }
+
+    return mapInMemoryToBundle(profile);
+  }
+
+  return withDbClient(async (client) => {
+    await ensureProfileExistsWithClient(client, input.walletPublicKey);
+
+    await client.query(
+      `UPDATE user_profiles
+          SET email = $2,
+              updated_at = NOW()
+        WHERE wallet_public_key = $1
+          AND COALESCE(NULLIF(BTRIM(email), ''), NULL) IS NULL`,
+      [input.walletPublicKey, normalizedEmail]
+    );
+
+    const profile = await getProfileBundleWithClient(client, input.walletPublicKey);
+    if (!profile) {
+      throw new Error("Could not read wallet profile after federated email prefill.");
+    }
+
+    return profile;
+  });
 }
 
 export async function markKycSessionPending(input: MarkKycSessionPendingInput): Promise<void> {

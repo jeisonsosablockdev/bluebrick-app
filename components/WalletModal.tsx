@@ -15,7 +15,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { fetchAuthMe, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import { fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
 import {
   buildPhantomBrowseDeepLink,
   buildReferralAuthMetadata,
@@ -43,6 +43,7 @@ import {
   ONBOARDING_REWARD_COMPLETE_PROFILE_HREF,
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
+import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
 
 type WalletModalProps = {
   initialAuth: AuthMeResponse;
@@ -53,9 +54,11 @@ const PHANTOM_INSTALL_URL = "https://phantom.app/download";
 const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
 const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
 const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
+const POST_AUTH_DECISION_QUERY_PARAM = "postAuthDecision";
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 type MessageSigner = (message: Uint8Array) => Promise<Uint8Array>;
+type LoginMethod = "mail" | "wallet";
 
 type NavEntry = {
   href: string;
@@ -92,6 +95,27 @@ function WalletCtaIcon() {
   );
 }
 
+function MailMethodIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4.5 6.75h15A1.5 1.5 0 0 1 21 8.25v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 15.75v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m4.5 8.25 7.5 5.25 7.5-5.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 type OnboardingRewardSnapshot = {
   status: OnboardingRewardStatus;
   rewardAmountUsdSnapshot: number;
@@ -112,6 +136,25 @@ type ProtectedProfileResponse = {
 
 function truncatePublicKey(publicKey: string): string {
   return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+}
+
+function buildPathWithoutQueryParam(pathname: string, searchParams: URLSearchParams, paramName: string): string {
+  const nextParams = new URLSearchParams(searchParams.toString());
+  nextParams.delete(paramName);
+  const query = nextParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+function buildPathWithQueryParam(
+  pathname: string,
+  searchParams: URLSearchParams,
+  paramName: string,
+  value: string
+): string {
+  const nextParams = new URLSearchParams(searchParams.toString());
+  nextParams.set(paramName, value);
+  const query = nextParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
@@ -235,11 +278,16 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   const phantomFallbackTimerRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
   const authRefreshPromiseRef = useRef<Promise<void> | null>(null);
+  const persistedReferralIntentSignatureRef = useRef<string | null>(null);
   const autoCloseOnConnect = useMemo(() => getWalletModalAutoClose(), []);
   const [isSmallViewport, setIsSmallViewport] = useState(false);
   const [isMobileUserAgent, setIsMobileUserAgent] = useState(false);
   const [isInPhantomApp, setIsInPhantomApp] = useState(false);
   const [showPhantomFallback, setShowPhantomFallback] = useState(false);
+  const [selectedLoginMethod, setSelectedLoginMethod] = useState<LoginMethod>(
+    initialAuth.federatedAuthenticated ? "wallet" : initialAuth.federatedAvailable ? "mail" : "wallet"
+  );
+  const [isReferralFieldVisible, setIsReferralFieldVisible] = useState(false);
   const walletPublicKey = publicKey?.toBase58() ?? null;
   const phantomWallet = useMemo(() => wallets.find((item) => item.adapter.name === PhantomWalletName), [wallets]);
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
@@ -257,33 +305,52 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     const raw = searchParams.get("ref");
     return raw ? normalizeReferralCodeInput(raw) : "";
   }, [searchParams]);
+  const shouldPromptPostAuthDecision = searchParams.get(POST_AUTH_DECISION_QUERY_PARAM) === "1";
+  const cleanCurrentLandingPath = useMemo(
+    () => buildPathWithoutQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM),
+    [pathname, searchParams]
+  );
   const currentLandingPath = useMemo(() => {
     const query = searchParams.toString();
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
+  const federatedSignInReturnTo = useMemo(
+    () => buildPathWithQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM, "1"),
+    [pathname, searchParams]
+  );
+  const hasWalletSession = authState.walletAuthenticated ?? authState.authenticated;
+  const hasFederatedSession = Boolean(authState.federatedAuthenticated);
+  const hasAccountSession = authState.accountAuthenticated ?? (hasWalletSession || hasFederatedSession);
+  const isFederatedLoginAvailable = Boolean(authState.federatedAvailable);
+  const shouldShowLoginMethodSwitcher = isFederatedLoginAvailable && !hasWalletSession && !hasFederatedSession;
+  const showWalletPanel = !isFederatedLoginAvailable || selectedLoginMethod === "wallet" || hasWalletSession || hasFederatedSession;
+  const showMailPanel = isFederatedLoginAvailable && selectedLoginMethod === "mail" && !hasWalletSession && !hasFederatedSession;
+  const shouldShowDisconnectButton = hasAccountSession || isConnected;
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
 
-    if (!authState.authenticated) {
+    if (!hasAccountSession) {
       return entries;
     }
 
     entries.push({ href: "/protected", label: t({ en: "Profile", es: "Perfil", pt: "Perfil" }) });
 
-    if (authState.role === "admin") {
+    if (hasWalletSession && authState.role === "admin") {
       entries.push({ href: "/admin", label: t({ en: "Dashboard", es: "Dashboard", pt: "Dashboard" }) });
     }
 
     return entries;
-  }, [authState.authenticated, authState.role, t]);
+  }, [authState.role, hasAccountSession, hasWalletSession, t]);
 
-  const headerWalletCtaLabel = authState.authenticated
+  const headerWalletCtaLabel = hasWalletSession
     ? t({ en: "Wallet", es: "Wallet", pt: "Wallet" })
-    : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
+    : hasAccountSession
+      ? t({ en: "Account", es: "Cuenta", pt: "Conta" })
+      : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
 
   const primaryLabel = useMemo(() => {
-    if (authState.authenticated) {
+    if (hasWalletSession) {
       return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
     }
 
@@ -292,12 +359,23 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     }
 
     return t({ en: "Connect & Sign in", es: "Conectar e iniciar sesion", pt: "Conectar e entrar" });
-  }, [authState.authenticated, isConnected, t]);
+  }, [hasWalletSession, isConnected, t]);
+
+  const disconnectLabel = hasFederatedSession && !hasWalletSession && !isConnected
+    ? t({ en: "Sign out", es: "Cerrar sesion", pt: "Sair" })
+    : hasWalletSession || isConnected
+      ? t({ en: "Sign out & disconnect wallet", es: "Cerrar sesion y desconectar wallet", pt: "Sair e desconectar carteira" })
+      : t({ en: "Disconnect wallet", es: "Desconectar wallet", pt: "Desconectar carteira" });
 
   const signInStatement = t({
     en: "Sign this message to authenticate with the app.",
     es: "Firma este mensaje para autenticarte en la app.",
     pt: "Assine esta mensagem para se autenticar no app."
+  });
+  const walletLinkStatement = t({
+    en: "Sign this message to link your wallet to this BRIDS account.",
+    es: "Firma este mensaje para vincular tu wallet a esta cuenta BRIDS.",
+    pt: "Assine esta mensagem para vincular sua carteira a esta conta BRIDS."
   });
 
   const resolveCurrentWalletPublicKey = useCallback((): string | null => {
@@ -373,6 +451,15 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         const currentAuth = await fetchAuthMe();
         setAuthState((previous) => (
           previous.authenticated === currentAuth.authenticated
+          && previous.federatedAvailable === currentAuth.federatedAvailable
+          && previous.accountAuthenticated === currentAuth.accountAuthenticated
+          && previous.federatedAuthenticated === currentAuth.federatedAuthenticated
+          && previous.walletAuthenticated === currentAuth.walletAuthenticated
+          && previous.authMethod === currentAuth.authMethod
+          && previous.accountId === currentAuth.accountId
+          && previous.workosUserId === currentAuth.workosUserId
+          && previous.federatedAvailable === currentAuth.federatedAvailable
+          && previous.email === currentAuth.email
           && previous.pubkey === currentAuth.pubkey
           && previous.role === currentAuth.role
             ? previous
@@ -401,11 +488,22 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   }, [initialAuth]);
 
   useEffect(() => {
+    if (!isFederatedLoginAvailable) {
+      setSelectedLoginMethod("wallet");
+      return;
+    }
+
+    if (hasFederatedSession && !hasWalletSession) {
+      setSelectedLoginMethod("wallet");
+    }
+  }, [hasFederatedSession, hasWalletSession, isFederatedLoginAvailable]);
+
+  useEffect(() => {
     if (queryReferralCode) {
       const hint = buildStoredReferralHint({
         referralCode: queryReferralCode,
         origin: "auto",
-        landingPath: currentLandingPath
+        landingPath: cleanCurrentLandingPath
       });
 
       if (hint) {
@@ -424,7 +522,117 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
     setReferralCode(storedHint.referralCode);
     setReferralOrigin(storedHint.origin);
-  }, [currentLandingPath, queryReferralCode]);
+  }, [cleanCurrentLandingPath, queryReferralCode]);
+
+  useEffect(() => {
+    if (referralCode) {
+      setIsReferralFieldVisible(true);
+    }
+  }, [referralCode]);
+
+  useEffect(() => {
+    if (!authState.federatedAuthenticated || authState.walletAuthenticated || !authState.accountId) {
+      return;
+    }
+
+    const storedHint = readStoredReferralHint();
+    if (!storedHint) {
+      return;
+    }
+
+    const normalizedReferralCode = normalizeReferralCodeInput(storedHint.referralCode);
+    if (!normalizedReferralCode) {
+      clearStoredReferralHint();
+      return;
+    }
+
+    const attributionSource = deriveReferralAttributionSource({
+      origin: storedHint.origin,
+      isMobileWalletFlow: false
+    });
+    const signature = [
+      authState.accountId,
+      normalizedReferralCode,
+      storedHint.capturedAt,
+      storedHint.origin,
+      storedHint.landingPath ?? ""
+    ].join(":");
+
+    if (persistedReferralIntentSignatureRef.current === signature) {
+      return;
+    }
+
+    persistedReferralIntentSignatureRef.current = signature;
+
+    void persistReferralIntent({
+      referralCode: normalizedReferralCode,
+      attributionSource,
+      capturedAt: storedHint.capturedAt,
+      metadata: buildReferralAuthMetadata({
+        landingPath: storedHint.landingPath,
+        origin: storedHint.origin,
+        source: attributionSource
+      })
+    })
+      .then(() => {
+        clearStoredReferralHint();
+      })
+      .catch(() => {
+        persistedReferralIntentSignatureRef.current = null;
+      });
+  }, [authState.accountId, authState.federatedAuthenticated, authState.walletAuthenticated]);
+
+  useEffect(() => {
+    if (!shouldPromptPostAuthDecision || !hasFederatedSession || hasWalletSession || postAuthDecisionReward) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fallbackReward: OnboardingRewardSnapshot = {
+      status: "pending_profile",
+      rewardAmountUsdSnapshot: 10,
+      qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      shouldShowReminder: true,
+      isProfileComplete: false
+    };
+
+    const openDecisionModal = async (): Promise<void> => {
+      try {
+        const profileRes = await fetch("/api/protected/profile");
+        if (cancelled) {
+          return;
+        }
+
+        if (profileRes.ok) {
+          const profileData = (await profileRes.json()) as ProtectedProfileResponse;
+          setPostAuthDecisionReward(profileData.data?.onboardingReward ?? fallbackReward);
+        } else {
+          setPostAuthDecisionReward(fallbackReward);
+        }
+      } catch {
+        if (!cancelled) {
+          setPostAuthDecisionReward(fallbackReward);
+        }
+      } finally {
+        if (!cancelled && typeof window !== "undefined") {
+          window.history.replaceState(null, "", cleanCurrentLandingPath);
+        }
+      }
+    };
+
+    void openDecisionModal();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    cleanCurrentLandingPath,
+    hasFederatedSession,
+    hasWalletSession,
+    postAuthDecisionReward,
+    shouldPromptPostAuthDecision
+  ]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -451,6 +659,30 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleExternalOpen = (event: Event): void => {
+      const customEvent = event as CustomEvent<WalletModalOpenDetail>;
+      const nextLoginMethod = customEvent.detail?.loginMethod;
+
+      if (nextLoginMethod === "mail" || nextLoginMethod === "wallet") {
+        setSelectedLoginMethod(nextLoginMethod);
+      }
+
+      setIsOpen(true);
+      setLastError(null);
+    };
+
+    window.addEventListener(WALLET_MODAL_OPEN_EVENT, handleExternalOpen as EventListener);
+
+    return () => {
+      window.removeEventListener(WALLET_MODAL_OPEN_EVENT, handleExternalOpen as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -573,7 +805,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
   }, [autoCloseOnConnect, connected, isOpen, walletPublicKey]);
 
   async function handlePrimaryAction(): Promise<void> {
-    if (authState.authenticated) {
+    if (hasWalletSession) {
       return;
     }
 
@@ -615,21 +847,32 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               isMobileWalletFlow: isMobileUserAgent || isInPhantomApp
             })
           : undefined;
+      const referralMetadata =
+        normalizedReferralCode && referralSource
+          ? buildReferralAuthMetadata({
+              landingPath: currentLandingPath,
+              origin: referralOrigin,
+              source: referralSource
+            })
+          : undefined;
+
+      if (hasFederatedSession && normalizedReferralCode && referralSource) {
+        await persistReferralIntent({
+          referralCode: normalizedReferralCode,
+          attributionSource: referralSource,
+          metadata: referralMetadata
+        });
+      }
 
       const verifiedResult = await startSiws({
         publicKey: activePublicKey,
         signMessage: activeSignMessage,
-        statement: signInStatement,
+        statement: hasFederatedSession ? walletLinkStatement : signInStatement,
+        noncePath: hasFederatedSession ? "/api/auth/link/wallet/nonce" : "/api/auth/nonce",
+        verifyPath: hasFederatedSession ? "/api/auth/link/wallet/verify" : "/api/auth/verify",
         referralCode: normalizedReferralCode || undefined,
         attributionSource: referralSource,
-        attributionMetadata:
-          normalizedReferralCode && referralSource
-            ? buildReferralAuthMetadata({
-                landingPath: currentLandingPath,
-                origin: referralOrigin,
-                source: referralSource
-              })
-            : undefined,
+        attributionMetadata: referralMetadata,
         onStatus: (status) => setPhase(status)
       });
 
@@ -637,9 +880,21 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         clearStoredReferralHint();
       }
 
-      setAuthState({ authenticated: true, pubkey: verifiedResult.publicKey, role: "user" });
+      setAuthState((previous) => ({
+        authenticated: true,
+        accountAuthenticated: true,
+        federatedAuthenticated: previous.federatedAuthenticated,
+        walletAuthenticated: true,
+        authMethod: previous.federatedAuthenticated ? "hybrid" : "wallet",
+        accountId: previous.accountId ?? null,
+        workosUserId: previous.workosUserId ?? null,
+        email: previous.email ?? null,
+        pubkey: verifiedResult.publicKey,
+        role: "user"
+      }));
       broadcastAuthSync("login", verifiedResult.publicKey);
       void refreshAuthState({ silent: true });
+      router.refresh();
 
       try {
         const profileRes = await fetch("/api/protected/profile");
@@ -723,8 +978,20 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
 
       if (disconnectError || logoutError) {
         setLastError(disconnectError ?? logoutError);
+      } else if (hasFederatedSession && typeof window !== "undefined") {
+        window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
       } else {
-        setAuthState({ authenticated: false, pubkey: null });
+        setAuthState({
+          authenticated: false,
+          accountAuthenticated: false,
+          federatedAuthenticated: false,
+          walletAuthenticated: false,
+          authMethod: "anonymous",
+          accountId: null,
+          workosUserId: null,
+          email: null,
+          pubkey: null
+        });
         broadcastAuthSync("logout", walletPublicKey);
       }
     } finally {
@@ -750,9 +1017,11 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
     await navigator.clipboard.writeText(walletPublicKey);
   }
 
-  const accountStatusText = authState.authenticated && authState.pubkey
+  const accountStatusText = hasWalletSession && authState.pubkey
     ? `${authState.role === "admin" ? t({ en: "Admin", es: "Admin", pt: "Admin" }) : t({ en: "User", es: "Usuario", pt: "Usuario" })}: ${truncatePublicKey(authState.pubkey)}`
-    : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
+    : hasFederatedSession
+      ? `${t({ en: "Account", es: "Cuenta", pt: "Conta" })}: ${authState.email ?? t({ en: "Federated session", es: "Sesion federada", pt: "Sessao federada" })}`
+      : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
   const topFeedbackText = statusText ?? lastError;
   const isTopFeedbackStatus = Boolean(statusText);
   const shouldShowPhantomOpenPill = isSmallViewport && isMobileUserAgent && !isInPhantomApp;
@@ -903,7 +1172,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                   <span>{headerWalletCtaLabel}</span>
                 </span>
               </Button>
-              {authState.authenticated && authState.pubkey ? (
+              {hasAccountSession ? (
                 <div
                   className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-max max-w-[22rem] rounded-xl border border-white/20 bg-slate-950/90 px-3 py-2 text-xs text-white/80 opacity-0 shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition group-hover:opacity-100 group-focus-within:opacity-100"
                   role="status"
@@ -1006,15 +1275,8 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
-                    {t({ en: "Wallet Authentication", es: "Autenticacion de Wallet", pt: "Autenticacao de Wallet" })}
+                    {t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
                   </h2>
-                  <p className="text-sm text-white/70">
-                    {t({
-                      en: "Connect Phantom and sign in with SIWS.",
-                      es: "Conecta Phantom e inicia sesion con SIWS.",
-                      pt: "Conecte a Phantom e entre com SIWS."
-                    })}
-                  </p>
                 </div>
                 <button
                   ref={closeButtonRef}
@@ -1045,96 +1307,170 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
                 </div>
               ) : null}
 
-              {isConnected ? (
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-sm text-white/85">
-                    {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+              {shouldShowLoginMethodSwitcher ? (
+                <div className="rounded-[28px] border border-white/15 bg-white/10 p-5 sm:p-6">
+                  <p className="text-base font-semibold text-white md:text-xl md:leading-tight lg:text-2xl lg:leading-tight">
+                    {t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
                   </p>
+                  <div
+                    className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                    role="tablist"
+                    aria-label={t({ en: "Login method", es: "Metodo de ingreso", pt: "Metodo de entrada" })}
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedLoginMethod === "mail"}
+                      onClick={() => setSelectedLoginMethod("mail")}
+                      className={cn(
+                        "inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full border px-5 text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80",
+                        selectedLoginMethod === "mail"
+                          ? "border-transparent bg-gradientPrimary text-white shadow-glow hover:opacity-95"
+                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                      )}
+                    >
+                      <MailMethodIcon />
+                      <span>{t({ en: "Mail", es: "Mail", pt: "Mail" })}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedLoginMethod === "wallet"}
+                      onClick={() => setSelectedLoginMethod("wallet")}
+                      className={cn(
+                        "inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full border px-5 text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80",
+                        selectedLoginMethod === "wallet"
+                          ? "border-transparent bg-gradientPrimary text-white shadow-glow hover:opacity-95"
+                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                      )}
+                    >
+                      <WalletCtaIcon />
+                      <span>{t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}</span>
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <p className="rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/70">
-                  {t({
-                    en: "Connect Phantom to continue with SIWS authentication.",
-                    es: "Conecta Phantom para continuar con la autenticacion SIWS.",
-                    pt: "Conecte a Phantom para continuar com a autenticacao SIWS."
-                  })}
-                </p>
-              )}
-
-              {!isPhantomInstalled ? (
-                <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                  {t({
-                    en: "Phantom is not installed.",
-                    es: "Phantom no esta instalada.",
-                    pt: "A Phantom nao esta instalada."
-                  })}{" "}
-                  <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href="https://phantom.app/" target="_blank" rel="noreferrer">
-                    {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
-                  </a>{" "}
-                  {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
-                </p>
               ) : null}
 
-              <div className="space-y-2">
-                <label htmlFor="wallet-referral-code" className="block text-sm font-medium text-white">
-                  {t({ en: "Referral code (optional)", es: "Codigo de referido (opcional)", pt: "Codigo de referido (opcional)" })}
-                </label>
-                <input
-                  id="wallet-referral-code"
-                  type="text"
-                  value={referralCode}
-                  onChange={(event) => {
-                    const nextValue = normalizeReferralCodeInput(event.target.value);
-                    setReferralCode(nextValue);
-                    setReferralOrigin("manual");
+              {showMailPanel ? (
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <p className="text-sm font-medium text-white">
+                    {t({ en: "Continue with email", es: "Continuar con email", pt: "Continuar com email" })}
+                  </p>
+                  <p className="mt-1 text-sm text-white/70">
+                    {t({
+                      en: "Use a familiar sign-in method first, then link your wallet later from the same BRIDS account.",
+                      es: "Usa primero un metodo de ingreso familiar y luego vincula tu wallet desde la misma cuenta BRIDS.",
+                      pt: "Use primeiro um metodo de entrada familiar e depois vincule sua carteira na mesma conta BRIDS."
+                    })}
+                  </p>
+                  <a
+                    href={`/sign-in?returnTo=${encodeURIComponent(federatedSignInReturnTo)}`}
+                    className="mt-3 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95"
+                  >
+                    <MailMethodIcon />
+                    <span>{t({ en: "Continue with email", es: "Continuar con email", pt: "Continuar com email" })}</span>
+                  </a>
+                </div>
+              ) : null}
 
-                    if (!nextValue) {
-                      clearStoredReferralHint();
-                      return;
-                    }
+              {showWalletPanel ? (
+                <>
+                  {isConnected ? (
+                    <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-sm text-white/85">
+                        {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+                      </p>
+                    </div>
+                  ) : null}
 
-                    const hint = buildStoredReferralHint({
-                      referralCode: nextValue,
-                      origin: "manual",
-                      landingPath: currentLandingPath
-                    });
+                  {!isPhantomInstalled ? (
+                    <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+                      {t({
+                        en: "Phantom is not installed.",
+                        es: "Phantom no esta instalada.",
+                        pt: "A Phantom nao esta instalada."
+                      })}{" "}
+                      <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href={PHANTOM_INSTALL_URL} target="_blank" rel="noreferrer">
+                        {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
+                      </a>{" "}
+                      {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
+                    </p>
+                  ) : null}
 
-                    if (hint) {
-                      writeStoredReferralHint(hint);
-                    }
-                  }}
-                  placeholder={t({
-                    en: "Paste or edit your invite code",
-                    es: "Pega o edita tu codigo de invitacion",
-                    pt: "Cole ou edite seu codigo de convite"
-                  })}
-                  className="min-h-11 w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300/45 focus:bg-white/15"
-                  autoCapitalize="characters"
-                  autoCorrect="off"
-                  spellCheck={false}
-                />
-                <p className="text-xs text-white/60">
-                  {t({
-                    en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
-                    es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
-                    pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
-                  })}
-                </p>
-              </div>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsReferralFieldVisible((previous) => !previous)}
+                      className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white/85 transition hover:text-white"
+                    >
+                      <span>{t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}</span>
+                    </button>
+                    {isReferralFieldVisible ? (
+                      <>
+                        <input
+                          id="wallet-referral-code"
+                          type="text"
+                          value={referralCode}
+                          onChange={(event) => {
+                            const nextValue = normalizeReferralCodeInput(event.target.value);
+                            setReferralCode(nextValue);
+                            setReferralOrigin("manual");
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button onClick={handlePrimaryAction} disabled={isBusy || authState.authenticated || !isPhantomInstalled} className="min-h-11 w-full">
-                  {primaryLabel}
-                </Button>
+                            if (!nextValue) {
+                              clearStoredReferralHint();
+                              return;
+                            }
 
-                <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                  {t({ en: "Logout & Disconnect", es: "Cerrar sesion y desconectar", pt: "Sair e desconectar" })}
-                </Button>
-              </div>
+                            const hint = buildStoredReferralHint({
+                              referralCode: nextValue,
+                              origin: "manual",
+                              landingPath: cleanCurrentLandingPath
+                            });
 
-              <Button variant="ghost" onClick={copyAddress} disabled={!walletPublicKey} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
-                {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
-              </Button>
+                            if (hint) {
+                              writeStoredReferralHint(hint);
+                            }
+                          }}
+                          placeholder={t({
+                            en: "Paste or edit your invite code",
+                            es: "Pega o edita tu codigo de invitacion",
+                            pt: "Cole ou edite seu codigo de convite"
+                          })}
+                          className="min-h-11 w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300/45 focus:bg-white/15"
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
+                        />
+                        <p className="text-xs text-white/60">
+                          {t({
+                            en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                            es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                            pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+                          })}
+                        </p>
+                      </>
+                    ) : null}
+                  </div>
+
+                  <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                    <Button onClick={handlePrimaryAction} disabled={isBusy || hasWalletSession || !isPhantomInstalled} className="min-h-11 w-full">
+                      {primaryLabel}
+                    </Button>
+
+                    {shouldShowDisconnectButton ? (
+                      <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
+                        {disconnectLabel}
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {walletPublicKey ? (
+                    <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
+                      {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
+                    </Button>
+                  ) : null}
+                </>
+              ) : null}
 
             </div>
           </div>
@@ -1145,6 +1481,7 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
         open={Boolean(postAuthDecisionReward)}
         qualificationDeadlineLabel={formatOnboardingRewardDeadlineLabel(postAuthDecisionReward?.qualificationDeadlineAt ?? null, locale)}
         rewardAmountUsd={postAuthDecisionReward?.rewardAmountUsdSnapshot ?? 10}
+        walletConnected={hasWalletSession}
         onClose={handleExploreAfterAuth}
         onExplore={handleExploreAfterAuth}
         onCompleteProfile={handleCompleteProfileAfterAuth}

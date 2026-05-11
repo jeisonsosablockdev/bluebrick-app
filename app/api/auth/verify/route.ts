@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { ensureWalletFirstAccount } from "@/lib/accounts/repository";
 import { clearNonceCookie, getNonceFromRequest, getRequestHost, setSessionCookie, verifySiwsPayload } from "@/lib/auth";
 import { isWalletRegistered } from "@/lib/compliance/profile-repository";
 import { ensureOnboardingRewardRegistered } from "@/lib/onboarding-reward-service";
@@ -50,6 +51,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     clearNonceCookie(errorResponse);
     return errorResponse;
   }
+
+  await ensureWalletFirstAccount(verification.publicKey);
 
   const isNewUser = !(await isWalletRegistered(verification.publicKey));
   const normalizedReferralCode = typeof body.referralCode === "string" ? body.referralCode.trim() : "";

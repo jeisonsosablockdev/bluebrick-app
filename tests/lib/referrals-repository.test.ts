@@ -7,8 +7,11 @@ import {
   bindReferralAtFirstAuth,
   expireEligibleReferralAttributions,
   getActiveReferralAttributionByInviteeWallet,
+  getActiveReferralIntentForAccount,
   getOrCreateReferralCodeForWallet,
-  markReferralAttributionKycApproved
+  markReferralAttributionKycApproved,
+  promoteReferralIntentForAccountWallet,
+  upsertReferralIntentForAccount
 } from "@/lib/referrals/repository";
 
 describe("lib/referrals/repository (in-memory)", () => {
@@ -118,6 +121,147 @@ describe("lib/referrals/repository (in-memory)", () => {
     }
 
     expect(second.attribution.referrerWalletPublicKey).toBe(firstReferrerWalletPublicKey);
+  });
+
+  it("stores only one active referral intent per account and updates it on replacement", async () => {
+    const accountId = `account-${randomUUID()}`;
+    const firstReferralCode = await getOrCreateReferralCodeForWallet({
+      referrerWalletPublicKey: `referrer-a-${randomUUID()}`
+    });
+    const secondReferralCode = await getOrCreateReferralCodeForWallet({
+      referrerWalletPublicKey: `referrer-b-${randomUUID()}`
+    });
+
+    const first = await upsertReferralIntentForAccount({
+      accountId,
+      referralCode: ` ${firstReferralCode.code} `,
+      attributionSource: "link",
+      capturedAt: "2026-05-09T10:00:00.000Z",
+      metadata: { step: "first" }
+    });
+
+    expect(first.outcome).toBe("stored");
+    if (first.outcome !== "stored") {
+      throw new Error("Expected stored referral intent.");
+    }
+
+    const second = await upsertReferralIntentForAccount({
+      accountId,
+      referralCode: secondReferralCode.code,
+      attributionSource: "manual",
+      capturedAt: "2026-05-09T11:00:00.000Z",
+      metadata: { step: "second" }
+    });
+
+    expect(second.outcome).toBe("stored");
+    if (second.outcome !== "stored") {
+      throw new Error("Expected stored referral intent.");
+    }
+
+    expect(second.intent.id).toBe(first.intent.id);
+    expect(second.intent.referralCode).toBe(secondReferralCode.code);
+    expect(second.intent.attributionSource).toBe("manual");
+    expect(second.intent.capturedAt).toBe("2026-05-09T11:00:00.000Z");
+    expect(second.intent.metadata.step).toBe("second");
+
+    const active = await getActiveReferralIntentForAccount({ accountId });
+    expect(active?.id).toBe(first.intent.id);
+    expect(active?.referralCode).toBe(secondReferralCode.code);
+  });
+
+  it("rejects provisional intents that point to unknown referral codes", async () => {
+    const result = await upsertReferralIntentForAccount({
+      accountId: `account-${randomUUID()}`,
+      referralCode: "UNKNOWN123",
+      attributionSource: "manual"
+    });
+
+    expect(result.outcome).toBe("rejected_invalid_code");
+  });
+
+  it("promotes an active referral intent into a wallet-bound attribution once", async () => {
+    const referrerWalletPublicKey = `referrer-${randomUUID()}`;
+    const inviteeWalletPublicKey = `invitee-${randomUUID()}`;
+    const accountId = `account-${randomUUID()}`;
+    const referralCode = await getOrCreateReferralCodeForWallet({ referrerWalletPublicKey });
+
+    await upsertReferralIntentForAccount({
+      accountId,
+      referralCode: referralCode.code,
+      attributionSource: "deep_link",
+      capturedAt: "2026-05-09T10:00:00.000Z",
+      metadata: { campaign: "spring" }
+    });
+
+    const promoted = await promoteReferralIntentForAccountWallet({
+      accountId,
+      walletPublicKey: inviteeWalletPublicKey,
+      promotedAt: "2026-05-09T12:00:00.000Z"
+    });
+
+    expect(promoted.outcome).toBe("promoted");
+    if (promoted.outcome !== "promoted") {
+      throw new Error("Expected promoted referral intent.");
+    }
+
+    expect(promoted.intent.status).toBe("promoted");
+    expect(promoted.intent.resolvedAt).toBe("2026-05-09T12:00:00.000Z");
+    expect(promoted.intent.promotedAttributionId).toBe(promoted.attribution.id);
+    expect(promoted.attribution.inviteeWalletPublicKey).toBe(inviteeWalletPublicKey);
+    expect(promoted.attribution.metadata.campaign).toBe("spring");
+
+    const activeIntent = await getActiveReferralIntentForAccount({ accountId });
+    expect(activeIntent).toBeNull();
+
+    const activeAttribution = await getActiveReferralAttributionByInviteeWallet({
+      inviteeWalletPublicKey
+    });
+    expect(activeAttribution?.id).toBe(promoted.attribution.id);
+  });
+
+  it("discards a referral intent instead of duplicating when the wallet already has an attribution", async () => {
+    const firstReferrerWalletPublicKey = `referrer-a-${randomUUID()}`;
+    const secondReferrerWalletPublicKey = `referrer-b-${randomUUID()}`;
+    const inviteeWalletPublicKey = `invitee-${randomUUID()}`;
+    const accountId = `account-${randomUUID()}`;
+    const firstCode = await getOrCreateReferralCodeForWallet({
+      referrerWalletPublicKey: firstReferrerWalletPublicKey
+    });
+    const secondCode = await getOrCreateReferralCodeForWallet({
+      referrerWalletPublicKey: secondReferrerWalletPublicKey
+    });
+
+    const bound = await bindReferralAtFirstAuth({
+      inviteeWalletPublicKey,
+      referralCode: firstCode.code,
+      attributionSource: "link"
+    });
+
+    expect(bound.outcome).toBe("bound");
+
+    await upsertReferralIntentForAccount({
+      accountId,
+      referralCode: secondCode.code,
+      attributionSource: "manual",
+      metadata: { source: "federated" }
+    });
+
+    const promoted = await promoteReferralIntentForAccountWallet({
+      accountId,
+      walletPublicKey: inviteeWalletPublicKey,
+      promotedAt: "2026-05-09T12:30:00.000Z"
+    });
+
+    expect(promoted.outcome).toBe("discarded_wallet_already_attributed");
+    if (promoted.outcome !== "discarded_wallet_already_attributed") {
+      throw new Error("Expected discarded_wallet_already_attributed outcome.");
+    }
+
+    expect(promoted.intent.status).toBe("discarded_wallet_already_attributed");
+    expect(promoted.attribution.referrerWalletPublicKey).toBe(firstReferrerWalletPublicKey);
+
+    const activeIntent = await getActiveReferralIntentForAccount({ accountId });
+    expect(activeIntent).toBeNull();
   });
 
   it("promotes active attributions after KYC and expires stale unqualified ones", async () => {

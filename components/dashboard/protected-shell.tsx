@@ -16,8 +16,11 @@ import type { LocaleText } from "@/lib/i18n";
 import { areDevOnlyModulesVisible } from "@/lib/release-module-visibility";
 
 type ProtectedShellProps = {
-  authenticatedPublicKey: string;
-  authenticatedRole: UserRole;
+  authenticatedPublicKey: string | null;
+  authenticatedRole?: UserRole;
+  accountAuthenticated: boolean;
+  walletAuthenticated: boolean;
+  federatedEmail: string | null;
   children: ReactNode;
 };
 
@@ -133,7 +136,14 @@ export function resolveCurrentProtectedModule(pathname: string, navigation: NavI
   return active ?? navigation[0];
 }
 
-export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, children }: ProtectedShellProps): ReactElement {
+export function ProtectedShell({
+  authenticatedPublicKey,
+  authenticatedRole,
+  accountAuthenticated,
+  walletAuthenticated,
+  federatedEmail,
+  children
+}: ProtectedShellProps): ReactElement {
   const { t } = useI18n();
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -149,9 +159,14 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <WalletModal
           initialAuth={{
-            authenticated: true,
+            authenticated: walletAuthenticated,
+            accountAuthenticated,
+            federatedAuthenticated: accountAuthenticated && !walletAuthenticated,
+            walletAuthenticated,
             pubkey: authenticatedPublicKey,
-            role: authenticatedRole
+            role: authenticatedRole,
+            email: federatedEmail,
+            authMethod: walletAuthenticated ? "wallet" : "federated"
           }}
         />
       </div>
@@ -197,7 +212,11 @@ export function ProtectedShell({ authenticatedPublicKey, authenticatedRole, chil
               </Button>
               <div className="ml-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                <span className="font-medium text-white">{truncatePublicKey(authenticatedPublicKey)}</span>
+                <span className="font-medium text-white">
+                  {authenticatedPublicKey
+                    ? truncatePublicKey(authenticatedPublicKey)
+                    : federatedEmail ?? t({ en: "Account session", es: "Sesion de cuenta", pt: "Sessao de conta" })}
+                </span>
               </div>
             </div>
             <nav aria-label="breadcrumb" className="text-xs text-white/60">

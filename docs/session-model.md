@@ -1,6 +1,33 @@
 # Session Model
 
-Last Updated: 2026-05-09
+Last Updated: 2026-05-10
+
+## BRI-154 Hybrid Session Foundation
+- BRIDS now carries two separate session layers:
+  - WorkOS account session cookie (`workos_session` / AuthKit-managed cookie)
+  - BRIDS SIWS wallet session cookie (`siws_session`)
+- These cookies are intentionally isolated and are never collapsed into one browser token.
+- Request authority is derived server-side from the combination of:
+  - `accountAuthenticated`
+  - `federatedAuthenticated`
+  - `walletAuthenticated`
+  - linked `wallet_public_key`, when present
+  - wallet-derived `role`, when present
+- If WorkOS and SIWS sessions resolve to different BRIDS accounts, hybrid composition is rejected and the request falls back to fail-closed semantics.
+- Session authority states now include:
+  - `anonymous`
+  - `federated` / account-only
+  - `wallet`
+  - `hybrid`
+- `GET /api/auth/me` is the canonical session introspection surface for the browser and now returns both auth layers plus `authMethod`.
+- `/protected` may render from account-only session.
+- Wallet-bound APIs, financial flows, and `/admin/**` still require SIWS wallet authentication.
+- Federated wallet linking now uses a dedicated pending link context:
+  - single-use
+  - 5-minute max lifetime
+  - bound to `account_id` and `workos_user_id`
+  - requires an active WorkOS session at completion time, but does not require the exact same AuthKit `sessionId` if WorkOS rotates it during the flow
+  - invalidated on success, failure, logout, or account-context mismatch
 
 ## BRI-153 UI Slice Notes
 - No new session token, cookie, role, or refresh path was introduced by the wallet CTA rename or the profile quick tour emphasis updates.
@@ -30,13 +57,18 @@ Last Updated: 2026-05-09
 - Reward qualification and checkout consumption remain server-authoritative and are derived from persisted profile, KYC, and order state.
 
 ## Scope
-- Feature: SIWS-backed wallet session for Next.js App Router frontend.
+- Feature: hybrid WorkOS account session plus SIWS-backed wallet session for Next.js App Router frontend.
 - Roles: `user` and `admin` resolved from wallet allowlist on the server.
 
 ## Cookie Strategy
 - Cookie type: `httpOnly`, `secure` (production), `sameSite=lax`.
+- WorkOS cookie:
+  - AuthKit-managed encrypted session cookie for federated/account auth.
+  - Cookie name defaults to WorkOS AuthKit defaults unless explicitly overridden by WorkOS env.
 - Nonce cookie:
   - `siws_nonce` (signed, short-lived, 5 minutes).
+- Wallet session cookie:
+  - `siws_session` (signed, 24-hour TTL, BRIDS-managed).
 - Pre-auth referral hint:
   - Public referral route `/r/<referralCode>` is metadata-first and redirects users into `/?ref=<referralCode>` before auth begins.
   - Client-only `localStorage` entry (`brids_referral_hint`) used to persist `referralCode`, capture origin, and landing path until first auth payload is sent.
@@ -46,32 +78,49 @@ Last Updated: 2026-05-09
   - Session token regenerated on each successful SIWS verification.
 
 ## Session Lifecycle
-1. Create session:
+1. Create WorkOS account session:
+   - `GET /sign-in` starts hosted WorkOS auth.
+   - `GET /callback` completes AuthKit callback and ensures a BRIDS account exists for the returned `workos_user_id`.
+   - Result is a low-authority account session only.
+2. Create wallet session:
    - Server verifies SIWS message signature and validates nonce against signed nonce cookie.
    - On the same first auth payload, server may process optional referral fields (`referralCode`, `attributionSource`, `attributionMetadata`) before final response emission.
    - Referral binding is only attempted when the wallet is still considered new; existing wallets are explicitly skipped to prevent late referral attachment.
    - Server creates signed session token (`siws_session`) with 24h expiration.
    - Cookie `siws_session` written with path `/`.
-2. Refresh session:
-   - No token rotation endpoint; user re-authenticates with SIWS.
+3. Hybrid session composition:
+   - If both WorkOS and SIWS are present, backend treats the request as hybrid.
+   - WorkOS stays account-level authority; SIWS stays wallet-level authority.
+4. Wallet linking:
+   - `GET /api/auth/link/wallet/nonce` creates a pending wallet-link context and returns a nonce.
+   - `POST /api/auth/link/wallet/verify` requires the same active WorkOS session plus a fresh SIWS proof for the wallet.
+   - If the WorkOS account context changes before completion, the link fails closed and the context is destroyed.
+5. Refresh session:
+   - WorkOS refresh is handled by AuthKit middleware/proxy.
+   - SIWS has no refresh endpoint; user re-authenticates with SIWS.
    - UI auth state is revalidated across browser contexts via `BroadcastChannel` + `localStorage` sync signal, and on `focus`/`visibilitychange`.
-3. Revoke session:
-   - `POST /api/auth/logout` clears cookie and revokes current token in-process.
+6. Revoke session:
+   - `POST /api/auth/logout` clears only `siws_session`.
+   - `POST /api/auth/logout` also clears any pending wallet-link context.
+   - `GET /sign-out` clears WorkOS session cookie and redirects away.
 
 ## Validation Rules
 - Authentication:
-  - Missing/expired/unknown session token = unauthenticated.
+  - Missing all session layers = unauthenticated.
+  - WorkOS-only session = account-authenticated but not wallet-authenticated.
+  - SIWS session = wallet-authenticated.
 - Role resolution:
-  - If authenticated, role is computed from `ADMIN_WALLETS` and wallet pubkey.
+  - Role is computed only from authenticated wallet and `ADMIN_WALLETS`.
   - Role is never trusted from client state.
 - Server-side checks per request:
-  - `GET /api/auth/me` exposes `{ authenticated, pubkey, role }`.
+  - `GET /api/auth/me` exposes hybrid auth state: `accountAuthenticated`, `federatedAuthenticated`, `walletAuthenticated`, `authMethod`, `pubkey`, `role`.
   - `POST /api/auth/verify` may bind a referral only during first-auth wallet creation semantics and never for already-registered wallets.
   - `POST /api/auth/verify` also ensures a wallet-bound onboarding reward record exists for the authenticated profile without changing session semantics.
   - `GET /api/referrals/preview` is intentionally public and only returns truncated referrer display data for a valid referral code.
   - `GET /api/protected/referrals/summary` requires a valid SIWS session and always binds aggregate referral metrics to the authenticated wallet.
   - `GET /api/protected/referrals/invitees` requires a valid SIWS session and always returns a backend-paginated, privacy-safe invitee feed for the authenticated wallet.
-  - `GET /api/protected/me` requires a valid session and returns `401` otherwise.
+  - `/protected` may render from either WorkOS account session or SIWS wallet session.
+  - `GET /api/protected/me` requires a valid wallet session and returns `401` otherwise.
   - `GET /api/protected/profile` and `PUT /api/protected/profile` require valid SIWS session, always bind writes to session wallet, and include the current onboarding reward snapshot for that wallet.
   - `GET /api/protected/kyc/status` requires valid SIWS session and only returns status for session wallet.
   - `POST /api/protected/kyc/stripe/session` requires valid SIWS session and applies wallet/IP rate limit before creating provider session.
@@ -105,7 +154,8 @@ Last Updated: 2026-05-09
 
 ## Authorization Layers
 1. Session layer:
-   - Cookie `siws_session` carries signed server token validated on each request.
+   - WorkOS cookie carries account session managed by AuthKit middleware/proxy.
+   - Cookie `siws_session` carries signed BRIDS wallet token validated on each request.
    - Pre-auth referral hint is client-only presentation state and never authenticates or authorizes requests by itself.
 2. Role layer:
    - Role is derived from `ADMIN_WALLETS` and wallet pubkey.

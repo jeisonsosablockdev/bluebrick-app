@@ -8,15 +8,29 @@ const NONCE_TTL_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const NONCE_TOKEN_KIND = "siws-nonce";
 const SESSION_TOKEN_KIND = "siws-session";
+const WALLET_LINK_TOKEN_KIND = "wallet-link";
+
+type WalletLinkContextRecord = {
+  accountId: string;
+  workosUserId: string;
+  workosSessionId: string;
+  nonce: string;
+  expiresAt: number;
+};
 
 type AuthStoreState = {
   nonces: Map<string, NonceRecord>;
   revokedSessionTokens: Map<string, number>;
+  walletLinkContexts: Map<string, WalletLinkContextRecord>;
 };
 
 function getStore(): AuthStoreState {
   const scopedGlobal = globalThis as typeof globalThis & { __authStore?: AuthStoreState };
-  scopedGlobal.__authStore ??= { nonces: new Map(), revokedSessionTokens: new Map() };
+  scopedGlobal.__authStore ??= {
+    nonces: new Map(),
+    revokedSessionTokens: new Map(),
+    walletLinkContexts: new Map()
+  };
   return scopedGlobal.__authStore;
 }
 
@@ -35,6 +49,12 @@ function purgeExpired(): void {
       store.revokedSessionTokens.delete(sessionToken);
     }
   }
+
+  for (const [contextId, context] of store.walletLinkContexts) {
+    if (context.expiresAt <= now) {
+      store.walletLinkContexts.delete(contextId);
+    }
+  }
 }
 
 function generateToken(size = 24): string {
@@ -42,10 +62,11 @@ function generateToken(size = 24): string {
 }
 
 type SignedAuthPayload = {
-  kind: typeof NONCE_TOKEN_KIND | typeof SESSION_TOKEN_KIND;
+  kind: typeof NONCE_TOKEN_KIND | typeof SESSION_TOKEN_KIND | typeof WALLET_LINK_TOKEN_KIND;
   exp: number;
   nonce?: string;
   pubkey?: string;
+  contextId?: string;
 };
 
 function getSiwsTokenSecret(): string {
@@ -92,7 +113,7 @@ function parseSignedToken(token: string): SignedAuthPayload | null {
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8")) as SignedAuthPayload;
     if (
       !payload
-      || (payload.kind !== NONCE_TOKEN_KIND && payload.kind !== SESSION_TOKEN_KIND)
+      || (payload.kind !== NONCE_TOKEN_KIND && payload.kind !== SESSION_TOKEN_KIND && payload.kind !== WALLET_LINK_TOKEN_KIND)
       || !Number.isFinite(payload.exp)
     ) {
       return null;
@@ -196,4 +217,71 @@ export function revokeSession(sessionToken: string): void {
 
 export function getSessionMaxAgeSeconds(): number {
   return Math.floor(SESSION_TTL_MS / 1000);
+}
+
+export function createWalletLinkContext(input: {
+  accountId: string;
+  workosUserId: string;
+  workosSessionId?: string | null;
+}): {
+  nonce: string;
+  token: string;
+  expiresAt: number;
+} {
+  purgeExpired();
+
+  const accountId = input.accountId.trim();
+  const workosUserId = input.workosUserId.trim();
+  const workosSessionId = input.workosSessionId?.trim() || "";
+
+  if (!accountId || !workosUserId) {
+    throw new Error("Wallet link context requires account and WorkOS user ids.");
+  }
+
+  const contextId = generateToken(18);
+  const nonce = generateToken(18);
+  const expiresAt = Date.now() + NONCE_TTL_MS;
+
+  getStore().walletLinkContexts.set(contextId, {
+    accountId,
+    workosUserId,
+    workosSessionId,
+    nonce,
+    expiresAt
+  });
+
+  return {
+    nonce,
+    expiresAt,
+    token: encodeSignedToken({
+      kind: WALLET_LINK_TOKEN_KIND,
+      contextId,
+      exp: expiresAt
+    })
+  };
+}
+
+export function readWalletLinkContext(token: string): (WalletLinkContextRecord & { contextId: string }) | null {
+  purgeExpired();
+  const payload = parseSignedToken(token);
+
+  if (!payload || payload.kind !== WALLET_LINK_TOKEN_KIND || !payload.contextId || isPayloadExpired(payload)) {
+    return null;
+  }
+
+  const context = getStore().walletLinkContexts.get(payload.contextId);
+
+  if (!context || context.expiresAt <= Date.now()) {
+    return null;
+  }
+
+  return {
+    contextId: payload.contextId,
+    ...context
+  };
+}
+
+export function clearWalletLinkContext(contextId: string): void {
+  purgeExpired();
+  getStore().walletLinkContexts.delete(contextId);
 }

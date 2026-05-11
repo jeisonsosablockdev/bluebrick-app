@@ -1,5 +1,14 @@
-import { ReferralProgramModule } from "@/components/dashboard/referral-program-module";
+import { redirect } from "next/navigation";
 
-export default function ReferralsPage() {
+import { ReferralProgramModule } from "@/components/dashboard/referral-program-module";
+import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+
+export default async function ReferralsPage() {
+  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+
+  if (!authenticatedPublicKey) {
+    redirect("/protected");
+  }
+
   return <ReferralProgramModule />;
 }

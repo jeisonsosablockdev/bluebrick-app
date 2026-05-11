@@ -1,6 +1,35 @@
-# Auth Flow (SIWS)
+# Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-09
+Last Updated: 2026-05-10
+
+## BRI-154 Hybrid Auth Foundation
+- BRIDS now supports a second low-authority entry path through WorkOS AuthKit in addition to SIWS.
+- New federated entry routes:
+  - `GET /sign-in` starts the WorkOS sign-in redirect.
+  - `GET /callback` completes the WorkOS callback and ensures the BRIDS local account exists.
+  - `GET /sign-out` clears the WorkOS session and returns to the requested page.
+- WorkOS auth is account-first, not wallet-first:
+  - successful WorkOS sign-in creates or resumes a BRIDS `account_id`
+  - this path does not grant wallet ownership, admin authority, or financial permissions
+- SIWS remains the strong identity layer:
+  - wallet signatures are still required for wallet-bound, regulated, financial, or admin-sensitive actions
+  - when SIWS is later completed for the same user, the request authority becomes hybrid (`workos_session + siws_session`)
+- `GET /api/auth/me` now returns both layers:
+  - `accountAuthenticated`
+  - `federatedAuthenticated`
+  - `walletAuthenticated`
+  - `authMethod`
+  - existing `pubkey` and server-derived `role`
+- `/protected` now admits either:
+  - a federated account session, or
+  - a wallet-authenticated SIWS session
+- `/admin/**` remains wallet-first and admin-wallet-only.
+- Wallet linking now has its own guarded SIWS path for federated users:
+  - `GET /api/auth/link/wallet/nonce` issues a single-use, 5-minute wallet-link context bound to the active WorkOS account session
+  - `POST /api/auth/link/wallet/verify` verifies a fresh SIWS signature against that exact link context and fails closed on mismatch or replay
+- Direct SIWS login continues to work for wallet-first users, but now also ensures the wallet is resolved into the BRIDS account model.
+- If WorkOS and SIWS sessions resolve to different BRIDS accounts, the server now fails closed on hybrid account introspection instead of composing them.
+- Wallet-bound dashboard routes like `/protected/referrals` still require active wallet SIWS even when `/protected` overview can render from account-only session.
 
 ## BRI-153 UI Slice Notes
 - The wallet CTA in the top navigation now reflects auth state:
@@ -41,10 +70,24 @@ Last Updated: 2026-05-09
 - The initial active campaign grants `$10 USD` as a one-time checkout discount for the tokenized fraction flow after the user completes the required profile fields and verified KYC inside the allowed window.
 
 ## Scope
-- Feature: Phantom wallet connection + Sign-In With Solana (SIWS) via message signing only.
+- Feature: Hybrid account entry with WorkOS AuthKit plus Phantom wallet Sign-In With Solana (SIWS).
 - Wallet integration: `@solana/wallet-adapter-react` with Phantom as primary wallet.
+- Federated integration: WorkOS AuthKit redirect flow (`/sign-in -> /callback`) with local BRIDS account creation.
 - Signature verification primitive: `@solana/kit` address encoder (`address` + `getAddressEncoder`) in server auth boundary.
 - RBAC extension: authenticated wallet is mapped to `user`/`admin` server-side.
+
+## Federated Flow
+1. WorkOS redirect initiated:
+   - `GET /sign-in` generates a WorkOS AuthKit URL and redirects browser there.
+2. WorkOS callback completed:
+   - `GET /callback` is handled by AuthKit.
+   - On success, backend ensures a BRIDS local account exists for `workos_user_id`.
+3. Low-authority account session established:
+   - WorkOS sets its own `httpOnly` session cookie.
+   - BRIDS resolves this as an account session only.
+4. Protected account entry:
+   - `/protected` can render with account-only state.
+   - account-only users still need SIWS step-up before wallet-bound actions.
 
 ## SIWS Flow
 1. Nonce issued by server:
@@ -68,7 +111,8 @@ Last Updated: 2026-05-09
 6. Session introspection:
    - `GET /api/auth/me` returns `{ authenticated, pubkey, role }` when session is valid.
 7. Protected routes:
-   - `/protected` and `/api/protected/me` require a valid SIWS session.
+   - `/protected` accepts either a valid WorkOS account session or a valid SIWS session.
+   - wallet-bound routes and APIs still require valid SIWS session.
    - `/admin/**` is gated in Next.js proxy (`proxy.ts`, previously `middleware.ts`).
    - Admin pages and admin API handlers also re-check role server-side.
 8. Batch orchestrator (H3, server-side):
@@ -174,10 +218,15 @@ Last Updated: 2026-05-09
 ## Endpoint Map
 | Endpoint | Method | Auth Required | Role Required | Behavior |
 | --- | --- | --- | --- | --- |
+| `/sign-in` | `GET` | No | None | Starts WorkOS AuthKit sign-in and redirects to provider/hosted auth |
+| `/callback` | `GET` | No | None | Completes WorkOS callback, persists/resumes BRIDS account, redirects to protected area |
+| `/sign-out` | `GET` | Optional | None | Clears WorkOS session and redirects back |
 | `/api/auth/nonce` | `GET` | No | None | Returns nonce (5 min TTL) and sets signed nonce cookie (`siws_nonce`) |
 | `/api/auth/verify` | `POST` | No | None | Verifies SIWS signature against signed nonce cookie, sets `siws_session`, and clears `siws_nonce` |
-| `/api/auth/me` | `GET` | Optional | None | Returns current auth payload and server-computed role |
-| `/api/auth/logout` | `POST` | Optional | None | Revokes session token and clears cookie |
+| `/api/auth/link/wallet/nonce` | `GET` | WorkOS account session | None | Issues a single-use wallet-link nonce + server-held context bound to the active WorkOS account session |
+| `/api/auth/link/wallet/verify` | `POST` | WorkOS account session | None | Verifies SIWS against the active wallet-link context, links the wallet to the current account, and sets `siws_session` |
+| `/api/auth/me` | `GET` | Optional | None | Returns current hybrid auth payload: account state, wallet state, `authMethod`, `pubkey`, and server-computed role |
+| `/api/auth/logout` | `POST` | Optional | None | Revokes SIWS session token and clears `siws_session`; WorkOS logout remains explicit through `/sign-out` |
 | `/api/referrals/preview` | `GET` | No | None | Returns truncated referrer preview for a valid referral code so invitee arrival UX can stay privacy-safe |
 | `/api/protected/me` | `GET` | Yes | `user` or `admin` | Returns wallet pubkey if session exists |
 | `/api/protected/referrals/summary` | `GET` | Yes | `user` or `admin` | Returns aggregate referral metrics for the authenticated wallet: referral code, share path, counts, reward totals, and milestone progress |

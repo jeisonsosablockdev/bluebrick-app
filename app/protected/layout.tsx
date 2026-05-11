@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { ProtectedShell } from "@/components/dashboard/protected-shell";
-import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
-import { getRoleForWallet } from "@/lib/rbac";
+import { resolveAppAuthContext } from "@/lib/app-auth";
 import { createPageMetadata } from "@/lib/seo";
 
 type ProtectedLayoutProps = {
@@ -20,14 +19,20 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function ProtectedLayout({ children }: ProtectedLayoutProps) {
-  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
+  const auth = await resolveAppAuthContext();
 
-  if (!authenticatedPublicKey) {
+  if (!auth.accountAuthenticated) {
     redirect("/");
   }
 
   return (
-    <ProtectedShell authenticatedPublicKey={authenticatedPublicKey} authenticatedRole={getRoleForWallet(authenticatedPublicKey)}>
+    <ProtectedShell
+      authenticatedPublicKey={auth.walletPublicKey}
+      authenticatedRole={auth.role}
+      accountAuthenticated={auth.accountAuthenticated}
+      federatedEmail={auth.workosEmail}
+      walletAuthenticated={auth.walletAuthenticated}
+    >
       {children}
     </ProtectedShell>
   );

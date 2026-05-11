@@ -40,6 +40,28 @@ function renderModal(): RenderHandle {
   return { container, root };
 }
 
+function renderAccountOnlyModal(): RenderHandle {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  act(() => {
+    root.render(
+      createElement(OnboardingRewardDecisionModal, {
+        open: true,
+        walletConnected: false,
+        rewardAmountUsd: 10,
+        qualificationDeadlineLabel: "13 de mayo de 2026",
+        onExplore: vi.fn(),
+        onCompleteProfile: vi.fn(),
+        onClose: vi.fn()
+      })
+    );
+  });
+
+  return { container, root };
+}
+
 describe("components/onboarding/onboarding-reward-decision-modal", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
@@ -61,6 +83,17 @@ describe("components/onboarding/onboarding-reward-decision-modal", () => {
     expect(container.textContent).toContain("Explorar agora");
     expect(container.textContent).toContain("Continuar com meu perfil");
     expect(container.textContent).toContain("Benefício de onboarding");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("adapts the guidance when the account is federated-only", () => {
+    const { container, root } = renderAccountOnlyModal();
+
+    expect(container.textContent).toContain("Sua conta BRIDS já está pronta.");
+    expect(container.textContent).not.toContain("Sua wallet já está conectada.");
 
     act(() => {
       root.unmount();

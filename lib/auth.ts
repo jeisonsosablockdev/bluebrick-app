@@ -4,11 +4,14 @@ import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
 import {
+  clearWalletLinkContext,
+  createWalletLinkContext,
   createSession,
   createNonceToken,
   getNonceMaxAgeSeconds,
   getSessionMaxAgeSeconds,
   getSessionPublicKey,
+  readWalletLinkContext,
   readNonceFromToken,
   revokeSession
 } from "@/lib/auth-store";
@@ -16,6 +19,7 @@ import { parseSiwsMessage } from "@/lib/siws";
 
 const AUTH_COOKIE_NAME = "siws_session";
 const NONCE_COOKIE_NAME = "siws_nonce";
+const WALLET_LINK_COOKIE_NAME = "wallet_link_context";
 const SIWS_MAX_AGE_MS = 5 * 60 * 1000;
 const addressEncoder = getAddressEncoder();
 
@@ -148,6 +152,58 @@ export function clearSessionCookie(response: NextResponse): void {
     path: "/",
     maxAge: 0
   });
+}
+
+export function setWalletLinkContextCookie(
+  response: NextResponse,
+  input: {
+    accountId: string;
+    workosUserId: string;
+    workosSessionId?: string | null;
+  }
+): { nonce: string; expiresAt: number } {
+  const context = createWalletLinkContext(input);
+
+  response.cookies.set({
+    name: WALLET_LINK_COOKIE_NAME,
+    value: context.token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: getNonceMaxAgeSeconds()
+  });
+
+  return {
+    nonce: context.nonce,
+    expiresAt: context.expiresAt
+  };
+}
+
+export function clearWalletLinkContextCookie(response: NextResponse, contextId?: string | null): void {
+  if (contextId) {
+    clearWalletLinkContext(contextId);
+  }
+
+  response.cookies.set({
+    name: WALLET_LINK_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0
+  });
+}
+
+export function getWalletLinkContextFromRequest(request: NextRequest) {
+  const token = request.cookies.get(WALLET_LINK_COOKIE_NAME)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  return readWalletLinkContext(token);
 }
 
 export function revokeRequestSession(request: NextRequest): void {

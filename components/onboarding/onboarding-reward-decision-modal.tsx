@@ -10,6 +10,7 @@ type OnboardingRewardDecisionModalProps = {
   open: boolean;
   rewardAmountUsd: number;
   qualificationDeadlineLabel: string | null;
+  walletConnected?: boolean;
   onExplore: () => void;
   onCompleteProfile: () => void;
   onClose: () => void;
@@ -19,6 +20,7 @@ export function OnboardingRewardDecisionModal({
   open,
   rewardAmountUsd,
   qualificationDeadlineLabel,
+  walletConnected = true,
   onExplore,
   onCompleteProfile,
   onClose
@@ -69,11 +71,17 @@ export function OnboardingRewardDecisionModal({
               <section className="rounded-[26px] border border-white/12 bg-[linear-gradient(180deg,rgba(14,21,37,0.92),rgba(8,12,23,0.96))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
                 <div className="space-y-5 md:grid md:grid-cols-[1.18fr_0.82fr] md:items-center md:gap-6 md:space-y-0">
                   <p className="max-w-[30ch] text-[13px] leading-7 text-white/72 sm:max-w-[34ch] sm:text-[14px] sm:leading-7 md:max-w-none md:text-[15px] md:leading-8">
-                    {t({
-                      en: "Your wallet is already connected. You can keep exploring the platform now or complete your profile to move faster through verification and purchase.",
-                      es: "Ya conectaste tu wallet. Puedes seguir explorando la plataforma ahora mismo o completar tu perfil para avanzar más rápido en verificación y compra.",
-                      pt: "Sua wallet já está conectada. Você pode continuar explorando a plataforma agora mesmo ou completar seu perfil para avançar mais rápido na verificação e compra."
-                    })}
+                    {walletConnected
+                      ? t({
+                          en: "Your wallet is already connected. You can keep exploring the platform now or complete your profile to move faster through verification and purchase.",
+                          es: "Ya conectaste tu wallet. Puedes seguir explorando la plataforma ahora mismo o completar tu perfil para avanzar más rápido en verificación y compra.",
+                          pt: "Sua wallet já está conectada. Você pode continuar explorando a plataforma agora mesmo ou completar seu perfil para avançar mais rápido na verificação e compra."
+                        })
+                      : t({
+                          en: "Your BRIDS account is ready. You can explore the platform now or complete your profile first to move faster when you link your wallet later.",
+                          es: "Tu cuenta BRIDS ya esta lista. Puedes explorar la plataforma ahora o completar primero tu perfil para avanzar más rápido cuando vincules tu wallet después.",
+                          pt: "Sua conta BRIDS já está pronta. Você pode explorar a plataforma agora ou completar primeiro seu perfil para avançar mais rápido quando vincular sua carteira depois."
+                        })}
                   </p>
 
                   <div className="flex flex-col gap-3 md:justify-self-end md:w-full md:max-w-[19rem] md:justify-center">
