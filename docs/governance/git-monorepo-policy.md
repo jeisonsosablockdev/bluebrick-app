@@ -248,7 +248,8 @@ Every PR must:
 	6.	Build Next.js app
 	7.	Full repo type-check
 	8.	Lint entire repo
-	9.	Run security scans
+	9.	Run DB migration validation against clean Postgres when schema or persistence work is in scope
+	10.	Run security scans
 
 If any fails → block merge.
 

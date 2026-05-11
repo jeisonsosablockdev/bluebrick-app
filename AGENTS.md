@@ -22,6 +22,7 @@
 - Mint, metadata, collection, royalty, or Metaplex scope: `.codex/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.codex/workflows/mainnet-hardening.md`
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
+- `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose the dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce the DB migration gate from `testing-policy`.
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
 
 ## Agent Routing
@@ -42,6 +43,7 @@
 
 ## Definition of Done
 - `npm run validate`
+- Database-backed schema or persistence changes: tracked migrations applied, no pending tracked migrations, and `validate:db` passes when `DATABASE_URL` is available
 - Required docs updated per `docs/governance/documentation-policy.md`
 - Required PR/RFC metadata still aligns with `docs/governance/pr-policy-source-of-truth.json`
 - Frontend/auth critical flows: Playwright passed; Synpress passed when wallet/auth applies; MCP/browser evidence captured when browser-critical

@@ -1,6 +1,7 @@
 import { Pool, type PoolClient } from "pg";
 
 import { normalizeDatabaseUrlForPg } from "@/lib/db/connection-string";
+import { assertDatabaseMigrationsApplied } from "@/lib/db/migration-guard";
 
 declare global {
   var __dbPool: Pool | undefined;
@@ -30,7 +31,9 @@ export function getDbPool(): Pool {
 }
 
 export async function withDbClient<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
-  const client = await getDbPool().connect();
+  const pool = getDbPool();
+  await assertDatabaseMigrationsApplied(pool);
+  const client = await pool.connect();
 
   try {
     return await work(client);

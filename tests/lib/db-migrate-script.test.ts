@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-const { filterTrackedMigrationFiles, parseEnvValue } = require("../../scripts/db-migrate.js") as {
+const { diffPendingMigrationFiles, filterTrackedMigrationFiles, parseEnvValue } = require(
+  "../../scripts/db-migrate.js"
+) as {
+  diffPendingMigrationFiles: (files: string[], appliedMigrationIds: Set<string>) => string[];
   filterTrackedMigrationFiles: (
     allFiles: string[],
     trackedFiles: Set<string>
@@ -39,5 +42,21 @@ describe("scripts/db-migrate", () => {
   it("parses quoted env values without surrounding quotes", () => {
     expect(parseEnvValue('\"postgres://example\"')).toBe("postgres://example");
     expect(parseEnvValue("'postgres://example'")).toBe("postgres://example");
+  });
+
+  it("detects pending migrations from the tracked file set", () => {
+    const pending = diffPendingMigrationFiles(
+      [
+        "017_authority_lifecycle_registry.sql",
+        "018_checkout_dual_payment.sql",
+        "024_onboarding_profile_completion_rewards.sql"
+      ],
+      new Set(["017_authority_lifecycle_registry.sql"])
+    );
+
+    expect(pending).toEqual([
+      "018_checkout_dual_payment.sql",
+      "024_onboarding_profile_completion_rewards.sql"
+    ]);
   });
 });
