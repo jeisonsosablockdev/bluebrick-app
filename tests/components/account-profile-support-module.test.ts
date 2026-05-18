@@ -28,6 +28,10 @@ vi.mock("@/lib/auth-ui-events", () => ({
   dispatchOpenWalletModal: authUiEventMocks.dispatchOpenWalletModal
 }));
 
+vi.mock("@/components/pwa/pwa-capability-card", () => ({
+  PwaCapabilityCard: () => null
+}));
+
 import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
 
 type RenderHandle = {

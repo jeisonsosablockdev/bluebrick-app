@@ -1,6 +1,70 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-10
+Last Updated: 2026-05-11
+
+## BRI-157 PWA Installability Shell
+- BRIDS now exposes a minimal installable shell through the App Router root layout:
+  - `app/manifest.ts` publishes the standalone manifest and icon contract
+  - `app/providers.tsx` registers a minimal service worker from the browser
+  - protected profile surfaces render capability-aware install/help UI
+- This slice does not change auth authority:
+  - the service worker does not validate sessions
+  - the service worker does not intercept authenticated fetches
+  - the installability card does not request notification permission yet
+- `/protected/perfil` remains server-gated by `resolveAppAuthContext()` before any client installability UX appears.
+- Installability copy may differ by platform capability (`prompt-ready`, `manual iOS`, `criteria pending`, `unsupported`), but those states are presentation only and never widen route access or wallet authority.
+
+## BRI-157 Wallet-Bound Push Subscription Contract
+- `S03` adds `GET/POST/DELETE /api/notifications/subscriptions`.
+- These routes are not account-only surfaces:
+  - WorkOS-only session is insufficient
+  - active SIWS wallet auth is required
+  - `account_id` and `wallet_public_key` are resolved only on the server from `resolveAppAuthContext()`
+- Client payload is limited to endpoint/key material plus non-authority diagnostics (`platformFamily`, `appMode`, `consentSource`).
+- Endpoint ownership is fail-closed:
+  - the same endpoint cannot be silently reassigned to another account or wallet
+  - revoke and re-register stay tied to the same server-owned identity pair
+
+## BRI-157 Transactional Web Push Delivery
+- `S04` adds server-only push delivery orchestration:
+  - `POST /api/internal/notifications/enqueue`
+  - `POST /api/internal/notifications/process`
+- These routes are not browser authority surfaces:
+  - enqueue requires either an admin SIWS session with server-resolved wallet pubkey or `x-notifications-worker-token`
+  - process requires either the worker token or an admin session
+  - payloads never carry authority over audience ownership; target wallet is interpreted only as delivery scope for an already authorized server actor
+- Delivery stays transactional-first:
+  - allowed notification types are constrained to high-value account or wallet events
+  - jobs are deduped by `dedupeKey`
+  - dead endpoints (`404/410`) are auto-pruned
+  - transient provider errors mark the subscription as `failing` instead of silently deleting it
+
+## BRI-157 Guarded Admin Push Campaigns
+- `S05` adds admin-only campaign routes:
+  - `POST /api/admin/notifications/campaigns/preview`
+  - `POST /api/admin/notifications/campaigns/send`
+- These routes stay wallet-admin only:
+  - WorkOS account session alone is insufficient
+  - request actor must resolve to an allowlisted admin wallet on the server
+- Campaign guardrails are explicit:
+  - only `admin_notice` fan-out is allowed through the delivery pipeline
+  - `destinationUrl` must stay internal (`/path`)
+  - audience must be previewed first and confirmed by `previewHash`
+  - segmentation is limited to fields with source of truth today: `country`, `platformFamily`, `appMode`
+  - sends are capped and rate-limited per admin actor
+- `R04` does not change any of the authority rules above.
+  - route payload schemas and JSON error helpers were consolidated inside the notifications bounded context
+  - status codes, auth requirements, and response shapes remain unchanged
+
+## BRI-157 Rollout And Health Gates
+- `S06` adds rollout control above the previous auth boundaries:
+  - `ENABLE_WEB_PUSH_SUBSCRIPTIONS=false` blocks new subscription registration server-side
+  - `ENABLE_WEB_PUSH_DELIVERY=false` blocks internal delivery processing and admin campaign fan-out
+  - `NEXT_PUBLIC_ENABLE_PWA_INSTALLABILITY=false` suppresses service worker registration in the browser shell
+- Admin health route:
+  - `GET /api/admin/notifications/health`
+  - requires admin wallet auth
+  - returns operational counts only; it does not widen message-sending authority
 
 ## BRI-154 Hybrid Auth Foundation
 - BRIDS now supports a second low-authority entry path through WorkOS AuthKit in addition to SIWS.

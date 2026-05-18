@@ -16,6 +16,7 @@ import {
   SEO_DEFAULT_DESCRIPTION,
   SEO_SITE_NAME
 } from "./site";
+import { PWA_ICON_PATHS } from "@/lib/pwa/config";
 
 export interface SeoPageMetadataInput {
   title: string;
@@ -93,11 +94,18 @@ export function createRootMetadata(overrides?: RootMetadataOverrides): Metadata 
 
   return {
     metadataBase: new URL(getSiteOrigin()),
+    applicationName: title,
+    manifest: "/manifest.webmanifest",
     title: {
       default: title,
       template: `%s | ${SEO_SITE_NAME}`
     },
     description,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title
+    },
     openGraph: {
       type: "website",
       siteName: SEO_SITE_NAME,
@@ -112,7 +120,8 @@ export function createRootMetadata(overrides?: RootMetadataOverrides): Metadata 
     },
     icons: {
       icon: [{ url: faviconPath, type: "image/svg+xml" }],
-      shortcut: [faviconPath]
+      shortcut: [faviconPath],
+      apple: [{ url: PWA_ICON_PATHS.appleTouch, sizes: "180x180", type: "image/png" }]
     }
   };
 }

@@ -77,6 +77,7 @@ describe("components/admin/admin-shell-navigation", () => {
       "/admin/collections",
       "/admin/health/collections",
       "/admin/sales",
+      "/admin/notifications",
       "/admin/monitoring"
     ]);
   });

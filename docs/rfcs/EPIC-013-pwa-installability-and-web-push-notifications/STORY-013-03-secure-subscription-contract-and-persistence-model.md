@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-013-pwa-installability-and-web-push-notifications`
 - Story ID: `STORY-013-03-secure-subscription-contract-and-persistence-model`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `in-review` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
 - Last Updated: `2026-05-11`
@@ -80,19 +80,19 @@
   - Rechazado simplificar el problema a `PushSubscription(userId)`.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
-- Decision date: `2026-05-09`
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-05-11`
 - Decision owner: `jaymusicmachine`
 - Approval notes:
   No se aprueba sin esquema de estado y ownership suficientemente defensivo.
 
 ## Status
-- Current status: `draft`
+- Current status: `in-review`
 - Next action:
-  Definir DDL exacto, indices y contrato API.
+  Validar la PR de schema + API server-owned y mergearla a integracion.
 - Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
 - [ ] Implementation completed (if in scope)
 
 ## Test and Validation Plan
@@ -112,6 +112,6 @@
   - migracion aplicada y verificada contra Postgres limpio antes de aprobar implementacion
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
+- Related issue(s): `BRI-157`
+- Related PR(s): `#212 (open)`
 - Final commit hash(es): `TBD`

@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-013-pwa-installability-and-web-push-notifications`
 - Story ID: `STORY-013-04-delivery-pipeline-pruning-and-transactional-sends`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
-- Last Updated: `2026-05-11`
+- Last Updated: `2026-05-12`
 
 ## Context
 - Problem:
@@ -67,20 +67,20 @@
   - Rechazado el endpoint publico generico de envio masivo como base del sistema.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
-- Decision date: `2026-05-09`
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-05-12`
 - Decision owner: `jaymusicmachine`
 - Approval notes:
-  Requiere decision sobre tecnologia de cola/batching y esquema de delivery logs.
+  Se aprueba un pipeline transaccional wallet-targeted con jobs idempotentes, auth interna separada y fallback inline solo para entornos sin cola configurada.
 
 ## Status
-- Current status: `draft`
+- Current status: `implemented`
 - Next action:
-  Escoger estrategia de procesamiento y modelo de auditoria.
+  Continuar con `STORY-013-05` solo sobre este pipeline ya endurecido.
 - Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -93,6 +93,6 @@
   - No aplica.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-157`
+- Related PR(s): `pending`
+- Final commit hash(es): `pending`

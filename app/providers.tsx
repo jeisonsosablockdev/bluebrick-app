@@ -7,6 +7,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 
 import { LocaleProvider } from "@/components/i18n/locale-provider";
+import { PwaClientRuntime } from "@/components/pwa/pwa-client-runtime";
 import type { AppLocale } from "@/lib/i18n";
 import { getSolanaRpcUrl } from "@/lib/solana";
 
@@ -33,6 +34,7 @@ export function AppProviders({ locale, children }: AppProvidersProps) {
 
   return (
     <LocaleProvider initialLocale={locale}>
+      <PwaClientRuntime />
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect={false} onError={handleWalletError}>
           <WalletModalProvider>{children}</WalletModalProvider>

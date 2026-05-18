@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { useRouter } from "next/navigation";
 
 import { useI18n } from "@/components/i18n/locale-provider";
+import { PwaCapabilityCard } from "@/components/pwa/pwa-capability-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
@@ -86,6 +87,8 @@ export function AccountProfileSupportModule({ email }: AccountProfileSupportModu
               })}
             </p>
           </div>
+
+          <PwaCapabilityCard audience="account-linking" />
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button

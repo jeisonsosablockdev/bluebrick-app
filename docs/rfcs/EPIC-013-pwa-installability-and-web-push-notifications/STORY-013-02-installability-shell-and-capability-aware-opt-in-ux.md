@@ -3,7 +3,7 @@
 ## Metadata
 - Epic: `EPIC-013-pwa-installability-and-web-push-notifications`
 - Story ID: `STORY-013-02-installability-shell-and-capability-aware-opt-in-ux`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `in-review` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
 - Last Updated: `2026-05-11`
@@ -62,19 +62,19 @@
   - Rechazado tratar esta historia como si ya entregara valor de negocio por si sola.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
-- Decision date: `2026-05-09`
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-05-11`
 - Decision owner: `jaymusicmachine`
 - Approval notes:
   Requiere copy de valor y feature detection clara antes de implementarse.
 
 ## Status
-- Current status: `draft`
+- Current status: `in-review`
 - Next action:
-  Definir estados UX exactos y contrato de registro del service worker minimo.
+  Validar PR de implementacion del shell instalable y dejar la rama lista para merge a integracion.
 - Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
 - [ ] Implementation completed (if in scope)
 
 ## Test and Validation Plan
@@ -88,6 +88,6 @@
   - Validar 320px, 375px, 768px y 1024px.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
+- Related issue(s): `BRI-157`
+- Related PR(s): `#211 (open)`
 - Final commit hash(es): `TBD`

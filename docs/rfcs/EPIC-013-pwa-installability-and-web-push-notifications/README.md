@@ -6,7 +6,9 @@
 - Status: `in-review`
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
-- Last Updated: `2026-05-11`
+- Last Updated: `2026-05-12`
+- Parent issue: `BRI-157`
+- Integration branch: `feature/shared-pwa-web-push-bri-157-integration`
 
 ## Scope
 - Problem statement:
@@ -29,6 +31,7 @@
 
 ## Success Criteria
 - [ ] La app puede instalarse de forma consistente en Android y en iOS Home Screen con metadata valida y UX de ayuda no invasiva.
+- [ ] La instalacion por si sola no se trata como consentimiento; el usuario debe conceder permiso push e inscribir su dispositivo desde una interaccion directa.
 - [ ] Un usuario autenticado con SIWS puede registrar y revocar varias suscripciones por dispositivo/browser/install sin duplicados silenciosos.
 - [ ] El backend almacena consentimiento, estado, ultima entrega, ultimo fallo y razon de desactivacion por suscripcion.
 - [ ] Los envios usan procesamiento asincrono o por lotes con idempotencia, pruning de endpoints invalidos y auditoria de resultado.
@@ -38,12 +41,14 @@
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-013-01 | Kickoff, threat model, and scope correction | `STORY-013-01-kickoff-threat-model-and-scope-correction.md` | `in-review` | `TBD` | Replantea la iniciativa y endurece los criterios de aprobacion |
-| STORY-013-02 | Installability shell and capability-aware opt-in UX | `STORY-013-02-installability-shell-and-capability-aware-opt-in-ux.md` | `draft` | `TBD` | Manifest, icons, standalone UX, iOS fallback, sin cache agresivo |
-| STORY-013-03 | Secure subscription contract and persistence model | `STORY-013-03-secure-subscription-contract-and-persistence-model.md` | `draft` | `TBD` | Multiple subscriptions per wallet/device with lifecycle metadata |
-| STORY-013-04 | Delivery pipeline, pruning, and transactional sends | `STORY-013-04-delivery-pipeline-pruning-and-transactional-sends.md` | `draft` | `TBD` | Prioriza envios de sistema, no marketing |
-| STORY-013-05 | Admin campaigns, segmentation, and abuse controls | `STORY-013-05-admin-campaigns-segmentation-and-abuse-controls.md` | `draft` | `TBD` | Solo despues de guardrails, auditoria y caps operativos |
-| STORY-013-06 | QA, rollout, observability, and kill-switch | `STORY-013-06-qa-rollout-observability-and-kill-switch.md` | `draft` | `TBD` | E2E, responsive, MCP evidence, docs sync, rollback |
+| STORY-013-01 | Kickoff, threat model, and scope correction | `STORY-013-01-kickoff-threat-model-and-scope-correction.md` | `in-review` | `#210` | Replantea la iniciativa y endurece los criterios de aprobacion |
+| STORY-013-02 | Installability shell and capability-aware opt-in UX | `STORY-013-02-installability-shell-and-capability-aware-opt-in-ux.md` | `implemented` | `#211 (merged)` | Manifest, icons, standalone UX, iOS fallback, sin cache agresivo |
+| STORY-013-03 | Secure subscription contract and persistence model | `STORY-013-03-secure-subscription-contract-and-persistence-model.md` | `implemented` | `#212 (merged)` | Multiple subscriptions per wallet/device with lifecycle metadata |
+| STORY-013-04 | Delivery pipeline, pruning, and transactional sends | `STORY-013-04-delivery-pipeline-pruning-and-transactional-sends.md` | `implemented` | `pending` | Prioriza envios de sistema, no marketing |
+| STORY-013-05 | Admin campaigns, segmentation, and abuse controls | `STORY-013-05-admin-campaigns-segmentation-and-abuse-controls.md` | `implemented` | `pending` | Solo despues de guardrails, auditoria y caps operativos |
+| STORY-013-06 | QA, rollout, observability, and kill-switch | `STORY-013-06-qa-rollout-observability-and-kill-switch.md` | `implemented` | `pending` | E2E, responsive, MCP evidence, docs sync, rollback |
+| STORY-013-07 | Clean-code refactor slices | `STORY-013-07-clean-code-refactor-slices.md` | `in-review` | `pending` | Follow-up estructural para separar dominio, transporte, persistencia y UI sin cambiar comportamiento |
+| STORY-013-08 | User push opt-in enrollment and device-bound consent | `STORY-013-08-user-push-opt-in-enrollment.md` | `in-review` | `pending` | Cierra el gap entre app instalada, permiso browser y suscripcion persistida |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
@@ -54,6 +59,13 @@
 | 2026-05-09 | STORY-013-04 | El envio masivo no puede depender de una sola request HTTP recorriendo todo el universo de suscripciones | jaymusicmachine | `STORY-013-04-delivery-pipeline-pruning-and-transactional-sends.md` |
 | 2026-05-09 | STORY-013-05 | El broadcast admin queda bloqueado hasta tener preview, dry-run, rate limits, audience caps y trazabilidad | jaymusicmachine | `STORY-013-05-admin-campaigns-segmentation-and-abuse-controls.md` |
 | 2026-05-11 | STORY-013-03 | El modelado de suscripciones debe alinearse al baseline hibrido de auth y al nuevo gate de migraciones `validate:db` | jaymusicmachine | `STORY-013-03-secure-subscription-contract-and-persistence-model.md` |
+| 2026-05-11 | STORY-013-02 | El service worker inicial queda limitado a installability; no cachea fetches autenticados ni dispara permiso push todavia | jaymusicmachine | `STORY-013-02-installability-shell-and-capability-aware-opt-in-ux.md` |
+| 2026-05-12 | STORY-013-04 | Release 1 de delivery queda limitado a jobs transaccionales con dedupe, batch processing, pruning y auth interna separada del browser | jaymusicmachine | `STORY-013-04-delivery-pipeline-pruning-and-transactional-sends.md` |
+| 2026-05-12 | STORY-013-05 | El primer panel admin queda restringido a notices gobernados con preview hash, cap, dry-run, URL interna y segmentacion sobre campos reales | jaymusicmachine | `STORY-013-05-admin-campaigns-segmentation-and-abuse-controls.md` |
+| 2026-05-12 | STORY-013-06 | El epic no cierra sin kill-switches server/client, health snapshot admin y evidencia responsive reproducible | jaymusicmachine | `STORY-013-06-qa-rollout-observability-and-kill-switch.md` |
+| 2026-05-12 | STORY-013-07 | El cleanup posterior a implementacion debe ejecutarse por slices de refactor con fachadas estables y sin cambiar contratos externos | jaymusicmachine | `STORY-013-07-clean-code-refactor-slices.md` |
+| 2026-05-13 | STORY-013-02 | Los iconos generados del shell PWA y Apple icon dejan de usar el placeholder tipografico y pasan a derivarse del asset real `brids-mark` | jaymusicmachine | `#222` |
+| 2026-05-13 | STORY-013-08 | Instalar BRIDS no implica consentimiento push; el alta debe ocurrir por tap directo, con permiso browser y persistencia explicita por dispositivo | jaymusicmachine | `STORY-013-08-user-push-opt-in-enrollment.md` |
 
 ## Risks and Dependencies
 - Risks:
@@ -84,6 +96,6 @@
 - [ ] Que metrica define exito: install rate, opt-in rate, delivery success, CTR, retorno a flujo critico?
 
 ## Traceability
-- Issue(s): `TBD`
-- PR(s): `TBD`
+- Issue(s): `BRI-157`
+- PR(s): `#210 (merged), #211 (merged), #212 (merged), #213 (merged), #214 (merged), #222 (merged), pending STORY-013-06, pending STORY-013-08`
 - Final commit hash(es): `TBD`

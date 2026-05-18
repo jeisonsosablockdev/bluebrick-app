@@ -1,6 +1,24 @@
 # Session Model
 
-Last Updated: 2026-05-10
+Last Updated: 2026-05-11
+
+## BRI-157 PWA Session Boundary Notes
+- The installability slice introduces browser-local runtime state, not a new session layer.
+- No new cookie, token, refresh path, or server authority source was added.
+- The service worker registered in `S02` is intentionally minimal:
+  - it exists to satisfy installability prerequisites
+  - it does not cache authenticated responses
+  - it does not proxy auth headers, wallet signatures, or role checks
+- Client capability detection for installability/push readiness may read:
+  - browser display mode
+  - `beforeinstallprompt` availability
+  - notification permission state
+  - service worker / PushManager support
+- Those signals are advisory only. Session authority continues to be resolved exclusively on the server from `workos_session` and/or `siws_session`.
+- `S03` keeps push subscription ownership inside that same server session model:
+  - `web_push_subscriptions` rows are created for a server-resolved `account_id + wallet_public_key`
+  - account-only sessions cannot create or revoke push endpoints
+  - endpoint conflicts across accounts fail closed instead of reassigning ownership
 
 ## BRI-154 Hybrid Session Foundation
 - BRIDS now carries two separate session layers:
@@ -101,8 +119,40 @@ Last Updated: 2026-05-10
    - UI auth state is revalidated across browser contexts via `BroadcastChannel` + `localStorage` sync signal, and on `focus`/`visibilitychange`.
 6. Revoke session:
    - `POST /api/auth/logout` clears only `siws_session`.
-   - `POST /api/auth/logout` also clears any pending wallet-link context.
-   - `GET /sign-out` clears WorkOS session cookie and redirects away.
+- `POST /api/auth/logout` also clears any pending wallet-link context.
+- `GET /sign-out` clears WorkOS session cookie and redirects away.
+
+## BRI-157 Notification Worker Boundary
+- `S04` introduces a separate internal worker trust boundary for web push delivery.
+- Worker authentication:
+  - internal processors may call `/api/internal/notifications/process` with `x-notifications-worker-token`
+  - admin operators may enqueue transactional jobs with an active admin wallet session
+- Session semantics:
+  - the worker token does not create a user session, role, or wallet identity
+  - delivery job ownership is recorded as `created_by_type` plus `created_by_id` for auditability
+  - delivery attempts mutate subscription lifecycle state (`active`, `failing`, `gone`) server-side only
+
+## BRI-157 Admin Campaign Boundary
+- `S05` adds a separate admin campaign boundary above the worker layer.
+- Authentication and authorization:
+  - preview/send routes require a valid SIWS admin wallet session
+  - federated account session without wallet step-up cannot preview or queue campaigns
+- Session semantics:
+  - campaign audit records bind to `actor_pubkey`
+  - preview confirmation is enforced by `previewHash`, not by trusting stale browser state
+  - admin campaign routes never accept external redirect destinations or arbitrary audience ownership from client payloads
+- `R04` keeps these session semantics intact while moving route contracts into shared notifications modules.
+  - preview/send/enqueue/process now reuse bounded-context schemas and error helpers
+  - no session cookie, role derivation, or worker-token rule changed in that cleanup
+
+## BRI-157 Rollout Controls
+- `S06` adds runtime gates that can disable parts of the notification stack without changing session semantics.
+- Controls:
+  - `ENABLE_WEB_PUSH_SUBSCRIPTIONS=false` blocks subscription writes but does not create a new auth path
+  - `ENABLE_WEB_PUSH_DELIVERY=false` blocks enqueue/process flows and admin campaign sends
+  - `NEXT_PUBLIC_ENABLE_PWA_INSTALLABILITY=false` prevents browser-side service worker registration
+- Observability:
+  - `/api/admin/notifications/health` is admin-only and reports rollout state plus aggregate health counters
 
 ## Validation Rules
 - Authentication:

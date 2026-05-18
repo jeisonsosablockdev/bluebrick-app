@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-013-pwa-installability-and-web-push-notifications`
 - Story ID: `STORY-013-06-qa-rollout-observability-and-kill-switch`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
-- Last Updated: `2026-05-11`
+- Last Updated: `2026-05-12`
 
 ## Context
 - Problem:
@@ -68,20 +68,20 @@
   - Rechazado considerar QA como una tarea accesoria.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
-- Decision date: `2026-05-09`
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-05-12`
 - Decision owner: `jaymusicmachine`
 - Approval notes:
-  Queda condicionado al alcance final del flujo autenticado y del panel admin.
+  Se aprueba un cierre pragmatico del EPIC: kill-switches discretos por capa, health snapshot admin y evidencia responsive automatizable del panel de notificaciones.
 
 ## Status
-- Current status: `draft`
+- Current status: `implemented`
 - Next action:
-  Definir matriz E2E y evidencia requerida por plataforma.
+  Preparar merge final de la rama de integracion a `develop` cuando el issue padre lo autorice.
 - Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -99,6 +99,6 @@
   - `npm run validate:db` cuando haya trabajo de schema/persistencia
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-157`
+- Related PR(s): `pending`
+- Final commit hash(es): `pending`

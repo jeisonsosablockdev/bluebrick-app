@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
+import { PwaCapabilityCard } from "@/components/pwa/pwa-capability-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/lib/countries";
@@ -654,6 +655,8 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
             })}
           </p>
         </div>
+
+        <PwaCapabilityCard audience="wallet-profile" />
 
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
           <div className="space-y-3">

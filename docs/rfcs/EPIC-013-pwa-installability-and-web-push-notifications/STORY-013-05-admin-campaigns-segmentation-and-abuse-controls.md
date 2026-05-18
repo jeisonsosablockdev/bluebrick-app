@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-013-pwa-installability-and-web-push-notifications`
 - Story ID: `STORY-013-05-admin-campaigns-segmentation-and-abuse-controls`
-- Status: `draft` (`draft | in-review | approved | implemented | rejected`)
+- Status: `implemented` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `jaymusicmachine`
 - Created: `2026-05-09`
-- Last Updated: `2026-05-11`
+- Last Updated: `2026-05-12`
 
 ## Context
 - Problem:
@@ -60,20 +60,20 @@
   - Rechazado el broadcast libre a “todos los usuarios” como primer modo de operacion.
 
 ## Decision
-- Decision: `pending` (`pending | approved | rejected`)
-- Decision date: `2026-05-09`
+- Decision: `approved` (`pending | approved | rejected`)
+- Decision date: `2026-05-12`
 - Decision owner: `jaymusicmachine`
 - Approval notes:
-  Requiere taxonomia de mensajes y reglas operativas antes de aprobarse.
+  Se aprueba un primer panel admin fuertemente recortado: preview obligatorio, dry-run, rate limit, audience cap, URL interna y segmentos solo sobre atributos modelados hoy.
 
 ## Status
-- Current status: `draft`
+- Current status: `implemented`
 - Next action:
-  Definir atributos realmente segmentables y controles de abuso.
+  Continuar con `STORY-013-06` para QA final, observabilidad y kill-switch.
 - Exit criteria:
-- [ ] All critical critique points addressed
-- [ ] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] All critical critique points addressed
+- [x] Decision is `approved`
+- [x] Implementation completed (if in scope)
 
 ## Test and Validation Plan
 - Unit tests:
@@ -86,6 +86,6 @@
   - Obligatoria si el panel UI entra en scope.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-157`
+- Related PR(s): `pending`
+- Final commit hash(es): `pending`

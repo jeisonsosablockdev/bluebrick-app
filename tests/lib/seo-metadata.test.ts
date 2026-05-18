@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { PWA_ICON_PATHS } from "@/lib/pwa/config";
 import {
   buildCanonicalUrl,
   createPageMetadata,
+  createRootMetadata,
   getSiteOrigin,
   isIndexablePage,
   normalizeRoutePath,
@@ -59,6 +61,23 @@ describe("lib/seo metadata infrastructure", () => {
     expect(metadata.robots).toMatchObject({
       index: false,
       follow: false
+    });
+  });
+
+  it("adds manifest and apple web app metadata to the root layout", () => {
+    const metadata = createRootMetadata({
+      title: "BRIDS",
+      description: "Installable BRIDS shell."
+    });
+
+    expect(metadata.manifest).toBe("/manifest.webmanifest");
+    expect(metadata.appleWebApp).toMatchObject({
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "BRIDS"
+    });
+    expect(metadata.icons).toMatchObject({
+      apple: [{ url: PWA_ICON_PATHS.appleTouch, sizes: "180x180", type: "image/png" }]
     });
   });
 });
