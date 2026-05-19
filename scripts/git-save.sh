@@ -37,6 +37,11 @@ done
 
 CURRENT_BRANCH="$(git branch --show-current)"
 
+if [[ "$CURRENT_BRANCH" =~ ^(develop|main|master)$ ]]; then
+  echo "❌ No se permiten commits directos en ${CURRENT_BRANCH}. Crea una rama de trabajo primero."
+  exit 1
+fi
+
 if [[ -z "${MSG}" ]]; then
   echo "❌ Mensaje de commit obligatorio."
   exit 1
@@ -115,7 +120,11 @@ case "${CURRENT_BRANCH}" in
     ;;
 esac
 
-git add .
+if git diff --cached --quiet; then
+  echo "❌ No hay cambios staged. Haz staging explicito de los archivos de este slice antes de guardar."
+  exit 1
+fi
+
 git status
 git commit -m "${COMMIT_TYPE}(${SCOPE}): ${MSG}"
 echo "✅ Commit creado"

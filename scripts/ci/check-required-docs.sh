@@ -85,6 +85,12 @@ changed_files_include_path() {
   grep -Fx -q -- "${file_path}" <<<"${CHANGED_FILES}"
 }
 
+changed_files_match() {
+  local regex="$1"
+
+  grep -E -- "${regex}" <<<"${CHANGED_FILES}" || true
+}
+
 require_docs_changed() {
   local scope="$1"
   shift
@@ -297,26 +303,93 @@ if [[ "${touches_nft}" -eq 1 ]]; then
     "docs/nft-spec.md" || missing_any=1
 fi
 
-requires_feature_doc=0
+requires_feature_artifact_pair=0
+requires_fix_artifact_pair=0
 if [[ "${touches_product_code}" -eq 1 ]]; then
   if [[ -n "${HEAD_BRANCH}" ]]; then
-    if [[ "${HEAD_BRANCH}" =~ ^(feature|fix|nft|refactor)/ ]]; then
-      requires_feature_doc=1
+    if [[ "${HEAD_BRANCH}" =~ ^(feature|security|nft|refactor)/ ]]; then
+      requires_feature_artifact_pair=1
+    fi
+    if [[ "${HEAD_BRANCH}" =~ ^fix/ ]]; then
+      requires_fix_artifact_pair=1
     fi
   else
     # Local fallback when branch name isn't provided by CI env vars.
     CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
-    if [[ "${CURRENT_BRANCH}" =~ ^(feature|fix|nft|refactor)/ ]]; then
-      requires_feature_doc=1
+    if [[ "${CURRENT_BRANCH}" =~ ^(feature|security|nft|refactor)/ ]]; then
+      requires_feature_artifact_pair=1
+    fi
+    if [[ "${CURRENT_BRANCH}" =~ ^fix/ ]]; then
+      requires_fix_artifact_pair=1
     fi
   fi
 fi
 
-if [[ "${requires_feature_doc}" -eq 1 ]]; then
-  echo "Feature/fix/refactor scope detected -> validating feature note under docs/features."
-  if ! grep -E -q '^docs/features/.*\.md$' <<<"${CHANGED_FILES}"; then
-    echo "::error::Missing feature note update: add/update at least one Markdown file under docs/features/ for this feature/fix/refactor PR."
+if [[ "${requires_feature_artifact_pair}" -eq 1 ]]; then
+  echo "Feature/security/nft/refactor scope detected -> validating feature artifacts under docs/features."
+  feature_problem_artifacts="$(changed_files_match '^docs/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  feature_solution_artifacts="$(changed_files_match '^docs/features/feature-.*-implementation\.md$')"
+
+  if [[ -z "${feature_problem_artifacts}" ]]; then
+    echo "::error::Missing feature problem artifact update: add/update docs/features/feature-<slug>.md for this PR."
     missing_any=1
+  fi
+
+  if [[ -z "${feature_solution_artifacts}" ]]; then
+    echo "::error::Missing feature solution artifact update: add/update docs/features/feature-<slug>-implementation.md for this PR."
+    missing_any=1
+  fi
+
+  if [[ "${missing_any}" -eq 0 ]]; then
+    matching_feature_pair=0
+    while IFS= read -r problem_artifact; do
+      [[ -z "${problem_artifact}" ]] && continue
+      problem_base="${problem_artifact%.md}"
+      expected_solution="${problem_base}-implementation.md"
+      if grep -Fx -q -- "${expected_solution}" <<<"${feature_solution_artifacts}"; then
+        matching_feature_pair=1
+        break
+      fi
+    done <<<"${feature_problem_artifacts}"
+
+    if [[ "${matching_feature_pair}" -eq 0 ]]; then
+      echo "::error::Feature artifact pair mismatch: update a matching docs/features/feature-<slug>.md and docs/features/feature-<slug>-implementation.md in the same PR."
+      missing_any=1
+    fi
+  fi
+fi
+
+if [[ "${requires_fix_artifact_pair}" -eq 1 ]]; then
+  echo "Fix scope detected -> validating problem + solution artifact pair under docs/fixes."
+  fix_problem_artifacts="$(changed_files_match '^docs/fixes/fix-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  fix_solution_artifacts="$(changed_files_match '^docs/fixes/fix-.*-implementation\.md$')"
+
+  if [[ -z "${fix_problem_artifacts}" ]]; then
+    echo "::error::Missing fix problem artifact update: add/update docs/fixes/fix-<slug>.md for this PR."
+    missing_any=1
+  fi
+
+  if [[ -z "${fix_solution_artifacts}" ]]; then
+    echo "::error::Missing fix solution artifact update: add/update docs/fixes/fix-<slug>-implementation.md for this PR."
+    missing_any=1
+  fi
+
+  if [[ "${missing_any}" -eq 0 ]]; then
+    matching_fix_pair=0
+    while IFS= read -r problem_artifact; do
+      [[ -z "${problem_artifact}" ]] && continue
+      problem_base="${problem_artifact%.md}"
+      expected_solution="${problem_base}-implementation.md"
+      if grep -Fx -q -- "${expected_solution}" <<<"${fix_solution_artifacts}"; then
+        matching_fix_pair=1
+        break
+      fi
+    done <<<"${fix_problem_artifacts}"
+
+    if [[ "${matching_fix_pair}" -eq 0 ]]; then
+      echo "::error::Fix artifact pair mismatch: update a matching docs/fixes/fix-<slug>.md and docs/fixes/fix-<slug>-implementation.md in the same PR."
+      missing_any=1
+    fi
   fi
 fi
 

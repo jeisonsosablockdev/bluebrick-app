@@ -158,6 +158,7 @@ async function createFeatureBranchRepo(branchName: string): Promise<string> {
 
   await copyScriptIntoRepo(workDir);
   await mkdir(path.join(workDir, "docs", "features"), { recursive: true });
+  await mkdir(path.join(workDir, "docs", "fixes"), { recursive: true });
 
   await writeFile(path.join(workDir, "README.md"), "# Temp Repo\n", "utf8");
 
@@ -318,7 +319,7 @@ describe("PR governance shell helpers", () => {
     expect(output).toContain("Required docs check passed.");
   });
 
-  it("includes untracked files in local feature-note enforcement", async () => {
+  it("requires a fix artifact pair for qualifying fix branches", async () => {
     const repoDir = await createFeatureBranchRepo("fix/shared-pr-governance-flow-flexibility");
 
     await mkdir(path.join(repoDir, "tests", "lib"), { recursive: true });
@@ -329,18 +330,74 @@ describe("PR governance shell helpers", () => {
     );
 
     expect(() => runBash("bash ./scripts/ci/check-required-docs.sh", repoDir)).toThrowError(
-      /Missing feature note update/
+      /Missing fix problem artifact update/
     );
 
     await writeFile(
-      path.join(repoDir, "docs", "features", "feature-untracked-note.md"),
-      "# Feature Note\n",
+      path.join(repoDir, "docs", "fixes", "fix-pr-governance-flow-flexibility.md"),
+      "# Fix Problem\n",
+      "utf8"
+    );
+
+    expect(() => runBash("bash ./scripts/ci/check-required-docs.sh", repoDir)).toThrowError(
+      /Missing fix solution artifact update/
+    );
+
+    await writeFile(
+      path.join(
+        repoDir,
+        "docs",
+        "fixes",
+        "fix-pr-governance-flow-flexibility-implementation.md"
+      ),
+      "# Fix Solution\n",
       "utf8"
     );
 
     const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
 
-    expect(output).toContain("Feature/fix/refactor scope detected -> validating feature note");
+    expect(output).toContain("Fix scope detected -> validating problem + solution artifact pair");
+    expect(output).toContain("Required docs check passed.");
+  });
+
+  it("requires a feature artifact pair for qualifying feature branches", async () => {
+    const repoDir = await createFeatureBranchRepo("feature/shared-pr-governance-flow-flexibility");
+
+    await mkdir(path.join(repoDir, "tests", "lib"), { recursive: true });
+    await writeFile(
+      path.join(repoDir, "tests", "lib", "untracked-governance.test.ts"),
+      "export const testCase = true;\n",
+      "utf8"
+    );
+
+    expect(() => runBash("bash ./scripts/ci/check-required-docs.sh", repoDir)).toThrowError(
+      /Missing feature problem artifact update/
+    );
+
+    await writeFile(
+      path.join(repoDir, "docs", "features", "feature-pr-governance-flow-flexibility.md"),
+      "# Feature Problem\n",
+      "utf8"
+    );
+
+    expect(() => runBash("bash ./scripts/ci/check-required-docs.sh", repoDir)).toThrowError(
+      /Missing feature solution artifact update/
+    );
+
+    await writeFile(
+      path.join(
+        repoDir,
+        "docs",
+        "features",
+        "feature-pr-governance-flow-flexibility-implementation.md"
+      ),
+      "# Feature Solution\n",
+      "utf8"
+    );
+
+    const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
+
+    expect(output).toContain("Feature/security/nft/refactor scope detected -> validating feature artifacts");
     expect(output).toContain("Required docs check passed.");
   });
 
@@ -363,9 +420,20 @@ describe("PR governance shell helpers", () => {
       "utf8"
     );
     await writeFile(path.join(repoDir, "docs", "linear-context.md"), "noise\n", "utf8");
+    await mkdir(path.join(repoDir, "docs", "fixes"), { recursive: true });
     await writeFile(
-      path.join(repoDir, "docs", "features", "feature-untracked-note.md"),
-      "# Feature Note\n",
+      path.join(repoDir, "docs", "fixes", "fix-pr-governance-flow-flexibility.md"),
+      "# Fix Problem\n",
+      "utf8"
+    );
+    await writeFile(
+      path.join(
+        repoDir,
+        "docs",
+        "fixes",
+        "fix-pr-governance-flow-flexibility-implementation.md"
+      ),
+      "# Fix Solution\n",
       "utf8"
     );
 

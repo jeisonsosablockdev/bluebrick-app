@@ -130,9 +130,24 @@ describe("git workflow scripts", () => {
     expect(sliceOutput).toContain(
       "Siguiente PR objetivo: feature/shared-slice-planning-bri-149-integration"
     );
+    expect(sliceOutput).toContain("documentation slice");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
       "feature/shared-slice-planning-bri-149-s01-governance-policy"
     );
+  });
+
+  it("prints artifact-first guidance for fix integration branches", async () => {
+    const repoDir = await createWorkflowRepo();
+
+    const output = runBash(
+      path.join(repoDir, "scripts", "git-start.sh"),
+      ["fix", "shared", "agent-enforcement", "--mode", "integration", "--issue", "BRI-157"],
+      repoDir
+    );
+
+    expect(output).toContain("documentation slice");
+    expect(output).toContain("docs/fixes/fix-<slug>.md");
+    expect(output).toContain("docs/fixes/fix-<slug>-implementation.md");
   });
 
   it("rejects ambiguous two-argument calls for typed branch families", async () => {
@@ -148,6 +163,7 @@ describe("git workflow scripts", () => {
 
     runGit(["checkout", "-b", "refactor/shared-branch-alignment"], repoDir);
     await writeFile(path.join(repoDir, "README.md"), "# Drift fix\n", "utf8");
+    runGit(["add", "README.md"], repoDir);
 
     runBash(
       path.join(repoDir, "scripts", "git-save.sh"),
@@ -161,7 +177,39 @@ describe("git workflow scripts", () => {
     );
   });
 
-  it("guides slice pushes toward the integration branch instead of develop", async () => {
+  it("requires explicit staging before creating a commit", async () => {
+    const repoDir = await createWorkflowRepo();
+
+    runGit(["checkout", "-b", "fix/shared-stage-contract"], repoDir);
+    await writeFile(path.join(repoDir, "README.md"), "# Unstaged change\n", "utf8");
+
+    expect(() =>
+      runBash(
+        path.join(repoDir, "scripts", "git-save.sh"),
+        ["--message", "enforce explicit staging"],
+        repoDir,
+        { SKIP_TEST_GATES: "1" }
+      )
+    ).toThrow("No hay cambios staged");
+  });
+
+  it("blocks direct commits on protected branches", async () => {
+    const repoDir = await createWorkflowRepo();
+
+    await writeFile(path.join(repoDir, "README.md"), "# Protected branch change\n", "utf8");
+    runGit(["add", "README.md"], repoDir);
+
+    expect(() =>
+      runBash(
+        path.join(repoDir, "scripts", "git-save.sh"),
+        ["--scope", "shared", "--message", "attempt protected commit"],
+        repoDir,
+        { SKIP_TEST_GATES: "1" }
+      )
+    ).toThrow("No se permiten commits directos en develop");
+  });
+
+  it("guides slice pushes toward the mother branch instead of an invented integration branch", async () => {
     const repoDir = await createWorkflowRepo();
 
     runGit(
@@ -172,7 +220,15 @@ describe("git workflow scripts", () => {
     const output = runBash(path.join(repoDir, "scripts", "git-push.sh"), [], repoDir);
 
     expect(output).toContain(
-      "abrir PR desde 'feature/shared-slice-planning-bri-149-s01-governance-policy' hacia 'feature/shared-slice-planning-bri-149-integration'"
+      "abrir PR desde 'feature/shared-slice-planning-bri-149-s01-governance-policy' hacia 'feature/shared-slice-planning-bri-149'"
+    );
+  });
+
+  it("blocks direct pushes on protected branches", async () => {
+    const repoDir = await createWorkflowRepo();
+
+    expect(() => runBash(path.join(repoDir, "scripts", "git-push.sh"), [], repoDir)).toThrow(
+      "No se permite push directo a develop"
     );
   });
 });

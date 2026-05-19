@@ -71,7 +71,51 @@ If documentation is missing or outdated → task incomplete.
 
 ⸻
 
-Feature Notes for Small/Iterative Work
+Artifact-First Rule
+
+For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work:
+	•	Implementation must not start until the governing artifact exists locally.
+	•	The artifact is an input to planning, slicing, review, QA, and Linear sync.
+	•	If the solution artifact is not decision-complete, implementation remains blocked.
+
+For new feature initiatives, the required artifact pair is:
+	•	Problem artifact: `/docs/features/feature-<slug>.md`
+	•	Solution artifact: `/docs/features/feature-<slug>-implementation.md`
+
+For new fix initiatives, the required artifact pair is:
+	•	Problem artifact: `/docs/fixes/fix-<slug>.md`
+	•	Solution artifact: `/docs/fixes/fix-<slug>-implementation.md`
+
+Problem artifact must answer:
+	•	What problem exists
+	•	Why it matters
+	•	What outcome is expected
+	•	What gaps exist today
+	•	What questions remain open
+
+Solution artifact must answer:
+	•	How the work will be resolved
+	•	What slices and branches will be used
+	•	What tests go first
+	•	What tooling is required
+	•	What gates must pass
+	•	What will be synchronized to Linear
+
+Decision-complete rule:
+	•	If a material decision is missing from the solution artifact, implementation is blocked.
+	•	The missing decision must be documented and resolved before code slices open.
+
+Documentation slice rule:
+	•	For multi-slice initiatives, the documentation slice is mandatory and comes before implementation slices.
+	•	The documentation slice owns the artifact pair, the atomic slice map, the test-plan-first contract, and RFC creation or update when RFC applies.
+
+Linear sync rule:
+	•	Linear is updated from the artifact.
+	•	The artifact is not reverse-generated from comments or memory.
+
+⸻
+
+Feature And Fix Artifacts For Small/Iterative Work
 
 For branch types:
 	•	`feature/*`
@@ -79,13 +123,18 @@ For branch types:
 	•	`nft/*`
 	•	`refactor/*`
 
-If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), the PR must update at least one Markdown file under:
+If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), the PR must update the required branch-family artifact path:
+	•	`feature/*`, `security/*`, `nft/*`, `refactor/*`:
 	•	`/docs/features/*.md`
+	•	`fix/*`:
+	•	`/docs/fixes/fix-*.md`
+	•	`/docs/fixes/fix-*-implementation.md`
 
 Enforcement:
-	•	If no `/docs/features/*.md` file is updated for qualifying changes, documentation is considered incomplete.
+	•	If qualifying `feature/*`, `security/*`, `nft/*`, or `refactor/*` changes update no `/docs/features/*.md` file, documentation is considered incomplete.
+	•	If qualifying `fix/*` changes update no problem artifact or no matching solution artifact under `/docs/fixes/`, documentation is considered incomplete.
 	•	For single-issue slice flows, multiple slice branches may update the same parent feature-note file incrementally instead of creating one near-duplicate file per slice.
-	•	Prefer one accumulated feature note per parent Linear issue when the slices belong to the same initiative.
+	•	Prefer one accumulated parent artifact pair per parent Linear issue when the slices belong to the same initiative.
 
 ⸻
 
@@ -116,6 +165,7 @@ Allowed status values:
 Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
+	•	If the initiative uses the documentation-slice model, the RFC must be created or updated in that documentation slice, not invented later in implementation slices.
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
 	•	`docs/rfcs/000-manifest.md` is intentionally blank as a bootstrap scaffold and is excluded from story/epic RFC content requirements.
 

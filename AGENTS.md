@@ -12,6 +12,14 @@
 
 ## Entry Rules
 - Start with `planner`.
+- For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work, require the governing artifact before implementation.
+- For new features, require:
+  - `docs/features/feature-<slug>.md`
+  - `docs/features/feature-<slug>-implementation.md`
+- For new fixes, require:
+  - `docs/fixes/fix-<slug>.md`
+  - `docs/fixes/fix-<slug>-implementation.md`
+- For multi-slice work, require the documentation slice before implementation slices.
 - Load only the matching `.codex/workflows/*.md` and `.codex/policies/*.md`.
 - Keep specialist context narrow; do not paste governance text into task prompts.
 - When multiple scopes are touched, run every matching workflow and aggregate all gates.
@@ -26,12 +34,12 @@
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
 
 ## Agent Routing
-- `planner`: detect scope, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
+- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
-- `docs`: canonical doc sync, feature notes, RFC traceability, migration notes.
+- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: clean-code, duplication, naming, dead-code, governance, and final completion gate.
 

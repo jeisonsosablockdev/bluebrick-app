@@ -32,8 +32,16 @@ async function createTemplateFile(rootDir: string) {
       "- Issue: `{{ISSUE_ID}}`",
       "- Owner: `{{OWNER}}`",
       "",
+      "# Artifact Pair",
+      "- Problem artifact: `{{PROBLEM_ARTIFACT}}`",
+      "- Solution artifact: `{{SOLUTION_ARTIFACT}}`",
+      "",
       "# Integration Branch",
       "`{{INTEGRATION_BRANCH}}`",
+      "",
+      "# Documentation Slice",
+      "- Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`",
+      "- Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`",
       "",
       "# Slice Plan",
       "| Slice | Status | Branch | Objective | Scope tecnico | Validation | PR |",
@@ -45,6 +53,9 @@ async function createTemplateFile(rootDir: string) {
       "",
       "# Risks",
       "{{RISK_ITEMS}}",
+      "",
+      "# Test Plan First",
+      "{{TEST_PLAN_FIRST_ITEMS}}",
       "",
       "# Completion Gate",
       "{{COMPLETION_GATE_ITEMS}}"
@@ -109,10 +120,14 @@ describe("scripts/linear-plan-core", () => {
     });
 
     expect(result.body).toContain("Issue: `BRI-149`");
+    expect(result.body).toContain("Problem artifact: `docs/features/feature-single-issue-slice-planning.md`");
+    expect(result.body).toContain("Solution artifact: `docs/features/feature-single-issue-slice-planning-implementation.md`");
     expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-integration");
+    expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s01-formalize-governance-policy");
     expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s01-formalize-governance-policy");
     expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
     expect(result.body).toContain("1. S01 - Formalize governance policy");
+    expect(result.body).toContain("# Documentation Slice");
     expect(result.commandSummary).toContain("git checkout -b feature/shared-single-issue-slice-planning-bri-149-integration");
     expect(result.commandSummary).toContain("git checkout -b feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
 
@@ -121,5 +136,29 @@ describe("scripts/linear-plan-core", () => {
       "utf8"
     );
     expect(templateCopy).toContain("{{SLICE_ROWS}}");
+  });
+
+  it("requires the first slice to be S01 so documentation owns the plan first", async () => {
+    const rootDir = await mkdtemp(path.join(tmpdir(), "linear-plan-test-"));
+    await createTemplateFile(rootDir);
+
+    await expect(
+      createLinearPlan({
+        rootDir,
+        issueId: "BRI-149",
+        type: "fix",
+        scope: "shared",
+        slug: "agent-governance",
+        title: "Agent governance enforcement",
+        goal: "Harden workflow orchestration.",
+        scopeItems: ["Governance docs and tooling"],
+        nonGoals: ["No product behavior changes"],
+        risks: ["Overfitting the workflow"],
+        owner: "qa-user",
+        slices: [
+          "S02|tooling|Update generator and branch helpers|scripts|npm run validate"
+        ]
+      })
+    ).rejects.toThrow("The first slice must be S01");
   });
 });

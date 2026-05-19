@@ -5,6 +5,7 @@
 - Story ID: `STORY-<id>-<slug>`
 - Status: `draft` (`draft | in-review | approved | implemented | rejected`)
 - Owner: `<owner>`
+- RFC owner slice: `<branch-or-slice-id>`
 - Created: `<YYYY-MM-DD>`
 - Last Updated: `<YYYY-MM-DD>`
 

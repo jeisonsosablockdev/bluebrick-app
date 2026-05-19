@@ -12,7 +12,10 @@
 - `docs/governance/*` remains the single source of truth; `AGENTS.md` and `.codex/*` only reference or compress it.
 - Update required canonical docs by impacted scope before completion.
 - RFC structure, status values, and traceability must follow the documentation policy, templates, and enforcement scripts.
-- Qualifying product changes still need at least one `/docs/features/*.md` update.
+- Non-trivial work requires an artifact before implementation.
+- New features and fixes use a dual artifact pair.
+- Multi-slice work requires the documentation slice before implementation slices.
+- When RFC applies in the documentation-slice model, RFC creation or update belongs to that documentation slice.
 - Any docs validation failure blocks completion.
 
 ## Required Evidence

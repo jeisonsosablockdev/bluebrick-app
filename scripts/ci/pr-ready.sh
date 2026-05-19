@@ -142,7 +142,8 @@ echo "- Add exactly one scope label (scope:*)"
 echo "- Add exactly one type label (type:*)"
 echo "- Add exactly one risk label (risk:*)"
 echo "- Fill PR template sections: Issue, RFC, Riesgos, Rollback Plan, Prueba Devnet"
-echo "- If branch is feature/fix/nft/refactor and touches product code, update docs/features/*.md"
+echo "- If branch touches qualifying product code, update the required artifact pair for that branch family"
+echo "- For multi-slice work, confirm the documentation slice closed before implementation slices"
 
 echo
 echo "🎉 PR preflight passed. Safe to open PR against ${BASE_REF}."

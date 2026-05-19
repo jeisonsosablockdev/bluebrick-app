@@ -75,18 +75,31 @@ Applies to `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work th
 
 Rules
 	1.	Use one parent Linear issue as the planning and tracking container.
-	2.	Do not create multiple Linear subissues by default.
-	3.	The parent issue must contain:
+	2.	Create the parent issue before starting non-trivial work.
+	3.	For initiatives with a mother branch, use the canonical branch from the parent issue `git branch name` field.
+	4.	Do not create multiple Linear subissues by default.
+	5.	The parent issue must contain:
 	•	Objective
 	•	Scope
 	•	Non-goals
+	•	Problem artifact path
+	•	Solution artifact path
 	•	Integration branch
+	•	Documentation slice
 	•	Slice plan table
 	•	Order of execution
 	•	Risks
+	•	Test plan first
 	•	Completion gate
-	4.	Each slice must have one dominant responsibility and one proposed branch.
-	5.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+	6.	Each slice must have one dominant responsibility and one proposed branch.
+	7.	The first slice in multi-slice work is the documentation slice.
+	8.	Implementation slices open only after the documentation slice stabilizes the artifact, slice map, and test-plan-first contract.
+	9.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+
+Artifact-first and documentation-slice rule:
+	•	Non-trivial feature/fix/security/nft/refactor work starts with an artifact before implementation.
+	•	Features and fixes use a problem artifact plus a solution artifact.
+	•	If the solution artifact is not decision-complete, code implementation remains blocked.
 
 ⸻
 
@@ -124,6 +137,7 @@ Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
 	•	Integration branches start from latest `develop`.
+	•	The integration branch name must match the parent issue `git branch name` field when that field exists.
 	•	Slice branches start from the parent integration branch, not directly from `develop`.
 
 Examples:
@@ -140,11 +154,12 @@ feature/shared-knowledge-promotion-bri-143-s01-governance-policy
 🔀 INTEGRATION BRANCH FLOW (MANDATORY WHEN USING SLICES)
 
 	1.	Create the integration branch from latest `develop`.
-	2.	Create each slice branch from the integration branch.
-	3.	Open slice PRs into the integration branch.
-	4.	Merge reviewed slices into the integration branch.
-	5.	Open the final integration PR from the integration branch into `develop`.
-	6.	Delete the temporary integration branch after the final merge.
+	2.	Create the documentation slice first from the integration branch.
+	3.	Create each implementation slice from the integration branch after the documentation slice closes the planning contract.
+	4.	Open slice PRs into the integration branch.
+	5.	Merge reviewed slices into the integration branch.
+	6.	Open the final integration PR from the integration branch into `develop`.
+	7.	Delete the temporary integration branch after the final merge.
 
 ⸻
 

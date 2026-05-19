@@ -106,6 +106,36 @@ function buildSliceBranchName({ type, scope, slug, issueId, sliceId, sliceSlug }
   )}-${normalizedSliceId}-${normalizedSliceSlug}`;
 }
 
+function buildProblemArtifactPath({ type, slug }) {
+  const normalizedType = normalizeType(type);
+  const normalizedSlug = slugify(slug);
+
+  if (!normalizedSlug) {
+    throw new Error("A non-empty slug is required to build artifact paths.");
+  }
+
+  if (normalizedType === "fix") {
+    return `docs/fixes/fix-${normalizedSlug}.md`;
+  }
+
+  return `docs/features/feature-${normalizedSlug}.md`;
+}
+
+function buildSolutionArtifactPath({ type, slug }) {
+  const normalizedType = normalizeType(type);
+  const normalizedSlug = slugify(slug);
+
+  if (!normalizedSlug) {
+    throw new Error("A non-empty slug is required to build artifact paths.");
+  }
+
+  if (normalizedType === "fix") {
+    return `docs/fixes/fix-${normalizedSlug}-implementation.md`;
+  }
+
+  return `docs/features/feature-${normalizedSlug}-implementation.md`;
+}
+
 function renderBulletList(items, fallback = "- TBD") {
   if (!items || items.length === 0) {
     return fallback;
@@ -178,6 +208,7 @@ function parseArgs(argv) {
     nonGoals: [],
     risks: [],
     slices: [],
+    testPlanFirst: [],
     owner: process.env.USER || process.env.USERNAME || "unknown",
     bodyFile: "",
     help: false
@@ -204,6 +235,7 @@ function parseArgs(argv) {
       token === "--non-goal" ||
       token === "--risk" ||
       token === "--slice" ||
+      token === "--test-plan-first" ||
       token === "--owner" ||
       token === "--body-file"
     ) {
@@ -221,6 +253,7 @@ function parseArgs(argv) {
       if (token === "--non-goal") args.nonGoals.push(next);
       if (token === "--risk") args.risks.push(next);
       if (token === "--slice") args.slices.push(next);
+      if (token === "--test-plan-first") args.testPlanFirst.push(next);
       if (token === "--owner") args.owner = next;
       if (token === "--body-file") args.bodyFile = next;
       index += 1;
@@ -315,12 +348,19 @@ async function createLinearPlan(options) {
   }
 
   const parsedSlices = options.slices.map(parseSliceDefinition);
+  const firstSlice = parsedSlices[0];
   const integrationBranch = buildIntegrationBranchName({
     type,
     scope,
     slug,
     issueId
   });
+  const problemArtifact = buildProblemArtifactPath({ type, slug });
+  const solutionArtifact = buildSolutionArtifactPath({ type, slug });
+
+  if (normalizeSliceId(firstSlice.sliceId) !== "S01") {
+    throw new Error("The first slice must be S01 so documentation owns the plan first.");
+  }
 
   const sliceBranches = parsedSlices.map((slice) => ({
     sliceId: normalizeSliceId(slice.sliceId),
@@ -341,7 +381,11 @@ async function createLinearPlan(options) {
     .replace("{{NON_GOAL_ITEMS}}", renderBulletList(options.nonGoals))
     .replace("{{ISSUE_ID}}", issueId)
     .replace("{{OWNER}}", owner)
+    .replace("{{PROBLEM_ARTIFACT}}", problemArtifact)
+    .replace("{{SOLUTION_ARTIFACT}}", solutionArtifact)
     .replace("{{INTEGRATION_BRANCH}}", integrationBranch)
+    .replace("{{DOCUMENTATION_SLICE_BRANCH}}", sliceBranches[0].branch)
+    .replace("{{DOCUMENTATION_SLICE_OBJECTIVE}}", firstSlice.objective)
     .replace(
       "{{SLICE_ROWS}}",
       renderSliceRows({
@@ -359,6 +403,13 @@ async function createLinearPlan(options) {
       )
     )
     .replace("{{RISK_ITEMS}}", renderBulletList(options.risks))
+    .replace(
+      "{{TEST_PLAN_FIRST_ITEMS}}",
+      renderBulletList(
+        options.testPlanFirst,
+        "- Define tests-first expectations for each slice before implementation starts."
+      )
+    )
     .replace(
       "{{COMPLETION_GATE_ITEMS}}",
       [
@@ -400,6 +451,7 @@ function usage() {
     "  --non-goal <text>        Repeatable non-goal bullet",
     "  --risk <text>            Repeatable risk bullet",
     "  --slice <text>           Repeatable. Use `S01|Objective|Scope tecnico|Validation` or `S01|slice-slug|Objective|Scope tecnico|Validation`",
+    "  --test-plan-first <text> Repeatable tests-first bullet for the parent issue plan",
     "  --owner <name>           Owner shown in the Markdown",
     "  --body-file <path>       Optional output path. If omitted, Markdown prints to stdout.",
     "  --help                   Show this help"
@@ -432,7 +484,9 @@ async function runCli(argv) {
 
 module.exports = {
   buildIntegrationBranchName,
+  buildProblemArtifactPath,
   buildSliceBranchName,
+  buildSolutionArtifactPath,
   createLinearPlan,
   normalizeIssueId,
   normalizeScope,

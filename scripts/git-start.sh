@@ -217,10 +217,21 @@ echo "🌿 Base branch: ${BASE_BRANCH}"
 
 if [[ "${MODE}" == "slice" ]]; then
   echo "🧩 Slice branch detectada. Siguiente PR objetivo: ${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-integration"
+  echo "📝 Recuerda: la documentation slice debe ser S01 antes de abrir slices de implementación."
 elif [[ "${MODE}" == "integration" ]]; then
   echo "🧭 Integration branch detectada. Siguiente PR final objetivo: develop"
+  echo "📝 Para trabajo multi-slice, crea primero la documentation slice antes de abrir slices de implementación."
 fi
 
 echo "🧪 Gate inicial obligatorio:"
-echo "   1) Define o actualiza tests unitarios de la historia primero (fase RED)."
-echo "   2) Implementa codigo solo despues de tener esos tests definidos."
+echo "   1) Crea o actualiza el artefacto que gobierna el trabajo antes de implementar."
+if [[ "${TYPE}" == "fix" ]]; then
+  echo "      - docs/fixes/fix-<slug>.md"
+  echo "      - docs/fixes/fix-<slug>-implementation.md"
+elif [[ "${TYPE}" == "feature" ]]; then
+  echo "      - docs/features/feature-<slug>.md"
+  echo "      - docs/features/feature-<slug>-implementation.md"
+fi
+echo "   2) Para trabajo multi-slice, resuelve la documentation slice antes de slices de implementación."
+echo "   3) Define o actualiza tests unitarios de la historia primero (fase RED)."
+echo "   4) Implementa codigo solo despues de tener esos tests definidos."

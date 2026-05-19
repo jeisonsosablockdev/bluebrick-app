@@ -148,3 +148,4 @@ fi
 
 echo "✅ PR metadata lint passed."
 echo "Base: ${BASE_REF} | Branch: ${CURRENT_BRANCH} | Additions: ${ADDITIONS} | SizeExempt: ${SIZE_EXEMPT} | Policy: ${POLICY_FILE}"
+echo "ℹ️ Reminder: branch-family artifact pair and documentation-slice-first rules are validated by docs governance, not by label metadata alone."

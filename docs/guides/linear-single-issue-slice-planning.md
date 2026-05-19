@@ -26,6 +26,13 @@ Use the single-issue model for non-trivial `feature/*`, `fix/*`, `security/*`, `
 - needs more than one PR before `develop`
 - touches more than one technical area
 
+Before implementation starts, the initiative must also have:
+
+- a parent Linear issue
+- a governing local artifact
+- for features and fixes, a problem artifact plus a solution artifact
+- a documentation slice as the first slice when the work is multi-slice
+
 ## When To Use Real Subissues
 
 Create separate Linear subissues only when at least one is true:
@@ -43,10 +50,13 @@ The parent issue must contain:
 - `# Objective`
 - `# Scope`
 - `# Non-goals`
+- `# Artifact Pair`
 - `# Integration Branch`
+- `# Documentation Slice`
 - `# Slice Plan`
 - `# Order of Execution`
 - `# Risks`
+- `# Test Plan First`
 - `# Completion Gate`
 
 Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skeleton.
@@ -54,7 +64,9 @@ Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skel
 ## Minimum Branch Rules
 
 - The integration branch starts from latest `develop`.
+- The integration branch name must match the parent issue `git branch name` field when that field exists.
 - Slice branches start from the integration branch, not from `develop`.
+- The first slice is the documentation slice.
 - Slice PRs target the integration branch.
 - The final integration PR targets `develop`.
 - Slice ids must be zero-padded: `s01`, `s02`, `s03`.
@@ -62,9 +74,21 @@ Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skel
 
 See `docs/governance/git-monorepo-policy.md` for the canonical naming rules.
 
-## Feature Notes
+## Feature And Fix Artifacts
 
-If the initiative touches product code and requires `docs/features/*.md`, prefer one accumulated feature note for the full parent issue and update that same file across slices.
+If the initiative touches product code, prefer one accumulated artifact pair for the full parent issue and update those same files across slices.
+
+For features:
+
+- `docs/features/feature-<slug>.md`
+- `docs/features/feature-<slug>-implementation.md`
+
+For fixes:
+
+- `docs/fixes/fix-<slug>.md`
+- `docs/fixes/fix-<slug>-implementation.md`
+
+The solution artifact should be decision-complete before implementation slices open.
 
 ## Generator
 

@@ -31,6 +31,7 @@ Notes:
 - If --size-exempt is omitted, it is inferred automatically from diff size threshold in policy.
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
 - Default local validation mode for pr:open is governance-only; CI still runs full validate after PR creation.
+- Use the branch-family artifact pair and documentation-slice-first model already defined in repo governance before opening implementation PRs.
 USAGE
 }
 

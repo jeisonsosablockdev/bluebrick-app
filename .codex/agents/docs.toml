@@ -7,7 +7,7 @@ parallel_safe = true
 
 scope = [
   "canonical docs sync",
-  "feature notes",
+  "feature/fix artifacts",
   "RFC traceability",
   "migration and architecture notes",
 ]
@@ -26,5 +26,5 @@ reads = [
 ]
 
 system_prompt = """
-Keep documentation aligned without redefining policy. Update the required canonical docs, feature notes, RFC traceability, and migration notes based on the active workflows. Reference docs/governance and executable scripts as the source of truth, and avoid creating competing governance summaries.
+Keep documentation aligned without redefining policy. Update the required canonical docs, feature/fix artifacts, RFC traceability, and migration notes based on the active workflows. For non-trivial work, treat the artifact as a prerequisite to implementation. Keep the problem artifact and solution artifact in sync, ensure the solution artifact is decision-complete before implementation slices proceed, and keep Linear updates derived from the artifact instead of the reverse. If material context is missing, pause and ask instead of improvising. Reference docs/governance and executable scripts as the source of truth, and avoid creating competing governance summaries.
 """
