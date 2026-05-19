@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { WalletModal } from "@/components/WalletModal";
 import { InviteeWelcomeBanner } from "@/components/referrals/invitee-welcome-banner";
@@ -14,11 +15,13 @@ import { PromoBannerSection } from "@/components/sections/promo-banner";
 import { PropertiesSection } from "@/components/sections/properties";
 import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
 import { WelcomeSection } from "@/components/sections/welcome";
-import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
+import { PwaClientRuntime } from "@/components/pwa/pwa-client-runtime";
+import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { listMarketplaceProperties } from "@/lib/property-marketplace-server";
-import { getRoleForWallet } from "@/lib/rbac";
 import { createPageMetadata } from "@/lib/seo";
 import { createOrganizationSchema, createWebPageSchema, createWebSiteSchema } from "@/lib/schema";
+
+export const revalidate = 300;
 
 const homePageMetadata = createPageMetadata({
   title: "Home",
@@ -34,10 +37,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
-  const featuredProperties = await listMarketplaceProperties({})
-    .then((properties) => properties.slice(0, 3))
+  const marketplaceProperties = await listMarketplaceProperties({})
     .catch(() => []);
+  const featuredProperties = marketplaceProperties.slice(0, 3);
   const homeSchemas = [
     createOrganizationSchema(),
     createWebSiteSchema(),
@@ -50,16 +52,17 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      <PwaClientRuntime />
       <JsonLdScript id="jsonld-home" schemas={homeSchemas} />
-      <WalletModal
-        initialAuth={{
-          authenticated: Boolean(authenticatedPublicKey),
-          pubkey: authenticatedPublicKey,
-          role: authenticatedPublicKey ? getRoleForWallet(authenticatedPublicKey) : undefined
-        }}
-      />
-      <InviteeWelcomeBanner />
-      <HeroSection />
+      <WalletRuntimeProvider>
+        <Suspense fallback={null}>
+          <WalletModal />
+        </Suspense>
+      </WalletRuntimeProvider>
+      <Suspense fallback={null}>
+        <InviteeWelcomeBanner />
+      </Suspense>
+      <HeroSection marketplaceTotal={marketplaceProperties.length} />
       <WelcomeSection />
       <FeaturesSection />
       <TokenizationProcessSection />

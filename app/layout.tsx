@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AppProviders } from "@/app/providers";
-import { AppSplashScreen } from "@/components/brand/app-splash-screen";
 import { ClientAnalytics } from "@/components/observability/client-analytics";
-import { getServerLocale } from "@/lib/i18n-server";
+import { DEFAULT_LOCALE } from "@/lib/i18n";
 import { createRootMetadata } from "@/lib/seo";
 import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
 
@@ -14,8 +15,7 @@ export const metadata: Metadata = createRootMetadata({
   description: "AI discovery infrastructure and public platform pages for BRIDS."
 });
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getServerLocale();
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const themeInitScript = `
     (function () {
       try {
@@ -29,14 +29,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   `;
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={DEFAULT_LOCALE} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <ClientAnalytics />
-        <AppSplashScreen />
-        <AppProviders locale={locale}>{children}</AppProviders>
+        <Suspense fallback={null}>
+          <ClientAnalytics />
+        </Suspense>
+        <AppProviders>{children}</AppProviders>
+        <SpeedInsights />
       </body>
     </html>
   );

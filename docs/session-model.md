@@ -1,6 +1,21 @@
 # Session Model
 
-Last Updated: 2026-05-11
+Last Updated: 2026-05-19
+
+## BRI-158 Public Session Bootstrap Boundary
+- Public discovery pages now bootstrap as anonymous by default and defer wallet/account introspection until a user-facing auth surface actually needs it.
+- No cookie names, TTLs, or server authority rules changed:
+  - `workos_session` remains the federated account session
+  - `siws_session` remains the wallet session
+  - `siws_nonce` remains the short-lived replay-protection cookie
+- What changed is the shell bootstrap path:
+  - root layout no longer reads request-time locale/auth signals for public pages
+  - `WalletModal` may start from `ANONYMOUS_AUTH_STATE` and refresh via `GET /api/auth/me` on the client
+  - wallet runtime is mounted per-surface instead of globally for the whole app shell
+- Session authority remains fully server-resolved:
+  - anonymous public render does not imply anonymous protected access
+  - protected/admin pages still resolve session state on the server before granting access
+  - browser-local locale detection and deferred modal auth refresh are presentation/bootstrap concerns only
 
 ## BRI-157 PWA Session Boundary Notes
 - The installability slice introduces browser-local runtime state, not a new session layer.

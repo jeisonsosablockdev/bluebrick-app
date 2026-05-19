@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { WalletModal } from "@/components/WalletModal";
 import { TransparencyContent } from "@/app/transparencia/client";
-import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
-import { getRoleForWallet } from "@/lib/rbac";
+import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { createPageMetadata } from "@/lib/seo";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = createPageMetadata({
   title: "Transparencia",
@@ -13,19 +15,15 @@ export const metadata: Metadata = createPageMetadata({
   section: "transparency"
 });
 
-export default async function TransparencyPage() {
-  const authenticatedPublicKey = await getAuthenticatedPublicKeyFromCookies();
-
+export default function TransparencyPage() {
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 pb-0 md:pb-0">
-        <WalletModal
-          initialAuth={{
-            authenticated: Boolean(authenticatedPublicKey),
-            pubkey: authenticatedPublicKey,
-            role: authenticatedPublicKey ? getRoleForWallet(authenticatedPublicKey) : undefined
-          }}
-        />
+        <WalletRuntimeProvider>
+          <Suspense fallback={null}>
+            <WalletModal />
+          </Suspense>
+        </WalletRuntimeProvider>
       </div>
       <TransparencyContent />
     </>

@@ -15,7 +15,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
+import { ANONYMOUS_AUTH_STATE, fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
 import {
   buildPhantomBrowseDeepLink,
   buildReferralAuthMetadata,
@@ -46,7 +46,7 @@ import {
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
 
 type WalletModalProps = {
-  initialAuth: AuthMeResponse;
+  initialAuth?: AuthMeResponse;
 };
 
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
@@ -259,7 +259,7 @@ function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSign
   return typeof (adapter as { signMessage?: unknown } | null)?.signMessage === "function";
 }
 
-export function WalletModal({ initialAuth }: WalletModalProps) {
+export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalProps) {
   const { locale, t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
@@ -1116,7 +1116,15 @@ export function WalletModal({ initialAuth }: WalletModalProps) {
               className="brand-pill inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
               aria-label={t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar para inicio" })}
             >
-              <Image src="/brand/brids-mark.svg" alt="BRIDS mark" width={24} height={24} className="h-6 w-auto sm:hidden" priority />
+              <Image
+                src="/brand/brids-mark.svg"
+                alt="BRIDS mark"
+                width={24}
+                height={24}
+                className="sm:hidden"
+                style={{ height: "24px", width: "auto" }}
+                priority
+              />
               <Image src="/brand/brids-logo.svg" alt="BRIDS" width={124} height={41} className="hidden h-7 w-auto sm:block" priority />
             </Link>
 

@@ -10,9 +10,10 @@ import { listingStatusClasses, listingStatusLabel } from "@/components/marketpla
 type MarketplaceCardProps = {
   property: PropertyListItem;
   onOpenDetail: (id: string) => void;
+  prioritizeImage?: boolean;
 };
 
-export function MarketplaceCard({ property, onOpenDetail }: MarketplaceCardProps) {
+export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = false }: MarketplaceCardProps) {
   const { locale, t } = useI18n();
 
   return (
@@ -23,7 +24,14 @@ export function MarketplaceCard({ property, onOpenDetail }: MarketplaceCardProps
         onClick={() => onOpenDetail(property.id)}
         aria-label={`${t({ en: "View details for", es: "Ver detalle de", pt: "Ver detalhes de" })} ${property.title}`}
       >
-        <Image src={property.image} alt={property.title} width={600} height={360} className="h-44 w-full object-cover" />
+        <Image
+          src={property.image}
+          alt={property.title}
+          width={600}
+          height={360}
+          className="h-44 w-full object-cover"
+          loading={prioritizeImage ? "eager" : "lazy"}
+        />
       </button>
       <div className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-3">

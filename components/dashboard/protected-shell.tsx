@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { WalletModal } from "@/components/WalletModal";
@@ -157,18 +157,20 @@ export function ProtectedShell({
   return (
     <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
-        <WalletModal
-          initialAuth={{
-            authenticated: walletAuthenticated,
-            accountAuthenticated,
-            federatedAuthenticated: accountAuthenticated && !walletAuthenticated,
-            walletAuthenticated,
-            pubkey: authenticatedPublicKey,
-            role: authenticatedRole,
-            email: federatedEmail,
-            authMethod: walletAuthenticated ? "wallet" : "federated"
-          }}
-        />
+        <Suspense fallback={null}>
+          <WalletModal
+            initialAuth={{
+              authenticated: walletAuthenticated,
+              accountAuthenticated,
+              federatedAuthenticated: accountAuthenticated && !walletAuthenticated,
+              walletAuthenticated,
+              pubkey: authenticatedPublicKey,
+              role: authenticatedRole,
+              email: federatedEmail,
+              authMethod: walletAuthenticated ? "wallet" : "federated"
+            }}
+          />
+        </Suspense>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">

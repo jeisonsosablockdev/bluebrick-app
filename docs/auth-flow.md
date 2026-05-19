@@ -1,6 +1,21 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-11
+Last Updated: 2026-05-19
+
+## BRI-158 Public Shell Performance Boundary
+- Public discovery routes now avoid request-time auth bootstrap in the root shell.
+- `app/layout.tsx` no longer resolves locale through server request APIs and no longer mounts the global splash gate.
+- Wallet runtime is now intent-scoped instead of shell-global:
+  - `app/providers.tsx` keeps only locale state
+  - Solana wallet providers moved into `components/wallet/wallet-runtime-provider.tsx`
+  - public pages mount wallet runtime only where the wallet CTA/modal is actually present
+- Public wallet entry now defaults to anonymous bootstrap:
+  - `WalletModal` accepts `ANONYMOUS_AUTH_STATE` when no server auth snapshot is provided
+  - browser-side auth introspection still resolves through `GET /api/auth/me`
+  - this does not widen authority; it only defers session discovery until the user needs wallet/account UI
+- Protected and admin boundaries remain server-authoritative:
+  - `/protected/**` and `/admin/**` still derive access from server session resolution
+  - moving wallet providers out of the root layout does not relax any auth, role, or cookie checks
 
 ## BRI-157 PWA Installability Shell
 - BRIDS now exposes a minimal installable shell through the App Router root layout:

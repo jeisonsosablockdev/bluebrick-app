@@ -65,6 +65,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.39",
     "@solana/web3.js": "^1.98.4",
     "@vercel/blob": "^2.3.3",
+    "@vercel/speed-insights": "^2.0.0",
     "@workos-inc/authkit-nextjs": "^4.0.1",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.6",

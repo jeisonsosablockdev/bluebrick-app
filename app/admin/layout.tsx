@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { ForbiddenView } from "@/components/forbidden-view";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getServerLocale } from "@/lib/i18n-server";
 import { localize } from "@/lib/i18n";
@@ -42,11 +43,13 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <AdminShell
-      authenticatedPublicKey={pubkey}
-      walletLabel={`${localize(locale, { en: "Admin", es: "Admin", pt: "Admin" })} ${truncatePublicKey(pubkey)}`}
-    >
-      {children}
-    </AdminShell>
+    <WalletRuntimeProvider>
+      <AdminShell
+        authenticatedPublicKey={pubkey}
+        walletLabel={`${localize(locale, { en: "Admin", es: "Admin", pt: "Admin" })} ${truncatePublicKey(pubkey)}`}
+      >
+        {children}
+      </AdminShell>
+    </WalletRuntimeProvider>
   );
 }

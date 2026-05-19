@@ -1,16 +1,13 @@
 import { Card } from "@/components/ui/card";
-import { localize } from "@/lib/i18n";
-import { getServerLocale } from "@/lib/i18n-server";
+import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 
-export default async function MarketplaceDetailLoading() {
-  const locale = await getServerLocale();
-
+export default function MarketplaceDetailLoading() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
       <section className="grid gap-6 md:grid-cols-2">
         <Card className="h-80 animate-pulse bg-slate-900/70">
           <span className="sr-only">
-            {localize(locale, {
+            {localize(DEFAULT_LOCALE, {
               en: "Loading detail",
               es: "Cargando detalle",
               pt: "Carregando detalhe"
@@ -19,7 +16,7 @@ export default async function MarketplaceDetailLoading() {
         </Card>
         <Card className="h-80 animate-pulse bg-slate-900/70">
           <span className="sr-only">
-            {localize(locale, {
+            {localize(DEFAULT_LOCALE, {
               en: "Loading detail",
               es: "Cargando detalle",
               pt: "Carregando detalhe"

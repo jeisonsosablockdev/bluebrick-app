@@ -9,41 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
 
-export function HeroSection() {
+type HeroSectionProps = {
+  marketplaceTotal: number;
+};
+
+export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
   const { locale, t } = useI18n();
-  const [marketplaceTotal, setMarketplaceTotal] = useState<number | null>(null);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadMarketplaceTotal = async () => {
-      try {
-        const response = await fetch("/properties");
-        if (!response.ok) {
-          return;
-        }
-
-        const payload = (await response.json()) as { meta?: { total?: number } };
-        const total = payload.meta?.total;
-        if (typeof total === "number" && Number.isFinite(total) && isActive) {
-          setMarketplaceTotal(total);
-        }
-      } catch {
-        // Keep fallback value when total cannot be loaded.
-      }
-    };
-
-    void loadMarketplaceTotal();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   const formattedMarketplaceTotal = useMemo(() => {
-    if (marketplaceTotal === null) {
-      return "--";
-    }
     return new Intl.NumberFormat(locale).format(marketplaceTotal);
   }, [locale, marketplaceTotal]);
 
@@ -132,6 +105,7 @@ export function HeroSection() {
             height={420}
             className="h-full w-full object-cover"
             priority
+            sizes="(min-width: 1024px) 560px, (min-width: 768px) 50vw, 100vw"
           />
         </Card>
       </div>

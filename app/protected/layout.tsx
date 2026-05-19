@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { ProtectedShell } from "@/components/dashboard/protected-shell";
+import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { resolveAppAuthContext } from "@/lib/app-auth";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -26,14 +27,16 @@ export default async function ProtectedLayout({ children }: ProtectedLayoutProps
   }
 
   return (
-    <ProtectedShell
-      authenticatedPublicKey={auth.walletPublicKey}
-      authenticatedRole={auth.role}
-      accountAuthenticated={auth.accountAuthenticated}
-      federatedEmail={auth.workosEmail}
-      walletAuthenticated={auth.walletAuthenticated}
-    >
-      {children}
-    </ProtectedShell>
+    <WalletRuntimeProvider>
+      <ProtectedShell
+        authenticatedPublicKey={auth.walletPublicKey}
+        authenticatedRole={auth.role}
+        accountAuthenticated={auth.accountAuthenticated}
+        federatedEmail={auth.workosEmail}
+        walletAuthenticated={auth.walletAuthenticated}
+      >
+        {children}
+      </ProtectedShell>
+    </WalletRuntimeProvider>
   );
 }

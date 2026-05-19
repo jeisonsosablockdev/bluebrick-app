@@ -41,7 +41,6 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
       try {
         const response = await fetch(`/properties/${selectedId}`, {
           method: "GET",
-          cache: "no-store",
           signal: controller.signal
         });
 
@@ -105,8 +104,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
 
     try {
       const response = await fetch(`/properties/${selectedId}`, {
-        method: "GET",
-        cache: "no-store"
+        method: "GET"
       });
       const payload = (await response.json()) as PropertyDetailResponse;
 
@@ -140,8 +138,13 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {properties.map((property) => (
-          <MarketplaceCard key={property.id} property={property} onOpenDetail={setSelectedId} />
+        {properties.map((property, index) => (
+          <MarketplaceCard
+            key={property.id}
+            property={property}
+            onOpenDetail={setSelectedId}
+            prioritizeImage={index === 0}
+          />
         ))}
       </div>
 

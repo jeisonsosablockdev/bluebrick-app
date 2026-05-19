@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
@@ -32,13 +32,15 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
   return (
     <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
-        <WalletModal
-          initialAuth={{
-            authenticated: true,
-            pubkey: authenticatedPublicKey,
-            role: "admin"
-          }}
-        />
+        <Suspense fallback={null}>
+          <WalletModal
+            initialAuth={{
+              authenticated: true,
+              pubkey: authenticatedPublicKey,
+              role: "admin"
+            }}
+          />
+        </Suspense>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">

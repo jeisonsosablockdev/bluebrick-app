@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -283,6 +283,18 @@ function shortDayLabel(value: string): string {
 }
 
 export function DashboardCharts({ context, adminChartsData }: DashboardChartsProps) {
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setChartsReady(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
+
   const data = useMemo(() => {
     if (context !== "admin" || !adminChartsData) {
       return DATA_BY_CONTEXT[context];
@@ -371,6 +383,35 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
     [data.monthly]
   );
 
+  if (!chartsReady) {
+    return (
+      <section className="space-y-4" aria-hidden="true">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <article key={`kpi-skeleton-${index}`} className="glass-surface p-4">
+              <div className="space-y-3">
+                <div className="h-3 w-24 rounded-full bg-white/10" />
+                <div className="h-8 w-20 rounded-full bg-white/10" />
+                <div className="h-3 w-16 rounded-full bg-white/10" />
+                <div className="h-12 w-full rounded-2xl bg-white/5" />
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <article className="glass-surface h-80 p-4 xl:col-span-2" />
+          <article className="glass-surface h-80 p-4" />
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <article className="glass-surface h-96 p-4 xl:col-span-2" />
+          <article className="glass-surface h-96 p-4" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -381,7 +422,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
               <p className="text-2xl font-semibold text-white">{kpi.value}</p>
               <p className="text-xs text-cyan-200">{kpi.trendLabel}</p>
               <div className="h-12 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={48}>
                   <LineChart data={kpi.trend}>
                     <Line type="monotone" dataKey="value" stroke="#2FC6FF" strokeWidth={2.5} dot={false} />
                   </LineChart>
@@ -398,7 +439,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
             <p className="text-sm font-semibold text-white">Revenue & Growth Trend</p>
             <p className="mt-1 text-xs text-white/65">Recharts base chart for daily dashboard monitoring.</p>
             <div className="mt-4 h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={288}>
                 <AreaChart data={data.monthly} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id={`areaRevenue-${context}`} x1="0" y1="0" x2="0" y2="1">
@@ -429,7 +470,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
             <p className="text-sm font-semibold text-white">Portfolio Distribution</p>
             <p className="mt-1 text-xs text-white/65">Recharts donut for fast composition reading.</p>
             <div className="mt-4 h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={288}>
                 <PieChart>
                   <Pie data={data.distribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={72} outerRadius={102} paddingAngle={3}>
                     {data.distribution.map((slice) => (
@@ -478,7 +519,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
             <p className="text-sm font-semibold text-white">Conversion Funnel</p>
             <p className="mt-1 text-xs text-white/65">Recharts horizontal bars for stage drop-off clarity.</p>
             <div className="mt-4 h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
                 <BarChart data={data.funnel} layout="vertical" margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" />
                   <XAxis type="number" hide />

@@ -9,6 +9,10 @@ type RouteContext = {
   }>;
 };
 
+const PUBLIC_CACHE_HEADERS = {
+  "cache-control": "public, s-maxage=60, stale-while-revalidate=300"
+};
+
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -18,7 +22,7 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Property not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ data: property }, { status: 200 });
+    return NextResponse.json({ data: property }, { status: 200, headers: PUBLIC_CACHE_HEADERS });
   } catch (error) {
     if (error instanceof PropertyRpcError) {
       return NextResponse.json({ error: error.message }, { status: 502 });

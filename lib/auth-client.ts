@@ -42,6 +42,11 @@ export type AuthMeResponse = {
   role?: "user" | "admin";
 };
 
+export const ANONYMOUS_AUTH_STATE: AuthMeResponse = {
+  authenticated: false,
+  pubkey: null
+};
+
 type StartSiwsArgs = {
   publicKey: string;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;

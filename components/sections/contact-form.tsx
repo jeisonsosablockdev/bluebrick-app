@@ -73,6 +73,7 @@ export function ContactFormSection() {
                   const info = COUNTRIES.find((c) => c.code === newCountry);
                   if (info && (!phone || phone.trim() === "")) setPhone(info.dialCode + " ");
                 }}
+                suppressHydrationWarning
                 value={country}
               >
                 <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
@@ -95,6 +96,7 @@ export function ContactFormSection() {
                     const numberPart = oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone.trim();
                     setPhone(newCode + " " + numberPart);
                   }}
+                  suppressHydrationWarning
                   value={selectedDialCode}
                 >
                   {COUNTRIES.map((c) => (
@@ -120,6 +122,7 @@ export function ContactFormSection() {
             <textarea
               className="flex min-h-28 w-full rounded-md border border-white/10 bg-black/40 px-3 py-3 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder={t({ en: "How can we help you?", es: "¿Cómo podemos ayudarte?", pt: "Como podemos te ajudar?" })}
+              suppressHydrationWarning
             />
           </div>
 
@@ -129,6 +132,7 @@ export function ContactFormSection() {
               id="newsletter_contact" 
               defaultChecked 
               className="h-5 w-5 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 bg-black/40 cursor-pointer" 
+              suppressHydrationWarning
             />
             <label htmlFor="newsletter_contact" className="text-sm font-medium text-slate-300 cursor-pointer select-none">
               {t({ en: "Add me to the newsletter for future updates and properties.", es: "Agregarme al newsletter para recibir actualizaciones y oportunidades.", pt: "Adicionar-me a newsletter para receber atualizações e propriedades." })}
