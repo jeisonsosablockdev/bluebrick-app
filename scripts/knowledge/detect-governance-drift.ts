@@ -29,16 +29,20 @@ function defaultOutputPath(rootDir: string): string {
   return path.join(rootDir, "docs", "knowledge", "reports", `governance-drift-${dateStamp}.md`);
 }
 
-const options = parseCliOptions(process.argv.slice(2));
-const rootDir = process.cwd();
-const report = await buildGovernanceDriftReport(rootDir);
-const content = renderGovernanceDriftReport(report);
-const outputPath = options.output ? path.resolve(rootDir, options.output) : defaultOutputPath(rootDir);
+async function main(): Promise<void> {
+  const options = parseCliOptions(process.argv.slice(2));
+  const rootDir = process.cwd();
+  const report = await buildGovernanceDriftReport(rootDir);
+  const content = renderGovernanceDriftReport(report);
+  const outputPath = options.output ? path.resolve(rootDir, options.output) : defaultOutputPath(rootDir);
 
-await mkdir(path.dirname(outputPath), { recursive: true });
-await writeFile(outputPath, content, "utf8");
-process.stdout.write(`Wrote ${path.relative(rootDir, outputPath)}\n`);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, content, "utf8");
+  process.stdout.write(`Wrote ${path.relative(rootDir, outputPath)}\n`);
 
-if (options.check && report.checks.some((check) => !check.passed)) {
-  throw new Error("Governance drift detected. Inspect the generated report.");
+  if (options.check && report.checks.some((check) => !check.passed)) {
+    throw new Error("Governance drift detected. Inspect the generated report.");
+  }
 }
+
+void main();
