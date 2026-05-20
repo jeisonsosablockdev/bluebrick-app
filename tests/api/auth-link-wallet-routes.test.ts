@@ -15,7 +15,9 @@ const appAuthMocks = vi.hoisted(() => ({
 }));
 
 const accountMocks = vi.hoisted(() => ({
+  findAccountByWalletPublicKey: vi.fn(),
   linkWalletIdentityToAccount: vi.fn(),
+  mergeFederatedOnlyAccountIntoWalletAccount: vi.fn(),
   AccountRepositoryError: class AccountRepositoryError extends Error {
     code: string;
 
@@ -34,6 +36,10 @@ const referralRepositoryMocks = vi.hoisted(() => ({
   promoteReferralIntentForAccountWallet: vi.fn()
 }));
 
+const authStoreMocks = vi.hoisted(() => ({
+  consumeNonce: vi.fn()
+}));
+
 vi.mock("@/lib/auth", () => ({
   setWalletLinkContextCookie: authMocks.setWalletLinkContextCookie,
   getWalletLinkContextFromRequest: authMocks.getWalletLinkContextFromRequest,
@@ -48,7 +54,9 @@ vi.mock("@/lib/app-auth", () => ({
 }));
 
 vi.mock("@/lib/accounts/repository", () => ({
+  findAccountByWalletPublicKey: accountMocks.findAccountByWalletPublicKey,
   linkWalletIdentityToAccount: accountMocks.linkWalletIdentityToAccount,
+  mergeFederatedOnlyAccountIntoWalletAccount: accountMocks.mergeFederatedOnlyAccountIntoWalletAccount,
   AccountRepositoryError: accountMocks.AccountRepositoryError
 }));
 
@@ -58,6 +66,10 @@ vi.mock("@/lib/compliance/profile-repository", () => ({
 
 vi.mock("@/lib/referrals/repository", () => ({
   promoteReferralIntentForAccountWallet: referralRepositoryMocks.promoteReferralIntentForAccountWallet
+}));
+
+vi.mock("@/lib/auth-store", () => ({
+  consumeNonce: authStoreMocks.consumeNonce
 }));
 
 import { GET as getWalletLinkNonce } from "@/app/api/auth/link/wallet/nonce/route";
@@ -107,10 +119,17 @@ describe("wallet link auth routes", () => {
       sessionToken: "siws_session_token"
     });
     accountMocks.linkWalletIdentityToAccount.mockResolvedValue(undefined);
+    accountMocks.findAccountByWalletPublicKey.mockResolvedValue({
+      account: { id: "account_wallet" }
+    });
+    accountMocks.mergeFederatedOnlyAccountIntoWalletAccount.mockResolvedValue({
+      account: { id: "account_wallet" }
+    });
     profileRepositoryMocks.applyFederatedEmailPrefill.mockResolvedValue(undefined);
     referralRepositoryMocks.promoteReferralIntentForAccountWallet.mockResolvedValue({
       outcome: "no_intent"
     });
+    authStoreMocks.consumeNonce.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -179,6 +198,22 @@ describe("wallet link auth routes", () => {
     expect(payload.referralBindingOutcome).toBeNull();
   });
 
+  it("fails closed when the wallet-link nonce was already consumed", async () => {
+    authStoreMocks.consumeNonce.mockReturnValueOnce(false);
+
+    const response = await verifyWalletLink(
+      createVerifyRequest({
+        message: "signed message",
+        signature: "base64-signature",
+        publicKey: "Wallet111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(payload.error).toBe("Invalid or expired nonce.");
+  });
+
   it("fails closed when active account context does not match link context", async () => {
     authMocks.getWalletLinkContextFromRequest.mockReturnValueOnce({
       contextId: "context_123",
@@ -234,7 +269,7 @@ describe("wallet link auth routes", () => {
     });
   });
 
-  it("fails closed when wallet is already linked elsewhere", async () => {
+  it("merges safely when wallet is already linked to another wallet-backed account", async () => {
     accountMocks.linkWalletIdentityToAccount.mockRejectedValueOnce(
       new accountMocks.AccountRepositoryError("WALLET_ALREADY_LINKED", "Wallet is already linked to another account.")
     );
@@ -248,8 +283,36 @@ describe("wallet link auth routes", () => {
     );
     const payload = await response.json();
 
+    expect(response.status).toBe(200);
+    expect(payload.merged).toBe(true);
+    expect(accountMocks.mergeFederatedOnlyAccountIntoWalletAccount).toHaveBeenCalledWith({
+      sourceAccountId: "account_123",
+      targetAccountId: "account_wallet"
+    });
+  });
+
+  it("returns review_required when wallet conflict is not auto-mergeable", async () => {
+    accountMocks.linkWalletIdentityToAccount.mockRejectedValueOnce(
+      new accountMocks.AccountRepositoryError("WALLET_ALREADY_LINKED", "Wallet is already linked to another account.")
+    );
+    accountMocks.mergeFederatedOnlyAccountIntoWalletAccount.mockRejectedValueOnce(
+      new accountMocks.AccountRepositoryError(
+        "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+        "Source account is not eligible for automatic consolidation."
+      )
+    );
+
+    const response = await verifyWalletLink(
+      createVerifyRequest({
+        message: "signed message",
+        signature: "base64-signature",
+        publicKey: "Wallet111"
+      })
+    );
+    const payload = await response.json();
+
     expect(response.status).toBe(409);
-    expect(payload.error).toBe("Wallet is already linked to another account.");
+    expect(payload.error).toBe("This account requires manual review before it can be consolidated.");
   });
 
   it("returns the promotion outcome when a federated referral intent is consumed", async () => {

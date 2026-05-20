@@ -8,7 +8,8 @@ import {
   findAccountByWalletPublicKey,
   findAccountByWorkosUserId,
   linkFederatedIdentityToAccount,
-  linkWalletIdentityToAccount
+  linkWalletIdentityToAccount,
+  mergeFederatedOnlyAccountIntoWalletAccount
 } from "@/lib/accounts/repository";
 
 function clearDatabaseUrl(): void {
@@ -139,6 +140,30 @@ describe("lib/accounts/repository", () => {
     expect(linked.federatedIdentities[0]).toMatchObject({
       workosUserId: "user_admin",
       email: "admin@example.com"
+    });
+  });
+
+  it("merges a federated-only account into a wallet-backed account", async () => {
+    clearDatabaseUrl();
+
+    const federatedAccount = await ensureFederatedAccount({
+      workosUserId: "user_merge",
+      email: "merge@example.com",
+      emailVerified: true
+    });
+    const walletAccount = await ensureWalletFirstAccount("wallet_merge");
+
+    const merged = await mergeFederatedOnlyAccountIntoWalletAccount({
+      sourceAccountId: federatedAccount.account.id,
+      targetAccountId: walletAccount.account.id
+    });
+
+    expect(merged.account.id).toBe(walletAccount.account.id);
+    expect(merged.walletIdentities).toHaveLength(1);
+    expect(merged.federatedIdentities).toHaveLength(1);
+    expect(merged.federatedIdentities[0]?.workosUserId).toBe("user_merge");
+    await expect(findAccountByWorkosUserId("user_merge")).resolves.toMatchObject({
+      account: { id: walletAccount.account.id }
     });
   });
 });

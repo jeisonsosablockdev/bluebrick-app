@@ -4,13 +4,18 @@ import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
 import {
+  clearFederatedLinkContext,
   clearWalletLinkContext,
+  consumeNonce,
+  createFederatedLinkContext,
   createWalletLinkContext,
   createSession,
   createNonceToken,
   getNonceMaxAgeSeconds,
   getSessionMaxAgeSeconds,
   getSessionPublicKey,
+  hasUsableNonce,
+  readFederatedLinkContext,
   readWalletLinkContext,
   readNonceFromToken,
   revokeSession
@@ -20,6 +25,7 @@ import { parseSiwsMessage } from "@/lib/siws";
 const AUTH_COOKIE_NAME = "siws_session";
 const NONCE_COOKIE_NAME = "siws_nonce";
 const WALLET_LINK_COOKIE_NAME = "wallet_link_context";
+const FEDERATED_LINK_COOKIE_NAME = "federated_link_context";
 const SIWS_MAX_AGE_MS = 5 * 60 * 1000;
 const addressEncoder = getAddressEncoder();
 
@@ -63,6 +69,10 @@ export function verifySiwsPayload(payload: VerifyPayload, requestHost: string, e
   }
 
   if (!expectedNonce || parsed.nonce !== expectedNonce) {
+    return { ok: false, status: 409, error: "Invalid or expired nonce." };
+  }
+
+  if (!hasUsableNonce(expectedNonce)) {
     return { ok: false, status: 409, error: "Invalid or expired nonce." };
   }
 
@@ -128,6 +138,16 @@ export function getNonceFromRequest(request: NextRequest): string | null {
   }
 
   return readNonceFromToken(nonceToken);
+}
+
+export function consumeNonceFromRequest(request: NextRequest): boolean {
+  const nonce = getNonceFromRequest(request);
+
+  if (!nonce) {
+    return false;
+  }
+
+  return consumeNonce(nonce);
 }
 
 export function setSessionCookie(response: NextResponse, sessionToken: string): void {
@@ -204,6 +224,56 @@ export function getWalletLinkContextFromRequest(request: NextRequest) {
   }
 
   return readWalletLinkContext(token);
+}
+
+export function setFederatedLinkContextCookie(
+  response: NextResponse,
+  input: {
+    accountId: string;
+    walletPublicKey: string;
+  }
+): { expiresAt: number } {
+  const context = createFederatedLinkContext(input);
+
+  response.cookies.set({
+    name: FEDERATED_LINK_COOKIE_NAME,
+    value: context.token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: getNonceMaxAgeSeconds()
+  });
+
+  return {
+    expiresAt: context.expiresAt
+  };
+}
+
+export function clearFederatedLinkContextCookie(response: NextResponse, contextId?: string | null): void {
+  if (contextId) {
+    clearFederatedLinkContext(contextId);
+  }
+
+  response.cookies.set({
+    name: FEDERATED_LINK_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0
+  });
+}
+
+export function getFederatedLinkContextFromRequest(request: NextRequest) {
+  const token = request.cookies.get(FEDERATED_LINK_COOKIE_NAME)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  return readFederatedLinkContext(token);
 }
 
 export function revokeRequestSession(request: NextRequest): void {

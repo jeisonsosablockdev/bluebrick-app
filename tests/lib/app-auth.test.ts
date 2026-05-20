@@ -42,7 +42,7 @@ vi.mock("@/lib/workos/config", () => ({
   isWorkosConfigured: workosConfigMocks.isWorkosConfigured
 }));
 
-import { resolveAppAuthContext } from "@/lib/app-auth";
+import { resolveAppAuthContext, resolveRawAppAuthContext } from "@/lib/app-auth";
 
 describe("lib/app-auth", () => {
   beforeEach(() => {
@@ -113,6 +113,21 @@ describe("lib/app-auth", () => {
     });
   });
 
+  it("fails closed to anonymous WorkOS state when withAuth is unavailable on the current route", async () => {
+    workosConfigMocks.isWorkosConfigured.mockReturnValue(true);
+    authkitMocks.withAuth.mockRejectedValueOnce(
+      new Error("You are calling 'withAuth' on a route that isn't covered by the AuthKit middleware.")
+    );
+
+    const auth = await resolveRawAppAuthContext();
+
+    expect(auth.workos).toMatchObject({
+      authenticated: false,
+      accountId: null,
+      workosUserId: null
+    });
+  });
+
   it("returns a hybrid session when wallet and WorkOS are both active", async () => {
     workosConfigMocks.isWorkosConfigured.mockReturnValue(true);
     authkitMocks.withAuth.mockResolvedValue({
@@ -176,5 +191,31 @@ describe("lib/app-auth", () => {
       walletPublicKey: null,
       authMethod: "anonymous"
     });
+  });
+
+  it("exposes both auth layers in raw resolution even when they conflict", async () => {
+    workosConfigMocks.isWorkosConfigured.mockReturnValue(true);
+    authkitMocks.withAuth.mockResolvedValue({
+      sessionId: "session_123",
+      user: {
+        id: "user_123",
+        email: "user@example.com",
+        emailVerified: true
+      }
+    });
+    accountMocks.ensureFederatedAccount.mockResolvedValue({
+      account: { id: "account_federated" }
+    });
+    accountMocks.ensureWalletFirstAccount.mockResolvedValue({
+      account: { id: "account_wallet" }
+    });
+    authMocks.getAuthenticatedPublicKeyFromCookies.mockResolvedValue("Wallet111");
+
+    const auth = await resolveRawAppAuthContext();
+
+    expect(auth.sessionConflict).toBe(true);
+    expect(auth.workos.accountId).toBe("account_federated");
+    expect(auth.wallet.accountId).toBe("account_wallet");
+    expect(auth.wallet.walletPublicKey).toBe("Wallet111");
   });
 });
