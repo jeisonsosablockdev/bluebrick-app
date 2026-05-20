@@ -259,7 +259,7 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
       ? t({ en: "Enable notifications", es: "Activar notificaciones", pt: "Ativar notificacoes" })
       : canDisable
         ? t({ en: "Disable notifications", es: "Desactivar notificaciones", pt: "Desativar notificacoes" })
-        : snapshot.installabilityState !== "installed"
+        : snapshot.installabilityState !== "standalone"
           ? t({ en: "Add to Home Screen", es: "Anadir a pantalla de inicio", pt: "Adicionar a Tela de Inicio" })
           : null;
 
