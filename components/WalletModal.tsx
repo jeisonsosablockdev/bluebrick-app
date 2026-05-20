@@ -227,6 +227,66 @@ function getFriendlyWalletErrorMessage(error: unknown, t: Translate): string {
   return error.message;
 }
 
+function getAuthLinkStatusMessage(status: string | null, t: Translate): string | null {
+  if (status === "federated_linked") {
+    return t({
+      en: "Email sign-in is now linked to this wallet-backed account.",
+      es: "El ingreso por email ya quedo vinculado a esta cuenta respaldada por wallet.",
+      pt: "O login por email agora esta vinculado a esta conta com wallet."
+    });
+  }
+
+  if (status === "already_linked") {
+    return t({
+      en: "This wallet account already has an email sign-in linked.",
+      es: "Esta cuenta wallet ya tiene un ingreso por email vinculado.",
+      pt: "Esta conta com wallet ja possui login por email vinculado."
+    });
+  }
+
+  if (status === "review_required") {
+    return t({
+      en: "This account needs manual review before it can be consolidated.",
+      es: "Esta cuenta necesita revision manual antes de poder consolidarse.",
+      pt: "Esta conta precisa de revisao manual antes de ser consolidada."
+    });
+  }
+
+  if (status === "link_expired") {
+    return t({
+      en: "The linking session expired. Start the flow again from your wallet session.",
+      es: "La sesion de vinculacion expiro. Inicia el flujo otra vez desde tu sesion wallet.",
+      pt: "A sessao de vinculacao expirou. Inicie o fluxo novamente pela sessao da wallet."
+    });
+  }
+
+  if (status === "wallet_required") {
+    return t({
+      en: "An active wallet session is required to link email sign-in.",
+      es: "Se requiere una sesion wallet activa para vincular el ingreso por email.",
+      pt: "Uma sessao wallet ativa e necessaria para vincular o login por email."
+    });
+  }
+
+  if (status === "federated_required") {
+    return t({
+      en: "Complete the email sign-in flow to finish linking.",
+      es: "Completa el ingreso por email para terminar la vinculacion.",
+      pt: "Conclua o login por email para finalizar a vinculacao."
+    });
+  }
+
+  if (status === "federated_unavailable") {
+    return t({
+      en: "Email sign-in is not available in this environment.",
+      es: "El ingreso por email no esta disponible en este entorno.",
+      pt: "O login por email nao esta disponivel neste ambiente."
+    });
+  }
+
+  return null;
+}
+
 function getStatusText(phase: ActionPhase, t: Translate): string | null {
   if (phase === "connecting") {
     return t({ en: "Connecting...", es: "Conectando...", pt: "Conectando..." });
@@ -306,8 +366,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     return raw ? normalizeReferralCodeInput(raw) : "";
   }, [searchParams]);
   const shouldPromptPostAuthDecision = searchParams.get(POST_AUTH_DECISION_QUERY_PARAM) === "1";
+  const authLinkStatus = searchParams.get("authLinkStatus");
   const cleanCurrentLandingPath = useMemo(
-    () => buildPathWithoutQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM),
+    () => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.delete(POST_AUTH_DECISION_QUERY_PARAM);
+      nextParams.delete("authLinkStatus");
+      const query = nextParams.toString();
+      return query ? `${pathname}?${query}` : pathname;
+    },
     [pathname, searchParams]
   );
   const currentLandingPath = useMemo(() => {
@@ -326,6 +393,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const showWalletPanel = !isFederatedLoginAvailable || selectedLoginMethod === "wallet" || hasWalletSession || hasFederatedSession;
   const showMailPanel = isFederatedLoginAvailable && selectedLoginMethod === "mail" && !hasWalletSession && !hasFederatedSession;
   const shouldShowDisconnectButton = hasAccountSession || isConnected;
+  const authLinkStatusMessage = useMemo(
+    () => getAuthLinkStatusMessage(authLinkStatus, t),
+    [authLinkStatus, t]
+  );
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
@@ -999,6 +1070,14 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     }
   }
 
+  function handleStartFederatedLink(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.location.assign("/api/auth/link/federated/start");
+  }
+
   function handleExploreAfterAuth(): void {
     setPostAuthDecisionReward(null);
     router.push(ONBOARDING_REWARD_EXPLORE_HREF);
@@ -1022,8 +1101,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     : hasFederatedSession
       ? `${t({ en: "Account", es: "Cuenta", pt: "Conta" })}: ${authState.email ?? t({ en: "Federated session", es: "Sesion federada", pt: "Sessao federada" })}`
       : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
-  const topFeedbackText = statusText ?? lastError;
-  const isTopFeedbackStatus = Boolean(statusText);
+  const topFeedbackText = statusText ?? authLinkStatusMessage ?? lastError;
+  const isTopFeedbackStatus = Boolean(statusText || authLinkStatusMessage);
   const shouldShowPhantomOpenPill = isSmallViewport && isMobileUserAgent && !isInPhantomApp;
 
   useEffect(() => {
@@ -1471,6 +1550,16 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       </Button>
                     ) : null}
                   </div>
+
+                  {hasWalletSession && !hasFederatedSession && isFederatedLoginAvailable ? (
+                    <Button variant="outline" onClick={handleStartFederatedLink} disabled={isBusy} className="min-h-11 w-full">
+                      {t({
+                        en: "Link email sign-in",
+                        es: "Vincular ingreso por email",
+                        pt: "Vincular login por email"
+                      })}
+                    </Button>
+                  ) : null}
 
                   {walletPublicKey ? (
                     <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">

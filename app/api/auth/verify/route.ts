@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ensureWalletFirstAccount } from "@/lib/accounts/repository";
-import { clearNonceCookie, getNonceFromRequest, getRequestHost, setSessionCookie, verifySiwsPayload } from "@/lib/auth";
+import {
+  clearNonceCookie,
+  consumeNonceFromRequest,
+  getNonceFromRequest,
+  getRequestHost,
+  setSessionCookie,
+  verifySiwsPayload
+} from "@/lib/auth";
 import { isWalletRegistered } from "@/lib/compliance/profile-repository";
 import { ensureOnboardingRewardRegistered } from "@/lib/onboarding-reward-service";
 import { normalizeReferralAttributionSource } from "@/lib/referrals/domain";
@@ -48,6 +55,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (!verification.ok) {
     const errorResponse = NextResponse.json({ error: verification.error }, { status: verification.status });
+    clearNonceCookie(errorResponse);
+    return errorResponse;
+  }
+
+  if (!consumeNonceFromRequest(request)) {
+    const errorResponse = NextResponse.json({ error: "Invalid or expired nonce." }, { status: 409 });
     clearNonceCookie(errorResponse);
     return errorResponse;
   }

@@ -1,6 +1,6 @@
 # Session Model
 
-Last Updated: 2026-05-19
+Last Updated: 2026-05-20
 
 ## BRI-158 Public Session Bootstrap Boundary
 - Public discovery pages now bootstrap as anonymous by default and defer wallet/account introspection until a user-facing auth surface actually needs it.
@@ -61,6 +61,13 @@ Last Updated: 2026-05-19
   - bound to `account_id` and `workos_user_id`
   - requires an active WorkOS session at completion time, but does not require the exact same AuthKit `sessionId` if WorkOS rotates it during the flow
   - invalidated on success, failure, logout, or account-context mismatch
+- Wallet-backed federated linking now also uses its own pending context:
+  - single-use
+  - 5-minute max lifetime
+  - bound to `account_id` and `wallet_public_key`
+  - created only from an active SIWS wallet session
+  - completed only after WorkOS sign-in returns through `/auth/link/federated/complete`
+  - invalidated on success, failure, logout, or mismatch
 
 ## BRI-153 UI Slice Notes
 - No new session token, cookie, role, or refresh path was introduced by the wallet CTA rename or the profile quick tour emphasis updates.
@@ -128,13 +135,21 @@ Last Updated: 2026-05-19
    - `GET /api/auth/link/wallet/nonce` creates a pending wallet-link context and returns a nonce.
    - `POST /api/auth/link/wallet/verify` requires the same active WorkOS session plus a fresh SIWS proof for the wallet.
    - If the WorkOS account context changes before completion, the link fails closed and the context is destroyed.
-5. Refresh session:
+   - If the proved wallet already belongs to another wallet-backed account, backend may absorb the current federated-only account into that wallet-backed account when eligibility checks pass.
+   - Unsafe consolidations fail into review-required handling rather than silent merge or wallet reassignment.
+5. Federated linking from wallet:
+   - `GET /api/auth/link/federated/start` requires active SIWS wallet auth and writes a pending federated-link context.
+   - Browser is redirected through WorkOS and returns to `GET /auth/link/federated/complete`.
+   - Completion succeeds idempotently if both layers already resolve to the same account.
+   - If WorkOS resolves to a separate federated-only account, backend may absorb that account into the wallet-backed account when safe.
+   - Admin-capable or otherwise unsafe states fail into review-required handling.
+6. Refresh session:
    - WorkOS refresh is handled by AuthKit middleware/proxy.
    - SIWS has no refresh endpoint; user re-authenticates with SIWS.
    - UI auth state is revalidated across browser contexts via `BroadcastChannel` + `localStorage` sync signal, and on `focus`/`visibilitychange`.
-6. Revoke session:
+7. Revoke session:
    - `POST /api/auth/logout` clears only `siws_session`.
-- `POST /api/auth/logout` also clears any pending wallet-link context.
+   - `POST /api/auth/logout` also clears any pending wallet-link or federated-link context.
 - `GET /sign-out` clears WorkOS session cookie and redirects away.
 
 ## BRI-157 Notification Worker Boundary
@@ -266,7 +281,8 @@ Last Updated: 2026-05-19
 - Replay protections:
   - Signed nonce cookie (`siws_nonce`) with 5-minute TTL.
   - SIWS message nonce must match nonce cookie value.
-  - Nonce cookie is cleared after verify attempt to force a fresh challenge.
+  - Nonce must also still exist in the in-memory/server nonce store at verification time.
+  - Nonce is consumed immediately after successful verify and nonce cookie is cleared after verify attempt to force a fresh challenge.
   - Purchase challenges are single-use with short TTL (`PURCHASE_CHALLENGE_TTL_SECONDS`, default 120s).
   - Purchase challenge replay attempts are rejected once consumed/expired.
   - Stripe KYC bootstrap is rate-limited by wallet/IP (`STRIPE_IDENTITY_RATE_LIMIT_WINDOW_SECONDS`, `STRIPE_IDENTITY_RATE_LIMIT_MAX_ATTEMPTS`).

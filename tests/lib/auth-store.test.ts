@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  clearFederatedLinkContext,
   clearWalletLinkContext,
   consumeNonce,
+  createFederatedLinkContext,
   createWalletLinkContext,
   createSession,
   getSessionMaxAgeSeconds,
   getSessionPublicKey,
   hasUsableNonce,
   issueNonce,
+  readFederatedLinkContext,
   readWalletLinkContext,
   revokeSession
 } from "@/lib/auth-store";
@@ -70,5 +73,22 @@ describe("lib/auth-store", () => {
       workosUserId: "user_123",
       nonce: context.nonce
     });
+  });
+
+  it("creates federated link contexts that resolve back to the same wallet account", () => {
+    const context = createFederatedLinkContext({
+      accountId: "account_wallet",
+      walletPublicKey: "Wallet111"
+    });
+
+    const resolved = readFederatedLinkContext(context.token);
+
+    expect(resolved).toMatchObject({
+      accountId: "account_wallet",
+      walletPublicKey: "Wallet111"
+    });
+
+    clearFederatedLinkContext(resolved?.contextId ?? "");
+    expect(readFederatedLinkContext(context.token)).toBeNull();
   });
 });

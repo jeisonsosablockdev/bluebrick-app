@@ -56,6 +56,11 @@ export type LinkWalletIdentityInput = {
   walletPublicKey: string;
 };
 
+export type MergeFederatedOnlyAccountIntoWalletAccountInput = {
+  sourceAccountId: string;
+  targetAccountId: string;
+};
+
 type InMemoryAccountState = {
   account: AccountRecord;
   wallets: WalletIdentityRecord[];
@@ -259,6 +264,52 @@ function linkWalletIdentityToAccountInMemory(input: LinkWalletIdentityInput): Ac
   }
 
   return cloneBundle(state);
+}
+
+function mergeFederatedOnlyAccountIntoWalletAccountInMemory(
+  input: MergeFederatedOnlyAccountIntoWalletAccountInput
+): AccountIdentityBundle {
+  const sourceAccountId = input.sourceAccountId.trim();
+  const targetAccountId = input.targetAccountId.trim();
+
+  if (!sourceAccountId || !targetAccountId) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  if (sourceAccountId === targetAccountId) {
+    return cloneBundle(getInMemoryAccountById(targetAccountId));
+  }
+
+  const source = getInMemoryAccountById(sourceAccountId);
+  const target = getInMemoryAccountById(targetAccountId);
+
+  if (source.wallets.length > 0 || source.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+      "Source account is not eligible for automatic consolidation."
+    );
+  }
+
+  if (!target.wallets.length || !target.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "TARGET_ACCOUNT_NOT_WALLET_BACKED",
+      "Target account is not eligible to receive federated identities."
+    );
+  }
+
+  for (const identity of source.federated) {
+    inMemoryAccountIdByWorkosUserId.set(identity.workosUserId, target.account.id);
+    target.federated.push({
+      ...identity,
+      accountId: target.account.id,
+      updatedAt: nowIso()
+    });
+  }
+
+  target.account.updatedAt = nowIso();
+  inMemoryAccountsById.delete(source.account.id);
+
+  return cloneBundle(target);
 }
 
 function mapAccountRow(row: {
@@ -691,6 +742,194 @@ export async function linkWalletIdentityToAccount(input: LinkWalletIdentityInput
   } catch (error) {
     if (isAccountsSchemaUnavailableError(error)) {
       return linkWalletIdentityToAccountInMemory(input);
+    }
+
+    throw error;
+  }
+}
+
+export async function mergeFederatedOnlyAccountIntoWalletAccount(
+  input: MergeFederatedOnlyAccountIntoWalletAccountInput
+): Promise<AccountIdentityBundle> {
+  const sourceAccountId = input.sourceAccountId.trim();
+  const targetAccountId = input.targetAccountId.trim();
+
+  if (!sourceAccountId || !targetAccountId) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  if (sourceAccountId === targetAccountId) {
+    if (!hasDatabase()) {
+      return cloneBundle(getInMemoryAccountById(targetAccountId));
+    }
+
+    const sameAccount = await withDbClient((client) => getAccountBundleByIdWithClient(client, targetAccountId));
+    if (!sameAccount) {
+      throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+    }
+
+    return sameAccount;
+  }
+
+  if (!hasDatabase()) {
+    return mergeFederatedOnlyAccountIntoWalletAccountInMemory(input);
+  }
+
+  try {
+    return await withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        const sourceBundle = await getAccountBundleByIdWithClient(client, sourceAccountId);
+        const targetBundle = await getAccountBundleByIdWithClient(client, targetAccountId);
+
+        if (!sourceBundle || !targetBundle) {
+          throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+        }
+
+        if (sourceBundle.walletIdentities.length > 0 || sourceBundle.account.primaryWalletPublicKey) {
+          throw new AccountRepositoryError(
+            "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+            "Source account is not eligible for automatic consolidation."
+          );
+        }
+
+        if (!targetBundle.walletIdentities.length || !targetBundle.account.primaryWalletPublicKey) {
+          throw new AccountRepositoryError(
+            "TARGET_ACCOUNT_NOT_WALLET_BACKED",
+            "Target account is not eligible to receive federated identities."
+          );
+        }
+
+        const sourceProfiles = await client.query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count
+             FROM user_profiles
+            WHERE account_id = $1`,
+          [sourceAccountId]
+        );
+
+        if (Number.parseInt(sourceProfiles.rows[0]?.count ?? "0", 10) > 0) {
+          throw new AccountRepositoryError(
+            "SOURCE_ACCOUNT_HAS_BOUND_PROFILE_STATE",
+            "Source account has state that requires manual review."
+          );
+        }
+
+        const sourcePushSubscriptions = await client.query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count
+             FROM web_push_subscriptions
+            WHERE account_id = $1`,
+          [sourceAccountId]
+        ).catch((error: unknown) => {
+          if (isAccountsSchemaUnavailableError(error)) {
+            return { rows: [{ count: "0" }] };
+          }
+
+          throw error;
+        });
+
+        if (Number.parseInt(sourcePushSubscriptions.rows[0]?.count ?? "0", 10) > 0) {
+          throw new AccountRepositoryError(
+            "SOURCE_ACCOUNT_HAS_PUSH_STATE",
+            "Source account has state that requires manual review."
+          );
+        }
+
+        const sourceActiveIntent = await client.query<{ id: string }>(
+          `SELECT id
+             FROM account_referral_intents
+            WHERE account_id = $1
+              AND status = 'active'
+            LIMIT 1
+            FOR UPDATE`,
+          [sourceAccountId]
+        ).catch((error: unknown) => {
+          if (isAccountsSchemaUnavailableError(error)) {
+            return { rows: [] };
+          }
+
+          throw error;
+        });
+
+        const targetActiveIntent = await client.query<{ id: string }>(
+          `SELECT id
+             FROM account_referral_intents
+            WHERE account_id = $1
+              AND status = 'active'
+            LIMIT 1
+            FOR UPDATE`,
+          [targetAccountId]
+        ).catch((error: unknown) => {
+          if (isAccountsSchemaUnavailableError(error)) {
+            return { rows: [] };
+          }
+
+          throw error;
+        });
+
+        const sourceActiveIntentId = sourceActiveIntent.rows[0]?.id ?? null;
+        const targetActiveIntentId = targetActiveIntent.rows[0]?.id ?? null;
+
+        if (sourceActiveIntentId && !targetActiveIntentId) {
+          await client.query(
+            `UPDATE account_referral_intents
+                SET account_id = $2
+              WHERE id = $1`,
+            [sourceActiveIntentId, targetAccountId]
+          ).catch((error: unknown) => {
+            if (isAccountsSchemaUnavailableError(error)) {
+              return;
+            }
+
+            throw error;
+          });
+        } else if (sourceActiveIntentId && targetActiveIntentId) {
+          await client.query(
+            `UPDATE account_referral_intents
+                SET status = 'discarded_wallet_already_attributed',
+                    resolved_at = NOW(),
+                    promoted_attribution_id = NULL
+              WHERE id = $1`,
+            [sourceActiveIntentId]
+          ).catch((error: unknown) => {
+            if (isAccountsSchemaUnavailableError(error)) {
+              return;
+            }
+
+            throw error;
+          });
+        }
+
+        await client.query(
+          `UPDATE account_federated_identities
+              SET account_id = $2,
+                  updated_at = NOW()
+            WHERE account_id = $1`,
+          [sourceAccountId, targetAccountId]
+        );
+
+        await client.query(
+          `DELETE FROM accounts
+            WHERE id = $1`,
+          [sourceAccountId]
+        );
+
+        await client.query("COMMIT");
+
+        const merged = await getAccountBundleByIdWithClient(client, targetAccountId);
+        if (!merged) {
+          throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+        }
+
+        return merged;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  } catch (error) {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return mergeFederatedOnlyAccountIntoWalletAccountInMemory(input);
     }
 
     throw error;

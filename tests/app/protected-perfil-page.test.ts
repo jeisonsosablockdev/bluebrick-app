@@ -22,6 +22,10 @@ vi.mock("@/components/dashboard/account-profile-support-module", () => ({
   AccountProfileSupportModule: ({ email }: { email: string | null }) => ({ type: "account-only", email })
 }));
 
+vi.mock("@/components/dashboard/auth-link-status-banner", () => ({
+  AuthLinkStatusBanner: ({ status }: { status: string | null }) => ({ type: "auth-link-status", status })
+}));
+
 vi.mock("@/components/dashboard/profile-kyc-module", () => ({
   ProfileKycModule: ({ walletPublicKey }: { walletPublicKey: string }) => ({ type: "wallet-profile", walletPublicKey })
 }));
@@ -46,7 +50,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: null
     });
 
-    await expect(PerfilPage()).rejects.toThrow("REDIRECT:/");
+    await expect(PerfilPage({})).rejects.toThrow("REDIRECT:/");
   });
 
   it("renders the account-only support module for federated sessions without a wallet", async () => {
@@ -58,9 +62,15 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage()).resolves.toMatchObject({
+    await expect(PerfilPage({})).resolves.toMatchObject({
       props: {
-        email: "user@example.com"
+        children: expect.arrayContaining([
+          expect.objectContaining({
+            props: {
+              email: "user@example.com"
+            }
+          })
+        ])
       }
     });
   });
@@ -74,9 +84,15 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage()).resolves.toMatchObject({
+    await expect(PerfilPage({})).resolves.toMatchObject({
       props: {
-        walletPublicKey: "Wallet111"
+        children: expect.arrayContaining([
+          expect.objectContaining({
+            props: {
+              walletPublicKey: "Wallet111"
+            }
+          })
+        ])
       }
     });
   });

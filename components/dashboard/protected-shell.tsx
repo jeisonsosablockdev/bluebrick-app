@@ -162,12 +162,14 @@ export function ProtectedShell({
             initialAuth={{
               authenticated: walletAuthenticated,
               accountAuthenticated,
-              federatedAuthenticated: accountAuthenticated && !walletAuthenticated,
+              federatedAuthenticated: Boolean(federatedEmail),
               walletAuthenticated,
               pubkey: authenticatedPublicKey,
               role: authenticatedRole,
               email: federatedEmail,
-              authMethod: walletAuthenticated ? "wallet" : "federated"
+              authMethod: walletAuthenticated
+                ? (federatedEmail ? "hybrid" : "wallet")
+                : "federated"
             }}
           />
         </Suspense>

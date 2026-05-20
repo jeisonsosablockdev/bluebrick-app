@@ -254,6 +254,14 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
   const notificationLabel = resolveNotificationLabel(snapshot.notificationState);
   const title = resolveTitle(audience, snapshot.installabilityState, snapshot.platform);
   const body = resolveBody(audience, snapshot.installabilityState, snapshot.notificationState);
+  const nextActionLabel =
+    canEnable
+      ? t({ en: "Enable notifications", es: "Activar notificaciones", pt: "Ativar notificacoes" })
+      : canDisable
+        ? t({ en: "Disable notifications", es: "Desactivar notificaciones", pt: "Desativar notificacoes" })
+        : snapshot.installabilityState !== "installed"
+          ? t({ en: "Add to Home Screen", es: "Anadir a pantalla de inicio", pt: "Adicionar a Tela de Inicio" })
+          : null;
 
   return (
     <Card className="overflow-hidden border-white/12 bg-[linear-gradient(160deg,rgba(8,18,31,0.94),rgba(5,12,23,0.98))] p-0 shadow-[0_18px_50px_rgba(3,8,18,0.34)]">
@@ -263,6 +271,11 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
         </p>
         <h3 className="mt-2 max-w-[24ch] text-lg font-semibold leading-tight text-white">{t(title)}</h3>
         <p className="mt-3 text-sm leading-7 text-white/78">{t(body)}</p>
+        {nextActionLabel ? (
+          <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-cyan-200/88">
+            {nextActionLabel}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-3 px-4 py-4 sm:px-5 lg:grid-cols-2">
@@ -315,9 +328,9 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
             </Button>
             <p className="text-sm leading-6 text-white/65">
               {t({
-                en: "Install first, then come back here to enroll notifications from the installed shell.",
-                es: "Instala primero y luego vuelve aqui para inscribir notificaciones desde el shell instalado.",
-                pt: "Instale primeiro e depois volte aqui para inscrever notificacoes a partir do shell instalado."
+                en: "Install first, then come back here to enroll notifications from the installed shell. If needed, use your browser menu to Add to Home Screen.",
+                es: "Instala primero y luego vuelve aqui para inscribir notificaciones desde el shell instalado. Si hace falta, usa el menu del navegador para Anadir a pantalla de inicio.",
+                pt: "Instale primeiro e depois volte aqui para inscrever notificacoes a partir do shell instalado. Se precisar, use o menu do navegador para Adicionar a Tela de Inicio."
               })}
             </p>
           </div>
