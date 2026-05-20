@@ -8,7 +8,7 @@
 
 ## Summary
 - Refactor `components/WalletModal.tsx` to reduce responsibility concentration and improve readability without changing current auth behavior.
-- Keep the current auth modal UI contract intact, including the `Mail` / `Wallet` method switcher, referral input, and primary CTA behavior.
+- Simplify the auth-entry modal so `Mail` and `Wallet` are the primary actions that immediately start their respective flows.
 - Create cleaner boundaries for auth-entry UI composition, wallet-auth orchestration, and auxiliary status/referral concerns.
 
 ## Why
@@ -29,23 +29,32 @@
   - `Ingresa a tu cuenta BRIDS`
   - `Mail` / `Wallet` method switcher
   - referral input section
-  - primary auth CTA
+  - current primary auth CTA, which this refactor will remove
+
+## UI Decision Included In This Refactor
+- Remove the extra `Conectar e iniciar sesion` button from the unauthenticated wallet-entry state.
+- `Mail` click should immediately start the federated sign-in flow.
+- `Wallet` click should immediately start the wallet sign-in flow.
+- The modal should no longer require:
+  - select method first
+  - then click a second CTA to begin
+- Referral capture remains available, but the entry flow should feel like two direct choices instead of a chooser plus a follow-up action.
 
 ## Goals
 1. Split `WalletModal` into smaller, intention-revealing units.
 2. Reduce mixed levels of abstraction inside the main component.
-3. Preserve behavior, copy, and route/auth contracts.
+3. Simplify the unauthenticated auth-entry UX to direct `Mail` and `Wallet` actions.
 4. Make future auth-entry changes easier to test and review.
 
 ## Non-Goals
 - No trust-boundary or session policy changes.
-- No product redesign of the auth modal.
+- No full product redesign of the auth modal beyond the direct-action entry simplification above.
 - No change to wallet/federated linking semantics.
 - No unrelated governance or workflow changes in this initiative.
 
 ## Likely Extraction Targets
 - Auth entry card presentation
-- Login method switcher
+- Direct auth action group
 - Referral input section
 - Primary wallet action cluster
 - Status/feedback surface
@@ -58,4 +67,4 @@
 
 ## Notes
 - This is a `refactor/*` initiative and therefore uses `docs/features/*` artifacts.
-- The refactor should preserve the existing screenshot-level UI unless a small cleanup clearly improves readability without changing product intent.
+- The screenshot-level UI is intentionally changing in one focused way: remove the extra wallet CTA and make `Mail` / `Wallet` direct entry actions.

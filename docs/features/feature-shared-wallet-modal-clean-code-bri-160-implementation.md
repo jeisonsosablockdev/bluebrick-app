@@ -8,14 +8,16 @@
   - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md`
 
 ## Goal
-Restructure `components/WalletModal.tsx` into smaller, more maintainable units while preserving all existing auth behavior.
+Restructure `components/WalletModal.tsx` into smaller, more maintainable units and simplify the auth-entry UI so `Mail` and `Wallet` directly start their flows.
 
 ## Decision Summary
 
-### 1. Behavior-preserving refactor only
-- No auth-flow contract changes.
+### 1. Targeted UI simplification is allowed
+- Remove the extra `Conectar e iniciar sesion` action in the unauthenticated wallet entry view.
+- The `Mail` and `Wallet` controls become direct action triggers, not only a selector state.
+- No auth trust-boundary or backend contract changes are allowed.
 - No redirect or session-payload changes.
-- No visual redesign unless the change is incidental to decomposition and keeps the current UI contract.
+- No broader visual redesign beyond this simplification.
 
 ### 2. Prefer extraction over rewrite
 - Keep the working logic intact where possible.
@@ -33,7 +35,8 @@ Restructure `components/WalletModal.tsx` into smaller, more maintainable units w
 ### S02 - WalletModal decomposition
 - extract the most cohesive UI/action sections from `WalletModal`
 - reduce mixed abstraction levels in the main component
-- keep public behavior and copy intact
+- implement direct-action auth entry for `Mail` and `Wallet`
+- preserve downstream auth/linking semantics and route contracts
 
 ### S03 - QA and reviewer closeout
 - run targeted UI/auth verification
@@ -51,10 +54,11 @@ Additional checks if the refactor changes browser-critical behavior:
 
 ## Risks
 - Extracting too aggressively could change subtle auth-state timing or visibility logic.
-- UI cleanup can accidentally drift the modal contract if layout and orchestration are refactored together.
+- UI cleanup can accidentally drift referral capture or button-state behavior if layout and orchestration are refactored together.
 
 ## Completion Gate
 - `WalletModal` is materially smaller or clearly decomposed into narrower responsibilities.
 - New boundaries are intention-revealing and preserve behavior.
+- The unauthenticated modal starts auth directly from `Mail` and `Wallet` without the extra wallet CTA.
 - Explicit clean-code pass is recorded with no unresolved blocking findings.
 - Required validation passes.
