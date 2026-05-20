@@ -238,7 +238,7 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
-  it("shows login method tabs and email login by default", async () => {
+  it("shows direct Mail and Wallet entry actions by default", async () => {
     const { container, root } = renderWalletModal({
       authenticated: false,
       federatedAvailable: true,
@@ -264,25 +264,20 @@ describe("components/WalletModal header CTA", () => {
     expect(container.textContent).toContain("Ingresa a tu cuenta BRIDS");
     expect(container.textContent).toContain("Mail");
     expect(container.textContent).toContain("Wallet");
-    expect(container.textContent).toContain("Continuar con email");
-    const mailTab = Array.from(container.querySelectorAll('button[role="tab"]')).find((candidate) =>
+    expect(container.textContent).not.toContain("Continuar con email");
+    expect(container.textContent).not.toContain("Conectar e iniciar sesion");
+    const mailButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
       candidate.textContent?.includes("Mail")
     );
-    const walletTab = Array.from(container.querySelectorAll('button[role="tab"]')).find((candidate) =>
+    const walletButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
       candidate.textContent?.includes("Wallet")
     );
-    expect(mailTab?.className).toContain("bg-gradientPrimary");
-    expect(mailTab?.className).toContain("rounded-full");
-    expect(mailTab?.className).toContain("shadow-glow");
-    expect(walletTab?.className).toContain("border-white/25");
-    expect(walletTab?.className).toContain("bg-transparent");
-    const signInLink = Array.from(container.querySelectorAll("a")).find((candidate) =>
-      candidate.textContent?.includes("Continuar con email")
-    );
-    expect(signInLink?.getAttribute("href")).toBe("/sign-in?returnTo=%2F%3FpostAuthDecision%3D1");
-    expect(signInLink?.className).toContain("bg-gradientPrimary");
-    expect(signInLink?.className).toContain("rounded-full");
-    expect(signInLink?.className).toContain("shadow-glow");
+    expect(mailButton?.className).toContain("bg-gradientPrimary");
+    expect(mailButton?.className).toContain("rounded-full");
+    expect(mailButton?.className).toContain("shadow-glow");
+    expect(walletButton?.className).toContain("bg-gradientPrimary");
+    expect(walletButton?.className).toContain("rounded-full");
+    expect(walletButton?.className).toContain("shadow-glow");
     expect(container.textContent).not.toContain("Usa WorkOS para empezar con una cuenta por email o conecta Phantom para SIWS.");
     expect(container.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
 
@@ -291,7 +286,7 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
-  it("switches to wallet mode and reveals referral input only on demand", async () => {
+  it("keeps the referral input hidden until the user asks for it", async () => {
     const { container, root } = renderWalletModal({
       authenticated: false,
       federatedAvailable: true,
@@ -314,22 +309,8 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const walletTab = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Wallet")
-    );
-
-    act(() => {
-      walletTab?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
     expect(container.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
     expect(container.textContent).toContain("Ingresa tu codigo de referido (opcional)");
-    expect(walletTab?.className).toContain("bg-gradientPrimary");
-    expect(walletTab?.className).toContain("shadow-glow");
     expect(container.querySelector('input[placeholder="Pega o edita tu codigo de invitacion"]')).toBeNull();
 
     const referralToggle = Array.from(container.querySelectorAll("button")).find((candidate) =>
