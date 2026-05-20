@@ -31,7 +31,7 @@
 | 5 | `nft` + `solana` | Implement the smallest safe change with tests first | Relevant tests lead the implementation |
 | 6 | `docs` | Sync `docs/nft-spec.md`, `docs/devnet-proof.md`, and traceability docs when required | Canonical NFT documentation is current |
 | 7 | `qa` | Verify the mint or metadata flow with repo gates and targeted checks | Required validation and evidence are captured |
-| 8 | `reviewer` | Audit the final diff and completion status | No unresolved blocking findings remain |
+| 8 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
 - No NFT task closes without real mint or metadata evidence when acceptance depends on on-chain behavior.
@@ -41,6 +41,7 @@
 - Real transaction signatures when on-chain acceptance applies
 - Metadata or collection account proof
 - Royalty or seller fee validation notes
+- Clean-code findings or explicit no-findings result
 - Updated docs paths
 - Validation and targeted test results
 

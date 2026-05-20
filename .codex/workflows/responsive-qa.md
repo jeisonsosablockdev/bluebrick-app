@@ -22,7 +22,7 @@
 | 1 | `planner` | Select the routes and critical states that need responsive proof | Target surfaces, required artifacts, and blocking states are fixed |
 | 2 | `frontend` | Resolve layout risk before final verification | Global overflow is addressed before local polish, and touch targets plus modal states are ready to inspect |
 | 3 | `qa` | Capture evidence at 320, 375, 768, and 1024 widths | Every required artifact exists, evidence is readable, and overflow notes are explicit |
-| 4 | `reviewer` | Confirm the checklist and artifacts are sufficient for closeout | No ambiguous evidence, no unresolved overflow, and no missing browser-critical proof remain |
+| 4 | `reviewer` | Run explicit clean-code audit for the touched UI diff and confirm the checklist plus artifacts are sufficient for closeout | No ambiguous evidence, no unresolved overflow, no missing browser-critical proof, and no unresolved clean-code findings remain |
 
 ## Blocking Gates
 - Any horizontal overflow failure blocks completion.
@@ -37,3 +37,4 @@
 - No-overflow confirmation, starting with global page overflow before local component notes
 - Touch-target and modal notes
 - Browser or MCP evidence references
+- Clean-code findings or explicit no-findings result for the touched UI diff

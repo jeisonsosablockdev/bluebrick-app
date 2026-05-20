@@ -29,7 +29,7 @@
 | 4 | `docs` | Confirm artifact prerequisites and sync required docs for non-trivial work | Implementation does not run ahead of the governing artifact |
 | 5 | `frontend` | Implement with tests first and keep the diff local to the touched surface | Relevant tests are updated before final verification |
 | 6 | `qa` | Run targeted tests, Playwright, Synpress, and browser evidence as required | Workflow-specific gates pass with deterministic artifacts |
-| 7 | `reviewer` | Audit the final diff and completion status | No unresolved blocking findings remain |
+| 7 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
 - Non-trivial work does not move into implementation without the required artifact and, when applicable, the documentation slice.
@@ -43,6 +43,7 @@
 - Playwright output
 - Synpress output when wallet or auth applies
 - MCP or browser artifacts for critical flows
+- Clean-code findings or explicit no-findings result
 - Updated docs paths
 
 ## Handoffs

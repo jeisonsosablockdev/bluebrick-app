@@ -28,7 +28,7 @@
 | 3 | Domain specialists | Close implementation gaps and produce missing proofs | Each active workflow has the required evidence |
 | 4 | `qa` | Run the full validation and regression set required by the scope | Validation and required E2E checks pass |
 | 5 | `docs` | Record hardening traceability and any required governance docs updates | Canonical records stay current |
-| 6 | `reviewer` | Block or clear completion based on the remaining risk profile | No unresolved critical or high findings remain |
+| 6 | `reviewer` | Run explicit clean-code audit and block or clear completion based on the remaining risk profile | No unresolved critical or high findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
 - No mainnet hardening task closes with unresolved critical or high-risk findings.
@@ -39,4 +39,5 @@
 - Security findings and mitigations
 - Relevant devnet proof links
 - Dependency or audit outputs when applicable
+- Clean-code findings or explicit no-findings result
 - Updated docs paths

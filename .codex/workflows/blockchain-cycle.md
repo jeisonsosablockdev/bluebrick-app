@@ -30,12 +30,13 @@
 | 5 | `docs` | Sync canonical docs and RFC or feature-note traceability | Required docs paths are updated |
 | 6 | `solana` | Execute the real devnet flow | Real transaction is submitted, confirmed, and read back |
 | 7 | `qa` | Run repo validation and focused verification | `npm run validate` and required targeted checks pass |
-| 8 | `reviewer` | Audit the final diff and gate completion | No unresolved blocking findings remain |
+| 8 | `reviewer` | Run explicit clean-code audit, audit the final diff, and gate completion | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Required Evidence
 - Commands run
 - Transaction signatures
 - Fetched account or state proof
+- Clean-code findings or explicit no-findings result
 - Updated docs paths
 - Validation and test results
 

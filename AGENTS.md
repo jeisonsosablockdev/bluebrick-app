@@ -41,16 +41,17 @@
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
 - `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
-- `reviewer`: clean-code, duplication, naming, dead-code, governance, and final completion gate.
+- `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
 
 ## Delegation Rules
 - Delegate the smallest possible context: changed paths, active workflow, required policies, expected evidence.
 - Run independent specialists in parallel only when their write scopes do not overlap.
 - `security` joins blockchain, auth, admin, wallet, payment, and other high-trust-surface changes.
-- `reviewer` is the final gate and should review findings before completion, not just summarize progress.
+- `reviewer` is the final gate and should run the explicit clean-code pass before completion, not just summarize progress.
 
 ## Definition of Done
 - `npm run validate`
+- Explicit `clean-code` pass completed and any blocking findings are resolved or consciously documented
 - Database-backed schema or persistence changes: tracked migrations applied, no pending tracked migrations, and `validate:db` passes when `DATABASE_URL` is available
 - Required docs updated per `docs/governance/documentation-policy.md`
 - Required PR/RFC metadata still aligns with `docs/governance/pr-policy-source-of-truth.json`
