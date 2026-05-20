@@ -272,12 +272,14 @@ describe("components/WalletModal header CTA", () => {
     const walletButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
       candidate.textContent?.includes("Wallet")
     );
-    expect(mailButton?.className).toContain("bg-gradientPrimary");
+    expect(mailButton?.className).toContain("bg-transparent");
+    expect(mailButton?.className).toContain("border-white/25");
     expect(mailButton?.className).toContain("rounded-full");
-    expect(mailButton?.className).toContain("shadow-glow");
-    expect(walletButton?.className).toContain("bg-gradientPrimary");
+    expect(mailButton?.className).toContain("active:bg-gradientPrimary");
+    expect(walletButton?.className).toContain("bg-transparent");
+    expect(walletButton?.className).toContain("border-white/25");
     expect(walletButton?.className).toContain("rounded-full");
-    expect(walletButton?.className).toContain("shadow-glow");
+    expect(walletButton?.className).toContain("active:bg-gradientPrimary");
     expect(container.textContent).not.toContain("Usa WorkOS para empezar con una cuenta por email o conecta Phantom para SIWS.");
     expect(container.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
 

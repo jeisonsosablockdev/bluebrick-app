@@ -43,11 +43,16 @@ describe("components/wallet-modal/auth-entry-action-card", () => {
 
   it("renders only direct Mail and Wallet entry actions", () => {
     const { container, root } = renderCard();
+    const [mailButton, walletButton] = Array.from(container.querySelectorAll("button"));
 
     expect(container.textContent).toContain("Ingresa a tu cuenta BRIDS");
     expect(container.textContent).toContain("Mail");
     expect(container.textContent).toContain("Wallet");
     expect(container.textContent).not.toContain("Conectar e iniciar sesion");
+    expect(mailButton?.className).toContain("bg-transparent");
+    expect(mailButton?.className).toContain("border-white/25");
+    expect(walletButton?.className).toContain("bg-transparent");
+    expect(walletButton?.className).toContain("border-white/25");
 
     act(() => {
       root.unmount();
@@ -84,6 +89,10 @@ describe("components/wallet-modal/auth-entry-action-card", () => {
 
     expect(onMailClick).toHaveBeenCalledTimes(1);
     expect(onWalletClick).toHaveBeenCalledTimes(1);
+    expect(mailButton?.className).toContain("bg-gradientPrimary");
+    expect(mailButton?.className).toContain("shadow-glow");
+    expect(walletButton?.className).toContain("bg-gradientPrimary");
+    expect(walletButton?.className).toContain("shadow-glow");
 
     act(() => {
       root.unmount();
