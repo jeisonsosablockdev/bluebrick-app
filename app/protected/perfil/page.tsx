@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthLinkStatusBanner } from "@/components/dashboard/auth-link-status-banner";
 import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
 import { ProfileKycModule } from "@/components/dashboard/profile-kyc-module";
+import { parseAuthLinkStatus } from "@/lib/auth-link-status";
 import { resolveAppAuthContext } from "@/lib/app-auth";
 
 type PerfilPageProps = {
@@ -13,7 +14,7 @@ export default async function PerfilPage(props: PerfilPageProps) {
   const auth = await resolveAppAuthContext();
   const resolvedSearchParams = props?.searchParams ? await props.searchParams : undefined;
   const authLinkStatusParam = resolvedSearchParams?.authLinkStatus;
-  const authLinkStatus = typeof authLinkStatusParam === "string" ? authLinkStatusParam : null;
+  const authLinkStatus = parseAuthLinkStatus(typeof authLinkStatusParam === "string" ? authLinkStatusParam : null);
 
   if (!auth.accountAuthenticated) {
     redirect("/");
