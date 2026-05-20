@@ -34,6 +34,7 @@ import {
   parseAuthSyncPayload,
   parseAuthSyncPayloadFromUnknown
 } from "@/lib/auth-sync";
+import { getAuthLinkStatusContent, parseAuthLinkStatus } from "@/lib/auth-link-status";
 import { getWalletModalAutoClose } from "@/lib/solana";
 import {
   formatOnboardingRewardDeadlineLabel,
@@ -306,8 +307,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     return raw ? normalizeReferralCodeInput(raw) : "";
   }, [searchParams]);
   const shouldPromptPostAuthDecision = searchParams.get(POST_AUTH_DECISION_QUERY_PARAM) === "1";
+  const authLinkStatus = parseAuthLinkStatus(searchParams.get("authLinkStatus"));
   const cleanCurrentLandingPath = useMemo(
-    () => buildPathWithoutQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM),
+    () => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.delete(POST_AUTH_DECISION_QUERY_PARAM);
+      nextParams.delete("authLinkStatus");
+      const query = nextParams.toString();
+      return query ? `${pathname}?${query}` : pathname;
+    },
     [pathname, searchParams]
   );
   const currentLandingPath = useMemo(() => {
@@ -326,6 +334,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const showWalletPanel = !isFederatedLoginAvailable || selectedLoginMethod === "wallet" || hasWalletSession || hasFederatedSession;
   const showMailPanel = isFederatedLoginAvailable && selectedLoginMethod === "mail" && !hasWalletSession && !hasFederatedSession;
   const shouldShowDisconnectButton = hasAccountSession || isConnected;
+  const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
@@ -999,6 +1008,14 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     }
   }
 
+  function handleStartFederatedLink(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.location.assign("/api/auth/link/federated/start");
+  }
+
   function handleExploreAfterAuth(): void {
     setPostAuthDecisionReward(null);
     router.push(ONBOARDING_REWARD_EXPLORE_HREF);
@@ -1022,8 +1039,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     : hasFederatedSession
       ? `${t({ en: "Account", es: "Cuenta", pt: "Conta" })}: ${authState.email ?? t({ en: "Federated session", es: "Sesion federada", pt: "Sessao federada" })}`
       : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
-  const topFeedbackText = statusText ?? lastError;
-  const isTopFeedbackStatus = Boolean(statusText);
+  const topFeedbackText = statusText ?? authLinkStatusContent?.message ?? lastError;
+  const isTopFeedbackStatus = Boolean(statusText || authLinkStatusContent);
   const shouldShowPhantomOpenPill = isSmallViewport && isMobileUserAgent && !isInPhantomApp;
 
   useEffect(() => {
@@ -1471,6 +1488,16 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       </Button>
                     ) : null}
                   </div>
+
+                  {hasWalletSession && !hasFederatedSession && isFederatedLoginAvailable ? (
+                    <Button variant="outline" onClick={handleStartFederatedLink} disabled={isBusy} className="min-h-11 w-full">
+                      {t({
+                        en: "Link email sign-in",
+                        es: "Vincular ingreso por email",
+                        pt: "Vincular login por email"
+                      })}
+                    </Button>
+                  ) : null}
 
                   {walletPublicKey ? (
                     <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">

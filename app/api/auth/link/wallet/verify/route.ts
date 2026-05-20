@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { linkWalletIdentityToAccount, AccountRepositoryError } from "@/lib/accounts/repository";
+import {
+  linkWalletIdentityToAccount,
+  mergeFederatedOnlyAccountIntoWalletAccount,
+  findAccountByWalletPublicKey,
+  AccountRepositoryError
+} from "@/lib/accounts/repository";
 import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository";
 import { promoteReferralIntentForAccountWallet } from "@/lib/referrals/repository";
+import { getRoleForWallet } from "@/lib/rbac";
+import { consumeNonce } from "@/lib/auth-store";
 import {
   clearWalletLinkContextCookie,
   getRequestHost,
@@ -76,6 +83,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return clearFailedContext(verification.status, verification.error, linkContext.contextId);
   }
 
+  if (!consumeNonce(linkContext.nonce)) {
+    return clearFailedContext(409, "Invalid or expired nonce.", linkContext.contextId);
+  }
+
+  let effectiveAccountId = auth.accountId;
+  let merged = false;
+
   try {
     await linkWalletIdentityToAccount({
       accountId: auth.accountId,
@@ -83,10 +97,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     if (error instanceof AccountRepositoryError && error.code === "WALLET_ALREADY_LINKED") {
-      return clearFailedContext(409, error.message, linkContext.contextId);
-    }
+      const walletAccount = await findAccountByWalletPublicKey(verification.publicKey);
 
-    throw error;
+      if (!walletAccount) {
+        return clearFailedContext(409, error.message, linkContext.contextId);
+      }
+
+      if (getRoleForWallet(verification.publicKey) === "admin") {
+        return clearFailedContext(409, "This account requires manual review before it can be consolidated.", linkContext.contextId);
+      }
+
+      try {
+        const consolidated = await mergeFederatedOnlyAccountIntoWalletAccount({
+          sourceAccountId: auth.accountId,
+          targetAccountId: walletAccount.account.id
+        });
+
+        effectiveAccountId = consolidated.account.id;
+        merged = true;
+      } catch (mergeError) {
+        if (mergeError instanceof AccountRepositoryError) {
+          return clearFailedContext(
+            409,
+            "This account requires manual review before it can be consolidated.",
+            linkContext.contextId
+          );
+        }
+
+        throw mergeError;
+      }
+    } else {
+      throw error;
+    }
   }
 
   await applyFederatedEmailPrefill({
@@ -98,7 +140,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const referralIntentResult = await promoteReferralIntentForAccountWallet({
-      accountId: auth.accountId,
+      accountId: effectiveAccountId,
       walletPublicKey: verification.publicKey
     });
 
@@ -122,6 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     ok: true,
     publicKey: verification.publicKey,
     linked: true,
+    merged,
     referralBindingOutcome
   });
   setSessionCookie(response, verification.sessionToken);

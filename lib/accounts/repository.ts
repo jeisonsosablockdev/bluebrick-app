@@ -56,6 +56,11 @@ export type LinkWalletIdentityInput = {
   walletPublicKey: string;
 };
 
+export type MergeFederatedOnlyAccountIntoWalletAccountInput = {
+  sourceAccountId: string;
+  targetAccountId: string;
+};
+
 type InMemoryAccountState = {
   account: AccountRecord;
   wallets: WalletIdentityRecord[];
@@ -261,6 +266,52 @@ function linkWalletIdentityToAccountInMemory(input: LinkWalletIdentityInput): Ac
   return cloneBundle(state);
 }
 
+function mergeFederatedOnlyAccountIntoWalletAccountInMemory(
+  input: MergeFederatedOnlyAccountIntoWalletAccountInput
+): AccountIdentityBundle {
+  const sourceAccountId = input.sourceAccountId.trim();
+  const targetAccountId = input.targetAccountId.trim();
+
+  if (!sourceAccountId || !targetAccountId) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  if (sourceAccountId === targetAccountId) {
+    return cloneBundle(getInMemoryAccountById(targetAccountId));
+  }
+
+  const source = getInMemoryAccountById(sourceAccountId);
+  const target = getInMemoryAccountById(targetAccountId);
+
+  if (source.wallets.length > 0 || source.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+      "Source account is not eligible for automatic consolidation."
+    );
+  }
+
+  if (!target.wallets.length || !target.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "TARGET_ACCOUNT_NOT_WALLET_BACKED",
+      "Target account is not eligible to receive federated identities."
+    );
+  }
+
+  for (const identity of source.federated) {
+    inMemoryAccountIdByWorkosUserId.set(identity.workosUserId, target.account.id);
+    target.federated.push({
+      ...identity,
+      accountId: target.account.id,
+      updatedAt: nowIso()
+    });
+  }
+
+  target.account.updatedAt = nowIso();
+  inMemoryAccountsById.delete(source.account.id);
+
+  return cloneBundle(target);
+}
+
 function mapAccountRow(row: {
   id: string;
   created_via: AccountCreatedVia;
@@ -349,6 +400,197 @@ async function getAccountBundleByIdWithClient(client: PoolClient, accountId: str
     walletIdentities: walletsResult.rows.map(mapWalletRow),
     federatedIdentities: federatedResult.rows.map(mapFederatedRow)
   };
+}
+
+async function getRequiredAccountBundleByIdWithClient(client: PoolClient, accountId: string): Promise<AccountIdentityBundle> {
+  const bundle = await getAccountBundleByIdWithClient(client, accountId);
+  if (!bundle) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  return bundle;
+}
+
+function assertSourceAccountIsFederatedOnly(sourceBundle: AccountIdentityBundle): void {
+  if (sourceBundle.walletIdentities.length > 0 || sourceBundle.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+      "Source account is not eligible for automatic consolidation."
+    );
+  }
+}
+
+function assertTargetAccountIsWalletBacked(targetBundle: AccountIdentityBundle): void {
+  if (!targetBundle.walletIdentities.length || !targetBundle.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "TARGET_ACCOUNT_NOT_WALLET_BACKED",
+      "Target account is not eligible to receive federated identities."
+    );
+  }
+}
+
+async function queryCountWithMissingTableFallback(
+  client: PoolClient,
+  queryText: string,
+  values: string[]
+): Promise<number> {
+  const result = await queryWithMissingTableFallback(client, queryText, values, [{ count: "0" }]);
+
+  return Number.parseInt(result.rows[0]?.count ?? "0", 10);
+}
+
+async function queryWithMissingTableFallback<Row extends Record<string, unknown>>(
+  client: PoolClient,
+  queryText: string,
+  values: string[],
+  fallbackRows: Row[]
+): Promise<{ rows: Row[] }> {
+  try {
+    return await client.query<Row>(queryText, values);
+  } catch (error) {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return { rows: fallbackRows };
+    }
+
+    throw error;
+  }
+}
+
+async function runQueryUnlessTableMissing(client: PoolClient, queryText: string, values: string[]): Promise<void> {
+  try {
+    await client.query(queryText, values);
+  } catch (error) {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+async function assertSourceAccountHasNoBoundProfileState(client: PoolClient, sourceAccountId: string): Promise<void> {
+  const profileCount = await queryCountWithMissingTableFallback(
+    client,
+    `SELECT COUNT(*)::text AS count
+       FROM user_profiles
+      WHERE account_id = $1`,
+    [sourceAccountId]
+  );
+
+  if (profileCount > 0) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_HAS_BOUND_PROFILE_STATE",
+      "Source account has state that requires manual review."
+    );
+  }
+}
+
+async function assertSourceAccountHasNoPushState(client: PoolClient, sourceAccountId: string): Promise<void> {
+  const pushSubscriptionCount = await queryCountWithMissingTableFallback(
+    client,
+    `SELECT COUNT(*)::text AS count
+       FROM web_push_subscriptions
+      WHERE account_id = $1`,
+    [sourceAccountId]
+  );
+
+  if (pushSubscriptionCount > 0) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_HAS_PUSH_STATE",
+      "Source account has state that requires manual review."
+    );
+  }
+}
+
+async function getLockedActiveReferralIntentId(client: PoolClient, accountId: string): Promise<string | null> {
+  const result = await queryWithMissingTableFallback(
+    client,
+    `SELECT id
+       FROM account_referral_intents
+      WHERE account_id = $1
+        AND status = 'active'
+      LIMIT 1
+      FOR UPDATE`,
+    [accountId],
+    [] as { id: string }[]
+  );
+
+  return result.rows[0]?.id ?? null;
+}
+
+async function reconcileReferralIntentsForAccountMerge(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<void> {
+  const sourceActiveIntentId = await getLockedActiveReferralIntentId(client, sourceAccountId);
+  const targetActiveIntentId = await getLockedActiveReferralIntentId(client, targetAccountId);
+
+  if (!sourceActiveIntentId) {
+    return;
+  }
+
+  if (!targetActiveIntentId) {
+    await runQueryUnlessTableMissing(
+      client,
+      `UPDATE account_referral_intents
+          SET account_id = $2
+        WHERE id = $1`,
+      [sourceActiveIntentId, targetAccountId]
+    );
+    return;
+  }
+
+  await runQueryUnlessTableMissing(
+    client,
+    `UPDATE account_referral_intents
+        SET status = 'discarded_wallet_already_attributed',
+            resolved_at = NOW(),
+            promoted_attribution_id = NULL
+      WHERE id = $1`,
+    [sourceActiveIntentId]
+  );
+}
+
+async function reassignFederatedIdentitiesForAccountMerge(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<void> {
+  await client.query(
+    `UPDATE account_federated_identities
+        SET account_id = $2,
+            updated_at = NOW()
+      WHERE account_id = $1`,
+    [sourceAccountId, targetAccountId]
+  );
+}
+
+async function deleteAbsorbedAccountForMerge(client: PoolClient, sourceAccountId: string): Promise<void> {
+  await client.query(
+    `DELETE FROM accounts
+      WHERE id = $1`,
+    [sourceAccountId]
+  );
+}
+
+async function mergeFederatedOnlyAccountIntoWalletAccountWithClient(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<AccountIdentityBundle> {
+  const sourceBundle = await getRequiredAccountBundleByIdWithClient(client, sourceAccountId);
+  const targetBundle = await getRequiredAccountBundleByIdWithClient(client, targetAccountId);
+
+  assertSourceAccountIsFederatedOnly(sourceBundle);
+  assertTargetAccountIsWalletBacked(targetBundle);
+  await assertSourceAccountHasNoBoundProfileState(client, sourceAccountId);
+  await assertSourceAccountHasNoPushState(client, sourceAccountId);
+  await reconcileReferralIntentsForAccountMerge(client, sourceAccountId, targetAccountId);
+  await reassignFederatedIdentitiesForAccountMerge(client, sourceAccountId, targetAccountId);
+  await deleteAbsorbedAccountForMerge(client, sourceAccountId);
+
+  return getRequiredAccountBundleByIdWithClient(client, targetAccountId);
 }
 
 export async function findAccountByWalletPublicKey(walletPublicKey: string): Promise<AccountIdentityBundle | null> {
@@ -691,6 +933,56 @@ export async function linkWalletIdentityToAccount(input: LinkWalletIdentityInput
   } catch (error) {
     if (isAccountsSchemaUnavailableError(error)) {
       return linkWalletIdentityToAccountInMemory(input);
+    }
+
+    throw error;
+  }
+}
+
+export async function mergeFederatedOnlyAccountIntoWalletAccount(
+  input: MergeFederatedOnlyAccountIntoWalletAccountInput
+): Promise<AccountIdentityBundle> {
+  const sourceAccountId = input.sourceAccountId.trim();
+  const targetAccountId = input.targetAccountId.trim();
+
+  if (!sourceAccountId || !targetAccountId) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  if (sourceAccountId === targetAccountId) {
+    if (!hasDatabase()) {
+      return cloneBundle(getInMemoryAccountById(targetAccountId));
+    }
+
+    const sameAccount = await withDbClient((client) => getAccountBundleByIdWithClient(client, targetAccountId));
+    if (!sameAccount) {
+      throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+    }
+
+    return sameAccount;
+  }
+
+  if (!hasDatabase()) {
+    return mergeFederatedOnlyAccountIntoWalletAccountInMemory(input);
+  }
+
+  try {
+    return await withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        const merged = await mergeFederatedOnlyAccountIntoWalletAccountWithClient(client, sourceAccountId, targetAccountId);
+        await client.query("COMMIT");
+
+        return merged;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  } catch (error) {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return mergeFederatedOnlyAccountIntoWalletAccountInMemory(input);
     }
 
     throw error;

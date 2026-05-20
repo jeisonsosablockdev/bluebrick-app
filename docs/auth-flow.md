@@ -106,6 +106,10 @@ Last Updated: 2026-05-19
 - Wallet linking now has its own guarded SIWS path for federated users:
   - `GET /api/auth/link/wallet/nonce` issues a single-use, 5-minute wallet-link context bound to the active WorkOS account session
   - `POST /api/auth/link/wallet/verify` verifies a fresh SIWS signature against that exact link context and fails closed on mismatch or replay
+- Wallet-backed users now also have an explicit federated-link path:
+  - `GET /api/auth/link/federated/start` requires active SIWS wallet auth and stores a short-lived pending federated-link context bound to `account_id + wallet_public_key`
+  - browser returns from WorkOS through `GET /auth/link/federated/complete`
+  - completion either succeeds idempotently, consolidates a safe federated-only split account into the wallet-backed account, or redirects to `review_required`
 - Direct SIWS login continues to work for wallet-first users, but now also ensures the wallet is resolved into the BRIDS account model.
 - If WorkOS and SIWS sessions resolve to different BRIDS accounts, the server now fails closed on hybrid account introspection instead of composing them.
 - Wallet-bound dashboard routes like `/protected/referrals` still require active wallet SIWS even when `/protected` overview can render from account-only session.
@@ -167,6 +171,12 @@ Last Updated: 2026-05-19
 4. Protected account entry:
    - `/protected` can render with account-only state.
    - account-only users still need SIWS step-up before wallet-bound actions.
+5. Wallet-backed federated linking:
+   - `GET /api/auth/link/federated/start` begins from an already wallet-authenticated session and creates a short-lived pending context.
+   - After WorkOS sign-in completes, `GET /auth/link/federated/complete` reads both auth layers plus the pending context.
+   - Same-account completion is idempotent.
+   - Split-account completion may safely absorb the federated-only account into the wallet-backed account.
+   - Unsafe cases fail into `review_required`; wallet ownership is never reassigned heuristically.
 
 ## SIWS Flow
 1. Nonce issued by server:
@@ -179,6 +189,7 @@ Last Updated: 2026-05-19
    - Wallet signs message bytes via `signMessage()`.
 3. Signature verified server-side:
    - `POST /api/auth/verify` validates format, host/domain, issuedAt freshness, signature, and nonce equality against signed nonce cookie.
+   - The nonce must also still exist in the server-side nonce store and is consumed immediately after successful verification to close replay windows.
    - The same first auth payload may also carry optional referral fields (`referralCode`, `attributionSource`, `attributionMetadata`).
    - Referral binding is attempted only for wallets that are still new at auth time; previously registered wallets skip referral attachment to avoid late attribution.
    - Nonce cookie is cleared after verify success/failure to force fresh challenge on retry.

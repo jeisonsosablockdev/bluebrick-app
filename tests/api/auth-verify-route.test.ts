@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
+  consumeNonceFromRequest: vi.fn(),
   getNonceFromRequest: vi.fn(),
   getRequestHost: vi.fn(),
   verifySiwsPayload: vi.fn(),
@@ -13,6 +14,7 @@ const routeMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
+  consumeNonceFromRequest: routeMocks.consumeNonceFromRequest,
   getNonceFromRequest: routeMocks.getNonceFromRequest,
   getRequestHost: routeMocks.getRequestHost,
   verifySiwsPayload: routeMocks.verifySiwsPayload,
@@ -48,6 +50,7 @@ describe("POST /api/auth/verify", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     routeMocks.getNonceFromRequest.mockReturnValue("nonce-1");
+    routeMocks.consumeNonceFromRequest.mockReturnValue(true);
     routeMocks.getRequestHost.mockReturnValue("example.com");
     routeMocks.verifySiwsPayload.mockReturnValue({
       ok: true,
@@ -166,5 +169,21 @@ describe("POST /api/auth/verify", () => {
     expect(payload.error).toBe("Invalid or expired nonce.");
     expect(routeMocks.clearNonceCookie).toHaveBeenCalledTimes(1);
     expect(routeMocks.bindReferralAtFirstAuth).not.toHaveBeenCalled();
+  });
+
+  it("rejects replay when the nonce was already consumed", async () => {
+    routeMocks.consumeNonceFromRequest.mockReturnValueOnce(false);
+
+    const response = await POST(
+      createRequest({
+        message: "signed-message",
+        signature: "signature-1",
+        publicKey: "Wallet11111111111111111111111111111111111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(payload.error).toBe("Invalid or expired nonce.");
   });
 });
