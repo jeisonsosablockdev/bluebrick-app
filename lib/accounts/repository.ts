@@ -402,6 +402,188 @@ async function getAccountBundleByIdWithClient(client: PoolClient, accountId: str
   };
 }
 
+async function getRequiredAccountBundleByIdWithClient(client: PoolClient, accountId: string): Promise<AccountIdentityBundle> {
+  const bundle = await getAccountBundleByIdWithClient(client, accountId);
+  if (!bundle) {
+    throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  return bundle;
+}
+
+function assertSourceAccountIsFederatedOnly(sourceBundle: AccountIdentityBundle): void {
+  if (sourceBundle.walletIdentities.length > 0 || sourceBundle.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
+      "Source account is not eligible for automatic consolidation."
+    );
+  }
+}
+
+function assertTargetAccountIsWalletBacked(targetBundle: AccountIdentityBundle): void {
+  if (!targetBundle.walletIdentities.length || !targetBundle.account.primaryWalletPublicKey) {
+    throw new AccountRepositoryError(
+      "TARGET_ACCOUNT_NOT_WALLET_BACKED",
+      "Target account is not eligible to receive federated identities."
+    );
+  }
+}
+
+async function queryCountWithMissingTableFallback(
+  client: PoolClient,
+  queryText: string,
+  values: string[]
+): Promise<number> {
+  const result = await client.query<{ count: string }>(queryText, values).catch((error: unknown) => {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return { rows: [{ count: "0" }] };
+    }
+
+    throw error;
+  });
+
+  return Number.parseInt(result.rows[0]?.count ?? "0", 10);
+}
+
+async function assertSourceAccountHasNoBoundProfileState(client: PoolClient, sourceAccountId: string): Promise<void> {
+  const profileCount = await queryCountWithMissingTableFallback(
+    client,
+    `SELECT COUNT(*)::text AS count
+       FROM user_profiles
+      WHERE account_id = $1`,
+    [sourceAccountId]
+  );
+
+  if (profileCount > 0) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_HAS_BOUND_PROFILE_STATE",
+      "Source account has state that requires manual review."
+    );
+  }
+}
+
+async function assertSourceAccountHasNoPushState(client: PoolClient, sourceAccountId: string): Promise<void> {
+  const pushSubscriptionCount = await queryCountWithMissingTableFallback(
+    client,
+    `SELECT COUNT(*)::text AS count
+       FROM web_push_subscriptions
+      WHERE account_id = $1`,
+    [sourceAccountId]
+  );
+
+  if (pushSubscriptionCount > 0) {
+    throw new AccountRepositoryError(
+      "SOURCE_ACCOUNT_HAS_PUSH_STATE",
+      "Source account has state that requires manual review."
+    );
+  }
+}
+
+async function getLockedActiveReferralIntentId(client: PoolClient, accountId: string): Promise<string | null> {
+  const result = await client.query<{ id: string }>(
+    `SELECT id
+       FROM account_referral_intents
+      WHERE account_id = $1
+        AND status = 'active'
+      LIMIT 1
+      FOR UPDATE`,
+    [accountId]
+  ).catch((error: unknown) => {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return { rows: [] };
+    }
+
+    throw error;
+  });
+
+  return result.rows[0]?.id ?? null;
+}
+
+async function reconcileReferralIntentsForAccountMerge(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<void> {
+  const sourceActiveIntentId = await getLockedActiveReferralIntentId(client, sourceAccountId);
+  const targetActiveIntentId = await getLockedActiveReferralIntentId(client, targetAccountId);
+
+  if (!sourceActiveIntentId) {
+    return;
+  }
+
+  if (!targetActiveIntentId) {
+    await client.query(
+      `UPDATE account_referral_intents
+          SET account_id = $2
+        WHERE id = $1`,
+      [sourceActiveIntentId, targetAccountId]
+    ).catch((error: unknown) => {
+      if (isAccountsSchemaUnavailableError(error)) {
+        return;
+      }
+
+      throw error;
+    });
+    return;
+  }
+
+  await client.query(
+    `UPDATE account_referral_intents
+        SET status = 'discarded_wallet_already_attributed',
+            resolved_at = NOW(),
+            promoted_attribution_id = NULL
+      WHERE id = $1`,
+    [sourceActiveIntentId]
+  ).catch((error: unknown) => {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return;
+    }
+
+    throw error;
+  });
+}
+
+async function reassignFederatedIdentitiesForAccountMerge(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<void> {
+  await client.query(
+    `UPDATE account_federated_identities
+        SET account_id = $2,
+            updated_at = NOW()
+      WHERE account_id = $1`,
+    [sourceAccountId, targetAccountId]
+  );
+}
+
+async function deleteAbsorbedAccountForMerge(client: PoolClient, sourceAccountId: string): Promise<void> {
+  await client.query(
+    `DELETE FROM accounts
+      WHERE id = $1`,
+    [sourceAccountId]
+  );
+}
+
+async function mergeFederatedOnlyAccountIntoWalletAccountWithClient(
+  client: PoolClient,
+  sourceAccountId: string,
+  targetAccountId: string
+): Promise<AccountIdentityBundle> {
+  const sourceBundle = await getRequiredAccountBundleByIdWithClient(client, sourceAccountId);
+  const targetBundle = await getRequiredAccountBundleByIdWithClient(client, targetAccountId);
+
+  assertSourceAccountIsFederatedOnly(sourceBundle);
+  assertTargetAccountIsWalletBacked(targetBundle);
+  await assertSourceAccountHasNoBoundProfileState(client, sourceAccountId);
+  await assertSourceAccountHasNoPushState(client, sourceAccountId);
+  await reconcileReferralIntentsForAccountMerge(client, sourceAccountId, targetAccountId);
+  await reassignFederatedIdentitiesForAccountMerge(client, sourceAccountId, targetAccountId);
+  await deleteAbsorbedAccountForMerge(client, sourceAccountId);
+
+  return getRequiredAccountBundleByIdWithClient(client, targetAccountId);
+}
+
 export async function findAccountByWalletPublicKey(walletPublicKey: string): Promise<AccountIdentityBundle | null> {
   const normalized = walletPublicKey.trim();
 
@@ -780,146 +962,8 @@ export async function mergeFederatedOnlyAccountIntoWalletAccount(
       await client.query("BEGIN");
 
       try {
-        const sourceBundle = await getAccountBundleByIdWithClient(client, sourceAccountId);
-        const targetBundle = await getAccountBundleByIdWithClient(client, targetAccountId);
-
-        if (!sourceBundle || !targetBundle) {
-          throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
-        }
-
-        if (sourceBundle.walletIdentities.length > 0 || sourceBundle.account.primaryWalletPublicKey) {
-          throw new AccountRepositoryError(
-            "SOURCE_ACCOUNT_NOT_FEDERATED_ONLY",
-            "Source account is not eligible for automatic consolidation."
-          );
-        }
-
-        if (!targetBundle.walletIdentities.length || !targetBundle.account.primaryWalletPublicKey) {
-          throw new AccountRepositoryError(
-            "TARGET_ACCOUNT_NOT_WALLET_BACKED",
-            "Target account is not eligible to receive federated identities."
-          );
-        }
-
-        const sourceProfiles = await client.query<{ count: string }>(
-          `SELECT COUNT(*)::text AS count
-             FROM user_profiles
-            WHERE account_id = $1`,
-          [sourceAccountId]
-        );
-
-        if (Number.parseInt(sourceProfiles.rows[0]?.count ?? "0", 10) > 0) {
-          throw new AccountRepositoryError(
-            "SOURCE_ACCOUNT_HAS_BOUND_PROFILE_STATE",
-            "Source account has state that requires manual review."
-          );
-        }
-
-        const sourcePushSubscriptions = await client.query<{ count: string }>(
-          `SELECT COUNT(*)::text AS count
-             FROM web_push_subscriptions
-            WHERE account_id = $1`,
-          [sourceAccountId]
-        ).catch((error: unknown) => {
-          if (isAccountsSchemaUnavailableError(error)) {
-            return { rows: [{ count: "0" }] };
-          }
-
-          throw error;
-        });
-
-        if (Number.parseInt(sourcePushSubscriptions.rows[0]?.count ?? "0", 10) > 0) {
-          throw new AccountRepositoryError(
-            "SOURCE_ACCOUNT_HAS_PUSH_STATE",
-            "Source account has state that requires manual review."
-          );
-        }
-
-        const sourceActiveIntent = await client.query<{ id: string }>(
-          `SELECT id
-             FROM account_referral_intents
-            WHERE account_id = $1
-              AND status = 'active'
-            LIMIT 1
-            FOR UPDATE`,
-          [sourceAccountId]
-        ).catch((error: unknown) => {
-          if (isAccountsSchemaUnavailableError(error)) {
-            return { rows: [] };
-          }
-
-          throw error;
-        });
-
-        const targetActiveIntent = await client.query<{ id: string }>(
-          `SELECT id
-             FROM account_referral_intents
-            WHERE account_id = $1
-              AND status = 'active'
-            LIMIT 1
-            FOR UPDATE`,
-          [targetAccountId]
-        ).catch((error: unknown) => {
-          if (isAccountsSchemaUnavailableError(error)) {
-            return { rows: [] };
-          }
-
-          throw error;
-        });
-
-        const sourceActiveIntentId = sourceActiveIntent.rows[0]?.id ?? null;
-        const targetActiveIntentId = targetActiveIntent.rows[0]?.id ?? null;
-
-        if (sourceActiveIntentId && !targetActiveIntentId) {
-          await client.query(
-            `UPDATE account_referral_intents
-                SET account_id = $2
-              WHERE id = $1`,
-            [sourceActiveIntentId, targetAccountId]
-          ).catch((error: unknown) => {
-            if (isAccountsSchemaUnavailableError(error)) {
-              return;
-            }
-
-            throw error;
-          });
-        } else if (sourceActiveIntentId && targetActiveIntentId) {
-          await client.query(
-            `UPDATE account_referral_intents
-                SET status = 'discarded_wallet_already_attributed',
-                    resolved_at = NOW(),
-                    promoted_attribution_id = NULL
-              WHERE id = $1`,
-            [sourceActiveIntentId]
-          ).catch((error: unknown) => {
-            if (isAccountsSchemaUnavailableError(error)) {
-              return;
-            }
-
-            throw error;
-          });
-        }
-
-        await client.query(
-          `UPDATE account_federated_identities
-              SET account_id = $2,
-                  updated_at = NOW()
-            WHERE account_id = $1`,
-          [sourceAccountId, targetAccountId]
-        );
-
-        await client.query(
-          `DELETE FROM accounts
-            WHERE id = $1`,
-          [sourceAccountId]
-        );
-
+        const merged = await mergeFederatedOnlyAccountIntoWalletAccountWithClient(client, sourceAccountId, targetAccountId);
         await client.query("COMMIT");
-
-        const merged = await getAccountBundleByIdWithClient(client, targetAccountId);
-        if (!merged) {
-          throw new AccountRepositoryError("ACCOUNT_NOT_FOUND", "Account was not found.");
-        }
 
         return merged;
       } catch (error) {

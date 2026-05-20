@@ -6,6 +6,7 @@
 - Depends on:
   - `docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md`
   - `docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
+  - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
 
 ## Goal
 

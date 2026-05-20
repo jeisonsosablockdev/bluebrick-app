@@ -20,6 +20,10 @@ The current system fails closed when those two session layers point at different
 
 This fix introduces an explicit, server-controlled identity consolidation mechanism so the user can intentionally prove control of both sides and recover into one BRIDS account without weakening wallet authority.
 
+Follow-up cleanup note:
+
+- The implementation also opened a dedicated clean-code refactor track in `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md` to reduce repository orchestration size and remove duplicated auth-link status presentation logic without changing the trust model.
+
 ## Problem
 
 Today the hybrid auth model has three gaps:
