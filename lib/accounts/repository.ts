@@ -434,15 +434,38 @@ async function queryCountWithMissingTableFallback(
   queryText: string,
   values: string[]
 ): Promise<number> {
-  const result = await client.query<{ count: string }>(queryText, values).catch((error: unknown) => {
+  const result = await queryWithMissingTableFallback(client, queryText, values, [{ count: "0" }]);
+
+  return Number.parseInt(result.rows[0]?.count ?? "0", 10);
+}
+
+async function queryWithMissingTableFallback<Row extends Record<string, unknown>>(
+  client: PoolClient,
+  queryText: string,
+  values: string[],
+  fallbackRows: Row[]
+): Promise<{ rows: Row[] }> {
+  try {
+    return await client.query<Row>(queryText, values);
+  } catch (error) {
     if (isAccountsSchemaUnavailableError(error)) {
-      return { rows: [{ count: "0" }] };
+      return { rows: fallbackRows };
     }
 
     throw error;
-  });
+  }
+}
 
-  return Number.parseInt(result.rows[0]?.count ?? "0", 10);
+async function runQueryUnlessTableMissing(client: PoolClient, queryText: string, values: string[]): Promise<void> {
+  try {
+    await client.query(queryText, values);
+  } catch (error) {
+    if (isAccountsSchemaUnavailableError(error)) {
+      return;
+    }
+
+    throw error;
+  }
 }
 
 async function assertSourceAccountHasNoBoundProfileState(client: PoolClient, sourceAccountId: string): Promise<void> {
@@ -480,21 +503,17 @@ async function assertSourceAccountHasNoPushState(client: PoolClient, sourceAccou
 }
 
 async function getLockedActiveReferralIntentId(client: PoolClient, accountId: string): Promise<string | null> {
-  const result = await client.query<{ id: string }>(
+  const result = await queryWithMissingTableFallback(
+    client,
     `SELECT id
        FROM account_referral_intents
       WHERE account_id = $1
         AND status = 'active'
       LIMIT 1
       FOR UPDATE`,
-    [accountId]
-  ).catch((error: unknown) => {
-    if (isAccountsSchemaUnavailableError(error)) {
-      return { rows: [] };
-    }
-
-    throw error;
-  });
+    [accountId],
+    [] as { id: string }[]
+  );
 
   return result.rows[0]?.id ?? null;
 }
@@ -512,35 +531,25 @@ async function reconcileReferralIntentsForAccountMerge(
   }
 
   if (!targetActiveIntentId) {
-    await client.query(
+    await runQueryUnlessTableMissing(
+      client,
       `UPDATE account_referral_intents
           SET account_id = $2
         WHERE id = $1`,
       [sourceActiveIntentId, targetAccountId]
-    ).catch((error: unknown) => {
-      if (isAccountsSchemaUnavailableError(error)) {
-        return;
-      }
-
-      throw error;
-    });
+    );
     return;
   }
 
-  await client.query(
+  await runQueryUnlessTableMissing(
+    client,
     `UPDATE account_referral_intents
         SET status = 'discarded_wallet_already_attributed',
             resolved_at = NOW(),
             promoted_attribution_id = NULL
       WHERE id = $1`,
     [sourceActiveIntentId]
-  ).catch((error: unknown) => {
-    if (isAccountsSchemaUnavailableError(error)) {
-      return;
-    }
-
-    throw error;
-  });
+  );
 }
 
 async function reassignFederatedIdentitiesForAccountMerge(
