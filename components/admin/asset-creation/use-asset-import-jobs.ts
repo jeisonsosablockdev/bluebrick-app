@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import type { ChangeEvent } from "react";
 
 import { parseTabularText, parseTextFileToTabularRows } from "@/lib/admin/asset-form";
+import { buildTextImportFingerprint } from "@/lib/admin/asset-import-fingerprint";
 
 type SetStateAction<T> = T | ((prev: T) => T);
 
@@ -38,6 +39,21 @@ function buildNoRowsMessage(t: (copy: ImportTranslations) => string): string {
     es: "No se detectaron filas validas en el contenido importado.",
     pt: "Nenhuma linha valida foi detectada no conteudo importado."
   });
+}
+
+function createTextImportCandidate(input: {
+  fileName: string;
+  text: string;
+  headers: string[];
+  rows: Array<Record<string, string>>;
+}): ParsedImportCandidate {
+  return {
+    fileName: input.fileName,
+    fingerprint: buildTextImportFingerprint(input.fileName, input.text),
+    headers: input.headers,
+    rows: input.rows,
+    text: input.text
+  };
 }
 
 async function fetchPdfImportPreview(file: File): Promise<ParsedImportCandidate> {
@@ -85,13 +101,12 @@ export function useAssetImportJobs({
       return null;
     }
 
-    return {
+    return createTextImportCandidate({
       fileName: input.fileName?.trim() || "pasted-import.tsv",
-      fingerprint: `text:${input.fileName?.trim() || "pasted-import.tsv"}:${input.text}`,
+      text: input.text,
       headers: parsed.headers,
-      rows: parsed.rows,
-      text: input.text
-    };
+      rows: parsed.rows
+    });
   }, [setImportHeaders, setImportMessage, setImportPreviewCount, t]);
 
   const applyImportCandidate = useCallback((candidate: ParsedImportCandidate) => {
@@ -157,13 +172,12 @@ export function useAssetImportJobs({
         return null;
       }
 
-      return {
+      return createTextImportCandidate({
         fileName: file.name,
-        fingerprint: `text:${file.name}:${text}`,
+        text,
         headers: parsed.headers,
-        rows: parsed.rows,
-        text
-      };
+        rows: parsed.rows
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown import error.";
       setImportMessage(message);

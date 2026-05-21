@@ -3,6 +3,32 @@ type ParsedTabularRows = {
   rows: Array<Record<string, string>>;
 };
 
+type ExtractedBriefFields = {
+  internalCode: string;
+  address: string;
+  purchasePriceUsd: string;
+  afterRepairValueUsd: string;
+  rehabBudgetUsd: string;
+  closingCostsUsd: string;
+  holdingCostsUsd: string;
+  sellingCostsUsd: string;
+  totalProjectCostUsd: string;
+  buildingFundingGoal: string;
+  buildingTotalUnits: string;
+  buildingNftCost: string;
+  structuringFeeUsd: string;
+  grossProfitProjectedUsd: string;
+  managementFeeUsd: string;
+  brokerFeeUsd: string;
+  netInvestorProfitUsd: string;
+  projectedNetRoiPct: string;
+  durationLabel: string;
+  buildingProjectStage: string;
+  buildingDeveloperName: string;
+  buildingExitStrategy: string;
+  riskNotes: string;
+};
+
 export class AssetPdfBriefError extends Error {
   code: string;
 
@@ -199,97 +225,140 @@ function buildRiskNotes(text: string): string {
   return collapseWhitespace(section);
 }
 
-export function parseInvestmentBriefTextToRows(text: string): ParsedTabularRows {
-  const normalized = text.replace(/\u00a0/g, " ").replace(/\r\n/g, "\n");
-  const collapsed = collapseWhitespace(normalized);
+function normalizeBriefText(text: string): string {
+  return collapseWhitespace(text.replace(/\u00a0/g, " ").replace(/\r\n/g, "\n"));
+}
 
-  const internalCode = matchTextValue(collapsed, [
-    /Deal Number:\s*([A-Za-z0-9-]+)/i
-  ]);
-  const address = matchTextValue(collapsed, [
-    /Address:\s*(.+?)\s+Purchase Price:/i
-  ]);
-  const purchasePriceUsd = matchMoneyValue(collapsed, [
-    /Purchase Price:\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const afterRepairValueUsd = matchMoneyValue(collapsed, [
-    /After Repair Value\s*\(ARV\):\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const rehabBudgetUsd = matchMoneyValue(collapsed, [
-    /(?:Construction\s*\/\s*Rehab|Rehab Budget|Rehab\s*\/\s*Construction)\s+Budget:\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
-    /Rehab\s*\/\s*Construction\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const closingCostsUsd = matchMoneyValue(collapsed, [
-    /Closing Costs(?:\s*\([^)]*\))?\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const holdingCostsUsd = matchMoneyValue(collapsed, [
-    /Holding\s*&\s*Misc\.\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const sellingCostsUsd = matchMoneyValue(collapsed, [
-    /Selling Costs(?:\s*\([^)]*\))?\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const totalProjectCostUsd = matchMoneyValue(collapsed, [
-    /Total Project Cost\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const buildingFundingGoal = matchMoneyValue(collapsed, [
-    /Minimum Capital Required to Participate in(?:\s+the)?\s+Project\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i,
-    /Minimum Capital Required to Participate in(?:\s+the)?\s+Project\s+\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const buildingTotalUnits = matchTextValue(collapsed, [
-    /Cantidad de Ticket de inversion\s*([0-9]+)/i,
-    /MINIMUM TICKET\s+([0-9]+)/i
-  ]);
-  const buildingNftCost = matchMoneyValue(collapsed, [
-    /MINIMUM TICKET\s+Ticket Value\s+Structuring fee\s+Total Participation Value\s+\d+\s+\$?\s*([\d,]+(?:\.\d+)?)/i,
-    /Ticket Value\s+\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const structuringFeeUsd = matchMoneyValue(collapsed, [
-    /Structuring fee\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const grossProfitProjectedUsd = matchMoneyValue(collapsed, [
-    /Net Profit\s*\(before distribution\)\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const managementFeeUsd = matchMoneyValue(collapsed, [
-    /Management Fee(?:\s*\([^)]*\))?\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const brokerFeeUsd = matchMoneyValue(collapsed, [
-    /Broker Fee(?:\s*\([^)]*\))?\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const netInvestorProfitUsd = matchMoneyValue(collapsed, [
-    /Net Profit for Investor\s*\$?\s*([\d,]+(?:\.\d+)?)/i
-  ]);
-  const projectedNetRoiPct = matchPercentValue(collapsed, [
-    /Net Profit for Investor\s+\$?\s*[\d,]+(?:\.\d+)?\s+(\d+(?:\.\d+)?)%/i,
-    /Total Investors(?:\s+\d+%)?\s+\$?\s*[\d,]+(?:\.\d+)?\s+(\d+(?:\.\d+)?)%/i
-  ]);
-  const durationLabel = firstNonEmpty(
-    matchTextValue(collapsed, [/Total Estimated Duration\s+(.+?)(?:9-\s*Security|10-\s*Investment Highlights|$)/is]),
-    matchTextValue(collapsed, [/Timing\s+(.+?)\s+2\s*-\s*Financial Breakdown/is])
+function omitEmptyFields(row: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(row).filter(([, value]) => value.trim().length > 0)
   );
-  const buildingProjectStage = deriveProjectStage(collapsed);
-  const buildingDeveloperName = deriveOperatorName(collapsed);
-  const buildingExitStrategy = deriveExitStrategy(collapsed);
-  const riskNotes = buildRiskNotes(collapsed);
-  const { city, state, country } = deriveLocation(address);
-  const buildingProjectDurationMonths = deriveDurationMonths(durationLabel);
+}
 
-  const recognitionScore = [
-    internalCode,
-    address,
-    purchasePriceUsd,
-    afterRepairValueUsd,
-    totalProjectCostUsd,
-    buildingFundingGoal,
-    projectedNetRoiPct
+function extractBriefFields(text: string): ExtractedBriefFields {
+  return {
+    internalCode: matchTextValue(text, [
+      /Deal Number:\s*([A-Za-z0-9-]+)/i
+    ]),
+    address: matchTextValue(text, [
+      /Address:\s*(.+?)\s+Purchase Price:/i
+    ]),
+    purchasePriceUsd: matchMoneyValue(text, [
+      /Purchase Price:\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    afterRepairValueUsd: matchMoneyValue(text, [
+      /After Repair Value\s*\(ARV\):\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    rehabBudgetUsd: matchMoneyValue(text, [
+      /(?:Construction\s*\/\s*Rehab|Rehab Budget|Rehab\s*\/\s*Construction)\s+Budget:\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
+      /Rehab\s*\/\s*Construction\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    closingCostsUsd: matchMoneyValue(text, [
+      /Closing Costs(?:\s*\([^)]*\))?\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    holdingCostsUsd: matchMoneyValue(text, [
+      /Holding\s*&\s*Misc\.\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    sellingCostsUsd: matchMoneyValue(text, [
+      /Selling Costs(?:\s*\([^)]*\))?\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    totalProjectCostUsd: matchMoneyValue(text, [
+      /Total Project Cost\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    buildingFundingGoal: matchMoneyValue(text, [
+      /Minimum Capital Required to Participate in(?:\s+the)?\s+Project\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i,
+      /Minimum Capital Required to Participate in(?:\s+the)?\s+Project\s+\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    buildingTotalUnits: matchTextValue(text, [
+      /Cantidad de Ticket de inversion\s*([0-9]+)/i,
+      /MINIMUM TICKET\s+([0-9]+)/i
+    ]),
+    buildingNftCost: matchMoneyValue(text, [
+      /MINIMUM TICKET\s+Ticket Value\s+Structuring fee\s+Total Participation Value\s+\d+\s+\$?\s*([\d,]+(?:\.\d+)?)/i,
+      /Ticket Value\s+\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    structuringFeeUsd: matchMoneyValue(text, [
+      /Structuring fee\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    grossProfitProjectedUsd: matchMoneyValue(text, [
+      /Net Profit\s*\(before distribution\)\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    managementFeeUsd: matchMoneyValue(text, [
+      /Management Fee(?:\s*\([^)]*\))?\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    brokerFeeUsd: matchMoneyValue(text, [
+      /Broker Fee(?:\s*\([^)]*\))?\s+\d+(?:\.\d+)?%\s+\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    netInvestorProfitUsd: matchMoneyValue(text, [
+      /Net Profit for Investor\s*\$?\s*([\d,]+(?:\.\d+)?)/i
+    ]),
+    projectedNetRoiPct: matchPercentValue(text, [
+      /Net Profit for Investor\s+\$?\s*[\d,]+(?:\.\d+)?\s+(\d+(?:\.\d+)?)%/i,
+      /Total Investors(?:\s+\d+%)?\s+\$?\s*[\d,]+(?:\.\d+)?\s+(\d+(?:\.\d+)?)%/i
+    ]),
+    durationLabel: firstNonEmpty(
+      matchTextValue(text, [/Total Estimated Duration\s+(.+?)(?:9-\s*Security|10-\s*Investment Highlights|$)/is]),
+      matchTextValue(text, [/Timing\s+(.+?)\s+2\s*-\s*Financial Breakdown/is])
+    ),
+    buildingProjectStage: deriveProjectStage(text),
+    buildingDeveloperName: deriveOperatorName(text),
+    buildingExitStrategy: deriveExitStrategy(text),
+    riskNotes: buildRiskNotes(text)
+  };
+}
+
+function countRecognizedCoreFields(fields: ExtractedBriefFields): number {
+  return [
+    fields.internalCode,
+    fields.address,
+    fields.purchasePriceUsd,
+    fields.afterRepairValueUsd,
+    fields.totalProjectCostUsd,
+    fields.buildingFundingGoal,
+    fields.projectedNetRoiPct
   ].filter(Boolean).length;
+}
 
-  if (recognitionScore < 4) {
-    throw new AssetPdfBriefError(
-      "This PDF does not match the supported investment brief template closely enough to auto-fill the form.",
-      "UNSUPPORTED_PDF_TEMPLATE"
-    );
+function assertSupportedBrief(fields: ExtractedBriefFields): void {
+  if (countRecognizedCoreFields(fields) >= 4) {
+    return;
   }
 
+  throw new AssetPdfBriefError(
+    "This PDF does not match the supported investment brief template closely enough to auto-fill the form.",
+    "UNSUPPORTED_PDF_TEMPLATE"
+  );
+}
+
+function buildNormalizedImportRow(fields: ExtractedBriefFields): Record<string, string> {
+  const {
+    address,
+    afterRepairValueUsd,
+    brokerFeeUsd,
+    buildingDeveloperName,
+    buildingExitStrategy,
+    buildingFundingGoal,
+    buildingNftCost,
+    buildingProjectStage,
+    buildingTotalUnits,
+    closingCostsUsd,
+    durationLabel,
+    grossProfitProjectedUsd,
+    holdingCostsUsd,
+    internalCode,
+    managementFeeUsd,
+    netInvestorProfitUsd,
+    projectedNetRoiPct,
+    purchasePriceUsd,
+    rehabBudgetUsd,
+    riskNotes,
+    sellingCostsUsd,
+    structuringFeeUsd,
+    totalProjectCostUsd
+  } = fields;
+
+  const { city, state, country } = deriveLocation(address);
+  const buildingProjectDurationMonths = deriveDurationMonths(durationLabel);
   const assetName = deriveAssetName({
     projectStage: buildingProjectStage,
     city,
@@ -311,7 +380,7 @@ export function parseInvestmentBriefTextToRows(text: string): ParsedTabularRows 
     buildingProjectDurationMonths
   });
 
-  const row: Record<string, string> = {
+  return omitEmptyFields({
     assetType: "building_new",
     assetName,
     slug,
@@ -343,14 +412,19 @@ export function parseInvestmentBriefTextToRows(text: string): ParsedTabularRows 
     buildingExpectedAnnualReturn: projectedNetRoiPct,
     buildingExitStrategy,
     buildingProjectDurationMonths
-  };
+  });
+}
 
-  const filteredRow = Object.fromEntries(
-    Object.entries(row).filter(([, value]) => typeof value === "string" && value.trim().length > 0)
-  );
+export function parseInvestmentBriefTextToRows(text: string): ParsedTabularRows {
+  const normalizedText = normalizeBriefText(text);
+  const extractedFields = extractBriefFields(normalizedText);
+
+  assertSupportedBrief(extractedFields);
+
+  const row = buildNormalizedImportRow(extractedFields);
 
   return {
-    headers: Object.keys(filteredRow),
-    rows: [filteredRow]
+    headers: Object.keys(row),
+    rows: [row]
   };
 }

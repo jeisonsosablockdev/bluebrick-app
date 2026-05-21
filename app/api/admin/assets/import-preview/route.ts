@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
+import { buildPdfImportFingerprint } from "@/lib/admin/asset-import-fingerprint";
 import { AssetPdfBriefError } from "@/lib/admin/asset-pdf-brief";
 import { parseInvestmentBriefPdfBuffer } from "@/lib/admin/asset-pdf-server";
 
@@ -18,6 +19,10 @@ function errorResponse(status: number, code: string, message: string): NextRespo
   );
 }
 
+function isPdfFileName(fileName: string): boolean {
+  return fileName.toLowerCase().endsWith(".pdf");
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const roleResult = getRequestRole(request);
 
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return errorResponse(400, "MISSING_IMPORT_FILE", "A PDF file is required.");
     }
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
+    if (!isPdfFileName(file.name)) {
       return errorResponse(415, "UNSUPPORTED_IMPORT_FILE", "Only PDF files are supported by this preview endpoint.");
     }
 
@@ -44,7 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ok: true,
       data: {
         fileName: file.name,
-        fingerprint: `pdf:${file.name}:${parsed.headers.join("|")}:${JSON.stringify(parsed.rows[0] ?? {})}`,
+        fingerprint: buildPdfImportFingerprint(file.name, parsed.headers, parsed.rows[0]),
         text: "",
         headers: parsed.headers,
         rows: parsed.rows
