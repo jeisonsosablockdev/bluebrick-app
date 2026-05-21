@@ -12,7 +12,8 @@ The rollout will be incremental and backward-safe:
 4. Update marketplace public presentation
 5. Preserve compatibility for existing records and legacy fields
 6. Verify end-to-end flow with admin + marketplace checks
-7. Run a dedicated clean-code audit before final reviewer closure
+7. Add follow-up slices for operator-workflow UX/import decisions
+8. Run a dedicated clean-code audit before final reviewer closure
 
 ## Technical Design
 
@@ -76,18 +77,24 @@ Pipeline:
 Source types:
 
 - `CSV/TSV/TXT` structured rows
-- `PDF brief` parsed into the same normalized row/object shape
+- `PDF brief` parsed into the same normalized row/object shape once the dedicated PDF intake slice is implemented
 
 Normalization design:
 
 - Spreadsheet import produces a `Record<string, string>` row map.
-- PDF import produces the same logical output shape after label extraction.
-- Both paths feed the same field alias mapper.
+- Future PDF import should produce the same logical output shape after label extraction.
+- Both paths should feed the same field alias mapper.
 
 Implementation rule:
 
 - Do not add separate form-writing logic for PDF imports.
-- Add a PDF parsing adapter that outputs the same normalized import payload shape used by the tabular importer.
+- Add a PDF parsing adapter that outputs the same normalized import payload shape used by the tabular importer when the PDF slice is built.
+
+Current-state clarification:
+
+- The live admin import flow currently supports `.csv`, `.txt`, `.tsv`, and pasted tabular content from Excel.
+- The live admin import flow does not yet accept PDF files.
+- The artifact must distinguish between current shipped behavior and planned PDF support.
 
 ### Validation Design
 
@@ -354,7 +361,7 @@ Confirmed existing-field semantics:
 Import contract rule:
 
 - `Excel/CSV` remains the primary deterministic source for auto-fill.
-- `PDF` import must normalize extracted content into the same internal mapping layer used by the current tabular import flow.
+- future `PDF` import must normalize extracted content into the same internal mapping layer used by the current tabular import flow.
 - Imported values must pass through the same preview and correction step before they are committed to the form.
 
 ### Slice 2: Admin UI Capture
@@ -414,9 +421,15 @@ Examples of reusable source phrases:
 
 Import UX rule:
 
-- Keep the current import entrypoint and extend it to accept the new supported source formats.
+- Keep the current import entrypoint and extend it carefully as new supported source formats actually ship.
 - Do not build a second disconnected "PDF-only" asset creation path.
-- Spreadsheet rows and parsed PDF payloads must converge into the same form-population workflow.
+- Spreadsheet rows and future parsed PDF payloads must converge into the same form-population workflow.
+
+Immediate UX decision:
+
+- `Quick import` should become the first visible block on `/admin/assets/new`.
+- The page should reflect the real operator sequence: import first, review/correct second, enrich third, mint last.
+- The import copy must describe only the formats that are truly available in the running product.
 
 Implementation mapping contract:
 
@@ -501,7 +514,90 @@ Deliverables:
 - Evidence of no regressions in existing create/mint handoff flow
 - Evidence that the new economics fields are visible in marketplace user surfaces
 
-### Slice 6: Clean-Code Audit
+### Slice 6: Admin UX and Import Entry Refresh
+
+- Move `Quick import` to the first visible position on `/admin/assets/new`.
+- Reframe the page hierarchy around the real operator workflow for these briefs.
+- Update import help text, labels, and affordances so supported formats are described truthfully.
+- Remove the `Guardar borrador` / save-draft affordance from this flow because it does not currently persist a recoverable draft.
+- Preserve existing preview/apply/async import behavior while changing the section order.
+- Improve the rapid-import surface using `UI Ux Pro Max` guidance while preserving the existing button and card style system.
+
+Current-state constraint:
+
+- This slice must not imply that PDF import is already available.
+- Supported formats to describe as shipped are:
+  - `.csv`
+  - `.txt`
+  - `.tsv`
+  - pasted tabular content from Excel
+
+UI/UX quality bar for this slice:
+
+- Keep the existing card and button visual language already present in admin.
+- Improve hierarchy, spacing, and scanability around the import-first workflow.
+- Preserve visible focus states, minimum touch-target sizing, and no horizontal overflow.
+- Avoid adding a second disconnected import path or a hidden expert-only control cluster.
+
+Deliverables:
+
+- Updated section ordering on `/admin/assets/new`
+- Updated import copy and affordances
+- Removal of the misleading draft-save control until real draft persistence exists
+- No regression in import preview/apply/queue behavior
+
+### Slice 7: Reserved Follow-Up Slice
+
+This slice is now dedicated to simplifying the quick-import interaction model.
+
+Goals:
+
+- Remove the visible async-import controls from the interface.
+- Remove the quick-import QStash integration and related async-import wiring from this screen.
+- Remove the explicit `Preview` button from the interface.
+- Trigger preview automatically as soon as a valid import source is loaded.
+- Add replacement confirmation before a second import overwrites the current imported state.
+
+Behavior contract:
+
+1. User lands on `/admin/assets/new` and sees `Quick import` first.
+2. User uploads a supported file or pastes valid tabular content.
+3. The system parses and previews immediately without requiring a separate preview action.
+4. If no prior imported state exists, the preview/apply flow continues directly.
+5. If prior imported state already exists and the user attempts a new import, show a confirmation modal.
+6. Modal copy must explain that current imported changes will be lost and replaced by the new import.
+7. Confirm replaces the imported state with the new parsed payload.
+8. Cancel preserves the current imported state and dismisses the modal.
+
+Interface removals for this slice:
+
+- remove the visible `Queue async import` action
+- remove the visible import-job tracker from this screen
+- remove the visible `Preview and apply first row` action
+- remove QStash-driven async import actions and status wiring that only exist to support the removed queue flow
+
+Technical rule:
+
+- The underlying canonical import parsing/mapping pipeline should continue to be reused.
+- This slice changes interaction flow, not the canonical field-mapping contract.
+- QStash-linked async import behavior should be removed from `/admin/assets/new`, including no-op or orphaned UI state that only exists to support the removed queue flow.
+- If any generic import utilities remain for future use, they must not leak queue-specific UX concepts into this screen after the simplification.
+
+Modal quality rule:
+
+- Confirmation modal must follow the existing design system rather than introducing a new ad hoc pattern.
+- It must be keyboard-accessible, focus-managed, and explicit about destructive replacement.
+- Primary and secondary actions must remain consistent with the existing button system.
+
+Deliverables:
+
+- Auto-preview behavior on import load
+- Replacement-confirmation modal for second import attempts
+- Removal of preview/async controls from the visible interface
+- Removal of QStash-related quick-import flow dependencies from this screen
+- Preserved parsing/mapping compatibility underneath the UX simplification
+
+### Slice 8: Clean-Code Audit
 
 This fix must end with a dedicated `clean-code audit` slice using the repository's `clean-code` skill and the final reviewer gate.
 
@@ -525,7 +621,7 @@ Completion rule:
 
 - if the clean-code audit finds blocking issues, the fix remains incomplete until they are resolved or consciously documented for reviewer sign-off
 
-### Slice 7: Reviewer Completion
+### Slice 9: Reviewer Completion
 
 - run the final reviewer gate after QA and clean-code audit are complete
 - verify definition of done, governance alignment, and no unresolved blocking findings
@@ -539,6 +635,8 @@ Before implementation closes:
 - Add tests for economics mapping into marketplace read model and public detail rendering.
 - Add tests for backward compatibility with legacy records.
 - Add tests proving the reused import pipeline accepts the extended spreadsheet mapping and normalized PDF payloads.
+- Add tests proving auto-preview triggers on valid import load.
+- Add tests proving replacement confirmation protects existing imported state until confirmed.
 - Complete the dedicated clean-code audit slice.
 - Run `npm run validate`.
 

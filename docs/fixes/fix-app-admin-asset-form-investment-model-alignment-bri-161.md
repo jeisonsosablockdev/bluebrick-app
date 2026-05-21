@@ -117,19 +117,46 @@ This fix will reuse the existing admin import pipeline instead of creating a sec
 Source priority:
 
 - `Excel/CSV` is the primary structured import source.
-- `PDF` is a supported source when it follows the same brief template family as the current documents.
+- `PDF` is the next intended source when it follows the same brief template family as the current documents.
 
 Reuse principle:
 
 - Structured spreadsheet imports should continue to use the current tabular import path.
-- PDF imports should extract and normalize values into the same internal field-mapping pipeline already used by text/CSV import.
+- Future PDF imports should extract and normalize values into the same internal field-mapping pipeline already used by text/CSV import.
 - The admin should review a preview before applying imported values to the form.
 
 Why:
 
 - It reduces duplication in UI, validation, and state handling.
 - It keeps one canonical mapping layer from imported content into `AssetForm`.
-- It allows PDF ingestion to benefit from the same preview, correction, and async-import behavior already present in admin.
+- It defines the path for PDF ingestion to benefit from the same preview, correction, and async-import behavior already present in admin once that slice is implemented.
+
+Current state clarification:
+
+- The current live admin import flow supports `.csv`, `.txt`, `.tsv`, and pasted tabular content from Excel.
+- PDF upload/parsing is not yet connected in the real `/admin/assets/new` flow.
+- The artifact must not treat PDF import as already shipped behavior until the dedicated slice is implemented.
+
+## Admin UX Entry Decision
+
+The first visible block on `/admin/assets/new` should be `Quick import`.
+
+Reasoning:
+
+- The current operating workflow starts from a brief or structured spreadsheet, not from manual field-by-field capture.
+- Admin users should be encouraged to import first, then review/correct, instead of scrolling past multiple manual sections before reaching ingestion.
+- This keeps the form aligned with the real operator workflow for these deals.
+
+Immediate UX rule:
+
+- `Quick import` moves to the top of the page.
+- The rest of the form stays available below for review, corrections, enrichment, and mint continuity.
+
+Current-state source support rule:
+
+- The top import section must describe current supported formats accurately.
+- It should present spreadsheet/tabular sources as available now.
+- It should not claim that PDF upload is already supported until the parser and file intake are actually wired.
 
 ## Source Mapping
 
@@ -189,6 +216,31 @@ Marketplace visibility rule:
 - They must be persisted and reflected in what the end user sees in marketplace surfaces.
 - The marketplace card should continue to stay concise, while the marketplace detail page must expose the broader economics set in a structured way.
 - Transparency, governance, and execution context from the brief must be visible to users, not only retained as internal admin notes.
+
+## Rapid Import UX Decision
+
+The admin entry experience should start with `Quick import`.
+
+UX decisions confirmed for the next slices:
+
+- `Quick import` becomes the first visible block on `/admin/assets/new`.
+- The current async import controls should be removed from the visible interface because that path is not part of the real operator workflow in use today.
+- The current `async import` path and its QStash-linked behavior should be removed from this admin flow, not merely hidden.
+- The explicit `Preview` button should be removed from the visible interface.
+- When a user loads a valid import source, preview should happen immediately.
+- If the user already has imported data loaded and attempts a new import, the UI must show a confirmation modal explaining that current imported changes will be replaced.
+
+Interaction rule:
+
+- Replacement must be explicit and user-confirmed.
+- The confirmation modal must use plain language: current imported values will be lost and replaced with the newly loaded import.
+- If the user cancels, the current imported state remains untouched.
+
+UI quality rule:
+
+- This slice should improve the rapid-import surface using the `UI Ux Pro Max` guidance.
+- It must preserve the current button and card visual language already implemented in the product.
+- Accessibility, focus visibility, touch-target size, and responsive behavior remain mandatory.
 
 ## Scope Boundaries
 
