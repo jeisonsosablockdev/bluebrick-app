@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { InputHTMLAttributes, ReactElement } from "react";
+import type { ChangeEvent, ClipboardEvent, InputHTMLAttributes, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/core-candy-machine-panel";
 import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
 import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
+import type { ParsedImportCandidate } from "@/components/admin/asset-creation/use-asset-import-jobs";
 import {
   AssetCollectionSection,
   AssetCommercialDescriptionSection,
@@ -409,8 +410,6 @@ export function AssetCreationForm(): ReactElement {
     importPreviewCount,
     importHeaders,
     importMessage,
-    importSubmitting,
-    importJob,
     dragTargetField,
     uploadState,
     uploadRefs,
@@ -431,8 +430,6 @@ export function AssetCreationForm(): ReactElement {
     setImportPreviewCount,
     setImportHeaders,
     setImportMessage,
-    setImportSubmitting,
-    setImportJob,
     setDragTargetField,
     setUploadState,
     setUploadRefs,
@@ -445,6 +442,7 @@ export function AssetCreationForm(): ReactElement {
     setCreatedMarketplaceEntryId
   } = useAssetCreationFormState(draftId);
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
+  const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
   const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -997,31 +995,77 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const hasLoadedImport = importHeaders.length > 0 && importPreviewCount > 0;
+
   const {
-    previewImportFromText,
-    enqueueImportFromText,
+    buildImportCandidateFromText,
+    applyImportCandidate: applyImportCandidateToState,
     onImportFileInput
   } = useAssetImportJobs({
-    draftId,
-    importText,
-    importFileName,
-    importJob,
-    setImportSubmitting,
     setImportMessage,
-    setImportJob,
     setImportHeaders,
     setImportPreviewCount,
     setImportFileName,
+    setImportText,
     t,
     onApplyImportedRow: applyImportedRow
   });
 
-  const saveDraft = async () => {
-    setFormStatus("saving");
-    setValidationErrors([]);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setFormStatus("saved");
-  };
+  const requestImportCandidate = useCallback((candidate: ParsedImportCandidate | null) => {
+    if (!candidate) {
+      return;
+    }
+
+    const isSameImport = candidate.text === importText && candidate.fileName === importFileName;
+    if (!hasLoadedImport || isSameImport) {
+      applyImportCandidateToState(candidate);
+      return;
+    }
+
+    setPendingImportCandidate(candidate);
+  }, [
+    applyImportCandidateToState,
+    hasLoadedImport,
+    importFileName,
+    importText
+  ]);
+
+  const handleImportFileInput = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const candidate = await onImportFileInput(event);
+    requestImportCandidate(candidate);
+  }, [onImportFileInput, requestImportCandidate]);
+
+  const handleImportTextareaPaste = useCallback((event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = event.clipboardData.getData("text");
+    if (!pastedText.trim()) {
+      return;
+    }
+
+    event.preventDefault();
+    const candidate = buildImportCandidateFromText({
+      text: pastedText,
+      fileName: "pasted-import.tsv"
+    });
+    requestImportCandidate(candidate);
+  }, [buildImportCandidateFromText, requestImportCandidate]);
+
+  const confirmReplaceImport = useCallback(() => {
+    if (!pendingImportCandidate) {
+      return;
+    }
+
+    applyImportCandidateToState(pendingImportCandidate);
+    setPendingImportCandidate(null);
+  }, [applyImportCandidateToState, pendingImportCandidate]);
+
+  const cancelReplaceImport = useCallback(() => {
+    setPendingImportCandidate(null);
+    setImportMessage(t({
+      en: "Replacement canceled. Your current imported values were kept.",
+      es: "Se cancelo el reemplazo. Se mantuvieron tus valores importados actuales.",
+      pt: "A substituicao foi cancelada. Seus valores importados atuais foram mantidos."
+    }));
+  }, [setImportMessage, t]);
 
   const continueToMint = async () => {
     if (!canContinueToMint) {
@@ -1140,6 +1184,22 @@ export function AssetCreationForm(): ReactElement {
   return (
     <div className="space-y-4 pb-24">
       <AssetCreationIntroSection t={t} />
+      <AssetImportSection
+        t={t}
+        importFileName={importFileName}
+        importText={importText}
+        importPreviewCount={importPreviewCount}
+        importHeaders={importHeaders}
+        importMessage={importMessage}
+        hasLoadedImport={hasLoadedImport}
+        replaceImportOpen={Boolean(pendingImportCandidate)}
+        pendingImportLabel={pendingImportCandidate?.fileName ?? ""}
+        setImportText={setImportText}
+        onImportFileInput={handleImportFileInput}
+        onImportTextareaPaste={handleImportTextareaPaste}
+        onConfirmReplaceImport={confirmReplaceImport}
+        onCancelReplaceImport={cancelReplaceImport}
+      />
       <AssetTypeSelectionSection t={t} form={form} setForm={setForm} options={assetTypeOptions} />
       <AssetIdentificationSection t={t} form={form} setForm={setForm} />
       <AssetLocationSection t={t} form={form} setForm={setForm} />
@@ -1164,21 +1224,6 @@ export function AssetCreationForm(): ReactElement {
         setCollectionSymbolManual={setCollectionSymbolManual}
         onResetSuggestedValues={handleResetSuggestedCollectionValues}
       />
-      <AssetImportSection
-        t={t}
-        importFileName={importFileName}
-        importText={importText}
-        importPreviewCount={importPreviewCount}
-        importHeaders={importHeaders}
-        importMessage={importMessage}
-        importSubmitting={importSubmitting}
-        importJob={importJob}
-        setImportText={setImportText}
-        previewImportFromText={previewImportFromText}
-        enqueueImportFromText={enqueueImportFromText}
-        onImportFileInput={onImportFileInput}
-      />
-
       {form.assetType && (
         <Card className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1962,9 +2007,6 @@ export function AssetCreationForm(): ReactElement {
               {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
             </Button>
           </Link>
-          <Button className="min-h-11" variant="outline" onClick={saveDraft}>
-            {t({ en: "Save draft", es: "Guardar borrador", pt: "Salvar rascunho" })}
-          </Button>
           {showMintSetup ? (
             <Button
               className="min-h-11"
