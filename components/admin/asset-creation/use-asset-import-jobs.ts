@@ -15,6 +15,7 @@ type ImportTranslations = {
 
 export type ParsedImportCandidate = {
   fileName: string;
+  fingerprint: string;
   headers: string[];
   rows: Array<Record<string, string>>;
   text: string;
@@ -25,6 +26,7 @@ type UseAssetImportJobsArgs = {
   setImportHeaders: (value: SetStateAction<string[]>) => void;
   setImportPreviewCount: (value: SetStateAction<number>) => void;
   setImportFileName: (value: SetStateAction<string>) => void;
+  setImportFingerprint: (value: SetStateAction<string>) => void;
   setImportText: (value: SetStateAction<string>) => void;
   t: (copy: ImportTranslations) => string;
   onApplyImportedRow: (row: Record<string, string>) => void;
@@ -38,11 +40,34 @@ function buildNoRowsMessage(t: (copy: ImportTranslations) => string): string {
   });
 }
 
+async function fetchPdfImportPreview(file: File): Promise<ParsedImportCandidate> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/admin/assets/import-preview", {
+    method: "POST",
+    body: formData
+  });
+
+  const payload = await response.json().catch(() => null) as {
+    data?: ParsedImportCandidate;
+    error?: { message?: string };
+  } | null;
+
+  if (!response.ok || !payload?.data) {
+    const message = payload?.error?.message?.trim() || "Could not preview the PDF import.";
+    throw new Error(message);
+  }
+
+  return payload.data;
+}
+
 export function useAssetImportJobs({
   setImportMessage,
   setImportHeaders,
   setImportPreviewCount,
   setImportFileName,
+  setImportFingerprint,
   setImportText,
   t,
   onApplyImportedRow
@@ -62,6 +87,7 @@ export function useAssetImportJobs({
 
     return {
       fileName: input.fileName?.trim() || "pasted-import.tsv",
+      fingerprint: `text:${input.fileName?.trim() || "pasted-import.tsv"}:${input.text}`,
       headers: parsed.headers,
       rows: parsed.rows,
       text: input.text
@@ -70,6 +96,7 @@ export function useAssetImportJobs({
 
   const applyImportCandidate = useCallback((candidate: ParsedImportCandidate) => {
     setImportFileName(candidate.fileName);
+    setImportFingerprint(candidate.fingerprint);
     setImportText(candidate.text);
     setImportHeaders(candidate.headers);
     setImportPreviewCount(candidate.rows.length);
@@ -82,6 +109,7 @@ export function useAssetImportJobs({
   }, [
     onApplyImportedRow,
     setImportFileName,
+    setImportFingerprint,
     setImportHeaders,
     setImportMessage,
     setImportPreviewCount,
@@ -96,6 +124,25 @@ export function useAssetImportJobs({
     }
 
     try {
+      const extension = file.name.toLowerCase().split(".").pop();
+
+      if (extension === "pdf") {
+        const candidate = await fetchPdfImportPreview(file);
+        setImportHeaders(candidate.headers);
+        setImportPreviewCount(candidate.rows.length);
+
+        if (candidate.rows.length === 0) {
+          setImportMessage(t({
+            en: "The PDF was read, but no supported deal fields were detected.",
+            es: "Se leyo el PDF, pero no se detectaron campos compatibles del deal.",
+            pt: "O PDF foi lido, mas nenhum campo compativel do deal foi detectado."
+          }));
+          return null;
+        }
+
+        return candidate;
+      }
+
       const text = await file.text();
       const parsed = parseTextFileToTabularRows(file.name, text);
       setImportHeaders(parsed.headers);
@@ -112,6 +159,7 @@ export function useAssetImportJobs({
 
       return {
         fileName: file.name,
+        fingerprint: `text:${file.name}:${text}`,
         headers: parsed.headers,
         rows: parsed.rows,
         text

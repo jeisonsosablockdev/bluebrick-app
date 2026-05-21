@@ -69,6 +69,7 @@ export function assetCreationReducer(
         ...state,
         importText: action.payload.importText ?? state.importText,
         importFileName: action.payload.importFileName ?? state.importFileName,
+        importFingerprint: action.payload.importFingerprint ?? state.importFingerprint,
         importPreviewCount: action.payload.importPreviewCount ?? state.importPreviewCount,
         importHeaders: action.payload.importHeaders ?? state.importHeaders,
         importMessage: action.payload.importMessage ?? state.importMessage,

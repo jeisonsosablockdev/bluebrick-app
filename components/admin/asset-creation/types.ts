@@ -131,6 +131,7 @@ export type AssetCreationState = {
   collectionSymbolManual: boolean;
   importText: string;
   importFileName: string;
+  importFingerprint: string;
   importPreviewCount: number;
   importHeaders: string[];
   importMessage: string;
@@ -252,6 +253,7 @@ export function createInitialAssetCreationState(draftId: string): AssetCreationS
     collectionSymbolManual: false,
     importText: "",
     importFileName: "",
+    importFingerprint: "",
     importPreviewCount: 0,
     importHeaders: [],
     importMessage: "",

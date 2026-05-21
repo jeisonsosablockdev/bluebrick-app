@@ -93,9 +93,9 @@ export function AssetImportSection({
                 </p>
                 <p className="text-sm leading-6 text-white/60">
                   {t({
-                    en: "Supported today: `.csv`, `.txt`, `.tsv`. As soon as the file is valid, the preview is applied automatically.",
-                    es: "Disponible hoy: `.csv`, `.txt`, `.tsv`. Tan pronto el archivo sea valido, la vista previa se aplica automaticamente.",
-                    pt: "Disponivel hoje: `.csv`, `.txt`, `.tsv`. Assim que o arquivo for valido, a pre-visualizacao e aplicada automaticamente."
+                    en: "Supported today: `.csv`, `.txt`, `.tsv`, and the standard investment brief `.pdf`. As soon as the file is valid, the preview is applied automatically.",
+                    es: "Disponible hoy: `.csv`, `.txt`, `.tsv` y el `.pdf` estandar del brief de inversion. Tan pronto el archivo sea valido, la vista previa se aplica automaticamente.",
+                    pt: "Disponivel hoje: `.csv`, `.txt`, `.tsv` e o `.pdf` padrao do brief de investimento. Assim que o arquivo for valido, a pre-visualizacao e aplicada automaticamente."
                   })}
                 </p>
               </div>
@@ -117,7 +117,7 @@ export function AssetImportSection({
                     id="quick-import-file"
                     className="sr-only"
                     type="file"
-                    accept=".csv,.txt,.tsv"
+                    accept=".csv,.txt,.tsv,.pdf"
                     onChange={(event) => { void onImportFileInput(event); }}
                   />
                   <label
