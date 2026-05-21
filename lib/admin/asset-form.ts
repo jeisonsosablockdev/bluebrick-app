@@ -188,6 +188,7 @@ export function parseTextFileToTabularRows(fileName: string, content: string): P
 }
 
 export const importKeyAliasMap: Record<string, string> = {
+  assettype: "assetType",
   assetname: "assetName",
   slug: "slug",
   internalcode: "internalCode",

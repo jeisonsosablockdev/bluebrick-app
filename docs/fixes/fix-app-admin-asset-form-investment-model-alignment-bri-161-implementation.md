@@ -597,7 +597,76 @@ Deliverables:
 - Removal of QStash-related quick-import flow dependencies from this screen
 - Preserved parsing/mapping compatibility underneath the UX simplification
 
-### Slice 8: Clean-Code Audit
+### Slice 8: PDF Brief Intake
+
+This slice adds real PDF support to the quick-import flow.
+
+Goals:
+
+- Accept PDF files from the same `Quick import` entrypoint used by spreadsheet imports.
+- Extract text from the supported investment brief family without introducing a second asset-creation path.
+- Normalize PDF-derived values into the same canonical import shape already used by spreadsheet imports.
+- Preserve the same safety model: parse, preview automatically, let the user review/correct in the form.
+
+Scope rule:
+
+- This slice targets the recurring brief format already reviewed in BRI-161.
+- It is not a generic “any PDF” ingestion feature.
+- If a PDF does not match the supported brief family with enough confidence, the UI should fail clearly instead of silently mapping partial or incorrect values.
+
+Technical design:
+
+1. File intake accepts `.pdf` in the quick-import surface.
+2. PDF text is extracted through a dedicated parser adapter.
+3. The parser identifies supported labels and repeated sections from the brief family.
+4. Extracted values are normalized into the same `Record<string, string>`-compatible shape expected by the current import mapping layer.
+5. That normalized payload flows through the same preview/apply behavior already used by spreadsheet imports.
+
+Parsing contract:
+
+- Prefer deterministic label extraction over free-form inference.
+- Use explicit label aliases for bilingual/variant headings where the brief family repeats them.
+- Support the economics fields already modeled in this fix, including:
+  - `Deal Number`
+  - `Address`
+  - `Purchase Price`
+  - `After Repair Value (ARV)`
+  - `Rehab Budget`
+  - `Closing Costs`
+  - `Holding & Misc.`
+  - `Selling Costs`
+  - `Total Project Cost`
+  - `Minimum Capital Required`
+  - `Structuring Fee`
+  - `Net Profit (before distribution)`
+  - `Management Fee`
+  - `Broker Fee`
+  - `Net Profit for Investor`
+  - `ROI`
+  - `Exit Strategy`
+  - `Total Estimated Duration`
+  - operator / sponsor / developer identity
+
+Failure behavior:
+
+- If no supported labels are found, show a clear import error message.
+- If only a partial extraction is achieved, the result should surface as an incomplete preview, not as silent success.
+- No background queueing or deferred processing should be reintroduced through this slice.
+
+Review bar for implementation:
+
+- The parser should be small, deterministic, and easy to audit.
+- Mapping logic should remain centralized rather than duplicated between PDF and spreadsheet paths.
+- Any heuristic extraction should be documented inline by naming and tests, not hidden in broad regex ambiguity.
+
+Deliverables:
+
+- PDF acceptance in the quick-import UI
+- PDF-to-normalized-import parser adapter
+- Shared import-path compatibility with existing spreadsheet mapping
+- Clear error states for unsupported or weakly matched PDFs
+
+### Slice 9: Clean-Code Audit
 
 This fix must end with a dedicated `clean-code audit` slice using the repository's `clean-code` skill and the final reviewer gate.
 
@@ -621,7 +690,7 @@ Completion rule:
 
 - if the clean-code audit finds blocking issues, the fix remains incomplete until they are resolved or consciously documented for reviewer sign-off
 
-### Slice 9: Reviewer Completion
+### Slice 10: Reviewer Completion
 
 - run the final reviewer gate after QA and clean-code audit are complete
 - verify definition of done, governance alignment, and no unresolved blocking findings
@@ -637,6 +706,8 @@ Before implementation closes:
 - Add tests proving the reused import pipeline accepts the extended spreadsheet mapping and normalized PDF payloads.
 - Add tests proving auto-preview triggers on valid import load.
 - Add tests proving replacement confirmation protects existing imported state until confirmed.
+- Add tests proving supported PDF briefs normalize into the same import candidate shape as spreadsheet input.
+- Add tests proving unsupported PDFs fail clearly instead of creating silent partial mappings.
 - Complete the dedicated clean-code audit slice.
 - Run `npm run validate`.
 

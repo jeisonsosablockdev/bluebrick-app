@@ -51,6 +51,7 @@ type SetImportInputAction = {
   payload: {
     importText?: string;
     importFileName?: string;
+    importFingerprint?: string;
     importPreviewCount?: number;
     importHeaders?: string[];
     importMessage?: string;

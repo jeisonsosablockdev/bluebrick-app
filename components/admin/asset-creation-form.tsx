@@ -407,6 +407,7 @@ export function AssetCreationForm(): ReactElement {
     collectionSymbolManual,
     importText,
     importFileName,
+    importFingerprint,
     importPreviewCount,
     importHeaders,
     importMessage,
@@ -427,6 +428,7 @@ export function AssetCreationForm(): ReactElement {
     setCollectionSymbolManual,
     setImportText,
     setImportFileName,
+    setImportFingerprint,
     setImportPreviewCount,
     setImportHeaders,
     setImportMessage,
@@ -1006,6 +1008,7 @@ export function AssetCreationForm(): ReactElement {
     setImportHeaders,
     setImportPreviewCount,
     setImportFileName,
+    setImportFingerprint,
     setImportText,
     t,
     onApplyImportedRow: applyImportedRow
@@ -1016,7 +1019,7 @@ export function AssetCreationForm(): ReactElement {
       return;
     }
 
-    const isSameImport = candidate.text === importText && candidate.fileName === importFileName;
+    const isSameImport = candidate.fingerprint === importFingerprint;
     if (!hasLoadedImport || isSameImport) {
       applyImportCandidateToState(candidate);
       return;
@@ -1026,8 +1029,7 @@ export function AssetCreationForm(): ReactElement {
   }, [
     applyImportCandidateToState,
     hasLoadedImport,
-    importFileName,
-    importText
+    importFingerprint
   ]);
 
   const handleImportFileInput = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
