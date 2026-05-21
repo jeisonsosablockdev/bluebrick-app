@@ -1,6 +1,17 @@
 # Session Model
 
-Last Updated: 2026-05-20
+Last Updated: 2026-05-21
+
+## BRI-161 Marketplace Investment Payload Notes
+- The marketplace investment-model alignment slice does not introduce a new session layer, cookie, token, or role.
+- Structured marketplace content added by this fix is still published only from an existing admin SIWS session:
+  - `project`
+  - `economics`
+  - `governance`
+- Session authority stays unchanged:
+  - public marketplace reads remain anonymous-safe
+  - admin asset creation and marketplace publishing remain wallet-admin-only
+  - user purchase flows still derive pricing and purchase authority from the existing wallet session model, not from the new informational economics payload
 
 ## BRI-158 Public Session Bootstrap Boundary
 - Public discovery pages now bootstrap as anonymous by default and defer wallet/account introspection until a user-facing auth surface actually needs it.

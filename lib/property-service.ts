@@ -15,6 +15,34 @@ export type PropertyInvestment = {
   availabilityLabel: string;
 };
 
+export type PropertyProject = {
+  stage: string;
+  developerName: string;
+  exitStrategy: string;
+  durationMonths: number | null;
+};
+
+export type PropertyEconomics = {
+  purchasePriceUsd: number | null;
+  afterRepairValueUsd: number | null;
+  rehabBudgetUsd: number | null;
+  closingCostsUsd: number | null;
+  holdingCostsUsd: number | null;
+  sellingCostsUsd: number | null;
+  totalProjectCostUsd: number | null;
+  minimumCapitalRequiredUsd: number | null;
+  structuringFeeUsd: number | null;
+  grossProfitProjectedUsd: number | null;
+  managementFeeUsd: number | null;
+  brokerFeeUsd: number | null;
+  netInvestorProfitUsd: number | null;
+  projectedNetRoiPct: number | null;
+};
+
+export type PropertyGovernance = {
+  riskNotes: string;
+};
+
 export type PropertyBlockchainInfo = {
   network: "Solana Devnet";
   collectionAddress: string;
@@ -37,6 +65,9 @@ export type PropertyDetail = {
   highlights: string[];
   investmentNotes: string;
   investment: PropertyInvestment;
+  project: PropertyProject;
+  economics: PropertyEconomics;
+  governance: PropertyGovernance;
   documents: PropertyDocument[];
   blockchain: PropertyBlockchainInfo;
 };
@@ -47,6 +78,8 @@ export type PropertyListItem = Pick<
 > & {
   nftPriceUsd: number;
   annualRoiPct: number;
+  minimumCapitalRequiredUsd: number | null;
+  projectDurationMonths: number | null;
 };
 
 export type PropertyFilters = {
@@ -75,6 +108,9 @@ export type CreateMarketplaceEntryInput = {
   nftPriceUsd: number;
   annualRoiPct: number;
   availabilityLabel: string;
+  project: PropertyProject;
+  economics: PropertyEconomics;
+  governance: PropertyGovernance;
   documents: Array<{
     label: string;
     url: string;
@@ -85,6 +121,25 @@ export type CreateMarketplaceEntryInput = {
   lastOnchainUpdate: string | null;
   syncStatus: BlockchainSyncStatus;
 };
+
+export function createEmptyPropertyEconomics(): PropertyEconomics {
+  return {
+    purchasePriceUsd: null,
+    afterRepairValueUsd: null,
+    rehabBudgetUsd: null,
+    closingCostsUsd: null,
+    holdingCostsUsd: null,
+    sellingCostsUsd: null,
+    totalProjectCostUsd: null,
+    minimumCapitalRequiredUsd: null,
+    structuringFeeUsd: null,
+    grossProfitProjectedUsd: null,
+    managementFeeUsd: null,
+    brokerFeeUsd: null,
+    netInvestorProfitUsd: null,
+    projectedNetRoiPct: null
+  };
+}
 
 export class PropertyRpcError extends Error {
   constructor(message = "Blockchain RPC unavailable.") {
@@ -112,6 +167,20 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
       nftPriceUsd: 120,
       annualRoiPct: 12.8,
       availabilityLabel: "Disponible"
+    },
+    project: {
+      stage: "operating",
+      developerName: "Bricks Operations",
+      exitStrategy: "hold",
+      durationMonths: null
+    },
+    economics: {
+      ...createEmptyPropertyEconomics(),
+      minimumCapitalRequiredUsd: 120000,
+      projectedNetRoiPct: 12.8
+    },
+    governance: {
+      riskNotes: "Distribucion mensual de ingresos segun fraccion NFT."
     },
     documents: [
       { id: "prospectus", label: "Prospecto de inversion", url: "https://example.com/docs/central-norte/prospecto.pdf" },
@@ -146,6 +215,20 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
       annualRoiPct: 11.4,
       availabilityLabel: "Funding abierto"
     },
+    project: {
+      stage: "rehabilitation",
+      developerName: "Marberia Capital",
+      exitStrategy: "sale",
+      durationMonths: 14
+    },
+    economics: {
+      ...createEmptyPropertyEconomics(),
+      minimumCapitalRequiredUsd: 95000,
+      projectedNetRoiPct: 11.4
+    },
+    governance: {
+      riskNotes: "La oferta actual prioriza inversionistas tempranos."
+    },
     documents: [
       { id: "prospectus", label: "Prospecto de inversion", url: "https://example.com/docs/marberia/prospecto.pdf" },
       { id: "legal", label: "Documentacion legal", url: "https://example.com/docs/marberia/legal.pdf" },
@@ -179,6 +262,20 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
       annualRoiPct: 13.2,
       availabilityLabel: "Sold out"
     },
+    project: {
+      stage: "closed",
+      developerName: "Torre Rio Asset Co.",
+      exitStrategy: "sale",
+      durationMonths: null
+    },
+    economics: {
+      ...createEmptyPropertyEconomics(),
+      minimumCapitalRequiredUsd: 140000,
+      projectedNetRoiPct: 13.2
+    },
+    governance: {
+      riskNotes: "No disponible para nuevas compras primarias."
+    },
     documents: [
       { id: "prospectus", label: "Prospecto de inversion", url: "https://example.com/docs/torre-rio/prospecto.pdf" },
       { id: "legal", label: "Documentacion legal", url: "https://example.com/docs/torre-rio/legal.pdf" },
@@ -200,6 +297,9 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     ...detail,
     highlights: [...detail.highlights],
     investment: { ...detail.investment },
+    project: { ...detail.project },
+    economics: { ...detail.economics },
+    governance: { ...detail.governance },
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -255,7 +355,9 @@ function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
     listingStatus: property.listingStatus,
     image: property.image,
     nftPriceUsd: property.investment.nftPriceUsd,
-    annualRoiPct: property.investment.annualRoiPct
+    annualRoiPct: property.investment.annualRoiPct,
+    minimumCapitalRequiredUsd: property.economics.minimumCapitalRequiredUsd,
+    projectDurationMonths: property.project.durationMonths
   }));
 }
 
@@ -290,6 +392,9 @@ export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInpu
       annualRoiPct: input.annualRoiPct,
       availabilityLabel: input.availabilityLabel
     },
+    project: { ...input.project },
+    economics: { ...input.economics },
+    governance: { ...input.governance },
     documents: input.documents.map((document, index) => ({
       id: toDocumentId(document.label, index),
       label: document.label,

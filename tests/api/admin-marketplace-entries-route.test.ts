@@ -117,6 +117,31 @@ describe("POST /api/admin/marketplace/entries", () => {
         supplyTotal: 1200,
         nftPriceUsd: 150,
         annualRoiPct: 12.5,
+        project: {
+          stage: "rehab",
+          developerName: "Blue Brick Capital LLC",
+          exitStrategy: "sale",
+          durationMonths: 10
+        },
+        economics: {
+          purchasePriceUsd: 120000,
+          afterRepairValueUsd: 210000,
+          rehabBudgetUsd: 45000,
+          closingCostsUsd: 5000,
+          holdingCostsUsd: 3500,
+          sellingCostsUsd: 8000,
+          totalProjectCostUsd: 181500,
+          minimumCapitalRequiredUsd: 90000,
+          structuringFeeUsd: 3500,
+          grossProfitProjectedUsd: 28500,
+          managementFeeUsd: 2500,
+          brokerFeeUsd: 4000,
+          netInvestorProfitUsd: 22000,
+          projectedNetRoiPct: 12.5
+        },
+        governance: {
+          riskNotes: "Escrow account with milestone-based draws."
+        },
         documents: [{ label: "Brochure", url: "https://cdn.example.com/brochure.pdf" }],
         collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
         candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111",
@@ -136,7 +161,21 @@ describe("POST /api/admin/marketplace/entries", () => {
         stateProvince: "Bogotá D.C.",
         detailedLocation: "Calle 10 #12-34",
         geoLat: 4.711,
-        geoLng: -74.072
+        geoLng: -74.072,
+        project: expect.objectContaining({
+          stage: "rehab",
+          developerName: "Blue Brick Capital LLC",
+          exitStrategy: "sale",
+          durationMonths: 10
+        }),
+        economics: expect.objectContaining({
+          minimumCapitalRequiredUsd: 90000,
+          projectedNetRoiPct: 12.5,
+          afterRepairValueUsd: 210000
+        }),
+        governance: {
+          riskNotes: "Escrow account with milestone-based draws."
+        }
       })
     );
   });

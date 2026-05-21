@@ -7,14 +7,18 @@ import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplac
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
+  createEmptyPropertyEconomics,
   listPropertyDetailsSnapshot,
   PropertyRpcError,
   type BlockchainSyncStatus,
   type CreateMarketplaceEntryInput,
+  type PropertyEconomics,
+  type PropertyProject,
   type ListingStatus,
   type PropertyDetail,
   type PropertyDocument,
   type PropertyFilters,
+  type PropertyGovernance,
   type PropertyListItem
 } from "@/lib/property-service";
 
@@ -39,6 +43,9 @@ type PersistedMarketplaceRow = {
   nft_price_usd: string | number;
   annual_roi_pct: string | number;
   availability_label: string;
+  project_json: unknown;
+  economics_json: unknown;
+  governance_json: unknown;
   documents_json: unknown;
   collection_address: string;
   asset_mint_address: string;
@@ -52,6 +59,10 @@ type PersistedMarketplaceDocument = {
   label?: unknown;
   url?: unknown;
 };
+
+type PersistedMarketplaceEconomics = Partial<Record<keyof PropertyEconomics, unknown>>;
+type PersistedMarketplaceProject = Partial<Record<keyof PropertyProject, unknown>>;
+type PersistedMarketplaceGovernance = Partial<Record<keyof PropertyGovernance, unknown>>;
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
@@ -173,6 +184,63 @@ function parseDocumentsJson(rawValue: unknown): PropertyDocument[] {
     .filter((item) => item.label.length > 0 && item.url.length > 0);
 }
 
+function parseProjectJson(rawValue: unknown): PropertyProject {
+  if (!rawValue || typeof rawValue !== "object") {
+    return {
+      stage: "",
+      developerName: "",
+      exitStrategy: "",
+      durationMonths: null
+    };
+  }
+
+  const source = rawValue as PersistedMarketplaceProject;
+  return {
+    stage: typeof source.stage === "string" ? source.stage.trim() : "",
+    developerName: typeof source.developerName === "string" ? source.developerName.trim() : "",
+    exitStrategy: typeof source.exitStrategy === "string" ? source.exitStrategy.trim() : "",
+    durationMonths: Number.isFinite(Number(source.durationMonths)) ? Number(source.durationMonths) : null
+  };
+}
+
+function parseEconomicsJson(rawValue: unknown): PropertyEconomics {
+  const fallback = createEmptyPropertyEconomics();
+  if (!rawValue || typeof rawValue !== "object") {
+    return fallback;
+  }
+
+  const source = rawValue as PersistedMarketplaceEconomics;
+  return {
+    purchasePriceUsd: Number.isFinite(Number(source.purchasePriceUsd)) ? Number(source.purchasePriceUsd) : null,
+    afterRepairValueUsd: Number.isFinite(Number(source.afterRepairValueUsd)) ? Number(source.afterRepairValueUsd) : null,
+    rehabBudgetUsd: Number.isFinite(Number(source.rehabBudgetUsd)) ? Number(source.rehabBudgetUsd) : null,
+    closingCostsUsd: Number.isFinite(Number(source.closingCostsUsd)) ? Number(source.closingCostsUsd) : null,
+    holdingCostsUsd: Number.isFinite(Number(source.holdingCostsUsd)) ? Number(source.holdingCostsUsd) : null,
+    sellingCostsUsd: Number.isFinite(Number(source.sellingCostsUsd)) ? Number(source.sellingCostsUsd) : null,
+    totalProjectCostUsd: Number.isFinite(Number(source.totalProjectCostUsd)) ? Number(source.totalProjectCostUsd) : null,
+    minimumCapitalRequiredUsd: Number.isFinite(Number(source.minimumCapitalRequiredUsd)) ? Number(source.minimumCapitalRequiredUsd) : null,
+    structuringFeeUsd: Number.isFinite(Number(source.structuringFeeUsd)) ? Number(source.structuringFeeUsd) : null,
+    grossProfitProjectedUsd: Number.isFinite(Number(source.grossProfitProjectedUsd)) ? Number(source.grossProfitProjectedUsd) : null,
+    managementFeeUsd: Number.isFinite(Number(source.managementFeeUsd)) ? Number(source.managementFeeUsd) : null,
+    brokerFeeUsd: Number.isFinite(Number(source.brokerFeeUsd)) ? Number(source.brokerFeeUsd) : null,
+    netInvestorProfitUsd: Number.isFinite(Number(source.netInvestorProfitUsd)) ? Number(source.netInvestorProfitUsd) : null,
+    projectedNetRoiPct: Number.isFinite(Number(source.projectedNetRoiPct)) ? Number(source.projectedNetRoiPct) : null
+  };
+}
+
+function parseGovernanceJson(rawValue: unknown, investmentNotes: string): PropertyGovernance {
+  if (!rawValue || typeof rawValue !== "object") {
+    return { riskNotes: investmentNotes };
+  }
+
+  const source = rawValue as PersistedMarketplaceGovernance;
+  return {
+    riskNotes: typeof source.riskNotes === "string" && source.riskNotes.trim()
+      ? source.riskNotes.trim()
+      : investmentNotes
+  };
+}
+
 function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): PropertyDetail {
   return {
     id: row.id,
@@ -193,6 +261,9 @@ function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): Property
       annualRoiPct: toSafeNumber(row.annual_roi_pct),
       availabilityLabel: row.availability_label
     },
+    project: parseProjectJson(row.project_json),
+    economics: parseEconomicsJson(row.economics_json),
+    governance: parseGovernanceJson(row.governance_json, row.investment_notes),
     documents: parseDocumentsJson(row.documents_json),
     blockchain: {
       network: "Solana Devnet",
@@ -215,6 +286,9 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     ...detail,
     highlights: [...detail.highlights],
     investment: { ...detail.investment },
+    project: { ...detail.project },
+    economics: { ...detail.economics },
+    governance: { ...detail.governance },
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -240,6 +314,9 @@ function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): Pro
       annualRoiPct: input.annualRoiPct,
       availabilityLabel: input.availabilityLabel
     },
+    project: { ...input.project },
+    economics: { ...input.economics },
+    governance: { ...input.governance },
     documents: input.documents.map((document, index) => ({
       id: toDocumentId(document.label, index),
       label: document.label,
@@ -293,7 +370,9 @@ function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
     listingStatus: property.listingStatus,
     image: property.image,
     nftPriceUsd: property.investment.nftPriceUsd,
-    annualRoiPct: property.investment.annualRoiPct
+    annualRoiPct: property.investment.annualRoiPct,
+    minimumCapitalRequiredUsd: property.economics.minimumCapitalRequiredUsd,
+    projectDurationMonths: property.project.durationMonths
   }));
 }
 
@@ -317,6 +396,9 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
            detailed_location,
            highlights_json,
            investment_notes,
+           project_json,
+           economics_json,
+           governance_json,
            supply_total,
            minted_or_sold,
            nft_price_usd,
@@ -377,6 +459,9 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         ...(support.geoLng ? ["geo_lng"] : []),
         "highlights_json",
         "investment_notes",
+        "project_json",
+        "economics_json",
+        "governance_json",
         "supply_total",
         "minted_or_sold",
         "nft_price_usd",
@@ -409,6 +494,9 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         ...(support.geoLng ? [input.geoLng ?? null] : []),
         toJsonbValue(input.highlights),
         input.investmentNotes,
+        toJsonbValue(input.project),
+        toJsonbValue(input.economics),
+        toJsonbValue(input.governance),
         input.supplyTotal,
         input.mintedOrSold,
         input.nftPriceUsd,

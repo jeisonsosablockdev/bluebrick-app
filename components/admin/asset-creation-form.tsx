@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { InputHTMLAttributes, ReactElement } from "react";
+import type { ChangeEvent, ClipboardEvent, InputHTMLAttributes, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/core-candy-machine-panel";
 import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
 import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
+import type { ParsedImportCandidate } from "@/components/admin/asset-creation/use-asset-import-jobs";
 import {
   AssetCollectionSection,
   AssetCommercialDescriptionSection,
@@ -35,6 +36,7 @@ import {
   formatPriceInput,
   parsePositiveDecimalInput
 } from "@/lib/admin/pricing";
+import type { PropertyEconomics, PropertyGovernance, PropertyProject } from "@/lib/property-service";
 import {
   parseCollectionName,
   parseCollectionSymbol,
@@ -169,6 +171,22 @@ function normalizeMarketplaceEntryId(primary: string, fallback: string): string 
   return normalized || "marketplace-entry";
 }
 
+function readOptionalNumber(value: string): number | null {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+  return parsed;
+}
+
+function readOptionalPositiveInteger(value: string): number | null {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 function deriveNftPriceUsd(form: AssetForm): number {
   if (form.assetType === "building_new") {
     const nftCost = Number(form.buildingNftCost);
@@ -196,6 +214,11 @@ function deriveNftPriceUsd(form: AssetForm): number {
 
 function deriveAnnualRoiPct(form: AssetForm): number {
   if (form.assetType === "building_new") {
+    const projectedNetRoi = Number(form.projectedNetRoiPct);
+    if (Number.isFinite(projectedNetRoi) && projectedNetRoi >= 0) {
+      return projectedNetRoi;
+    }
+
     const annualReturn = Number(form.buildingExpectedAnnualReturn);
     if (Number.isFinite(annualReturn) && annualReturn >= 0) {
       return annualReturn;
@@ -219,8 +242,16 @@ function buildMarketplaceHighlights(form: AssetForm): string[] {
     highlights.push(`Project stage: ${form.buildingProjectStage.trim()}`);
   }
 
-  if (form.assetType === "building_new" && form.buildingTotalUnits.trim()) {
-    highlights.push(`Total units: ${form.buildingTotalUnits.trim()}`);
+  if (form.assetType === "building_new" && form.buildingDeveloperName.trim()) {
+    highlights.push(`Operator: ${form.buildingDeveloperName.trim()}`);
+  }
+
+  if (form.assetType === "building_new" && form.buildingExitStrategy.trim()) {
+    highlights.push(`Exit: ${form.buildingExitStrategy.trim()}`);
+  }
+
+  if (form.assetType === "building_new" && form.buildingProjectDurationMonths.trim()) {
+    highlights.push(`Duration: ${form.buildingProjectDurationMonths.trim()} months`);
   }
 
   if (form.assetType === "rental_property" && form.rentalOccupancyRate.trim()) {
@@ -236,6 +267,46 @@ function buildMarketplaceHighlights(form: AssetForm): string[] {
   }
 
   return Array.from(new Set(highlights.map((item) => item.trim()).filter(Boolean))).slice(0, 6);
+}
+
+function buildMarketplaceProject(form: AssetForm): PropertyProject {
+  return {
+    stage: form.buildingProjectStage.trim(),
+    developerName: form.buildingDeveloperName.trim(),
+    exitStrategy: form.buildingExitStrategy.trim(),
+    durationMonths: readOptionalPositiveInteger(form.buildingProjectDurationMonths)
+  };
+}
+
+function buildMarketplaceEconomics(form: AssetForm): PropertyEconomics {
+  return {
+    purchasePriceUsd: readOptionalNumber(form.purchasePriceUsd),
+    afterRepairValueUsd: readOptionalNumber(form.afterRepairValueUsd),
+    rehabBudgetUsd: readOptionalNumber(form.rehabBudgetUsd),
+    closingCostsUsd: readOptionalNumber(form.closingCostsUsd),
+    holdingCostsUsd: readOptionalNumber(form.holdingCostsUsd),
+    sellingCostsUsd: readOptionalNumber(form.sellingCostsUsd),
+    totalProjectCostUsd: readOptionalNumber(form.totalProjectCostUsd),
+    minimumCapitalRequiredUsd: readOptionalNumber(form.buildingFundingGoal),
+    structuringFeeUsd: readOptionalNumber(form.structuringFeeUsd),
+    grossProfitProjectedUsd: readOptionalNumber(form.grossProfitProjectedUsd),
+    managementFeeUsd: readOptionalNumber(form.managementFeeUsd),
+    brokerFeeUsd: readOptionalNumber(form.brokerFeeUsd),
+    netInvestorProfitUsd: readOptionalNumber(form.netInvestorProfitUsd),
+    projectedNetRoiPct: readOptionalNumber(form.projectedNetRoiPct)
+  };
+}
+
+function buildMarketplaceGovernance(form: AssetForm): PropertyGovernance {
+  const governanceNotes = [
+    form.riskNotes.trim(),
+    form.buildingFiduciaryStructure.trim() ? `Fiduciary structure: ${form.buildingFiduciaryStructure.trim()}` : "",
+    form.buildingLicensesStatus.trim() ? `Licenses status: ${form.buildingLicensesStatus.trim()}` : ""
+  ].filter(Boolean);
+
+  return {
+    riskNotes: (governanceNotes.join(" ") || form.investmentThesis.trim() || "").trim()
+  };
 }
 
 function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url: string }> {
@@ -336,11 +407,10 @@ export function AssetCreationForm(): ReactElement {
     collectionSymbolManual,
     importText,
     importFileName,
+    importFingerprint,
     importPreviewCount,
     importHeaders,
     importMessage,
-    importSubmitting,
-    importJob,
     dragTargetField,
     uploadState,
     uploadRefs,
@@ -358,11 +428,10 @@ export function AssetCreationForm(): ReactElement {
     setCollectionSymbolManual,
     setImportText,
     setImportFileName,
+    setImportFingerprint,
     setImportPreviewCount,
     setImportHeaders,
     setImportMessage,
-    setImportSubmitting,
-    setImportJob,
     setDragTargetField,
     setUploadState,
     setUploadRefs,
@@ -375,6 +444,7 @@ export function AssetCreationForm(): ReactElement {
     setCreatedMarketplaceEntryId
   } = useAssetCreationFormState(draftId);
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
+  const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
   const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -515,12 +585,34 @@ export function AssetCreationForm(): ReactElement {
     const errors: string[] = [];
 
     if (form.assetType === "building_new") {
+      const purchasePriceUsd = Number(form.purchasePriceUsd || "0");
+      const afterRepairValueUsd = Number(form.afterRepairValueUsd || "0");
+      const rehabBudgetUsd = Number(form.rehabBudgetUsd || "0");
+      const totalProjectCostUsd = Number(form.totalProjectCostUsd || "0");
+      const projectedNetRoiPct = Number(form.projectedNetRoiPct || "0");
+      const closingCostsUsd = Number(form.closingCostsUsd || "0");
+      const holdingCostsUsd = Number(form.holdingCostsUsd || "0");
+      const sellingCostsUsd = Number(form.sellingCostsUsd || "0");
+      const knownCostComponentSum = purchasePriceUsd + rehabBudgetUsd + closingCostsUsd + holdingCostsUsd + sellingCostsUsd;
+
       if (!form.buildingDeveloperName.trim()) errors.push(t({ en: "developerName is required.", es: "developerName obligatorio.", pt: "developerName obrigatorio." }));
       if (!form.buildingProjectStage.trim()) errors.push(t({ en: "projectStage is required.", es: "projectStage obligatorio.", pt: "projectStage obrigatorio." }));
-      if (!form.buildingEstimatedDeliveryDate.trim()) errors.push(t({ en: "estimatedDeliveryDate is required.", es: "estimatedDeliveryDate obligatorio.", pt: "estimatedDeliveryDate obrigatorio." }));
+      if (!form.buildingProjectDurationMonths.trim()) errors.push(t({ en: "projectDurationMonths is required.", es: "projectDurationMonths obligatorio.", pt: "projectDurationMonths obrigatorio." }));
       if (Number(form.buildingFundingGoal || "0") <= 0) errors.push(t({ en: "fundingGoal must be greater than 0.", es: "fundingGoal debe ser mayor a 0.", pt: "fundingGoal deve ser maior que 0." }));
       if (Number(form.buildingNftCost || "0") <= 0) errors.push(t({ en: "nftCost must be greater than 0.", es: "nftCost debe ser mayor a 0.", pt: "nftCost deve ser maior que 0." }));
       if (Number(form.buildingTotalUnits || "0") <= 0) errors.push(t({ en: "totalUnits must be greater than 0.", es: "totalUnits debe ser mayor a 0.", pt: "totalUnits deve ser maior que 0." }));
+      if (purchasePriceUsd <= 0) errors.push(t({ en: "purchasePriceUsd must be greater than 0.", es: "purchasePriceUsd debe ser mayor a 0.", pt: "purchasePriceUsd deve ser maior que 0." }));
+      if (afterRepairValueUsd <= 0) errors.push(t({ en: "afterRepairValueUsd must be greater than 0.", es: "afterRepairValueUsd debe ser mayor a 0.", pt: "afterRepairValueUsd deve ser maior que 0." }));
+      if (rehabBudgetUsd <= 0) errors.push(t({ en: "rehabBudgetUsd must be greater than 0.", es: "rehabBudgetUsd debe ser mayor a 0.", pt: "rehabBudgetUsd deve ser maior que 0." }));
+      if (totalProjectCostUsd <= 0) errors.push(t({ en: "totalProjectCostUsd must be greater than 0.", es: "totalProjectCostUsd debe ser mayor a 0.", pt: "totalProjectCostUsd deve ser maior que 0." }));
+      if (projectedNetRoiPct < 0) errors.push(t({ en: "projectedNetRoiPct must be non-negative.", es: "projectedNetRoiPct debe ser no negativo.", pt: "projectedNetRoiPct deve ser nao negativo." }));
+      if (knownCostComponentSum > 0 && totalProjectCostUsd > 0 && totalProjectCostUsd < knownCostComponentSum) {
+        errors.push(t({
+          en: "totalProjectCostUsd cannot be lower than the known component cost sum.",
+          es: "totalProjectCostUsd no puede ser menor a la suma de costos conocidos.",
+          pt: "totalProjectCostUsd nao pode ser menor que a soma dos custos conhecidos."
+        }));
+      }
     }
 
     if (form.assetType === "rental_property") {
@@ -704,6 +796,21 @@ export function AssetCreationForm(): ReactElement {
     form.buildingEstimatedDeliveryDate,
     setForm
   ]);
+
+  useEffect(() => {
+    if (form.assetType !== "building_new") {
+      return;
+    }
+
+    if (form.buildingExpectedAnnualReturn === form.projectedNetRoiPct) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      buildingExpectedAnnualReturn: prev.projectedNetRoiPct
+    }));
+  }, [form.assetType, form.projectedNetRoiPct, form.buildingExpectedAnnualReturn, setForm]);
 
   const {
     onFileInput,
@@ -890,31 +997,77 @@ export function AssetCreationForm(): ReactElement {
     }
   };
 
+  const hasLoadedImport = importHeaders.length > 0 && importPreviewCount > 0;
+
   const {
-    previewImportFromText,
-    enqueueImportFromText,
+    buildImportCandidateFromText,
+    applyImportCandidate: applyImportCandidateToState,
     onImportFileInput
   } = useAssetImportJobs({
-    draftId,
-    importText,
-    importFileName,
-    importJob,
-    setImportSubmitting,
     setImportMessage,
-    setImportJob,
     setImportHeaders,
     setImportPreviewCount,
     setImportFileName,
+    setImportFingerprint,
+    setImportText,
     t,
     onApplyImportedRow: applyImportedRow
   });
 
-  const saveDraft = async () => {
-    setFormStatus("saving");
-    setValidationErrors([]);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setFormStatus("saved");
-  };
+  const requestImportCandidate = useCallback((candidate: ParsedImportCandidate | null) => {
+    if (!candidate) {
+      return;
+    }
+
+    const isSameImport = candidate.fingerprint === importFingerprint;
+    if (!hasLoadedImport || isSameImport) {
+      applyImportCandidateToState(candidate);
+      return;
+    }
+
+    setPendingImportCandidate(candidate);
+  }, [
+    applyImportCandidateToState,
+    hasLoadedImport,
+    importFingerprint
+  ]);
+
+  const handleImportFileInput = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const candidate = await onImportFileInput(event);
+    requestImportCandidate(candidate);
+  }, [onImportFileInput, requestImportCandidate]);
+
+  const handleImportTextareaPaste = useCallback((event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = event.clipboardData.getData("text");
+    if (!pastedText.trim()) {
+      return;
+    }
+
+    event.preventDefault();
+    const candidate = buildImportCandidateFromText({
+      text: pastedText,
+      fileName: "pasted-import.tsv"
+    });
+    requestImportCandidate(candidate);
+  }, [buildImportCandidateFromText, requestImportCandidate]);
+
+  const confirmReplaceImport = useCallback(() => {
+    if (!pendingImportCandidate) {
+      return;
+    }
+
+    applyImportCandidateToState(pendingImportCandidate);
+    setPendingImportCandidate(null);
+  }, [applyImportCandidateToState, pendingImportCandidate]);
+
+  const cancelReplaceImport = useCallback(() => {
+    setPendingImportCandidate(null);
+    setImportMessage(t({
+      en: "Replacement canceled. Your current imported values were kept.",
+      es: "Se cancelo el reemplazo. Se mantuvieron tus valores importados actuales.",
+      pt: "A substituicao foi cancelada. Seus valores importados atuais foram mantidos."
+    }));
+  }, [setImportMessage, t]);
 
   const continueToMint = async () => {
     if (!canContinueToMint) {
@@ -944,6 +1097,7 @@ export function AssetCreationForm(): ReactElement {
 
     const nftPriceUsd = deriveNftPriceUsd(form);
     const annualRoiPct = deriveAnnualRoiPct(form);
+    const economics = buildMarketplaceEconomics(form);
 
     const payload = {
       entryId: normalizeMarketplaceEntryId(form.slug, form.internalCode || draftId),
@@ -961,6 +1115,9 @@ export function AssetCreationForm(): ReactElement {
       supplyTotal: mintQuantityValue > 0 ? mintQuantityValue : 1,
       nftPriceUsd,
       annualRoiPct,
+      project: buildMarketplaceProject(form),
+      economics,
+      governance: buildMarketplaceGovernance(form),
       documents: buildMarketplaceDocuments(form),
       collectionAddress: deployCompletedData.collectionAddress,
       candyMachineAddress: deployCompletedData.candyMachineAddress,
@@ -1029,6 +1186,22 @@ export function AssetCreationForm(): ReactElement {
   return (
     <div className="space-y-4 pb-24">
       <AssetCreationIntroSection t={t} />
+      <AssetImportSection
+        t={t}
+        importFileName={importFileName}
+        importText={importText}
+        importPreviewCount={importPreviewCount}
+        importHeaders={importHeaders}
+        importMessage={importMessage}
+        hasLoadedImport={hasLoadedImport}
+        replaceImportOpen={Boolean(pendingImportCandidate)}
+        pendingImportLabel={pendingImportCandidate?.fileName ?? ""}
+        setImportText={setImportText}
+        onImportFileInput={handleImportFileInput}
+        onImportTextareaPaste={handleImportTextareaPaste}
+        onConfirmReplaceImport={confirmReplaceImport}
+        onCancelReplaceImport={cancelReplaceImport}
+      />
       <AssetTypeSelectionSection t={t} form={form} setForm={setForm} options={assetTypeOptions} />
       <AssetIdentificationSection t={t} form={form} setForm={setForm} />
       <AssetLocationSection t={t} form={form} setForm={setForm} />
@@ -1053,21 +1226,6 @@ export function AssetCreationForm(): ReactElement {
         setCollectionSymbolManual={setCollectionSymbolManual}
         onResetSuggestedValues={handleResetSuggestedCollectionValues}
       />
-      <AssetImportSection
-        t={t}
-        importFileName={importFileName}
-        importText={importText}
-        importPreviewCount={importPreviewCount}
-        importHeaders={importHeaders}
-        importMessage={importMessage}
-        importSubmitting={importSubmitting}
-        importJob={importJob}
-        setImportText={setImportText}
-        previewImportFromText={previewImportFromText}
-        enqueueImportFromText={enqueueImportFromText}
-        onImportFileInput={onImportFileInput}
-      />
-
       {form.assetType && (
         <Card className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1097,9 +1255,9 @@ export function AssetCreationForm(): ReactElement {
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectStage: event.target.value }))}
                 />
                 <GuidedInputField
-                  label={t({ en: "Developer name", es: "Nombre del desarrollador", pt: "Nome da incorporadora" })}
-                  hint={t({ en: "Legal entity or brand in charge of execution.", es: "Entidad legal o marca a cargo de la ejecucion.", pt: "Entidade legal ou marca responsavel pela execucao." })}
-                  tooltip={t({ en: "Displayed in admin traceability and listings.", es: "Se muestra en trazabilidad admin y listados.", pt: "Exibido na rastreabilidade admin e listagens." })}
+                  label={t({ en: "Operator / developer", es: "Operador / desarrollador", pt: "Operador / desenvolvedor" })}
+                  hint={t({ en: "Sponsor, developer, or execution operator from the brief.", es: "Sponsor, desarrollador u operador de ejecucion del brief.", pt: "Sponsor, desenvolvedor ou operador de execucao do brief." })}
+                  tooltip={t({ en: "Displayed to investors as the entity leading execution.", es: "Se muestra al inversionista como la entidad que lidera la ejecucion.", pt: "Exibido ao investidor como a entidade que lidera a execucao." })}
                   placeholder="developerName"
                   value={form.buildingDeveloperName}
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))}
@@ -1121,9 +1279,9 @@ export function AssetCreationForm(): ReactElement {
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))}
                 />
                 <GuidedInputField
-                  label={t({ en: "Funding goal", es: "Meta de fondeo", pt: "Meta de captacao" })}
-                  hint={t({ en: "Reference value in USD for total units and Fraction cost.", es: "Valor de referencia en USD para unidades y costo Fracción.", pt: "Valor de referencia em USD para unidades e custo do Fração." })}
-                  tooltip={t({ en: "Core financial target used for consistency checks.", es: "Objetivo financiero base para validaciones de consistencia.", pt: "Meta financeira base para validacoes de consistencia." })}
+                  label={t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}
+                  hint={t({ en: "Investor capital target from the brief, in USD.", es: "Meta de capital inversionista del brief, en USD.", pt: "Meta de capital do investidor do brief, em USD." })}
+                  tooltip={t({ en: "Used as the public minimum-capital signal and mint consistency anchor.", es: "Se usa como senal publica de capital minimo y ancla de consistencia de mint.", pt: "Usado como sinal publico de capital minimo e ancora de consistencia do mint." })}
                   placeholder="fundingGoal"
                   prefix="$"
                   value={form.buildingFundingGoal}
@@ -1188,15 +1346,143 @@ export function AssetCreationForm(): ReactElement {
                     <p className="text-[11px] text-rose-200">{solUsdQuoteError}</p>
                   ) : null}
                 </div>
-                <GuidedInputField
-                  label={t({ en: "Expected annual return", es: "Retorno anual esperado", pt: "Retorno anual esperado" })}
-                  hint={t({ en: "Projected percentage return for investors.", es: "Porcentaje proyectado de retorno para inversionistas.", pt: "Percentual projetado de retorno para investidores." })}
-                  tooltip={t({ en: "Displayed in marketplace ROI summary.", es: "Se muestra en el resumen ROI del marketplace.", pt: "Exibido no resumo de ROI do marketplace." })}
-                  placeholder="expectedAnnualReturn"
-                  suffix="%"
-                  value={form.buildingExpectedAnnualReturn}
-                  onChange={(event) => setForm((prev) => ({ ...prev, buildingExpectedAnnualReturn: event.target.value }))}
-                />
+              </div>
+
+              <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">{t({ en: "Deal economics", es: "Economia del deal", pt: "Economia do deal" })}</p>
+                  <p className="text-xs text-white/60">
+                    {t({
+                      en: "Informational project economics captured from the investment brief and shown in the marketplace detail.",
+                      es: "Economia informativa del proyecto capturada desde el brief y mostrada en el detalle del marketplace.",
+                      pt: "Economia informativa do projeto capturada do brief e exibida no detalhe do marketplace."
+                    })}
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <GuidedInputField
+                    label={t({ en: "Purchase price", es: "Purchase Price", pt: "Purchase Price" })}
+                    hint={t({ en: "Acquisition price from the brief.", es: "Precio de adquisicion del brief.", pt: "Preco de aquisicao do brief." })}
+                    tooltip={t({ en: "Base entry price for the project economics.", es: "Precio base de entrada para la economia del proyecto.", pt: "Preco base de entrada para a economia do projeto." })}
+                    prefix="$"
+                    value={form.purchasePriceUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, purchasePriceUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "After Repair Value (ARV)", es: "After Repair Value (ARV)", pt: "After Repair Value (ARV)" })}
+                    hint={t({ en: "Projected value after completion or stabilization.", es: "Valor proyectado despues de completar o estabilizar.", pt: "Valor projetado apos concluir ou estabilizar." })}
+                    tooltip={t({ en: "Primary upside benchmark from the brief.", es: "Benchmark principal de upside del brief.", pt: "Benchmark principal de upside do brief." })}
+                    prefix="$"
+                    value={form.afterRepairValueUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, afterRepairValueUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Rehab budget", es: "Rehab Budget", pt: "Rehab Budget" })}
+                    hint={t({ en: "Construction or rehabilitation budget.", es: "Presupuesto de construccion o rehabilitacion.", pt: "Orcamento de construcao ou reabilitacao." })}
+                    tooltip={t({ en: "Execution cost allocated to the work scope.", es: "Costo de ejecucion asignado al alcance de obra.", pt: "Custo de execucao alocado ao escopo da obra." })}
+                    prefix="$"
+                    value={form.rehabBudgetUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, rehabBudgetUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Closing costs", es: "Closing Costs", pt: "Closing Costs" })}
+                    hint={t({ en: "Acquisition and transaction closing costs.", es: "Costos de cierre y transaccion.", pt: "Custos de fechamento e transacao." })}
+                    tooltip={t({ en: "Administrative and transactional cost bucket.", es: "Bolsa de costos administrativos y transaccionales.", pt: "Bolsa de custos administrativos e transacionais." })}
+                    prefix="$"
+                    value={form.closingCostsUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, closingCostsUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Holding & misc.", es: "Holding & Misc.", pt: "Holding & Misc." })}
+                    hint={t({ en: "Carry, contingency, and miscellaneous operating costs.", es: "Carry, contingencia y costos operativos varios.", pt: "Carry, contingencia e custos operacionais diversos." })}
+                    tooltip={t({ en: "Intermediate cost bucket while the project is live.", es: "Bolsa intermedia de costos mientras el proyecto esta vivo.", pt: "Bolsa intermediaria de custos enquanto o projeto esta ativo." })}
+                    prefix="$"
+                    value={form.holdingCostsUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, holdingCostsUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Selling costs", es: "Selling Costs", pt: "Selling Costs" })}
+                    hint={t({ en: "Disposition or commercialization cost bucket.", es: "Bolsa de costos de salida o comercializacion.", pt: "Bolsa de custos de saida ou comercializacao." })}
+                    tooltip={t({ en: "Used to explain the net path to exit.", es: "Se usa para explicar la ruta neta hacia la salida.", pt: "Usado para explicar a rota liquida ate a saida." })}
+                    prefix="$"
+                    value={form.sellingCostsUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, sellingCostsUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Total project cost", es: "Total Project Cost", pt: "Total Project Cost" })}
+                    hint={t({ en: "All-in project cost shown to investors.", es: "Costo all-in del proyecto mostrado al inversionista.", pt: "Custo all-in do projeto exibido ao investidor." })}
+                    tooltip={t({ en: "Validated against known cost components when present.", es: "Se valida contra los componentes de costo conocidos cuando existan.", pt: "Validado contra os componentes de custo conhecidos quando presentes." })}
+                    prefix="$"
+                    value={form.totalProjectCostUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, totalProjectCostUsd: event.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">{t({ en: "Fees and investor return", es: "Fees y retorno del inversionista", pt: "Fees e retorno do investidor" })}</p>
+                  <p className="text-xs text-white/60">
+                    {t({
+                      en: "Public economics used to explain fee stack, projected profit, and investor outcome.",
+                      es: "Economia publica usada para explicar fees, profit proyectado y resultado para el inversionista.",
+                      pt: "Economia publica usada para explicar fees, lucro projetado e resultado para o investidor."
+                    })}
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <GuidedInputField
+                    label={t({ en: "Structuring fee", es: "Structuring Fee", pt: "Structuring Fee" })}
+                    hint={t({ en: "Fee charged for structuring the deal participation.", es: "Fee cobrado por estructurar la participacion del deal.", pt: "Fee cobrado pela estruturacao da participacao no deal." })}
+                    tooltip={t({ en: "Investor-visible structuring fee in USD.", es: "Fee de estructuracion visible para el inversionista en USD.", pt: "Fee de estruturacao visivel ao investidor em USD." })}
+                    prefix="$"
+                    value={form.structuringFeeUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, structuringFeeUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Net profit (before distribution)", es: "Net Profit (before distribution)", pt: "Net Profit (before distribution)" })}
+                    hint={t({ en: "Projected gross distributable profit before downstream splits.", es: "Profit proyectado antes de splits posteriores.", pt: "Lucro projetado antes de splits posteriores." })}
+                    tooltip={t({ en: "Headline projected profit from the brief.", es: "Profit proyectado principal del brief.", pt: "Lucro projetado principal do brief." })}
+                    prefix="$"
+                    value={form.grossProfitProjectedUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, grossProfitProjectedUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Management fee", es: "Management Fee", pt: "Management Fee" })}
+                    hint={t({ en: "Operator or management fee disclosed to investors.", es: "Fee de operador o management informado al inversionista.", pt: "Fee de operador ou management informado ao investidor." })}
+                    tooltip={t({ en: "Part of the public fee stack.", es: "Parte del stack publico de fees.", pt: "Parte do stack publico de fees." })}
+                    prefix="$"
+                    value={form.managementFeeUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, managementFeeUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Broker fee", es: "Broker Fee", pt: "Broker Fee" })}
+                    hint={t({ en: "Broker or selling-side fee bucket.", es: "Bolsa de fee broker o lado comercial.", pt: "Bolsa de fee de broker ou lado comercial." })}
+                    tooltip={t({ en: "Shown separately to preserve deal transparency.", es: "Se muestra separado para preservar transparencia del deal.", pt: "Exibido separadamente para preservar a transparencia do deal." })}
+                    prefix="$"
+                    value={form.brokerFeeUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, brokerFeeUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Net profit for investor", es: "Net Profit for Investor", pt: "Net Profit for Investor" })}
+                    hint={t({ en: "Projected investor-side net outcome.", es: "Resultado neto proyectado del inversionista.", pt: "Resultado liquido projetado do investidor." })}
+                    tooltip={t({ en: "Public-facing investor profit outcome.", es: "Resultado de profit visible para el inversionista.", pt: "Resultado de lucro visivel para o investidor." })}
+                    prefix="$"
+                    value={form.netInvestorProfitUsd}
+                    onChange={(event) => setForm((prev) => ({ ...prev, netInvestorProfitUsd: event.target.value }))}
+                  />
+                  <GuidedInputField
+                    label={t({ en: "Projected net ROI", es: "ROI proyectado", pt: "ROI projetado" })}
+                    hint={t({ en: "Net investor ROI from the brief.", es: "ROI neto del inversionista segun el brief.", pt: "ROI liquido do investidor segundo o brief." })}
+                    tooltip={t({ en: "Preferred ROI signal for the marketplace.", es: "Senal de ROI preferida para el marketplace.", pt: "Sinal de ROI preferido para o marketplace." })}
+                    suffix="%"
+                    value={form.projectedNetRoiPct}
+                    onChange={(event) => setForm((prev) => ({ ...prev, projectedNetRoiPct: event.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1">
                   <p className="inline-flex items-center gap-1 text-xs text-white/70">
                     <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
@@ -1228,12 +1514,12 @@ export function AssetCreationForm(): ReactElement {
                 </div>
                 <GuidedInputField
                   label={t({ en: "Project duration", es: "Duracion del proyecto", pt: "Duracao do projeto" })}
-                  hint={t({ en: "Calculated automatically from start and delivery dates.", es: "Se calcula automaticamente con inicio y entrega.", pt: "Calculado automaticamente a partir de inicio e entrega." })}
-                  tooltip={t({ en: "Read-only field to prevent manual inconsistency.", es: "Campo solo lectura para evitar inconsistencias manuales.", pt: "Campo somente leitura para evitar inconsistencias manuais." })}
-                  placeholder={t({ en: "Auto", es: "Auto", pt: "Auto" })}
+                  hint={t({ en: "Prefers total estimated duration from the brief and auto-syncs from dates when available.", es: "Prefiere la duracion total estimada del brief y se autosincroniza con fechas cuando existan.", pt: "Prefere a duracao total estimada do brief e sincroniza automaticamente com datas quando existirem." })}
+                  tooltip={t({ en: "Investor-facing duration signal used on marketplace.", es: "Senal de duracion visible para el inversionista en marketplace.", pt: "Sinal de duracao visivel ao investidor no marketplace." })}
+                  placeholder={t({ en: "Months", es: "Meses", pt: "Meses" })}
                   suffix={t({ en: "mo", es: "meses", pt: "meses" })}
                   value={form.buildingProjectDurationMonths}
-                  readOnly
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingProjectDurationMonths: event.target.value }))}
                 />
                 <GuidedInputField
                   label={t({ en: "Licenses status", es: "Estado de licencias", pt: "Status das licencas" })}
@@ -1723,9 +2009,6 @@ export function AssetCreationForm(): ReactElement {
               {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
             </Button>
           </Link>
-          <Button className="min-h-11" variant="outline" onClick={saveDraft}>
-            {t({ en: "Save draft", es: "Guardar borrador", pt: "Salvar rascunho" })}
-          </Button>
           {showMintSetup ? (
             <Button
               className="min-h-11"

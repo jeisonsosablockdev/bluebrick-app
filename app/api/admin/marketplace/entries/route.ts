@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
 import { getRequestRole } from "@/lib/auth-session";
-import { type ListingStatus } from "@/lib/property-service";
+import {
+  createEmptyPropertyEconomics,
+  type ListingStatus,
+  type PropertyEconomics,
+  type PropertyGovernance,
+  type PropertyProject
+} from "@/lib/property-service";
 import { createMarketplacePropertyEntryPersistent } from "@/lib/property-marketplace-server";
 
 type MarketplaceEntryRequest = {
@@ -22,6 +28,9 @@ type MarketplaceEntryRequest = {
   nftPriceUsd?: unknown;
   annualRoiPct?: unknown;
   documents?: unknown;
+  project?: unknown;
+  economics?: unknown;
+  governance?: unknown;
   collectionAddress?: unknown;
   candyMachineAddress?: unknown;
   snapshotId?: unknown;
@@ -31,6 +40,10 @@ type MarketplaceDocumentInput = {
   label: string;
   url: string;
 };
+
+type MarketplaceProjectInput = Partial<Record<keyof PropertyProject, unknown>>;
+type MarketplaceEconomicsInput = Partial<Record<keyof PropertyEconomics, unknown>>;
+type MarketplaceGovernanceInput = Partial<Record<keyof PropertyGovernance, unknown>>;
 
 function readRequiredText(raw: unknown, fieldName: string): string {
   if (typeof raw !== "string") {
@@ -90,6 +103,85 @@ function parseDocuments(raw: unknown): MarketplaceDocumentInput[] {
     .slice(0, 12);
 }
 
+function readOptionalNumericField(raw: unknown): number | null {
+  if (raw === null || raw === undefined || raw === "") {
+    return null;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error("Structured numeric fields must be non-negative when provided.");
+  }
+
+  return parsed;
+}
+
+function parseProject(raw: unknown): PropertyProject {
+  if (!raw || typeof raw !== "object") {
+    return {
+      stage: "",
+      developerName: "",
+      exitStrategy: "",
+      durationMonths: null
+    };
+  }
+
+  const project = raw as MarketplaceProjectInput;
+  const durationMonths = project.durationMonths === null || project.durationMonths === undefined || project.durationMonths === ""
+    ? null
+    : readPositiveInteger(project.durationMonths, "project.durationMonths");
+
+  return {
+    stage: typeof project.stage === "string" ? project.stage.trim() : "",
+    developerName: typeof project.developerName === "string" ? project.developerName.trim() : "",
+    exitStrategy: typeof project.exitStrategy === "string" ? project.exitStrategy.trim() : "",
+    durationMonths
+  };
+}
+
+function parseEconomics(raw: unknown, defaults: { minimumCapitalRequiredUsd: number; projectedNetRoiPct: number }): PropertyEconomics {
+  const fallback = createEmptyPropertyEconomics();
+
+  if (!raw || typeof raw !== "object") {
+    return {
+      ...fallback,
+      minimumCapitalRequiredUsd: defaults.minimumCapitalRequiredUsd,
+      projectedNetRoiPct: defaults.projectedNetRoiPct
+    };
+  }
+
+  const economics = raw as MarketplaceEconomicsInput;
+  return {
+    purchasePriceUsd: readOptionalNumericField(economics.purchasePriceUsd),
+    afterRepairValueUsd: readOptionalNumericField(economics.afterRepairValueUsd),
+    rehabBudgetUsd: readOptionalNumericField(economics.rehabBudgetUsd),
+    closingCostsUsd: readOptionalNumericField(economics.closingCostsUsd),
+    holdingCostsUsd: readOptionalNumericField(economics.holdingCostsUsd),
+    sellingCostsUsd: readOptionalNumericField(economics.sellingCostsUsd),
+    totalProjectCostUsd: readOptionalNumericField(economics.totalProjectCostUsd),
+    minimumCapitalRequiredUsd: readOptionalNumericField(economics.minimumCapitalRequiredUsd) ?? defaults.minimumCapitalRequiredUsd,
+    structuringFeeUsd: readOptionalNumericField(economics.structuringFeeUsd),
+    grossProfitProjectedUsd: readOptionalNumericField(economics.grossProfitProjectedUsd),
+    managementFeeUsd: readOptionalNumericField(economics.managementFeeUsd),
+    brokerFeeUsd: readOptionalNumericField(economics.brokerFeeUsd),
+    netInvestorProfitUsd: readOptionalNumericField(economics.netInvestorProfitUsd),
+    projectedNetRoiPct: readOptionalNumericField(economics.projectedNetRoiPct) ?? defaults.projectedNetRoiPct
+  };
+}
+
+function parseGovernance(raw: unknown, investmentNotes: string): PropertyGovernance {
+  if (!raw || typeof raw !== "object") {
+    return { riskNotes: investmentNotes };
+  }
+
+  const governance = raw as MarketplaceGovernanceInput;
+  return {
+    riskNotes: typeof governance.riskNotes === "string" && governance.riskNotes.trim()
+      ? governance.riskNotes.trim()
+      : investmentNotes
+  };
+}
+
 function buildExplorerUrl(collectionAddress: string): string {
   const encodedAddress = encodeURIComponent(collectionAddress);
   return `https://explorer.solana.com/address/${encodedAddress}?cluster=devnet`;
@@ -111,6 +203,9 @@ function normalizePayload(rawBody: unknown): {
   supplyTotal: number;
   nftPriceUsd: number;
   annualRoiPct: number;
+  project: PropertyProject;
+  economics: PropertyEconomics;
+  governance: PropertyGovernance;
   documents: MarketplaceDocumentInput[];
   collectionAddress: string;
   candyMachineAddress: string;
@@ -145,6 +240,12 @@ function normalizePayload(rawBody: unknown): {
   const investmentNotes = typeof body.investmentNotes === "string" && body.investmentNotes.trim()
     ? body.investmentNotes.trim()
     : "Marketplace entry created from admin console deploy workflow.";
+  const project = parseProject(body.project);
+  const economics = parseEconomics(body.economics, {
+    minimumCapitalRequiredUsd: 0,
+    projectedNetRoiPct: annualRoiPct
+  });
+  const governance = parseGovernance(body.governance, investmentNotes);
 
   const snapshotId = typeof body.snapshotId === "string" && body.snapshotId.trim()
     ? body.snapshotId.trim()
@@ -166,6 +267,9 @@ function normalizePayload(rawBody: unknown): {
     supplyTotal,
     nftPriceUsd,
     annualRoiPct,
+    project,
+    economics,
+    governance,
     documents,
     collectionAddress,
     candyMachineAddress,
@@ -241,6 +345,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       nftPriceUsd: payload.nftPriceUsd,
       annualRoiPct: payload.annualRoiPct,
       availabilityLabel: "Funding abierto",
+      project: payload.project,
+      economics: payload.economics,
+      governance: payload.governance,
       documents,
       collectionAddress: payload.collectionAddress,
       assetMintAddress: payload.candyMachineAddress,

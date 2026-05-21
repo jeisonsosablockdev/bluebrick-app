@@ -429,6 +429,17 @@ a {
     z-index: 1;
   }
 
+  .admin-sidebar-header {
+    flex-shrink: 0;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .admin-sidebar-scroll {
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) calc(100% - 1.5rem), rgba(0, 0, 0, 0) 100%);
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) calc(100% - 1.5rem), rgba(0, 0, 0, 0) 100%);
+  }
+
   .admin-sidebar-wallet {
     color: rgba(226, 232, 240, 0.9);
   }
@@ -489,6 +500,10 @@ a {
   html[data-theme="light"] .admin-sidebar {
     border-color: rgba(15, 23, 42, 0.14);
     background: linear-gradient(180deg, rgba(252, 254, 255, 0.95), rgba(244, 248, 255, 0.95));
+  }
+
+  html[data-theme="light"] .admin-sidebar-header {
+    border-bottom-color: rgba(15, 23, 42, 0.08);
   }
 
   html[data-theme="light"] .admin-sidebar-wallet {

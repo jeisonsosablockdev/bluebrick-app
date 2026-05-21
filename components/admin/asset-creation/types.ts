@@ -67,6 +67,19 @@ export type AssetForm = {
   propertyImages: string[];
   collectionName: string;
   collectionSymbol: string;
+  purchasePriceUsd: string;
+  afterRepairValueUsd: string;
+  rehabBudgetUsd: string;
+  closingCostsUsd: string;
+  holdingCostsUsd: string;
+  sellingCostsUsd: string;
+  totalProjectCostUsd: string;
+  structuringFeeUsd: string;
+  grossProfitProjectedUsd: string;
+  managementFeeUsd: string;
+  brokerFeeUsd: string;
+  netInvestorProfitUsd: string;
+  projectedNetRoiPct: string;
   buildingProjectStage: string;
   buildingDeveloperName: string;
   buildingEstimatedDeliveryDate: string;
@@ -118,6 +131,7 @@ export type AssetCreationState = {
   collectionSymbolManual: boolean;
   importText: string;
   importFileName: string;
+  importFingerprint: string;
   importPreviewCount: number;
   importHeaders: string[];
   importMessage: string;
@@ -159,6 +173,19 @@ export const initialAssetForm: AssetForm = {
   propertyImages: [],
   collectionName: "",
   collectionSymbol: "",
+  purchasePriceUsd: "",
+  afterRepairValueUsd: "",
+  rehabBudgetUsd: "",
+  closingCostsUsd: "",
+  holdingCostsUsd: "",
+  sellingCostsUsd: "",
+  totalProjectCostUsd: "",
+  structuringFeeUsd: "",
+  grossProfitProjectedUsd: "",
+  managementFeeUsd: "",
+  brokerFeeUsd: "",
+  netInvestorProfitUsd: "",
+  projectedNetRoiPct: "",
   buildingProjectStage: "",
   buildingDeveloperName: "",
   buildingEstimatedDeliveryDate: "",
@@ -226,6 +253,7 @@ export function createInitialAssetCreationState(draftId: string): AssetCreationS
     collectionSymbolManual: false,
     importText: "",
     importFileName: "",
+    importFingerprint: "",
     importPreviewCount: 0,
     importHeaders: [],
     importMessage: "",

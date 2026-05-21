@@ -55,6 +55,7 @@ type AssetCreationFormStateApi = AssetCreationState & {
   setCollectionSymbolManual: (value: SetStateAction<boolean>) => void;
   setImportText: (value: SetStateAction<string>) => void;
   setImportFileName: (value: SetStateAction<string>) => void;
+  setImportFingerprint: (value: SetStateAction<string>) => void;
   setImportPreviewCount: (value: SetStateAction<number>) => void;
   setImportHeaders: (value: SetStateAction<string[]>) => void;
   setImportMessage: (value: SetStateAction<string>) => void;
@@ -126,6 +127,11 @@ export function useAssetCreationFormState(initialDraftId: string): AssetCreation
   const setImportFileName = useCallback((value: SetStateAction<string>) => {
     const next = resolveSetStateAction(value, stateRef.current.importFileName);
     dispatchAndTrack(setImportInput({ importFileName: next }));
+  }, [dispatchAndTrack]);
+
+  const setImportFingerprint = useCallback((value: SetStateAction<string>) => {
+    const next = resolveSetStateAction(value, stateRef.current.importFingerprint);
+    dispatchAndTrack(setImportInput({ importFingerprint: next }));
   }, [dispatchAndTrack]);
 
   const setImportPreviewCount = useCallback((value: SetStateAction<number>) => {
@@ -212,6 +218,7 @@ export function useAssetCreationFormState(initialDraftId: string): AssetCreation
     setCollectionSymbolManual,
     setImportText,
     setImportFileName,
+    setImportFingerprint,
     setImportPreviewCount,
     setImportHeaders,
     setImportMessage,

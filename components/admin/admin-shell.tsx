@@ -20,6 +20,26 @@ type AdminShellProps = {
   children: ReactNode;
 };
 
+function AdminSidebarHeader({
+  title,
+  walletLabel,
+  action
+}: {
+  title: string;
+  walletLabel: string;
+  action?: ReactNode;
+}): ReactElement {
+  return (
+    <div className="admin-sidebar-header space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{title}</p>
+        {action}
+      </div>
+      <p className="admin-sidebar-wallet text-xs">{walletLabel}</p>
+    </div>
+  );
+}
+
 export function AdminShell({ authenticatedPublicKey, walletLabel, children }: AdminShellProps): ReactElement {
   const { t } = useI18n();
   const pathname = usePathname();
@@ -45,14 +65,14 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
 
       <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="glass-surface admin-sidebar sticky top-6 h-[calc(100vh-3rem)] space-y-4 overflow-y-auto bg-transparent p-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
-                {t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
-              </p>
-              <p className="admin-sidebar-wallet mt-1 text-xs">{walletLabel}</p>
+          <Card className="glass-surface admin-sidebar sticky top-6 flex h-[calc(100vh-3rem)] flex-col bg-transparent p-4">
+            <AdminSidebarHeader
+              title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
+              walletLabel={walletLabel}
+            />
+            <div className="admin-sidebar-scroll no-scrollbar mt-4 flex-1 overflow-y-auto pr-1">
+              <AdminNavigation pathname={pathname} sections={adminNav} />
             </div>
-            <AdminNavigation pathname={pathname} sections={adminNav} />
           </Card>
         </aside>
 
@@ -94,22 +114,25 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
-          <aside className="glass-surface admin-sidebar relative h-full w-[88%] max-w-sm overflow-y-auto rounded-r-3xl border-l-0 bg-transparent p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
-                {t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
-              </p>
-              <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
-                {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
-              </Button>
-            </div>
-
-            <AdminNavigation
-              onNavigate={() => setIsDrawerOpen(false)}
-              pathname={pathname}
-              sectionKeyPrefix="mobile"
-              sections={adminNav}
+          <aside className="glass-surface admin-sidebar relative flex h-full w-[88%] max-w-sm flex-col rounded-r-3xl border-l-0 bg-transparent p-4">
+            <AdminSidebarHeader
+              title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
+              walletLabel={walletLabel}
+              action={(
+                <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
+                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                </Button>
+              )}
             />
+
+            <div className="admin-sidebar-scroll no-scrollbar mt-4 flex-1 overflow-y-auto pr-1">
+              <AdminNavigation
+                onNavigate={() => setIsDrawerOpen(false)}
+                pathname={pathname}
+                sectionKeyPrefix="mobile"
+                sections={adminNav}
+              />
+            </div>
           </aside>
         </div>
       )}

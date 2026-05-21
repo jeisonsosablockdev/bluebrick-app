@@ -1,6 +1,18 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-19
+Last Updated: 2026-05-21
+
+## BRI-161 Admin Asset Investment Model Alignment
+- Admin asset creation now carries a richer marketplace handoff contract for investment-project listings.
+- This change does not widen route access or session authority:
+  - `/admin/assets/new` still requires admin wallet authority before any create/deploy action
+  - `/api/admin/marketplace/entries` still requires authenticated admin role resolved on the server
+  - public marketplace readers continue to consume already-published data only
+- The new handoff payload now includes structured `project`, `economics`, and `governance` blocks so the marketplace can render brief-aligned investment details without relying on loose text highlights.
+- The admin deploy flow remains the same authority chain:
+  - admin completes the asset form
+  - admin runs mint/deploy flow
+  - server creates the marketplace entry from the verified admin session plus the captured form state
 
 ## BRI-158 Public Shell Performance Boundary
 - Public discovery routes now avoid request-time auth bootstrap in the root shell.
