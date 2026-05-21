@@ -1,6 +1,18 @@
 # NFT Spec
 
-Last Updated: 2026-05-10
+Last Updated: 2026-05-21
+
+## BRI-161 Marketplace Investment Model Handoff
+- The admin asset form now captures structured investment brief data that is published alongside the NFT listing in marketplace surfaces.
+- New marketplace content blocks persisted from the deploy/admin handoff:
+  - `project_json`
+  - `economics_json`
+  - `governance_json`
+- NFT authority rules do not change:
+  - admin SIWS authority is still required for deploy and marketplace handoff
+  - collection, candy machine, and asset mint addresses remain the blockchain source-of-truth for purchasable inventory
+  - the new investment-model fields are informational marketplace content and do not override on-chain mint price, authority, or collection semantics
+- Marketplace detail pages may now render richer deal economics from the admin handoff, but purchase execution still relies on the existing quote/challenge/prepare/submit NFT flow.
 
 ## Codex Orchestration Baseline Compatibility
 - No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.

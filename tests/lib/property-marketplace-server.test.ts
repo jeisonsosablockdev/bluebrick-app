@@ -20,6 +20,22 @@ vi.mock("@/lib/db/pool", () => ({
 }));
 
 vi.mock("@/lib/property-service", () => ({
+  createEmptyPropertyEconomics: vi.fn(() => ({
+    purchasePriceUsd: null,
+    afterRepairValueUsd: null,
+    rehabBudgetUsd: null,
+    closingCostsUsd: null,
+    holdingCostsUsd: null,
+    sellingCostsUsd: null,
+    totalProjectCostUsd: null,
+    minimumCapitalRequiredUsd: null,
+    structuringFeeUsd: null,
+    grossProfitProjectedUsd: null,
+    managementFeeUsd: null,
+    brokerFeeUsd: null,
+    netInvestorProfitUsd: null,
+    projectedNetRoiPct: null
+  })),
   listPropertyDetailsSnapshot: vi.fn(() => []),
   PropertyRpcError: class PropertyRpcError extends Error {},
   filterPropertyDetails: vi.fn((records) => records),
@@ -59,6 +75,31 @@ describe("lib/property-marketplace-server", () => {
       nftPriceUsd: 150,
       annualRoiPct: 12.5,
       availabilityLabel: "Funding",
+      project: {
+        stage: "rehab",
+        developerName: "Blue Brick Capital LLC",
+        exitStrategy: "sale",
+        durationMonths: 10
+      },
+      economics: {
+        purchasePriceUsd: 120000,
+        afterRepairValueUsd: 210000,
+        rehabBudgetUsd: 45000,
+        closingCostsUsd: 5000,
+        holdingCostsUsd: 3500,
+        sellingCostsUsd: 8000,
+        totalProjectCostUsd: 181500,
+        minimumCapitalRequiredUsd: 90000,
+        structuringFeeUsd: 3500,
+        grossProfitProjectedUsd: 28500,
+        managementFeeUsd: 2500,
+        brokerFeeUsd: 4000,
+        netInvestorProfitUsd: 22000,
+        projectedNetRoiPct: 12.5
+      },
+      governance: {
+        riskNotes: "Escrow account with milestone-based draws."
+      },
       documents: [{ label: "Brochure", url: "https://cdn.example.com/brochure.pdf" }],
       collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
       assetMintAddress: "CanDyMach1ne1111111111111111111111111111111",

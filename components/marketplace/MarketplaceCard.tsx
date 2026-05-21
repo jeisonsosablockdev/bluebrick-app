@@ -13,8 +13,21 @@ type MarketplaceCardProps = {
   prioritizeImage?: boolean;
 };
 
+function formatUsd(value: number | null, locale: string): string {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return "N/A";
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
 export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = false }: MarketplaceCardProps) {
   const { locale, t } = useI18n();
+  const numberLocale = locale === "en" ? "en-US" : locale === "pt" ? "pt-BR" : "es-CO";
 
   return (
     <Card className="overflow-hidden p-0">
@@ -42,11 +55,16 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
         </div>
         <p className="text-sm text-slate-400">{property.locationLabel}</p>
         <p className="text-sm text-cyan-200">
-          {t({ en: "Fraction price", es: "Precio Fracción", pt: "Preco Fração" })}: ${property.nftPriceUsd.toFixed(2)}
+          {t({ en: "Minimum capital", es: "Capital minimo", pt: "Capital minimo" })}: {formatUsd(property.minimumCapitalRequiredUsd, numberLocale)}
         </p>
         <p className="text-sm font-semibold text-cyan-300">
           {t({ en: "Estimated ROI", es: "ROI estimado", pt: "ROI estimado" })}: {property.annualRoiPct.toFixed(1)}%
         </p>
+        {typeof property.projectDurationMonths === "number" && property.projectDurationMonths > 0 ? (
+          <p className="text-sm text-slate-300">
+            {t({ en: "Duration", es: "Duracion", pt: "Duracao" })}: {property.projectDurationMonths} {t({ en: "months", es: "meses", pt: "meses" })}
+          </p>
+        ) : null}
 
         <button
           type="button"
