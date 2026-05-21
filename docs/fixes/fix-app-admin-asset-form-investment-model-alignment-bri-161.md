@@ -238,6 +238,12 @@ Interaction rule:
 
 UI quality rule:
 
+Additional admin shell follow-up confirmed inside this same fix:
+
+- the admin sidebar visual treatment needs one more polish slice
+- the current exposed native scrollbar in the sidebar breaks the shell aesthetic
+- scrolling behavior must be preserved, but the visual presentation should align with the existing BRIDS admin cards and navigation language
+
 - This slice should improve the rapid-import surface using the `UI Ux Pro Max` guidance.
 - It must preserve the current button and card visual language already implemented in the product.
 - Accessibility, focus visibility, touch-target size, and responsive behavior remain mandatory.

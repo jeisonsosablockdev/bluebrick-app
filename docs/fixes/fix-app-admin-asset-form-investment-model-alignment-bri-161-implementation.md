@@ -695,6 +695,43 @@ Completion rule:
 - run the final reviewer gate after QA and clean-code audit are complete
 - verify definition of done, governance alignment, and no unresolved blocking findings
 
+### Slice 11: Admin Sidebar Visual Alignment
+
+This slice improves the admin shell sidebar presentation.
+
+Problem:
+
+- the current sidebar exposes a native scrollbar that visually clashes with the glass-shell treatment
+- the scrollbar reads like a browser artifact instead of part of the interface
+- the current shell couples the full sidebar card to the scroll behavior, which makes the composition feel heavier than necessary
+
+Goals:
+
+- preserve full navigation overflow behavior
+- remove the intrusive scrollbar presentation from the desktop sidebar
+- keep the sidebar visually consistent with the existing BRIDS card, shell, and button language
+- improve the internal composition so the sidebar header and navigation feel more intentional
+
+UX rules:
+
+- sidebar content must remain scrollable when navigation exceeds viewport height
+- keyboard navigation and focus behavior must not regress
+- the desktop shell is the primary target, but mobile drawer cleanup may share the same structural treatment where appropriate
+
+Technical direction:
+
+1. Refactor `AdminShell` so the sidebar uses a stable outer frame and a dedicated inner scroll region.
+2. Keep identity content such as shell title and wallet summary visually anchored instead of forcing the entire shell to scroll as one slab.
+3. Reuse an existing utility or introduce a tightly scoped sidebar scroll utility instead of scattering ad hoc overflow styles.
+4. Prefer a CSS-first solution over a JS-driven workaround.
+
+Acceptance criteria:
+
+- `/admin/assets/new` no longer shows the intrusive sidebar scrollbar treatment from the current shell
+- sidebar navigation remains fully usable and scrollable
+- the result feels visually coherent with the rest of the admin interface
+- no regression appears in desktop or mobile admin navigation behavior
+
 ## Test-First Contract
 
 Before implementation closes:
