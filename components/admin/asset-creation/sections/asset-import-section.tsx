@@ -3,6 +3,7 @@ import type { ChangeEvent, ClipboardEvent, ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import { GuidedFieldHeader, GuidedTextareaField } from "@/components/admin/asset-creation/sections/guided-field";
 import type { SectionT } from "@/components/admin/asset-creation/sections/section-types";
 
 type SetStateAction<T> = T | ((prev: T) => T);
@@ -87,17 +88,16 @@ export function AssetImportSection({
         <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
             <div className="space-y-3">
-              <div className="space-y-1">
+              <div className="space-y-1 text-xs text-white/70">
                 <p className="text-sm font-semibold text-white">
                   {t({ en: "Upload a file", es: "Sube un archivo", pt: "Envie um arquivo" })}
                 </p>
-                <p className="text-sm leading-6 text-white/60">
-                  {t({
-                    en: "Supported today: `.csv`, `.txt`, `.tsv`, and the standard investment brief `.pdf`. As soon as the file is valid, the preview is applied automatically.",
-                    es: "Disponible hoy: `.csv`, `.txt`, `.tsv` y el `.pdf` estandar del brief de inversion. Tan pronto el archivo sea valido, la vista previa se aplica automaticamente.",
-                    pt: "Disponivel hoje: `.csv`, `.txt`, `.tsv` e o `.pdf` padrao do brief de investimento. Assim que o arquivo for valido, a pre-visualizacao e aplicada automaticamente."
-                  })}
-                </p>
+                <GuidedFieldHeader
+                  label={t({ en: "Import file", es: "Archivo de importacion", pt: "Arquivo de importacao" })}
+                  hint={t({ en: "Use a structured export to prefill the form automatically.", es: "Usa una exportacion estructurada para rellenar el formulario automaticamente.", pt: "Use uma exportacao estruturada para preencher o formulario automaticamente." })}
+                  tooltip={t({ en: "Supported today: CSV, TXT, TSV, and the standard investment brief PDF. Valid imports apply their preview automatically.", es: "Disponible hoy: CSV, TXT, TSV y el PDF estandar del brief de inversion. Las importaciones validas aplican su vista previa automaticamente.", pt: "Disponivel hoje: CSV, TXT, TSV e o PDF padrao do brief de investimento. Importacoes validas aplicam a pre-visualizacao automaticamente." })}
+                  ariaLabel={t({ en: "Import file help", es: "Ayuda de archivo de importacion", pt: "Ajuda de arquivo de importacao" })}
+                />
               </div>
               <div className="flex min-h-[148px] flex-col items-start justify-between rounded-2xl border border-dashed border-white/15 bg-slate-950/40 p-4">
                 <div className="space-y-2">
@@ -133,20 +133,15 @@ export function AssetImportSection({
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
             <div className="space-y-3">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-white">
-                  {t({ en: "Paste from Excel", es: "Pega desde Excel", pt: "Cole do Excel" })}
-                </p>
-                <p className="text-sm leading-6 text-white/60">
-                  {t({
-                    en: "Paste a copied table directly here. We will detect headers and apply the first valid row immediately.",
-                    es: "Pega aqui una tabla copiada. Detectaremos encabezados y aplicaremos la primera fila valida inmediatamente.",
-                    pt: "Cole aqui uma tabela copiada. Vamos detectar os cabecalhos e aplicar a primeira linha valida imediatamente."
-                  })}
-                </p>
-              </div>
-              <textarea
-                className="min-h-[148px] w-full resize-none rounded-2xl border border-white/12 bg-slate-950/55 px-4 py-3 text-base leading-6 text-white outline-none transition focus:border-cyan-300/55 focus:ring-2 focus:ring-cyan-300/20"
+              <p className="text-sm font-semibold text-white">
+                {t({ en: "Paste from Excel", es: "Pega desde Excel", pt: "Cole do Excel" })}
+              </p>
+              <GuidedTextareaField
+                label={t({ en: "Pasted table", es: "Tabla pegada", pt: "Tabela colada" })}
+                hint={t({ en: "Paste copied rows with headers so the first valid row can be applied.", es: "Pega filas copiadas con encabezados para aplicar la primera fila valida.", pt: "Cole linhas copiadas com cabecalhos para aplicar a primeira linha valida." })}
+                tooltip={t({ en: "This accepts spreadsheet-like tabular content and detects headers automatically.", es: "Esto acepta contenido tabular tipo hoja de calculo y detecta encabezados automaticamente.", pt: "Isto aceita conteudo tabular tipo planilha e detecta cabecalhos automaticamente." })}
+                ariaLabel={t({ en: "Pasted table help", es: "Ayuda de tabla pegada", pt: "Ajuda de tabela colada" })}
+                className="min-h-[148px] w-full resize-none border-white/12 bg-slate-950/55 text-base leading-6 transition focus:border-cyan-300/55 focus:ring-2 focus:ring-cyan-300/20"
                 placeholder={t({
                   en: "Paste tabular content with a header row.",
                   es: "Pega contenido tabular con fila de encabezados.",

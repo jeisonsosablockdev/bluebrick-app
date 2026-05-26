@@ -6,3 +6,4 @@ export * from "@/components/admin/asset-creation/sections/asset-commercial-descr
 export * from "@/components/admin/asset-creation/sections/asset-media-section";
 export * from "@/components/admin/asset-creation/sections/asset-collection-section";
 export * from "@/components/admin/asset-creation/sections/asset-import-section";
+export * from "@/components/admin/asset-creation/sections/guided-field";

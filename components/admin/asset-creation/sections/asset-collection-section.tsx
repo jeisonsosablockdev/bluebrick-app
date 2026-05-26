@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
 
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { GuidedInputField } from "@/components/admin/asset-creation/sections/guided-field";
 import type { AssetForm } from "@/components/admin/asset-creation/types";
 import type { SectionT } from "@/components/admin/asset-creation/sections/section-types";
 
@@ -42,7 +42,11 @@ export function AssetCollectionSection({
         })}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Input
+        <GuidedInputField
+          label={t({ en: "Collection name", es: "Nombre de coleccion", pt: "Nome da colecao" })}
+          hint={t({ en: "NFT collection name shown in mint and wallet surfaces.", es: "Nombre de la coleccion NFT visible en mint y wallet.", pt: "Nome da colecao NFT exibido em mint e wallet." })}
+          tooltip={t({ en: "Suggested from slug and internal code, but you can override it manually.", es: "Se sugiere desde slug e internalCode, pero puedes ajustarlo manualmente.", pt: "E sugerido a partir de slug e internalCode, mas voce pode ajusta-lo manualmente." })}
+          ariaLabel={t({ en: "Collection name help", es: "Ayuda de nombre de coleccion", pt: "Ajuda de nome da colecao" })}
           placeholder={t({ en: "collectionName (required to continue)", es: "collectionName (obligatorio para continuar)", pt: "collectionName (obrigatorio para continuar)" })}
           value={form.collectionName}
           onChange={(event) => {
@@ -50,7 +54,11 @@ export function AssetCollectionSection({
             setForm((prev) => ({ ...prev, collectionName: event.target.value }));
           }}
         />
-        <Input
+        <GuidedInputField
+          label={t({ en: "Collection symbol", es: "Simbolo de coleccion", pt: "Simbolo da colecao" })}
+          hint={t({ en: "Short ticker-style symbol for mint metadata.", es: "Simbolo corto estilo ticker para la metadata de mint.", pt: "Simbolo curto estilo ticker para a metadata de mint." })}
+          tooltip={t({ en: "Keep it compact and compatible with token metadata expectations.", es: "Mantenlo compacto y compatible con las expectativas de metadata del token.", pt: "Mantenha compacto e compativel com as expectativas de metadata do token." })}
+          ariaLabel={t({ en: "Collection symbol help", es: "Ayuda de simbolo de coleccion", pt: "Ajuda de simbolo da colecao" })}
           placeholder="collectionSymbol"
           value={form.collectionSymbol}
           onChange={(event) => {
