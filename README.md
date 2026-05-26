@@ -132,6 +132,7 @@ Toolchain governance for maintenance/update cadence is defined in:
 - `npm test`: run all unit tests with Vitest.
 - `npm run test:watch`: run tests in watch mode.
 - `npm run test:coverage`: run tests with coverage report.
+- `npm run preflight:start`: run an initial workspace preflight that reviews branches, suggests next actions, checks package/lock drift, and summarizes `AGENTS.md` guidance without cleaning branches automatically.
 - `npm run pr:ready`: run local PR governance preflight (`validate` + required docs + commit convention + PR-size + branch-age checks).
   - Includes feature-note enforcement: qualifying feature/fix/refactor/nft product changes must update `docs/features/*.md`.
 - `npm run e2e:install`: install Playwright Chromium (one-time setup).

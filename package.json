@@ -36,6 +36,7 @@
     "validate:knowledge": "vitest run tests/lib/knowledge-system.test.ts && tsx ./scripts/knowledge/build-knowledge-index.ts --check",
     "validate:workflow": "vitest run tests/lib/workflow-evals.test.ts",
     "validate:docs-governance": "bash ./scripts/ci/validate-doc-governance.sh",
+    "preflight:start": "bash ./scripts/ci/preflight-start.sh",
     "knowledge:scan": "tsx ./scripts/knowledge/scan-recent-changes.ts",
     "knowledge:index": "tsx ./scripts/knowledge/build-knowledge-index.ts",
     "knowledge:drift": "tsx ./scripts/knowledge/detect-governance-drift.ts",
