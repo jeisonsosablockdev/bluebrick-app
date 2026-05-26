@@ -44,6 +44,7 @@ vi.mock("@/lib/i18n-server", () => ({
 }));
 
 vi.mock("@/lib/i18n", () => ({
+  DEFAULT_LOCALE: "es",
   localize: (_locale: string, text: { en: string }) => text.en
 }));
 
