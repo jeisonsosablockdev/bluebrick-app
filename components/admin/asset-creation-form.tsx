@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, ClipboardEvent, InputHTMLAttributes, ReactElement } from "react";
+import type { ChangeEvent, ClipboardEvent, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -19,7 +19,11 @@ import {
   AssetImportSection,
   AssetLocationSection,
   AssetMediaSection,
-  AssetTypeSelectionSection
+  AssetTypeSelectionSection,
+  GuidedFieldHeader,
+  GuidedInputField,
+  GuidedSelectField,
+  GuidedTextareaField
 } from "@/components/admin/asset-creation/sections";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -325,49 +329,6 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
   }
 
   return documents;
-}
-
-type GuidedInputFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "className"> & {
-  label: string;
-  hint: string;
-  tooltip: string;
-  prefix?: string;
-  suffix?: string;
-  className?: string;
-};
-
-function GuidedInputField({
-  label,
-  hint,
-  tooltip,
-  prefix,
-  suffix,
-  className,
-  ...inputProps
-}: GuidedInputFieldProps): ReactElement {
-  return (
-    <label className="space-y-1 text-xs text-white/70">
-      <span className="inline-flex items-center gap-1">
-        <span>{label}</span>
-        <span
-          className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
-          title={tooltip}
-          aria-label={tooltip}
-        >
-          ?
-        </span>
-      </span>
-      <div className="relative">
-        {prefix ? <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{prefix}</span> : null}
-        <Input
-          className={cn(prefix ? "pl-7" : "", suffix ? "pr-12" : "", className)}
-          {...inputProps}
-        />
-        {suffix ? <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/60">{suffix}</span> : null}
-      </div>
-      <span className="text-[11px] text-white/50">{hint}</span>
-    </label>
-  );
 }
 
 function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
@@ -1297,7 +1258,14 @@ export function AssetCreationForm(): ReactElement {
                 />
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-white/70">{t({ en: "Pricing input currency", es: "Moneda de entrada", pt: "Moeda de entrada" })}</p>
+                    <div className="text-xs text-white/70">
+                      <GuidedFieldHeader
+                        label={t({ en: "Pricing input currency", es: "Moneda de entrada", pt: "Moeda de entrada" })}
+                        hint={t({ en: "Choose whether you type the Fraction cost in USD or SOL.", es: "Elige si vas a escribir el costo por Fraccion en USD o SOL.", pt: "Escolha se voce vai digitar o custo por Fracao em USD ou SOL." })}
+                        tooltip={t({ en: "The canonical stored price stays in USD even when the entry mode is SOL.", es: "El precio canonico almacenado sigue en USD incluso cuando el modo de entrada es SOL.", pt: "O preco canonico armazenado permanece em USD mesmo quando o modo de entrada e SOL." })}
+                        ariaLabel={t({ en: "Pricing input currency help", es: "Ayuda de moneda de entrada", pt: "Ajuda de moeda de entrada" })}
+                      />
+                    </div>
                     <div className="inline-flex rounded-xl border border-white/20 bg-slate-900/50 p-1">
                       {(["USD", "SOL"] as const).map((currency) => (
                         <button
@@ -1483,35 +1451,23 @@ export function AssetCreationForm(): ReactElement {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <p className="inline-flex items-center gap-1 text-xs text-white/70">
-                    <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
-                    <span
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
-                      title={t({ en: "How investor capital is recovered at the end of cycle.", es: "Como se recupera el capital del inversionista al cierre del ciclo.", pt: "Como o capital do investidor e recuperado no fim do ciclo." })}
-                      aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
-                    >
-                      ?
-                    </span>
-                  </p>
-                  <select
-                    className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
-                    value={form.buildingExitStrategy}
-                    onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))}
-                  >
-                    <option className="bg-slate-900 text-slate-100" value="">
-                      {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+                <GuidedSelectField
+                  label={t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}
+                  hint={t({ en: "Choose the expected liquidation path for the project.", es: "Selecciona la via esperada de liquidacion del proyecto.", pt: "Selecione a via esperada de liquidacao do projeto." })}
+                  tooltip={t({ en: "How investor capital is expected to be recovered at the end of the cycle.", es: "Como se espera recuperar el capital del inversionista al final del ciclo.", pt: "Como se espera recuperar o capital do investidor no fim do ciclo." })}
+                  ariaLabel={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                  value={form.buildingExitStrategy}
+                  onChange={(event) => setForm((prev) => ({ ...prev, buildingExitStrategy: event.target.value }))}
+                >
+                  <option className="bg-slate-900 text-slate-100" value="">
+                    {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+                  </option>
+                  {exitStrategyOptions.map((option) => (
+                    <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
+                      {t(option.label)}
                     </option>
-                    {exitStrategyOptions.map((option) => (
-                      <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
-                        {t(option.label)}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-white/50">
-                    {t({ en: "Choose the expected liquidation path for the project.", es: "Selecciona la via esperada de liquidacion del proyecto.", pt: "Selecione a via esperada de liquidacao do projeto." })}
-                  </p>
-                </div>
+                  ))}
+                </GuidedSelectField>
                 <GuidedInputField
                   label={t({ en: "Project duration", es: "Duracion del proyecto", pt: "Duracao do projeto" })}
                   hint={t({ en: "Prefers total estimated duration from the brief and auto-syncs from dates when available.", es: "Prefiere la duracion total estimada del brief y se autosincroniza con fechas cuando existan.", pt: "Prefere a duracao total estimada do brief e sincroniza automaticamente com datas quando existirem." })}
@@ -1725,35 +1681,23 @@ export function AssetCreationForm(): ReactElement {
                 value={form.landEntryPrice}
                 onChange={(event) => setForm((prev) => ({ ...prev, landEntryPrice: event.target.value }))}
               />
-              <div className="space-y-1">
-                <p className="inline-flex items-center gap-1 text-xs text-white/70">
-                  <span>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}</span>
-                  <span
-                    className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70"
-                    title={t({ en: "Expected monetization route at exit.", es: "Ruta esperada de monetizacion en la salida.", pt: "Rota esperada de monetizacao na saida." })}
-                    aria-label={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
-                  >
-                    ?
-                  </span>
-                </p>
-                <select
-                  className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none ring-0 focus:border-cyan-300/60"
-                  value={form.landExitStrategy}
-                  onChange={(event) => setForm((prev) => ({ ...prev, landExitStrategy: event.target.value }))}
-                >
-                  <option className="bg-slate-900 text-slate-100" value="">
-                    {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+              <GuidedSelectField
+                label={t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}
+                hint={t({ en: "Choose disposal strategy at investment maturity.", es: "Selecciona la estrategia de salida al madurar la inversion.", pt: "Selecione a estrategia de saida na maturidade do investimento." })}
+                tooltip={t({ en: "Expected monetization route when the land thesis reaches exit.", es: "Ruta esperada de monetizacion cuando la tesis del lote llegue a salida.", pt: "Rota esperada de monetizacao quando a tese do terreno chegar a saida." })}
+                ariaLabel={t({ en: "Exit strategy help", es: "Ayuda de estrategia de salida", pt: "Ajuda da estrategia de saida" })}
+                value={form.landExitStrategy}
+                onChange={(event) => setForm((prev) => ({ ...prev, landExitStrategy: event.target.value }))}
+              >
+                <option className="bg-slate-900 text-slate-100" value="">
+                  {t({ en: "Select strategy", es: "Selecciona estrategia", pt: "Selecione estrategia" })}
+                </option>
+                {exitStrategyOptions.map((option) => (
+                  <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
+                    {t(option.label)}
                   </option>
-                  {exitStrategyOptions.map((option) => (
-                    <option key={option.value} className="bg-slate-900 text-slate-100" value={option.value}>
-                      {t(option.label)}
-                    </option>
-                    ))}
-                  </select>
-                <p className="text-[11px] text-white/50">
-                  {t({ en: "Choose disposal strategy at investment maturity.", es: "Selecciona la estrategia de salida al madurar la inversion.", pt: "Selecione a estrategia de saida na maturidade do investimento." })}
-                </p>
-              </div>
+                ))}
+              </GuidedSelectField>
               <GuidedInputField
                 label={t({ en: "Urban development potential", es: "Potencial urbanistico", pt: "Potencial urbanistico" })}
                 hint={t({ en: "Short thesis on future development upside.", es: "Tesis corta sobre potencial de desarrollo futuro.", pt: "Tese curta sobre potencial de desenvolvimento futuro." })}
@@ -1850,36 +1794,55 @@ export function AssetCreationForm(): ReactElement {
         )}
       </Card>
 
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">
-          {t({ en: "Mint seed data", es: "Datos semilla de mint", pt: "Dados base de mint" })}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs text-white/70">
-            {t({ en: "Mint quantity", es: "Cantidad de mint", pt: "Quantidade de mint" })}
-            {form.assetType === "building_new" ? (
-              <Input type="number" min={1} value={String(Math.max(0, mintQuantityValue))} readOnly />
-            ) : (
-              <Input
-                type="number"
-                min={1}
-                value={mintQuantity}
-                onChange={(event) => setMintQuantity(event.target.value)}
-              />
-            )}
-          </label>
-          <label className="space-y-1 text-xs text-white/70">
-            {t({ en: "Cover / URI", es: "Cover / URI", pt: "Cover / URI" })}
-            <Input value={form.coverImage} readOnly />
-          </label>
-          <label className="space-y-1 text-xs text-white/70">
-            {t({ en: "Name", es: "Nombre", pt: "Nome" })}
-            <Input value={form.assetName} readOnly />
-          </label>
-          <label className="space-y-1 text-xs text-white/70">
-            {t({ en: "Symbol", es: "Simbolo", pt: "Simbolo" })}
-            <Input value={form.collectionSymbol} readOnly />
-          </label>
+      <Card className="space-y-5 p-4 sm:p-5">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-white">
+            {t({ en: "Mint seed data", es: "Datos semilla de mint", pt: "Dados base de mint" })}
+          </p>
+          <p className="max-w-3xl text-sm leading-6 text-white/60">
+            {t({
+              en: "Review the metadata snapshot that will feed the mint flow before opening deploy and reconciliation.",
+              es: "Revisa el snapshot de metadata que alimentara el flujo de mint antes de abrir deploy y reconciliacion.",
+              pt: "Revise o snapshot de metadata que vai alimentar o fluxo de mint antes de abrir deploy e reconciliacao."
+            })}
+          </p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2 xl:gap-4">
+          <GuidedInputField
+            label={t({ en: "Mint quantity", es: "Cantidad de mint", pt: "Quantidade de mint" })}
+            hint={t({ en: "Defines how many fractions can be minted from this asset.", es: "Define cuantas fracciones se pueden mintear desde este activo.", pt: "Define quantas fracoes podem ser mintadas a partir deste ativo." })}
+            tooltip={t({ en: "For building assets this value is derived from total units. For other types you can adjust it here.", es: "Para activos building este valor se deriva del total de unidades. Para otros tipos puedes ajustarlo aqui.", pt: "Para ativos building este valor e derivado do total de unidades. Para outros tipos voce pode ajusta-lo aqui." })}
+            ariaLabel={t({ en: "Mint quantity help", es: "Ayuda de cantidad de mint", pt: "Ajuda de quantidade de mint" })}
+            type="number"
+            min={1}
+            value={form.assetType === "building_new" ? String(Math.max(0, mintQuantityValue)) : mintQuantity}
+            readOnly={form.assetType === "building_new"}
+            onChange={form.assetType === "building_new" ? undefined : (event) => setMintQuantity(event.target.value)}
+          />
+          <GuidedInputField
+            label={t({ en: "Cover / URI", es: "Cover / URI", pt: "Cover / URI" })}
+            hint={t({ en: "Read-only cover reference passed into mint metadata.", es: "Referencia de portada solo lectura que se pasa a la metadata de mint.", pt: "Referencia de capa somente leitura enviada para a metadata de mint." })}
+            tooltip={t({ en: "This mirrors the current cover image selection used by the mint flow.", es: "Esto refleja la seleccion actual de imagen de portada usada por el flujo de mint.", pt: "Isto espelha a selecao atual de imagem de capa usada pelo fluxo de mint." })}
+            ariaLabel={t({ en: "Cover URI help", es: "Ayuda de cover URI", pt: "Ajuda de cover URI" })}
+            value={form.coverImage}
+            readOnly
+          />
+          <GuidedInputField
+            label={t({ en: "Name", es: "Nombre", pt: "Nome" })}
+            hint={t({ en: "Read-only asset name that will seed mint metadata.", es: "Nombre del activo solo lectura que alimenta la metadata de mint.", pt: "Nome do ativo somente leitura que alimenta a metadata de mint." })}
+            tooltip={t({ en: "This value comes from the identification section above.", es: "Este valor viene de la seccion de identificacion de arriba.", pt: "Este valor vem da secao de identificacao acima." })}
+            ariaLabel={t({ en: "Mint name help", es: "Ayuda de nombre para mint", pt: "Ajuda de nome para mint" })}
+            value={form.assetName}
+            readOnly
+          />
+          <GuidedInputField
+            label={t({ en: "Symbol", es: "Simbolo", pt: "Simbolo" })}
+            hint={t({ en: "Read-only collection symbol reused in mint metadata.", es: "Simbolo de coleccion solo lectura reutilizado en la metadata de mint.", pt: "Simbolo de colecao somente leitura reutilizado na metadata de mint." })}
+            tooltip={t({ en: "This value comes from the collection section and is reused by the mint setup.", es: "Este valor viene de la seccion de coleccion y se reutiliza en la configuracion de mint.", pt: "Este valor vem da secao de colecao e e reutilizado na configuracao de mint." })}
+            ariaLabel={t({ en: "Mint symbol help", es: "Ayuda de simbolo para mint", pt: "Ajuda de simbolo para mint" })}
+            value={form.collectionSymbol}
+            readOnly
+          />
         </div>
         {form.assetType === "building_new" ? (
           <p className="text-xs text-cyan-100/80">
@@ -1890,14 +1853,17 @@ export function AssetCreationForm(): ReactElement {
             })}
           </p>
         ) : null}
-        <label className="space-y-1 text-xs text-white/70">
-          {t({ en: "Description", es: "Descripcion", pt: "Descricao" })}
-          <textarea
-            className="min-h-20 rounded-xl border border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-white"
+        <div className="max-w-4xl">
+          <GuidedTextareaField
+            label={t({ en: "Description", es: "Descripcion", pt: "Descricao" })}
+            hint={t({ en: "Read-only description snapshot used by the mint setup.", es: "Snapshot de descripcion solo lectura usado por la configuracion de mint.", pt: "Snapshot de descricao somente leitura usado pela configuracao de mint." })}
+            tooltip={t({ en: "This mirrors the commercial description currently selected above.", es: "Esto refleja la descripcion comercial actualmente seleccionada arriba.", pt: "Isto reflete a descricao comercial atualmente selecionada acima." })}
+            ariaLabel={t({ en: "Mint description help", es: "Ayuda de descripcion para mint", pt: "Ajuda de descricao para mint" })}
+            className="min-h-[148px] max-w-4xl resize-y leading-6"
             value={form.shortDescription || form.longDescription}
             readOnly
           />
-        </label>
+        </div>
       </Card>
 
       {showMintSetup ? (

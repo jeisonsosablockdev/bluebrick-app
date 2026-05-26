@@ -1,6 +1,16 @@
 # NFT Spec
 
-Last Updated: 2026-05-21
+Last Updated: 2026-05-26
+
+## BRI-10 Contextual hints in `/admin/assets/new`
+- The admin asset creation route now extends the existing `?` guidance pattern across non-location form fields.
+- The `Location` section remains intentionally excluded from this hint rollout.
+- This is a UX-only guidance change:
+  - no NFT authority rule changed
+  - no mint/deploy payload contract changed
+  - no metadata ownership or collection semantics changed
+  - no save/import/mint runtime behavior changed
+- Mint seed data now explains the read-only values shown before step 2, but those fields still mirror the same underlying asset-creation state.
 
 ## BRI-161 Marketplace Investment Model Handoff
 - The admin asset form now captures structured investment brief data that is published alongside the NFT listing in marketplace surfaces.
