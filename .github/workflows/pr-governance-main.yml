@@ -1,29 +1,27 @@
-name: PR Validation (Integration Targets)
+name: PR Governance Gates (Main)
 
 on:
   pull_request:
     branches:
-      - feature/**-integration
-      - fix/**-integration
-      - security/**-integration
-      - nft/**-integration
-      - refactor/**-integration
+      - main
     types:
       - opened
       - synchronize
+      - edited
       - reopened
       - ready_for_review
 
 concurrency:
-  group: pr-integration-targets-${{ github.event.pull_request.number }}
+  group: pr-governance-main-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   validate:
-    name: Validate (lint + typecheck + docs governance)
+    name: Release Validate (lint + typecheck + docs governance)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -60,7 +58,7 @@ jobs:
         run: npm run validate
 
   required-docs:
-    name: Required Docs Sync Check
+    name: Release Required Docs Sync Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -75,26 +73,16 @@ jobs:
           HEAD_BRANCH: ${{ github.head_ref }}
         run: bash ./scripts/ci/check-required-docs.sh
 
-  integration-preflight:
-    name: Integration Preflight Policy
+  release-policy:
+    name: Release PR Policy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-
-      - name: Run integration preflight policy
+      - name: Run release PR policy
         env:
-          BASE_REF: ${{ github.base_ref }}
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: |
-          bash ./scripts/ci/pr-ready.sh \
-            --base "${BASE_REF}" \
-            --validate-mode governance-only \
-            --head-branch "${HEAD_BRANCH}"
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: bash ./scripts/ci/release-pr-policy.sh
