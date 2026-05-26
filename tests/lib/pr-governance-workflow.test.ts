@@ -14,20 +14,21 @@ describe("PR governance workflow", () => {
     expect(workflowSource).toContain("cancel-in-progress: true");
   });
 
-  it("keeps heavy validation on opened/synchronize events and defers opened metadata enforcement explicitly", () => {
+  it("keeps heavy validation on the guarded PR events without reintroducing label-triggered bypass paths", () => {
     expect(workflowSource).toContain(
       `if: \${{ contains(fromJson('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
     expect(workflowSource).toContain(
       `if: \${{ contains(fromJson('["opened","edited","synchronize","reopened","ready_for_review"]'), github.event.action) }}`
     );
-    expect(workflowSource).toContain(
-      `if: \${{ github.event.action == 'opened' }}`
-    );
-    expect(workflowSource).toContain(
-      `if: \${{ github.event.action != 'opened' }}`
-    );
-    expect(workflowSource).toContain("PR governance policy deferred on opened.");
+    expect(workflowSource).toContain("      - opened");
+    expect(workflowSource).toContain("      - synchronize");
+    expect(workflowSource).toContain("      - edited");
+    expect(workflowSource).toContain("      - reopened");
+    expect(workflowSource).toContain("      - ready_for_review");
+    expect(workflowSource).toContain("Exactly one scope label is required.");
+    expect(workflowSource).toContain("Exactly one type label is required.");
+    expect(workflowSource).toContain("Exactly one risk label is required.");
     expect(workflowSource).not.toContain("      - labeled");
     expect(workflowSource).not.toContain("      - unlabeled");
   });
