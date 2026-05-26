@@ -1,0 +1,46 @@
+name: Protected Branch Push Provenance
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  verify-push-provenance:
+    name: Verify Protected Branch Push Provenance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify head commit came from merged PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const branch = context.ref.replace("refs/heads/", "");
+            const sha = context.sha;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: sha,
+            });
+
+            const matchingMergedPr = prs.find((pr) => {
+              return pr.merged_at && pr.base?.ref === branch;
+            });
+
+            if (!matchingMergedPr) {
+              core.setFailed(
+                `Push provenance violation: commit ${sha} on '${branch}' has no merged PR associated with base '${branch}'. This usually means a direct push or bypass.`
+              );
+              return;
+            }
+
+            core.info(
+              `Protected branch push provenance passed via PR #${matchingMergedPr.number} (${matchingMergedPr.head.ref} -> ${matchingMergedPr.base.ref}).`
+            );

@@ -6,6 +6,7 @@ source "$(dirname "$0")/pr-governance-lib.sh"
 BASE_REF="develop"
 POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
 VALIDATE_MODE="${VALIDATE_MODE:-full}"
+HEAD_BRANCH_OVERRIDE="${HEAD_BRANCH_OVERRIDE:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -19,6 +20,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --validate-mode)
       VALIDATE_MODE="$2"
+      shift 2
+      ;;
+    --head-branch)
+      HEAD_BRANCH_OVERRIDE="$2"
       shift 2
       ;;
     *)
@@ -62,8 +67,12 @@ fi
 
 CURRENT_BRANCH="$(git branch --show-current)"
 if [[ -z "${CURRENT_BRANCH}" ]]; then
-  echo "❌ Unable to detect current branch."
-  exit 1
+  if [[ -n "${HEAD_BRANCH_OVERRIDE}" ]]; then
+    CURRENT_BRANCH="${HEAD_BRANCH_OVERRIDE}"
+  else
+    echo "❌ Unable to detect current branch."
+    exit 1
+  fi
 fi
 
 if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then

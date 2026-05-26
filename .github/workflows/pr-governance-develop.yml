@@ -85,12 +85,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Defer metadata enforcement on opened
-        if: ${{ github.event.action == 'opened' }}
-        run: echo "PR governance policy deferred on opened. Canonical enforcement runs on edited, synchronize, reopened, and ready_for_review after metadata settles."
-
       - name: Enforce PR governance policy
-        if: ${{ github.event.action != 'opened' }}
         uses: actions/github-script@v8
         with:
           script: |
