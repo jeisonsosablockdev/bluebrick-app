@@ -3,10 +3,10 @@
 ## Metadata
 - Epic: `EPIC-011-admin-collections-console`
 - Story ID: `STORY-011-12-location-form-editor-and-maps-assisted-ux`
-- Status: `approved` (`draft | in-review | approved | implemented`)
+- Status: `implemented` (`draft | in-review | approved | implemented`)
 - Owner: `jaymusicmachine`
 - Created: `2026-04-27`
-- Last Updated: `2026-04-27`
+- Last Updated: `2026-05-26`
 
 ## Context
 - Problem:
@@ -89,13 +89,13 @@
   Aprobada la extensión de UI para lograr paridad funcional con el formulario de creación y conservar Maps como capa asistiva.
 
 ## Status
-- Current status: `approved`
+- Current status: `implemented`
 - Next action:
-  Implementar el editor expandido y cerrar la evidencia responsive/E2E del flujo combinado de formulario manual + Google Maps.
+  Revisar la rama de integración `story-011-12-location-form-editor-and-maps-assisted-ux-bri-125` antes de abrir la PR final a `develop`.
 - Exit criteria:
 - [x] All critical critique points addressed
 - [x] Decision is `approved`
-- [ ] Implementation completed (if in scope)
+- [x] Implementation completed (if in scope)
 
 ## Suggested Implementation Slices
 - Slice A:
@@ -126,6 +126,6 @@
   - Obligatoria en 320, 375, 768, 1024.
 
 ## Traceability
-- Related issue(s): `TBD`
-- Related PR(s): `TBD`
-- Final commit hash(es): `TBD`
+- Related issue(s): `BRI-125`, `BRI-130`, `BRI-131`, `BRI-140`, `BRI-132`, `BRI-141`, `BRI-133`, `BRI-134`, `BRI-142`
+- Related PR(s): `integration branch only (no PR to develop yet)`
+- Final commit hash(es): `0e0b9c0`, `473dd1c`, `ce21fb2`, `420aadb`, `c4d3e94`, `92b1151`, `ff5f32e`, `0bf0eae`
