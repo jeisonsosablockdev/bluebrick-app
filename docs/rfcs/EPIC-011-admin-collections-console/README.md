@@ -6,7 +6,7 @@
 - Status: `approved`
 - Owner: `jaymusicmachine`
 - Created: `2026-04-17`
-- Last Updated: `2026-04-28`
+- Last Updated: `2026-05-26`
 
 ## Scope
 - Problem statement:
@@ -46,9 +46,9 @@
 | STORY-011-07 | QA, responsive evidence, and docs sync | `STORY-011-07-qa-responsive-evidence-and-docs-sync.md` | `implemented` | `#158` | Playwright, responsive QA, feature note, auth/docs updates; `BRI-100` locks API/admin collections regression coverage, `BRI-101` adds deterministic browser flow coverage for index/detail/edit path, `BRI-103` adds the responsive evidence pack across required breakpoints, and `BRI-102` closes RFC/docs traceability |
 | STORY-011-08 | Blockchain readonly panel | `STORY-011-08-blockchain-readonly-panel.md` | `implemented` | `#160` | Read-only candy machine, authorities, guards, and appdata panel; `BRI-104` establishes base addresses, `BRI-105` adds authorities, `BRI-106` adds guard fields, `BRI-107` normalizes AppData payload fields, `BRI-108` closes the read-only panel UI, and `BRI-109` adds copy/link interactions with focused tests |
 | STORY-011-09 | Google Maps location integration | `STORY-011-09-google-maps-location-integration.md` | `implemented` | `local merge` | Address autocomplete, maps persistence, outbound maps UX, and embed-preview fix; `BRI-110` closes current address display + outbound CTA, `BRI-111` closes the dedicated backend contract, `BRI-112` adds local autocomplete + place resolution, `BRI-113` closes persistence coverage for `google_maps_place_json`, `BRI-114` closes manual save/cancel + QA, and `084fbca` restores the embed preview with a dedicated public key + CSP allowance |
-| STORY-011-10 | Collections health and manual review queue | `STORY-011-10-collections-health-and-manual-review-queue.md` | `implemented` | `pending final PR` | Read-only health view for inconsistent or bootstrap-failed entries; `BRI-115`, `BRI-116`, `BRI-117`, `BRI-135`, `BRI-118`, `BRI-136`, and `BRI-119` close the actor-scoped health queue, degraded-row filtering, and responsive QA coverage |
-| STORY-011-11 | Location form contract and persistence parity | `STORY-011-11-location-form-contract-and-persistence-parity.md` | `implemented` | `integration branch only` | Canonical location contract now converges create, bootstrap, and PATCH flows; `BRI-126`, `BRI-127`, `BRI-137`, `BRI-138`, `BRI-139`, `BRI-128`, and `BRI-129` close storage, normalization, sync, and regression coverage on the integration branch |
-| STORY-011-12 | Location form editor and maps-assisted UX parity | `STORY-011-12-location-form-editor-and-maps-assisted-ux.md` | `approved` | `TBD` | Reuses the `/admin/assets/new` location experience inside collection detail, keeping Google Maps as an assistive layer for lookup, preview, and outbound navigation |
+| STORY-011-10 | Collections health and manual review queue | `STORY-011-10-collections-health-and-manual-review-queue.md` | `implemented` | `pending final PR` | Read-only health view for inconsistent or bootstrap-failed entries; `BRI-115`, `BRI-116`, `BRI-117`, `BRI-135`, `BRI-118`, `BRI-136`, and `BRI-119` close the actor-scoped health queue, degraded-row filtering, endpoint/UI delivery, and responsive QA coverage |
+| STORY-011-11 | Location form contract and persistence parity | `STORY-011-11-location-form-contract-and-persistence-parity.md` | `implemented` | `integration branch only` | Canonical location contract now converges create, bootstrap, and PATCH flows; `BRI-126`, `BRI-127`, `BRI-137`, `BRI-138`, `BRI-139`, `BRI-128`, and `BRI-129` close storage, normalization, sync, regression coverage, and the integration-branch compatibility follow-up |
+| STORY-011-12 | Location form editor and maps-assisted UX parity | `STORY-011-12-location-form-editor-and-maps-assisted-ux.md` | `implemented` | `integration branch only` | Reuses the `/admin/assets/new` location experience inside collection detail; `BRI-130`, `BRI-131`, `BRI-140`, `BRI-132`, `BRI-141`, `BRI-133`, `BRI-134`, and `BRI-142` close the expanded form shell, assistive Maps UX, save/cancel semantics, and responsive/browser QA |
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
