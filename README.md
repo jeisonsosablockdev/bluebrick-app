@@ -165,8 +165,21 @@ Evidence workflow:
 - Day-to-day work is `develop`-first.
 - Create feature/fix branches from latest `develop`.
 - Open regular PRs into `develop`.
+- `develop` is the continuous integration branch and publishes to `qa.brids.io`.
+- Release candidates must be cut from `develop` as `release/rc-*` branches.
+- The active `release/rc-*` candidate is promoted to `rc.brids.io`.
 - Use `main` only for release PRs from `develop`.
+- `main` remains the only production source and publishes to `brids.io` and `www.brids.io`.
 - CI enforces this rule with `.github/workflows/enforce-main-source-branch.yml` (PRs to `main` must come from `develop`).
+
+Promotion order:
+
+1. `feature/*` or `fix/*` -> PR -> `develop`
+2. `develop` -> `qa.brids.io`
+3. cut `release/rc-*` from `develop`
+4. promote the selected `release/rc-*` deployment to `rc.brids.io`
+5. open the release PR `develop -> main`
+6. `main` -> `brids.io` / `www.brids.io`
 
 Quick start:
 
