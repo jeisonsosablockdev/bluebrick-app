@@ -198,6 +198,30 @@ export async function getStakeActionAttemptById(attemptId: string): Promise<Stak
   });
 }
 
+export async function getStakeActionAttemptBySignature(signature: string): Promise<StakeActionAttemptRecord | null> {
+  const txSignature = assertNonEmpty(signature, "signature");
+
+  if (!isDatabaseConfigured()) {
+    return Array.from(inMemoryAttempts.values()).find((entry) => entry.txSignature === txSignature) ?? null;
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<StakeActionAttemptRow>(
+      `SELECT *
+       FROM stake_action_attempts
+       WHERE tx_signature = $1
+       LIMIT 1`,
+      [txSignature]
+    );
+
+    if ((result.rowCount ?? 0) === 0) {
+      return null;
+    }
+
+    return mapRow(result.rows[0] as StakeActionAttemptRow);
+  });
+}
+
 export async function listStakeActionAttemptsByWallet(walletPublicKey: string): Promise<StakeActionAttemptRecord[]> {
   const wallet = assertNonEmpty(walletPublicKey, "walletPublicKey");
 
@@ -279,3 +303,21 @@ export async function markStakeActionAttemptFailed(input: {
   });
 }
 
+export async function markStakeActionAttemptValidated(input: {
+  attemptId: string;
+}): Promise<StakeActionAttemptRecord | null> {
+  return updateStakeActionAttempt(input.attemptId, {
+    status: "validated",
+    errorMessage: null
+  });
+}
+
+export async function markStakeActionAttemptReconcilePending(input: {
+  attemptId: string;
+  errorMessage?: string | null;
+}): Promise<StakeActionAttemptRecord | null> {
+  return updateStakeActionAttempt(input.attemptId, {
+    status: "reconcile_pending",
+    errorMessage: input.errorMessage ?? null
+  });
+}
