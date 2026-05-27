@@ -1,6 +1,25 @@
 # Session Model
 
-Last Updated: 2026-05-21
+Last Updated: 2026-05-27
+
+## BRI-5 Stake Session Boundary
+- `Stake / Unstake` reuses the existing SIWS wallet session and does not add a new cookie, session token, or browser authority source.
+- Session requirements:
+  - `GET /api/protected/stake/assets` requires active wallet authentication
+  - `POST /api/protected/stake/prepare` requires active wallet authentication
+  - `POST /api/protected/stake/submit` requires active wallet authentication
+  - `GET /api/protected/profile/stake-history` requires active wallet authentication
+  - `POST /api/webhooks/helius/stake` is not a user session surface; it is authenticated by shared-secret webhook trust plus canonical RPC revalidation
+- Session invariants:
+  - the authenticated SIWS wallet is the only wallet allowed to prepare and submit its own stake transaction
+  - account-only / federated-only session is insufficient for stake actions
+  - the profile history projection is derived data and never upgrades or substitutes wallet authority
+- Nonce and cookie behavior remain unchanged:
+  - `siws_nonce` still protects SIWS replay at login time
+  - `siws_session` remains the wallet authority cookie used by stake routes
+  - stake attempts use server-side idempotency records, not new browser tokens
+- Trust-boundary note:
+  - Helius webhook data may trigger observation of a candidate stake event, but the session model still treats canonical RPC verification plus the stored attempt record as the final gate before profile history becomes authoritative for product reads
 
 ## BRI-161 Marketplace Investment Payload Notes
 - The marketplace investment-model alignment slice does not introduce a new session layer, cookie, token, or role.

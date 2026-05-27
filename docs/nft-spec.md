@@ -1,6 +1,24 @@
 # NFT Spec
 
-Last Updated: 2026-05-26
+Last Updated: 2026-05-27
+
+## BRI-5 Stake / Unstake Ownership Contract
+- The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
+- Scope:
+  - applies only to NFTs minted through BRIDS-tracked Candy Machines / collections already persisted in the platform database
+  - applies only when the currently authenticated wallet is also the current on-chain owner
+- NFT authority model for this slice:
+  - stake uses the existing owner-managed freeze capability already attached to eligible BRIDS NFTs
+  - no new on-chain program, PDA, or authority layer is introduced in `v1`
+  - the server may prepare the transaction, but the owner wallet must sign it before submission
+- Collection and inventory validation:
+  - stake UI must not list arbitrary wallet NFTs
+  - server filters the wallet DAS inventory against BRIDS-tracked collection/candy-machine records already persisted in DB
+  - if an NFT is no longer owned by the connected wallet, it is excluded from the actionable stake list even if historical profile records still exist
+- Profile-history contract:
+  - Helius stake webhook data is observational only
+  - canonical RPC transaction validation is required before `freeze` / `unfreeze` history is persisted to the user-profile projection
+  - persisted profile history is a read model for the protected profile and does not become the source of truth for NFT ownership or freeze state
 
 ## BRI-10 Contextual hints in `/admin/assets/new`
 - The admin asset creation route now extends the existing `?` guidance pattern across non-location form fields.

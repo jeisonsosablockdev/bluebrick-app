@@ -1,6 +1,32 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-21
+Last Updated: 2026-05-27
+
+## BRI-5 Stake / Unstake Protected Flow
+- The protected stake surface now executes real owner-driven `freeze / unfreeze` actions for eligible BRIDS NFTs instead of mock UI data.
+- New protected routes:
+  - `GET /api/protected/stake/assets`
+  - `POST /api/protected/stake/prepare`
+  - `POST /api/protected/stake/submit`
+  - `GET /api/protected/profile/stake-history`
+  - `POST /api/webhooks/helius/stake`
+- Authority and trust boundaries:
+  - browser wallet connection alone is insufficient
+  - stake APIs require an active SIWS wallet session resolved on the server
+  - the connected wallet must match the authenticated session wallet before a prepared transaction can be signed or submitted
+  - only NFTs currently owned by that wallet and linked to BRIDS collections persisted server-side are exposed in the stake UI
+- Stake transaction flow:
+  1. server resolves the authenticated SIWS wallet
+  2. server filters wallet-held NFTs against BRIDS inventory persisted in DB
+  3. `prepare` builds the devnet `freezeAsset` or `thawAsset` transaction for that exact wallet + asset pair
+  4. browser signs with the owner wallet
+  5. `submit` revalidates payer and prepared-message equality before broadcasting
+  6. Helius webhook observes the resulting signature and profile history is reconciled only after canonical RPC validation
+- Replay and duplication protections:
+  - prepared actions are stored as server-owned attempts with `attemptId + idempotencyKey`
+  - submit rejects mismatched wallet, mismatched prepared message, or non-`prepared` attempts
+  - webhook ingestion is deduplicated before profile persistence and is never treated as authority without canonical transaction revalidation
+- This slice does not introduce a new auth token, cookie, or role. Stake authority stays inside the existing SIWS wallet session model.
 
 ## BRI-161 Admin Asset Investment Model Alignment
 - Admin asset creation now carries a richer marketplace handoff contract for investment-project listings.
