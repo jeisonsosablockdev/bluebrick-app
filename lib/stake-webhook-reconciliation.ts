@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { Connection } from "@solana/web3.js";
 
 import { withDbClient } from "@/lib/db/pool";
+import {
+  createLegacyConnection,
+  getLegacyTransactionBySignature,
+  getLegacyTransactionPayerFromResponse
+} from "@/lib/solana-kit/compat/web3-transactions";
 import {
   getStakeActionAttemptBySignature,
   markStakeActionAttemptFailed,
@@ -190,7 +194,7 @@ export async function processStakeHeliusWebhookPayload(payload: unknown): Promis
     duplicates: 0,
     reconciled: 0
   };
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
 
   for (const rawEvent of events) {
     const event = normalizeHeliusEvent(rawEvent);
@@ -223,10 +227,7 @@ export async function processStakeHeliusWebhookPayload(payload: unknown): Promis
       continue;
     }
 
-    const transaction = await connection.getTransaction(event.signature, {
-      commitment: "confirmed",
-      maxSupportedTransactionVersion: 0
-    });
+    const transaction = await getLegacyTransactionBySignature(connection, event.signature, "confirmed");
 
     if (!transaction || transaction.meta?.err) {
       await markStakeActionAttemptReconcilePending({
@@ -236,7 +237,7 @@ export async function processStakeHeliusWebhookPayload(payload: unknown): Promis
       continue;
     }
 
-    const payer = transaction.transaction.message.staticAccountKeys[0]?.toBase58() ?? null;
+    const payer = getLegacyTransactionPayerFromResponse(transaction);
     if (payer !== attempt.walletPublicKey) {
       await markStakeActionAttemptFailed({
         attemptId: attempt.id,

@@ -1,13 +1,16 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 type RemoteStakeState = "disabled_unsupported" | "ready_to_stake" | "ready_to_unstake" | "sync_pending";
 type LocalStakeState = RemoteStakeState | "pending_stake" | "pending_unstake" | "action_error";
@@ -406,7 +409,7 @@ export function StakeModule(): ReactElement {
         throw new Error(prepared.error?.message ?? "Could not prepare stake action.");
       }
 
-      const unsignedTransaction = VersionedTransaction.deserialize(fromBase64(prepared.data.transactionBase64));
+      const unsignedTransaction = deserializeLegacyVersionedTransaction(fromBase64(prepared.data.transactionBase64));
       const signedTransaction = await signTransaction(unsignedTransaction);
 
       const submitResponse = await fetch("/api/protected/stake/submit", {
@@ -415,7 +418,7 @@ export function StakeModule(): ReactElement {
         body: JSON.stringify({
           attemptId: prepared.data.attemptId,
           idempotencyKey: prepared.data.idempotencyKey,
-          signedTransactionBase64: toBase64(signedTransaction.serialize())
+          signedTransactionBase64: toBase64(serializeLegacyVersionedTransaction(signedTransaction))
         })
       });
       const submitted = await parseResponse<SubmittedStakePayload>(submitResponse);
@@ -600,4 +603,3 @@ export function StakeModule(): ReactElement {
     </div>
   );
 }
-

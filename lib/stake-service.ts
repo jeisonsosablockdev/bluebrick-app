@@ -2,10 +2,17 @@ import { fetchAsset, fetchCollection, freezeAsset, isFrozen, mplCore, thawAsset 
 import { createNoopSigner, publicKey, signerIdentity } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
-import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 
 import { withDbClient } from "@/lib/db/pool";
 import { DasClient } from "@/lib/das-client";
+import {
+  createLegacyConnection,
+  deserializeLegacyVersionedTransaction,
+  getLegacyTransactionPayer,
+  normalizeLegacyPublicKey,
+  sendAndConfirmLegacyVersionedTransaction,
+  serializeLegacyVersionedMessage
+} from "@/lib/solana-kit/compat/web3-transactions";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
@@ -106,7 +113,7 @@ function assertNonEmpty(value: string, label: string): string {
 
 function parsePublicKey(raw: string, label: string): string {
   try {
-    return new PublicKey(raw).toBase58();
+    return normalizeLegacyPublicKey(raw);
   } catch {
     throw new StakeFlowError("INVALID_INPUT", `${label} is not a valid Solana public key.`, 400);
   }
@@ -124,14 +131,14 @@ function fromBase64(base64Value: string): Buffer {
   }
 }
 
-function parseSignedTransaction(base64Value: string): VersionedTransaction {
+function parseSignedTransaction(base64Value: string) {
   const raw = fromBase64(base64Value);
   if (!raw.length) {
     throw new StakeFlowError("INVALID_INPUT", "Signed transaction cannot be empty.", 400);
   }
 
   try {
-    return VersionedTransaction.deserialize(raw);
+    return deserializeLegacyVersionedTransaction(raw);
   } catch {
     throw new StakeFlowError("INVALID_INPUT", "Signed transaction payload is invalid.", 400);
   }
@@ -227,15 +234,15 @@ function normalizeOwnerAsset(rawAsset: unknown): OwnerDasAssetCandidate | null {
   };
 }
 
-function assertPayerMatchesWallet(transaction: VersionedTransaction, walletPublicKey: string): void {
-  const payer = transaction.message.staticAccountKeys[0];
-  if (!payer || payer.toBase58() !== walletPublicKey) {
+function assertPayerMatchesWallet(transaction: ReturnType<typeof parseSignedTransaction>, walletPublicKey: string): void {
+  const payer = getLegacyTransactionPayer(transaction);
+  if (payer !== walletPublicKey) {
     throw new StakeFlowError("UNAUTHORIZED", "Signed transaction payer does not match authenticated wallet.", 403);
   }
 }
 
-function assertPreparedMessageMatches(transaction: VersionedTransaction, preparedMessageBase64: string): void {
-  const signedMessageBase64 = toBase64(transaction.message.serialize());
+function assertPreparedMessageMatches(transaction: ReturnType<typeof parseSignedTransaction>, preparedMessageBase64: string): void {
+  const signedMessageBase64 = toBase64(serializeLegacyVersionedMessage(transaction));
   if (signedMessageBase64 !== preparedMessageBase64) {
     throw new StakeFlowError("INVALID_TRANSACTION", "Signed transaction does not match the prepared stake action.", 409);
   }
@@ -515,14 +522,10 @@ export async function submitStakeAction(input: {
   assertPayerMatchesWallet(signedTransaction, walletPublicKey);
   assertPreparedMessageMatches(signedTransaction, attempt.preparedTxMessageBase64);
 
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
 
   try {
-    const txSignature = await connection.sendRawTransaction(signedTransaction.serialize(), {
-      preflightCommitment: "confirmed",
-      skipPreflight: false
-    });
-    await connection.confirmTransaction(txSignature, "confirmed");
+    const txSignature = await sendAndConfirmLegacyVersionedTransaction(connection, signedTransaction, "confirmed");
     await markStakeActionAttemptSubmitted({ attemptId, txSignature });
 
     return {
@@ -540,4 +543,3 @@ export async function submitStakeAction(input: {
     throw new StakeFlowError("TRANSACTION_FAILED", message, 500);
   }
 }
-
