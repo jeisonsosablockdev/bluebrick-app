@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "motion/react";
 
 import { Card } from "@/components/ui/card";
 import { H2, Lead } from "@/components/ui/typography";
@@ -9,10 +10,12 @@ import { PurchaseCta } from "@/components/marketplace/PurchaseCta";
 import type { AppLocale } from "@/lib/i18n";
 import type { PropertyDetail } from "@/lib/property-service";
 import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
+import { createDetailOpenMotionVariants } from "@/lib/motion";
 
 type PropertyDetailContentProps = {
   property: PropertyDetail;
   imageClassName?: string;
+  layoutId?: string;
 };
 
 function formatUsd(value: number | null, locale: AppLocale): string {
@@ -71,12 +74,20 @@ function formatDate(dateValue: string | null, locale: AppLocale): string {
   });
 }
 
-export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80" }: PropertyDetailContentProps) {
+export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80", layoutId }: PropertyDetailContentProps) {
   const { locale, t } = useI18n();
+  const motionVariants = createDetailOpenMotionVariants();
 
   return (
     <>
-      <section className="rounded-2xl border border-white/10 bg-panel p-5 md:p-6">
+      <motion.section
+        className="rounded-2xl border border-white/10 bg-panel p-5 md:p-6"
+        variants={motionVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        layoutId={layoutId}
+      >
         <div className="grid gap-6 md:grid-cols-2">
           <Image src={property.image} alt={property.title} width={900} height={600} className={`w-full rounded-xl object-cover ${imageClassName}`} />
           <div className="space-y-4">
@@ -89,9 +100,9 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             <PurchaseCta propertyId={property.id} nftPriceUsd={property.investment.nftPriceUsd} />
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2">
+      <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">
             {t({
@@ -129,9 +140,9 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             ))}
           </ul>
         </Card>
-      </section>
+      </motion.section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2">
+      <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Deal economics", es: "Economia del deal", pt: "Economia do deal" })}</H2>
           <div className="grid gap-2 text-sm text-slate-300">
@@ -157,9 +168,9 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             {property.economics.projectedNetRoiPct !== null ? <p>{t({ en: "Projected ROI", es: "ROI proyectado", pt: "ROI projetado" })}: {formatPercent(property.economics.projectedNetRoiPct, locale)}</p> : null}
           </div>
         </Card>
-      </section>
+      </motion.section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2">
+      <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Execution and exit", es: "Ejecucion y salida", pt: "Execucao e saida" })}</H2>
           <div className="grid gap-2 text-sm text-slate-300">
@@ -176,9 +187,9 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             {property.governance.riskNotes || property.investmentNotes}
           </p>
         </Card>
-      </section>
+      </motion.section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2">
+      <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Documents", es: "Documentos", pt: "Documentos" })}</H2>
           <ul className="space-y-2">
@@ -219,7 +230,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             </p>
           ) : null}
         </Card>
-      </section>
+      </motion.section>
     </>
   );
 }
