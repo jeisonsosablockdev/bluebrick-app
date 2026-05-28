@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { WalletModal } from "@/components/WalletModal";
 import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
 import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
+import { RouteTransition } from "@/components/motion/route-transition";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";
 import type { LocaleText } from "@/lib/i18n";
+import { createPanelMotionVariants, MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 import { areDevOnlyModulesVisible } from "@/lib/release-module-visibility";
 
 type ProtectedShellProps = {
@@ -237,49 +240,69 @@ export function ProtectedShell({
             </div>
           </header>
 
-          <OnboardingRewardReminder />
-
-          {children}
+          <RouteTransition routeKey={pathname} className="space-y-5">
+            <OnboardingRewardReminder />
+            {children}
+          </RouteTransition>
         </section>
       </div>
 
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <button
-            aria-label={t({ en: "Close menu", es: "Cerrar menu", pt: "Fechar menu" })}
-            className="absolute inset-0 bg-black/70"
-            onClick={() => setIsDrawerOpen(false)}
-            type="button"
-          />
-          <aside className="glass-surface dashboard-sidebar relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <p className="dashboard-sidebar-title text-xs uppercase tracking-[0.2em]">
-                {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
-              </p>
-              <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
-                {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
-              </Button>
-            </div>
-            <nav className="space-y-1">
-              {dashboardNav.map((item) => {
-                const active = isActive(pathname, item.href);
-                return (
-                  <Link
-                    key={`mobile-${item.href}`}
-                    href={item.href}
-                    className={`flex min-h-11 items-center rounded-xl px-3 py-2 text-sm ${
-                      active ? "dashboard-sidebar-link-active" : "dashboard-sidebar-link"
-                    }`}
-                    onClick={() => setIsDrawerOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </aside>
-        </div>
-      )}
+      <AnimatePresence>
+        {isDrawerOpen ? (
+          <motion.div
+            key="protected-mobile-nav"
+            className="fixed inset-0 z-40 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={MOTION_FAST_OPACITY_TRANSITION}
+          >
+            <motion.button
+              aria-label={t({ en: "Close menu", es: "Cerrar menu", pt: "Fechar menu" })}
+              className="absolute inset-0 bg-black/70"
+              onClick={() => setIsDrawerOpen(false)}
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={MOTION_FAST_OPACITY_TRANSITION}
+            />
+            <motion.aside
+              className="glass-surface dashboard-sidebar relative h-full w-[84%] max-w-xs rounded-r-3xl border-l-0 bg-transparent p-4"
+              variants={createPanelMotionVariants()}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <p className="dashboard-sidebar-title text-xs uppercase tracking-[0.2em]">
+                  {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
+                </p>
+                <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
+                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                </Button>
+              </div>
+              <nav className="space-y-1">
+                {dashboardNav.map((item) => {
+                  const active = isActive(pathname, item.href);
+                  return (
+                    <Link
+                      key={`mobile-${item.href}`}
+                      href={item.href}
+                      className={`flex min-h-11 items-center rounded-xl px-3 py-2 text-sm ${
+                        active ? "dashboard-sidebar-link-active" : "dashboard-sidebar-link"
+                      }`}
+                      onClick={() => setIsDrawerOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </motion.aside>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <QuickTourOverlay />
     </main>
   );

@@ -1,6 +1,21 @@
 # Session Model
 
-Last Updated: 2026-05-27
+Last Updated: 2026-05-28
+
+## BRI-163 Motion 12 Session UX Notes
+- Motion 12 changes the feel of session entry and session return, but it does not add a new session layer.
+- The wallet modal and account-linking overlay are motion-wrapped UI surfaces only; they still rely on the same `workos_session` and `siws_session` authority model.
+- Route transitions for `/marketplace`, `/protected`, and `/protected/perfil` are presentation boundaries that help the user feel movement between places.
+- The federated return path still ends in a server redirect to `/protected/perfil`; Motion 12 only makes the destination feel like a deliberate arrival.
+- Mobile protected navigation now opens as a motion drawer, but no session cookie, role derivation, or redirect policy changed.
+- The current cookie strategy remains unchanged:
+  - `workos_session` for federated/account auth
+  - `siws_session` for wallet auth
+  - `siws_nonce` for replay protection
+- The new UX polish must preserve the same trust boundaries:
+  - browser presentation state is not authority
+  - route animation is not access control
+  - motion feedback never widens wallet or admin permissions
 
 ## BRI-5 Stake Session Boundary
 - `Stake / Unstake` reuses the existing SIWS wallet session and does not add a new cookie, session token, or browser authority source.
