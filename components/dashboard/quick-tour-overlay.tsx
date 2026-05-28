@@ -197,6 +197,7 @@ export function QuickTourOverlay() {
   const pathname = usePathname();
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const isProfileRoute = pathname === "/protected/perfil";
 
   const [showTour, setShowTour] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -275,6 +276,12 @@ export function QuickTourOverlay() {
   }, [pathname, step?.anchorId]);
 
   useEffect(() => {
+    if (!isProfileRoute) {
+      setIsCheckingProfile(false);
+      setShowTour(false);
+      return;
+    }
+
     const dismissed = sessionStorage.getItem(TOUR_DISMISSED_KEY);
     if (dismissed) {
       setIsCheckingProfile(false);
@@ -306,20 +313,20 @@ export function QuickTourOverlay() {
     }
 
     void checkProfile();
-  }, []);
+  }, [isProfileRoute]);
 
   useEffect(() => {
-    if (!showTour) {
+    if (!showTour || !isProfileRoute) {
       return;
     }
 
     if (step?.anchorId && pathname === "/protected/perfil") {
       scrollToAnchor(step.anchorId);
     }
-  }, [pathname, showTour, step?.anchorId]);
+  }, [isProfileRoute, pathname, showTour, step?.anchorId]);
 
   useEffect(() => {
-    if (!showTour) {
+    if (!showTour || !isProfileRoute) {
       return;
     }
 
@@ -333,7 +340,7 @@ export function QuickTourOverlay() {
       window.removeEventListener("resize", onViewportChange);
       window.removeEventListener("scroll", onViewportChange);
     };
-  }, [calculateCardPosition, showTour, currentStep, pathname]);
+  }, [calculateCardPosition, currentStep, isProfileRoute, pathname, showTour]);
 
   const handleDismiss = useCallback(() => {
     sessionStorage.setItem(TOUR_DISMISSED_KEY, "true");
@@ -359,7 +366,7 @@ export function QuickTourOverlay() {
 
   const progressPercent = useMemo(() => Math.round(((currentStep + 1) / TOUR_STEPS.length) * 100), [currentStep]);
 
-  if (isCheckingProfile || !showTour) {
+  if (!isProfileRoute || isCheckingProfile || !showTour) {
     return null;
   }
 

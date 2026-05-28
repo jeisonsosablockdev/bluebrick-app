@@ -9,6 +9,7 @@ const localeMocks = vi.hoisted(() => ({
 }));
 
 const navigationMocks = vi.hoisted(() => ({
+  pathname: "/protected/perfil",
   push: vi.fn()
 }));
 
@@ -17,7 +18,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/protected/perfil",
+  usePathname: () => navigationMocks.pathname,
   useRouter: () => ({ push: navigationMocks.push })
 }));
 
@@ -57,6 +58,7 @@ function getDescriptionStrongText(container: HTMLDivElement): string | null {
 
 describe("components/dashboard/quick-tour-overlay", () => {
   beforeEach(() => {
+    navigationMocks.pathname = "/protected/perfil";
     localeMocks.useI18n.mockReturnValue({
       locale: "es",
       setLocale: vi.fn(),
@@ -107,6 +109,24 @@ describe("components/dashboard/quick-tour-overlay", () => {
 
       expect(getDescriptionStrongText(container)).toBe(expected);
     }
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not render on the protected overview route", async () => {
+    navigationMocks.pathname = "/protected";
+
+    const { container, root } = renderOverlay();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector(".quick-tour-card")).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
 
     act(() => {
       root.unmount();

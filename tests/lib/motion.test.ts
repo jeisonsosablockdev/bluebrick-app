@@ -5,8 +5,10 @@ import {
   MOTION_DETAIL_DISTANCE,
   MOTION_PAGE_DISTANCE,
   MOTION_PANEL_DISTANCE,
+  MOTION_NAVIGATION_ORIGIN_SCALE,
   MOTION_THEME_DISTANCE,
   createDetailOpenMotionVariants,
+  createNavigationOriginMotionVariants,
   createPageMotionVariants,
   createPanelMotionVariants,
   createThemeMotionVariants
@@ -45,5 +47,17 @@ describe("lib/motion", () => {
 
     expect(detailVariants.initial.y).toBe(MOTION_DETAIL_DISTANCE);
     expect(themeVariants.initial.y).toBe(MOTION_THEME_DISTANCE);
+  });
+
+  it("creates navigation-origin variants that expand from the trigger point", () => {
+    const variants = createNavigationOriginMotionVariants({
+      x: 120,
+      y: 48,
+      radius: 960
+    });
+
+    expect(variants.initial.clipPath).toBe("circle(0px at 120px 48px)");
+    expect(variants.animate.clipPath).toBe("circle(960px at 120px 48px)");
+    expect(variants.initial.scale).toBe(MOTION_NAVIGATION_ORIGIN_SCALE);
   });
 });

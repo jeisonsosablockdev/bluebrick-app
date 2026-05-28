@@ -58,13 +58,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   };
 
   return (
-    <div className={cn("inline-flex", className)} data-no-theme-invert="true">
+    <div className={cn("inline-flex w-full sm:w-[17rem]", className)} data-no-theme-invert="true">
       <motion.button
         type="button"
         onClick={toggleTheme}
         whileHover={{ y: -1 }}
         whileTap={{ scale: 0.985 }}
-        className="inline-flex min-h-11 items-center gap-3 rounded-full border border-white/20 bg-slate-900/85 px-4 text-sm font-medium text-white shadow-[0_10px_26px_rgba(0,0,0,0.25)] transition hover:bg-slate-900"
+        className="inline-flex min-h-11 w-full items-center justify-center gap-3 whitespace-nowrap rounded-full border border-white/20 bg-slate-900/85 px-4 text-sm font-medium text-white shadow-[0_10px_26px_rgba(0,0,0,0.25)] transition hover:bg-slate-900"
         aria-label={t({
           en: "Toggle color theme",
           es: "Cambiar tema de color",

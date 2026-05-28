@@ -7,5 +7,5 @@ type MarketplaceLayoutProps = {
 };
 
 export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) {
-  return <PathRouteTransition>{children}</PathRouteTransition>;
+  return <PathRouteTransition mode="navigation-origin">{children}</PathRouteTransition>;
 }

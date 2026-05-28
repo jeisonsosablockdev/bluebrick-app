@@ -11,6 +11,7 @@ import {
   resolveCurrentAdminLabel
 } from "@/components/admin/admin-shell-navigation";
 import { WalletModal } from "@/components/WalletModal";
+import { RouteTransition } from "@/components/motion/route-transition";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -102,7 +103,9 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
             </div>
           </header>
 
-          {children}
+          <RouteTransition routeKey={pathname} className="space-y-5" mode="navigation-origin">
+            {children}
+          </RouteTransition>
         </section>
       </div>
 

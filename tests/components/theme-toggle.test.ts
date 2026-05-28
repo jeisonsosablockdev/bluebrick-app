@@ -71,4 +71,18 @@ describe("components/theme/theme-toggle", () => {
       root.unmount();
     });
   });
+
+  it("keeps a stable desktop width so locale copy does not resize the header", () => {
+    const { container, root } = renderToggle();
+    const wrapper = container.firstElementChild;
+    const button = container.querySelector("button");
+
+    expect(wrapper?.className).toContain("sm:w-[17rem]");
+    expect(button?.className).toContain("w-full");
+    expect(button?.className).toContain("whitespace-nowrap");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

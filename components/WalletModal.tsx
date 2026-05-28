@@ -14,6 +14,7 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { OnboardingRewardDecisionModal } from "@/components/onboarding/onboarding-reward-decision-modal";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { recordNavigationOriginFromClick } from "@/components/motion/navigation-origin";
 import { AuthEntryActionCard } from "@/components/wallet-modal/auth-entry-action-card";
 import { ReferralCodeField } from "@/components/wallet-modal/referral-code-field";
 import type { LocaleText } from "@/lib/i18n";
@@ -70,6 +71,10 @@ type NavEntry = {
 };
 
 type Translate = (text: LocaleText) => string;
+
+const PRIMARY_NAV_LINK_BASE_CLASSNAME =
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition";
+const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
 
 function WalletCtaIcon() {
   return (
@@ -1178,8 +1183,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                     <Link
                       key={entry.href}
                       href={entry.href}
+                      onClick={(event) => recordNavigationOriginFromClick(event, entry.href)}
                       className={cn(
-                        "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition",
+                        PRIMARY_NAV_LINK_BASE_CLASSNAME,
+                        PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME,
                         active
                           ? "border-cyan-300/45 bg-gradientPrimary text-white shadow-[0_10px_30px_rgba(59,130,246,0.25)]"
                           : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
@@ -1247,8 +1254,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                   <Link
                     key={`mobile-${entry.href}`}
                     href={entry.href}
+                    onClick={(event) => recordNavigationOriginFromClick(event, entry.href)}
                     className={cn(
-                      "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition",
+                      PRIMARY_NAV_LINK_BASE_CLASSNAME,
+                      PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME,
                       active
                         ? "border-cyan-300/45 bg-gradientPrimary text-white shadow-[0_10px_30px_rgba(59,130,246,0.25)]"
                         : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"

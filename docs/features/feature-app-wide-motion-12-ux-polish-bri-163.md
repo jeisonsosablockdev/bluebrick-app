@@ -28,6 +28,7 @@ The goal is not decoration. The goal is to make the interface communicate when t
 ## Desired Interaction Feel
 - When the language changes, the interface should feel like it has refreshed into the new language rather than only swapping text.
 - When the user moves from one page to another, the transition should feel like traveling into a new place.
+- When the user moves through the main navigation, the destination should feel like it emerges from the pressed button rather than swapping abruptly.
 - When a menu opens, especially inside profile navigation, it should feel like a panel unfolding or expanding in place.
 - When light mode changes to dark mode, the interface should feel like light giving way to darkness, and the reverse should feel like light returning.
 - When login happens, it should feel like a real event is taking place.
@@ -41,6 +42,7 @@ The current app already works functionally, but several everyday interactions do
 
 - Locale switching updates text, but it does not feel like the interface reloaded into a new language.
 - Route changes do not consistently feel spatial.
+- Main navigation route changes still feel too much like plain page swaps instead of content emerging from the triggering button.
 - Menus and profile sections expand without enough sense of unfolding or anchoring.
 - Theme switching does not yet read as a light-to-dark or dark-to-light shift.
 - Login and federated return do not yet feel like a deliberate exit and re-entry.

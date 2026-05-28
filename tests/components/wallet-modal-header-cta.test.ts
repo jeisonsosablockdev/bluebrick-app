@@ -604,4 +604,48 @@ describe("components/WalletModal header CTA", () => {
       root.unmount();
     });
   });
+
+  it("keeps the primary navigation buttons at a stable desktop width", async () => {
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      walletAuthenticated: true,
+      authMethod: "wallet",
+      accountId: "account_123",
+      email: null,
+      pubkey: "So11111111111111111111111111111111111111112",
+      role: "admin"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      role: "admin",
+      pubkey: "So11111111111111111111111111111111111111112"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const marketplaceLink = container.querySelector('a[href="/marketplace"]');
+    const profileLink = container.querySelector('a[href="/protected"]');
+    const dashboardLink = container.querySelector('a[href="/admin"]');
+
+    expect(marketplaceLink?.className).toContain("sm:w-[6.75rem]");
+    expect(profileLink?.className).toContain("sm:w-[6.75rem]");
+    expect(dashboardLink?.className).toContain("sm:w-[6.75rem]");
+    expect(marketplaceLink?.className).toContain("sm:justify-center");
+    expect(profileLink?.className).toContain("sm:justify-center");
+    expect(dashboardLink?.className).toContain("sm:justify-center");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

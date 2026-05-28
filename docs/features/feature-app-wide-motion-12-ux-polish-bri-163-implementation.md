@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-wide-motion-12-ux-polish-bri-163.md`
 - Mother/integration branch: `feature-app-wide-motion-12-ux-polish-bri-163`
-- Current slice: `feature-app-wide-motion-12-ux-polish-bri-163-s06-qa-performance-docs`
+- Current slice: `feature-app-wide-motion-12-ux-polish-bri-163-s07-nav-origin-expansion`
 
 ## Goal
 Implement a shared Motion 12 experience that makes the main user-facing interactions feel like real transitions instead of abrupt state swaps, while keeping the landing page fast and preserving the current auth and session boundaries.
@@ -18,6 +18,7 @@ Implement a shared Motion 12 experience that makes the main user-facing interact
 6. Do not change auth/session authority, wallet trust, or business rules.
 7. Use one shared motion vocabulary so language switching, theme switching, login flow, loading, and property detail transitions feel coordinated instead of unrelated.
 8. Use the current Motion 12 syntax only; legacy `framer-motion` imports, examples, or patterns are not acceptable.
+9. Make the main navigation routes feel like the destination emerges from the pressed navigation button instead of swapping pages abruptly.
 
 ## Tooling And Syntax Discipline
 - S02 owns the Motion 12 setup, including `motion.dev`, the shared motion runtime, and the MCP Motion integration with Codex.
@@ -45,6 +46,7 @@ Implement a shared Motion 12 experience that makes the main user-facing interact
 
 ## Motion Vocabulary
 - `pageEnter` and `pageExit` for route changes.
+- `navOriginExpand` for the main navigation routes that should feel like they emerge from the pressed button.
 - `panelExpand` and `panelCollapse` for menus and profile sections.
 - `themeCrossfade` for light and dark changes.
 - `authEnter` and `authReturn` for login and federated round-trips.
@@ -101,6 +103,19 @@ Implement a shared Motion 12 experience that makes the main user-facing interact
   - verify the landing page remains performant after motion changes
   - update any docs that need follow-through from the implementation
 
+### S07 - navigation origin expansion fixfix
+- Branch: `feature-app-wide-motion-12-ux-polish-bri-163-s07-nav-origin-expansion`
+- Scope:
+  - replace the current main-route page transition with a soft expansion that appears to emerge from the pressed primary navigation button
+  - keep the navigation bar visually stable so button size, position, and color do not change when the transition runs
+  - apply the behavior only to the primary navigation buttons that move between the main, marketplace, protected, and admin destinations
+  - keep the effect fintech-modern, premium, and restrained instead of flashy or distracting
+  - preserve the existing performance posture of the landing and avoid introducing a heavy client wrapper just to support the effect
+
+### S07 fixup - quick tour scope tightening
+- Keep `components/dashboard/quick-tour-overlay.tsx` scoped to `/protected/perfil` so the protected overview shell stays clean and the profile tour only appears where the anchor fields exist.
+- Preserve the existing profile onboarding guidance on the profile page while preventing the tour backdrop from competing with the overview sidebar.
+
 ## Files Most Likely to Change
 - `components/i18n/language-switcher.tsx`
 - `components/theme/theme-toggle.tsx`
@@ -112,6 +127,9 @@ Implement a shared Motion 12 experience that makes the main user-facing interact
 - `components/dashboard/auth-link-status-banner.tsx`
 - `components/marketplace/MarketplaceCard.tsx`
 - `components/marketplace/PropertyDetailContent.tsx`
+- `components/motion/path-route-transition.tsx`
+- `components/motion/route-transition.tsx`
+- `components/WalletModal.tsx`
 - `components/ui/button.tsx`
 - `app/layout.tsx`
 - `app/page.tsx`
@@ -119,6 +137,7 @@ Implement a shared Motion 12 experience that makes the main user-facing interact
 - `app/protected/perfil/page.tsx`
 - `app/marketplace/page.tsx`
 - `app/marketplace/[id]/page.tsx`
+- `app/admin/page.tsx`
 - `app/marketplace/loading.tsx`
 - `app/marketplace/[id]/loading.tsx`
 - `app/auth/link/federated/complete/route.ts`

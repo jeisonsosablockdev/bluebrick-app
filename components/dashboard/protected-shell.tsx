@@ -240,7 +240,7 @@ export function ProtectedShell({
             </div>
           </header>
 
-          <RouteTransition routeKey={pathname} className="space-y-5">
+          <RouteTransition routeKey={pathname} className="space-y-5" mode="navigation-origin">
             <OnboardingRewardReminder />
             {children}
           </RouteTransition>
