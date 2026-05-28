@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "motion/react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import type { PropertyListItem } from "@/lib/property-service";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
+import { MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 
 type MarketplaceCardProps = {
   property: PropertyListItem;
@@ -28,14 +30,22 @@ function formatUsd(value: number | null, locale: string): string {
 export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = false }: MarketplaceCardProps) {
   const { locale, t } = useI18n();
   const numberLocale = locale === "en" ? "en-US" : locale === "pt" ? "pt-BR" : "es-CO";
+  const layoutId = `marketplace-property-${property.id}`;
 
   return (
-    <Card className="overflow-hidden p-0">
-      <button
+    <motion.article
+      className="glass-interactive-card overflow-hidden rounded-2xl border border-white/10 bg-panel p-0"
+      layoutId={layoutId}
+      transition={MOTION_FAST_OPACITY_TRANSITION}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.992 }}
+    >
+      <motion.button
         type="button"
         className="block w-full text-left"
         onClick={() => onOpenDetail(property.id)}
         aria-label={`${t({ en: "View details for", es: "Ver detalle de", pt: "Ver detalhes de" })} ${property.title}`}
+        whileTap={{ scale: 0.997 }}
       >
         <Image
           src={property.image}
@@ -45,7 +55,7 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
           className="h-44 w-full object-cover"
           loading={prioritizeImage ? "eager" : "lazy"}
         />
-      </button>
+      </motion.button>
       <div className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-base font-semibold text-white">{property.title}</h3>
@@ -66,14 +76,15 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
           </p>
         ) : null}
 
-        <button
+        <Button
           type="button"
           onClick={() => onOpenDetail(property.id)}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/25 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+          variant="outline"
+          className="min-h-11 w-full rounded-full"
         >
           {t({ en: "View details", es: "Ver detalle", pt: "Ver detalhes" })}
-        </button>
+        </Button>
       </div>
-    </Card>
+    </motion.article>
   );
 }

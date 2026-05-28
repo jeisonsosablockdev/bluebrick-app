@@ -52,7 +52,7 @@ export default async function MarketplaceDetailPage({ params }: MarketplaceDetai
           </Link>
         </div>
 
-        <PropertyDetailContent property={property} />
+        <PropertyDetailContent property={property} layoutId={`marketplace-property-${id}`} />
       </WalletRuntimeProvider>
     </main>
   );
