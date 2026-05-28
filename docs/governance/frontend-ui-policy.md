@@ -29,6 +29,21 @@ If UI breaks at any of the widths above → task incomplete.
 
 ⸻
 
+🎞️ MOTION LANGUAGE POLICY (MANDATORY)
+
+For motion-driven UX/UI work:
+	1.	Use Motion 12 (`motion.dev`) as the preferred motion system.
+	2.	Use the current `motion` syntax only.
+	•	Do not reintroduce legacy `framer-motion` imports, examples, or patterns.
+	3.	Use motion to communicate refresh, navigation, expansion, activation, theme shift, login, loading progression, and property opening.
+	4.	Preserve current Core Web Vitals, especially on landing and other public entry surfaces.
+	5.	Respect `prefers-reduced-motion`.
+	6.	When a slice needs AI-assisted UI/tooling guidance, follow the OpenAI Developers docs-first workflow before implementation closes.
+
+If motion makes the interface feel heavier or slower instead of clearer or more directional → task incomplete.
+
+⸻
+
 🟢 RESPONSIVE QA MACRO
 
 Trigger

@@ -27,6 +27,7 @@
 ## Workflow Routing
 - `/programs` or on-chain runtime changes: `.codex/workflows/blockchain-cycle.md`
 - `/app`, `components`, auth flows, or browser-critical routes: `.codex/workflows/frontend-cycle.md`
+  - Motion-driven UX/UI slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any OpenAI Developers tooling references explicit in the governing artifact.
 - Mint, metadata, collection, royalty, or Metaplex scope: `.codex/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.codex/workflows/mainnet-hardening.md`
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
