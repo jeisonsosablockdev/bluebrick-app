@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -58,20 +59,46 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
   return (
     <div className={cn("inline-flex", className)} data-no-theme-invert="true">
-      <button
+      <motion.button
         type="button"
         onClick={toggleTheme}
-        className="inline-flex min-h-11 items-center rounded-full border border-white/20 bg-slate-900/85 px-4 text-sm font-medium text-white shadow-[0_10px_26px_rgba(0,0,0,0.25)] transition hover:bg-slate-900"
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.985 }}
+        className="inline-flex min-h-11 items-center gap-3 rounded-full border border-white/20 bg-slate-900/85 px-4 text-sm font-medium text-white shadow-[0_10px_26px_rgba(0,0,0,0.25)] transition hover:bg-slate-900"
         aria-label={t({
           en: "Toggle color theme",
           es: "Cambiar tema de color",
           pt: "Alternar tema de cor"
         })}
       >
-        {theme === "dark"
-          ? t({ en: "Switch to light mode", es: "Cambiar a modo claro", pt: "Mudar para modo claro" })
-          : t({ en: "Switch to dark mode", es: "Cambiar a modo oscuro", pt: "Mudar para modo escuro" })}
-      </button>
+        <motion.span
+          layout
+          className="inline-flex h-6 w-12 items-center rounded-full border border-white/15 bg-black/20 p-1"
+          transition={{ type: "spring", stiffness: 520, damping: 36 }}
+        >
+          <motion.span
+            layout
+            className={cn(
+              "h-4 w-4 rounded-full shadow-[0_6px_18px_rgba(255,255,255,0.18)]",
+              theme === "dark" ? "bg-sky-200" : "bg-amber-200"
+            )}
+            transition={{ type: "spring", stiffness: 520, damping: 36 }}
+          />
+        </motion.span>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={theme}
+            initial={{ opacity: 0, y: 2 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -2 }}
+            transition={{ duration: 0.18 }}
+          >
+            {theme === "dark"
+              ? t({ en: "Switch to light mode", es: "Cambiar a modo claro", pt: "Mudar para modo claro" })
+              : t({ en: "Switch to dark mode", es: "Cambiar a modo oscuro", pt: "Mudar para modo escuro" })}
+          </motion.span>
+        </AnimatePresence>
+      </motion.button>
     </div>
   );
 }

@@ -1,6 +1,11 @@
+"use client";
+
+import { motion, type HTMLMotionProps } from "motion/react";
+
+import { MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = Omit<HTMLMotionProps<"button">, "ref"> & {
   variant?: "primary" | "ghost" | "outline";
 };
 
@@ -13,5 +18,14 @@ export function Button({ className, variant = "primary", type = "button", ...pro
     outline: "border border-white/25 text-white hover:bg-white/10"
   };
 
-  return <button className={cn(base, variants[variant], className)} type={type} {...props} />;
+  return (
+    <motion.button
+      className={cn(base, variants[variant], className)}
+      type={type}
+      whileHover={{ y: -1 }}
+      whileTap={{ scale: 0.985 }}
+      transition={MOTION_FAST_OPACITY_TRANSITION}
+      {...props}
+    />
+  );
 }
