@@ -18,6 +18,7 @@ const legacyWeb3ImportAllowlist = [
   "lib/purchase-anti-bot.ts",
   "lib/purchase-service.ts",
   "lib/purchase-third-party-signer.ts",
+  "lib/solana-kit/compat/**/*.{ts,tsx}",
   "tests/lib/purchase-anti-bot.test.ts"
 ];
 
