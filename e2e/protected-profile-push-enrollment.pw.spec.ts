@@ -22,7 +22,7 @@ test("protected profile exposes push enrollment controls across required widths"
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("/protected/perfil");
     await expect(page.getByText(/Installability \/ Push readiness|Instalabilidad \/ Preparacion push|Instalabilidade \/ Preparacao push/)).toBeVisible();
-    await expect(page.getByText(/Activar notificaciones|Desactivar notificaciones|Anadir a pantalla de inicio/)).toBeVisible();
+    await expect(page.getByText(/Enable notifications|Disable notifications|Add to Home Screen|Activar notificaciones|Desactivar notificaciones|Anadir a pantalla de inicio|Ativar notificacoes|Desativar notificacoes|Adicionar a Tela de Inicio/)).toBeVisible();
 
     const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(hasHorizontalOverflow).toBe(false);

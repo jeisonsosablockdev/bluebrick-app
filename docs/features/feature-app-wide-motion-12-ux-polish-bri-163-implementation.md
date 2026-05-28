@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-wide-motion-12-ux-polish-bri-163.md`
 - Mother/integration branch: `feature-app-wide-motion-12-ux-polish-bri-163`
-- Current slice: `feature-app-wide-motion-12-ux-polish-bri-163-s01-documentation-slice`
+- Current slice: `feature-app-wide-motion-12-ux-polish-bri-163-s06-qa-performance-docs`
 
 ## Goal
 Implement a shared Motion 12 experience that makes the main user-facing interactions feel like real transitions instead of abrupt state swaps, while keeping the landing page fast and preserving the current auth and session boundaries.
@@ -166,6 +166,16 @@ Run and update tests before closing the implementation slices:
 - Responsive QA passes for the public and protected surfaces.
 - Landing performance remains acceptable.
 - `npm run validate` passes.
+
+## Final Validation Summary
+- `npm run validate` passed after the Motion 12 rollout across locale, theme, auth, route, loading, and property-open surfaces.
+- Playwright smoke evidence passed for:
+  - `/`
+  - wallet modal direct auth entry
+  - critical path responsive evidence
+  - protected profile push/readiness controls
+- The protected profile responsive spec was kept aligned with the actual PWA copy surfaced by the install / notification card.
+- The landing page retained its existing performance-first shell strategy while motion remained isolated to small client islands.
 
 ## Linear Sync
 - After S02 is approved, add a Linear comment to `BRI-163` with the motion vocabulary, the final in-scope surfaces, and the explicit admin-dashboard exclusion.
