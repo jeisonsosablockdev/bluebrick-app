@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
+import { AnimatePresence, motion } from "motion/react";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -47,6 +48,7 @@ import {
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
+import { createPanelMotionVariants, MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 
 type WalletModalProps = {
   initialAuth?: AuthMeResponse;
@@ -1306,150 +1308,166 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         </div>
       </header>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm" onClick={() => setIsOpen(false)} role="presentation">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="wallet-modal-title"
-            className="glass-surface max-h-[85vh] w-full max-w-lg overflow-y-auto p-5 sm:p-6"
-            onClick={(event) => event.stopPropagation()}
+      <AnimatePresence>
+        {isOpen ? (
+          <motion.div
+            key="wallet-modal-overlay"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={MOTION_FAST_OPACITY_TRANSITION}
+            onClick={() => setIsOpen(false)}
+            role="presentation"
           >
-            <div className="pointer-events-none absolute -left-8 top-4 h-20 w-20 rounded-full bg-cyan-300/15 blur-3xl" />
-            <div className="pointer-events-none absolute -right-8 bottom-4 h-20 w-20 rounded-full bg-fuchsia-300/15 blur-3xl" />
+            <motion.div
+              key="wallet-modal-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="wallet-modal-title"
+              className="glass-surface max-h-[85vh] w-full max-w-lg overflow-y-auto p-5 sm:p-6"
+              variants={createPanelMotionVariants()}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="pointer-events-none absolute -left-8 top-4 h-20 w-20 rounded-full bg-cyan-300/15 blur-3xl" />
+              <div className="pointer-events-none absolute -right-8 bottom-4 h-20 w-20 rounded-full bg-fuchsia-300/15 blur-3xl" />
 
-            <div className="relative z-10 space-y-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
-                    {t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
-                  </h2>
+              <div className="relative z-10 space-y-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
+                      {t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
+                    </h2>
+                  </div>
+                  <button
+                    ref={closeButtonRef}
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 px-3 text-sm text-white/80 transition hover:bg-white/20"
+                    aria-label={t({ en: "Close wallet modal", es: "Cerrar modal de wallet", pt: "Fechar modal da wallet" })}
+                  >
+                    ×
+                  </button>
                 </div>
-                <button
-                  ref={closeButtonRef}
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 px-3 text-sm text-white/80 transition hover:bg-white/20"
-                  aria-label={t({ en: "Close wallet modal", es: "Cerrar modal de wallet", pt: "Fechar modal da wallet" })}
-                >
-                  ×
-                </button>
-              </div>
 
-              {topFeedbackText ? (
-                <div
-                  className={cn(
-                    "flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-sm",
-                    isTopFeedbackStatus
-                      ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
-                      : "border-red-300/35 bg-red-500/10 text-red-200"
-                  )}
-                  role={isTopFeedbackStatus ? "status" : "alert"}
-                  aria-live={isTopFeedbackStatus ? "polite" : "assertive"}
-                >
-                  {isTopFeedbackStatus ? (
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" />
-                  ) : null}
-                  {topFeedbackText}
-                </div>
-              ) : null}
+                {topFeedbackText ? (
+                  <div
+                    className={cn(
+                      "flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-sm",
+                      isTopFeedbackStatus
+                        ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+                        : "border-red-300/35 bg-red-500/10 text-red-200"
+                    )}
+                    role={isTopFeedbackStatus ? "status" : "alert"}
+                    aria-live={isTopFeedbackStatus ? "polite" : "assertive"}
+                  >
+                    {isTopFeedbackStatus ? (
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" />
+                    ) : null}
+                    {topFeedbackText}
+                  </div>
+                ) : null}
 
-              {shouldShowDirectAuthEntryActions ? (
-                <AuthEntryActionCard
-                  title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
-                  mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
-                  walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
-                  mailIcon={<MailMethodIcon />}
-                  walletIcon={<WalletCtaIcon />}
-                  onMailClick={handleStartMailSignIn}
-                  onWalletClick={handleStartWalletSignIn}
-                  disabled={isBusy}
-                />
-              ) : null}
-
-              <>
-                  {isConnected ? (
-                    <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                      <p className="text-sm text-white/85">
-                        {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {!isPhantomInstalled ? (
-                    <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                      {t({
-                        en: "Phantom is not installed.",
-                        es: "Phantom no esta instalada.",
-                        pt: "A Phantom nao esta instalada."
-                      })}{" "}
-                      <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href={PHANTOM_INSTALL_URL} target="_blank" rel="noreferrer">
-                        {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
-                      </a>{" "}
-                      {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
-                    </p>
-                  ) : null}
-
-                  <ReferralCodeField
-                    inputId="wallet-referral-code"
-                    value={referralCode}
-                    isVisible={isReferralFieldVisible}
-                    onToggle={() => setIsReferralFieldVisible((previous) => !previous)}
-                    onChange={handleReferralCodeChange}
-                    toggleLabel={t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}
-                    inputPlaceholder={t({
-                      en: "Paste or edit your invite code",
-                      es: "Pega o edita tu codigo de invitacion",
-                      pt: "Cole ou edite seu codigo de convite"
-                    })}
-                    helpText={t({
-                      en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
-                      es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
-                      pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
-                    })}
+                {shouldShowDirectAuthEntryActions ? (
+                  <AuthEntryActionCard
+                    title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
+                    mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
+                    walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
+                    mailIcon={<MailMethodIcon />}
+                    walletIcon={<WalletCtaIcon />}
+                    onMailClick={handleStartMailSignIn}
+                    onWalletClick={handleStartWalletSignIn}
+                    disabled={isBusy}
                   />
+                ) : null}
 
-                  {!shouldShowDirectAuthEntryActions ? (
-                    <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
-                      <Button onClick={handleWalletPrimaryAction} disabled={isBusy || hasWalletSession || !isPhantomInstalled} className="min-h-11 w-full">
-                        {walletPrimaryLabel}
-                      </Button>
+                <>
+                    {isConnected ? (
+                      <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                        <p className="text-sm text-white/85">
+                          {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+                        </p>
+                      </div>
+                    ) : null}
 
-                      {shouldShowDisconnectButton ? (
+                    {!isPhantomInstalled ? (
+                      <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+                        {t({
+                          en: "Phantom is not installed.",
+                          es: "Phantom no esta instalada.",
+                          pt: "A Phantom nao esta instalada."
+                        })}{" "}
+                        <a className="underline decoration-amber-200/70 underline-offset-2 hover:text-amber-100" href={PHANTOM_INSTALL_URL} target="_blank" rel="noreferrer">
+                          {t({ en: "Install Phantom", es: "Instalar Phantom", pt: "Instalar Phantom" })}
+                        </a>{" "}
+                        {t({ en: "and retry.", es: "y vuelve a intentarlo.", pt: "e tente novamente." })}
+                      </p>
+                    ) : null}
+
+                    <ReferralCodeField
+                      inputId="wallet-referral-code"
+                      value={referralCode}
+                      isVisible={isReferralFieldVisible}
+                      onToggle={() => setIsReferralFieldVisible((previous) => !previous)}
+                      onChange={handleReferralCodeChange}
+                      toggleLabel={t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}
+                      inputPlaceholder={t({
+                        en: "Paste or edit your invite code",
+                        es: "Pega o edita tu codigo de invitacion",
+                        pt: "Cole ou edite seu codigo de convite"
+                      })}
+                      helpText={t({
+                        en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                        es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                        pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+                      })}
+                    />
+
+                    {!shouldShowDirectAuthEntryActions ? (
+                      <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                        <Button onClick={handleWalletPrimaryAction} disabled={isBusy || hasWalletSession || !isPhantomInstalled} className="min-h-11 w-full">
+                          {walletPrimaryLabel}
+                        </Button>
+
+                        {shouldShowDisconnectButton ? (
+                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
+                            {disconnectLabel}
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : shouldShowDisconnectButton ? (
+                      <div className="grid gap-3">
                         <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
                           {disconnectLabel}
                         </Button>
-                      ) : null}
-                    </div>
-                  ) : shouldShowDisconnectButton ? (
-                    <div className="grid gap-3">
-                      <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                        {disconnectLabel}
+                      </div>
+                    ) : null}
+
+                    {hasWalletSession && !hasFederatedSession && isFederatedLoginAvailable ? (
+                      <Button variant="outline" onClick={handleStartFederatedLink} disabled={isBusy} className="min-h-11 w-full">
+                        {t({
+                          en: "Link email sign-in",
+                          es: "Vincular ingreso por email",
+                          pt: "Vincular login por email"
+                        })}
                       </Button>
-                    </div>
-                  ) : null}
+                    ) : null}
 
-                  {hasWalletSession && !hasFederatedSession && isFederatedLoginAvailable ? (
-                    <Button variant="outline" onClick={handleStartFederatedLink} disabled={isBusy} className="min-h-11 w-full">
-                      {t({
-                        en: "Link email sign-in",
-                        es: "Vincular ingreso por email",
-                        pt: "Vincular login por email"
-                      })}
-                    </Button>
-                  ) : null}
+                    {walletPublicKey ? (
+                      <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
+                        {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
+                      </Button>
+                    ) : null}
+                </>
 
-                  {walletPublicKey ? (
-                    <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
-                      {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
-                    </Button>
-                  ) : null}
-              </>
-
-            </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <OnboardingRewardDecisionModal
         open={Boolean(postAuthDecisionReward)}

@@ -1,6 +1,20 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-27
+Last Updated: 2026-05-28
+
+## BRI-163 App-wide Motion 12 Auth UX Polish
+- The new Motion 12 UX polish changes how auth-related surfaces feel, not how auth authority works.
+- Login entry now uses Motion 12 dialogs and panel transitions so the wallet modal feels like a real opening event instead of a static overlay.
+- Federated return to `/protected/perfil` now arrives through a route transition boundary and a motion-wrapped status banner so the user can feel the return to the profile area.
+- The account-only profile support surface now animates like a modal panel, reinforcing the sense of leaving the public shell and entering the account-linking step.
+- Protected navigation on mobile now opens as a motion drawer, but the same server-side auth checks, redirect rules, and session boundaries still apply.
+- Marketplace route transitions are now motion-wrapped at the layout boundary for public user navigation, but no session semantics changed.
+- No new cookie, token, role, or trust boundary was added by this UX polish.
+- The existing auth flow remains:
+  - WorkOS/AuthKit for account sessions
+  - SIWS for wallet sessions
+  - server-side hybrid composition when both layers exist
+  - server-side redirects for federated link completion and protected route access
 
 ## BRI-5 Stake / Unstake Protected Flow
 - The protected stake surface now executes real owner-driven `freeze / unfreeze` actions for eligible BRIDS NFTs instead of mock UI data.

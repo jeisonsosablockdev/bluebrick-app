@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { RouteTransition } from "@/components/motion/route-transition";
 
 import { AuthLinkStatusBanner } from "@/components/dashboard/auth-link-status-banner";
 import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
@@ -22,17 +23,17 @@ export default async function PerfilPage(props: PerfilPageProps) {
 
   if (!auth.walletAuthenticated || !auth.walletPublicKey) {
     return (
-      <div className="space-y-4">
+      <RouteTransition className="space-y-4" routeKey={`account:${authLinkStatus ?? "none"}`}>
         <AuthLinkStatusBanner status={authLinkStatus} />
         <AccountProfileSupportModule email={auth.workosEmail} />
-      </div>
+      </RouteTransition>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <RouteTransition className="space-y-4" routeKey={`wallet:${auth.walletPublicKey}:${authLinkStatus ?? "none"}`}>
       <AuthLinkStatusBanner status={authLinkStatus} />
       <ProfileKycModule walletPublicKey={auth.walletPublicKey} />
-    </div>
+    </RouteTransition>
   );
 }
