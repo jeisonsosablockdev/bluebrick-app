@@ -15,6 +15,12 @@ This includes:
 
 `AGENTS.md`, local scripts, and CI must reference this file and must not duplicate rule lists.
 
+## Task Bootstrap
+
+When a new task brief is vague or underspecified, start with `npm run task:init` instead of jumping straight to branch creation.
+
+It runs the preflight diagnostics, asks a Socratic clarification pass for the problem, outcome, scope, and branch shape, and then delegates to the canonical branch helper once the shape is clear.
+
 ## Mandatory Sequence
 1. For non-trivial work, create/update one parent Linear issue with a Markdown slice plan before coding.
 2. If slices are required, create an `*-integration` branch from `develop` and create slice branches from that integration branch.

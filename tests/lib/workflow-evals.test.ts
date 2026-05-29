@@ -32,7 +32,9 @@ describe("workflow evals", () => {
     const docs = read(".codex/agents/docs.toml");
 
     expect(planner).toContain("pause and ask instead of improvising");
+    expect(planner).toContain("Socratic clarification pass");
     expect(docs).toContain("pause and ask instead of improvising");
+    expect(docs).toContain("Socratic breakdown");
   });
 
   it("keeps git helpers aligned with atomicity instead of convenience staging", () => {

@@ -125,6 +125,9 @@ branch_artifact_guidance() {
     fix/*)
       echo "- This branch family expects /docs/fixes/fix-<slug>.md and /docs/fixes/fix-<slug>-implementation.md for qualifying work."
       ;;
+    develop)
+      echo "- Fresh task brief detected: use ./scripts/task-init.sh to run the Socratic clarification pass and then create the right branch."
+      ;;
   esac
 
   if [[ "${branch_name}" =~ -integration$ ]]; then
@@ -363,7 +366,7 @@ BRANCH_GUIDANCE="$(branch_artifact_guidance "${CURRENT_BRANCH}")"
 if [[ -n "${BRANCH_GUIDANCE}" ]]; then
   print_limited_list "${BRANCH_GUIDANCE}"
 else
-  echo "- Start new work from the latest develop using ./scripts/git-start.sh when possible."
+  echo "- Start new work from the latest develop using ./scripts/task-init.sh when the brief is vague, or ./scripts/git-start.sh when the branch shape is already known."
 fi
 
 print_section "6) Recommended Next Steps"

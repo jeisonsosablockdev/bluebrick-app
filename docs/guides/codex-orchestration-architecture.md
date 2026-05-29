@@ -59,6 +59,7 @@ docs/
 ## Orchestration Flow
 
 1. `planner` reads `AGENTS.md`, the touched paths, and only the workflow and policy files that match the task.
+   - If the brief is vague, the bootstrap flow should run a Socratic clarification pass before choosing the branch shape so the task expands into a concrete problem, outcome, scope, and branch plan.
 2. `planner` activates one or more workflows based on scope: blockchain, frontend, NFT, mainnet hardening, responsive QA.
 3. `planner` delegates the smallest useful context to specialists, including changed paths, active workflow, required policies, evidence expectations, and open risks.
 4. Domain specialists implement or analyze within their lane:

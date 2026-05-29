@@ -12,6 +12,7 @@
 
 ## Entry Rules
 - Start with `planner`.
+- When the brief is vague or underspecified, run a Socratic clarification pass before branching; the canonical bootstrap entrypoint is `npm run task:init`.
 - For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work, require the governing artifact before implementation.
 - For new features, require:
   - `docs/features/feature-<slug>.md`

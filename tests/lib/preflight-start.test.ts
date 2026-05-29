@@ -179,6 +179,7 @@ describe("preflight:start", () => {
     expect(output).toContain("Working tree is clean.");
     expect(output).toContain("Remote refs refreshed from origin.");
     expect(output).toContain("No obvious package.json/package-lock.json drift detected");
+    expect(output).toContain("use ./scripts/task-init.sh");
     expect(output).toContain("Preflight complete.");
   });
 });

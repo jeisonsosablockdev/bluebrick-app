@@ -12,6 +12,7 @@ describe("agent orchestration contracts", () => {
     expect(source).toContain("docs/features/feature-<slug>.md");
     expect(source).toContain("docs/fixes/fix-<slug>.md");
     expect(source).toContain("documentation slice");
+    expect(source).toContain("npm run task:init");
   });
 
   it("requires planner and docs agents to use artifact-first preconditions", () => {
@@ -20,8 +21,10 @@ describe("agent orchestration contracts", () => {
 
     expect(planner).toContain("parent Linear issue");
     expect(planner).toContain("documentation slice");
+    expect(planner).toContain("Socratic clarification pass");
     expect(docs).toContain("problem artifact");
     expect(docs).toContain("solution artifact");
+    expect(docs).toContain("Socratic breakdown");
   });
 
   it("requires docs and testing policies to mention clarification and tests-first contracts", () => {
