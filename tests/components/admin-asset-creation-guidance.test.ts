@@ -11,7 +11,8 @@ import {
   AssetImportSection,
   AssetLocationSection,
   AssetMediaSection,
-  AssetTypeSelectionSection
+  AssetTypeSelectionSection,
+  GuidanceBadge
 } from "@/components/admin/asset-creation/sections";
 import { initialAssetForm } from "@/components/admin/asset-creation/types";
 
@@ -113,6 +114,40 @@ describe("components/admin/asset-creation guidance", () => {
     expect(helperLabels).toContain("Ayuda de descripcion corta");
     expect(helperLabels).toContain("Ayuda de imagen de portada");
     expect(helperLabels).toContain("Ayuda de nombre de coleccion");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows the tooltip only when the local hint icon is hovered", () => {
+    const { container, root } = renderNode(
+      createElement(GuidanceBadge, {
+        hint: "Resumen breve",
+        tooltip: "Explains how the field is used",
+        ariaLabel: "Ayuda de ejemplo"
+      })
+    );
+
+    const button = container.querySelector("button[aria-label='Ayuda de ejemplo']");
+
+    expect(button).not.toBeNull();
+    expect(document.body.querySelector("[role='tooltip']")).toBeNull();
+
+    act(() => {
+      button?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+    });
+
+    const tooltip = document.body.querySelector("[role='tooltip']");
+    expect(tooltip).not.toBeNull();
+    expect(tooltip?.textContent).toContain("Resumen breve");
+    expect(tooltip?.textContent).toContain("Explains how the field is used");
+
+    act(() => {
+      button?.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+    });
+
+    expect(document.body.querySelector("[role='tooltip']")).toBeNull();
 
     act(() => {
       root.unmount();

@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactElement, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { useId } from "react";
+import { createPortal } from "react-dom";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,31 +13,104 @@ type GuidanceBadgeProps = {
 
 export function GuidanceBadge({ hint, tooltip, ariaLabel }: GuidanceBadgeProps): ReactElement {
   const tooltipId = useId();
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<{
+    left: number;
+    top: number;
+    maxWidth: number;
+  } | null>(null);
+
+  const updateTooltipPosition = useCallback(() => {
+    const button = buttonRef.current;
+    if (!button || typeof window === "undefined") {
+      return;
+    }
+
+    const rect = button.getBoundingClientRect();
+    const viewportPadding = 12;
+    const preferredWidth = 288;
+    const maxWidth = Math.max(220, Math.min(preferredWidth, window.innerWidth - viewportPadding * 2));
+    const halfWidth = maxWidth / 2;
+    const minLeft = viewportPadding + halfWidth;
+    const maxLeft = window.innerWidth - viewportPadding - halfWidth;
+    const centeredLeft = rect.left + rect.width / 2;
+    const left = Math.min(Math.max(centeredLeft, minLeft), maxLeft);
+    const top = rect.bottom + 10;
+
+    setTooltipStyle({
+      left,
+      top,
+      maxWidth
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    updateTooltipPosition();
+  }, [isOpen, updateTooltipPosition]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePositionUpdate = () => {
+      updateTooltipPosition();
+    };
+
+    window.addEventListener("resize", handlePositionUpdate);
+    window.addEventListener("scroll", handlePositionUpdate, true);
+
+    return () => {
+      window.removeEventListener("resize", handlePositionUpdate);
+      window.removeEventListener("scroll", handlePositionUpdate, true);
+    };
+  }, [isOpen, updateTooltipPosition]);
 
   return (
     <span className="relative inline-flex">
       <button
+        ref={buttonRef}
         type="button"
         aria-label={ariaLabel ?? tooltip}
         aria-describedby={tooltipId}
-        className="peer inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70 transition-colors hover:border-cyan-300/60 hover:text-cyan-100 focus-visible:border-cyan-300/60 focus-visible:text-cyan-100 focus-visible:outline-none"
+        aria-expanded={isOpen}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/5 text-[10px] text-white/70 transition-colors hover:border-cyan-300/60 hover:text-cyan-100 focus-visible:border-cyan-300/60 focus-visible:text-cyan-100 focus-visible:outline-none"
+        onBlur={() => setIsOpen(false)}
+        onFocus={() => setIsOpen(true)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
       >
         ?
       </button>
-      <span
-        id={tooltipId}
-        role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-slate-950/95 px-3 py-3 text-[11px] font-normal leading-5 text-white opacity-0 shadow-2xl transition-opacity duration-150 peer-hover:opacity-100 peer-focus-visible:opacity-100"
-      >
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
-          Que es
-        </span>
-        <span className="mt-1 block text-white/90">{hint}</span>
-        <span className="mt-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
-          Como afecta
-        </span>
-        <span className="mt-1 block text-white/90">{tooltip}</span>
-      </span>
+      {isOpen && tooltipStyle && typeof document !== "undefined" ? createPortal(
+        <span
+          id={tooltipId}
+          role="tooltip"
+          className="pointer-events-none z-[9999] rounded-xl border border-white/10 bg-slate-950/95 px-3 py-3 text-[11px] font-normal leading-5 text-white shadow-2xl"
+          style={{
+            position: "fixed",
+            left: tooltipStyle.left,
+            top: tooltipStyle.top,
+            maxWidth: `${tooltipStyle.maxWidth}px`,
+            transform: "translateX(-50%)"
+          }}
+        >
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
+            Que es
+          </span>
+          <span className="mt-1 block text-white/90">{hint}</span>
+          <span className="mt-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
+            Como afecta
+          </span>
+          <span className="mt-1 block text-white/90">{tooltip}</span>
+        </span>,
+        document.body
+      ) : null}
     </span>
   );
 }

@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-05-27
+Last Updated: 2026-05-29
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
@@ -41,6 +41,11 @@ Last Updated: 2026-05-27
   - collection, candy machine, and asset mint addresses remain the blockchain source-of-truth for purchasable inventory
   - the new investment-model fields are informational marketplace content and do not override on-chain mint price, authority, or collection semantics
 - Marketplace detail pages may now render richer deal economics from the admin handoff, but purchase execution still relies on the existing quote/challenge/prepare/submit NFT flow.
+
+## BRI-165 Admin Asset Upload and Hint Cleanup
+- The `/admin/assets/new` tooltip and upload finalization fix does not change NFT authority, metadata ownership, royalties, or collection semantics.
+- Upload finalization now tolerates storage `ETag` differences when the upload has already passed checksum, MIME, and size validation.
+- The `?` hint affordance remains a presentation-only helper and does not affect minting, metadata, or on-chain NFT state.
 
 ## Codex Orchestration Baseline Compatibility
 - No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.

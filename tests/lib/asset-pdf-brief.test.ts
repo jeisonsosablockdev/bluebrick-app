@@ -80,6 +80,7 @@ describe("lib/admin/asset-pdf-brief", () => {
 
     expect(parsed.rows[0].riskNotes).toContain("Escrow Account:");
     expect(parsed.rows[0].shortDescription).toContain("Brandon");
+    expect(parsed.rows[0].longDescription).toContain("Hickory Creek Blvd");
     expect(parsed.rows[0].investmentThesis).toContain("Projected net ROI is 21.75%");
   });
 

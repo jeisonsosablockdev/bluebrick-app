@@ -1,6 +1,6 @@
 # Session Model
 
-Last Updated: 2026-05-28
+Last Updated: 2026-05-29
 
 ## BRI-163 Motion 12 Session UX Notes
 - Motion 12 changes the feel of session entry and session return, but it does not add a new session layer.
@@ -46,6 +46,12 @@ Last Updated: 2026-05-28
   - public marketplace reads remain anonymous-safe
   - admin asset creation and marketplace publishing remain wallet-admin-only
   - user purchase flows still derive pricing and purchase authority from the existing wallet session model, not from the new informational economics payload
+
+## BRI-165 Admin Upload Finalization Session Boundary
+- The upload finalization fix does not add a new session layer, cookie, token, or role.
+- `/admin/assets/new` file uploads continue to rely on the existing admin wallet session and server-side role resolution.
+- Storage `ETag` is now treated as upload metadata during finalization, not as a session or authority signal.
+- The `?` guidance tooltip remains presentation-only and has no effect on session state or access control.
 
 ## BRI-158 Public Session Bootstrap Boundary
 - Public discovery pages now bootstrap as anonymous by default and defer wallet/account introspection until a user-facing auth surface actually needs it.

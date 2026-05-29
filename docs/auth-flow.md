@@ -1,6 +1,6 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-28
+Last Updated: 2026-05-29
 
 ## BRI-163 App-wide Motion 12 Auth UX Polish
 - The new Motion 12 UX polish changes how auth-related surfaces feel, not how auth authority works.
@@ -53,6 +53,12 @@ Last Updated: 2026-05-28
   - admin completes the asset form
   - admin runs mint/deploy flow
   - server creates the marketplace entry from the verified admin session plus the captured form state
+
+## BRI-165 Admin Asset Upload Finalization Hardening
+- `/admin/assets/new` upload finalization remains inside the same admin wallet authority boundary as the rest of the create flow.
+- This fix does not add a new auth cookie, token, or role.
+- The upload finalizer now treats storage `ETag` as persistence metadata, not as an extra authority gate that can fail a valid upload after checksum and MIME validation already passed.
+- The shared `?` hint affordance remains a UI-only helper and does not affect auth/session behavior.
 
 ## BRI-158 Public Shell Performance Boundary
 - Public discovery routes now avoid request-time auth bootstrap in the root shell.

@@ -44,6 +44,15 @@ function normalizeMimeType(value: string): string {
   return value.trim().toLowerCase();
 }
 
+function normalizeEtag(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim().replace(/^W\//i, "").replace(/^"+|"+$/g, "");
+  return normalized || null;
+}
+
 export async function POST(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const roleResult = getRequestRole(request);
 
@@ -140,11 +149,8 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       return errorResponse(422, "UPLOAD_VALIDATION_FAILED", "Stored object content-type does not match signed contract.");
     }
 
-    if (payload.etag && metadata.etag && payload.etag !== metadata.etag) {
-      return errorResponse(422, "UPLOAD_VALIDATION_FAILED", "etag does not match stored object ETag.");
-    }
-
     const cdnUrl = metadata.url ?? buildCdnUrl(config, contract.objectKey);
+    const persistedEtag = normalizeEtag(metadata.etag) ?? normalizeEtag(payload.etag);
 
     const persisted = await persistFinalizedUpload({
       uploadId: contract.uploadId,
@@ -156,7 +162,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
       mimeType: contract.mimeType,
       sizeBytes: contract.sizeBytes,
       contentMd5Base64: contract.contentMd5Base64,
-      etag: metadata.etag ?? payload.etag,
+      etag: persistedEtag,
       uploadedAt: new Date().toISOString()
     });
 
