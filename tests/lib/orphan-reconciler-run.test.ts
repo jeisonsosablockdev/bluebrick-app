@@ -84,6 +84,37 @@ describe("lib/asset-uploads/orphan-reconciler execution", () => {
     expect(gcsMocks.deleteGcsObjectIfPresent).not.toHaveBeenCalled();
   });
 
+  it("keeps canceled asset-creation sessions eligible for abandoned cleanup", async () => {
+    dbState.rows = [
+      {
+        upload_id: "33333333-3333-4333-8333-333333333333",
+        object_key: "admin-assets/galleryImage/create-draft/seo-gallery.jpg",
+        reason: "abandoned"
+      }
+    ];
+
+    const result = await reconcileOrphanedUploads({
+      dryRun: true,
+      temporaryRetentionDays: 7,
+      abandonedRetentionDays: 30,
+      limit: 25
+    });
+
+    const candidateSql = String(queryMock.mock.calls[0]?.[0]);
+
+    expect(result).toMatchObject({
+      dryRun: true,
+      candidates: 1,
+      byReason: { temporary: 0, abandoned: 1 },
+      sampleUploadIds: ["33333333-3333-4333-8333-333333333333"]
+    });
+    expect(candidateSql).toContain("edit_session_id IS NOT NULL");
+    expect(candidateSql).toContain("promoted_at IS NULL");
+    expect(candidateSql).toContain("COALESCE(canceled_at, created_at)");
+    expect(queryMock.mock.calls[0]?.[1]).toEqual(["7", "30", 25]);
+    expect(gcsMocks.deleteGcsObjectIfPresent).not.toHaveBeenCalled();
+  });
+
   it("deletes storage objects before removing orphaned DB rows", async () => {
     dbState.rows = [
       {
