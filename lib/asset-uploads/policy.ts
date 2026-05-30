@@ -317,7 +317,7 @@ export function buildSeoImageFileName(input: {
   pushUniqueSegment(segments, context?.internalCode);
   pushUniqueSegment(segments, context?.imageRole);
 
-  if (segments.length < 2 || !isGenericImageBaseName(originalBase)) {
+  if (segments.length === 0 || !isGenericImageBaseName(originalBase)) {
     pushUniqueSegment(segments, originalBase);
   }
 

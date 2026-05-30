@@ -1,6 +1,20 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-29
+Last Updated: 2026-05-30
+
+## BRI-165 Admin Asset Upload Session Lifecycle
+- `/admin/assets/new` now assigns a browser-local `editSessionId` to each asset creation form session and sends it with every admin upload request.
+- This is lifecycle metadata only; it is not an auth token, session cookie, role grant, or user identity source.
+- New admin upload lifecycle routes:
+  - `POST /api/admin/assets/uploads/edit-session/promote`
+  - `POST /api/admin/assets/uploads/edit-session/cancel`
+- Both routes keep the existing admin wallet boundary:
+  - request auth is resolved server-side through `getRequestRole`
+  - caller must be authenticated as `admin`
+  - mutations are scoped to `draftId + editSessionId`
+- Promotion marks finalized uploads as retained after the marketplace entry is created successfully.
+- Cancellation marks unpromoted uploads when the admin cancels, closes, refreshes, or otherwise abandons the form; durable deletion remains the orphan reconciler's responsibility after retention.
+- SEO image renaming runs inside the signed-upload policy path and does not alter auth, MIME, checksum, size, or admin-role validation.
 
 ## BRI-163 App-wide Motion 12 Auth UX Polish
 - The new Motion 12 UX polish changes how auth-related surfaces feel, not how auth authority works.
