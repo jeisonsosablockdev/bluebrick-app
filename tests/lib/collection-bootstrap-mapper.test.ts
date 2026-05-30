@@ -39,6 +39,7 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
         formSnapshot: {
           country: "Colombia",
           state: "ANT",
+          postalCode: "050021",
           city: "Medellin",
           address: "Carrera 43A #1-50",
           geoLat: "6.25184",
@@ -144,6 +145,7 @@ describe("lib/admin/collection-bootstrap-mapper", () => {
     expect(result.payload.googleMapsPlaceJson).toBeNull();
     expect(result.payload.country).toBe("CO");
     expect(result.payload.stateProvince).toBe("Antioquia");
+    expect(result.payload.postalCode).toBe("050021");
     expect(result.payload.city).toBe("Medellin");
     expect(result.payload.address).toBe("Carrera 43A #1-50");
     expect(result.payload.geoLat).toBe(6.25184);

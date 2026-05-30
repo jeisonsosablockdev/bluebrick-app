@@ -112,6 +112,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams): Prom
       city: update.city,
       country: update.country,
       stateProvince: update.stateProvince,
+      ...(update.postalCode !== undefined ? { postalCode: update.postalCode } : {}),
       address: update.address,
       geoLat: update.geoLat,
       geoLng: update.geoLng,

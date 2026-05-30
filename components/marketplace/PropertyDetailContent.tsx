@@ -52,6 +52,18 @@ function shouldRenderMetric(value: number | null): boolean {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
+function formatDetailedLocation(property: PropertyDetail): string {
+  const detailedLocation = property.detailedLocation.trim();
+  const postalCode = property.postalCode?.trim();
+  if (!postalCode) {
+    return detailedLocation;
+  }
+
+  return detailedLocation
+    .replace(new RegExp(`\\s*,?\\s*${postalCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`), "")
+    .trim();
+}
+
 function formatDate(dateValue: string | null, locale: AppLocale): string {
   if (!dateValue) {
     return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
@@ -132,8 +144,13 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
           <H2 className="text-2xl text-white">{t({ en: "Property information", es: "Informacion de la propiedad", pt: "Informacoes da propriedade" })}</H2>
           <p className="text-sm text-slate-300">{property.investmentNotes}</p>
           <p className="text-sm text-slate-300">
-            {t({ en: "Detailed location", es: "Ubicacion detallada", pt: "Localizacao detalhada" })}: {property.detailedLocation}
+            {t({ en: "Detailed location", es: "Ubicacion detallada", pt: "Localizacao detalhada" })}: {formatDetailedLocation(property)}
           </p>
+          {property.postalCode ? (
+            <p className="text-sm text-slate-300">
+              {t({ en: "Postal code", es: "Codigo postal", pt: "Codigo postal" })}: {property.postalCode}
+            </p>
+          ) : null}
           <ul className="list-disc space-y-1 pl-5 text-sm text-slate-300">
             {property.highlights.map((item) => (
               <li key={item}>{item}</li>

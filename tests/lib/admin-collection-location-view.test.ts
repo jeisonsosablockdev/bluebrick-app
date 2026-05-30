@@ -11,6 +11,7 @@ const baseContent = {
   title: "Ocean View Residences",
   city: "Cartagena",
   country: "CO",
+  postalCode: null,
   locationLabel: "Bocagrande Waterfront",
   detailedLocation: "Avenida San Martin 7-14, Bocagrande",
   googleMapsPlace: null

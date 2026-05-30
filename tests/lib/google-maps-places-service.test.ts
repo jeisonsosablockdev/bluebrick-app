@@ -63,6 +63,14 @@ describe("lib/admin/google-maps-places-service", () => {
           text: "Oceanview Fractional Tower"
         },
         formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
+        addressComponents: [
+          { longText: "7-14", shortText: "7-14", types: ["street_number"] },
+          { longText: "Avenida San Martin", shortText: "Av. San Martin", types: ["route"] },
+          { longText: "Cartagena", shortText: "Cartagena", types: ["locality"] },
+          { longText: "Bolivar", shortText: "BOL", types: ["administrative_area_level_1"] },
+          { longText: "Colombia", shortText: "CO", types: ["country"] },
+          { longText: "130001", shortText: "130001", types: ["postal_code"] }
+        ],
         location: {
           latitude: 10.3997,
           longitude: -75.5553
@@ -83,7 +91,12 @@ describe("lib/admin/google-maps-places-service", () => {
       formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
       lat: 10.3997,
       lng: -75.5553,
-      googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
+      googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower",
+      addressLine: "7-14 Avenida San Martin",
+      city: "Cartagena",
+      stateProvince: "Bolivar",
+      country: "CO",
+      postalCode: "130001"
     });
   });
 

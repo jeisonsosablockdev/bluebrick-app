@@ -122,12 +122,49 @@ type GooglePlaceDetailsResponse = {
     text?: string;
   };
   formattedAddress?: string;
+  addressComponents?: Array<{
+    longText?: string;
+    shortText?: string;
+    types?: string[];
+  }>;
   location?: {
     latitude?: number;
     longitude?: number;
   };
   googleMapsUri?: string;
 };
+
+function getAddressComponent(
+  components: GooglePlaceDetailsResponse["addressComponents"],
+  type: string,
+  text: "long" | "short" = "long"
+): string | null {
+  const component = components?.find((item) => item.types?.includes(type));
+  const value = text === "short" ? component?.shortText : component?.longText;
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function buildAddressLine(components: GooglePlaceDetailsResponse["addressComponents"]): string | null {
+  const streetNumber = getAddressComponent(components, "street_number");
+  const route = getAddressComponent(components, "route");
+  const premise = getAddressComponent(components, "premise");
+  const subpremise = getAddressComponent(components, "subpremise");
+
+  const segments = [
+    [streetNumber, route].filter(Boolean).join(" ").trim(),
+    premise,
+    subpremise ? `Unit ${subpremise}` : null
+  ].filter((segment): segment is string => Boolean(segment && segment.trim()));
+
+  return segments.length > 0 ? Array.from(new Set(segments)).join(", ") : null;
+}
+
+function getCity(components: GooglePlaceDetailsResponse["addressComponents"]): string | null {
+  return getAddressComponent(components, "locality")
+    ?? getAddressComponent(components, "postal_town")
+    ?? getAddressComponent(components, "sublocality")
+    ?? getAddressComponent(components, "administrative_area_level_2");
+}
 
 export async function resolveGoogleMapsPlace(input: {
   placeId: string;
@@ -148,7 +185,7 @@ export async function resolveGoogleMapsPlace(input: {
     headers: {
       "content-type": "application/json",
       "X-Goog-Api-Key": apiKey,
-      "X-Goog-FieldMask": "id,displayName,formattedAddress,location,googleMapsUri",
+      "X-Goog-FieldMask": "id,displayName,formattedAddress,addressComponents,location,googleMapsUri",
       "X-Goog-Session-Token": input.sessionToken
     }
   });
@@ -167,6 +204,11 @@ export async function resolveGoogleMapsPlace(input: {
   const lat = payload.location?.latitude;
   const lng = payload.location?.longitude;
   const googleMapsUrl = payload.googleMapsUri?.trim() || "";
+  const addressLine = buildAddressLine(payload.addressComponents);
+  const city = getCity(payload.addressComponents);
+  const stateProvince = getAddressComponent(payload.addressComponents, "administrative_area_level_1");
+  const country = getAddressComponent(payload.addressComponents, "country", "short");
+  const postalCode = getAddressComponent(payload.addressComponents, "postal_code");
 
   if (
     !payload.id?.trim() ||
@@ -191,7 +233,12 @@ export async function resolveGoogleMapsPlace(input: {
     formattedAddress,
     lat,
     lng,
-    googleMapsUrl
+    googleMapsUrl,
+    addressLine,
+    city,
+    stateProvince,
+    country,
+    postalCode
   };
 }
 

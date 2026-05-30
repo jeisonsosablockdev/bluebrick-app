@@ -24,6 +24,7 @@ type MarketplaceEditableCollectionRow = {
   city: string;
   country: string;
   state_province: string | null;
+  postal_code: string | null;
   location_label: string;
   detailed_location: string;
   geo_lat: number | string | null;
@@ -48,6 +49,7 @@ export type AdminCollectionContentRecord = {
   city: string;
   country: string;
   stateProvince: string | null;
+  postalCode: string | null;
   locationLabel: string;
   detailedLocation: string;
   geoLat: number | null;
@@ -72,6 +74,7 @@ export type UpdateAdminCollectionContentInput = {
   city?: string;
   country?: string;
   stateProvince?: string | null;
+  postalCode?: string | null;
   address?: string;
   geoLat?: number | null;
   geoLng?: number | null;
@@ -96,7 +99,7 @@ type JsonUpdateAssignment = {
 
 type ResolvedLocationUpdate = Pick<
   UpdateAdminCollectionContentInput,
-  "city" | "country" | "stateProvince" | "address" | "geoLat" | "geoLng" | "googleMapsPlace"
+  "city" | "country" | "stateProvince" | "postalCode" | "address" | "geoLat" | "geoLng" | "googleMapsPlace"
 > & {
   locationLabel?: string;
 };
@@ -111,6 +114,7 @@ function buildSelectCollectionContentColumns(
       city,
       country,
       ${support.stateProvince ? "state_province" : "NULL::text AS state_province"},
+      ${support.postalCode ? "postal_code" : "NULL::text AS postal_code"},
       location_label,
       detailed_location,
       ${support.geoLat ? "geo_lat" : "NULL::double precision AS geo_lat"},
@@ -233,6 +237,7 @@ function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): 
     city: row.city,
     country: row.country,
     stateProvince: toOptionalTrimmedText(row.state_province),
+    postalCode: toOptionalTrimmedText(row.postal_code),
     locationLabel: row.location_label,
     detailedLocation: row.detailed_location,
     geoLat: toOptionalFiniteNumber(row.geo_lat),
@@ -321,6 +326,13 @@ function buildJsonUpdateAssignments(
     });
   }
 
+  if (input.postalCode !== undefined && support.postalCode) {
+    assignments.push({
+      assignment: "postal_code = $VALUE",
+      value: toOptionalTrimmedText(input.postalCode)
+    });
+  }
+
   if (input.address !== undefined) {
     assignments.push({
       assignment: "detailed_location = $VALUE",
@@ -356,6 +368,7 @@ function hasCanonicalLocationFieldUpdate(input: UpdateAdminCollectionContentInpu
   return input.city !== undefined
     || input.country !== undefined
     || input.stateProvince !== undefined
+    || input.postalCode !== undefined
     || input.address !== undefined
     || input.geoLat !== undefined
     || input.geoLng !== undefined;
@@ -386,6 +399,7 @@ async function resolveLocationUpdate(
     city: input.city ?? current.city,
     country: input.country ?? current.country,
     stateProvince: input.stateProvince !== undefined ? input.stateProvince : current.stateProvince,
+    postalCode: input.postalCode !== undefined ? input.postalCode : current.postalCode,
     address: input.address ?? current.detailedLocation,
     geoLat: input.geoLat !== undefined ? input.geoLat : current.geoLat,
     geoLng: input.geoLng !== undefined ? input.geoLng : current.geoLng
@@ -395,6 +409,7 @@ async function resolveLocationUpdate(
     city: input.city,
     country: input.country,
     stateProvince: input.stateProvince,
+    postalCode: input.postalCode,
     address: input.address,
     geoLat: input.geoLat,
     geoLng: input.geoLng
@@ -494,6 +509,7 @@ export async function updateAdminCollectionContent(
          city,
          country,
          ${support.stateProvince ? "state_province," : "NULL::text AS state_province,"}
+         ${support.postalCode ? "postal_code," : "NULL::text AS postal_code,"}
          location_label,
          detailed_location,
          ${support.geoLat ? "geo_lat," : "NULL::double precision AS geo_lat,"}
@@ -536,6 +552,7 @@ export async function applyCollectionBootstrapPayload(
     city: input.payload.city,
     country: input.payload.country,
     stateProvince: input.payload.stateProvince,
+    postalCode: input.payload.postalCode,
     address: input.payload.address,
     geoLat: input.payload.geoLat,
     geoLng: input.payload.geoLng

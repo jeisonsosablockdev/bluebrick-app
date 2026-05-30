@@ -4,6 +4,7 @@ export type AdminCanonicalLocation = {
   city: string;
   country: string;
   stateProvince: string | null;
+  postalCode: string | null;
   address: string;
   geoLat: number | null;
   geoLng: number | null;
@@ -71,9 +72,9 @@ function isAddressEquivalent(
 
 export function deriveAdminCanonicalLocationLabel(location: Pick<
   AdminCanonicalLocation,
-  "city" | "country" | "stateProvince"
+  "city" | "country" | "stateProvince" | "postalCode"
 >): string {
-  const segments = uniqueSegments([location.city, location.stateProvince, location.country]);
+  const segments = uniqueSegments([location.city, location.stateProvince, location.postalCode, location.country]);
   return segments.join(", ");
 }
 

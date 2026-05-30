@@ -31,6 +31,7 @@ type PersistedMarketplaceRow = {
   title: string;
   city: string;
   country: string;
+  postal_code: string | null;
   location_label: string;
   listing_status: ListingStatus;
   image_url: string;
@@ -247,6 +248,7 @@ function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): Property
     title: row.title,
     city: row.city,
     country: row.country,
+    postalCode: typeof row.postal_code === "string" && row.postal_code.trim() ? row.postal_code.trim() : null,
     locationLabel: row.location_label,
     listingStatus: row.listing_status,
     image: row.image_url,
@@ -300,7 +302,13 @@ function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): Pro
     title: input.title,
     city: input.city,
     country: input.country,
-    locationLabel: `${input.city}, ${input.country}`,
+    postalCode: input.postalCode ?? null,
+    locationLabel: deriveAdminCanonicalLocationLabel({
+      city: input.city,
+      country: input.country,
+      stateProvince: input.stateProvince ?? null,
+      postalCode: input.postalCode ?? null
+    }),
     listingStatus: input.listingStatus,
     image: input.image,
     shortDescription: input.shortDescription,
@@ -383,12 +391,14 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
 
   try {
     return withDbClient(async (client) => {
+      const support = await getMarketplaceEntryLocationColumnSupport(client);
       const result = await client.query<PersistedMarketplaceRow>(
         `SELECT
            id,
            title,
            city,
            country,
+           ${support.postalCode ? "postal_code" : "NULL::text AS postal_code"},
            location_label,
            listing_status,
            image_url,
@@ -450,6 +460,7 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         "city",
         "country",
         ...(support.stateProvince ? ["state_province"] : []),
+        ...(support.postalCode ? ["postal_code"] : []),
         "location_label",
         "listing_status",
         "image_url",
@@ -481,10 +492,12 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         input.city,
         input.country,
         ...(support.stateProvince ? [input.stateProvince ?? null] : []),
+        ...(support.postalCode ? [input.postalCode ?? null] : []),
         deriveAdminCanonicalLocationLabel({
           city: input.city,
           country: input.country,
-          stateProvince: input.stateProvince ?? null
+          stateProvince: input.stateProvince ?? null,
+          postalCode: input.postalCode ?? null
         }),
         input.listingStatus,
         input.image,

@@ -27,8 +27,18 @@ function resolveGoogleMapsEmbedApiKey(explicitApiKey?: string | null): string | 
 
 export function buildAdminCollectionLocationLabel(content: Pick<
   AdminCollectionContentRecord,
-  "locationLabel" | "detailedLocation" | "city" | "country"
+  "locationLabel" | "detailedLocation" | "city" | "country" | "postalCode" | "googleMapsPlace"
 >): string | null {
+  const placeSegments = normalizeSegments([
+    content.googleMapsPlace?.city,
+    content.googleMapsPlace?.stateProvince,
+    content.googleMapsPlace?.postalCode,
+    content.googleMapsPlace?.country
+  ]);
+  if (placeSegments.length > 0) {
+    return placeSegments.join(", ");
+  }
+
   const primary = normalizeSegments([
     content.locationLabel,
     content.detailedLocation
@@ -43,7 +53,7 @@ export function buildAdminCollectionLocationLabel(content: Pick<
 
 export function buildAdminCollectionLocationQuery(content: Pick<
   AdminCollectionContentRecord,
-  "locationLabel" | "detailedLocation" | "city" | "country" | "googleMapsPlace"
+  "locationLabel" | "detailedLocation" | "city" | "country" | "postalCode" | "googleMapsPlace"
 >): string | null {
   const fromPlace = normalizeSegments([
     content.googleMapsPlace?.formattedAddress,
@@ -57,6 +67,7 @@ export function buildAdminCollectionLocationQuery(content: Pick<
     content.detailedLocation,
     content.locationLabel,
     content.city,
+    content.postalCode,
     content.country
   ]);
   return fallback.length > 0 ? fallback.join(", ") : null;
@@ -64,7 +75,7 @@ export function buildAdminCollectionLocationQuery(content: Pick<
 
 export function buildAdminCollectionGoogleMapsUrl(content: Pick<
   AdminCollectionContentRecord,
-  "locationLabel" | "detailedLocation" | "city" | "country" | "googleMapsPlace"
+  "locationLabel" | "detailedLocation" | "city" | "country" | "postalCode" | "googleMapsPlace"
 >): string | null {
   if (content.googleMapsPlace?.googleMapsUrl) {
     return content.googleMapsPlace.googleMapsUrl;
@@ -76,7 +87,7 @@ export function buildAdminCollectionGoogleMapsUrl(content: Pick<
 
 export function buildAdminCollectionGoogleMapsEmbedUrl(content: Pick<
   AdminCollectionContentRecord,
-  "locationLabel" | "detailedLocation" | "city" | "country" | "googleMapsPlace"
+  "locationLabel" | "detailedLocation" | "city" | "country" | "postalCode" | "googleMapsPlace"
 >, options?: {
   apiKey?: string | null;
 }): string | null {

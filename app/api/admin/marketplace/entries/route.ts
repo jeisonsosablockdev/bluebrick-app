@@ -17,6 +17,7 @@ type MarketplaceEntryRequest = {
   city?: unknown;
   country?: unknown;
   stateProvince?: unknown;
+  postalCode?: unknown;
   address?: unknown;
   geoLat?: unknown;
   geoLng?: unknown;
@@ -193,6 +194,7 @@ function normalizePayload(rawBody: unknown): {
   city: string;
   country: string;
   stateProvince: string | null;
+  postalCode: string | null;
   address: string;
   geoLat: number | null;
   geoLng: number | null;
@@ -221,6 +223,7 @@ function normalizePayload(rawBody: unknown): {
   const locationForm = normalizeAdminCollectionLocationForm({
     country: body.country,
     stateProvince: body.stateProvince,
+    postalCode: body.postalCode,
     city: body.city,
     address: body.address,
     geoLat: body.geoLat,
@@ -257,6 +260,7 @@ function normalizePayload(rawBody: unknown): {
     city: locationForm.city,
     country: locationForm.country,
     stateProvince: locationForm.stateProvince,
+    postalCode: locationForm.postalCode,
     address: locationForm.address,
     geoLat: locationForm.geoLat,
     geoLng: locationForm.geoLng,
@@ -332,6 +336,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       city: payload.city,
       country: payload.country,
       stateProvince: payload.stateProvince,
+      postalCode: payload.postalCode,
       listingStatus,
       image: payload.imageUrl,
       shortDescription: payload.shortDescription,

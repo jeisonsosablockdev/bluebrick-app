@@ -1,5 +1,11 @@
 import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
-import type { AdminCollectionLocationAutocompleteSuggestion } from "@/lib/admin/google-maps-places-service";
+
+export type AdminCollectionLocationAutocompleteSuggestion = {
+  placeId: string;
+  fullText: string;
+  primaryText: string;
+  secondaryText: string | null;
+};
 
 type AdminCollectionLocationAutocompleteSuccessResponse = {
   ok: true;
@@ -78,6 +84,36 @@ export async function fetchAdminCollectionLocationSuggestions(input: {
   return payload.data.suggestions;
 }
 
+export async function fetchAdminAssetLocationSuggestions(input: {
+  query: string;
+  country: string;
+  city: string;
+  sessionToken: string;
+}): Promise<AdminCollectionLocationAutocompleteSuggestion[]> {
+  const params = new URLSearchParams({
+    q: input.query,
+    country: input.country,
+    city: input.city,
+    sessionToken: input.sessionToken
+  });
+  const response = await fetch(`/api/admin/assets/location-maps/autocomplete?${params.toString()}`, {
+    cache: "no-store"
+  });
+
+  const payload = (await response.json()) as
+    | AdminCollectionLocationAutocompleteSuccessResponse
+    | AdminCollectionLocationErrorResponse;
+
+  if (!response.ok || "error" in payload) {
+    throw new AdminCollectionLocationClientError(
+      "error" in payload ? payload.error.code : "ADMIN_ASSET_LOCATION_AUTOCOMPLETE_FAILED",
+      "error" in payload ? payload.error.message : "Could not load Google Maps autocomplete suggestions."
+    );
+  }
+
+  return payload.data.suggestions;
+}
+
 export async function resolveAdminCollectionLocationPlace(input: {
   entryId: string;
   placeId: string;
@@ -99,6 +135,34 @@ export async function resolveAdminCollectionLocationPlace(input: {
   if (!response.ok || "error" in payload) {
     throw new AdminCollectionLocationClientError(
       "error" in payload ? payload.error.code : "ADMIN_COLLECTION_LOCATION_RESOLVE_FAILED",
+      "error" in payload ? payload.error.message : "Could not resolve the selected Google Maps place."
+    );
+  }
+
+  return payload.data.googleMapsPlace;
+}
+
+export async function resolveAdminAssetLocationPlace(input: {
+  placeId: string;
+  country: string;
+  sessionToken: string;
+}): Promise<CollectionBootstrapGoogleMapsPlace> {
+  const params = new URLSearchParams({
+    placeId: input.placeId,
+    country: input.country,
+    sessionToken: input.sessionToken
+  });
+  const response = await fetch(`/api/admin/assets/location-maps/resolve?${params.toString()}`, {
+    cache: "no-store"
+  });
+
+  const payload = (await response.json()) as
+    | AdminCollectionLocationResolveSuccessResponse
+    | AdminCollectionLocationErrorResponse;
+
+  if (!response.ok || "error" in payload) {
+    throw new AdminCollectionLocationClientError(
+      "error" in payload ? payload.error.code : "ADMIN_ASSET_LOCATION_RESOLVE_FAILED",
       "error" in payload ? payload.error.message : "Could not resolve the selected Google Maps place."
     );
   }

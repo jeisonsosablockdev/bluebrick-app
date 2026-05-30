@@ -2,6 +2,7 @@ import type {
   DeployCompletedPayload,
   SnapshotFinalizeResponse
 } from "@/components/admin/core-candy-machine-panel";
+import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
 
 export type AssetType = "building_new" | "rental_property" | "land_lot" | "";
 export type FormStatus = "draft" | "saving" | "saved" | "validation-error";
@@ -50,10 +51,12 @@ export type AssetForm = {
   internalCode: string;
   country: string;
   state: string;
+  postalCode: string;
   city: string;
   address: string;
   geoLat: string;
   geoLng: string;
+  googleMapsPlace: CollectionBootstrapGoogleMapsPlace | null;
   shortDescription: string;
   longDescription: string;
   investmentThesis: string;
@@ -156,10 +159,12 @@ export const initialAssetForm: AssetForm = {
   internalCode: "",
   country: "",
   state: "",
+  postalCode: "",
   city: "",
   address: "",
   geoLat: "",
   geoLng: "",
+  googleMapsPlace: null,
   shortDescription: "",
   longDescription: "",
   investmentThesis: "",
