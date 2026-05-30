@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, ClipboardEvent, ReactElement } from "react";
+import type { ChangeEvent, ClipboardEvent, DragEvent, ReactElement } from "react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -25,6 +25,7 @@ import {
   GuidedSelectField,
   GuidedTextareaField
 } from "@/components/admin/asset-creation/sections";
+import { assetTypeOptions } from "@/components/admin/asset-creation/asset-type-options";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,36 +47,6 @@ import {
   parseCollectionSymbol,
   parseExitStrategy
 } from "@/lib/admin/asset-compatibility-validation";
-
-const assetTypeOptions: Array<{ value: Exclude<AssetType, "">; title: { en: string; es: string; pt: string }; subtitle: { en: string; es: string; pt: string } }> = [
-  {
-    value: "building_new",
-    title: { en: "New building", es: "Edificio nuevo", pt: "Edificio novo" },
-    subtitle: {
-      en: "Asset in development or delivery stage.",
-      es: "Activo en fase de desarrollo o entrega.",
-      pt: "Ativo em fase de desenvolvimento ou entrega."
-    }
-  },
-  {
-    value: "rental_property",
-    title: { en: "Rental property", es: "Propiedad en renta", pt: "Propriedade em renda" },
-    subtitle: {
-      en: "Asset focused on recurring yield flow.",
-      es: "Activo enfocado en flujo de renta recurrente.",
-      pt: "Ativo focado em fluxo de renda recorrente."
-    }
-  },
-  {
-    value: "land_lot",
-    title: { en: "Land lot", es: "Lote de engorde", pt: "Lote de valorizacao" },
-    subtitle: {
-      en: "Asset with future appreciation thesis.",
-      es: "Activo con tesis de valorizacion futura.",
-      pt: "Ativo com tese de valorizacao futura."
-    }
-  }
-];
 
 const exitStrategyOptions: Array<{
   value: string;
@@ -406,6 +377,7 @@ export function AssetCreationForm(): ReactElement {
   } = useAssetCreationFormState(draftId);
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
   const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
+  const [isImportFileDragging, setIsImportFileDragging] = useState(false);
   const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -963,7 +935,8 @@ export function AssetCreationForm(): ReactElement {
   const {
     buildImportCandidateFromText,
     applyImportCandidate: applyImportCandidateToState,
-    onImportFileInput
+    onImportFileInput,
+    onImportFileDrop
   } = useAssetImportJobs({
     setImportMessage,
     setImportHeaders,
@@ -997,6 +970,37 @@ export function AssetCreationForm(): ReactElement {
     const candidate = await onImportFileInput(event);
     requestImportCandidate(candidate);
   }, [onImportFileInput, requestImportCandidate]);
+
+  const handleImportFileDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsImportFileDragging(true);
+  }, []);
+
+  const handleImportFileDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+
+    setIsImportFileDragging(false);
+  }, []);
+
+  const handleImportFileDrop = useCallback(async (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsImportFileDragging(false);
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const candidate = await onImportFileDrop(file);
+    requestImportCandidate(candidate);
+  }, [onImportFileDrop, requestImportCandidate]);
 
   const handleImportTextareaPaste = useCallback((event: ClipboardEvent<HTMLTextAreaElement>) => {
     const pastedText = event.clipboardData.getData("text");
@@ -1157,8 +1161,12 @@ export function AssetCreationForm(): ReactElement {
         hasLoadedImport={hasLoadedImport}
         replaceImportOpen={Boolean(pendingImportCandidate)}
         pendingImportLabel={pendingImportCandidate?.fileName ?? ""}
+        isFileDropActive={isImportFileDragging}
         setImportText={setImportText}
         onImportFileInput={handleImportFileInput}
+        onImportFileDragOver={handleImportFileDragOver}
+        onImportFileDragLeave={handleImportFileDragLeave}
+        onImportFileDrop={handleImportFileDrop}
         onImportTextareaPaste={handleImportTextareaPaste}
         onConfirmReplaceImport={confirmReplaceImport}
         onCancelReplaceImport={cancelReplaceImport}
