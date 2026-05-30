@@ -13,6 +13,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - the commercial description content should remain a single canonical source of truth in the current locale-driven UI,
 - location entry is currently uncomfortable and ambiguous because postal code is embedded inside free-form address text, while `/admin/collections` already has a Google Maps place integration that can provide structured address parts,
 - the Core Candy Machine metadata step can fail with the generic message `Pinata request failed.`, leaving operators without enough information to know whether the problem is credentials, Pinata API response, source image fetch, or provider fallback,
+- PDF quick import can still fail in production serverless builds when `pdfjs` tries to resolve its packaged `pdf.worker.mjs` file from the deployed function bundle,
 - uploads finalized during `/admin/assets/new` are not tied to an edit session, so abandoned form sessions can leave image and document objects in Blob and DB after the admin restarts the flow,
 - uploaded image object names are derived mostly from the original local file name, so generic names such as `IMG_1234`, `whatsapp-image`, or `caratula` can become public CDN URLs instead of descriptive SEO-friendly asset media names.
 
@@ -25,6 +26,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - The form should remain easy to review without introducing a second, disconnected content model.
 - Location quality affects operator confidence and marketplace accuracy; postal code should not be hidden at the end of a street-address string when city/state/country and coordinates already have first-class fields.
 - Pinata failures happen late in the create/mint path, so vague provider errors can make operators retry blindly and risk duplicate work or abandoned uploads.
+- PDF parsing must be compatible with Vercel's serverless bundle tracing; otherwise a PDF that works locally can fail in production before the import mapper sees any text.
 - Abandoned create sessions should not accumulate storage objects or uploaded-file rows that no asset will ever promote.
 - The backend already has edit-session lifecycle fields and an orphan reconciler; `/admin/assets/new` should participate in that lifecycle instead of creating unmanaged uploads.
 - Public image URLs are a minor but durable SEO signal; descriptive, hyphenated filenames help Google and other crawlers understand asset media without relying only on surrounding page copy.
@@ -45,6 +47,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - `/admin/assets/new` and `/admin/collections` location editing should share the Google Maps place-selection pattern where possible, and `postalCode` should become a first-class field rather than being buried inside `address`,
 - marketplace detail/listing views should display the resulting location clearly, including postal code when present, without duplicating it in the address line,
 - Pinata metadata failures should return actionable diagnostics, preserve the current local metadata fallback when Pinata is not configured, and avoid masking source-image fetch problems behind the generic `Pinata request failed.` message,
+- PDF quick import should parse inside the app-owned Node worker without requiring the `pdfjs-dist/legacy/build/pdf.worker.mjs` asset to be available in the production function filesystem,
 - no new multilingual storage model is introduced in this fix,
 - `/admin/assets/new` should generate one `editSessionId` per form session and pass it with every upload,
 - uploads from an abandoned or reset form session should become eligible for cancellation and orphan cleanup instead of remaining as unmanaged Blob/DB records,
@@ -61,6 +64,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - `/admin/collections` already has Google Maps autocomplete/resolve routes and a `googleMapsPlace` payload, while `/admin/assets/new` still relies on manually editing `country`, `state`, `city`, `address`, `geoLat`, and `geoLng`.
 - There is no explicit `postalCode` field in the current new-asset location flow, which makes ZIP/postal-code placement unclear and harder to render consistently in marketplace.
 - `lib/pinata-file-service.ts` falls back to `Pinata request failed.` when Pinata does not return a structured error payload, and route/UI copy can fail to distinguish Pinata auth/API errors from source-image fetch failures.
+- `asset-pdf-server.ts` currently resolves `pdfjs-dist/legacy/build/pdf.worker.mjs` inside the worker source; production deployments can omit that file from the function trace and fail with `Cannot find module 'pdfjs-dist/legacy/build/pdf.worker.mjs'`.
 - `uploadAssetFileViaSignedUrl` already accepts `editSessionId`, but `use-asset-upload-workflow.ts` does not pass one from `/admin/assets/new`.
 - `asset_upload_contracts` has `edit_session_id`, `promoted_at`, and `canceled_at`, but the new-asset form does not currently promote successful session uploads or cancel abandoned session uploads.
 - The orphan reconciler only cleans session-scoped uploads (`edit_session_id IS NOT NULL`), so current new-asset uploads are outside the automatic cleanup path.
@@ -87,3 +91,4 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 12. SEO filename generation never changes MIME validation, checksum validation, upload category policy, or the stored original file name audit trail.
 13. Location editing uses Google Maps place selection where available, persists/displays `postalCode` separately, and renders the final marketplace location without duplicated or hidden ZIP/postal-code text.
 14. Pinata metadata generation failures return actionable admin-facing errors and preserve the non-Pinata/local metadata fallback when Pinata is not configured.
+15. PDF quick import no longer depends on resolving the packaged `pdf.worker.mjs` file at production runtime and still extracts brief text for the current mapper.

@@ -15,21 +15,15 @@ const PDF_TEXT_WORKER_TIMEOUT_MS = 30_000;
 const pdfTextWorkerSource = `
 import path from "node:path";
 import { createRequire } from "node:module";
-import { parentPort, Worker as NodeWorker } from "node:worker_threads";
+import { parentPort } from "node:worker_threads";
 import { pathToFileURL } from "node:url";
 
 const requireFromProject = createRequire(path.join(process.cwd(), "package.json"));
-const pdfjsWorkerSrc = pathToFileURL(
-  requireFromProject.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs")
-).href;
 const pdfjsApiSrc = pathToFileURL(
   requireFromProject.resolve("pdfjs-dist/legacy/build/pdf.mjs")
 ).href;
 
-globalThis.Worker = NodeWorker;
-
 const pdfjs = await import(pdfjsApiSrc);
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
 
 function collectPageText(items) {
   return items
@@ -47,7 +41,7 @@ parentPort.on("message", async (buffer) => {
   let document = null;
 
   try {
-    document = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
+    document = await pdfjs.getDocument({ data: new Uint8Array(buffer), disableWorker: true }).promise;
     const pageText = [];
 
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
