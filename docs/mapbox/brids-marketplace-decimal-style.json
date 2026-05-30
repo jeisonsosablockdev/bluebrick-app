@@ -4,7 +4,7 @@
   "metadata": {
     "brids:feature": "BRI-164",
     "brids:env": "NEXT_PUBLIC_MAPBOX_STYLE_URL",
-    "brids:visualDirection": "Decimal-inspired editorial dark map adapted to the BRIDS marketplace palette",
+    "brids:visualDirection": "Decimal-inspired editorial dark map with a cyan USA landmass, darker surrounding geography, and violet network lines",
     "brids:primaryPoiRule": "Marketplace entries are the points of interest; generic POIs stay muted or hidden."
   },
   "sprite": "mapbox://sprites/mapbox/dark-v11",
@@ -13,6 +13,10 @@
     "composite": {
       "type": "vector",
       "url": "mapbox://mapbox.mapbox-streets-v8"
+    },
+    "countryBoundaries": {
+      "type": "vector",
+      "url": "mapbox://mapbox.country-boundaries-v1"
     }
   },
   "layers": [
@@ -20,7 +24,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "#04060F"
+        "background-color": "#02040A"
       }
     },
     {
@@ -29,7 +33,192 @@
       "source": "composite",
       "source-layer": "water",
       "paint": {
-        "fill-color": "#07111F"
+        "fill-color": "#030712"
+      }
+    },
+    {
+      "id": "usa-land-cyan",
+      "type": "fill",
+      "source": "countryBoundaries",
+      "source-layer": "country_boundaries",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "iso_3166_1_alpha_3"
+          ],
+          "USA"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "disputed"
+          ],
+          "false"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "worldview"
+            ],
+            "all"
+          ],
+          [
+            "in",
+            "US",
+            [
+              "get",
+              "worldview"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "fill-color": "#2FC6FF",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          0.34,
+          8,
+          0.44,
+          14,
+          0.26
+        ]
+      }
+    },
+    {
+      "id": "usa-cyan-coast-glow",
+      "type": "line",
+      "source": "countryBoundaries",
+      "source-layer": "country_boundaries",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "iso_3166_1_alpha_3"
+          ],
+          "USA"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "disputed"
+          ],
+          "false"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "worldview"
+            ],
+            "all"
+          ],
+          [
+            "in",
+            "US",
+            [
+              "get",
+              "worldview"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "#2FC6FF",
+        "line-blur": 2,
+        "line-opacity": 0.44,
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          1,
+          9,
+          2.8
+        ]
+      }
+    },
+    {
+      "id": "usa-violet-outline",
+      "type": "line",
+      "source": "countryBoundaries",
+      "source-layer": "country_boundaries",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "iso_3166_1_alpha_3"
+          ],
+          "USA"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "disputed"
+          ],
+          "false"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "worldview"
+            ],
+            "all"
+          ],
+          [
+            "in",
+            "US",
+            [
+              "get",
+              "worldview"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "#7C3AED",
+        "line-opacity": 0.72,
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          0.8,
+          9,
+          1.8
+        ]
       }
     },
     {
@@ -38,8 +227,8 @@
       "source": "composite",
       "source-layer": "landuse",
       "paint": {
-        "fill-color": "#0E1324",
-        "fill-opacity": 0.26
+        "fill-color": "#050816",
+        "fill-opacity": 0.2
       }
     },
     {
@@ -62,8 +251,8 @@
         false
       ],
       "paint": {
-        "fill-color": "#0A1A18",
-        "fill-opacity": 0.34
+        "fill-color": "#050B14",
+        "fill-opacity": 0.28
       }
     },
     {
@@ -73,7 +262,7 @@
       "source-layer": "building",
       "minzoom": 13,
       "paint": {
-        "fill-color": "#0E1324",
+        "fill-color": "#11102A",
         "fill-opacity": [
           "interpolate",
           [
@@ -96,8 +285,8 @@
       "source-layer": "building",
       "minzoom": 14,
       "paint": {
-        "line-color": "#2FC6FF",
-        "line-opacity": 0.08,
+        "line-color": "#7C3AED",
+        "line-opacity": 0.16,
         "line-width": 0.6
       }
     },
@@ -123,7 +312,7 @@
         false
       ],
       "paint": {
-        "line-color": "#1A2140",
+        "line-color": "#4C1D95",
         "line-opacity": [
           "interpolate",
           [
@@ -133,9 +322,9 @@
             "zoom"
           ],
           5,
-          0.14,
+          0.22,
           13,
-          0.5
+          0.58
         ],
         "line-width": [
           "interpolate",
@@ -173,8 +362,8 @@
         false
       ],
       "paint": {
-        "line-color": "#334155",
-        "line-opacity": 0.62,
+        "line-color": "#7C3AED",
+        "line-opacity": 0.68,
         "line-width": [
           "interpolate",
           [
@@ -191,7 +380,7 @@
       }
     },
     {
-      "id": "road-cyan-glow",
+      "id": "road-violet-glow",
       "type": "line",
       "source": "composite",
       "source-layer": "road",
@@ -209,9 +398,9 @@
         false
       ],
       "paint": {
-        "line-color": "#2FC6FF",
+        "line-color": "#A78BFA",
         "line-blur": 1.4,
-        "line-opacity": 0.22,
+        "line-opacity": 0.28,
         "line-width": [
           "interpolate",
           [
@@ -252,8 +441,8 @@
         ]
       ],
       "paint": {
-        "line-color": "#7C3AED",
-        "line-opacity": 0.22,
+        "line-color": "#A78BFA",
+        "line-opacity": 0.46,
         "line-width": 0.85
       }
     },
@@ -282,8 +471,8 @@
         ]
       ],
       "paint": {
-        "line-color": "#94A3B8",
-        "line-opacity": 0.28,
+        "line-color": "#7C3AED",
+        "line-opacity": 0.5,
         "line-width": 1
       }
     },

@@ -8,10 +8,11 @@
 
 ## Visual Contract
 The marketplace map uses a `Decimal x BRIDS` direction:
-- dark editorial land and water
+- cyan USA landmass using the same bright family as the marketplace chart lines
+- darker surrounding geography so the USA surface is the focus
 - muted generic POIs
 - readable city, state, neighborhood, and major road labels
-- subtle cyan/violet highlights
+- violet road, building, and boundary lines
 - marketplace entries are the primary points of interest through React Map GL markers
 
 The style JSON handles the base map only. Property pins are injected by the app at runtime from marketplace entry coordinates.

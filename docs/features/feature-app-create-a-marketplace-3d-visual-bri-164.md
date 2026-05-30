@@ -74,13 +74,13 @@ Technical implications:
 The target style is `Decimal x BRIDS`: a quiet editorial dark map inspired by the Decimal community style by Tristen Brown, adapted to the website palette.
 
 BRIDS palette mapping:
-- background / land: `#04060F`
-- deep land variation: `#070B14`
+- exterior background: `#02040A`
+- dark water / non-focus geography: `#030712`
 - panel navy: `#0E1324`
-- water: `#07111F`
-- minor roads: `#1A2140`
-- major roads: `#334155`
-- road highlight: `rgba(47,198,255,0.45)`
+- USA focus fill: `#2FC6FF`
+- minor roads: `#4C1D95`
+- major roads: `#7C3AED`
+- road highlight: `#A78BFA`
 - labels primary: `#E2E8F0`
 - labels secondary: `#94A3B8`
 - BRIDS cyan: `#2FC6FF`
@@ -89,8 +89,8 @@ BRIDS palette mapping:
 Style rules:
 - remove generic noisy POIs
 - keep city, state, neighborhood, and major road labels readable
-- make BRIDS property pins the brightest layer
-- use cyan/violet only as highlights, not as full-map saturation
+- make the USA landmass a controlled cyan highlight against a darker surrounding map
+- use violet for map lines so the pin and property card remain the brightest interaction layer
 - avoid a dashboard/heatmap look in the first release
 
 Style artifact:

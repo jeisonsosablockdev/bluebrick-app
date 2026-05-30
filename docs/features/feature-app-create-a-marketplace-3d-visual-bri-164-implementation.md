@@ -219,9 +219,11 @@ Before implementation is considered complete:
 - Publish runbook: `docs/mapbox/README.md`.
 - Desired visual outcome:
   - dark editorial base rather than default navigation map
+  - USA landmass reads in cyan like the marketplace chart lines
+  - surrounding geography stays darker so the map does not become visually noisy
   - low-noise POIs so marketplace listings become the primary POIs
-  - navy/black land and water with cyan/silver labels
-  - subtle roads, with cyan accents reserved for BRIDS property discovery
+  - navy/black water and exterior geography with cyan/silver labels
+  - violet roads and boundaries for the network/grid feel
   - selected pin/card uses the website cyan-to-violet gradient
 - Publish requirement:
   - manual path: import the JSON in Mapbox Studio, publish, then set `NEXT_PUBLIC_MAPBOX_STYLE_URL`
