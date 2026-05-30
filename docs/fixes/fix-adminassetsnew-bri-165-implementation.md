@@ -15,6 +15,7 @@ Apply the smallest safe changes that unblock the admin flow:
 9. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path.
 10. make PDF quick import production-safe by avoiding runtime resolution of the packaged `pdf.worker.mjs` asset in Vercel serverless functions.
 11. keep the live Phantom wallet adapter recoverable for admin deploy after SIWS/session refreshes.
+12. allow marketplace image rendering for Vercel Blob URLs produced by the admin upload pipeline.
 
 ## Slice Plan
 
@@ -170,6 +171,15 @@ Apply the smallest safe changes that unblock the admin flow:
   - Reconnect validates the recovered public key against the active session public key before closing the modal.
   - Targeted wallet modal/runtime tests, `lint`, and `typecheck` passed for this slice.
 
+### Slice BRI-165-17
+- Investigate the marketplace/detail error after successful mint:
+  - `Invalid src prop (...) on next/image`
+  - hostname `*.public.blob.vercel-storage.com` is not configured under `images`.
+- Keep the remote image allowlist explicit and narrow.
+- Add a `next.config.ts` `images.remotePatterns` entry for Vercel Blob public objects generated under `/admin-assets/**`.
+- Verify marketplace cover/gallery/property image URLs from `/admin/assets/new` are accepted without opening arbitrary remote image hosts.
+- Add regression coverage for the Vercel Blob image remote pattern.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -189,6 +199,7 @@ Targeted regression coverage will verify:
 - Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
 - PDF parsing does not directly resolve `pdf.worker.mjs` from app code, keeps the `pdfjs` API/fake-worker bundles in the production trace, and still extracts text through the app-owned Node worker.
 - Admin deploy can recover the live Phantom signer after navigation/refresh without clearing the authenticated admin session.
+- Next Image allows Vercel Blob URLs under `/admin-assets/**` so minted assets can be opened in marketplace immediately after creation.
 
 ## Final Review
 
@@ -199,6 +210,7 @@ Targeted regression coverage will verify:
 - The location follow-up must confirm `/admin/assets/new`, `/admin/collections`, and marketplace rendering share one coherent location contract and do not fork postal-code semantics.
 - The Pinata follow-up must confirm no secrets are logged or returned while still surfacing enough provider/source context for operators.
 - The wallet reconnect follow-up must confirm reconnecting the adapter does not bypass SIWS authorization and rejects mismatched wallet addresses.
+- The Vercel Blob image follow-up must confirm the allowlist remains scoped to HTTPS `admin-assets` URLs instead of allowing all remote hosts.
 
 ## Tooling
 
@@ -220,4 +232,5 @@ Targeted regression coverage will verify:
   - Pinata metadata route/service regression output for provider failures and fallback behavior,
   - PDF worker regression output showing production-safe `pdfjs` API and fake-worker tracing,
   - wallet runtime/modal regression output for admin deploy signer recovery,
+  - Next Image config regression output for Vercel Blob admin-assets URLs,
   - explicit clean-code pass or no-blockers result
