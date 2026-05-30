@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s05-fallback-polish`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -143,6 +143,15 @@ Fallback behavior:
   - render a stable outbound Google Maps link when embedding is not configured
   - preserve the `/marketplace` Mapbox list/map behavior unchanged
 
+### S09 - Mapbox DevKit MCP tooling
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
+- Scope:
+  - TDD first: add config-contract coverage for Mapbox MCP registration and no hardcoded token leakage
+  - add the hosted Mapbox DevKit MCP server to Codex repo config
+  - add the hosted Mapbox DevKit MCP server to Cursor repo config
+  - document the hosted endpoint choice and the npm/local-token alternative from official Mapbox docs
+  - keep runtime Mapbox app tokens separate from MCP authentication and do not commit `MAPBOX_ACCESS_TOKEN`
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`
@@ -160,6 +169,7 @@ Fallback behavior:
 ## Tooling Required
 - Mapbox GL JS v3
 - React Map GL
+- Mapbox DevKit MCP Server for style/tooling assistance where the assistant runtime supports configured MCP servers
 - Motion 12 for the pin and panel feel where appropriate
 - Existing Next.js App Router stack
 - Vitest for state and component coverage
@@ -174,6 +184,19 @@ Before implementation is considered complete:
 5. Run browser validation for the marketplace surface.
 6. Confirm the detail page remains a normal detail entry point.
 7. Finish with `npm run validate`.
+
+## Mapbox DevKit MCP Tooling Contract
+- Official source: `https://docs.mapbox.com/api/guides/devkit-mcp-server/#installation`
+- Hosted endpoint: `https://mcp-devkit.mapbox.com/mcp`
+- Codex repo config should register the hosted endpoint in `.codex/config.toml`.
+- Cursor repo config should register the hosted endpoint through `npx mcp-remote` in `.cursor/mcp.json`.
+- Hosted endpoint authentication is OAuth-driven in the consuming client; do not commit `MAPBOX_ACCESS_TOKEN`.
+- If token creation, prompts, or local-only server features become required, use the npm/local setup with `@mapbox/mcp-devkit-server` and provide `MAPBOX_ACCESS_TOKEN` from the local machine or secret manager only.
+- Token scopes for local/npm mode depend on tool usage:
+  - style operations: `styles:list`, `styles:read`, `styles:download`, `styles:write`
+  - token management: `tokens:read`, `tokens:write`
+  - feedback access: `user-feedback:read`
+  - preview generation: `tokens:read` plus at least one public token with `styles:read`
 
 ## Guardrails
 - Do not replace the traditional list.

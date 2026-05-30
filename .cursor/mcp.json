@@ -7,6 +7,10 @@
     "helius": {
       "command": "npx",
       "args": ["helius-mcp@latest"]
+    },
+    "mapboxDevKit": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
     }
   }
 }

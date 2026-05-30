@@ -1,10 +1,10 @@
 # Feature Note: Marketplace 3D Visual (BRI-164)
 
 ## Status
-- Map surface slice
+- Mapbox MCP tooling slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s05-fallback-polish`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
@@ -60,6 +60,8 @@ Technical implications:
 ## Tooling Considerations
 - Use a public client-exposed token, not a secret token, for Mapbox access.
 - The expected repo convention is a `NEXT_PUBLIC_*` env var for client-safe configuration.
+- Use the hosted Mapbox DevKit MCP endpoint for assistant-side style/tooling help when available; this is separate from the runtime `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` used by the app.
+- Do not commit `MAPBOX_ACCESS_TOKEN`; local/npm MCP mode must source it from the developer machine or secret manager only.
 - If the token is missing, the marketplace must stay list-only instead of rendering a broken map shell or a token warning.
 - The map should use the `react-map-gl/mapbox` entrypoint and stay controlled by React state so hover focus and camera changes remain predictable.
 - The public marketplace map should reuse the canonical location data already captured when an item is created, including `google_maps_place_json` and persisted coordinates (`geoLat`, `geoLng`) when they are available.
