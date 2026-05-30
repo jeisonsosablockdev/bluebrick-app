@@ -1,10 +1,10 @@
 # Feature Note: Marketplace 3D Visual (BRI-164)
 
 ## Status
-- Mapbox MCP tooling slice
+- Decimal-inspired BRIDS map style slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
@@ -60,6 +60,7 @@ Technical implications:
 ## Tooling Considerations
 - Use a public client-exposed token, not a secret token, for Mapbox access.
 - The expected repo convention is a `NEXT_PUBLIC_*` env var for client-safe configuration.
+- Use `NEXT_PUBLIC_MAPBOX_STYLE_URL` for the published BRIDS marketplace style. Fall back to `mapbox://styles/mapbox/dark-v11` until the custom style is published.
 - Use the hosted Mapbox DevKit MCP endpoint for assistant-side style/tooling help when available; this is separate from the runtime `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` used by the app.
 - Do not commit `MAPBOX_ACCESS_TOKEN`; local/npm MCP mode must source it from the developer machine or secret manager only.
 - If the token is missing, the marketplace must stay list-only instead of rendering a broken map shell or a token warning.
@@ -68,6 +69,36 @@ Technical implications:
 - The public marketplace read model may need to project that canonical location contract into the list/map payload, but it should not invent a separate source of truth.
 - Entries without canonical US map location data should stay list-only rather than forcing an approximate pin.
 - The tooling slice should establish the dependency and environment contract before UI slices depend on it.
+
+## Map Style Direction
+The target style is `Decimal x BRIDS`: a quiet editorial dark map inspired by the Decimal community style by Tristen Brown, adapted to the website palette.
+
+BRIDS palette mapping:
+- exterior background: `#02040A`
+- dark water / non-focus geography: `#030712`
+- panel navy: `#0E1324`
+- USA focus fill: `#2FC6FF`
+- minor roads: `#4C1D95`
+- major roads: `#7C3AED`
+- road highlight: `#A78BFA`
+- labels primary: `#E2E8F0`
+- labels secondary: `#94A3B8`
+- BRIDS cyan: `#2FC6FF`
+- BRIDS violet: `#7C3AED`
+
+Style rules:
+- remove generic noisy POIs
+- keep city, state, neighborhood, and major road labels readable
+- make the USA landmass a controlled cyan highlight against a darker surrounding map
+- use violet for map lines so the pin and property card remain the brightest interaction layer
+- avoid a dashboard/heatmap look in the first release
+
+Style artifact:
+- importable JSON: `docs/mapbox/brids-marketplace-decimal-style.json`
+- publishing notes: `docs/mapbox/README.md`
+- runtime env after publish: `NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/{username}/{style_id}`
+- publishing through the Mapbox Styles API requires a private token with `styles:write`; do not commit that token
+- if no published URL is configured, the runtime keeps `mapbox://styles/mapbox/dark-v11` as the safe fallback
 
 ## Problem Statement
 The current marketplace experience is functional, but it is mostly a conventional list-first browsing surface.

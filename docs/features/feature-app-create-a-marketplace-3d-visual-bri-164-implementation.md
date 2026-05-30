@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -152,6 +152,17 @@ Fallback behavior:
   - document the hosted endpoint choice and the npm/local-token alternative from official Mapbox docs
   - keep runtime Mapbox app tokens separate from MCP authentication and do not commit `MAPBOX_ACCESS_TOKEN`
 
+### S10 - Decimal-inspired BRIDS map style contract
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
+- Scope:
+  - TDD first: add style URL config and map-client coverage
+  - add `NEXT_PUBLIC_MAPBOX_STYLE_URL` as the published custom style contract
+  - keep `mapbox://styles/mapbox/dark-v11` as the safe fallback
+  - document the Decimal-inspired BRIDS palette and layer priorities
+  - keep runtime behavior unchanged until a published Mapbox Studio style URL is supplied
+  - add an importable Mapbox Style v8 JSON artifact for `BRIDS Marketplace Decimal`
+  - add a style artifact regression test for structure, palette, POI muting, and token hygiene
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`
@@ -170,6 +181,7 @@ Fallback behavior:
 - Mapbox GL JS v3
 - React Map GL
 - Mapbox DevKit MCP Server for style/tooling assistance where the assistant runtime supports configured MCP servers
+- Mapbox Studio published style URL through `NEXT_PUBLIC_MAPBOX_STYLE_URL`
 - Motion 12 for the pin and panel feel where appropriate
 - Existing Next.js App Router stack
 - Vitest for state and component coverage
@@ -197,6 +209,26 @@ Before implementation is considered complete:
   - token management: `tokens:read`, `tokens:write`
   - feedback access: `user-feedback:read`
   - preview generation: `tokens:read` plus at least one public token with `styles:read`
+
+## Decimal-Inspired BRIDS Style Contract
+- Visual reference: Decimal community style by Tristen Brown, adapted to BRIDS colors.
+- Runtime env var: `NEXT_PUBLIC_MAPBOX_STYLE_URL`.
+- Safe fallback: `mapbox://styles/mapbox/dark-v11`.
+- Desired published style name: `BRIDS Marketplace Decimal`.
+- Importable style artifact: `docs/mapbox/brids-marketplace-decimal-style.json`.
+- Publish runbook: `docs/mapbox/README.md`.
+- Desired visual outcome:
+  - dark editorial base rather than default navigation map
+  - USA landmass reads in cyan like the marketplace chart lines
+  - surrounding geography stays darker so the map does not become visually noisy
+  - low-noise POIs so marketplace listings become the primary POIs
+  - navy/black water and exterior geography with cyan/silver labels
+  - violet roads and boundaries for the network/grid feel
+  - selected pin/card uses the website cyan-to-violet gradient
+- Publish requirement:
+  - manual path: import the JSON in Mapbox Studio, publish, then set `NEXT_PUBLIC_MAPBOX_STYLE_URL`
+  - API path: use a private `MAPBOX_ACCESS_TOKEN` with `styles:write` and a Mapbox username
+  - runtime path: keep using public `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`; never commit private style-write tokens
 
 ## Guardrails
 - Do not replace the traditional list.

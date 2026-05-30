@@ -49,6 +49,7 @@ function renderExperience(): RenderHandle {
     root.render(
       createElement(MarketplaceExperience, {
         mapboxAccessToken: "pk.test-token",
+        mapboxStyleUrl: "mapbox://styles/brids/decimal-cinematic",
         properties: [
           {
             id: "us-1",
