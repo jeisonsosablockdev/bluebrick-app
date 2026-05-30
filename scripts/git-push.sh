@@ -13,10 +13,12 @@ echo "✅ Push listo: $BRANCH"
 
 if [[ "$BRANCH" == "develop" ]]; then
   echo "🚀 Siguiente paso: abrir PR de release desde 'develop' hacia 'main'."
-elif [[ "$BRANCH" =~ ^(.+)-s[0-9]{2}-[^/]+$ ]]; then
-  echo "🧩 Siguiente paso: abrir PR desde '$BRANCH' hacia '${BASH_REMATCH[1]}'."
-elif [[ "$BRANCH" =~ -integration$ ]]; then
+elif [[ "$BRANCH" =~ ^[^/]+/[^-]+-(.+)-([a-z]+-[0-9]+)-s[0-9]{2}-[^/]+$ ]]; then
+  echo "🧩 Siguiente paso: abrir PR desde '$BRANCH' hacia 'initiative/${BASH_REMATCH[2]}-${BASH_REMATCH[1]}'."
+elif [[ "$BRANCH" =~ ^initiative/ ]]; then
   echo "🧭 Siguiente paso: abrir PR desde '$BRANCH' hacia 'develop'."
+elif [[ "$BRANCH" =~ -integration$ ]]; then
+  echo "🧭 Rama legacy de integracion detectada. Siguiente paso: abrir PR desde '$BRANCH' hacia 'develop'."
 else
   echo "🧩 Siguiente paso: abrir PR desde '$BRANCH' hacia 'develop'."
 fi

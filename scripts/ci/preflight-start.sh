@@ -136,12 +136,14 @@ branch_artifact_guidance() {
       ;;
   esac
 
-  if [[ "${branch_name}" =~ -integration$ ]]; then
-    echo "- Integration branch detected: documentation slice should close before implementation slices."
+  if [[ "${branch_name}" =~ ^initiative/ ]]; then
+    echo "- Linear initiative branch detected: spec slice should close before delivery slices."
+  elif [[ "${branch_name}" =~ -integration$ ]]; then
+    echo "- Legacy integration branch detected: prefer initiative/* for new multi-slice work."
   fi
 
   if [[ "${branch_name}" =~ -s[0-9]{2}- ]]; then
-    echo "- Slice branch detected: PR target should be the parent integration branch, not develop."
+    echo "- Slice branch detected: PR target should be the Linear initiative branch, not develop."
   fi
 }
 

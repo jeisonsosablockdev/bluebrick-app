@@ -45,7 +45,7 @@ describe("workflow evals", () => {
     expect(gitSave).toContain("No hay cambios staged");
     expect(gitSave).toContain("No se permiten commits directos");
     expect(gitPush).toContain("No se permite push directo");
-    expect(gitPush).toContain("hacia '${BASH_REMATCH[1]}'");
+    expect(gitPush).toContain("initiative/${BASH_REMATCH[2]}-${BASH_REMATCH[1]}");
   });
 
   it("keeps responsive/browser QA fail-closed on ambiguous evidence", () => {

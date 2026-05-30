@@ -79,31 +79,34 @@ function normalizeSliceId(rawSliceId) {
   return `S${value.padStart(2, "0")}`;
 }
 
-function buildIntegrationBranchName({ type, scope, slug, issueId }) {
-  const normalizedType = normalizeType(type);
-  const normalizedScope = normalizeScope(scope);
+function buildInitiativeBranchName({ slug, issueId }) {
   const parentSlug = slugify(slug);
   const normalizedIssueId = normalizeIssueId(issueId).toLowerCase();
 
   if (!parentSlug) {
-    throw new Error("A non-empty slug is required to build integration branches.");
+    throw new Error("A non-empty slug is required to build Linear initiative branches.");
   }
 
-  return `${normalizedType}/${normalizedScope}-${parentSlug}-${normalizedIssueId}-integration`;
+  return `initiative/${normalizedIssueId}-${parentSlug}`;
 }
 
 function buildSliceBranchName({ type, scope, slug, issueId, sliceId, sliceSlug }) {
+  const normalizedType = normalizeType(type);
+  const normalizedScope = normalizeScope(scope);
+  const parentSlug = slugify(slug);
+  const normalizedIssueId = normalizeIssueId(issueId).toLowerCase();
   const normalizedSliceId = normalizeSliceId(sliceId).toLowerCase();
   const normalizedSliceSlug = slugify(sliceSlug);
+
+  if (!parentSlug) {
+    throw new Error("A non-empty slug is required to build slice branches.");
+  }
 
   if (!normalizedSliceSlug) {
     throw new Error("A non-empty slice slug is required to build slice branches.");
   }
 
-  return `${buildIntegrationBranchName({ type, scope, slug, issueId }).replace(
-    /-integration$/,
-    ""
-  )}-${normalizedSliceId}-${normalizedSliceSlug}`;
+  return `${normalizedType}/${normalizedScope}-${parentSlug}-${normalizedIssueId}-${normalizedSliceId}-${normalizedSliceSlug}`;
 }
 
 function buildProblemArtifactPath({ type, slug }) {
@@ -300,19 +303,19 @@ function renderSliceRows({ slices, type, scope, slug, issueId }) {
     .join("\n");
 }
 
-function buildGitCommandSummary({ integrationBranch, sliceBranches }) {
+function buildGitCommandSummary({ initiativeBranch, sliceBranches }) {
   const lines = [
-    "Integration branch:",
+    "Linear initiative branch:",
     `  git checkout develop`,
     `  git pull --ff-only origin develop`,
-    `  git checkout -b ${integrationBranch}`,
+    `  git checkout -b ${initiativeBranch}`,
     "",
     "Slice branches:"
   ];
 
   sliceBranches.forEach((slice) => {
     lines.push(`  # ${slice.sliceId} - ${slice.objective}`);
-    lines.push(`  git checkout ${integrationBranch}`);
+    lines.push(`  git checkout ${initiativeBranch}`);
     lines.push(`  git checkout -b ${slice.branch}`);
   });
 
@@ -349,9 +352,7 @@ async function createLinearPlan(options) {
 
   const parsedSlices = options.slices.map(parseSliceDefinition);
   const firstSlice = parsedSlices[0];
-  const integrationBranch = buildIntegrationBranchName({
-    type,
-    scope,
+  const initiativeBranch = buildInitiativeBranchName({
     slug,
     issueId
   });
@@ -359,7 +360,7 @@ async function createLinearPlan(options) {
   const solutionArtifact = buildSolutionArtifactPath({ type, slug });
 
   if (normalizeSliceId(firstSlice.sliceId) !== "S01") {
-    throw new Error("The first slice must be S01 so documentation owns the plan first.");
+    throw new Error("The first slice must be S01 so the spec slice owns the plan first.");
   }
 
   const sliceBranches = parsedSlices.map((slice) => ({
@@ -383,7 +384,7 @@ async function createLinearPlan(options) {
     .replace("{{OWNER}}", owner)
     .replace("{{PROBLEM_ARTIFACT}}", problemArtifact)
     .replace("{{SOLUTION_ARTIFACT}}", solutionArtifact)
-    .replace("{{INTEGRATION_BRANCH}}", integrationBranch)
+    .replace("{{INITIATIVE_BRANCH}}", initiativeBranch)
     .replace("{{DOCUMENTATION_SLICE_BRANCH}}", sliceBranches[0].branch)
     .replace("{{DOCUMENTATION_SLICE_OBJECTIVE}}", firstSlice.objective)
     .replace(
@@ -407,27 +408,27 @@ async function createLinearPlan(options) {
       "{{TEST_PLAN_FIRST_ITEMS}}",
       renderBulletList(
         options.testPlanFirst,
-        "- Define tests-first expectations for each slice before implementation starts."
+        "- Define tests-first expectations for each slice before delivery starts."
       )
     )
     .replace(
       "{{COMPLETION_GATE_ITEMS}}",
       [
-        "- [ ] All slice branches merged into the integration branch",
+        "- [ ] All slice branches merged into the Linear initiative branch",
         "- [ ] `npm run validate`",
         "- [ ] Required docs updated for the touched scope",
         "- [ ] Parent issue links the merged PRs and final commit path",
-        "- [ ] Final PR opened from the integration branch into `develop`"
+        "- [ ] Final PR opened from the Linear initiative branch into `develop`"
       ].join("\n")
     );
 
   return {
     body,
-    integrationBranch,
+    initiativeBranch,
     issueId,
     sliceBranches,
     commandSummary: buildGitCommandSummary({
-      integrationBranch,
+      initiativeBranch,
       sliceBranches
     })
   };
@@ -444,7 +445,7 @@ function usage() {
     "  --issue <BRI-149>        Parent Linear issue identifier",
     "  --type <feature|fix|security|nft|refactor>",
     "  --scope <program|app|shared|docs|infra|security|nft>",
-    "  --slug <parent-slug>     Stable slug shared by integration and slice branches",
+    "  --slug <parent-slug>     Stable slug shared by the Linear initiative and slice branches",
     "  --title <text>           Parent issue title",
     "  --goal <text>            Objective shown in the generated Markdown",
     "  --scope-item <text>      Repeatable scope bullet",
@@ -473,7 +474,7 @@ async function runCli(argv) {
     await fs.writeFile(bodyFilePath, plan.body, "utf8");
     console.log(`Linear slice plan written to ${bodyFilePath}`);
     console.log(`Parent issue: ${plan.issueId}`);
-    console.log(`Integration branch: ${plan.integrationBranch}`);
+    console.log(`Linear initiative branch: ${plan.initiativeBranch}`);
     console.log("");
     console.log(plan.commandSummary);
     return;
@@ -483,7 +484,7 @@ async function runCli(argv) {
 }
 
 module.exports = {
-  buildIntegrationBranchName,
+  buildInitiativeBranchName,
   buildProblemArtifactPath,
   buildSliceBranchName,
   buildSolutionArtifactPath,

@@ -105,9 +105,9 @@ Decision-complete rule:
 	•	If a material decision is missing from the solution artifact, implementation is blocked.
 	•	The missing decision must be documented and resolved before code slices open.
 
-Documentation slice rule:
-	•	For multi-slice initiatives, the documentation slice is mandatory and comes before implementation slices.
-	•	The documentation slice owns the artifact pair, the atomic slice map, the test-plan-first contract, and RFC creation or update when RFC applies.
+Spec slice rule:
+	•	For multi-slice initiatives, the spec slice is mandatory and comes before delivery slices.
+	•	The spec slice owns the artifact pair, the atomic slice map, the test-plan-first contract, and RFC creation or update when RFC applies.
 
 Linear sync rule:
 	•	Linear is updated from the artifact.
@@ -165,7 +165,7 @@ Allowed status values:
 Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
-	•	If the initiative uses the documentation-slice model, the RFC must be created or updated in that documentation slice, not invented later in implementation slices.
+	•	If the initiative uses the spec-slice model, the RFC must be created or updated in that spec slice, not invented later in delivery slices.
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
 	•	`docs/rfcs/000-manifest.md` is intentionally blank as a bootstrap scaffold and is excluded from story/epic RFC content requirements.
 

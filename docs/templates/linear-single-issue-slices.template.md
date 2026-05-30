@@ -15,10 +15,10 @@
 - Problem artifact: `{{PROBLEM_ARTIFACT}}`
 - Solution artifact: `{{SOLUTION_ARTIFACT}}`
 
-# Integration Branch
-`{{INTEGRATION_BRANCH}}`
+# Linear Initiative Branch
+`{{INITIATIVE_BRANCH}}`
 
-# Documentation Slice
+# Spec Slice
 - Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`
 - Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`
 

@@ -5,7 +5,7 @@
 - Title: `<short-title>`
 - Status: `draft`
 - Owner: `<owner>`
-- Documentation owner slice: `<branch-or-slice-id>`
+- Spec owner slice: `<branch-or-slice-id>`
 - Created: `<YYYY-MM-DD>`
 - Last Updated: `<YYYY-MM-DD>`
 

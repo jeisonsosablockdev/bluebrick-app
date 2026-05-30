@@ -1,8 +1,9 @@
-name: PR Validation (Integration Targets)
+name: PR Validation (Linear Initiative Targets)
 
 on:
   pull_request:
     branches:
+      - initiative/**
       - feature/**-integration
       - fix/**-integration
       - security/**-integration
@@ -15,7 +16,7 @@ on:
       - ready_for_review
 
 concurrency:
-  group: pr-integration-targets-${{ github.event.pull_request.number }}
+  group: pr-initiative-targets-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 permissions:

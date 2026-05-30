@@ -33,7 +33,7 @@
 | 7 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
-- Non-trivial work does not move into implementation without the required artifact and, when applicable, the documentation slice.
+- Non-trivial work does not move into implementation without the required artifact and, when applicable, the spec slice.
 - Wallet or auth flows do not close without the required E2E coverage.
 - Browser-critical flows do not close without recorded evidence.
 - Responsive regressions must run through `responsive-qa` before completion.

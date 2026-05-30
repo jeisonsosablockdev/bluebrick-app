@@ -10,11 +10,11 @@ Uso:
 Ejemplos:
   ./scripts/git-start.sh app initial-ui
   ./scripts/git-start.sh fix shared proxy-convention
-  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode integration --issue BRI-149
-  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug governance-policy
+  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
+  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug spec
 
 Options:
-  --mode <single|integration|slice>
+  --mode <single|initiative|slice>
   --issue <BRI-149>
   --slice-id <S01>
   --slice-slug <slug>
@@ -46,7 +46,7 @@ normalize_issue_key() {
   value="$(printf '%s' "${raw}" | tr '[:lower:]' '[:upper:]')"
 
   if [[ -z "${value}" ]]; then
-    echo "❌ --issue es obligatorio para ramas integration/slice."
+    echo "❌ --issue es obligatorio para ramas initiative/slice."
     exit 1
   fi
 
@@ -165,8 +165,13 @@ if [[ "${TYPE}" == "nft" && "${SCOPE}" != "program" ]]; then
   exit 1
 fi
 
-if [[ ! "${MODE}" =~ ^(single|integration|slice)$ ]]; then
-  echo "❌ --mode inválido: ${MODE}. Usa single, integration o slice."
+if [[ "${MODE}" == "integration" ]]; then
+  echo "⚠️  --mode integration es legacy; usa --mode initiative."
+  MODE="initiative"
+fi
+
+if [[ ! "${MODE}" =~ ^(single|initiative|slice)$ ]]; then
+  echo "❌ --mode inválido: ${MODE}. Usa single, initiative o slice."
   exit 1
 fi
 
@@ -181,9 +186,9 @@ BRANCH_PREFIX="${TYPE}/${SCOPE}-${NAME_SLUG}"
 if [[ "${MODE}" == "single" ]]; then
   BRANCH="${BRANCH_PREFIX}"
   BASE_BRANCH="${BASE_BRANCH:-develop}"
-elif [[ "${MODE}" == "integration" ]]; then
+elif [[ "${MODE}" == "initiative" ]]; then
   NORMALIZED_ISSUE="$(normalize_issue_key "${ISSUE_KEY}")"
-  BRANCH="${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-integration"
+  BRANCH="initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
   BASE_BRANCH="${BASE_BRANCH:-develop}"
 else
   NORMALIZED_ISSUE="$(normalize_issue_key "${ISSUE_KEY}")"
@@ -205,7 +210,7 @@ else
   fi
 
   BRANCH="${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-${NORMALIZED_SLICE_ID}-${NORMALIZED_SLICE_SLUG}"
-  BASE_BRANCH="${BASE_BRANCH:-${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-integration}"
+  BASE_BRANCH="${BASE_BRANCH:-initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}}"
 fi
 
 git status --porcelain >/dev/null
@@ -216,11 +221,11 @@ echo "✅ Rama creada: ${BRANCH}"
 echo "🌿 Base branch: ${BASE_BRANCH}"
 
 if [[ "${MODE}" == "slice" ]]; then
-  echo "🧩 Slice branch detectada. Siguiente PR objetivo: ${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-integration"
-  echo "📝 Recuerda: la documentation slice debe ser S01 antes de abrir slices de implementación."
-elif [[ "${MODE}" == "integration" ]]; then
-  echo "🧭 Integration branch detectada. Siguiente PR final objetivo: develop"
-  echo "📝 Para trabajo multi-slice, crea primero la documentation slice antes de abrir slices de implementación."
+  echo "🧩 Slice branch detectada. Siguiente PR objetivo: initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
+  echo "📝 Recuerda: el spec slice debe ser S01 antes de abrir delivery slices."
+elif [[ "${MODE}" == "initiative" ]]; then
+  echo "🧭 Linear initiative branch detectada. Siguiente PR final objetivo: develop"
+  echo "📝 Para trabajo multi-slice, crea primero el spec slice antes de abrir delivery slices."
 fi
 
 echo "🧪 Gate inicial obligatorio:"
@@ -232,6 +237,6 @@ elif [[ "${TYPE}" == "feature" ]]; then
   echo "      - docs/features/feature-<slug>.md"
   echo "      - docs/features/feature-<slug>-implementation.md"
 fi
-echo "   2) Para trabajo multi-slice, resuelve la documentation slice antes de slices de implementación."
+echo "   2) Para trabajo multi-slice, resuelve el spec slice antes de delivery slices."
 echo "   3) Define o actualiza tests unitarios de la historia primero (fase RED)."
 echo "   4) Implementa codigo solo despues de tener esos tests definidos."
