@@ -75,7 +75,56 @@ describe("lib/pinata-file-service", () => {
       })
     ).rejects.toMatchObject({
       name: "PinataFileServiceError",
-      status: 401
+      status: 401,
+      code: "PINATA_REQUEST_FAILED",
+      providerStatus: 401,
+      providerMessage: "unauthorized"
+    } satisfies Partial<PinataFileServiceError>);
+  });
+
+  it("surfaces unstructured pinata json errors with status and provider code", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        code: "INVALID_AUTH",
+        error: {
+          reason: "JWT is invalid or expired"
+        }
+      }), { status: 401 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      pinJsonToPinata({
+        name: "asset-json",
+        json: { name: "Asset" }
+      })
+    ).rejects.toMatchObject({
+      name: "PinataFileServiceError",
+      status: 401,
+      code: "PINATA_REQUEST_FAILED",
+      providerStatus: 401,
+      providerCode: "INVALID_AUTH",
+      providerMessage: "JWT is invalid or expired"
+    } satisfies Partial<PinataFileServiceError>);
+  });
+
+  it("surfaces non-json pinata provider bodies instead of the generic fallback", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("upstream provider unavailable", { status: 503 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      pinJsonToPinata({
+        name: "asset-json",
+        json: { name: "Asset" }
+      })
+    ).rejects.toMatchObject({
+      name: "PinataFileServiceError",
+      status: 503,
+      code: "PINATA_REQUEST_FAILED",
+      providerStatus: 503,
+      providerMessage: "upstream provider unavailable"
     } satisfies Partial<PinataFileServiceError>);
   });
 
@@ -127,6 +176,60 @@ describe("lib/pinata-file-service", () => {
     expect(pinned.gatewayUrl).toBe("https://gateway.pinata.cloud/ipfs/bafy-image-cid");
     expect(pinned.contentType).toBe("image/png");
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("separates source image download failures from pinata provider failures", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: new Headers()
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      pinFileFromUrlToPinata({
+        sourceUrl: "https://cdn.example.com/missing-cover.png",
+        name: "cover-image"
+      })
+    ).rejects.toMatchObject({
+      name: "PinataFileServiceError",
+      status: 502,
+      code: "PINATA_SOURCE_FETCH_FAILED",
+      message: "Could not download source file (404)."
+    } satisfies Partial<PinataFileServiceError>);
+  });
+
+  it("surfaces pinata file upload provider errors after source image download succeeds", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "image/png" }),
+        blob: async () => new Blob(["image-bytes"], { type: "image/png" })
+      })
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          status: "BAD_REQUEST",
+          message: {
+            details: "File pin rejected by provider"
+          }
+        }), { status: 400 })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      pinFileFromUrlToPinata({
+        sourceUrl: "https://cdn.example.com/cover.png",
+        name: "cover-image"
+      })
+    ).rejects.toMatchObject({
+      name: "PinataFileServiceError",
+      status: 400,
+      code: "PINATA_REQUEST_FAILED",
+      providerStatus: 400,
+      providerCode: "BAD_REQUEST",
+      providerMessage: "File pin rejected by provider"
+    } satisfies Partial<PinataFileServiceError>);
   });
 
   it("reuses image uri directly when image is already ipfs", async () => {

@@ -123,6 +123,12 @@ Apply the smallest safe changes that unblock the admin flow:
   - source image fetch failure,
   - local metadata fallback when Pinata is not configured.
 - Capture one QA note showing the admin-facing message is actionable and does not encourage blind retries.
+- Implementation evidence:
+  - Pinata API failures now include provider status, provider code, and a safe provider-response message when available.
+  - Non-JSON provider bodies are surfaced as bounded diagnostic text instead of collapsing to `Pinata request failed.`
+  - Source image download/read failures keep their own `PINATA_SOURCE_*` codes and do not look like Pinata credential/API failures.
+  - The admin metadata route now returns structured error payloads for Pinata failures while preserving the local metadata provider path when `PINATA_JWT` is not configured.
+  - Targeted Pinata/Core Candy tests, `typecheck`, `lint`, and `validate` passed for this slice.
 
 ## Test-First Contract
 
