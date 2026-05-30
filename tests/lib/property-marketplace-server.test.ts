@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-let locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
+let locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
 
 const queryMock = vi.fn(async (sql: string) => {
   if (sql.includes("information_schema.columns")) {
@@ -49,7 +49,7 @@ describe("lib/property-marketplace-server", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.DATABASE_URL = "postgres://example";
-    locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
+    locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
     resetMarketplaceEntryLocationColumnSupportCache();
   });
 
@@ -62,6 +62,7 @@ describe("lib/property-marketplace-server", () => {
       city: "Bogota",
       country: "CO",
       stateProvince: "Bogotá D.C.",
+      postalCode: "110221",
       listingStatus: "funding",
       image: "https://cdn.example.com/cover.jpg",
       shortDescription: "Tokenized building",
@@ -111,6 +112,7 @@ describe("lib/property-marketplace-server", () => {
 
     const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
     expect(sql).not.toContain("state_province");
+    expect(sql).not.toContain("postal_code");
     expect(sql).not.toContain("geo_lat");
     expect(sql).not.toContain("geo_lng");
     expect(sql).toContain("location_label");

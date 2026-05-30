@@ -104,6 +104,12 @@ Apply the smallest safe changes that unblock the admin flow:
   - create/marketplace payload propagation of `postalCode`,
   - marketplace display formatting with and without `postalCode`,
   - fallback/manual entry behavior when Maps is not configured.
+- Implementation evidence:
+  - `/admin/assets/new` now has an admin-only Google Maps lookup path and keeps manual fields available as fallback.
+  - Google Place Details hydrates address line, city, state/province, country, postal code, latitude, longitude, and the reduced `googleMapsPlace` payload.
+  - `postalCode` is persisted through marketplace creation, collection editing, bootstrap mapping, and a dedicated `marketplace_entries.postal_code` migration.
+  - Marketplace detail rendering shows postal code separately and strips a trailing duplicate from the address line when needed.
+  - Targeted tests, `typecheck`, `lint`, and `validate` passed for this slice.
 
 ### Slice BRI-165-14
 - Investigate `Pinata request failed.` in the Core Candy Machine metadata step used from `/admin/assets/new`.

@@ -1113,6 +1113,7 @@ export function AssetCreationForm(): ReactElement {
       city: form.city.trim(),
       country: form.country.trim(),
       stateProvince: form.state.trim() || null,
+      postalCode: form.postalCode.trim() || null,
       address: form.address.trim() || `${form.city.trim()}, ${form.country.trim()}`,
       geoLat: form.geoLat.trim() || null,
       geoLng: form.geoLng.trim() || null,

@@ -68,6 +68,11 @@ export type CollectionBootstrapGoogleMapsPlace = {
   lng: number;
   googleMapsUrl: string;
   placeId: string;
+  addressLine?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
 };
 
 export type CollectionBootstrapPayload = {
@@ -79,6 +84,7 @@ export type CollectionBootstrapPayload = {
   googleMapsPlaceJson: CollectionBootstrapGoogleMapsPlace | null;
   country?: string;
   stateProvince?: string | null;
+  postalCode?: string | null;
   city?: string;
   address?: string;
   geoLat?: number | null;
@@ -724,6 +730,11 @@ function parseGoogleMapsPlace(
   const formattedAddress = toTrimmedString(record.formattedAddress);
   const googleMapsUrl = toTrimmedString(record.googleMapsUrl);
   const placeId = toTrimmedString(record.placeId);
+  const addressLine = toTrimmedString(record.addressLine);
+  const city = toTrimmedString(record.city);
+  const stateProvince = toTrimmedString(record.stateProvince);
+  const country = toTrimmedString(record.country);
+  const postalCode = toTrimmedString(record.postalCode);
   const lat = typeof record.lat === "number" && Number.isFinite(record.lat) ? record.lat : null;
   const lng = typeof record.lng === "number" && Number.isFinite(record.lng) ? record.lng : null;
 
@@ -732,7 +743,7 @@ function parseGoogleMapsPlace(
     return null;
   }
 
-  return {
+  const place: CollectionBootstrapGoogleMapsPlace = {
     placeLabel,
     formattedAddress,
     lat,
@@ -740,6 +751,14 @@ function parseGoogleMapsPlace(
     googleMapsUrl,
     placeId
   };
+
+  if (addressLine) place.addressLine = addressLine;
+  if (city) place.city = city;
+  if (stateProvince) place.stateProvince = stateProvince;
+  if (country) place.country = country;
+  if (postalCode) place.postalCode = postalCode;
+
+  return place;
 }
 
 function parseCanonicalLocationForm(
@@ -750,6 +769,7 @@ function parseCanonicalLocationForm(
     formSnapshot.country,
     formSnapshot.stateProvince,
     formSnapshot.state,
+    formSnapshot.postalCode,
     formSnapshot.city,
     formSnapshot.address,
     formSnapshot.geoLat,
@@ -764,6 +784,7 @@ function parseCanonicalLocationForm(
     return normalizeAdminCollectionLocationForm({
       country: formSnapshot.country,
       stateProvince: formSnapshot.stateProvince ?? formSnapshot.state,
+      postalCode: formSnapshot.postalCode,
       city: formSnapshot.city,
       address: formSnapshot.address,
       geoLat: formSnapshot.geoLat,
@@ -867,6 +888,7 @@ export function mapCollectionBootstrapFromSnapshot(input: CollectionBootstrapInp
     googleMapsPlaceJson: parseGoogleMapsPlace(input.formSnapshot, reasonCodes),
     country: canonicalLocation?.country,
     stateProvince: canonicalLocation?.stateProvince,
+    postalCode: canonicalLocation?.postalCode,
     city: canonicalLocation?.city,
     address: canonicalLocation?.address,
     geoLat: canonicalLocation?.geoLat,

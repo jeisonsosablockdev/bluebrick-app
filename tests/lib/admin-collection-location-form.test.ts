@@ -44,6 +44,7 @@ describe("lib/admin/admin-collection-location-form", () => {
         normalizeAdminCollectionLocationForm({
           country: "Colombia",
           stateProvince: "ANT",
+          postalCode: "050021",
           city: " Medellin ",
           address: " Carrera 43A #1-50 ",
           geoLat: "6.25184",
@@ -52,6 +53,7 @@ describe("lib/admin/admin-collection-location-form", () => {
       ).toEqual({
         country: "CO",
         stateProvince: "Antioquia",
+        postalCode: "050021",
         city: "Medellin",
         address: "Carrera 43A #1-50",
         geoLat: 6.25184,
@@ -62,16 +64,18 @@ describe("lib/admin/admin-collection-location-form", () => {
     it("allows optional coordinates and stateProvince to stay null", () => {
       expect(
         normalizeAdminCollectionLocationForm({
-          country: "US",
-          city: "Miami",
-          address: "Brickell Avenue",
-          stateProvince: "   ",
-          geoLat: "",
+        country: "US",
+        city: "Miami",
+        address: "Brickell Avenue",
+        stateProvince: "   ",
+        postalCode: "",
+        geoLat: "",
           geoLng: undefined
         })
       ).toEqual({
         country: "US",
         stateProvince: null,
+        postalCode: null,
         city: "Miami",
         address: "Brickell Avenue",
         geoLat: null,

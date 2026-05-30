@@ -362,7 +362,12 @@ describe("PATCH /api/admin/collections/:id", () => {
       address: undefined,
       geoLat: undefined,
       geoLng: undefined,
-      fractionalInvestmentSummary: "Updated yield."
+      fractionalInvestmentSummary: "Updated yield.",
+      propertyInformation: undefined,
+      galleryImages: undefined,
+      propertyImages: undefined,
+      documents: undefined,
+      googleMapsPlace: undefined
     });
   });
 
@@ -446,8 +451,8 @@ describe("PATCH /api/admin/collections/:id", () => {
       country: undefined,
       stateProvince: undefined,
       address: undefined,
-      geoLat: undefined,
-      geoLng: undefined,
+      geoLat: 10.3997,
+      geoLng: -75.5553,
       fractionalInvestmentSummary: undefined,
       propertyInformation: undefined,
       galleryImages: undefined,
@@ -480,6 +485,7 @@ describe("PATCH /api/admin/collections/:id", () => {
         data: {
           country: "Colombia",
           stateProvince: "ANT",
+          postalCode: "050021",
           city: "Medellin",
           address: "Carrera 43A #1-50",
           geoLat: "6.25184",
@@ -500,6 +506,7 @@ describe("PATCH /api/admin/collections/:id", () => {
       city: "Medellin",
       country: "CO",
       stateProvince: "Antioquia",
+      postalCode: "050021",
       address: "Carrera 43A #1-50",
       geoLat: 6.25184,
       geoLng: -75.56359,

@@ -11,9 +11,10 @@ describe("lib/admin/admin-collection-location-sync", () => {
       deriveAdminCanonicalLocationLabel({
         city: "Medellin",
         stateProvince: "Antioquia",
+        postalCode: "050021",
         country: "CO"
       })
-    ).toBe("Medellin, Antioquia, CO");
+    ).toBe("Medellin, Antioquia, 050021, CO");
   });
 
   it("keeps the maps payload when canonical location still represents the same place", () => {
@@ -31,6 +32,7 @@ describe("lib/admin/admin-collection-location-sync", () => {
         location: {
           city: "Medellin",
           stateProvince: "Antioquia",
+          postalCode: "050021",
           country: "CO",
           address: "Carrera 43A #1-50",
           geoLat: 6.25184,
@@ -47,6 +49,7 @@ describe("lib/admin/admin-collection-location-sync", () => {
         location: {
           city: "Bogota",
           stateProvince: "Cundinamarca",
+          postalCode: null,
           country: "CO",
           address: "Calle 72 #10-34",
           geoLat: 4.711,

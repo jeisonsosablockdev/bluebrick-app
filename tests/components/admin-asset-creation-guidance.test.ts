@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-import { act, createElement, Fragment } from "react";
+import { act, createElement, Fragment, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   AssetCollectionSection,
@@ -40,10 +40,31 @@ function renderNode(node: ReactNode): RenderHandle {
   return { container, root };
 }
 
+function LocationHarness(): ReactNode {
+  const [form, setHarnessForm] = useState<AssetForm>({
+    ...initialAssetForm,
+    country: "US",
+    city: "Brandon"
+  });
+
+  return createElement(
+    Fragment,
+    null,
+    createElement(AssetLocationSection, { t, form, setForm: setHarnessForm }),
+    createElement("output", { "data-testid": "location-state" }, JSON.stringify(form))
+  );
+}
+
 describe("components/admin/asset-creation guidance", () => {
+  beforeEach(() => {
+    Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
+  });
+
   afterEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("renders contextual guidance across non-location creation sections", () => {
@@ -173,6 +194,86 @@ describe("components/admin/asset-creation guidance", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("hydrates location fields from a selected Google Maps place", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/autocomplete")) {
+        return new Response(JSON.stringify({
+          ok: true,
+          data: {
+            suggestions: [
+              {
+                placeId: "place-hickory",
+                fullText: "117 Hickory Creek Blvd, Brandon, FL 33511",
+                primaryText: "117 Hickory Creek Blvd",
+                secondaryText: "Brandon, FL 33511"
+              }
+            ]
+          }
+        }), { status: 200 });
+      }
+
+      return new Response(JSON.stringify({
+        ok: true,
+        data: {
+          googleMapsPlace: {
+            placeId: "place-hickory",
+            placeLabel: "117 Hickory Creek Blvd",
+            formattedAddress: "117 Hickory Creek Blvd, Brandon, FL 33511, USA",
+            addressLine: "117 Hickory Creek Blvd",
+            city: "Brandon",
+            stateProvince: "Florida",
+            country: "US",
+            postalCode: "33511",
+            lat: 27.9379,
+            lng: -82.2859,
+            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=117%20Hickory%20Creek%20Blvd"
+          }
+        }
+      }), { status: 200 });
+    }));
+
+    const { container, root } = renderNode(createElement(LocationHarness));
+    const input = container.querySelector("input");
+    expect(input).not.toBeNull();
+
+    await act(async () => {
+      const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      valueSetter?.call(input, "117 Hickory");
+      input!.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+
+    const suggestionButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("117 Hickory Creek Blvd")
+    );
+    expect(suggestionButton).toBeDefined();
+
+    await act(async () => {
+      suggestionButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const state = JSON.parse(container.querySelector("[data-testid='location-state']")?.textContent ?? "{}") as AssetForm;
+    expect(state.address).toBe("117 Hickory Creek Blvd");
+    expect(state.city).toBe("Brandon");
+    expect(state.state).toBe("Florida");
+    expect(state.country).toBe("US");
+    expect(state.postalCode).toBe("33511");
+    expect(state.geoLat).toBe("27.9379");
+    expect(state.geoLng).toBe("-82.2859");
+    expect(state.googleMapsPlace?.placeId).toBe("place-hickory");
+
+    act(() => {
+      root.unmount();
+    });
+    vi.useRealTimers();
   });
 
   it("wires drag and drop on the quick import dropzone", () => {

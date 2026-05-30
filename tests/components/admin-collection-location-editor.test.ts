@@ -27,6 +27,7 @@ function renderEditor(): RenderHandle {
         city: "Cartagena",
         country: "CO",
         stateProvince: "Bolivar",
+        postalCode: "130001",
         locationLabel: "Bocagrande Waterfront",
         detailedLocation: "Avenida San Martin 7-14, Bocagrande",
         geoLat: 10.3997,

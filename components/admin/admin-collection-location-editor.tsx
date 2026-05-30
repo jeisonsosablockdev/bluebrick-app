@@ -13,11 +13,11 @@ import {
   fetchAdminCollectionLocationSuggestions,
   resolveAdminCollectionLocationPlace,
   AdminCollectionLocationClientError,
-  updateAdminCollectionLocationPlace
+  updateAdminCollectionLocationPlace,
+  type AdminCollectionLocationAutocompleteSuggestion
 } from "@/lib/admin/admin-collection-location-client";
 import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
-import type { AdminCollectionLocationAutocompleteSuggestion } from "@/lib/admin/google-maps-places-service";
 import {
   buildAdminCollectionGoogleMapsEmbedUrl,
   buildAdminCollectionGoogleMapsUrl,
@@ -50,6 +50,13 @@ function buildPreviewContent(
 ): AdminCollectionContentRecord {
   return {
     ...content,
+    city: selectedPlace?.city ?? content.city,
+    country: selectedPlace?.country ?? content.country,
+    stateProvince: selectedPlace?.stateProvince ?? content.stateProvince,
+    postalCode: selectedPlace?.postalCode ?? content.postalCode,
+    detailedLocation: selectedPlace?.addressLine ?? selectedPlace?.formattedAddress ?? content.detailedLocation,
+    geoLat: selectedPlace?.lat ?? content.geoLat,
+    geoLng: selectedPlace?.lng ?? content.geoLng,
     googleMapsPlace: selectedPlace ?? content.googleMapsPlace
   };
 }

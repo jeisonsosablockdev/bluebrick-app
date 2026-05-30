@@ -53,7 +53,12 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
             formattedAddress: "Avenida San Martin 7-14, Bocagrande, Cartagena, CO",
             lat: 10.3997,
             lng: -75.5553,
-            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower"
+            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Oceanview%20Fractional%20Tower",
+            addressLine: "Avenida San Martin 7-14",
+            city: "Cartagena",
+            stateProvince: "Bolivar",
+            country: "CO",
+            postalCode: "130001"
           }
         }
       });

@@ -6,6 +6,7 @@ type MarketplaceEditableCollectionRow = {
   city: string;
   country: string;
   state_province: string | null;
+  postal_code: string | null;
   location_label: string;
   detailed_location: string;
   geo_lat: string | number | null;
@@ -26,7 +27,7 @@ type MarketplaceEditableCollectionRow = {
 
 let selectedRows: MarketplaceEditableCollectionRow[] = [];
 let updatedRow: MarketplaceEditableCollectionRow | null = null;
-let locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
+let locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
 
 const queryMock = vi.fn(async (sql: string, _values?: unknown[]) => {
   if (sql.includes("information_schema.columns")) {
@@ -79,6 +80,7 @@ function buildRow(input: Partial<MarketplaceEditableCollectionRow> = {}): Market
     city: "Bogota",
     country: "CO",
     state_province: "Cundinamarca",
+    postal_code: "110221",
     location_label: "Financial district",
     detailed_location: "Calle 72 # 10-34, Bogota",
     geo_lat: 4.711,
@@ -125,7 +127,7 @@ describe("lib/admin/collection-content-repository", () => {
     process.env.DATABASE_URL = "postgres://example";
     selectedRows = [];
     updatedRow = null;
-    locationColumnNames = ["state_province", "geo_lat", "geo_lng"];
+    locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
     resetMarketplaceEntryLocationColumnSupportCache();
   });
 
@@ -171,6 +173,7 @@ describe("lib/admin/collection-content-repository", () => {
         city: "Bogota",
         country: "CO",
         stateProvince: "Cundinamarca",
+        postalCode: "110221",
         locationLabel: "Financial district",
         detailedLocation: "Calle 72 # 10-34, Bogota",
         geoLat: 4.711,
@@ -228,6 +231,7 @@ describe("lib/admin/collection-content-repository", () => {
     selectedRows = [
       buildRow({
         state_province: null,
+        postal_code: null,
         geo_lat: null,
         geo_lng: null
       })
@@ -236,6 +240,7 @@ describe("lib/admin/collection-content-repository", () => {
     const result = await getAdminCollectionContentByEntryId("entry-1");
 
     expect(result?.stateProvince).toBeNull();
+    expect(result?.postalCode).toBeNull();
     expect(result?.geoLat).toBeNull();
     expect(result?.geoLng).toBeNull();
   });
@@ -245,6 +250,7 @@ describe("lib/admin/collection-content-repository", () => {
     selectedRows = [
       buildRow({
         state_province: null,
+        postal_code: null,
         geo_lat: null,
         geo_lng: null
       })
@@ -253,11 +259,13 @@ describe("lib/admin/collection-content-repository", () => {
     const result = await getAdminCollectionContentByEntryId("entry-1");
 
     expect(result?.stateProvince).toBeNull();
+    expect(result?.postalCode).toBeNull();
     expect(result?.geoLat).toBeNull();
     expect(result?.geoLng).toBeNull();
 
     const sql = String(queryMock.mock.calls[1]?.[0] ?? "");
     expect(sql).toContain("NULL::text AS state_province");
+    expect(sql).toContain("NULL::text AS postal_code");
     expect(sql).toContain("NULL::double precision AS geo_lat");
     expect(sql).toContain("NULL::double precision AS geo_lng");
   });
@@ -385,6 +393,7 @@ describe("lib/admin/collection-content-repository", () => {
       city: "Medellin",
       country: "CO",
       state_province: "Antioquia",
+      postal_code: "050021",
       detailed_location: "Carrera 43A #1-50",
       geo_lat: 6.25184,
       geo_lng: -75.56359,
@@ -397,6 +406,7 @@ describe("lib/admin/collection-content-repository", () => {
       city: "Medellin",
       country: "CO",
       stateProvince: "Antioquia",
+      postalCode: "050021",
       address: "Carrera 43A #1-50",
       geoLat: 6.25184,
       geoLng: -75.56359
@@ -412,19 +422,21 @@ describe("lib/admin/collection-content-repository", () => {
     expect(sql).toContain("city = $3");
     expect(sql).toContain("country = $4");
     expect(sql).toContain("state_province = $5");
-    expect(sql).toContain("detailed_location = $6");
-    expect(sql).toContain("location_label = $7");
-    expect(sql).toContain("geo_lat = $8");
-    expect(sql).toContain("geo_lng = $9");
-    expect(sql).toContain("updated_by = $10");
+    expect(sql).toContain("postal_code = $6");
+    expect(sql).toContain("detailed_location = $7");
+    expect(sql).toContain("location_label = $8");
+    expect(sql).toContain("geo_lat = $9");
+    expect(sql).toContain("geo_lng = $10");
+    expect(sql).toContain("updated_by = $11");
     expect(values).toEqual([
       "entry-1",
       null,
       "Medellin",
       "CO",
       "Antioquia",
+      "050021",
       "Carrera 43A #1-50",
-      "Medellin, Antioquia, CO",
+      "Medellin, Antioquia, 050021, CO",
       6.25184,
       -75.56359,
       "Admin444"
@@ -498,6 +510,7 @@ describe("lib/admin/collection-content-repository", () => {
       googleMapsPlaceJson: null,
       country: "CO",
       stateProvince: "Bolivar",
+      postalCode: "130001",
       city: "Cartagena",
       address: "Avenida San Martin 7-14",
       geoLat: 10.3997,
@@ -508,6 +521,7 @@ describe("lib/admin/collection-content-repository", () => {
       city: payload.city,
       country: payload.country,
       state_province: payload.stateProvince,
+      postal_code: payload.postalCode,
       detailed_location: payload.address,
       geo_lat: payload.geoLat,
       geo_lng: payload.geoLng,
@@ -542,12 +556,13 @@ describe("lib/admin/collection-content-repository", () => {
     expect(sql).toContain("city = $8");
     expect(sql).toContain("country = $9");
     expect(sql).toContain("state_province = $10");
-    expect(sql).toContain("detailed_location = $11");
-    expect(sql).toContain("location_label = $12");
-    expect(sql).toContain("geo_lat = $13");
-    expect(sql).toContain("geo_lng = $14");
-    expect(sql).toContain("updated_by = $15");
-    expect(values[11]).toBe("Cartagena, Bolivar, CO");
-    expect(values[14]).toBe("bootstrap-script");
+    expect(sql).toContain("postal_code = $11");
+    expect(sql).toContain("detailed_location = $12");
+    expect(sql).toContain("location_label = $13");
+    expect(sql).toContain("geo_lat = $14");
+    expect(sql).toContain("geo_lng = $15");
+    expect(sql).toContain("updated_by = $16");
+    expect(values[12]).toBe("Cartagena, Bolivar, 130001, CO");
+    expect(values[15]).toBe("bootstrap-script");
   });
 });

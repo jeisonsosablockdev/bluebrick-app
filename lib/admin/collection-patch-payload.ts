@@ -29,6 +29,7 @@ export type AdminCollectionPatchUpdate = {
   googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   country?: string;
   stateProvince?: string | null;
+  postalCode?: string | null;
   city?: string;
   address?: string;
   geoLat?: number | null;
@@ -103,7 +104,12 @@ const googleMapsPlaceSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   googleMapsUrl: z.string().trim().url(),
-  placeId: z.string().trim().min(1)
+  placeId: z.string().trim().min(1),
+  addressLine: z.string().trim().min(1).nullable().optional(),
+  city: z.string().trim().min(1).nullable().optional(),
+  stateProvince: z.string().trim().min(1).nullable().optional(),
+  country: z.string().trim().min(1).nullable().optional(),
+  postalCode: z.string().trim().min(1).nullable().optional()
 }).strict();
 
 const nullableTextSchema = z.string().trim().min(1).nullable();
@@ -151,6 +157,7 @@ const locationFormPayloadSchema = z.object({
   data: z.object({
     country: z.string(),
     stateProvince: z.string().nullable().optional(),
+    postalCode: z.string().nullable().optional(),
     city: z.string(),
     address: z.string(),
     geoLat: rawCoordinateSchema,
@@ -249,7 +256,14 @@ export function parseAdminCollectionPatchPayload(payload: unknown): AdminCollect
     case "googleMapsPlace":
       return {
         section: result.data.section,
-        googleMapsPlace: result.data.data.googleMapsPlace
+        googleMapsPlace: result.data.data.googleMapsPlace,
+        country: result.data.data.googleMapsPlace?.country ?? undefined,
+        stateProvince: result.data.data.googleMapsPlace?.stateProvince ?? undefined,
+        postalCode: result.data.data.googleMapsPlace?.postalCode ?? undefined,
+        city: result.data.data.googleMapsPlace?.city ?? undefined,
+        address: result.data.data.googleMapsPlace?.addressLine ?? undefined,
+        geoLat: result.data.data.googleMapsPlace?.lat ?? undefined,
+        geoLng: result.data.data.googleMapsPlace?.lng ?? undefined
       };
     case "locationForm": {
       try {
@@ -258,6 +272,7 @@ export function parseAdminCollectionPatchPayload(payload: unknown): AdminCollect
           section: result.data.section,
           country: locationForm.country,
           stateProvince: locationForm.stateProvince,
+          postalCode: locationForm.postalCode,
           city: locationForm.city,
           address: locationForm.address,
           geoLat: locationForm.geoLat,

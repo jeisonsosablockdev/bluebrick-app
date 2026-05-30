@@ -57,6 +57,7 @@ export type PropertyDetail = {
   title: string;
   city: string;
   country: string;
+  postalCode: string | null;
   locationLabel: string;
   listingStatus: ListingStatus;
   image: string;
@@ -95,6 +96,7 @@ export type CreateMarketplaceEntryInput = {
   city: string;
   country: string;
   stateProvince?: string | null;
+  postalCode?: string | null;
   listingStatus: ListingStatus;
   image: string;
   shortDescription: string;
@@ -154,6 +156,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     title: "Edificio Central Norte",
     city: "Bogota",
     country: "CO",
+    postalCode: null,
     locationLabel: "Bogota, CO",
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop",
@@ -201,6 +204,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     title: "Complejo Marberia",
     city: "Medellin",
     country: "CO",
+    postalCode: null,
     locationLabel: "Medellin, CO",
     listingStatus: "funding",
     image: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop",
@@ -248,6 +252,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     title: "Torre del Rio",
     city: "CDMX",
     country: "MX",
+    postalCode: null,
     locationLabel: "CDMX, MX",
     listingStatus: "sold-out",
     image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop",
@@ -378,6 +383,7 @@ export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInpu
     title: input.title,
     city: input.city,
     country: input.country,
+    postalCode: input.postalCode ?? null,
     locationLabel: createLocationLabel(input.city, input.country),
     listingStatus: input.listingStatus,
     image: input.image,

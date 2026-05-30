@@ -3,6 +3,7 @@ import { COUNTRIES } from "@/lib/countries";
 export type AdminCollectionLocationFormInput = {
   country: unknown;
   stateProvince?: unknown;
+  postalCode?: unknown;
   city: unknown;
   address: unknown;
   geoLat?: unknown;
@@ -12,6 +13,7 @@ export type AdminCollectionLocationFormInput = {
 export type AdminCollectionLocationForm = {
   country: string;
   stateProvince: string | null;
+  postalCode: string | null;
   city: string;
   address: string;
   geoLat: number | null;
@@ -159,6 +161,7 @@ export function normalizeAdminCollectionLocationForm(
   return {
     country,
     stateProvince: normalizeAdminCollectionStateProvince(country, input.stateProvince),
+    postalCode: readOptionalText(input.postalCode, "postalCode", "postalCode"),
     city: readRequiredText(input.city, "city", "city"),
     address: readRequiredText(input.address, "address", "address"),
     geoLat: parseCoordinate(input.geoLat, "geoLat", -90, 90),
