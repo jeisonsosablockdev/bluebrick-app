@@ -331,6 +331,7 @@ type SolUsdQuoteResponse = {
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
+  const [editSessionId] = useState<string>(() => createDraftId());
   const {
     form,
     formStatus,
@@ -753,6 +754,7 @@ export function AssetCreationForm(): ReactElement {
     uploadFieldValue
   } = useAssetUploadWorkflow({
     draftId,
+    editSessionId,
     form,
     dragTargetField,
     setForm,
