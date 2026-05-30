@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { act, createElement, type ReactNode } from "react";
+import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -358,6 +359,96 @@ describe("components/WalletModal header CTA", () => {
     expect(button).toBeTruthy();
     expect(button?.textContent).toContain("Wallet");
     expect(button?.querySelector("svg")).toBeTruthy();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("allows reconnecting Phantom when SIWS is active but the adapter is disconnected", async () => {
+    const connect = vi.fn(async () => undefined);
+    const select = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage: vi.fn()
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: null,
+      connected: false,
+      connecting: false,
+      disconnecting: false,
+      connect,
+      disconnect: vi.fn(),
+      select,
+      signMessage: undefined
+    });
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "admin"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "admin"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
+      candidate.textContent?.includes("Wallet")
+    );
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const reconnectButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
+      candidate.textContent?.includes("Reconectar wallet")
+    );
+
+    expect(reconnectButton).toBeTruthy();
+    expect((reconnectButton as HTMLButtonElement | undefined)?.disabled).toBe(false);
+
+    await act(async () => {
+      reconnectButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(connect).toHaveBeenCalledTimes(1);
+    expect(select).not.toHaveBeenCalled();
+    expect(authClientMocks.startSiws).not.toHaveBeenCalled();
 
     act(() => {
       root.unmount();
