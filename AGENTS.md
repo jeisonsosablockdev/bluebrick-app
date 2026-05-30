@@ -12,7 +12,7 @@
 
 ## Entry Rules
 - Start with `planner`.
-- When the brief is vague or underspecified, run a Socratic clarification pass before branching; the canonical bootstrap entrypoint is `npm run task:init`.
+- When the brief is vague or underspecified, run `npm run task:init` before branching; it is the canonical bootstrap entrypoint, runs preflight, asks for the task shape, and delegates to `git-start.sh` once the branch shape is clear. See the README for usage examples.
 - For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work, require the governing artifact before implementation.
 - For new features, require:
   - `docs/features/feature-<slug>.md`

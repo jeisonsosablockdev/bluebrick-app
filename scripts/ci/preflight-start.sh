@@ -3,6 +3,7 @@ set -euo pipefail
 
 BASE_REF="${BASE_REF:-develop}"
 FETCH_REMOTE=0
+BOOTSTRAP_MODE=0
 LIST_LIMIT="${LIST_LIMIT:-12}"
 
 usage() {
@@ -13,6 +14,7 @@ Usage:
 Options:
   --base <branch>  Base branch to compare against (default: develop)
   --fetch          Refresh origin refs before reviewing branches
+  --bootstrap      Internal mode for task-init bootstrap flow
 USAGE
 }
 
@@ -28,6 +30,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-fetch)
       FETCH_REMOTE=0
+      shift
+      ;;
+    --bootstrap)
+      BOOTSTRAP_MODE=1
       shift
       ;;
     -h|--help)
@@ -375,6 +381,14 @@ if (( ${#ACTION_ITEMS[@]} == 0 )); then
 else
   ACTION_LINES="$(printf '%s\n' "${ACTION_ITEMS[@]}")"
   print_limited_list "${ACTION_LINES}"
+fi
+
+if [[ "${CURRENT_BRANCH}" == "develop" && "${BOOTSTRAP_MODE}" != "1" ]]; then
+  echo
+  echo "❌ Bootstrap guard: this looks like a new task start on develop."
+  echo "- Use ./scripts/task-init.sh to run the Socratic clarification pass and create the right branch."
+  echo "- If you only need a repo preflight during task bootstrap, task-init passes --bootstrap internally."
+  exit 1
 fi
 
 echo

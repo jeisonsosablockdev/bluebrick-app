@@ -153,7 +153,11 @@ if [[ "${ASK_MODE}" == "auto" ]]; then
 fi
 
 echo "== Task Bootstrap =="
-bash "${SCRIPT_DIR}/ci/preflight-start.sh" --base "${BASE_REF}" $([[ "${FETCH_REMOTE}" == "1" ]] && printf '%s' "--fetch")
+PREFLIGHT_ARGS=("--base" "${BASE_REF}" "--bootstrap")
+if [[ "${FETCH_REMOTE}" == "1" ]]; then
+  PREFLIGHT_ARGS+=("--fetch")
+fi
+bash "${SCRIPT_DIR}/ci/preflight-start.sh" "${PREFLIGHT_ARGS[@]}"
 
 if [[ "${ASK_MODE}" == "ask" ]]; then
   echo

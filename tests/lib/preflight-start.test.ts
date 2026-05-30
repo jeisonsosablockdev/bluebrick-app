@@ -164,14 +164,25 @@ describe("preflight:start", () => {
     expect(output).toContain("Review AGENTS.md before implementation");
   });
 
-  it("can refresh remotes explicitly and still complete on a clean develop branch", async () => {
+  it("fails closed on a clean develop branch unless bootstrap mode is explicit", async () => {
+    const repoDir = await createPreflightRepo();
+
+    runGit(["restore", "package.json"], repoDir);
+    runGit(["checkout", "develop"], repoDir);
+
+    expect(() =>
+      runBash(path.join(repoDir, "scripts", "ci", "preflight-start.sh"), ["--fetch"], repoDir)
+    ).toThrow("Bootstrap guard");
+  });
+
+  it("can complete on a clean develop branch when called in bootstrap mode", async () => {
     const repoDir = await createPreflightRepo();
 
     runGit(["restore", "package.json"], repoDir);
     runGit(["checkout", "develop"], repoDir);
     const output = runBash(
       path.join(repoDir, "scripts", "ci", "preflight-start.sh"),
-      ["--fetch"],
+      ["--fetch", "--bootstrap"],
       repoDir
     );
 

@@ -19,7 +19,7 @@ This includes:
 
 When a new task brief is vague or underspecified, start with `npm run task:init` instead of jumping straight to branch creation.
 
-It runs the preflight diagnostics, asks a Socratic clarification pass for the problem, outcome, scope, and branch shape, and then delegates to the canonical branch helper once the shape is clear.
+It runs the preflight diagnostics, asks a Socratic clarification pass for the problem, outcome, scope, and branch shape, and then delegates to the canonical branch helper once the shape is clear. `preflight:start` itself now fails closed on fresh `develop` startups unless the bootstrap mode is explicit, so the interactive path is the only safe way to begin ambiguous work.
 
 ## Mandatory Sequence
 1. For non-trivial work, create/update one parent Linear issue with a Markdown slice plan before coding.

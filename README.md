@@ -181,10 +181,21 @@ Promotion order:
 5. open the release PR `develop -> main`
 6. `main` -> `brids.io` / `www.brids.io`
 
+## Task Bootstrap
+
+Use `npm run task:init` to start a new task the canonical way.
+
+- If the brief is vague or you want the Socratic clarification pass, run:
+  - `npm run task:init -- --ask`
+- If you already know the branch shape, pass the `git-start.sh` arguments through:
+  - `npm run task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`
+
+`task:init` runs the preflight first, then either asks for the missing task shape or delegates straight to `git-start.sh`.
+
 Quick start:
 
 - `git checkout develop && git pull origin develop`
-- `./scripts/git-start.sh app admin-asset-form-v3`
+- `npm run task:init -- --ask`
 
 ## RFC Workflow (Epics)
 

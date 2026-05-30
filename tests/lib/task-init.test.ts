@@ -144,6 +144,7 @@ describe("task:init", () => {
     const output = runBash(scriptPath, ["--ask", "--no-fetch"], repoDir, input);
 
     expect(output).toContain("Before we branch, let us make the shape of the work plain.");
+    expect(output).toContain("Preflight complete.");
     expect(output).toContain("Breakdown");
     expect(output).toContain("Socratic pass complete.");
     expect(output).toContain("Canonical docs: docs/features/feature-task-bootstrap.md");
