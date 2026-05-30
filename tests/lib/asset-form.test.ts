@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import * as XLSX from "xlsx";
 
 import {
   applyFinancialRule,
   mapImportRowToFormFields,
   parseTabularText,
   parseTextFileToTabularRows,
+  parseSpreadsheetFileToTabularRows,
   suggestMetadataFromIdentity,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
@@ -139,9 +141,48 @@ describe("lib/admin/asset-form", () => {
     });
 
     it("throws for unsupported extensions", () => {
-      expect(() => parseTextFileToTabularRows("import.xlsx", "binary-content")).toThrow(
+      expect(() => parseTextFileToTabularRows("import.md", "binary-content")).toThrow(
         "Unsupported import file extension. Use CSV/TXT or paste from Excel."
       );
+    });
+  });
+
+  describe("parseSpreadsheetFileToTabularRows", () => {
+    function buildWorkbookBuffer(bookType: "xls" | "xlsx"): ArrayBuffer {
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.aoa_to_sheet([
+        ["assetName", "slug", "internalCode"],
+        ["Torre A", "torre-a", "BLD-001"]
+      ]);
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      return XLSX.write(workbook, { bookType, type: "array" }) as ArrayBuffer;
+    }
+
+    it("parses xlsx workbooks with a header row", async () => {
+      await expect(parseSpreadsheetFileToTabularRows("import.xlsx", buildWorkbookBuffer("xlsx"))).resolves.toEqual({
+        headers: ["assetName", "slug", "internalCode"],
+        rows: [
+          {
+            assetName: "Torre A",
+            internalCode: "BLD-001",
+            slug: "torre-a"
+          }
+        ]
+      });
+    });
+
+    it("parses xls workbooks with a header row", async () => {
+      await expect(parseSpreadsheetFileToTabularRows("import.xls", buildWorkbookBuffer("xls"))).resolves.toEqual({
+        headers: ["assetName", "slug", "internalCode"],
+        rows: [
+          {
+            assetName: "Torre A",
+            internalCode: "BLD-001",
+            slug: "torre-a"
+          }
+        ]
+      });
     });
   });
 

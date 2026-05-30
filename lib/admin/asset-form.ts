@@ -187,6 +187,54 @@ export function parseTextFileToTabularRows(fileName: string, content: string): P
   return parseTabularText(content);
 }
 
+export async function parseSpreadsheetFileToTabularRows(fileName: string, data: ArrayBuffer): Promise<ParsedTabularRows> {
+  const ext = fileName.toLowerCase().split(".").pop();
+  if (!ext || !["xls", "xlsx"].includes(ext)) {
+    throw new Error("Unsupported spreadsheet file extension. Use XLS/XLSX.");
+  }
+
+  const xlsx = await import("xlsx");
+  const workbook = xlsx.read(data, { type: "array" });
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) {
+    return { headers: [], rows: [] };
+  }
+
+  const worksheet = workbook.Sheets[sheetName];
+  if (!worksheet) {
+    return { headers: [], rows: [] };
+  }
+
+  const matrix = xlsx.utils.sheet_to_json(worksheet, {
+    header: 1,
+    defval: "",
+    blankrows: false
+  }) as Array<Array<unknown>>;
+
+  if (matrix.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const headers = (matrix[0] ?? [])
+    .map((header) => String(header ?? "").trim())
+    .filter(Boolean);
+
+  const rows = matrix
+    .slice(1)
+    .map((row) => {
+      const record: Record<string, string> = {};
+
+      headers.forEach((header, index) => {
+        record[header] = String(row?.[index] ?? "").trim();
+      });
+
+      return record;
+    })
+    .filter((row) => Object.values(row).some((value) => value.length > 0));
+
+  return { headers, rows };
+}
+
 export const importKeyAliasMap: Record<string, string> = {
   assettype: "assetType",
   assetname: "assetName",

@@ -3,7 +3,11 @@
 import { useCallback } from "react";
 import type { ChangeEvent } from "react";
 
-import { parseTabularText, parseTextFileToTabularRows } from "@/lib/admin/asset-form";
+import {
+  parseSpreadsheetFileToTabularRows,
+  parseTabularText,
+  parseTextFileToTabularRows
+} from "@/lib/admin/asset-form";
 import { buildTextImportFingerprint } from "@/lib/admin/asset-import-fingerprint";
 
 type SetStateAction<T> = T | ((prev: T) => T);
@@ -132,12 +136,7 @@ export function useAssetImportJobs({
     t
   ]);
 
-  const onImportFileInput = useCallback(async (event: ChangeEvent<HTMLInputElement>): Promise<ParsedImportCandidate | null> => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return null;
-    }
-
+  const readImportFile = useCallback(async (file: File): Promise<ParsedImportCandidate | null> => {
     try {
       const extension = file.name.toLowerCase().split(".").pop();
 
@@ -156,6 +155,31 @@ export function useAssetImportJobs({
         }
 
         return candidate;
+      }
+
+      if (extension === "xls" || extension === "xlsx") {
+        const parsed = await parseSpreadsheetFileToTabularRows(file.name, await file.arrayBuffer());
+        setImportHeaders(parsed.headers);
+        setImportPreviewCount(parsed.rows.length);
+
+        if (parsed.rows.length === 0) {
+          setImportMessage(t({
+            en: "File parsed but no rows were detected.",
+            es: "Se proceso el archivo pero no se detectaron filas.",
+            pt: "Arquivo processado, mas nenhuma linha foi detectada."
+          }));
+          return null;
+        }
+
+        return createTextImportCandidate({
+          fileName: file.name,
+          text: [
+            parsed.headers.join("\t"),
+            ...parsed.rows.map((row) => parsed.headers.map((header) => row[header] ?? "").join("\t"))
+          ].join("\n"),
+          headers: parsed.headers,
+          rows: parsed.rows
+        });
       }
 
       const text = await file.text();
@@ -182,14 +206,30 @@ export function useAssetImportJobs({
       const message = error instanceof Error ? error.message : "Unknown import error.";
       setImportMessage(message);
       return null;
+    }
+  }, [setImportHeaders, setImportMessage, setImportPreviewCount, t]);
+
+  const onImportFileInput = useCallback(async (event: ChangeEvent<HTMLInputElement>): Promise<ParsedImportCandidate | null> => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return null;
+    }
+
+    try {
+      return await readImportFile(file);
     } finally {
       event.target.value = "";
     }
-  }, [setImportHeaders, setImportMessage, setImportPreviewCount, t]);
+  }, [readImportFile]);
+
+  const onImportFileDrop = useCallback(async (file: File): Promise<ParsedImportCandidate | null> => {
+    return readImportFile(file);
+  }, [readImportFile]);
 
   return {
     buildImportCandidateFromText,
     applyImportCandidate,
-    onImportFileInput
+    onImportFileInput,
+    onImportFileDrop
   };
 }
