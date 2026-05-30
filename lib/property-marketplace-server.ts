@@ -420,6 +420,8 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
            country,
            ${support.postalCode ? "postal_code" : "NULL::text AS postal_code"},
            location_label,
+           ${support.geoLat ? "geo_lat" : "NULL::double precision AS geo_lat"},
+           ${support.geoLng ? "geo_lng" : "NULL::double precision AS geo_lng"},
            listing_status,
            image_url,
            short_description,

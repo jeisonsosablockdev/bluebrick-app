@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
+let persistedRows: unknown[] = [];
 
 const queryMock = vi.fn(async (sql: string) => {
   if (sql.includes("information_schema.columns")) {
@@ -8,6 +9,10 @@ const queryMock = vi.fn(async (sql: string) => {
       rows: locationColumnNames.map((column_name) => ({ column_name })),
       rowCount: locationColumnNames.length
     };
+  }
+
+  if (sql.includes("FROM marketplace_entries")) {
+    return { rows: persistedRows, rowCount: persistedRows.length };
   }
 
   return { rows: [], rowCount: 1 };
@@ -43,13 +48,17 @@ vi.mock("@/lib/property-service", () => ({
 }));
 
 import { resetMarketplaceEntryLocationColumnSupportCache } from "@/lib/admin/marketplace-entry-location-columns";
-import { createMarketplacePropertyEntryPersistent } from "@/lib/property-marketplace-server";
+import {
+  createMarketplacePropertyEntryPersistent,
+  listMarketplaceMapEntries
+} from "@/lib/property-marketplace-server";
 
 describe("lib/property-marketplace-server", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.DATABASE_URL = "postgres://example";
     locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
+    persistedRows = [];
     resetMarketplaceEntryLocationColumnSupportCache();
   });
 
@@ -117,5 +126,58 @@ describe("lib/property-marketplace-server", () => {
     expect(sql).not.toContain("geo_lng");
     expect(sql).toContain("location_label");
     expect(sql).toContain("detailed_location");
+  });
+
+  it("selects persisted coordinates for marketplace map entries", async () => {
+    persistedRows = [
+      {
+        id: "brandon-117",
+        title: "Fix & Flip Brandon 117",
+        city: "Brandon",
+        country: "US",
+        postal_code: "33511",
+        location_label: "Brandon, Florida, 33511, US",
+        geo_lat: 27.9379,
+        geo_lng: -82.2859,
+        listing_status: "funding",
+        image_url: "https://cdn.example.com/brandon.jpg",
+        short_description: "US listing",
+        detailed_location: "Brandon, Florida",
+        highlights_json: [],
+        investment_notes: "Marketplace map listing",
+        supply_total: 2000,
+        minted_or_sold: 500,
+        nft_price_usd: 120,
+        annual_roi_pct: 21.8,
+        availability_label: "Funding",
+        project_json: {},
+        economics_json: {},
+        governance_json: {},
+        documents_json: [],
+        collection_address: "CoLLeCt1on111111111111111111111111111111111",
+        asset_mint_address: "CanDyMach1ne1111111111111111111111111111111",
+        explorer_url: "https://explorer.solana.com/address/test?cluster=devnet",
+        last_onchain_update: null,
+        sync_status: "available"
+      }
+    ];
+
+    const entries = await listMarketplaceMapEntries({});
+    const selectSql = String(queryMock.mock.calls.find((call) => String(call[0]).includes("FROM marketplace_entries"))?.[0] ?? "");
+
+    expect(selectSql).toContain("geo_lat");
+    expect(selectSql).toContain("geo_lng");
+    expect(entries).toEqual([
+      {
+        id: "brandon-117",
+        title: "Fix & Flip Brandon 117",
+        locationLabel: "Brandon, Florida, 33511, US",
+        country: "US",
+        geoLat: 27.9379,
+        geoLng: -82.2859,
+        supplyTotal: 2000,
+        mintedOrSold: 500
+      }
+    ]);
   });
 });
