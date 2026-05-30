@@ -4,6 +4,16 @@ import SparkMD5 from "spark-md5";
 
 export type AssetUploadCategory = "galleryImage" | "propertyImage" | "brochureFile" | "legalDoc" | "financialDoc";
 
+export type SeoImageUploadContext = {
+  assetName?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  internalCode?: string | null;
+  assetTypeLabel?: string | null;
+  imageRole?: string | null;
+};
+
 export type SignedUrlResponse = {
   uploadId: string;
   uploadUrl: string;
@@ -103,6 +113,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
   category: AssetUploadCategory;
   draftId: string;
   editSessionId?: string | null;
+  seoImageContext?: SeoImageUploadContext | null;
   previousCdnUrl?: string | null;
 }): Promise<FinalizeResponse> {
   const contentMd5Base64 = await calculateContentMd5Base64(input.file);
@@ -119,7 +130,8 @@ export async function uploadAssetFileViaSignedUrl(input: {
       sizeBytes: input.file.size,
       contentMd5Base64,
       draftId: input.draftId,
-      editSessionId: input.editSessionId?.trim() || null
+      editSessionId: input.editSessionId?.trim() || null,
+      seoImageContext: input.seoImageContext ?? null
     })
   });
 
