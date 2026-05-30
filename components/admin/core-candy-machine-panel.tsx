@@ -47,7 +47,12 @@ type SubmitResponse = {
 };
 
 type ErrorResponse = {
-  error?: string;
+  error?: string | {
+    code?: string;
+    message?: string;
+    providerStatus?: number | null;
+    providerCode?: string | null;
+  };
   code?: string;
   recoverable?: boolean;
 };
@@ -150,6 +155,24 @@ function truncate(value: string): string {
 
 async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json().catch(() => null)) as T;
+}
+
+function readErrorMessage(payload: ErrorResponse | null, fallback: string): string {
+  const error = payload?.error;
+  if (typeof error === "string" && error.trim()) {
+    return error.trim();
+  }
+
+  if (error && typeof error === "object") {
+    const providerSuffix = [
+      typeof error.providerStatus === "number" ? `status ${error.providerStatus}` : "",
+      typeof error.providerCode === "string" && error.providerCode.trim() ? error.providerCode.trim() : ""
+    ].filter(Boolean).join(", ");
+    const message = typeof error.message === "string" && error.message.trim() ? error.message.trim() : fallback;
+    return providerSuffix ? `${message} (${providerSuffix})` : message;
+  }
+
+  return fallback;
 }
 
 function parsePositiveInt(value: string): number | null {
@@ -258,10 +281,9 @@ export function CoreCandyMachinePanel({
       assetUri?: string;
       resolvedCollectionName?: string;
       resolvedAssetNamePrefix?: string;
-      error?: string;
-    }>(response);
+    } & ErrorResponse>(response);
     if (!response.ok || !payload.collectionUri || !payload.assetUri) {
-      throw new Error(payload.error ?? "Could not generate metadata URIs.");
+      throw new Error(readErrorMessage(payload, "Could not generate metadata URIs."));
     }
 
     return {
@@ -414,7 +436,7 @@ export function CoreCandyMachinePanel({
 
       const payload = await parseJson<SubmitResponse & ErrorResponse>(response);
       if (!response.ok || !Array.isArray(payload.transactions)) {
-        throw new Error(payload.error ?? "Could not submit deploy transactions.");
+        throw new Error(readErrorMessage(payload, "Could not submit deploy transactions."));
       }
 
       return payload.transactions;
@@ -496,7 +518,7 @@ export function CoreCandyMachinePanel({
 
       const payload = await parseJson<SnapshotFinalizeResponse & ErrorResponse>(response);
       if (!response.ok || !payload.snapshotId) {
-        throw new Error(payload.error ?? "Could not finalize mint snapshot.");
+        throw new Error(readErrorMessage(payload, "Could not finalize mint snapshot."));
       }
 
       setSnapshotResult(payload);
@@ -590,7 +612,7 @@ export function CoreCandyMachinePanel({
       const prepared = await parseJson<DeployPrepareResponse & ErrorResponse>(prepareResponse);
 
       if (!prepareResponse.ok || !Array.isArray(prepared.transactions)) {
-        throw new Error(prepared.error ?? "Could not prepare deploy transactions.");
+        throw new Error(readErrorMessage(prepared, "Could not prepare deploy transactions."));
       }
 
       setRunState((current) => ({

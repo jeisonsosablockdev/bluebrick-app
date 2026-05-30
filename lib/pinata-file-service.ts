@@ -20,6 +20,20 @@ type PinataPinJsonResponse = {
   IpfsHash?: unknown;
   error?: unknown;
   message?: unknown;
+  code?: unknown;
+  status?: unknown;
+  reason?: unknown;
+};
+
+type PinataResponsePayload = {
+  json: PinataPinJsonResponse | null;
+  rawText: string;
+};
+
+type PinataApiErrorContext = {
+  operation: "pin JSON metadata" | "pin source file";
+  status: number;
+  payload: PinataResponsePayload;
 };
 
 export type PinnedJsonResult = {
@@ -57,12 +71,27 @@ export type CoreCandyMachinePinataMetadataOutput = {
 export class PinataFileServiceError extends Error {
   readonly status: number;
   readonly code: string;
+  readonly providerStatus: number | null;
+  readonly providerCode: string | null;
+  readonly providerMessage: string | null;
 
-  constructor(message: string, status = 500, code = "PINATA_SERVICE_ERROR") {
+  constructor(
+    message: string,
+    status = 500,
+    code = "PINATA_SERVICE_ERROR",
+    details?: {
+      providerStatus?: number | null;
+      providerCode?: string | null;
+      providerMessage?: string | null;
+    }
+  ) {
     super(message);
     this.name = "PinataFileServiceError";
     this.status = status;
     this.code = code;
+    this.providerStatus = details?.providerStatus ?? null;
+    this.providerCode = details?.providerCode ?? null;
+    this.providerMessage = details?.providerMessage ?? null;
   }
 }
 
@@ -103,10 +132,31 @@ function requirePinataJwt(): string {
   return token;
 }
 
-function toApiErrorMessage(payload: PinataPinJsonResponse | null): string {
+function readNestedText(value: unknown, keys: string[]): string {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return "";
+  }
+
+  const record = value as Record<string, unknown>;
+  for (const key of keys) {
+    const direct = asTrimmedString(record[key]);
+    if (direct) {
+      return direct;
+    }
+  }
+
+  return "";
+}
+
+function extractProviderMessage(payload: PinataPinJsonResponse | null): string {
   const directError = asTrimmedString(payload?.error);
   if (directError) {
     return directError;
+  }
+
+  const nestedError = readNestedText(payload?.error, ["message", "reason", "details", "error"]);
+  if (nestedError) {
+    return nestedError;
   }
 
   const directMessage = asTrimmedString(payload?.message);
@@ -114,7 +164,66 @@ function toApiErrorMessage(payload: PinataPinJsonResponse | null): string {
     return directMessage;
   }
 
-  return "Pinata request failed.";
+  const nestedMessage = readNestedText(payload?.message, ["message", "reason", "details", "error"]);
+  if (nestedMessage) {
+    return nestedMessage;
+  }
+
+  return asTrimmedString(payload?.reason);
+}
+
+function extractProviderCode(payload: PinataPinJsonResponse | null): string {
+  return asTrimmedString(payload?.code)
+    || asTrimmedString(payload?.status)
+    || readNestedText(payload?.error, ["code", "status"])
+    || readNestedText(payload?.message, ["code", "status"]);
+}
+
+function safeBodySnippet(value: string): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
+function toPinataApiError(context: PinataApiErrorContext): PinataFileServiceError {
+  const providerMessage = extractProviderMessage(context.payload.json);
+  const providerCode = extractProviderCode(context.payload.json);
+  const fallbackSnippet = safeBodySnippet(context.payload.rawText);
+  const diagnostic = providerMessage || fallbackSnippet;
+  const message = [
+    `Pinata ${context.operation} request failed with status ${context.status}.`,
+    diagnostic ? `Provider response: ${diagnostic}` : "Provider response was empty or unreadable.",
+    providerCode ? `Provider code: ${providerCode}.` : ""
+  ].filter(Boolean).join(" ");
+
+  return new PinataFileServiceError(message, context.status || 502, "PINATA_REQUEST_FAILED", {
+    providerStatus: context.status || null,
+    providerCode: providerCode || null,
+    providerMessage: providerMessage || fallbackSnippet || null
+  });
+}
+
+async function readPinataResponsePayload(response: Response): Promise<PinataResponsePayload> {
+  if (typeof response.text !== "function" && typeof response.json === "function") {
+    const json = (await response.json().catch(() => null)) as PinataPinJsonResponse | null;
+    return {
+      json: json && typeof json === "object" && !Array.isArray(json) ? json : null,
+      rawText: json ? JSON.stringify(json) : ""
+    };
+  }
+
+  const rawText = await response.text().catch(() => "");
+  if (!rawText.trim()) {
+    return { json: null, rawText };
+  }
+
+  try {
+    const parsed = JSON.parse(rawText) as PinataPinJsonResponse;
+    return {
+      json: parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null,
+      rawText
+    };
+  } catch {
+    return { json: null, rawText };
+  }
 }
 
 function assertCid(value: unknown): string {
@@ -254,13 +363,17 @@ export async function pinJsonToPinata(input: PinataPinJsonInput): Promise<Pinned
     throw new PinataFileServiceError(message, 502, "PINATA_NETWORK_ERROR");
   });
 
-  const payload = (await response.json().catch(() => null)) as PinataPinJsonResponse | null;
+  const payload = await readPinataResponsePayload(response);
 
   if (!response.ok) {
-    throw new PinataFileServiceError(toApiErrorMessage(payload), response.status || 502, "PINATA_REQUEST_FAILED");
+    throw toPinataApiError({
+      operation: "pin JSON metadata",
+      status: response.status || 502,
+      payload
+    });
   }
 
-  const cid = assertCid(payload?.IpfsHash);
+  const cid = assertCid(payload.json?.IpfsHash);
   const gatewayBaseUrl = getPinataGatewayBaseUrl();
 
   return {
@@ -333,13 +446,17 @@ export async function pinFileFromUrlToPinata(input: PinataPinFileFromUrlInput): 
     throw new PinataFileServiceError(message, 502, "PINATA_NETWORK_ERROR");
   });
 
-  const payload = (await response.json().catch(() => null)) as PinataPinJsonResponse | null;
+  const payload = await readPinataResponsePayload(response);
 
   if (!response.ok) {
-    throw new PinataFileServiceError(toApiErrorMessage(payload), response.status || 502, "PINATA_REQUEST_FAILED");
+    throw toPinataApiError({
+      operation: "pin source file",
+      status: response.status || 502,
+      payload
+    });
   }
 
-  const cid = assertCid(payload?.IpfsHash);
+  const cid = assertCid(payload.json?.IpfsHash);
   const gatewayBaseUrl = getPinataGatewayBaseUrl();
 
   return {

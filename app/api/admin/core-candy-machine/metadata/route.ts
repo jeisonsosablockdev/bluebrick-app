@@ -79,6 +79,28 @@ function imageMimeTypeFromUri(imageUri: string): string {
   return "image/jpeg";
 }
 
+function pinataErrorResponse(error: {
+  code: string;
+  message: string;
+  status: number;
+  providerStatus: number | null;
+  providerCode: string | null;
+  providerMessage: string | null;
+}): NextResponse {
+  return NextResponse.json(
+    {
+      error: {
+        code: error.code,
+        message: error.message,
+        providerStatus: error.providerStatus,
+        providerCode: error.providerCode,
+        providerMessage: error.providerMessage
+      }
+    },
+    { status: error.status }
+  );
+}
+
 function buildMetadataPayloads(input: {
   collectionName: string;
   assetNamePrefix: string;
@@ -186,11 +208,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     } catch (error) {
       if (isPinataFileServiceError(error)) {
-        return NextResponse.json({ error: error.message }, { status: error.status });
+        return pinataErrorResponse(error);
       }
 
       const message = error instanceof Error ? error.message : "Could not generate Pinata metadata URIs.";
-      return NextResponse.json({ error: message }, { status: 502 });
+      return NextResponse.json({
+        error: {
+          code: "PINATA_METADATA_GENERATION_FAILED",
+          message
+        }
+      }, { status: 502 });
     }
   }
 

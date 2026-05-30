@@ -129,6 +129,10 @@ describe("api/admin/core-candy-machine/metadata", () => {
     routeMocks.isPinataConfigured.mockReturnValue(true);
     const error = new Error("Pinata unauthorized");
     (error as Error & { status?: number }).status = 401;
+    (error as Error & { code?: string }).code = "PINATA_REQUEST_FAILED";
+    (error as Error & { providerStatus?: number }).providerStatus = 401;
+    (error as Error & { providerCode?: string }).providerCode = "INVALID_AUTH";
+    (error as Error & { providerMessage?: string }).providerMessage = "Unauthorized";
     routeMocks.createCoreCandyMachinePinataMetadataUris.mockRejectedValue(error);
     routeMocks.isPinataFileServiceError.mockReturnValue(true);
 
@@ -146,6 +150,42 @@ describe("api/admin/core-candy-machine/metadata", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(401);
-    expect(payload.error).toBe("Pinata unauthorized");
+    expect(payload.error).toEqual({
+      code: "PINATA_REQUEST_FAILED",
+      message: "Pinata unauthorized",
+      providerStatus: 401,
+      providerCode: "INVALID_AUTH",
+      providerMessage: "Unauthorized"
+    });
+  });
+
+  it("returns actionable source image failures before pinning metadata", async () => {
+    routeMocks.isPinataConfigured.mockReturnValue(true);
+    const error = new Error("Could not download source file (404).");
+    (error as Error & { status?: number }).status = 502;
+    (error as Error & { code?: string }).code = "PINATA_SOURCE_FETCH_FAILED";
+    (error as Error & { providerStatus?: null }).providerStatus = null;
+    (error as Error & { providerCode?: null }).providerCode = null;
+    (error as Error & { providerMessage?: null }).providerMessage = null;
+    routeMocks.resolveImageForPinata.mockRejectedValue(error);
+    routeMocks.isPinataFileServiceError.mockReturnValue(true);
+
+    const request = new NextRequest("https://example.com/api/admin/core-candy-machine/metadata", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        collectionName: "Collection",
+        assetNamePrefix: "Asset",
+        image: "https://cdn.example.com/missing-image.png"
+      })
+    });
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(payload.error.code).toBe("PINATA_SOURCE_FETCH_FAILED");
+    expect(payload.error.message).toBe("Could not download source file (404).");
+    expect(routeMocks.createCoreCandyMachinePinataMetadataUris).not.toHaveBeenCalled();
   });
 });
