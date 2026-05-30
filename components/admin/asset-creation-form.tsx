@@ -1564,6 +1564,9 @@ export function AssetCreationForm(): ReactElement {
                   tooltip={t({ en: "Operational indicator for commercial stage.", es: "Indicador operativo del estado comercial.", pt: "Indicador operacional do estado comercial." })}
                   placeholder="salesProgressPercent"
                   suffix="%"
+                  inputMode="decimal"
+                  maxLength={6}
+                  className="w-24 pr-8"
                   value={form.buildingSalesProgressPercent}
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingSalesProgressPercent: event.target.value }))}
                 />
