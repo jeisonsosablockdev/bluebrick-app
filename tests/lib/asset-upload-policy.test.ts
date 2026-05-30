@@ -90,6 +90,25 @@ describe("lib/asset-uploads/policy", () => {
     expect(fileName).toBe("front-view.png");
   });
 
+  it("prefers partial SEO context over generic phone-generated image names", () => {
+    const fileName = buildSeoImageFileName({
+      category: "galleryImage",
+      originalFileName: "IMG_1234.JPG",
+      mimeType: "image/jpeg",
+      seoImageContext: {
+        assetName: "Hickory Brandon 117",
+        city: null,
+        state: null,
+        country: null,
+        internalCode: null,
+        assetTypeLabel: null,
+        imageRole: null
+      }
+    });
+
+    expect(fileName).toBe("hickory-brandon-117.jpg");
+  });
+
   it("does not apply SEO image context to document uploads", () => {
     const fileName = buildSeoImageFileName({
       category: "legalDoc",
