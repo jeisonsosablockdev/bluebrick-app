@@ -18,7 +18,7 @@ import {
 import { isMarketplaceReleaseControlledElementVisible } from "@/lib/release-module-visibility";
 import { createPageMetadata } from "@/lib/seo";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
-import { getMarketplaceMapboxAccessToken } from "@/lib/marketplace-mapbox-config";
+import { getMarketplaceMapboxAccessToken, getMarketplaceMapboxStyleUrl } from "@/lib/marketplace-mapbox-config";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Marketplace",
@@ -89,6 +89,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   const mapSources = await safeListMarketplaceMapEntries(filters);
   const cityOptions = await safeListMarketplacePropertyCities();
   const mapboxAccessToken = getMarketplaceMapboxAccessToken();
+  const mapboxStyleUrl = getMarketplaceMapboxStyleUrl();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
@@ -135,6 +136,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
               properties={properties}
               mapSources={mapSources}
               mapboxAccessToken={mapboxAccessToken}
+              mapboxStyleUrl={mapboxStyleUrl}
             />
           )}
         </section>

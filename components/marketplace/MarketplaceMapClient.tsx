@@ -12,6 +12,7 @@ type MapViewState = ViewState & {
 
 type MarketplaceMapClientProps = {
   mapboxAccessToken: string;
+  mapStyleUrl: string;
   pins: MarketplaceMapPin[];
   initialViewState?: Partial<MapViewState>;
   onPinHover?: (pin: MarketplaceMapPin) => void;
@@ -40,6 +41,7 @@ function createHoveredViewState(pin: MarketplaceMapPin, current: MapViewState): 
 
 export function MarketplaceMapClient({
   mapboxAccessToken,
+  mapStyleUrl,
   pins,
   initialViewState,
   onPinHover
@@ -53,7 +55,7 @@ export function MarketplaceMapClient({
     <div data-testid="marketplace-map-client" className="h-full min-h-[28rem] w-full">
       <Map
         reuseMaps
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle={mapStyleUrl}
         mapboxAccessToken={mapboxAccessToken}
         viewState={viewState}
         onMove={(event) =>

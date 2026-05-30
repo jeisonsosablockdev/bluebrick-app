@@ -13,13 +13,14 @@ type MarketplaceExperienceProps = {
   properties: PropertyListItem[];
   mapSources: MarketplaceMapPinSource[];
   mapboxAccessToken: string | null;
+  mapboxStyleUrl: string;
 };
 
 function renderList(properties: PropertyListItem[]): ReactElement {
   return <MarketplaceGridClient properties={properties} />;
 }
 
-export function MarketplaceExperience({ properties, mapSources, mapboxAccessToken }: MarketplaceExperienceProps) {
+export function MarketplaceExperience({ properties, mapSources, mapboxAccessToken, mapboxStyleUrl }: MarketplaceExperienceProps) {
   const pins = projectMarketplaceMapPins(mapSources);
   const canRenderMap = Boolean(mapboxAccessToken && pins.length > 0);
   const listNode = renderList(properties);
@@ -27,7 +28,7 @@ export function MarketplaceExperience({ properties, mapSources, mapboxAccessToke
     <MarketplaceMapShell
       mapboxAccessToken={mapboxAccessToken}
       pins={pins}
-      map={<MarketplaceMapClient mapboxAccessToken={mapboxAccessToken ?? ""} pins={pins} />}
+      map={<MarketplaceMapClient mapboxAccessToken={mapboxAccessToken ?? ""} mapStyleUrl={mapboxStyleUrl} pins={pins} />}
       fallback={listNode}
     />
   );

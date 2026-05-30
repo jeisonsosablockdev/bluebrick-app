@@ -60,6 +60,7 @@ Technical implications:
 ## Tooling Considerations
 - Use a public client-exposed token, not a secret token, for Mapbox access.
 - The expected repo convention is a `NEXT_PUBLIC_*` env var for client-safe configuration.
+- Use `NEXT_PUBLIC_MAPBOX_STYLE_URL` for the published BRIDS marketplace style. Fall back to `mapbox://styles/mapbox/dark-v11` until the custom style is published.
 - Use the hosted Mapbox DevKit MCP endpoint for assistant-side style/tooling help when available; this is separate from the runtime `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` used by the app.
 - Do not commit `MAPBOX_ACCESS_TOKEN`; local/npm MCP mode must source it from the developer machine or secret manager only.
 - If the token is missing, the marketplace must stay list-only instead of rendering a broken map shell or a token warning.
@@ -68,6 +69,29 @@ Technical implications:
 - The public marketplace read model may need to project that canonical location contract into the list/map payload, but it should not invent a separate source of truth.
 - Entries without canonical US map location data should stay list-only rather than forcing an approximate pin.
 - The tooling slice should establish the dependency and environment contract before UI slices depend on it.
+
+## Map Style Direction
+The target style is `Decimal x BRIDS`: a quiet editorial dark map inspired by the Decimal community style by Tristen Brown, adapted to the website palette.
+
+BRIDS palette mapping:
+- background / land: `#04060F`
+- deep land variation: `#070B14`
+- panel navy: `#0E1324`
+- water: `#07111F`
+- minor roads: `#1A2140`
+- major roads: `#334155`
+- road highlight: `rgba(47,198,255,0.45)`
+- labels primary: `#E2E8F0`
+- labels secondary: `#94A3B8`
+- BRIDS cyan: `#2FC6FF`
+- BRIDS violet: `#7C3AED`
+
+Style rules:
+- remove generic noisy POIs
+- keep city, state, neighborhood, and major road labels readable
+- make BRIDS property pins the brightest layer
+- use cyan/violet only as highlights, not as full-map saturation
+- avoid a dashboard/heatmap look in the first release
 
 ## Problem Statement
 The current marketplace experience is functional, but it is mostly a conventional list-first browsing surface.

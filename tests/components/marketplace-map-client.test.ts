@@ -31,6 +31,7 @@ function renderClient(): RenderHandle {
     root.render(
       createElement(MarketplaceMapClient, {
         mapboxAccessToken: "pk.test-token",
+        mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
         pins: [
           {
             id: "us-1",
@@ -75,7 +76,8 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     const { container, root } = renderClient();
 
     expect(latestMapProps).toMatchObject({
-      mapboxAccessToken: "pk.test-token"
+      mapboxAccessToken: "pk.test-token",
+      mapStyle: "mapbox://styles/brids/decimal-cinematic"
     });
 
     const beforeZoom = Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0);
