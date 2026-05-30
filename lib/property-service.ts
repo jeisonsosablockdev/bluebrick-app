@@ -345,9 +345,9 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     ],
     blockchain: {
       network: "Solana Devnet",
-      collectionAddress: "CN8fDPDrZf82D9QHcVNt6nBx1hmg8nAZhCtSgPxKrj7",
-      assetMintAddress: "7N8dP2mAKtXh3VxH2QtYK8moJeb6Y6uYj6LxF7XnV9tC",
-      explorerUrl: "https://explorer.solana.com/address/CN8fDPDrZf82D9QHcVNt6nBx1hmg8nAZhCtSgPxKrj7?cluster=devnet",
+      collectionAddress: "J3zJVmhaam33CrheptWxJxLHGFCN5VfeRLtWeqFngXna",
+      assetMintAddress: "Fjg92YY2WDxndECYD42QLj477YitJUnetb1bnMQsQKsJ",
+      explorerUrl: "https://explorer.solana.com/address/J3zJVmhaam33CrheptWxJxLHGFCN5VfeRLtWeqFngXna?cluster=devnet",
       lastOnchainUpdate: "2026-05-28T18:00:00Z",
       syncStatus: "available"
     }
