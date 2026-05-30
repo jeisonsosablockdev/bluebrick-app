@@ -16,6 +16,7 @@ type UploadTranslations = {
 
 type UseAssetUploadWorkflowArgs = {
   draftId: string;
+  editSessionId: string;
   form: AssetForm;
   dragTargetField: FileUploadField | null;
   setForm: (value: SetStateAction<AssetForm>) => void;
@@ -53,6 +54,7 @@ function updateListField(current: string[], fileNames: string[]): string[] {
 
 export function useAssetUploadWorkflow({
   draftId,
+  editSessionId,
   form,
   dragTargetField,
   setForm,
@@ -136,6 +138,7 @@ export function useAssetUploadWorkflow({
           file,
           category,
           draftId,
+          editSessionId,
           previousCdnUrl: previousSingleFieldCdnUrl || null
         });
         uploaded.push(result);
@@ -158,7 +161,7 @@ export function useAssetUploadWorkflow({
         : "",
       error: failed.join(" | ")
     });
-  }, [applySuccessfulUploads, draftId, form, patchUploadState, t]);
+  }, [applySuccessfulUploads, draftId, editSessionId, form, patchUploadState, t]);
 
   const onFileInput = useCallback((field: FileUploadField) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
