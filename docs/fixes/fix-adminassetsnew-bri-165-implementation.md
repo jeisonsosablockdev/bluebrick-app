@@ -63,6 +63,7 @@ Apply the smallest safe changes that unblock the admin flow:
 ### Slice BRI-165-10
 - Verify orphan reconciliation covers abandoned new-asset uploads because they now carry `editSessionId`.
 - Add regression coverage for temporary finalized uploads that are not promoted and become cleanup candidates after the configured retention window.
+- Use a 15-day default abandoned-upload retention window, while keeping `ORPHAN_UPLOAD_ABANDONED_RETENTION_DAYS` as an explicit override.
 - Confirm Blob deletion happens before DB row deletion, preserving the current reconciler safety order.
 
 ### Slice BRI-165-11

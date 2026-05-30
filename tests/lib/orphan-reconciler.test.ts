@@ -7,8 +7,8 @@ describe("lib/asset-uploads/orphan-reconciler", () => {
     const result = parseReconcileInput({});
 
     expect(result.dryRun).toBe(true);
-    expect(result.temporaryRetentionDays).toBeGreaterThan(0);
-    expect(result.abandonedRetentionDays).toBeGreaterThan(0);
+    expect(result.temporaryRetentionDays).toBe(7);
+    expect(result.abandonedRetentionDays).toBe(15);
     expect(result.limit).toBeGreaterThan(0);
   });
 

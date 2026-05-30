@@ -41,6 +41,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - no new multilingual storage model is introduced in this fix,
 - `/admin/assets/new` should generate one `editSessionId` per form session and pass it with every upload,
 - uploads from an abandoned or reset form session should become eligible for cancellation and orphan cleanup instead of remaining as unmanaged Blob/DB records,
+- abandoned finalized uploads should use a 15-day default retention window before orphan cleanup unless explicitly overridden by `ORPHAN_UPLOAD_ABANDONED_RETENTION_DAYS`,
 - uploads from a successful create/mint flow should be promoted so the reconciler does not delete files that are part of the final asset,
 - image uploads should get SEO-friendly object names before they are written to Vercel Blob, using asset context plus the original file name when available.
 

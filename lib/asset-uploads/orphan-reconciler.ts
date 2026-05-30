@@ -34,6 +34,9 @@ type ReconcileInput = {
   limit: number;
 };
 
+const DEFAULT_TEMPORARY_RETENTION_DAYS = 7;
+const DEFAULT_ABANDONED_RETENTION_DAYS = 15;
+
 function toPositiveInteger(value: unknown, fallback: number): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
@@ -53,11 +56,11 @@ export function parseReconcileInput(body: unknown): ReconcileInput {
     dryRun,
     temporaryRetentionDays: toPositiveInteger(
       record.temporaryRetentionDays,
-      toPositiveInteger(process.env.ORPHAN_UPLOAD_TEMP_RETENTION_DAYS, 7)
+      toPositiveInteger(process.env.ORPHAN_UPLOAD_TEMP_RETENTION_DAYS, DEFAULT_TEMPORARY_RETENTION_DAYS)
     ),
     abandonedRetentionDays: toPositiveInteger(
       record.abandonedRetentionDays,
-      toPositiveInteger(process.env.ORPHAN_UPLOAD_ABANDONED_RETENTION_DAYS, 30)
+      toPositiveInteger(process.env.ORPHAN_UPLOAD_ABANDONED_RETENTION_DAYS, DEFAULT_ABANDONED_RETENTION_DAYS)
     ),
     limit: Math.min(500, toPositiveInteger(record.limit, 200))
   };
