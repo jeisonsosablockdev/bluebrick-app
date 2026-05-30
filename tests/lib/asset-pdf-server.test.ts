@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import nextConfig from "../../next.config";
+
 const brandonBriefText = `
 BLUE BRICK INVESTMENTS OPPORTUNITY BRIEF BRANDON - FLORIDA
 Deal Number: 117
@@ -111,5 +113,15 @@ describe("lib/admin/asset-pdf-server", () => {
     expect(workerInstances[0].terminate).toHaveBeenCalledTimes(1);
     expect(result.extractedText).toContain("Deal Number: 117");
     expect(result.rows).toHaveLength(1);
+  });
+
+  it("keeps pdfjs assets in the production serverless trace", () => {
+    expect(nextConfig.outputFileTracingIncludes?.["/api/admin/assets/import-preview"]).toEqual(
+      expect.arrayContaining([
+        "./node_modules/pdfjs-dist/package.json",
+        "./node_modules/pdfjs-dist/legacy/build/pdf.mjs",
+        "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
+      ])
+    );
   });
 });

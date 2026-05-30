@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   outputFileTracingRoot: process.cwd(),
+  outputFileTracingIncludes: {
+    "/api/admin/assets/import-preview": [
+      "./node_modules/pdfjs-dist/package.json",
+      "./node_modules/pdfjs-dist/legacy/build/pdf.mjs",
+      "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
+    ]
+  },
   allowedDevOrigins: getAllowedDevOrigins(),
   images: {
     remotePatterns: [
