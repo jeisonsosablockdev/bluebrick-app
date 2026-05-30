@@ -133,6 +133,16 @@ Fallback behavior:
   - resolve or document any clean-code findings before closure
   - re-run the targeted tests and final validation after cleanup
 
+### S08 - marketplace detail Google Maps preview fix
+- Branch: `fix/app-marketplace-detail-google-maps-bri-164-s08-detail-map`
+- Scope:
+  - TDD first: add failing tests for the missing Google Maps iframe on `/marketplace/[id]`
+  - keep the detail page as a traditional property detail entry, not a Mapbox 3D state surface
+  - expose the canonical Google Maps place payload and/or address-derived embed URL to the detail component
+  - render an official Google Maps Embed API iframe when a public embed key exists
+  - render a stable outbound Google Maps link when embedding is not configured
+  - preserve the `/marketplace` Mapbox list/map behavior unchanged
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`

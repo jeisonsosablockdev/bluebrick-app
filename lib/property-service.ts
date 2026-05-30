@@ -1,3 +1,5 @@
+import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
+
 export type ListingStatus = "active" | "funding" | "sold-out";
 export type BlockchainSyncStatus = "available" | "unavailable" | "rpc_error";
 
@@ -61,6 +63,7 @@ export type PropertyDetail = {
   locationLabel: string;
   geoLat?: number | null;
   geoLng?: number | null;
+  googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   listingStatus: ListingStatus;
   image: string;
   shortDescription: string;
@@ -105,6 +108,7 @@ export type CreateMarketplaceEntryInput = {
   detailedLocation: string;
   geoLat?: number | null;
   geoLng?: number | null;
+  googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   highlights: string[];
   investmentNotes: string;
   supplyTotal: number;
@@ -162,6 +166,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     locationLabel: "Bogota, CO",
     geoLat: null,
     geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Activo residencial en zona de alta demanda con renta estabilizada.",
@@ -212,6 +217,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     locationLabel: "Medellin, CO",
     geoLat: null,
     geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "funding",
     image: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Complejo mixto con crecimiento de ocupacion en etapa de funding.",
@@ -262,6 +268,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     locationLabel: "CDMX, MX",
     geoLat: null,
     geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "sold-out",
     image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Activo completamente distribuido a holders con historial de pago estable.",
@@ -312,6 +319,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     locationLabel: "Boston, MA, US",
     geoLat: 42.3601,
     geoLng: -71.0589,
+    googleMapsPlace: null,
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "U.S. waterfront asset positioned for the discovery-style marketplace map.",
@@ -363,6 +371,7 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     project: { ...detail.project },
     economics: { ...detail.economics },
     governance: { ...detail.governance },
+    googleMapsPlace: detail.googleMapsPlace ? { ...detail.googleMapsPlace } : null,
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -443,6 +452,9 @@ export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInpu
     country: input.country,
     postalCode: input.postalCode ?? null,
     locationLabel: createLocationLabel(input.city, input.country),
+    geoLat: input.geoLat ?? null,
+    geoLng: input.geoLng ?? null,
+    googleMapsPlace: input.googleMapsPlace ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
     shortDescription: input.shortDescription,

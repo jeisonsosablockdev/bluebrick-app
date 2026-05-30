@@ -36,6 +36,7 @@ The detail page stays as it is today.
 - Hovering a pin zooms the map to that property.
 - The map should emphasize the single property being shown so the user feels like they are discovering that location.
 - The marketplace detail page remains a normal detail entry point and does not adopt the 3D states.
+- S08 exception: the detail page may render the existing Google Maps location preview for the property, using the canonical admin location payload, as long as it does not introduce the Mapbox 3D marketplace state machine into detail.
 
 ## Technical Specification
 ### Mapbox GL JS v3 + React Map GL
@@ -94,6 +95,7 @@ The new 3D visual is meant to add the missing layer of presence:
 
 ## Non-Goals
 - No redesign of the marketplace detail page.
+- No Mapbox 3D state machine on the marketplace detail page; Google Maps location preview restoration is allowed as a focused detail fix.
 - No map experience outside the USA.
 - No additional pin metadata beyond property name and `% sold` in the map surface.
 - No auth, wallet, or on-chain behavior changes.

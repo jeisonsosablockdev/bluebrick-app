@@ -3,6 +3,7 @@ import "server-only";
 import { Connection, PublicKey } from "@solana/web3.js";
 
 import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
+import { normalizeCollectionBootstrapGoogleMapsPlaceJson } from "@/lib/admin/collection-bootstrap-mapper";
 import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/solana";
@@ -36,6 +37,7 @@ type PersistedMarketplaceRow = {
   location_label: string;
   geo_lat: number | string | null;
   geo_lng: number | string | null;
+  google_maps_place_json: unknown;
   listing_status: ListingStatus;
   image_url: string;
   short_description: string;
@@ -268,6 +270,7 @@ function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): Property
     locationLabel: row.location_label,
     geoLat: toOptionalFiniteNumber(row.geo_lat),
     geoLng: toOptionalFiniteNumber(row.geo_lng),
+    googleMapsPlace: normalizeCollectionBootstrapGoogleMapsPlaceJson(row.google_maps_place_json),
     listingStatus: row.listing_status,
     image: row.image_url,
     shortDescription: row.short_description,
@@ -309,6 +312,7 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     project: { ...detail.project },
     economics: { ...detail.economics },
     governance: { ...detail.governance },
+    googleMapsPlace: detail.googleMapsPlace ? { ...detail.googleMapsPlace } : null,
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -329,6 +333,7 @@ function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): Pro
     }),
     geoLat: input.geoLat ?? null,
     geoLng: input.geoLng ?? null,
+    googleMapsPlace: input.googleMapsPlace ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
     shortDescription: input.shortDescription,
@@ -422,6 +427,7 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
            location_label,
            ${support.geoLat ? "geo_lat" : "NULL::double precision AS geo_lat"},
            ${support.geoLng ? "geo_lng" : "NULL::double precision AS geo_lng"},
+           ${support.googleMapsPlaceJson ? "google_maps_place_json" : "NULL::jsonb AS google_maps_place_json"},
            listing_status,
            image_url,
            short_description,
@@ -490,6 +496,7 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         "detailed_location",
         ...(support.geoLat ? ["geo_lat"] : []),
         ...(support.geoLng ? ["geo_lng"] : []),
+        ...(support.googleMapsPlaceJson ? ["google_maps_place_json"] : []),
         "highlights_json",
         "investment_notes",
         "project_json",
@@ -527,6 +534,7 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
         input.detailedLocation,
         ...(support.geoLat ? [input.geoLat ?? null] : []),
         ...(support.geoLng ? [input.geoLng ?? null] : []),
+        ...(support.googleMapsPlaceJson ? [input.googleMapsPlace ? toJsonbValue(input.googleMapsPlace) : null] : []),
         toJsonbValue(input.highlights),
         input.investmentNotes,
         toJsonbValue(input.project),

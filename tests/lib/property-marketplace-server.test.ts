@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-let locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
+let locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng", "google_maps_place_json"];
 let persistedRows: unknown[] = [];
 
 const queryMock = vi.fn(async (sql: string) => {
@@ -50,6 +50,7 @@ vi.mock("@/lib/property-service", () => ({
 import { resetMarketplaceEntryLocationColumnSupportCache } from "@/lib/admin/marketplace-entry-location-columns";
 import {
   createMarketplacePropertyEntryPersistent,
+  getMarketplacePropertyDetail,
   listMarketplaceMapEntries
 } from "@/lib/property-marketplace-server";
 
@@ -57,7 +58,7 @@ describe("lib/property-marketplace-server", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.DATABASE_URL = "postgres://example";
-    locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng"];
+    locationColumnNames = ["state_province", "postal_code", "geo_lat", "geo_lng", "google_maps_place_json"];
     persistedRows = [];
     resetMarketplaceEntryLocationColumnSupportCache();
   });
@@ -124,6 +125,7 @@ describe("lib/property-marketplace-server", () => {
     expect(sql).not.toContain("postal_code");
     expect(sql).not.toContain("geo_lat");
     expect(sql).not.toContain("geo_lng");
+    expect(sql).not.toContain("google_maps_place_json");
     expect(sql).toContain("location_label");
     expect(sql).toContain("detailed_location");
   });
@@ -179,5 +181,59 @@ describe("lib/property-marketplace-server", () => {
         mintedOrSold: 500
       }
     ]);
+  });
+
+  it("selects persisted Google Maps place data for marketplace detail", async () => {
+    persistedRows = [
+      {
+        id: "brandon-117",
+        title: "Fix & Flip Brandon 117",
+        city: "Brandon",
+        country: "US",
+        postal_code: "33511",
+        location_label: "Brandon, Florida, 33511, US",
+        geo_lat: 27.9379,
+        geo_lng: -82.2859,
+        google_maps_place_json: {
+          placeLabel: "117 Hickory Creek Blvd",
+          formattedAddress: "117 Hickory Creek Blvd, Brandon, FL 33511, USA",
+          lat: 27.9379,
+          lng: -82.2859,
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=117%20Hickory%20Creek%20Blvd",
+          placeId: "place-hickory",
+          city: "Brandon",
+          stateProvince: "FL",
+          country: "US",
+          postalCode: "33511"
+        },
+        listing_status: "funding",
+        image_url: "https://cdn.example.com/brandon.jpg",
+        short_description: "US listing",
+        detailed_location: "117 Hickory Creek Blvd, Brandon, FL",
+        highlights_json: [],
+        investment_notes: "Marketplace detail listing",
+        supply_total: 2000,
+        minted_or_sold: 500,
+        nft_price_usd: 120,
+        annual_roi_pct: 21.8,
+        availability_label: "Funding",
+        project_json: {},
+        economics_json: {},
+        governance_json: {},
+        documents_json: [],
+        collection_address: "CoLLeCt1on111111111111111111111111111111111",
+        asset_mint_address: "CanDyMach1ne1111111111111111111111111111111",
+        explorer_url: "https://explorer.solana.com/address/test?cluster=devnet",
+        last_onchain_update: null,
+        sync_status: "available"
+      }
+    ];
+
+    const detail = await getMarketplacePropertyDetail("brandon-117");
+    const selectSql = String(queryMock.mock.calls.find((call) => String(call[0]).includes("FROM marketplace_entries"))?.[0] ?? "");
+
+    expect(selectSql).toContain("google_maps_place_json");
+    expect(detail?.googleMapsPlace?.placeId).toBe("place-hickory");
+    expect(detail?.googleMapsPlace?.formattedAddress).toContain("Brandon");
   });
 });
