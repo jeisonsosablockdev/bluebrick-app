@@ -10,7 +10,8 @@ Apply the smallest safe changes that unblock the admin flow:
 4. keep the existing PDF import normalization path unchanged so commercial descriptions continue to auto-fill,
 5. keep the current single-language storage model unchanged in this fix,
 6. add edit-session lifecycle wiring to `/admin/assets/new` uploads so abandoned create sessions can be canceled and reconciled,
-7. generate SEO-friendly image object names before upload so public Blob URLs carry useful asset context.
+7. generate SEO-friendly image object names before upload so public Blob URLs carry useful asset context,
+8. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path.
 
 ## Slice Plan
 
@@ -80,6 +81,19 @@ Apply the smallest safe changes that unblock the admin flow:
 - Verify the SEO naming helper is shared and covered instead of embedding ad hoc filename string logic in UI components.
 - Resolve blocking findings before merging the follow-up branch.
 
+### Slice BRI-165-13
+- Investigate `Pinata request failed.` in the Core Candy Machine metadata step used from `/admin/assets/new`.
+- Improve `lib/pinata-file-service.ts` error extraction so Pinata API responses without the current expected shape still surface status, provider code/message, and safe diagnostic context.
+- Keep `PINATA_JWT` absence as the explicit local metadata fallback path; do not treat missing Pinata config as a failed create flow when fallback is intended.
+- Distinguish provider request failures from source-image fetch/read failures so operators know whether the issue is Pinata credentials/API, Blob/source URL reachability, or metadata payload validation.
+- Ensure admin route responses from `app/api/admin/core-candy-machine/metadata/route.ts` preserve structured error codes/statuses and do not collapse everything into `Pinata request failed.`
+- Add regression coverage for:
+  - Pinata JSON pin failure with an unstructured response body,
+  - Pinata file pin failure with an unstructured response body,
+  - source image fetch failure,
+  - local metadata fallback when Pinata is not configured.
+- Capture one QA note showing the admin-facing message is actionable and does not encourage blind retries.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -94,7 +108,8 @@ Targeted regression coverage will verify:
 - reset/cancel behavior marks unpromoted session uploads as canceled,
 - the orphan reconciler selects abandoned new-asset uploads after retention and deletes Blob objects before DB rows,
 - SEO image naming produces descriptive lowercase hyphenated object names from asset context while preserving original filename audit metadata,
-- SEO image naming falls back safely when asset context is incomplete and never bypasses MIME, extension, size, or checksum validation.
+- SEO image naming falls back safely when asset context is incomplete and never bypasses MIME, extension, size, or checksum validation,
+- Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
 
 ## Final Review
 
@@ -102,6 +117,7 @@ Targeted regression coverage will verify:
 - The final review must confirm the implementation slices are locally scoped and that no blocking maintainability issues remain.
 - The upload lifecycle follow-up must explicitly check that new asset creation and collection-editor upload lifecycles share backend helpers instead of introducing parallel cleanup rules.
 - The SEO naming follow-up must confirm generated names are descriptive without keyword stuffing and remain deterministic enough for tests.
+- The Pinata follow-up must confirm no secrets are logged or returned while still surfacing enough provider/source context for operators.
 
 ## Tooling
 
@@ -119,4 +135,5 @@ Targeted regression coverage will verify:
   - lint/typecheck/validate output,
   - orphan reconciler regression output for canceled/unpromoted uploads,
   - SEO image naming regression output for asset-context filenames and fallback filenames,
+  - Pinata metadata route/service regression output for provider failures and fallback behavior,
   - explicit clean-code pass or no-blockers result
