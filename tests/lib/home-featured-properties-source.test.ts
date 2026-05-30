@@ -22,4 +22,13 @@ describe("landing featured properties source contract", () => {
     expect(pageSource).toContain("listMarketplaceProperties");
     expect(pageSource).toContain("<PropertiesSection properties={featuredProperties} />");
   });
+
+  it("keeps home imagery sized for mobile Core Web Vitals", () => {
+    const heroSource = readFileFromRepo("components/sections/hero.tsx");
+    const sectionSource = readFileFromRepo("components/sections/properties.tsx");
+
+    expect(heroSource).toContain("fetchPriority=\"high\"");
+    expect(heroSource).toContain("sizes=\"(min-width: 1024px) 560px, (min-width: 768px) 50vw, 100vw\"");
+    expect(sectionSource).toContain("sizes=\"(min-width: 1024px) 360px, (min-width: 768px) 33vw, 100vw\"");
+  });
 });

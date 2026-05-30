@@ -26,6 +26,10 @@ vi.mock("@/components/dashboard/dashboard-charts", () => ({
   DashboardCharts: ({ context }: { context: string }) => createElement("div", { "data-testid": `dashboard-charts-${context}` }, `charts:${context}`)
 }));
 
+vi.mock("@/components/sections/footer", () => ({
+  FooterSection: () => createElement("footer", { "data-testid": "app-footer" }, "app-footer")
+}));
+
 vi.mock("@/components/ui/card", () => ({
   Card: ({ children }: { children: ReactNode }) => createElement("div", null, children)
 }));
@@ -58,6 +62,7 @@ vi.mock("@/lib/rbac", () => ({
 }));
 
 import MarketplacePage from "@/app/marketplace/page";
+import { dynamic, revalidate } from "@/app/marketplace/page";
 
 const originalNodeEnv = process.env.NODE_ENV;
 const originalFlag = process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
@@ -124,5 +129,16 @@ describe("app/marketplace/page", () => {
     const html = await renderMarketplacePage();
 
     expect(html).toContain("dashboard-charts-marketplace");
+  });
+
+  it("renders the shared footer on marketplace", async () => {
+    const html = await renderMarketplacePage();
+
+    expect(html).toContain("app-footer");
+  });
+
+  it("keeps the marketplace route dynamic so Safari does not keep stale deployed entry imagery", () => {
+    expect(dynamic).toBe("force-dynamic");
+    expect(revalidate).toBe(0);
   });
 });

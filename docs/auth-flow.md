@@ -746,3 +746,26 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - detail access still flows through the authenticated server handlers,
   - section save coverage still uses the same authenticated PATCH route contract and server-side validation/ownership checks.
 - No new auth flow, nonce lifecycle, cookie handling, or client-authoritative permission model was introduced in this slice.
+
+## BRI-166 S02 Marketplace Cache Refresh
+- `/marketplace` now declares an explicit dynamic route freshness contract so deployed Safari iPhone revisits do not remain stuck on stale marketplace HTML where entry cover imagery can disappear.
+- The slice does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, or account-linking logic.
+- The existing PWA service worker remains push/notification focused and does not gain a `fetch` handler or any new client-authoritative cache policy.
+
+## BRI-166 S03 Marketplace and Profile Footer
+- `/marketplace` and `/protected/perfil` now render the shared footer surface.
+- The footer is presentation/navigation-only and does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, or account-linking logic.
+- `/protected/perfil` still resolves account and wallet state server-side before selecting the account-only or wallet-backed profile module.
+
+## BRI-166 S04 Mobile Login Layout
+- The onboarding reward decision modal now uses a mobile-safe scroll container and `100svh` height constraint to prevent connected-wallet guidance from overlapping marketplace content on Safari iPhone-sized viewports.
+- The slice changes only modal layout classes and does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, reward qualification, or account-linking logic.
+
+## BRI-166 S06 Mobile Core Web Vitals Optimization
+- Home and marketplace images now carry more explicit mobile sizing/fetch-priority hints for Core Web Vitals.
+- The slice changes image loading hints only and does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, reward qualification, or account-linking logic.
+
+## BRI-166 S08 Protected Profile Footer Correction
+- The shared footer now belongs to `ProtectedShell`, so `/protected/perfil` shows the footer as part of the protected page shell instead of a profile-module child.
+- `/protected/perfil` still resolves account and wallet state server-side before rendering profile content.
+- The slice changes footer placement only and does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, reward qualification, or account-linking logic.

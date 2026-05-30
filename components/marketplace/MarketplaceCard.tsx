@@ -54,6 +54,8 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
           height={360}
           className="h-44 w-full object-cover"
           loading={prioritizeImage ? "eager" : "lazy"}
+          fetchPriority={prioritizeImage ? "high" : "auto"}
+          sizes="(min-width: 1024px) 360px, (min-width: 768px) 50vw, 100vw"
         />
       </motion.button>
       <div className="space-y-2 p-4">

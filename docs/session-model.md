@@ -657,3 +657,43 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation
   - same authenticated GET/PATCH routes as the only admin collection detail paths
 - Malformed JSON rejection and canonical ownership-path coverage tighten server behavior without widening the session boundary.
+
+## BRI-166 S02 Marketplace Cache Refresh Session Notes
+- `/marketplace` now opts into dynamic rendering and zero revalidation to prevent stale deployed page state on Safari iPhone.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup when wallet-protected surfaces are used
+  - no new session token shape, refresh rule, or browser-owned authority state
+- The change is a public route freshness guard and does not introduce a new authenticated request path.
+
+## BRI-166 S03 Marketplace and Profile Footer Session Notes
+- The shared footer was added to `/marketplace` and `/protected/perfil` as a presentational/navigation surface.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side account and wallet resolution for `/protected/perfil`
+  - no new session token shape, refresh rule, or browser-owned authority state
+- Footer links do not introduce a new authenticated mutation or session refresh path.
+
+## BRI-166 S04 Mobile Login Layout Session Notes
+- The connected-wallet/onboarding decision modal now has mobile-safe scroll and viewport constraints.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same wallet and account resolution before post-auth decisions
+  - no new session token shape, refresh rule, reward authority rule, or browser-owned authority state
+- The change does not add or remove any authenticated request path.
+
+## BRI-166 S06 Mobile Core Web Vitals Optimization Session Notes
+- Home and marketplace image loading hints were adjusted for mobile Core Web Vitals.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same wallet and account resolution behavior
+  - no new session token shape, refresh rule, or browser-owned authority state
+- The change does not add, remove, or alter any authenticated request path.
+
+## BRI-166 S08 Protected Profile Footer Correction Session Notes
+- `ProtectedShell` now owns the shared footer for protected profile/dashboard surfaces.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side account and wallet resolution for `/protected/perfil`
+  - no new session token shape, refresh rule, or browser-owned authority state
+- The change does not add, remove, or alter any authenticated request path.

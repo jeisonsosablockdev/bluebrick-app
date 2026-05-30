@@ -99,4 +99,19 @@ describe("components/onboarding/onboarding-reward-decision-modal", () => {
       root.unmount();
     });
   });
+
+  it("uses a mobile-safe scroll container so the decision prompt does not overlap the page chrome", () => {
+    const { container, root } = renderModal();
+
+    const overlay = container.querySelector("[data-testid='onboarding-reward-modal-overlay']");
+    const dialog = container.querySelector("[role='dialog']");
+
+    expect(overlay?.className).toContain("items-start");
+    expect(overlay?.className).toContain("overflow-y-auto");
+    expect(dialog?.className).toContain("max-h-[calc(100svh-1.5rem)]");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

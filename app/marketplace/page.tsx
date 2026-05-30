@@ -7,6 +7,7 @@ import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridC
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
+import { FooterSection } from "@/components/sections/footer";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
 import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
@@ -20,6 +21,8 @@ export const metadata: Metadata = createPageMetadata({
   path: "/marketplace",
   section: "marketplace"
 });
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type MarketplacePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -120,6 +123,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
             <DashboardCharts context="marketplace" />
           </section>
         ) : null}
+
+        <FooterSection />
       </WalletRuntimeProvider>
     </main>
   );

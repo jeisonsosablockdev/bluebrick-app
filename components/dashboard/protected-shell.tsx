@@ -11,6 +11,7 @@ import { WalletModal } from "@/components/WalletModal";
 import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
 import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
 import { RouteTransition } from "@/components/motion/route-transition";
+import { FooterSection } from "@/components/sections/footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";
@@ -245,6 +246,10 @@ export function ProtectedShell({
             {children}
           </RouteTransition>
         </section>
+      </div>
+
+      <div className="mx-auto mt-10 max-w-6xl px-4 md:px-6">
+        <FooterSection />
       </div>
 
       <AnimatePresence>

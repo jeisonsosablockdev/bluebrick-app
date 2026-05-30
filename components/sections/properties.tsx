@@ -62,7 +62,14 @@ export function PropertiesSection({ properties }: PropertiesSectionProps) {
       <div className="grid gap-4 md:grid-cols-3">
         {effectiveProperties.map((property) => (
           <Card key={property.id} className="overflow-hidden p-0">
-            <Image src={property.image} alt={property.title} width={600} height={360} className="h-44 w-full object-cover" />
+            <Image
+              src={property.image}
+              alt={property.title}
+              width={600}
+              height={360}
+              className="h-44 w-full object-cover"
+              sizes="(min-width: 1024px) 360px, (min-width: 768px) 33vw, 100vw"
+            />
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-base font-semibold text-white">{property.title}</h3>
