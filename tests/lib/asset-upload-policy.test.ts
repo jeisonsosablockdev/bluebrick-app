@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildSeoImageFileName,
   buildVersionedObjectKey,
   generateUploadId,
   isUuidV4,
@@ -34,7 +35,16 @@ describe("lib/asset-uploads/policy", () => {
       sizeBytes: 512_000,
       contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
       draftId: DRAFT_ID,
-      editSessionId: EDIT_SESSION_ID
+      editSessionId: EDIT_SESSION_ID,
+      seoImageContext: {
+        assetName: "Hickory Brandon 117",
+        city: "Brandon",
+        state: "FL",
+        country: "USA",
+        internalCode: "BR-117",
+        assetTypeLabel: "FIX & FLIP",
+        imageRole: "cover"
+      }
     });
 
     expect(parsed.ok).toBe(true);
@@ -45,6 +55,58 @@ describe("lib/asset-uploads/policy", () => {
     expect(parsed.value.category).toBe("galleryImage");
     expect(parsed.value.mimeType).toBe("image/png");
     expect(parsed.value.editSessionId).toBe(EDIT_SESSION_ID);
+    expect(parsed.value.seoImageContext?.assetName).toBe("Hickory Brandon 117");
+  });
+
+  it("builds SEO-friendly image file names from asset context", () => {
+    const fileName = buildSeoImageFileName({
+      category: "galleryImage",
+      originalFileName: "WhatsApp Image 2026-04-27 at 13.18.22.jpeg",
+      mimeType: "image/jpeg",
+      seoImageContext: {
+        assetName: "Hickory Brandon 117",
+        city: "Brandon",
+        state: "FL",
+        country: "USA",
+        internalCode: "BR-117",
+        assetTypeLabel: "FIX & FLIP",
+        imageRole: "cover"
+      }
+    });
+
+    expect(fileName).toBe("hickory-brandon-117-brandon-fl-usa-fix-flip-br-117-cover.jpeg");
+    expect(fileName).not.toContain("WhatsApp");
+    expect(fileName).not.toContain(" ");
+  });
+
+  it("falls back to sanitized original image names when context is missing", () => {
+    const fileName = buildSeoImageFileName({
+      category: "propertyImage",
+      originalFileName: "../../../Front View.PNG",
+      mimeType: "image/png",
+      seoImageContext: null
+    });
+
+    expect(fileName).toBe("front-view.png");
+  });
+
+  it("does not apply SEO image context to document uploads", () => {
+    const fileName = buildSeoImageFileName({
+      category: "legalDoc",
+      originalFileName: "Contrato Final.PDF",
+      mimeType: "application/pdf",
+      seoImageContext: {
+        assetName: "Hickory Brandon 117",
+        city: "Brandon",
+        state: "FL",
+        country: "USA",
+        internalCode: "BR-117",
+        assetTypeLabel: "FIX & FLIP",
+        imageRole: "cover"
+      }
+    });
+
+    expect(fileName).toBe("contrato-final.pdf");
   });
 
   it("rejects signed-url requests with invalid editSessionId", () => {

@@ -1,6 +1,12 @@
 import { randomUUID } from "node:crypto";
 
-import { ASSET_UPLOAD_CATEGORIES, type AssetUploadCategory, type FinalizeUploadRequest, type SignedUrlRequest } from "@/lib/asset-uploads/types";
+import {
+  ASSET_UPLOAD_CATEGORIES,
+  type AssetUploadCategory,
+  type FinalizeUploadRequest,
+  type SeoImageContext,
+  type SignedUrlRequest
+} from "@/lib/asset-uploads/types";
 
 type ParseResult<T, E extends string> = { ok: true; value: T } | { ok: false; code: E; message: string };
 
@@ -28,6 +34,27 @@ const MIME_EXTENSIONS: Record<string, string[]> = {
 
 const IMAGE_MIME_TYPES = new Set<string>(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const IMAGE_EXTENSIONS = new Set<string>(["jpg", "jpeg", "png", "webp", "avif"]);
+const SEO_IMAGE_CATEGORIES = new Set<AssetUploadCategory>(["galleryImage", "propertyImage"]);
+const SEO_IMAGE_CONTEXT_FIELDS = [
+  "assetName",
+  "city",
+  "state",
+  "country",
+  "internalCode",
+  "assetTypeLabel",
+  "imageRole"
+] as const;
+const GENERIC_IMAGE_BASE_NAMES = new Set([
+  "caratula",
+  "cover",
+  "foto",
+  "image",
+  "img",
+  "photo",
+  "picture",
+  "screenshot",
+  "whatsapp-image"
+]);
 const DOCUMENT_MIME_TYPES = new Set<string>([
   "application/pdf",
   "text/csv",
@@ -164,6 +191,28 @@ function normalizeExtension(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10);
 }
 
+function toSlugSegment(value: string): string {
+  return value
+    .trim()
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function pushUniqueSegment(segments: string[], value: string | null | undefined): void {
+  if (!value) {
+    return;
+  }
+
+  const segment = toSlugSegment(value).slice(0, 48);
+  if (!segment || segments.includes(segment)) {
+    return;
+  }
+
+  segments.push(segment);
+}
+
 export function sanitizeFileName(fileName: string): SanitizedFileName {
   const input = fileName.trim();
   const pathSegment = input.split(/[\\/]/).pop() ?? "";
@@ -188,6 +237,97 @@ export function sanitizeFileName(fileName: string): SanitizedFileName {
     sanitizedFileName: safeFileName,
     extension
   };
+}
+
+function parseSeoImageContext(value: unknown): { ok: true; value: SeoImageContext | null } | { ok: false; message: string } {
+  if (value === undefined || value === null) {
+    return { ok: true, value: null };
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {
+      ok: false,
+      message: "seoImageContext must be an object when provided."
+    };
+  }
+
+  const record = value as Record<string, unknown>;
+  const parsed = {} as SeoImageContext;
+
+  for (const fieldName of SEO_IMAGE_CONTEXT_FIELDS) {
+    const fieldValue = record[fieldName];
+
+    if (fieldValue === undefined || fieldValue === null || fieldValue === "") {
+      parsed[fieldName] = null;
+      continue;
+    }
+
+    if (typeof fieldValue !== "string") {
+      return {
+        ok: false,
+        message: `seoImageContext.${fieldName} must be a string when provided.`
+      };
+    }
+
+    const normalized = fieldValue.trim();
+    parsed[fieldName] = normalized ? normalized.slice(0, 120) : null;
+  }
+
+  return {
+    ok: true,
+    value: parsed
+  };
+}
+
+function isGenericImageBaseName(baseName: string): boolean {
+  if (!baseName) {
+    return true;
+  }
+
+  if (GENERIC_IMAGE_BASE_NAMES.has(baseName)) {
+    return true;
+  }
+
+  return /^(img|image|photo|picture|screenshot)-?\d*$/i.test(baseName) ||
+    baseName.startsWith("whatsapp-image");
+}
+
+export function buildSeoImageFileName(input: {
+  category: AssetUploadCategory;
+  originalFileName: string;
+  mimeType: string;
+  seoImageContext: SeoImageContext | null;
+}): string {
+  const sanitized = sanitizeFileName(input.originalFileName);
+  const extension = sanitized.extension || defaultExtensionForMimeType(input.mimeType);
+
+  if (!SEO_IMAGE_CATEGORIES.has(input.category) || !IMAGE_MIME_TYPES.has(input.mimeType)) {
+    return sanitized.sanitizedFileName;
+  }
+
+  const originalBase = sanitized.sanitizedFileName.replace(/\.[a-z0-9]{1,10}$/i, "");
+  const segments: string[] = [];
+  const context = input.seoImageContext;
+
+  pushUniqueSegment(segments, context?.assetName);
+  pushUniqueSegment(segments, context?.city);
+  pushUniqueSegment(segments, context?.state);
+  pushUniqueSegment(segments, context?.country);
+  pushUniqueSegment(segments, context?.assetTypeLabel);
+  pushUniqueSegment(segments, context?.internalCode);
+  pushUniqueSegment(segments, context?.imageRole);
+
+  if (segments.length < 2 || !isGenericImageBaseName(originalBase)) {
+    pushUniqueSegment(segments, originalBase);
+  }
+
+  const base = (segments.length > 0 ? segments.join("-") : originalBase || "image")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 96)
+    .replace(/-+$/g, "") || "image";
+
+  return `${base}.${extension}`;
 }
 
 function extensionAllowedByMime(extension: string, mimeType: string): boolean {
@@ -289,6 +429,15 @@ export function parseSignedUrlRequest(
     };
   }
 
+  const parsedSeoImageContext = parseSeoImageContext(record.seoImageContext);
+  if (!parsedSeoImageContext.ok) {
+    return {
+      ok: false,
+      code: "INVALID_UPLOAD_REQUEST",
+      message: parsedSeoImageContext.message
+    };
+  }
+
   const policy = getCategoryPolicy(category);
 
   if (!policy.allowedMimeTypes.has(mimeType)) {
@@ -335,7 +484,8 @@ export function parseSignedUrlRequest(
       sizeBytes,
       contentMd5Base64: record.contentMd5Base64.trim(),
       draftId,
-      editSessionId: parsedEditSessionId.value
+      editSessionId: parsedEditSessionId.value,
+      seoImageContext: parsedSeoImageContext.value
     }
   };
 }

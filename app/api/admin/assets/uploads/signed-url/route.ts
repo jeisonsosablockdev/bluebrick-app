@@ -7,7 +7,7 @@ import {
   generateUploadId,
   getCategoryPolicy,
   parseSignedUrlRequest,
-  sanitizeFileName
+  buildSeoImageFileName
 } from "@/lib/asset-uploads/policy";
 import { createSignedUploadContract } from "@/lib/asset-uploads/repository";
 
@@ -88,11 +88,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const payload = parsed.value;
     const uploadId = generateUploadId();
     const config = getGcsUploadConfig();
-    const sanitized = sanitizeFileName(payload.fileName);
+    const seoFileName = buildSeoImageFileName({
+      category: payload.category,
+      originalFileName: payload.fileName,
+      mimeType: payload.mimeType,
+      seoImageContext: payload.seoImageContext
+    });
     const objectKey = buildVersionedObjectKey({
       category: payload.category,
       draftId: payload.draftId,
-      fileName: sanitized.sanitizedFileName,
+      fileName: seoFileName,
       contentMd5Base64: payload.contentMd5Base64,
       mimeType: payload.mimeType
     });
@@ -114,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       editSessionId: payload.editSessionId,
       category: payload.category,
       originalFileName: payload.fileName,
-      sanitizedFileName: sanitized.sanitizedFileName,
+      sanitizedFileName: seoFileName,
       objectKey,
       bucket: config.bucketName,
       mimeType: payload.mimeType,

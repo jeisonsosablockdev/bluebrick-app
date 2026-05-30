@@ -4,7 +4,12 @@ import { useCallback } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 
 import type { AssetForm, FileUploadField, UploadRefsState, UploadUiState } from "@/components/admin/asset-creation/types";
-import { type AssetUploadCategory, type FinalizeResponse, uploadAssetFileViaSignedUrl } from "@/lib/admin/asset-upload-client";
+import {
+  type AssetUploadCategory,
+  type FinalizeResponse,
+  type SeoImageUploadContext,
+  uploadAssetFileViaSignedUrl
+} from "@/lib/admin/asset-upload-client";
 
 type SetStateAction<T> = T | ((prev: T) => T);
 
@@ -44,6 +49,55 @@ function fieldToUploadCategory(field: FileUploadField): AssetUploadCategory {
   }
 
   return "galleryImage";
+}
+
+function fieldToSeoImageRole(field: FileUploadField): string | null {
+  if (field === "coverImage") {
+    return "cover";
+  }
+
+  if (field === "galleryImages") {
+    return "gallery";
+  }
+
+  if (field === "propertyImages") {
+    return "property";
+  }
+
+  return null;
+}
+
+function assetTypeToSeoLabel(assetType: AssetForm["assetType"]): string | null {
+  if (assetType === "building_new") {
+    return "fix flip";
+  }
+
+  if (assetType === "rental_property") {
+    return "fix hold";
+  }
+
+  if (assetType === "land_lot") {
+    return "real estate dev";
+  }
+
+  return null;
+}
+
+function buildSeoImageContext(form: AssetForm, field: FileUploadField): SeoImageUploadContext | null {
+  const imageRole = fieldToSeoImageRole(field);
+  if (!imageRole) {
+    return null;
+  }
+
+  return {
+    assetName: form.assetName,
+    city: form.city,
+    state: form.state,
+    country: form.country,
+    internalCode: form.internalCode,
+    assetTypeLabel: assetTypeToSeoLabel(form.assetType),
+    imageRole
+  };
 }
 
 function updateListField(current: string[], fileNames: string[]): string[] {
@@ -115,6 +169,7 @@ export function useAssetUploadWorkflow({
     const uploaded: FinalizeResponse[] = [];
     const failed: string[] = [];
     const category = fieldToUploadCategory(field);
+    const seoImageContext = buildSeoImageContext(form, field);
     const previousSingleFieldCdnUrl = (field === "coverImage" || field === "brochureFile")
       ? form[field].trim()
       : "";
@@ -139,6 +194,7 @@ export function useAssetUploadWorkflow({
           category,
           draftId,
           editSessionId,
+          seoImageContext,
           previousCdnUrl: previousSingleFieldCdnUrl || null
         });
         uploaded.push(result);

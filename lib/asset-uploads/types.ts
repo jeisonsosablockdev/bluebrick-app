@@ -8,6 +8,16 @@ export const ASSET_UPLOAD_CATEGORIES = [
 
 export type AssetUploadCategory = (typeof ASSET_UPLOAD_CATEGORIES)[number];
 
+export type SeoImageContext = {
+  assetName: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  internalCode: string | null;
+  assetTypeLabel: string | null;
+  imageRole: string | null;
+};
+
 export type SignedUrlRequest = {
   category: AssetUploadCategory;
   fileName: string;
@@ -16,6 +26,7 @@ export type SignedUrlRequest = {
   contentMd5Base64: string;
   draftId: string;
   editSessionId: string | null;
+  seoImageContext: SeoImageContext | null;
 };
 
 export type FinalizeUploadRequest = {
