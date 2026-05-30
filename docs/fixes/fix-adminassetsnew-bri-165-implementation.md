@@ -11,7 +11,8 @@ Apply the smallest safe changes that unblock the admin flow:
 5. keep the current single-language storage model unchanged in this fix,
 6. add edit-session lifecycle wiring to `/admin/assets/new` uploads so abandoned create sessions can be canceled and reconciled,
 7. generate SEO-friendly image object names before upload so public Blob URLs carry useful asset context,
-8. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path.
+8. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path,
+9. align location entry across `/admin/assets/new` and `/admin/collections` with Google Maps place selection and first-class postal code handling.
 
 ## Slice Plan
 
@@ -94,6 +95,29 @@ Apply the smallest safe changes that unblock the admin flow:
   - local metadata fallback when Pinata is not configured.
 - Capture one QA note showing the admin-facing message is actionable and does not encourage blind retries.
 
+### Slice BRI-165-14
+- Replace the uncomfortable manual location-entry pattern in `/admin/assets/new` with a Google Maps place-selection flow that reuses the existing `/admin/collections` integration where possible.
+- Confirm the existing `/admin/collections` location editor remains supported and consistent with the new-asset flow instead of diverging into two address models.
+- Add `postalCode` as a first-class location field for both creation and existing-project editing surfaces where location is edited.
+- When a Google Maps place is selected, extract and persist structured address parts:
+  - `address` or address line,
+  - `city`,
+  - `state`,
+  - `country`,
+  - `postalCode`,
+  - `geoLat`,
+  - `geoLng`,
+  - reduced `googleMapsPlace` payload when supported.
+- Keep manual editing as a fallback when Google Maps is unavailable or the operator needs to correct provider data.
+- Avoid duplicating postal code inside the street address if `postalCode` is present separately.
+- Verify marketplace detail/listing rendering shows location clearly and includes postal code in the correct place without hiding it at the end of an ambiguous address string.
+- Add or update tests for:
+  - Google Maps place selection hydrating `/admin/assets/new` location fields,
+  - `/admin/collections` location editing preserving `postalCode`,
+  - create/marketplace payload propagation of `postalCode`,
+  - marketplace display formatting with and without `postalCode`,
+  - fallback/manual entry behavior when Maps is not configured.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -109,7 +133,8 @@ Targeted regression coverage will verify:
 - the orphan reconciler selects abandoned new-asset uploads after retention and deletes Blob objects before DB rows,
 - SEO image naming produces descriptive lowercase hyphenated object names from asset context while preserving original filename audit metadata,
 - SEO image naming falls back safely when asset context is incomplete and never bypasses MIME, extension, size, or checksum validation,
-- Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
+- Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path,
+- Google Maps place selection and `postalCode` propagation produce consistent admin and marketplace location rendering.
 
 ## Final Review
 
@@ -118,6 +143,7 @@ Targeted regression coverage will verify:
 - The upload lifecycle follow-up must explicitly check that new asset creation and collection-editor upload lifecycles share backend helpers instead of introducing parallel cleanup rules.
 - The SEO naming follow-up must confirm generated names are descriptive without keyword stuffing and remain deterministic enough for tests.
 - The Pinata follow-up must confirm no secrets are logged or returned while still surfacing enough provider/source context for operators.
+- The location follow-up must confirm `/admin/assets/new`, `/admin/collections`, and marketplace rendering share one coherent location contract and do not fork postal-code semantics.
 
 ## Tooling
 
@@ -136,4 +162,5 @@ Targeted regression coverage will verify:
   - orphan reconciler regression output for canceled/unpromoted uploads,
   - SEO image naming regression output for asset-context filenames and fallback filenames,
   - Pinata metadata route/service regression output for provider failures and fallback behavior,
+  - Google Maps/postal-code regression output for new asset creation, collection editing, and marketplace rendering,
   - explicit clean-code pass or no-blockers result
