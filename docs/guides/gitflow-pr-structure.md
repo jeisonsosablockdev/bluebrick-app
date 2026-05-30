@@ -23,7 +23,7 @@ It runs the preflight diagnostics, asks a Socratic clarification pass for the pr
 
 ## Mandatory Sequence
 1. For non-trivial work, create/update one parent Linear issue with a Markdown slice plan before coding.
-2. If slices are required, create an `*-integration` branch from `develop` and create slice branches from that integration branch.
+2. If slices are required, create the Linear initiative branch from `develop` and create slice branches from that initiative branch.
 3. Commit in the active working branch (never `develop`/`main`).
 4. Push branch to origin.
 5. Prepare PR body with required sections:
@@ -46,13 +46,13 @@ It runs the preflight diagnostics, asks a Socratic clarification pass for the pr
 
 Use the parent issue to store:
 - objective, scope, and non-goals
-- integration branch name
+- Linear initiative branch name
 - slice table with one branch per slice
 - execution order and completion gate
 
 ## Branch And PR Targets
-- Slice branch PRs target the parent `*-integration` branch.
-- Final integration PR targets `develop`.
+- Slice branch PRs target the parent Linear initiative branch.
+- Final initiative PR targets `develop`.
 - Slice PRs must still pass `npm run validate` and the required docs sync check.
 - Final PRs to `develop` continue to use the full governance workflow and metadata policy.
 - `scripts/git-start.sh`, `scripts/git-flow.sh`, and `scripts/full-cycle.sh` must generate branches that follow this target model.
@@ -65,13 +65,13 @@ npm run pr:open -- \
   --scope scope:shared \
   --type type:feature \
   --risk risk:low \
-  --base feature/shared-single-issue-slice-planning-bri-149-integration
+  --base initiative/bri-149-single-issue-slice-planning
 ```
 
-Example integration/slice branch creation:
+Example initiative/slice branch creation:
 ```bash
-./scripts/git-start.sh feature shared single-issue-slice-planning --mode integration --issue BRI-149
-./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug governance-policy
+./scripts/git-start.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
+./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug spec
 ```
 
 Example final PR opener:

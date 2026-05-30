@@ -127,7 +127,7 @@ afterEach(async () => {
 });
 
 describe("task:init", () => {
-  it("asks for a Socratic breakdown before creating an integration branch", async () => {
+  it("asks for a Socratic breakdown before creating an initiative branch", async () => {
     const repoDir = await createBootstrapRepo();
     const scriptPath = path.join(repoDir, "scripts", "task-init.sh");
     const input = [
@@ -136,7 +136,7 @@ describe("task:init", () => {
       "feature",
       "shared",
       "task-bootstrap",
-      "integration",
+      "initiative",
       "BRI-149",
       "y"
     ].join("\n") + "\n";
@@ -150,7 +150,7 @@ describe("task:init", () => {
     expect(output).toContain("Canonical docs: docs/features/feature-task-bootstrap.md");
     expect(output).toContain("Multi-slice reminder");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
-      "feature/shared-task-bootstrap-bri-149-integration"
+      "initiative/bri-149-task-bootstrap"
     );
   });
 });

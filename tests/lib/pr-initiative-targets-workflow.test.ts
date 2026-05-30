@@ -7,13 +7,14 @@ const workflowPath = path.join(
   process.cwd(),
   ".github",
   "workflows",
-  "pr-validate-integration-targets.yml"
+  "pr-validate-initiative-targets.yml"
 );
 const workflowSource = readFileSync(workflowPath, "utf8");
 
-describe("integration-target PR workflow", () => {
-  it("listens to pull requests that target integration branches", () => {
+describe("initiative-target PR workflow", () => {
+  it("listens to pull requests that target initiative branches", () => {
     expect(workflowSource).toContain("pull_request:");
+    expect(workflowSource).toContain("initiative/**");
     expect(workflowSource).toContain("feature/**-integration");
     expect(workflowSource).toContain("fix/**-integration");
     expect(workflowSource).toContain("security/**-integration");
@@ -28,9 +29,9 @@ describe("integration-target PR workflow", () => {
     expect(workflowSource).toContain("run: bash ./scripts/ci/check-required-docs.sh");
   });
 
-  it("uses dedicated concurrency for integration-target PRs", () => {
+  it("uses dedicated concurrency for initiative-target PRs", () => {
     expect(workflowSource).toContain("concurrency:");
-    expect(workflowSource).toContain("pr-integration-targets-${{ github.event.pull_request.number }}");
+    expect(workflowSource).toContain("pr-initiative-targets-${{ github.event.pull_request.number }}");
     expect(workflowSource).toContain("cancel-in-progress: true");
   });
 });

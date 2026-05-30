@@ -5,7 +5,7 @@
 Use this guide as the shared repo reference for planning non-trivial work with:
 
 - one parent Linear issue
-- one `*-integration` branch
+- one Linear initiative branch from the parent issue `git branch name`
 - one reviewable branch per slice
 
 This guide is intentionally short. The detailed operating heuristics can live in local tooling or local skills, but the repo keeps the canonical policy, template, and generator in version control.
@@ -31,7 +31,7 @@ Before implementation starts, the initiative must also have:
 - a parent Linear issue
 - a governing local artifact
 - for features and fixes, a problem artifact plus a solution artifact
-- a documentation slice as the first slice when the work is multi-slice
+- a spec slice as the first slice when the work is multi-slice
 
 ## When To Use Real Subissues
 
@@ -51,8 +51,8 @@ The parent issue must contain:
 - `# Scope`
 - `# Non-goals`
 - `# Artifact Pair`
-- `# Integration Branch`
-- `# Documentation Slice`
+- `# Linear Initiative Branch`
+- `# Spec Slice`
 - `# Slice Plan`
 - `# Order of Execution`
 - `# Risks`
@@ -63,12 +63,12 @@ Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skel
 
 ## Minimum Branch Rules
 
-- The integration branch starts from latest `develop`.
-- The integration branch name must match the parent issue `git branch name` field when that field exists.
-- Slice branches start from the integration branch, not from `develop`.
-- The first slice is the documentation slice.
-- Slice PRs target the integration branch.
-- The final integration PR targets `develop`.
+- The Linear initiative branch starts from latest `develop`.
+- The Linear initiative branch name must match the parent issue `git branch name` field.
+- Slice branches start from the Linear initiative branch, not from `develop`.
+- The first slice is the spec slice.
+- Slice PRs target the Linear initiative branch.
+- The final initiative PR targets `develop`.
 - Slice ids must be zero-padded: `s01`, `s02`, `s03`.
 - Use the lowercase Linear key in the branch name, for example `bri-149`.
 
@@ -88,14 +88,14 @@ For fixes:
 - `docs/fixes/fix-<slug>.md`
 - `docs/fixes/fix-<slug>-implementation.md`
 
-The solution artifact should be decision-complete before implementation slices open.
+The solution artifact should be decision-complete before delivery slices open.
 
 ## Generator
 
 Use the generator to produce:
 
 - the parent issue Markdown body
-- the proposed integration branch
+- the proposed Linear initiative branch
 - the proposed slice branches
 
 ```bash
@@ -104,7 +104,7 @@ npm run linear:plan -- --issue BRI-149 --type feature --scope shared --slug <slu
 
 ## Preferred Planning Path
 
-If your Codex environment has `@jsbd-linear-integration-slice-planner`, use it as the default operator for planning non-trivial single-issue slice work.
+If your Codex environment has a Linear initiative slice planner, use it as the default operator for planning non-trivial single-issue slice work.
 
 It should:
 
@@ -112,7 +112,7 @@ It should:
 - split the initiative into atomic, reviewable slices
 - order slices by technical dependency
 - produce the Linear-ready Markdown body
-- propose the integration branch and every slice branch
+- propose the Linear initiative branch and every slice branch
 - map the primary validation target for each slice
 
 The full worked example belongs to the skill references, not this repo guide.

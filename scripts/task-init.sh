@@ -14,7 +14,7 @@ Uso:
 Ejemplos:
   ./scripts/task-init.sh --ask
   ./scripts/task-init.sh app initial-ui
-  ./scripts/task-init.sh feature shared single-issue-slice-planning --mode integration --issue BRI-149
+  ./scripts/task-init.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
 
 Opciones del bootstrap:
   --ask         Fuerza el pase socrático de clarificación antes de crear la rama
@@ -37,7 +37,7 @@ normalize_issue_key() {
   value="$(printf '%s' "${raw}" | tr '[:lower:]' '[:upper:]')"
 
   if [[ -z "${value}" ]]; then
-    echo "❌ El issue key es obligatorio para ramas integration/slice."
+    echo "❌ El issue key es obligatorio para ramas initiative/slice."
     exit 1
   fi
 
@@ -84,7 +84,13 @@ print_hint() {
   echo "- Socratic pass complete."
   echo "- Problem: ${TASK_SUMMARY:-n/a}"
   echo "- Outcome: ${TASK_OUTCOME:-n/a}"
-  echo "- Branch shape: ${branch_type}/${BRANCH_SCOPE}-${branch_slug}"
+  if [[ "${BRANCH_MODE}" == "initiative" ]]; then
+    echo "- Branch shape: initiative/${ISSUE_KEY}-${branch_slug}"
+  elif [[ "${BRANCH_MODE}" == "slice" ]]; then
+    echo "- Branch shape: ${branch_type}/${BRANCH_SCOPE}-${branch_slug}-${ISSUE_KEY}-sNN-<slice-slug>"
+  else
+    echo "- Branch shape: ${branch_type}/${BRANCH_SCOPE}-${branch_slug}"
+  fi
 
   case "${branch_type}" in
     fix)
@@ -95,8 +101,8 @@ print_hint() {
       ;;
   esac
 
-  if [[ "${BRANCH_MODE}" == "integration" || "${BRANCH_MODE}" == "slice" ]]; then
-    echo "- Multi-slice reminder: create the documentation slice before implementation slices."
+  if [[ "${BRANCH_MODE}" == "initiative" || "${BRANCH_MODE}" == "slice" ]]; then
+    echo "- Multi-slice reminder: create the spec slice before delivery slices."
   fi
 }
 
@@ -167,7 +173,12 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
   prompt_required "Which branch family fits best (feature, fix, security, nft, refactor)?" "feature" BRANCH_TYPE
   prompt_required "Which scope does it touch (app, program, shared)?" "" BRANCH_SCOPE
   prompt_required "What short branch/doc slug should we use?" "" BRANCH_NAME
-  prompt_required "What branch mode do we need (single, integration, slice)?" "single" BRANCH_MODE
+  prompt_required "What branch mode do we need (single, initiative, slice)?" "single" BRANCH_MODE
+
+  if [[ "${BRANCH_MODE}" == "integration" ]]; then
+    echo "⚠️  Branch mode integration is legacy; using initiative."
+    BRANCH_MODE="initiative"
+  fi
 
   case "${BRANCH_TYPE}" in
     feature|fix|security|nft|refactor) ;;
@@ -178,14 +189,14 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
   esac
 
   case "${BRANCH_MODE}" in
-    single|integration|slice) ;;
+    single|initiative|slice) ;;
     *)
       echo "❌ Branch mode inválido: ${BRANCH_MODE}"
       exit 1
       ;;
   esac
 
-  if [[ "${BRANCH_MODE}" =~ ^(integration|slice)$ ]]; then
+  if [[ "${BRANCH_MODE}" =~ ^(initiative|slice)$ ]]; then
     prompt_required "What Linear issue key anchors the work (for example BRI-149)?" "" ISSUE_KEY
   fi
 
@@ -201,7 +212,7 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
     exit 1
   fi
 
-  if [[ "${BRANCH_MODE}" == "integration" ]]; then
+  if [[ "${BRANCH_MODE}" == "initiative" ]]; then
     ISSUE_KEY="$(normalize_issue_key "${ISSUE_KEY}")"
   elif [[ "${BRANCH_MODE}" == "slice" ]]; then
     ISSUE_KEY="$(normalize_issue_key "${ISSUE_KEY}")"
@@ -252,5 +263,5 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
   echo "Next steps"
   echo "- If this is a fix, create docs/fixes/fix-<slug>.md and docs/fixes/fix-<slug>-implementation.md."
   echo "- If this is feature/security/nft/refactor work, keep docs/features/feature-<slug>.md aligned with the branch."
-  echo "- If the work is multi-slice, start with the documentation slice before implementation slices."
+  echo "- If the work is multi-slice, start with the spec slice before delivery slices."
 fi

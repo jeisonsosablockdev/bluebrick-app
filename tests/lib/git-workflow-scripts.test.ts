@@ -99,13 +99,13 @@ describe("git workflow scripts", () => {
     expect(runGit(["branch", "--show-current"], repoDir)).toBe("feature/app-initial-ui");
   });
 
-  it("creates canonical integration and slice branches from typed arguments", async () => {
+  it("creates canonical initiative and slice branches from typed arguments", async () => {
     const repoDir = await createWorkflowRepo();
     const gitStartPath = path.join(repoDir, "scripts", "git-start.sh");
 
-    runBash(gitStartPath, ["feature", "shared", "slice-planning", "--mode", "integration", "--issue", "BRI-149"], repoDir);
+    runBash(gitStartPath, ["feature", "shared", "slice-planning", "--mode", "initiative", "--issue", "BRI-149"], repoDir);
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
-      "feature/shared-slice-planning-bri-149-integration"
+      "initiative/bri-149-slice-planning"
     );
 
     runGit(["checkout", "develop"], repoDir);
@@ -128,24 +128,24 @@ describe("git workflow scripts", () => {
     );
 
     expect(sliceOutput).toContain(
-      "Siguiente PR objetivo: feature/shared-slice-planning-bri-149-integration"
+      "Siguiente PR objetivo: initiative/bri-149-slice-planning"
     );
-    expect(sliceOutput).toContain("documentation slice");
+    expect(sliceOutput).toContain("spec slice");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
       "feature/shared-slice-planning-bri-149-s01-governance-policy"
     );
   });
 
-  it("prints artifact-first guidance for fix integration branches", async () => {
+  it("prints artifact-first guidance for fix initiative branches", async () => {
     const repoDir = await createWorkflowRepo();
 
     const output = runBash(
       path.join(repoDir, "scripts", "git-start.sh"),
-      ["fix", "shared", "agent-enforcement", "--mode", "integration", "--issue", "BRI-157"],
+      ["fix", "shared", "agent-enforcement", "--mode", "initiative", "--issue", "BRI-157"],
       repoDir
     );
 
-    expect(output).toContain("documentation slice");
+    expect(output).toContain("spec slice");
     expect(output).toContain("docs/fixes/fix-<slug>.md");
     expect(output).toContain("docs/fixes/fix-<slug>-implementation.md");
   });
@@ -209,7 +209,7 @@ describe("git workflow scripts", () => {
     ).toThrow("No se permiten commits directos en develop");
   });
 
-  it("guides slice pushes toward the mother branch instead of an invented integration branch", async () => {
+  it("guides slice pushes toward the Linear initiative branch", async () => {
     const repoDir = await createWorkflowRepo();
 
     runGit(
@@ -220,7 +220,7 @@ describe("git workflow scripts", () => {
     const output = runBash(path.join(repoDir, "scripts", "git-push.sh"), [], repoDir);
 
     expect(output).toContain(
-      "abrir PR desde 'feature/shared-slice-planning-bri-149-s01-governance-policy' hacia 'feature/shared-slice-planning-bri-149'"
+      "abrir PR desde 'feature/shared-slice-planning-bri-149-s01-governance-policy' hacia 'initiative/bri-149-slice-planning'"
     );
   });
 

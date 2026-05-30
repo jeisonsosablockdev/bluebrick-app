@@ -305,6 +305,7 @@ fi
 
 requires_feature_artifact_pair=0
 requires_fix_artifact_pair=0
+requires_initiative_artifact_pair=0
 if [[ "${touches_product_code}" -eq 1 ]]; then
   if [[ -n "${HEAD_BRANCH}" ]]; then
     if [[ "${HEAD_BRANCH}" =~ ^(feature|security|nft|refactor)/ ]]; then
@@ -312,6 +313,9 @@ if [[ "${touches_product_code}" -eq 1 ]]; then
     fi
     if [[ "${HEAD_BRANCH}" =~ ^fix/ ]]; then
       requires_fix_artifact_pair=1
+    fi
+    if [[ "${HEAD_BRANCH}" =~ ^initiative/ ]]; then
+      requires_initiative_artifact_pair=1
     fi
   else
     # Local fallback when branch name isn't provided by CI env vars.
@@ -322,6 +326,45 @@ if [[ "${touches_product_code}" -eq 1 ]]; then
     if [[ "${CURRENT_BRANCH}" =~ ^fix/ ]]; then
       requires_fix_artifact_pair=1
     fi
+    if [[ "${CURRENT_BRANCH}" =~ ^initiative/ ]]; then
+      requires_initiative_artifact_pair=1
+    fi
+  fi
+fi
+
+if [[ "${requires_initiative_artifact_pair}" -eq 1 ]]; then
+  echo "Linear initiative branch detected -> validating at least one feature or fix artifact pair."
+  feature_problem_artifacts="$(changed_files_match '^docs/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  feature_solution_artifacts="$(changed_files_match '^docs/features/feature-.*-implementation\.md$')"
+  fix_problem_artifacts="$(changed_files_match '^docs/fixes/fix-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  fix_solution_artifacts="$(changed_files_match '^docs/fixes/fix-.*-implementation\.md$')"
+  initiative_matching_pair=0
+
+  while IFS= read -r problem_artifact; do
+    [[ -z "${problem_artifact}" ]] && continue
+    problem_base="${problem_artifact%.md}"
+    expected_solution="${problem_base}-implementation.md"
+    if grep -Fx -q -- "${expected_solution}" <<<"${feature_solution_artifacts}"; then
+      initiative_matching_pair=1
+      break
+    fi
+  done <<<"${feature_problem_artifacts}"
+
+  if [[ "${initiative_matching_pair}" -eq 0 ]]; then
+    while IFS= read -r problem_artifact; do
+      [[ -z "${problem_artifact}" ]] && continue
+      problem_base="${problem_artifact%.md}"
+      expected_solution="${problem_base}-implementation.md"
+      if grep -Fx -q -- "${expected_solution}" <<<"${fix_solution_artifacts}"; then
+        initiative_matching_pair=1
+        break
+      fi
+    done <<<"${fix_problem_artifacts}"
+  fi
+
+  if [[ "${initiative_matching_pair}" -eq 0 ]]; then
+    echo "::error::Missing initiative artifact pair: update a matching docs/features/feature-<slug>.md pair or docs/fixes/fix-<slug>.md pair for this initiative PR."
+    missing_any=1
   fi
 fi
 

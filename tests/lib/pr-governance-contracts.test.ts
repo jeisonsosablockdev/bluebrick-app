@@ -13,7 +13,17 @@ describe("PR governance contracts", () => {
     );
 
     expect(source).toContain("artifact pair");
-    expect(source).toContain("documentation slice");
+    expect(source).toContain("spec slice");
+  });
+
+  it("keeps docs governance aware of Linear initiative branches", () => {
+    const source = readFileSync(
+      path.join(repoRoot, "scripts", "ci", "check-required-docs.sh"),
+      "utf8"
+    );
+
+    expect(source).toContain("requires_initiative_artifact_pair");
+    expect(source).toContain("Linear initiative branch detected");
   });
 
   it("keeps PR open flow aligned with local preflight and labels", () => {

@@ -27,12 +27,12 @@ No business logic outside defined boundaries.
 
 Main Rules
 	1.	main is protected.
-	2.	develop is the default integration branch for day-to-day work.
-	3.	Parent work branches (`feature/*`, `fix/*`, `security/*`, `refactor/*`, `nft/*`) MUST start from latest `develop`.
+	2.	develop is the default consolidation branch for day-to-day work.
+	3.	Direct work branches and Linear initiative branches MUST start from latest `develop`.
 	4.	No direct commits to main.
 	5.	No direct commits to develop.
 	6.	All changes go through Pull Request.
-	7.	Direct single-branch work targets `develop`; slice PRs target the parent `*-integration` branch.
+	7.	Direct single-branch work targets `develop`; slice PRs target the Linear initiative branch from the parent Linear issue.
 	8.	Only release PRs may target `main` (source branch: `develop`).
 	9.	Squash and merge only.
 	10.	No merge commits.
@@ -76,7 +76,7 @@ Applies to `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work th
 Rules
 	1.	Use one parent Linear issue as the planning and tracking container.
 	2.	Create the parent issue before starting non-trivial work.
-	3.	For initiatives with a mother branch, use the canonical branch from the parent issue `git branch name` field.
+	3.	For initiatives with multiple slices, use the Linear initiative branch from the parent issue `git branch name` field.
 	4.	Do not create multiple Linear subissues by default.
 	5.	The parent issue must contain:
 	•	Objective
@@ -84,19 +84,19 @@ Rules
 	•	Non-goals
 	•	Problem artifact path
 	•	Solution artifact path
-	•	Integration branch
-	•	Documentation slice
+	•	Linear initiative branch
+	•	Spec slice
 	•	Slice plan table
 	•	Order of execution
 	•	Risks
 	•	Test plan first
 	•	Completion gate
 	6.	Each slice must have one dominant responsibility and one proposed branch.
-	7.	The first slice in multi-slice work is the documentation slice.
-	8.	Implementation slices open only after the documentation slice stabilizes the artifact, slice map, and test-plan-first contract.
+	7.	The first slice in multi-slice work is the spec slice.
+	8.	Delivery slices open only after the spec slice stabilizes the artifact, slice map, and test-plan-first contract.
 	9.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
 
-Artifact-first and documentation-slice rule:
+Artifact-first and spec-slice rule:
 	•	Non-trivial feature/fix/security/nft/refactor work starts with an artifact before implementation.
 	•	Features and fixes use a problem artifact plus a solution artifact.
 	•	If the solution artifact is not decision-complete, code implementation remains blocked.
@@ -119,12 +119,9 @@ refactor/program-<name>
 refactor/app-<name>
 refactor/shared-<name>
 
-Integration branches (same type/scope family as the parent issue):
+Linear initiative branches (Git branch name stored on the parent Linear issue):
 
-feature/shared-<name>-bri-<id>-integration
-fix/app-<name>-bri-<id>-integration
-security/program-<issue>-bri-<id>-integration
-refactor/shared-<name>-bri-<id>-integration
+initiative/bri-<id>-<name>
 
 Slice branches:
 
@@ -136,9 +133,9 @@ refactor/shared-<name>-bri-<id>-s04-<slice-slug>
 Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
-	•	Integration branches start from latest `develop`.
-	•	The integration branch name must match the parent issue `git branch name` field when that field exists.
-	•	Slice branches start from the parent integration branch, not directly from `develop`.
+	•	Linear initiative branches start from latest `develop`.
+	•	The Linear initiative branch name must match the parent issue `git branch name` field.
+	•	Slice branches start from the Linear initiative branch, not directly from `develop`.
 
 Examples:
 
@@ -146,20 +143,20 @@ feature/program-staking
 feature/app-wallet-login
 nft/program-collection-mint
 security/program-authority-check
-feature/shared-knowledge-promotion-bri-143-integration
+initiative/bri-143-knowledge-promotion
 feature/shared-knowledge-promotion-bri-143-s01-governance-policy
 
 ⸻
 
-🔀 INTEGRATION BRANCH FLOW (MANDATORY WHEN USING SLICES)
+🔀 LINEAR INITIATIVE BRANCH FLOW (MANDATORY WHEN USING SLICES)
 
-	1.	Create the integration branch from latest `develop`.
-	2.	Create the documentation slice first from the integration branch.
-	3.	Create each implementation slice from the integration branch after the documentation slice closes the planning contract.
-	4.	Open slice PRs into the integration branch.
-	5.	Merge reviewed slices into the integration branch.
-	6.	Open the final integration PR from the integration branch into `develop`.
-	7.	Delete the temporary integration branch after the final merge.
+	1.	Create the Linear initiative branch from latest `develop`.
+	2.	Create the spec slice first from the Linear initiative branch.
+	3.	Create each delivery slice from the Linear initiative branch after the spec slice closes the planning contract.
+	4.	Open slice PRs into the Linear initiative branch.
+	5.	Merge reviewed slices into the Linear initiative branch.
+	6.	Open the final initiative PR from the Linear initiative branch into `develop`.
+	7.	Delete the temporary Linear initiative branch after the final merge.
 
 ⸻
 
@@ -213,18 +210,18 @@ PR must include:
 	•	Risk analysis section
 	•	Rollback plan section
 	•	Feature note path under `/docs/features/*.md` for small/iterative feature/fix/refactor/nft product changes
-	•	For slice PRs, the slice id and parent integration branch reference
+	•	For slice PRs, the slice id and parent Linear initiative branch reference
 
 No PR allowed without macro completion.
 
 ⸻
 
-🔒 INTEGRATION-TARGET PR GATES (MANDATORY)
+🔒 LINEAR INITIATIVE-TARGET PR GATES (MANDATORY)
 
-Every PR targeting a `*-integration` branch must pass:
+Every PR targeting an `initiative/*` branch must pass:
 	1.	`npm run validate`
 	2.	Required docs scope check
-	3.	Local preflight against the integration branch base (`npm run pr:ready -- --base <integration-branch>`)
+	3.	Local preflight against the Linear initiative branch base (`npm run pr:ready -- --base <initiative-branch>`)
 
 Full label/template governance remains mandatory for PRs targeting `develop`.
 
