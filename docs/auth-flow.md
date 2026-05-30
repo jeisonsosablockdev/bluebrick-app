@@ -30,6 +30,13 @@ Last Updated: 2026-05-30
   - server-side hybrid composition when both layers exist
   - server-side redirects for federated link completion and protected route access
 
+## BRI-164 Marketplace 3D Visual
+- The `/marketplace` 3D visual is a public discovery surface and does not add a new auth flow, cookie, or role.
+- Mapbox access uses a public client token (`NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`); it is configuration for rendering, not authority.
+- The marketplace map consumes already-published property data and existing public read models.
+- The detail page remains unchanged and still relies on the existing auth/session model when a user opens protected or wallet-gated flows elsewhere in the app.
+- Hover focus, view-state cycling, and map loading are presentation state only and do not widen auth boundaries.
+
 ## BRI-5 Stake / Unstake Protected Flow
 - The protected stake surface now executes real owner-driven `freeze / unfreeze` actions for eligible BRIDS NFTs instead of mock UI data.
 - New protected routes:

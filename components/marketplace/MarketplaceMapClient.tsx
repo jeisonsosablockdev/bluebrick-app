@@ -71,7 +71,7 @@ export function MarketplaceMapClient({
           <Marker key={pin.id} latitude={pin.latitude} longitude={pin.longitude} anchor="bottom">
             <button
               type="button"
-              className="group flex min-h-11 min-w-11 items-center justify-center rounded-full border border-cyan-200/30 bg-cyan-300/15 px-3 text-xs font-semibold text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-cyan-300/25"
+              className="group flex min-h-11 min-w-16 items-center gap-2 rounded-full border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-cyan-300/25"
               aria-label={`${pin.title}, ${pin.locationLabel}, ${pin.soldPercent}% sold`}
               onMouseEnter={() => {
                 setViewState((current) => createHoveredViewState(pin, current));
@@ -82,7 +82,10 @@ export function MarketplaceMapClient({
                 onPinHover?.(pin);
               }}
             >
-              <span className="rounded-full bg-slate-950/85 px-2 py-1 shadow-inner shadow-black/25">
+              <span className="max-w-[7.5rem] truncate text-[11px] font-semibold leading-none">
+                {pin.title}
+              </span>
+              <span className="rounded-full bg-slate-950/85 px-2 py-1 text-[11px] font-semibold shadow-inner shadow-black/25">
                 {pin.soldPercent.toFixed(Number.isInteger(pin.soldPercent) ? 0 : 2).replace(/\.00$/, "")}%
               </span>
             </button>

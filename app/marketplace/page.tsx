@@ -3,17 +3,22 @@ import { Suspense } from "react";
 
 import { WalletModal } from "@/components/WalletModal";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
-import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
+import { MarketplaceExperience } from "@/components/marketplace/MarketplaceExperience";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
 import { FooterSection } from "@/components/sections/footer";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
-import { listMarketplaceProperties, listMarketplacePropertyCities } from "@/lib/property-marketplace-server";
+import {
+  listMarketplaceMapEntries,
+  listMarketplaceProperties,
+  listMarketplacePropertyCities
+} from "@/lib/property-marketplace-server";
 import { isMarketplaceReleaseControlledElementVisible } from "@/lib/release-module-visibility";
 import { createPageMetadata } from "@/lib/seo";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
+import { getMarketplaceMapboxAccessToken } from "@/lib/marketplace-mapbox-config";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Marketplace",
@@ -39,6 +44,14 @@ async function safeListMarketplaceProperties(filters: PropertyFilters) {
 async function safeListMarketplacePropertyCities() {
   try {
     return await listMarketplacePropertyCities();
+  } catch {
+    return [];
+  }
+}
+
+async function safeListMarketplaceMapEntries(filters: PropertyFilters) {
+  try {
+    return await listMarketplaceMapEntries(filters);
   } catch {
     return [];
   }
@@ -73,7 +86,9 @@ function parseFilters(raw: Record<string, string | string[] | undefined>): Prope
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   const filters = parseFilters(await searchParams);
   const properties = await safeListMarketplaceProperties(filters);
+  const mapSources = await safeListMarketplaceMapEntries(filters);
   const cityOptions = await safeListMarketplacePropertyCities();
+  const mapboxAccessToken = getMarketplaceMapboxAccessToken();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
@@ -115,7 +130,13 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
                 pt: "Nao ha propriedades para os filtros selecionados."
               })}
             </Card>
-          ) : <MarketplaceGridClient properties={properties} />}
+          ) : (
+            <MarketplaceExperience
+              properties={properties}
+              mapSources={mapSources}
+              mapboxAccessToken={mapboxAccessToken}
+            />
+          )}
         </section>
 
         {isMarketplaceReleaseControlledElementVisible("placeholder-charts") ? (

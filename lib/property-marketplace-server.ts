@@ -21,6 +21,7 @@ import {
   type PropertyGovernance,
   type PropertyListItem
 } from "@/lib/property-service";
+import type { MarketplaceMapPinSource } from "@/lib/marketplace-map-pins";
 
 export type CreateMarketplaceEntryPersistentInput = CreateMarketplaceEntryInput & {
   createdBy: string;
@@ -33,6 +34,8 @@ type PersistedMarketplaceRow = {
   country: string;
   postal_code: string | null;
   location_label: string;
+  geo_lat: number | string | null;
+  geo_lng: number | string | null;
   listing_status: ListingStatus;
   image_url: string;
   short_description: string;
@@ -156,6 +159,19 @@ function toSafeNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function toOptionalFiniteNumber(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "string" && !value.trim()) {
+    return null;
+  }
+
+  const parsed = typeof value === "string" ? Number(value.trim()) : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function parseHighlightsJson(rawValue: unknown): string[] {
   if (!Array.isArray(rawValue)) {
     return [];
@@ -250,6 +266,8 @@ function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): Property
     country: row.country,
     postalCode: typeof row.postal_code === "string" && row.postal_code.trim() ? row.postal_code.trim() : null,
     locationLabel: row.location_label,
+    geoLat: toOptionalFiniteNumber(row.geo_lat),
+    geoLng: toOptionalFiniteNumber(row.geo_lng),
     listingStatus: row.listing_status,
     image: row.image_url,
     shortDescription: row.short_description,
@@ -309,6 +327,8 @@ function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInput): Pro
       stateProvince: input.stateProvince ?? null,
       postalCode: input.postalCode ?? null
     }),
+    geoLat: input.geoLat ?? null,
+    geoLng: input.geoLng ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
     shortDescription: input.shortDescription,
@@ -549,6 +569,24 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
 export async function listMarketplaceProperties(filters: PropertyFilters): Promise<PropertyListItem[]> {
   const records = await readMarketplaceRecordsForServer();
   return mapListItems(filterPropertyDetails(records, filters));
+}
+
+export async function listMarketplaceMapEntries(filters: PropertyFilters): Promise<MarketplaceMapPinSource[]> {
+  const records = await readMarketplaceRecordsForServer();
+
+  return filterPropertyDetails(records, filters)
+    .filter((property) => property.country.trim().toUpperCase() === "US")
+    .filter((property) => property.geoLat !== null && property.geoLat !== undefined && property.geoLng !== null && property.geoLng !== undefined)
+    .map((property) => ({
+      id: property.id,
+      title: property.title,
+      locationLabel: property.locationLabel,
+      country: property.country,
+      geoLat: property.geoLat ?? null,
+      geoLng: property.geoLng ?? null,
+      supplyTotal: property.investment.supplyTotal,
+      mintedOrSold: property.investment.mintedOrSold
+    }));
 }
 
 export async function listMarketplacePropertyCities(): Promise<string[]> {

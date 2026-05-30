@@ -14,6 +14,7 @@ describe("components/marketplace/MarketplaceMapShell", () => {
       createElement(MarketplaceMapShell, {
         mapboxAccessToken: null,
         pins: [],
+        map: createElement("div", { "data-testid": "marketplace-map-client" }, "map"),
         fallback: createElement("div", { "data-testid": "marketplace-list" }, "list")
       })
     );
@@ -37,11 +38,13 @@ describe("components/marketplace/MarketplaceMapShell", () => {
             soldPercent: 25
           }
         ],
+        map: createElement("div", { "data-testid": "marketplace-map-client" }, "map"),
         fallback: createElement("div", { "data-testid": "marketplace-list" }, "list")
       })
     );
 
     expect(html).toContain("marketplace-map-shell");
-    expect(html).toContain("marketplace-list");
+    expect(html).toContain("marketplace-map-client");
+    expect(html).not.toContain("marketplace-list");
   });
 });

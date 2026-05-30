@@ -18,8 +18,8 @@ vi.mock("@/components/marketplace/MarketplaceFilters", () => ({
   MarketplaceFilters: () => createElement("div", null, "marketplace-filters")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceGridClient", () => ({
-  MarketplaceGridClient: () => createElement("div", null, "marketplace-grid")
+vi.mock("@/components/marketplace/MarketplaceExperience", () => ({
+  MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
 }));
 
 vi.mock("@/components/dashboard/dashboard-charts", () => ({
@@ -54,6 +54,7 @@ vi.mock("@/lib/i18n", () => ({
 
 vi.mock("@/lib/property-marketplace-server", () => ({
   listMarketplaceProperties: pageMocks.listMarketplaceProperties,
+  listMarketplaceMapEntries: vi.fn(() => []),
   listMarketplacePropertyCities: pageMocks.listMarketplacePropertyCities
 }));
 
