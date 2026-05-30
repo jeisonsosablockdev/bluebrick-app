@@ -36,6 +36,10 @@ import {
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
 import {
+  cancelAssetUploadEditSession,
+  promoteAssetUploadEditSession
+} from "@/lib/admin/asset-upload-client";
+import {
   convertSolToUsd,
   convertUsdToSol,
   formatPriceInput,
@@ -331,6 +335,7 @@ type SolUsdQuoteResponse = {
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
   const [draftId] = useState<string>(() => createDraftId());
+  const [editSessionId] = useState<string>(() => createDraftId());
   const {
     form,
     formStatus,
@@ -753,6 +758,7 @@ export function AssetCreationForm(): ReactElement {
     uploadFieldValue
   } = useAssetUploadWorkflow({
     draftId,
+    editSessionId,
     form,
     dragTargetField,
     setForm,
@@ -761,6 +767,43 @@ export function AssetCreationForm(): ReactElement {
     setDragTargetField,
     t
   });
+
+  const hasCancelableSessionUploads = useMemo(() => {
+    if (createdMarketplaceEntryId) {
+      return false;
+    }
+
+    return Object.values(uploadRefs).some((refs) => refs.length > 0);
+  }, [createdMarketplaceEntryId, uploadRefs]);
+
+  const cancelCurrentUploadSession = useCallback((keepalive = false) => {
+    if (!hasCancelableSessionUploads) {
+      return;
+    }
+
+    void cancelAssetUploadEditSession({
+      draftId,
+      editSessionId,
+      keepalive
+    }).catch(() => {
+      // Best-effort cleanup: orphan reconciliation is the durable fallback.
+    });
+  }, [draftId, editSessionId, hasCancelableSessionUploads]);
+
+  useEffect(() => {
+    if (!hasCancelableSessionUploads) {
+      return;
+    }
+
+    const cancelOnPageHide = () => {
+      cancelCurrentUploadSession(true);
+    };
+
+    window.addEventListener("pagehide", cancelOnPageHide);
+    return () => {
+      window.removeEventListener("pagehide", cancelOnPageHide);
+    };
+  }, [cancelCurrentUploadSession, hasCancelableSessionUploads]);
 
   const renderUploadFieldFeedback = (field: FileUploadField): ReactElement | null => {
     const state = uploadState[field];
@@ -1113,13 +1156,27 @@ export function AssetCreationForm(): ReactElement {
       }
 
       const createdId = typeof body?.data?.id === "string" ? body.data.id : payload.entryId;
+      let uploadPromotionWarning = "";
+      try {
+        await promoteAssetUploadEditSession({
+          draftId,
+          editSessionId
+        });
+      } catch {
+        uploadPromotionWarning = ` ${t({
+          en: "Upload retention could not be confirmed automatically; please retry cleanup if this asset is discarded.",
+          es: "No se pudo confirmar automaticamente la retencion de uploads; reintenta la limpieza si descartas este asset.",
+          pt: "Nao foi possivel confirmar automaticamente a retencao dos uploads; tente limpar novamente se descartar este asset."
+        })}`;
+      }
+
       setCreatedMarketplaceEntryId(createdId);
       setCreateAssetMessage(
-        t({
+        `${t({
           en: "Marketplace entry created successfully from admin console.",
           es: "Entrada del marketplace creada correctamente desde la consola admin.",
           pt: "Entrada do marketplace criada com sucesso no console admin."
-        })
+        })}${uploadPromotionWarning}`
       );
     } catch (error) {
       const fallback = t({
@@ -1978,7 +2035,7 @@ export function AssetCreationForm(): ReactElement {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#070b14]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
-          <Link href="/admin/assets">
+          <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
             <Button className="min-h-11" variant="ghost">
               {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
             </Button>

@@ -4,6 +4,16 @@ import SparkMD5 from "spark-md5";
 
 export type AssetUploadCategory = "galleryImage" | "propertyImage" | "brochureFile" | "legalDoc" | "financialDoc";
 
+export type SeoImageUploadContext = {
+  assetName?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  internalCode?: string | null;
+  assetTypeLabel?: string | null;
+  imageRole?: string | null;
+};
+
 export type SignedUrlResponse = {
   uploadId: string;
   uploadUrl: string;
@@ -25,6 +35,14 @@ export type FinalizeResponse = {
   objectKey: string;
   cdnUrl: string;
   uploadedAt: string;
+};
+
+export type PromoteEditSessionUploadsResponse = {
+  promotedUploads: number;
+};
+
+export type CancelEditSessionUploadsResponse = {
+  canceledUploads: number;
 };
 
 type ApiErrorShape = {
@@ -95,6 +113,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
   category: AssetUploadCategory;
   draftId: string;
   editSessionId?: string | null;
+  seoImageContext?: SeoImageUploadContext | null;
   previousCdnUrl?: string | null;
 }): Promise<FinalizeResponse> {
   const contentMd5Base64 = await calculateContentMd5Base64(input.file);
@@ -111,7 +130,8 @@ export async function uploadAssetFileViaSignedUrl(input: {
       sizeBytes: input.file.size,
       contentMd5Base64,
       draftId: input.draftId,
-      editSessionId: input.editSessionId?.trim() || null
+      editSessionId: input.editSessionId?.trim() || null,
+      seoImageContext: input.seoImageContext ?? null
     })
   });
 
@@ -154,4 +174,52 @@ export async function uploadAssetFileViaSignedUrl(input: {
   }
 
   return finalizePayload as FinalizeResponse;
+}
+
+export async function promoteAssetUploadEditSession(input: {
+  draftId: string;
+  editSessionId: string;
+}): Promise<PromoteEditSessionUploadsResponse> {
+  const response = await fetch("/api/admin/assets/uploads/edit-session/promote", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      draftId: input.draftId,
+      editSessionId: input.editSessionId
+    })
+  });
+
+  const payload = await safeJson(response);
+  if (!response.ok) {
+    throw new Error(parseApiErrorMessage(payload, "Could not promote uploaded files."));
+  }
+
+  return payload as PromoteEditSessionUploadsResponse;
+}
+
+export async function cancelAssetUploadEditSession(input: {
+  draftId: string;
+  editSessionId: string;
+  keepalive?: boolean;
+}): Promise<CancelEditSessionUploadsResponse> {
+  const response = await fetch("/api/admin/assets/uploads/edit-session/cancel", {
+    method: "POST",
+    keepalive: input.keepalive,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      draftId: input.draftId,
+      editSessionId: input.editSessionId
+    })
+  });
+
+  const payload = await safeJson(response);
+  if (!response.ok) {
+    throw new Error(parseApiErrorMessage(payload, "Could not cancel uploaded files."));
+  }
+
+  return payload as CancelEditSessionUploadsResponse;
 }

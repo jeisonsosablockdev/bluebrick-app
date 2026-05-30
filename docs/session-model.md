@@ -1,6 +1,21 @@
 # Session Model
 
-Last Updated: 2026-05-29
+Last Updated: 2026-05-30
+
+## BRI-165 Admin Upload Edit Session Model
+- Asset creation uploads now carry an `editSessionId` generated once per `/admin/assets/new` form session.
+- `editSessionId` is not a login/session cookie and does not authenticate the caller; it only groups uploaded file contracts under the existing admin SIWS session.
+- Session authority remains unchanged:
+  - signed URL, finalize, promote, and cancel requests still require server-resolved admin role
+  - browser-local upload refs are not trusted as retention authority
+  - `draftId + editSessionId` scopes lifecycle mutations but does not replace `actorPubkey`
+- Lifecycle states:
+  - uploaded/finalized but unpromoted rows are temporary until the asset creation flow succeeds
+  - successful marketplace creation calls promotion so rows receive `promoted_at`
+  - cancel/pagehide best-effort calls mark unpromoted rows with `canceled_at`
+  - the orphan reconciler later removes unpromoted session-linked uploads after retention
+- SEO image filenames are derived from asset form context before object-key creation, while original local filenames remain stored for audit/debugging.
+- No new cookie, refresh flow, role, or wallet authority rule was introduced.
 
 ## BRI-163 Motion 12 Session UX Notes
 - Motion 12 changes the feel of session entry and session return, but it does not add a new session layer.
