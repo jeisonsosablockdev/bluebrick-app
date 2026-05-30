@@ -35,7 +35,10 @@ import {
   mapImportRowToFormFields,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
-import { promoteAssetUploadEditSession } from "@/lib/admin/asset-upload-client";
+import {
+  cancelAssetUploadEditSession,
+  promoteAssetUploadEditSession
+} from "@/lib/admin/asset-upload-client";
 import {
   convertSolToUsd,
   convertUsdToSol,
@@ -764,6 +767,43 @@ export function AssetCreationForm(): ReactElement {
     setDragTargetField,
     t
   });
+
+  const hasCancelableSessionUploads = useMemo(() => {
+    if (createdMarketplaceEntryId) {
+      return false;
+    }
+
+    return Object.values(uploadRefs).some((refs) => refs.length > 0);
+  }, [createdMarketplaceEntryId, uploadRefs]);
+
+  const cancelCurrentUploadSession = useCallback((keepalive = false) => {
+    if (!hasCancelableSessionUploads) {
+      return;
+    }
+
+    void cancelAssetUploadEditSession({
+      draftId,
+      editSessionId,
+      keepalive
+    }).catch(() => {
+      // Best-effort cleanup: orphan reconciliation is the durable fallback.
+    });
+  }, [draftId, editSessionId, hasCancelableSessionUploads]);
+
+  useEffect(() => {
+    if (!hasCancelableSessionUploads) {
+      return;
+    }
+
+    const cancelOnPageHide = () => {
+      cancelCurrentUploadSession(true);
+    };
+
+    window.addEventListener("pagehide", cancelOnPageHide);
+    return () => {
+      window.removeEventListener("pagehide", cancelOnPageHide);
+    };
+  }, [cancelCurrentUploadSession, hasCancelableSessionUploads]);
 
   const renderUploadFieldFeedback = (field: FileUploadField): ReactElement | null => {
     const state = uploadState[field];
@@ -1995,7 +2035,7 @@ export function AssetCreationForm(): ReactElement {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#070b14]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
-          <Link href="/admin/assets">
+          <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
             <Button className="min-h-11" variant="ghost">
               {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
             </Button>

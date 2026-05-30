@@ -31,6 +31,10 @@ export type PromoteEditSessionUploadsResponse = {
   promotedUploads: number;
 };
 
+export type CancelEditSessionUploadsResponse = {
+  canceledUploads: number;
+};
+
 type ApiErrorShape = {
   error?: {
     code?: string;
@@ -181,4 +185,29 @@ export async function promoteAssetUploadEditSession(input: {
   }
 
   return payload as PromoteEditSessionUploadsResponse;
+}
+
+export async function cancelAssetUploadEditSession(input: {
+  draftId: string;
+  editSessionId: string;
+  keepalive?: boolean;
+}): Promise<CancelEditSessionUploadsResponse> {
+  const response = await fetch("/api/admin/assets/uploads/edit-session/cancel", {
+    method: "POST",
+    keepalive: input.keepalive,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      draftId: input.draftId,
+      editSessionId: input.editSessionId
+    })
+  });
+
+  const payload = await safeJson(response);
+  if (!response.ok) {
+    throw new Error(parseApiErrorMessage(payload, "Could not cancel uploaded files."));
+  }
+
+  return payload as CancelEditSessionUploadsResponse;
 }
