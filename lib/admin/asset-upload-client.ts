@@ -27,6 +27,10 @@ export type FinalizeResponse = {
   uploadedAt: string;
 };
 
+export type PromoteEditSessionUploadsResponse = {
+  promotedUploads: number;
+};
+
 type ApiErrorShape = {
   error?: {
     code?: string;
@@ -154,4 +158,27 @@ export async function uploadAssetFileViaSignedUrl(input: {
   }
 
   return finalizePayload as FinalizeResponse;
+}
+
+export async function promoteAssetUploadEditSession(input: {
+  draftId: string;
+  editSessionId: string;
+}): Promise<PromoteEditSessionUploadsResponse> {
+  const response = await fetch("/api/admin/assets/uploads/edit-session/promote", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      draftId: input.draftId,
+      editSessionId: input.editSessionId
+    })
+  });
+
+  const payload = await safeJson(response);
+  if (!response.ok) {
+    throw new Error(parseApiErrorMessage(payload, "Could not promote uploaded files."));
+  }
+
+  return payload as PromoteEditSessionUploadsResponse;
 }

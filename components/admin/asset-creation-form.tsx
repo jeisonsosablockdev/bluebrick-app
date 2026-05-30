@@ -35,6 +35,7 @@ import {
   mapImportRowToFormFields,
   suggestCollectionFromIdentity
 } from "@/lib/admin/asset-form";
+import { promoteAssetUploadEditSession } from "@/lib/admin/asset-upload-client";
 import {
   convertSolToUsd,
   convertUsdToSol,
@@ -1115,13 +1116,27 @@ export function AssetCreationForm(): ReactElement {
       }
 
       const createdId = typeof body?.data?.id === "string" ? body.data.id : payload.entryId;
+      let uploadPromotionWarning = "";
+      try {
+        await promoteAssetUploadEditSession({
+          draftId,
+          editSessionId
+        });
+      } catch {
+        uploadPromotionWarning = ` ${t({
+          en: "Upload retention could not be confirmed automatically; please retry cleanup if this asset is discarded.",
+          es: "No se pudo confirmar automaticamente la retencion de uploads; reintenta la limpieza si descartas este asset.",
+          pt: "Nao foi possivel confirmar automaticamente a retencao dos uploads; tente limpar novamente se descartar este asset."
+        })}`;
+      }
+
       setCreatedMarketplaceEntryId(createdId);
       setCreateAssetMessage(
-        t({
+        `${t({
           en: "Marketplace entry created successfully from admin console.",
           es: "Entrada del marketplace creada correctamente desde la consola admin.",
           pt: "Entrada do marketplace criada com sucesso no console admin."
-        })
+        })}${uploadPromotionWarning}`
       );
     } catch (error) {
       const fallback = t({
