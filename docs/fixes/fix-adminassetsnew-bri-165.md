@@ -85,5 +85,5 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 10. Abandoned session uploads are eligible for orphan reconciliation after the configured retention windows, with Blob objects removed before DB rows are deleted.
 11. Image object names generated before upload are lowercase, hyphenated, ASCII-safe, and include natural asset context when available.
 12. SEO filename generation never changes MIME validation, checksum validation, upload category policy, or the stored original file name audit trail.
-13. Pinata metadata generation failures return actionable admin-facing errors and preserve the non-Pinata/local metadata fallback when Pinata is not configured.
-14. Location editing uses Google Maps place selection where available, persists/displays `postalCode` separately, and renders the final marketplace location without duplicated or hidden ZIP/postal-code text.
+13. Location editing uses Google Maps place selection where available, persists/displays `postalCode` separately, and renders the final marketplace location without duplicated or hidden ZIP/postal-code text.
+14. Pinata metadata generation failures return actionable admin-facing errors and preserve the non-Pinata/local metadata fallback when Pinata is not configured.
