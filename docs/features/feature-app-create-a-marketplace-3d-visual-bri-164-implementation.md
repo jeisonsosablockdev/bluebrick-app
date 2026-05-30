@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s11-map-camera-focus`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -163,6 +163,16 @@ Fallback behavior:
   - add an importable Mapbox Style v8 JSON artifact for `BRIDS Marketplace Decimal`
   - add a style artifact regression test for structure, palette, POI muting, and token hygiene
 
+### S11 - marketplace map camera focus
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s11-map-camera-focus`
+- Scope:
+  - TDD first: add tests for selected-pin camera focus and unselected aggregate camera centering
+  - add a pure map-camera helper that derives view state from marketplace pins
+  - center the map on a selected pin when the user selects an entry in the map panel
+  - center the map on the available pin midpoint when no pin is selected
+  - preserve hover zoom behavior for direct marker interaction
+  - keep detail navigation on the traditional list/card path
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`
@@ -229,6 +239,19 @@ Before implementation is considered complete:
   - manual path: import the JSON in Mapbox Studio, publish, then set `NEXT_PUBLIC_MAPBOX_STYLE_URL`
   - API path: use a private `MAPBOX_ACCESS_TOKEN` with `styles:write` and a Mapbox username
   - runtime path: keep using public `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`; never commit private style-write tokens
+
+## Camera Focus Contract
+- Helper: `lib/marketplace-map-camera.ts`.
+- No selection:
+  - derive latitude and longitude from the pin bounds midpoint
+  - derive zoom from the geographic span so the grouped inventory remains visible
+  - keep default pitch at `45`
+- Selected pin:
+  - center latitude and longitude on the selected pin
+  - use close discovery zoom `7.25`
+  - use pitch `52`
+- If the selected pin id is stale or missing, fall back to aggregate pin centering.
+- If there are no pins, fall back to the default USA camera.
 
 ## Guardrails
 - Do not replace the traditional list.

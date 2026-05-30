@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ReactElement } from "react";
 
 import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
@@ -21,14 +22,24 @@ function renderList(properties: PropertyListItem[]): ReactElement {
 }
 
 export function MarketplaceExperience({ properties, mapSources, mapboxAccessToken, mapboxStyleUrl }: MarketplaceExperienceProps) {
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const pins = projectMarketplaceMapPins(mapSources);
   const canRenderMap = Boolean(mapboxAccessToken && pins.length > 0);
   const listNode = renderList(properties);
   const mapNode = (
     <MarketplaceMapShell
       mapboxAccessToken={mapboxAccessToken}
+      selectedPinId={selectedPinId}
+      onPinSelect={setSelectedPinId}
       pins={pins}
-      map={<MarketplaceMapClient mapboxAccessToken={mapboxAccessToken ?? ""} mapStyleUrl={mapboxStyleUrl} pins={pins} />}
+      map={
+        <MarketplaceMapClient
+          mapboxAccessToken={mapboxAccessToken ?? ""}
+          mapStyleUrl={mapboxStyleUrl}
+          pins={pins}
+          selectedPinId={selectedPinId}
+        />
+      }
       fallback={listNode}
     />
   );

@@ -1,10 +1,10 @@
 # Feature Note: Marketplace 3D Visual (BRI-164)
 
 ## Status
-- Decimal-inspired BRIDS map style slice
+- Map camera focus slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s11-map-camera-focus`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
@@ -34,6 +34,8 @@ The detail page stays as it is today.
   - property name
   - `% sold`
 - Hovering a pin zooms the map to that property.
+- Selecting a marketplace pin from the map panel centers the camera on that property.
+- When no property is selected, the map camera centers on the midpoint that keeps the available marketplace pins visually grouped.
 - The map should emphasize the single property being shown so the user feels like they are discovering that location.
 - The marketplace detail page remains a normal detail entry point and does not adopt the 3D states.
 - S08 exception: the detail page may render the existing Google Maps location preview for the property, using the canonical admin location payload, as long as it does not introduce the Mapbox 3D marketplace state machine into detail.
@@ -100,6 +102,13 @@ Style artifact:
 - publishing through the Mapbox Styles API requires a private token with `styles:write`; do not commit that token
 - if no published URL is configured, the runtime keeps `mapbox://styles/mapbox/dark-v11` as the safe fallback
 
+## Camera Direction
+- The map should not stay on a generic USA center when marketplace entries have coordinates.
+- With no selection, camera state should be derived from available pins so the user sees the active inventory as a grouped discovery area.
+- With one selected pin, camera state should move to that pin with a closer zoom and slightly higher pitch.
+- Selection should not navigate away from `/marketplace`; detail navigation remains available through the traditional list/card path.
+- The camera calculation should live in a pure helper so the behavior can be tested outside Mapbox GL.
+
 ## Problem Statement
 The current marketplace experience is functional, but it is mostly a conventional list-first browsing surface.
 
@@ -141,6 +150,8 @@ The new 3D visual is meant to add the missing layer of presence:
 - The page remains usable when Mapbox is unavailable.
 - The list remains the reliable fallback and conversion anchor.
 - Hovering a pin zooms to the property in a way that feels intentional rather than gimmicky.
+- Selecting a pin centers that marketplace entry in the map camera.
+- When no pin is selected, the map camera centers the available inventory instead of using an unrelated static center.
 - The detail page remains unchanged.
 
 ## Open Questions
