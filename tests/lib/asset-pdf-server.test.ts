@@ -119,7 +119,8 @@ describe("lib/admin/asset-pdf-server", () => {
     expect(nextConfig.outputFileTracingIncludes?.["/api/admin/assets/import-preview"]).toEqual(
       expect.arrayContaining([
         "./node_modules/pdfjs-dist/package.json",
-        "./node_modules/pdfjs-dist/legacy/build/pdf.mjs"
+        "./node_modules/pdfjs-dist/legacy/build/pdf.mjs",
+        "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
       ])
     );
   });

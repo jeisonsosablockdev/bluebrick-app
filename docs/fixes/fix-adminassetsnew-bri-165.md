@@ -47,7 +47,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - `/admin/assets/new` and `/admin/collections` location editing should share the Google Maps place-selection pattern where possible, and `postalCode` should become a first-class field rather than being buried inside `address`,
 - marketplace detail/listing views should display the resulting location clearly, including postal code when present, without duplicating it in the address line,
 - Pinata metadata failures should return actionable diagnostics, preserve the current local metadata fallback when Pinata is not configured, and avoid masking source-image fetch problems behind the generic `Pinata request failed.` message,
-- PDF quick import should parse inside the app-owned Node worker without requiring the `pdfjs-dist/legacy/build/pdf.worker.mjs` asset and should explicitly include the `pdfjs` API bundle in the production function trace,
+- PDF quick import should parse inside the app-owned Node worker and explicitly include both the `pdfjs` API bundle and fake-worker bundle in the production function trace,
 - no new multilingual storage model is introduced in this fix,
 - `/admin/assets/new` should generate one `editSessionId` per form session and pass it with every upload,
 - uploads from an abandoned or reset form session should become eligible for cancellation and orphan cleanup instead of remaining as unmanaged Blob/DB records,
@@ -91,4 +91,4 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 12. SEO filename generation never changes MIME validation, checksum validation, upload category policy, or the stored original file name audit trail.
 13. Location editing uses Google Maps place selection where available, persists/displays `postalCode` separately, and renders the final marketplace location without duplicated or hidden ZIP/postal-code text.
 14. Pinata metadata generation failures return actionable admin-facing errors and preserve the non-Pinata/local metadata fallback when Pinata is not configured.
-15. PDF quick import no longer depends on resolving the packaged `pdf.worker.mjs` file at production runtime, explicitly traces the `pdfjs` API bundle, and still extracts brief text for the current mapper.
+15. PDF quick import explicitly traces the `pdfjs` API and fake-worker bundles and still extracts brief text for the current mapper in production serverless deployments.

@@ -138,14 +138,14 @@ Apply the smallest safe changes that unblock the admin flow:
 - Keep the app-owned Node worker isolation for PDF parsing so expensive parsing does not run directly in the route handler.
 - Stop resolving or importing the `pdfjs` packaged worker file from the production runtime bundle.
 - Use the `pdfjs` API bundle with worker execution disabled inside the app-owned worker thread.
-- Add explicit Next/Vercel output-file tracing for the `pdfjs-dist` package metadata and API bundle because the app-owned worker loads it from an embedded source string that static tracing cannot inspect.
+- Add explicit Next/Vercel output-file tracing for the `pdfjs-dist` package metadata, API bundle, and fake-worker bundle because `pdfjs` can still import `pdf.worker.mjs` from `pdf.mjs` when worker execution is disabled.
 - Preserve the current brief normalization and commercial description mapping after text extraction.
-- Add regression coverage proving the embedded worker source no longer references `pdf.worker.mjs`, configures `pdfjs` parsing without its packaged worker, and keeps the `pdfjs` API bundle in the production serverless trace.
+- Add regression coverage proving the embedded worker source no longer directly resolves `pdf.worker.mjs`, configures `pdfjs` parsing without a separate worker thread, and keeps both the `pdfjs` API bundle and fake-worker bundle in the production serverless trace.
 - Confirm with a real admin brief PDF locally that text extraction still succeeds.
 - Implementation evidence:
   - `asset-pdf-server.ts` still runs PDF extraction inside the app-owned Node worker, but no longer resolves `pdfjs-dist/legacy/build/pdf.worker.mjs`.
   - `pdfjs.getDocument` is called with `disableWorker: true` inside that worker, avoiding Vercel serverless filesystem dependency on the packaged worker asset.
-  - `next.config.ts` includes the `pdfjs-dist` package metadata and `legacy/build/pdf.mjs` in the `/api/admin/assets/import-preview` serverless trace so production can resolve the API bundle.
+  - `next.config.ts` includes the `pdfjs-dist` package metadata, `legacy/build/pdf.mjs`, and `legacy/build/pdf.worker.mjs` in the `/api/admin/assets/import-preview` serverless trace so production can resolve both the API bundle and `pdfjs` fake-worker import.
   - A real Brandon brief PDF extracted first-page text locally with `disableWorker: true`, confirming the parser can still read the current brief format.
   - Targeted PDF worker/import-preview/tracing tests, `lint`, `typecheck`, and `validate` passed for this hotfix.
 
@@ -166,7 +166,7 @@ Targeted regression coverage will verify:
 - SEO image naming falls back safely when asset context is incomplete and never bypasses MIME, extension, size, or checksum validation,
 - Google Maps place selection and `postalCode` propagation produce consistent admin and marketplace location rendering,
 - Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
-- PDF parsing does not reference `pdf.worker.mjs` at runtime, keeps the `pdfjs` API bundle in the production trace, and still extracts text through the app-owned Node worker.
+- PDF parsing does not directly resolve `pdf.worker.mjs` from app code, keeps the `pdfjs` API/fake-worker bundles in the production trace, and still extracts text through the app-owned Node worker.
 
 ## Final Review
 
@@ -195,5 +195,5 @@ Targeted regression coverage will verify:
   - SEO image naming regression output for asset-context filenames and fallback filenames,
   - Google Maps/postal-code regression output for new asset creation, collection editing, and marketplace rendering,
   - Pinata metadata route/service regression output for provider failures and fallback behavior,
-  - PDF worker regression output showing production-safe workerless `pdfjs` parsing,
+  - PDF worker regression output showing production-safe `pdfjs` API and fake-worker tracing,
   - explicit clean-code pass or no-blockers result
