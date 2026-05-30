@@ -308,6 +308,7 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     title: "Boston Harbor House",
     city: "Boston",
     country: "US",
+    postalCode: null,
     locationLabel: "Boston, MA, US",
     geoLat: 42.3601,
     geoLng: -71.0589,
