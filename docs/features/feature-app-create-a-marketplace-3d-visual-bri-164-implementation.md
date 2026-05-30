@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -160,6 +160,8 @@ Fallback behavior:
   - keep `mapbox://styles/mapbox/dark-v11` as the safe fallback
   - document the Decimal-inspired BRIDS palette and layer priorities
   - keep runtime behavior unchanged until a published Mapbox Studio style URL is supplied
+  - add an importable Mapbox Style v8 JSON artifact for `BRIDS Marketplace Decimal`
+  - add a style artifact regression test for structure, palette, POI muting, and token hygiene
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
@@ -213,12 +215,18 @@ Before implementation is considered complete:
 - Runtime env var: `NEXT_PUBLIC_MAPBOX_STYLE_URL`.
 - Safe fallback: `mapbox://styles/mapbox/dark-v11`.
 - Desired published style name: `BRIDS Marketplace Decimal`.
+- Importable style artifact: `docs/mapbox/brids-marketplace-decimal-style.json`.
+- Publish runbook: `docs/mapbox/README.md`.
 - Desired visual outcome:
   - dark editorial base rather than default navigation map
   - low-noise POIs so marketplace listings become the primary POIs
   - navy/black land and water with cyan/silver labels
   - subtle roads, with cyan accents reserved for BRIDS property discovery
   - selected pin/card uses the website cyan-to-violet gradient
+- Publish requirement:
+  - manual path: import the JSON in Mapbox Studio, publish, then set `NEXT_PUBLIC_MAPBOX_STYLE_URL`
+  - API path: use a private `MAPBOX_ACCESS_TOKEN` with `styles:write` and a Mapbox username
+  - runtime path: keep using public `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`; never commit private style-write tokens
 
 ## Guardrails
 - Do not replace the traditional list.

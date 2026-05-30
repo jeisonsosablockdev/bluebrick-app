@@ -1,10 +1,10 @@
 # Feature Note: Marketplace 3D Visual (BRI-164)
 
 ## Status
-- Mapbox MCP tooling slice
+- Decimal-inspired BRIDS map style slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s09-mapbox-mcp-tooling`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s10-mapbox-decimal-style`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
@@ -92,6 +92,13 @@ Style rules:
 - make BRIDS property pins the brightest layer
 - use cyan/violet only as highlights, not as full-map saturation
 - avoid a dashboard/heatmap look in the first release
+
+Style artifact:
+- importable JSON: `docs/mapbox/brids-marketplace-decimal-style.json`
+- publishing notes: `docs/mapbox/README.md`
+- runtime env after publish: `NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/{username}/{style_id}`
+- publishing through the Mapbox Styles API requires a private token with `styles:write`; do not commit that token
+- if no published URL is configured, the runtime keeps `mapbox://styles/mapbox/dark-v11` as the safe fallback
 
 ## Problem Statement
 The current marketplace experience is functional, but it is mostly a conventional list-first browsing surface.
