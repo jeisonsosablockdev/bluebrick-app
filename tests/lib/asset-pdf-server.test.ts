@@ -99,9 +99,13 @@ describe("lib/admin/asset-pdf-server", () => {
     const result = await parseInvestmentBriefPdfBuffer(new Uint8Array([1, 2, 3]));
 
     expect(workerInstances).toHaveLength(1);
+    const workerSource = decodeURIComponent(workerInstances[0].source.href);
+
     expect(workerInstances[0].source.href).toContain("data:text/javascript");
-    expect(decodeURIComponent(workerInstances[0].source.href)).toContain("process.cwd()");
-    expect(decodeURIComponent(workerInstances[0].source.href)).not.toContain("import.meta.url");
+    expect(workerSource).toContain("process.cwd()");
+    expect(workerSource).not.toContain("import.meta.url");
+    expect(workerSource).not.toContain("pdf.worker.mjs");
+    expect(workerSource).toContain("disableWorker: true");
     expect(workerInstances[0].postedMessage).toBeInstanceOf(ArrayBuffer);
     expect(workerInstances[0].transferList).toEqual([workerInstances[0].postedMessage]);
     expect(workerInstances[0].terminate).toHaveBeenCalledTimes(1);

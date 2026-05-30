@@ -13,6 +13,7 @@ Apply the smallest safe changes that unblock the admin flow:
 7. generate SEO-friendly image object names before upload so public Blob URLs carry useful asset context,
 8. align location entry across `/admin/assets/new` and `/admin/collections` with Google Maps place selection and first-class postal code handling,
 9. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path.
+10. make PDF quick import production-safe by avoiding runtime resolution of the packaged `pdf.worker.mjs` asset in Vercel serverless functions.
 
 ## Slice Plan
 
@@ -130,6 +131,22 @@ Apply the smallest safe changes that unblock the admin flow:
   - The admin metadata route now returns structured error payloads for Pinata failures while preserving the local metadata provider path when `PINATA_JWT` is not configured.
   - Targeted Pinata/Core Candy tests, `typecheck`, `lint`, and `validate` passed for this slice.
 
+### Slice BRI-165-15
+- Investigate the production Quick Import PDF error:
+  - `Cannot find module 'pdfjs-dist/legacy/build/pdf.worker.mjs'`
+  - require stack ending at the Vercel function package root.
+- Keep the app-owned Node worker isolation for PDF parsing so expensive parsing does not run directly in the route handler.
+- Stop resolving or importing the `pdfjs` packaged worker file from the production runtime bundle.
+- Use the `pdfjs` API bundle with worker execution disabled inside the app-owned worker thread.
+- Preserve the current brief normalization and commercial description mapping after text extraction.
+- Add regression coverage proving the embedded worker source no longer references `pdf.worker.mjs` and configures `pdfjs` parsing without its packaged worker.
+- Confirm with a real admin brief PDF locally that text extraction still succeeds.
+- Implementation evidence:
+  - `asset-pdf-server.ts` still runs PDF extraction inside the app-owned Node worker, but no longer resolves `pdfjs-dist/legacy/build/pdf.worker.mjs`.
+  - `pdfjs.getDocument` is called with `disableWorker: true` inside that worker, avoiding Vercel serverless filesystem dependency on the packaged worker asset.
+  - A real Brandon brief PDF extracted first-page text locally with `disableWorker: true`, confirming the parser can still read the current brief format.
+  - Targeted PDF worker and import-preview tests, `lint`, and `typecheck` passed for this hotfix.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -147,6 +164,7 @@ Targeted regression coverage will verify:
 - SEO image naming falls back safely when asset context is incomplete and never bypasses MIME, extension, size, or checksum validation,
 - Google Maps place selection and `postalCode` propagation produce consistent admin and marketplace location rendering,
 - Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
+- PDF parsing does not reference `pdf.worker.mjs` at runtime and still extracts text through the app-owned Node worker.
 
 ## Final Review
 
@@ -175,4 +193,5 @@ Targeted regression coverage will verify:
   - SEO image naming regression output for asset-context filenames and fallback filenames,
   - Google Maps/postal-code regression output for new asset creation, collection editing, and marketplace rendering,
   - Pinata metadata route/service regression output for provider failures and fallback behavior,
+  - PDF worker regression output showing production-safe workerless `pdfjs` parsing,
   - explicit clean-code pass or no-blockers result
