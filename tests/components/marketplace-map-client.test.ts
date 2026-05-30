@@ -96,4 +96,51 @@ describe("components/marketplace/MarketplaceMapClient", () => {
       root.unmount();
     });
   });
+
+  it("focuses a selected marketplace pin when the selected pin id changes", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        createElement(MarketplaceMapClient, {
+          mapboxAccessToken: "pk.test-token",
+          mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
+          selectedPinId: "tx-1",
+          pins: [
+            {
+              id: "fl-1",
+              title: "Brandon Residence",
+              locationLabel: "Brandon, FL, US",
+              href: "/marketplace/fl-1",
+              latitude: 27.9378,
+              longitude: -82.2859,
+              soldPercent: 0
+            },
+            {
+              id: "tx-1",
+              title: "Austin Yield House",
+              locationLabel: "Austin, TX, US",
+              href: "/marketplace/tx-1",
+              latitude: 30.2672,
+              longitude: -97.7431,
+              soldPercent: 42
+            }
+          ]
+        })
+      );
+    });
+
+    expect(latestMapProps?.viewState).toMatchObject({
+      latitude: 30.2672,
+      longitude: -97.7431,
+      pitch: 52
+    });
+    expect(Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0)).toBeGreaterThanOrEqual(7.25);
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Map, { Marker, type ViewState } from "react-map-gl/mapbox";
 
+import { createMarketplaceMapCameraViewState } from "@/lib/marketplace-map-camera";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
 type MapViewState = ViewState & {
@@ -14,20 +15,19 @@ type MarketplaceMapClientProps = {
   mapboxAccessToken: string;
   mapStyleUrl: string;
   pins: MarketplaceMapPin[];
+  selectedPinId?: string | null;
   initialViewState?: Partial<MapViewState>;
   onPinHover?: (pin: MarketplaceMapPin) => void;
 };
 
-const DEFAULT_US_VIEW_STATE: MapViewState = {
-  latitude: 39.8283,
-  longitude: -98.5795,
-  zoom: 3.45,
-  bearing: 0,
-  pitch: 45,
+const MAPBOX_DIMENSION_PLACEHOLDER = {
   width: 1,
-  height: 1,
-  padding: { top: 0, bottom: 0, left: 0, right: 0 }
+  height: 1
 };
+
+function createCameraKey(pins: MarketplaceMapPin[], selectedPinId?: string | null): string {
+  return `${selectedPinId ?? "aggregate"}:${pins.map((pin) => `${pin.id}:${pin.latitude}:${pin.longitude}`).join("|")}`;
+}
 
 function createHoveredViewState(pin: MarketplaceMapPin, current: MapViewState): MapViewState {
   return {
@@ -43,13 +43,19 @@ export function MarketplaceMapClient({
   mapboxAccessToken,
   mapStyleUrl,
   pins,
+  selectedPinId,
   initialViewState,
   onPinHover
 }: MarketplaceMapClientProps) {
-  const [viewState, setViewState] = useState<MapViewState>({
-    ...DEFAULT_US_VIEW_STATE,
+  const cameraKey = createCameraKey(pins, selectedPinId);
+  const cameraViewState: MapViewState = {
+    ...createMarketplaceMapCameraViewState(pins, selectedPinId),
+    ...MAPBOX_DIMENSION_PLACEHOLDER,
     ...initialViewState
-  });
+  };
+  const [movedViewState, setMovedViewState] = useState<{ cameraKey: string; viewState: MapViewState } | null>(null);
+  const viewState = movedViewState?.cameraKey === cameraKey ? movedViewState.viewState : cameraViewState;
+
 
   return (
     <div data-testid="marketplace-map-client" className="h-full min-h-[28rem] w-full">
@@ -59,11 +65,14 @@ export function MarketplaceMapClient({
         mapboxAccessToken={mapboxAccessToken}
         viewState={viewState}
         onMove={(event) =>
-          setViewState((current) => ({
-            ...current,
-            ...event.viewState,
-            width: current.width,
-            height: current.height
+          setMovedViewState((current) => ({
+            cameraKey,
+            viewState: {
+              ...(current?.cameraKey === cameraKey ? current.viewState : cameraViewState),
+              ...event.viewState,
+              width: current?.cameraKey === cameraKey ? current.viewState.width : cameraViewState.width,
+              height: current?.cameraKey === cameraKey ? current.viewState.height : cameraViewState.height
+            }
           }))
         }
         style={{ width: "100%", height: "100%" }}
@@ -76,11 +85,11 @@ export function MarketplaceMapClient({
               className="group flex min-h-11 min-w-16 items-center gap-2 rounded-full border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-cyan-300/25"
               aria-label={`${pin.title}, ${pin.locationLabel}, ${pin.soldPercent}% sold`}
               onMouseEnter={() => {
-                setViewState((current) => createHoveredViewState(pin, current));
+                setMovedViewState({ cameraKey, viewState: createHoveredViewState(pin, viewState) });
                 onPinHover?.(pin);
               }}
               onFocus={() => {
-                setViewState((current) => createHoveredViewState(pin, current));
+                setMovedViewState({ cameraKey, viewState: createHoveredViewState(pin, viewState) });
                 onPinHover?.(pin);
               }}
             >

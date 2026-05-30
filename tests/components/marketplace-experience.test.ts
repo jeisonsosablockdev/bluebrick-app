@@ -15,16 +15,46 @@ vi.mock("@/components/marketplace/MarketplaceGridClient", () => ({
 }));
 
 vi.mock("@/components/marketplace/MarketplaceMapClient", () => ({
-  MarketplaceMapClient: () => createElement("div", { "data-testid": "marketplace-map-client" }, "map")
+  MarketplaceMapClient: ({ selectedPinId }: { selectedPinId?: string | null }) =>
+    createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
 }));
 
 vi.mock("@/components/marketplace/MarketplaceMapShell", () => ({
-  MarketplaceMapShell: ({ fallback, mapboxAccessToken, pins, map }: { fallback: ReactNode; mapboxAccessToken: string | null; pins: unknown[]; map: ReactNode }) => {
+  MarketplaceMapShell: ({
+    fallback,
+    mapboxAccessToken,
+    onPinSelect,
+    pins,
+    selectedPinId,
+    map
+  }: {
+    fallback: ReactNode;
+    mapboxAccessToken: string | null;
+    onPinSelect?: (pinId: string) => void;
+    pins: Array<{ id: string; title: string }>;
+    selectedPinId?: string | null;
+    map: ReactNode;
+  }) => {
     if (!mapboxAccessToken || pins.length === 0) {
       return createElement("div", { "data-testid": "marketplace-map-fallback" }, fallback);
     }
 
-    return createElement("div", { "data-testid": "marketplace-map-shell" }, map);
+    return createElement(
+      "div",
+      { "data-testid": "marketplace-map-shell", "data-selected-pin-id": selectedPinId ?? "" },
+      map,
+      pins.map((pin) =>
+        createElement(
+          "button",
+          {
+            key: pin.id,
+            type: "button",
+            onClick: () => onPinSelect?.(pin.id)
+          },
+          pin.title
+        )
+      )
+    );
   }
 }));
 
@@ -96,6 +126,23 @@ describe("components/marketplace/MarketplaceExperience", () => {
     expect(grid).toBeTruthy();
     expect(container.textContent).toContain("Boston Harbor House");
     expect(container.innerHTML.indexOf("marketplace-map-shell")).toBeLessThan(container.innerHTML.indexOf("marketplace-grid"));
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("passes selected pin state from the pin list into the map client", () => {
+    const { container, root } = renderExperience();
+
+    const pinButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Boston Harbor House");
+    expect(pinButton).toBeTruthy();
+
+    act(() => {
+      pinButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(container.querySelector('[data-testid="marketplace-map-client"]')?.getAttribute("data-selected-pin-id")).toBe("us-1");
 
     act(() => {
       root.unmount();

@@ -5,6 +5,8 @@ import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 type MarketplaceMapShellProps = {
   mapboxAccessToken: string | null;
   pins: MarketplaceMapPin[];
+  selectedPinId?: string | null;
+  onPinSelect?: (pinId: string) => void;
   map: ReactNode;
   fallback: ReactNode;
 };
@@ -13,7 +15,7 @@ function formatSoldPercent(value: number): string {
   return Number.isInteger(value) ? `${value}%` : `${value.toFixed(2).replace(/\.00$/, "")}%`;
 }
 
-export function MarketplaceMapShell({ mapboxAccessToken, pins, map, fallback }: MarketplaceMapShellProps) {
+export function MarketplaceMapShell({ mapboxAccessToken, pins, selectedPinId, onPinSelect, map, fallback }: MarketplaceMapShellProps) {
   if (!mapboxAccessToken || pins.length === 0) {
     return <>{fallback}</>;
   }
@@ -42,10 +44,14 @@ export function MarketplaceMapShell({ mapboxAccessToken, pins, map, fallback }: 
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Pins</p>
           <div className="space-y-3">
             {pins.map((pin) => (
-              <a
+              <button
                 key={pin.id}
-                href={pin.href}
-                className="block rounded-2xl border border-white/10 bg-slate-950/60 p-3 transition hover:border-cyan-300/40 hover:bg-slate-950/85"
+                type="button"
+                aria-pressed={selectedPinId === pin.id}
+                onClick={() => onPinSelect?.(pin.id)}
+                className={`block w-full rounded-2xl border p-3 text-left transition hover:border-cyan-300/40 hover:bg-slate-950/85 ${
+                  selectedPinId === pin.id ? "border-cyan-300/60 bg-cyan-300/10" : "border-white/10 bg-slate-950/60"
+                }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -56,7 +62,7 @@ export function MarketplaceMapShell({ mapboxAccessToken, pins, map, fallback }: 
                     {formatSoldPercent(pin.soldPercent)}
                   </span>
                 </div>
-              </a>
+              </button>
             ))}
           </div>
         </aside>
