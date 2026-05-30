@@ -14,6 +14,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - location entry is currently uncomfortable and ambiguous because postal code is embedded inside free-form address text, while `/admin/collections` already has a Google Maps place integration that can provide structured address parts,
 - the Core Candy Machine metadata step can fail with the generic message `Pinata request failed.`, leaving operators without enough information to know whether the problem is credentials, Pinata API response, source image fetch, or provider fallback,
 - PDF quick import can still fail in production serverless builds when `pdfjs` tries to resolve files that are not included in the deployed function bundle, including its packaged `pdf.worker.mjs` worker or `pdf.mjs` API bundle,
+- the deploy panel can show `Connected wallet: Not connected` even after the admin session is authenticated, because SIWS cookies can outlive the live wallet-adapter connection required for transaction signing,
 - uploads finalized during `/admin/assets/new` are not tied to an edit session, so abandoned form sessions can leave image and document objects in Blob and DB after the admin restarts the flow,
 - uploaded image object names are derived mostly from the original local file name, so generic names such as `IMG_1234`, `whatsapp-image`, or `caratula` can become public CDN URLs instead of descriptive SEO-friendly asset media names.
 
@@ -27,6 +28,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - Location quality affects operator confidence and marketplace accuracy; postal code should not be hidden at the end of a street-address string when city/state/country and coordinates already have first-class fields.
 - Pinata failures happen late in the create/mint path, so vague provider errors can make operators retry blindly and risk duplicate work or abandoned uploads.
 - PDF parsing must be compatible with Vercel's serverless bundle tracing; otherwise a PDF that works locally can fail in production before the import mapper sees any text.
+- Deploy requires a live wallet signer, not just an authenticated admin session; the UI should make reconnection obvious and should recover the adapter after ordinary navigation or refresh.
 - Abandoned create sessions should not accumulate storage objects or uploaded-file rows that no asset will ever promote.
 - The backend already has edit-session lifecycle fields and an orphan reconciler; `/admin/assets/new` should participate in that lifecycle instead of creating unmanaged uploads.
 - Public image URLs are a minor but durable SEO signal; descriptive, hyphenated filenames help Google and other crawlers understand asset media without relying only on surrounding page copy.
@@ -48,6 +50,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - marketplace detail/listing views should display the resulting location clearly, including postal code when present, without duplicating it in the address line,
 - Pinata metadata failures should return actionable diagnostics, preserve the current local metadata fallback when Pinata is not configured, and avoid masking source-image fetch problems behind the generic `Pinata request failed.` message,
 - PDF quick import should parse inside the app-owned Node worker and explicitly include both the `pdfjs` API bundle and fake-worker bundle in the production function trace,
+- admin wallet runtime should reconnect the wallet adapter when possible and the wallet modal should offer a reconnect action when SIWS is active but Phantom is not connected,
 - no new multilingual storage model is introduced in this fix,
 - `/admin/assets/new` should generate one `editSessionId` per form session and pass it with every upload,
 - uploads from an abandoned or reset form session should become eligible for cancellation and orphan cleanup instead of remaining as unmanaged Blob/DB records,
@@ -65,6 +68,7 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 - There is no explicit `postalCode` field in the current new-asset location flow, which makes ZIP/postal-code placement unclear and harder to render consistently in marketplace.
 - `lib/pinata-file-service.ts` falls back to `Pinata request failed.` when Pinata does not return a structured error payload, and route/UI copy can fail to distinguish Pinata auth/API errors from source-image fetch failures.
 - `asset-pdf-server.ts` resolves `pdfjs-dist/legacy/build/pdf.mjs` inside an embedded worker source string; production deployments cannot statically trace that dynamic dependency and can fail with `Cannot find module 'pdfjs-dist/legacy/build/pdf.mjs'`.
+- `WalletRuntimeProvider` disables wallet-adapter `autoConnect`, and `WalletModal` disables its primary wallet action when a SIWS session already exists, leaving deploy unable to recover a disconnected signer without signing out.
 - `uploadAssetFileViaSignedUrl` already accepts `editSessionId`, but `use-asset-upload-workflow.ts` does not pass one from `/admin/assets/new`.
 - `asset_upload_contracts` has `edit_session_id`, `promoted_at`, and `canceled_at`, but the new-asset form does not currently promote successful session uploads or cancel abandoned session uploads.
 - The orphan reconciler only cleans session-scoped uploads (`edit_session_id IS NOT NULL`), so current new-asset uploads are outside the automatic cleanup path.
@@ -92,3 +96,4 @@ The admin asset creation flow has a few regressions that block day-to-day use:
 13. Location editing uses Google Maps place selection where available, persists/displays `postalCode` separately, and renders the final marketplace location without duplicated or hidden ZIP/postal-code text.
 14. Pinata metadata generation failures return actionable admin-facing errors and preserve the non-Pinata/local metadata fallback when Pinata is not configured.
 15. PDF quick import explicitly traces the `pdfjs` API and fake-worker bundles and still extracts brief text for the current mapper in production serverless deployments.
+16. Admin deploy surfaces recover a live wallet adapter connection after refresh/navigation and allow reconnecting Phantom without clearing the authenticated admin session.

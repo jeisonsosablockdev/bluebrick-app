@@ -30,7 +30,7 @@ export function WalletRuntimeProvider({ children }: WalletRuntimeProviderProps) 
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect={false} onError={handleWalletError}>
+      <WalletProvider wallets={wallets} autoConnect onError={handleWalletError}>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

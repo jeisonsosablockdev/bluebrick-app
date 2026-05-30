@@ -362,6 +362,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
 
   const walletPrimaryLabel = useMemo(() => {
+    if (hasWalletSession && !isConnected) {
+      return t({ en: "Reconnect wallet", es: "Reconectar wallet", pt: "Reconectar wallet" });
+    }
+
     if (hasWalletSession) {
       return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
     }
@@ -814,7 +818,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   }, [autoCloseOnConnect, connected, isOpen, walletPublicKey]);
 
   async function handleWalletPrimaryAction(): Promise<void> {
-    if (hasWalletSession) {
+    if (hasWalletSession && isConnected) {
       return;
     }
 
@@ -826,8 +830,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       }
 
       let activePublicKey = resolveCurrentWalletPublicKey();
+      const needsWalletAdapterConnection = !activePublicKey || (hasWalletSession && !isConnected);
 
-      if (!activePublicKey) {
+      if (needsWalletAdapterConnection) {
         setPhase("connecting");
 
         if (!wallet || wallet.adapter.name !== PhantomWalletName) {
@@ -841,6 +846,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
       if (!activePublicKey) {
         throw new Error("Wallet connected but public key is unavailable.");
+      }
+
+      if (hasWalletSession) {
+        if (authState.pubkey && activePublicKey !== authState.pubkey) {
+          throw new Error("Connected wallet does not match the signed-in session. Sign out and reconnect the correct wallet.");
+        }
+
+        setIsOpen(false);
+        return;
       }
 
       const activeSignMessage = await waitForSignMessage();
@@ -1437,7 +1451,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
                     {!shouldShowDirectAuthEntryActions ? (
                       <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
-                        <Button onClick={handleWalletPrimaryAction} disabled={isBusy || hasWalletSession || !isPhantomInstalled} className="min-h-11 w-full">
+                        <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled || (hasWalletSession && isConnected)} className="min-h-11 w-full">
                           {walletPrimaryLabel}
                         </Button>
 

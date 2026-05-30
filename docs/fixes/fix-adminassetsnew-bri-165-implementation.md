@@ -14,6 +14,7 @@ Apply the smallest safe changes that unblock the admin flow:
 8. align location entry across `/admin/assets/new` and `/admin/collections` with Google Maps place selection and first-class postal code handling,
 9. harden Pinata metadata generation errors so `Pinata request failed.` becomes actionable during the create/mint path.
 10. make PDF quick import production-safe by avoiding runtime resolution of the packaged `pdf.worker.mjs` asset in Vercel serverless functions.
+11. keep the live Phantom wallet adapter recoverable for admin deploy after SIWS/session refreshes.
 
 ## Slice Plan
 
@@ -149,6 +150,26 @@ Apply the smallest safe changes that unblock the admin flow:
   - A real Brandon brief PDF extracted first-page text locally with `disableWorker: true`, confirming the parser can still read the current brief format.
   - Targeted PDF worker/import-preview/tracing tests, `lint`, `typecheck`, and `validate` passed for this hotfix.
 
+### Slice BRI-165-16
+- Investigate the admin deploy state where the UI reports:
+  - `Connected wallet: Not connected`
+  - while the admin session/header still shows an authenticated wallet.
+- Keep the distinction between:
+  - authenticated SIWS/admin session used for server authorization, and
+  - live wallet-adapter connection required to sign deploy transactions.
+- Enable wallet-adapter auto-connect in the shared runtime so Phantom reconnects after refresh/navigation when the user previously authorized it.
+- Update `WalletModal` so an active SIWS wallet session with a disconnected adapter can reconnect Phantom without forcing sign-out/sign-in.
+- Validate that reconnecting through the modal does not run SIWS again and does not silently accept a different wallet than the active session.
+- Add regression coverage for:
+  - wallet runtime provider passing `autoConnect`,
+  - wallet modal exposing a reconnect action for an authenticated wallet session with disconnected adapter,
+  - reconnect path calling wallet adapter `connect` without invoking SIWS.
+- Implementation evidence:
+  - `WalletRuntimeProvider` now enables wallet-adapter `autoConnect`, allowing Phantom to recover after admin navigation/refresh when previously authorized.
+  - `WalletModal` now shows `Reconnect wallet` for active wallet sessions whose live adapter is disconnected, and calls the adapter `connect` path without rerunning SIWS.
+  - Reconnect validates the recovered public key against the active session public key before closing the modal.
+  - Targeted wallet modal/runtime tests, `lint`, and `typecheck` passed for this slice.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -167,6 +188,7 @@ Targeted regression coverage will verify:
 - Google Maps place selection and `postalCode` propagation produce consistent admin and marketplace location rendering,
 - Pinata errors expose actionable diagnostics while preserving the non-Pinata fallback path.
 - PDF parsing does not directly resolve `pdf.worker.mjs` from app code, keeps the `pdfjs` API/fake-worker bundles in the production trace, and still extracts text through the app-owned Node worker.
+- Admin deploy can recover the live Phantom signer after navigation/refresh without clearing the authenticated admin session.
 
 ## Final Review
 
@@ -176,6 +198,7 @@ Targeted regression coverage will verify:
 - The SEO naming follow-up must confirm generated names are descriptive without keyword stuffing and remain deterministic enough for tests.
 - The location follow-up must confirm `/admin/assets/new`, `/admin/collections`, and marketplace rendering share one coherent location contract and do not fork postal-code semantics.
 - The Pinata follow-up must confirm no secrets are logged or returned while still surfacing enough provider/source context for operators.
+- The wallet reconnect follow-up must confirm reconnecting the adapter does not bypass SIWS authorization and rejects mismatched wallet addresses.
 
 ## Tooling
 
@@ -196,4 +219,5 @@ Targeted regression coverage will verify:
   - Google Maps/postal-code regression output for new asset creation, collection editing, and marketplace rendering,
   - Pinata metadata route/service regression output for provider failures and fallback behavior,
   - PDF worker regression output showing production-safe `pdfjs` API and fake-worker tracing,
+  - wallet runtime/modal regression output for admin deploy signer recovery,
   - explicit clean-code pass or no-blockers result
