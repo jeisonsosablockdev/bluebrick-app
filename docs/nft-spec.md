@@ -47,7 +47,7 @@ Last Updated: 2026-05-29
 - Upload finalization now tolerates storage `ETag` differences when the upload has already passed checksum, MIME, and size validation.
 - The `?` hint affordance remains a presentation-only helper and does not affect minting, metadata, or on-chain NFT state.
 - The updated initial asset type labels and step 1 quick import drag/drop and file acceptance are admin UX changes only; they do not modify mint authority, collection validation, or royalty logic.
-- The production PDF Quick Import worker hotfix changes only server-side brief text extraction. It does not alter NFT metadata generation, Pinata metadata pinning, mint authority, collection validation, royalties, or purchase execution.
+- The production PDF Quick Import worker/tracing hotfix changes only server-side brief text extraction and Vercel function packaging for `pdfjs-dist`. It does not alter NFT metadata generation, Pinata metadata pinning, mint authority, collection validation, royalties, or purchase execution.
 
 ## Codex Orchestration Baseline Compatibility
 - No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.
