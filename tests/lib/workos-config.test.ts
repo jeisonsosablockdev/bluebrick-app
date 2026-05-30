@@ -68,7 +68,7 @@ describe("lib/workos/config", () => {
     process.env.WORKOS_API_KEY = "sk_test_123";
     process.env.WORKOS_CLIENT_ID = "client_123";
     process.env.WORKOS_COOKIE_PASSWORD = "x".repeat(32);
-    process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI = "https://brids-app.vercel.app/callback";
+    process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI = "https://brids.io/callback";
 
     expect(getWorkosCallbackPath()).toBe("/callback");
   });
