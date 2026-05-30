@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s04-map-surface`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s05-fallback-polish`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.

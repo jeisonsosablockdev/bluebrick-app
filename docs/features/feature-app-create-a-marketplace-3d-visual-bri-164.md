@@ -4,7 +4,7 @@
 - Map surface slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s04-map-surface`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s05-fallback-polish`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
