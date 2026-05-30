@@ -24,15 +24,6 @@
       }
     },
     {
-      "id": "land",
-      "type": "fill",
-      "source": "composite",
-      "source-layer": "land",
-      "paint": {
-        "fill-color": "#04060F"
-      }
-    },
-    {
       "id": "water",
       "type": "fill",
       "source": "composite",

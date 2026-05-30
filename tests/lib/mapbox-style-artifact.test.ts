@@ -12,8 +12,27 @@ const style = JSON.parse(styleText) as {
   sprite?: string;
   glyphs?: string;
   sources?: Record<string, unknown>;
-  layers?: Array<{ id: string; type: string }>;
+  layers?: Array<{ id: string; type: string; "source-layer"?: string }>;
 };
+
+const mapboxStreetsV8SourceLayers = new Set([
+  "admin",
+  "aeroway",
+  "airport_label",
+  "building",
+  "housenum_label",
+  "landuse_overlay",
+  "landuse",
+  "motorway_junction",
+  "natural_label",
+  "place_label",
+  "poi_label",
+  "road",
+  "structure",
+  "transit_stop_label",
+  "water",
+  "waterway"
+]);
 
 describe("Mapbox style artifact", () => {
   it("defines an importable Mapbox Style v8 document for the BRIDS marketplace", () => {
@@ -39,6 +58,17 @@ describe("Mapbox style artifact", () => {
   it("keeps generic POIs muted so marketplace entries can be the primary POIs", () => {
     expect(style.metadata?.["brids:primaryPoiRule"]).toContain("Marketplace entries");
     expect(style.layers?.map((layer) => layer.id)).toContain("poi-labels-muted");
+  });
+
+  it("only references source layers available in the Mapbox Streets v8 tileset", () => {
+    const sourceLayers = style.layers
+      ?.map((layer) => layer["source-layer"])
+      .filter((sourceLayer): sourceLayer is string => Boolean(sourceLayer));
+
+    expect(sourceLayers).toBeTruthy();
+    for (const sourceLayer of sourceLayers ?? []) {
+      expect(mapboxStreetsV8SourceLayers.has(sourceLayer)).toBe(true);
+    }
   });
 
   it("does not embed Mapbox access tokens in the committed style artifact", () => {
