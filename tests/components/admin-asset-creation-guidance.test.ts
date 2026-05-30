@@ -14,6 +14,7 @@ import {
   AssetTypeSelectionSection,
   GuidanceBadge
 } from "@/components/admin/asset-creation/sections";
+import { assetTypeOptions } from "@/components/admin/asset-creation/asset-type-options";
 import { initialAssetForm } from "@/components/admin/asset-creation/types";
 
 import type { ReactNode } from "react";
@@ -68,15 +69,19 @@ describe("components/admin/asset-creation guidance", () => {
           importText: "",
           importPreviewCount: 0,
           importHeaders: [],
-          importMessage: "",
-          hasLoadedImport: false,
-          replaceImportOpen: false,
-          pendingImportLabel: "",
-          setImportText: vi.fn(),
-          onImportFileInput: vi.fn(async () => {}),
-          onImportTextareaPaste: vi.fn(),
-          onConfirmReplaceImport: vi.fn(),
-          onCancelReplaceImport: vi.fn()
+        importMessage: "",
+        hasLoadedImport: false,
+        replaceImportOpen: false,
+        pendingImportLabel: "",
+        isFileDropActive: false,
+        setImportText: vi.fn(),
+        onImportFileInput: vi.fn(async () => {}),
+        onImportFileDragOver: vi.fn(),
+        onImportFileDragLeave: vi.fn(),
+        onImportFileDrop: vi.fn(),
+        onImportTextareaPaste: vi.fn(),
+        onConfirmReplaceImport: vi.fn(),
+        onCancelReplaceImport: vi.fn()
         }),
         createElement(AssetIdentificationSection, { t, form: initialAssetForm, setForm }),
         createElement(AssetCommercialDescriptionSection, { t, form: initialAssetForm, setForm }),
@@ -168,5 +173,71 @@ describe("components/admin/asset-creation guidance", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("wires drag and drop on the quick import dropzone", () => {
+    const onImportFileDragOver = vi.fn();
+    const onImportFileDragLeave = vi.fn();
+    const onImportFileDrop = vi.fn();
+
+    const { container, root } = renderNode(
+      createElement(AssetImportSection, {
+        t,
+        importFileName: "",
+        importText: "",
+        importPreviewCount: 0,
+        importHeaders: [],
+        importMessage: "",
+        hasLoadedImport: false,
+        replaceImportOpen: false,
+        pendingImportLabel: "",
+        isFileDropActive: false,
+        setImportText: vi.fn(),
+        onImportFileInput: vi.fn(async () => {}),
+        onImportFileDragOver,
+        onImportFileDragLeave,
+        onImportFileDrop,
+        onImportTextareaPaste: vi.fn(),
+        onConfirmReplaceImport: vi.fn(),
+        onCancelReplaceImport: vi.fn()
+      })
+    );
+
+    const dropzone = container.querySelector("[data-testid='quick-import-dropzone']");
+    expect(dropzone).not.toBeNull();
+
+    act(() => {
+      dropzone?.dispatchEvent(new Event("dragover", { bubbles: true, cancelable: true }));
+      dropzone?.dispatchEvent(new Event("dragleave", { bubbles: true, cancelable: true }));
+      dropzone?.dispatchEvent(new Event("drop", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onImportFileDragOver).toHaveBeenCalled();
+    expect(onImportFileDragLeave).toHaveBeenCalled();
+    expect(onImportFileDrop).toHaveBeenCalled();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("uses the new investment strategy labels for the asset type chooser", () => {
+    expect(assetTypeOptions).toEqual([
+      {
+        value: "building_new",
+        title: { en: "FIX & FLIP", es: "FIX & FLIP", pt: "FIX & FLIP" },
+        subtitle: { en: "Capital Growth", es: "Crecimiento de capital", pt: "Crescimento de capital" }
+      },
+      {
+        value: "rental_property",
+        title: { en: "FIX & HOLD", es: "FIX & HOLD", pt: "FIX & HOLD" },
+        subtitle: { en: "Recurring Income", es: "Ingresos recurrentes", pt: "Renda recorrente" }
+      },
+      {
+        value: "land_lot",
+        title: { en: "REAL ESTATE DEV", es: "REAL ESTATE DEV", pt: "REAL ESTATE DEV" },
+        subtitle: { en: "Projects from scratch", es: "Proyectos desde cero", pt: "Projetos do zero" }
+      }
+    ]);
   });
 });

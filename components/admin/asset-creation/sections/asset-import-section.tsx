@@ -1,4 +1,4 @@
-import type { ChangeEvent, ClipboardEvent, ReactElement } from "react";
+import type { ChangeEvent, ClipboardEvent, DragEvent, ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,8 +18,12 @@ type AssetImportSectionProps = {
   hasLoadedImport: boolean;
   replaceImportOpen: boolean;
   pendingImportLabel: string;
+  isFileDropActive: boolean;
   setImportText: (value: SetStateAction<string>) => void;
   onImportFileInput: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
+  onImportFileDragOver: (event: DragEvent<HTMLDivElement>) => void;
+  onImportFileDragLeave: (event: DragEvent<HTMLDivElement>) => void;
+  onImportFileDrop: (event: DragEvent<HTMLDivElement>) => void;
   onImportTextareaPaste: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
   onConfirmReplaceImport: () => void;
   onCancelReplaceImport: () => void;
@@ -44,8 +48,12 @@ export function AssetImportSection({
   hasLoadedImport,
   replaceImportOpen,
   pendingImportLabel,
+  isFileDropActive,
   setImportText,
   onImportFileInput,
+  onImportFileDragOver,
+  onImportFileDragLeave,
+  onImportFileDrop,
   onImportTextareaPaste,
   onConfirmReplaceImport,
   onCancelReplaceImport
@@ -99,7 +107,15 @@ export function AssetImportSection({
                   ariaLabel={t({ en: "Import file help", es: "Ayuda de archivo de importacion", pt: "Ajuda de arquivo de importacao" })}
                 />
               </div>
-              <div className="flex min-h-[148px] flex-col items-start justify-between rounded-2xl border border-dashed border-white/15 bg-slate-950/40 p-4">
+              <div
+                data-testid="quick-import-dropzone"
+                className={`flex min-h-[148px] flex-col items-start justify-between rounded-2xl border border-dashed p-4 transition ${
+                  isFileDropActive ? "border-cyan-300/70 bg-cyan-500/10" : "border-white/15 bg-slate-950/40"
+                }`}
+                onDragOver={onImportFileDragOver}
+                onDragLeave={onImportFileDragLeave}
+                onDrop={onImportFileDrop}
+              >
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-white/85">
                     {t({
@@ -117,7 +133,7 @@ export function AssetImportSection({
                     id="quick-import-file"
                     className="sr-only"
                     type="file"
-                    accept=".csv,.txt,.tsv,.pdf"
+                    accept=".csv,.txt,.tsv,.pdf,.xls,.xlsx"
                     onChange={(event) => { void onImportFileInput(event); }}
                   />
                   <label
