@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
+import {
+  normalizeCollectionBootstrapGoogleMapsPlaceJson,
+  type CollectionBootstrapGoogleMapsPlace
+} from "@/lib/admin/collection-bootstrap-mapper";
 import { getRequestRole } from "@/lib/auth-session";
 import {
   createEmptyPropertyEconomics,
@@ -21,6 +25,7 @@ type MarketplaceEntryRequest = {
   address?: unknown;
   geoLat?: unknown;
   geoLng?: unknown;
+  googleMapsPlace?: unknown;
   imageUrl?: unknown;
   shortDescription?: unknown;
   highlights?: unknown;
@@ -183,6 +188,19 @@ function parseGovernance(raw: unknown, investmentNotes: string): PropertyGoverna
   };
 }
 
+function parseGoogleMapsPlace(raw: unknown): CollectionBootstrapGoogleMapsPlace | null {
+  if (raw === undefined || raw === null) {
+    return null;
+  }
+
+  const normalized = normalizeCollectionBootstrapGoogleMapsPlaceJson(raw);
+  if (!normalized) {
+    throw new Error("googleMapsPlace must be a valid reduced Google Maps place payload.");
+  }
+
+  return normalized;
+}
+
 function buildExplorerUrl(collectionAddress: string): string {
   const encodedAddress = encodeURIComponent(collectionAddress);
   return `https://explorer.solana.com/address/${encodedAddress}?cluster=devnet`;
@@ -198,6 +216,7 @@ function normalizePayload(rawBody: unknown): {
   address: string;
   geoLat: number | null;
   geoLng: number | null;
+  googleMapsPlace: CollectionBootstrapGoogleMapsPlace | null;
   imageUrl: string;
   shortDescription: string;
   highlights: string[];
@@ -249,6 +268,7 @@ function normalizePayload(rawBody: unknown): {
     projectedNetRoiPct: annualRoiPct
   });
   const governance = parseGovernance(body.governance, investmentNotes);
+  const googleMapsPlace = parseGoogleMapsPlace(body.googleMapsPlace);
 
   const snapshotId = typeof body.snapshotId === "string" && body.snapshotId.trim()
     ? body.snapshotId.trim()
@@ -264,6 +284,7 @@ function normalizePayload(rawBody: unknown): {
     address: locationForm.address,
     geoLat: locationForm.geoLat,
     geoLng: locationForm.geoLng,
+    googleMapsPlace,
     imageUrl,
     shortDescription,
     highlights,
@@ -343,6 +364,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       detailedLocation: payload.address,
       geoLat: payload.geoLat,
       geoLng: payload.geoLng,
+      googleMapsPlace: payload.googleMapsPlace,
       highlights,
       investmentNotes: payload.investmentNotes,
       supplyTotal: payload.supplyTotal,

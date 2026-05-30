@@ -13,3 +13,5 @@ test-results
 .cache-synpress
 .vercel
 .env*.local
+next-env.d.ts
+artifacts/

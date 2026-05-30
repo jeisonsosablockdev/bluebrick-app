@@ -111,6 +111,18 @@ describe("POST /api/admin/marketplace/entries", () => {
         address: "Calle 10 #12-34",
         geoLat: "4.711",
         geoLng: "-74.072",
+        googleMapsPlace: {
+          placeLabel: "Central Tower",
+          formattedAddress: "Calle 10 #12-34, Bogota, Colombia",
+          lat: 4.711,
+          lng: -74.072,
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Central%20Tower",
+          placeId: "place-central-tower",
+          city: "Bogota",
+          stateProvince: "Bogotá D.C.",
+          country: "CO",
+          postalCode: "110221"
+        },
         imageUrl: "https://cdn.example.com/cover.jpg",
         shortDescription: "Tokenized building",
         highlights: ["Project stage: construction"],
@@ -164,6 +176,10 @@ describe("POST /api/admin/marketplace/entries", () => {
         detailedLocation: "Calle 10 #12-34",
         geoLat: 4.711,
         geoLng: -74.072,
+        googleMapsPlace: expect.objectContaining({
+          placeId: "place-central-tower",
+          formattedAddress: "Calle 10 #12-34, Bogota, Colombia"
+        }),
         project: expect.objectContaining({
           stage: "rehab",
           developerName: "Blue Brick Capital LLC",
