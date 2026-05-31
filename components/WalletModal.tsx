@@ -1096,6 +1096,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
           federatedAvailable: previous.federatedAvailable
         }));
         broadcastAuthSync("logout", walletPublicKey);
+        router.refresh();
       }
     } finally {
       setPhase("idle");

@@ -17,6 +17,7 @@ const navigationMocks = vi.hoisted(() => ({
   pathname: "/",
   searchParams: new URLSearchParams(),
   push: vi.fn(),
+  refresh: vi.fn(),
   replace: vi.fn()
 }));
 
@@ -48,7 +49,11 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigationMocks.pathname,
-  useRouter: () => ({ push: navigationMocks.push, replace: navigationMocks.replace }),
+  useRouter: () => ({
+    push: navigationMocks.push,
+    refresh: navigationMocks.refresh,
+    replace: navigationMocks.replace
+  }),
   useSearchParams: () => navigationMocks.searchParams
 }));
 
@@ -153,6 +158,7 @@ describe("components/WalletModal header CTA", () => {
     navigationMocks.pathname = "/";
     navigationMocks.searchParams = new URLSearchParams();
     navigationMocks.push.mockReset();
+    navigationMocks.refresh.mockReset();
     navigationMocks.replace.mockReset();
     localeMocks.useI18n.mockReturnValue({
       locale: "es",
@@ -839,6 +845,7 @@ describe("components/WalletModal header CTA", () => {
 
     expect(disconnect).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
+    expect(navigationMocks.refresh).toHaveBeenCalledTimes(1);
     expect(document.body.textContent).not.toContain("Reconectar wallet");
 
     act(() => {
