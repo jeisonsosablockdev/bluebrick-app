@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s17-linear-artifact-sync`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -215,6 +215,30 @@ Fallback behavior:
   - avoid broad rewrites in the audit slice
   - confirm targeted marketplace map tests still pass
   - preserve runtime behavior
+
+### S17 - Linear and artifact sync
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s17-linear-artifact-sync`
+- Scope:
+  - sync S12-S16 merge status into the governing feature artifact
+  - capture S15 Core Web Vitals/SEO findings as explicit follow-up backlog
+  - capture S16 clean-code audit result and non-blocking refactor candidates
+  - update Linear `BRI-164` with the same operational summary
+  - preserve runtime behavior
+
+## Latest Merge Evidence
+- `bfc4d8d merge: s12 marketplace pin leader line`
+- `61b96ad merge: s13 deferred map camera motion`
+- `d7e55fa merge: s14 marketplace clean code formatting`
+- `1abf11a merge: s15 marketplace web vitals seo audit`
+- `8774866 merge: s16 marketplace clean code refactor audit`
+- `npm run validate` passed after S16 merge.
+
+## Accepted Follow-Up Backlog
+- Performance: evaluate lazy hydration or delayed mobile activation for the Mapbox island while keeping the list usable immediately.
+- Performance: audit route-level JavaScript, wallet/modal providers, and Mapbox loading boundaries to reduce TBT/INP risk.
+- SEO: align marketplace metadata language with the visible H1 or add an explicit localized metadata strategy.
+- SEO: evaluate approved structured data for marketplace inventory after product/legal schema approval.
+- Refactor: extract `useMarketplaceMapViewState` and `MarketplaceMapMarker` only when the map interaction surface grows or performance work requires it.
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
