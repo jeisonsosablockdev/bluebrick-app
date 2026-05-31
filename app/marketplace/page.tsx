@@ -13,7 +13,9 @@ import { type ListingStatus, type PropertyFilters } from "@/lib/property-service
 import {
   listMarketplaceMapEntries,
   listMarketplaceProperties,
-  listMarketplacePropertyCities
+  listMarketplacePropertyCities,
+  readMarketplaceRecordsResultForServer,
+  type MarketplaceRecordsResult
 } from "@/lib/property-marketplace-server";
 import { isMarketplaceReleaseControlledElementVisible } from "@/lib/release-module-visibility";
 import { createPageMetadata } from "@/lib/seo";
@@ -38,6 +40,22 @@ async function safeListMarketplaceProperties(filters: PropertyFilters) {
     return await listMarketplaceProperties(filters);
   } catch {
     return [];
+  }
+}
+
+async function safeReadMarketplaceRecordsResult(): Promise<Pick<MarketplaceRecordsResult, "status" | "source" | "errorCode">> {
+  try {
+    const result = await readMarketplaceRecordsResultForServer();
+    return {
+      status: result.status,
+      source: result.source,
+      errorCode: result.errorCode
+    };
+  } catch {
+    return {
+      status: "ok",
+      source: "empty"
+    };
   }
 }
 
@@ -85,11 +103,13 @@ function parseFilters(raw: Record<string, string | string[] | undefined>): Prope
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   const filters = parseFilters(await searchParams);
+  const readResult = await safeReadMarketplaceRecordsResult();
   const properties = await safeListMarketplaceProperties(filters);
   const mapSources = await safeListMarketplaceMapEntries(filters);
   const cityOptions = await safeListMarketplacePropertyCities();
   const mapboxAccessToken = getMarketplaceMapboxAccessToken();
   const mapboxStyleUrl = getMarketplaceMapboxStyleUrl();
+  const isDataDegraded = readResult.status === "degraded";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
@@ -123,6 +143,16 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         </section>
 
         <section className="mt-6">
+          {isDataDegraded ? (
+            <Card className="mb-4 border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+              {localize(DEFAULT_LOCALE, {
+                en: "Marketplace data is temporarily using a fallback source. Listings remain available while we refresh the primary source.",
+                es: "Los datos del marketplace estan usando temporalmente una fuente de respaldo. Las propiedades siguen disponibles mientras actualizamos la fuente principal.",
+                pt: "Os dados do marketplace estao usando temporariamente uma fonte de backup. As propriedades continuam disponiveis enquanto atualizamos a fonte principal."
+              })}
+            </Card>
+          ) : null}
+
           {properties.length === 0 ? (
             <Card className="p-4 text-sm text-slate-300">
               {localize(DEFAULT_LOCALE, {
