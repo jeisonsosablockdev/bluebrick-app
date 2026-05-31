@@ -1,8 +1,8 @@
 # Implementation: Login modal viewport anchoring and auth state clarity
 
 ## Status
-- Artifact-only scope review.
-- Implementation is intentionally paused until this slice plan is accepted.
+- S01 artifact slice merged into the initiative branch.
+- S02 modal viewport slice is implemented and under targeted validation.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -36,9 +36,9 @@ Proposed once issue key exists:
 
 `fix/app-login-modal-issue-bri-167`
 
-Current local draft branch:
+Initiative branch:
 
-`fix/app-login-modal-issue`
+`fix/app-login-modal-issue-bri-167`
 
 ## Spec Slice
 - Branch: `fix/app-login-modal-issue-bri-167-s01-spec`
@@ -53,8 +53,8 @@ Current local draft branch:
 ## Slice Plan
 | Slice | Status | Branch | Objective | Technical Scope | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |
-| S01 | in-review | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | TBD |
-| S02 | pending | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | TBD |
+| S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
+| S02 | implemented | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | local slice |
 | S03 | pending | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | TBD |
 | S04 | pending | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | TBD |
 | S05 | pending | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | TBD |
@@ -235,4 +235,10 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - Explicit clean-code/reviewer pass has no unresolved blocking findings.
 
 ## Validation Results
-- Pending implementation.
+- S02 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because the open dialog still rendered inside the page render container.
+- S02 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 13 tests.
+- S02 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests across `/` and `/marketplace` at 320, 375, 768, and 1024 px widths.
+- S02 type validation: `npm run typecheck` passed.
+- S02 docs governance validation: `npm run validate:docs-governance` passed.
+- S02 whitespace validation: `git diff --check` passed.
+- S02 observed non-blocking marketplace warnings: existing chart containers can report `width(-1)` / `height(-1)` during the smoke run; the modal viewport assertions and screenshots still passed.
