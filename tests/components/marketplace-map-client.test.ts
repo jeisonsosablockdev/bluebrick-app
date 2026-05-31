@@ -66,6 +66,9 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     expect(container.textContent).toContain("Boston Harbor House");
     expect(container.textContent).toContain("25%");
     expect(container.querySelector('[aria-label*="Boston Harbor House"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="marketplace-map-pin-anchor"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')?.getAttribute("style")).toContain("rgb(103, 232, 249)");
 
     act(() => {
       root.unmount();

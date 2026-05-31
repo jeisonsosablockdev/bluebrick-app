@@ -33,6 +33,8 @@ The detail page stays as it is today.
 - Pins show:
   - property name
   - `% sold`
+- Pins render with a subtle leader line and anchor dot pointing from the floating card to the property's map location.
+- The leader line uses the same clear cyan as the `Marketplace Map` label (`text-cyan-300`, `#67E8F9`).
 - Hovering a pin zooms the map to that property.
 - Selecting a marketplace pin from the map panel centers the camera on that property.
 - When no property is selected, the map camera centers on the midpoint that keeps the available marketplace pins visually grouped.
