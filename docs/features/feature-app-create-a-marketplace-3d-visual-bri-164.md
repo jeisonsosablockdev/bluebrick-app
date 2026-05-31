@@ -179,14 +179,16 @@ The new 3D visual is meant to add the missing layer of presence:
 - Total Blocking Time remained high: `870ms` mobile and `830ms` desktop.
 - The default map-first state loads Mapbox resources early; this is intentional for the premium first release, but it is the next performance boundary to optimize.
 - S16 found no blocking clean-code issue before merge.
-- S21 strict debt review normalized the remaining non-blocking issues as P2 follow-ups and split them into S22-S25 implementation artifacts before runtime changes.
+- S21 strict debt review normalized the remaining non-blocking issues as P2 follow-ups and split them into S22-S43 atomic implementation artifacts before runtime changes.
 
 ## P2 Debt Follow-Up Artifacts
-- S21 inventory: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
-- S22 runtime observability and error boundaries: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s22-runtime-observability.md`.
-- S23 marketplace server boundary refactor: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s23-server-boundaries.md`.
-- S24 property detail content decomposition: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s24-detail-decomposition.md`.
-- S25 map data quality and Web Vitals boundary: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s25-map-quality-web-vitals.md`.
+- S21 inventory and atomic queue: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- S22-S25: reliability, safe admin errors, degraded read state, and read-failure logging split into one-change TDD slices.
+- S26-S31: `lib/property-marketplace-server.ts` boundary cleanup split into one extraction per slice.
+- S32-S40: `PropertyDetailContent` decomposition split into one formatter or section extraction per slice.
+- S41: coordinate range validation as a single map data-quality slice.
+- S42-S43: Mapbox lazy boundary and Web Vitals recheck split into runtime change and evidence-only follow-up.
+- Each runtime slice must start with failing tests for its one behavior and must not bundle adjacent refactors.
 
 ## Follow-Up Backlog
 - Evaluate lazy hydration or delayed activation for the Mapbox island on mobile while keeping the list immediately usable.
