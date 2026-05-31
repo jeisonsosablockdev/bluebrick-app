@@ -33,3 +33,10 @@ The public list/detail functions should keep their current return shape unless t
 - Degraded read state is representable in tests.
 - Existing callers are not broken.
 - No UI behavior changes.
+
+## Implementation Evidence
+- Added failing coverage for a persisted marketplace read failure.
+- Introduced `readMarketplaceRecordsResultForServer` as a backward-compatible result helper.
+- Existing list callers continue to receive the same records-only shape through the current public list API.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts`.
+- Targeted result: `4` tests passed.
