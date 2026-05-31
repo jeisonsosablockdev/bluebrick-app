@@ -16,7 +16,7 @@ export function MarketplaceMapMarker({ pin, onActivate }: MarketplaceMapMarkerPr
       <div className="flex flex-col items-center">
         <button
           type="button"
-          className="group flex min-h-11 min-w-16 items-center gap-2 rounded-full border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-cyan-300/25"
+          className="group flex min-h-11 min-w-16 items-center gap-2 rounded-full border border-cyan-200/40 bg-slate-950/90 px-3 py-2 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-slate-900/95"
           aria-label={`${pin.title}, ${pin.locationLabel}, ${formatMarketplaceSoldPercent(pin.soldPercent)} sold`}
           onMouseEnter={() => onActivate(pin)}
           onFocus={() => onActivate(pin)}

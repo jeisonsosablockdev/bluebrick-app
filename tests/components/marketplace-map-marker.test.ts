@@ -45,6 +45,8 @@ describe("components/marketplace/MarketplaceMapMarker", () => {
     expect(container.querySelector("button")?.getAttribute("aria-label")).toBe(
       "Fix & Flip Brandon 117, Brandon, Florida, US, 12.50% sold"
     );
+    expect(container.querySelector("button")?.className).toContain("bg-slate-950/90");
+    expect(container.querySelector("button")?.className).not.toContain("bg-cyan-300/15");
     expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')?.getAttribute("style")).toContain("rgb(103, 232, 249)");
     expect(container.querySelector('[data-testid="marketplace-map-pin-anchor"]')).toBeTruthy();
 
