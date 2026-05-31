@@ -2,22 +2,22 @@ import "server-only";
 
 import { Connection, PublicKey } from "@solana/web3.js";
 
-import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
-import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
 import { withDbClient } from "@/lib/db/pool";
 import {
   clonePropertyDetail,
-  mapCreateInputToPropertyDetail,
-  toMarketplaceDocumentId
+  mapCreateInputToPropertyDetail
 } from "@/lib/marketplace/property-row-mapper";
 import { readPersistedMarketplaceEntries } from "@/lib/marketplace/property-read-repository";
+import {
+  insertMarketplacePropertyEntry,
+  type CreateMarketplaceEntryPersistentInput
+} from "@/lib/marketplace/property-write-repository";
 import { recordOperabilityLog } from "@/lib/observability";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   listPropertyDetailsSnapshot,
   PropertyRpcError,
   type BlockchainSyncStatus,
-  type CreateMarketplaceEntryInput,
   type ListingStatus,
   type PropertyDetail,
   type PropertyFilters,
@@ -25,9 +25,7 @@ import {
 } from "@/lib/property-service";
 import type { MarketplaceMapPinSource } from "@/lib/marketplace-map-pins";
 
-export type CreateMarketplaceEntryPersistentInput = CreateMarketplaceEntryInput & {
-  createdBy: string;
-};
+export type { CreateMarketplaceEntryPersistentInput } from "@/lib/marketplace/property-write-repository";
 
 export type MarketplaceRecordsResult = {
   status: "ok" | "degraded";
@@ -122,10 +120,6 @@ async function resolveRealtimeSyncStatus(property: PropertyDetail): Promise<{
   }
 }
 
-function toJsonbValue(value: unknown): string {
-  return JSON.stringify(value);
-}
-
 function filterPropertyDetails(records: PropertyDetail[], filters: PropertyFilters): PropertyDetail[] {
   const normalizedSearch = filters.search?.trim().toLowerCase();
 
@@ -211,110 +205,7 @@ async function readMarketplaceRecordsForServer(): Promise<PropertyDetail[]> {
 }
 
 export async function createMarketplacePropertyEntryPersistent(input: CreateMarketplaceEntryPersistentInput): Promise<PropertyDetail> {
-  if (!isDatabaseConfigured()) {
-    throw new Error("DATABASE_URL is required to create marketplace entries.");
-  }
-
-  const documentsPayload = input.documents.map((document, index) => ({
-    id: toMarketplaceDocumentId(document.label, index),
-    label: document.label,
-    url: document.url
-  }));
-
-  try {
-    await withDbClient(async (client) => {
-      const support = await getMarketplaceEntryLocationColumnSupport(client);
-      const columns = [
-        "id",
-        "title",
-        "city",
-        "country",
-        ...(support.stateProvince ? ["state_province"] : []),
-        ...(support.postalCode ? ["postal_code"] : []),
-        "location_label",
-        "listing_status",
-        "image_url",
-        "short_description",
-        "detailed_location",
-        ...(support.geoLat ? ["geo_lat"] : []),
-        ...(support.geoLng ? ["geo_lng"] : []),
-        ...(support.googleMapsPlaceJson ? ["google_maps_place_json"] : []),
-        "highlights_json",
-        "investment_notes",
-        "project_json",
-        "economics_json",
-        "governance_json",
-        "supply_total",
-        "minted_or_sold",
-        "nft_price_usd",
-        "annual_roi_pct",
-        "availability_label",
-        "documents_json",
-        "collection_address",
-        "asset_mint_address",
-        "explorer_url",
-        "last_onchain_update",
-        "sync_status",
-        "created_by"
-      ];
-      const values = [
-        input.id,
-        input.title,
-        input.city,
-        input.country,
-        ...(support.stateProvince ? [input.stateProvince ?? null] : []),
-        ...(support.postalCode ? [input.postalCode ?? null] : []),
-        deriveAdminCanonicalLocationLabel({
-          city: input.city,
-          country: input.country,
-          stateProvince: input.stateProvince ?? null,
-          postalCode: input.postalCode ?? null
-        }),
-        input.listingStatus,
-        input.image,
-        input.shortDescription,
-        input.detailedLocation,
-        ...(support.geoLat ? [input.geoLat ?? null] : []),
-        ...(support.geoLng ? [input.geoLng ?? null] : []),
-        ...(support.googleMapsPlaceJson ? [input.googleMapsPlace ? toJsonbValue(input.googleMapsPlace) : null] : []),
-        toJsonbValue(input.highlights),
-        input.investmentNotes,
-        toJsonbValue(input.project),
-        toJsonbValue(input.economics),
-        toJsonbValue(input.governance),
-        input.supplyTotal,
-        input.mintedOrSold,
-        input.nftPriceUsd,
-        input.annualRoiPct,
-        input.availabilityLabel,
-        toJsonbValue(documentsPayload),
-        input.collectionAddress,
-        input.assetMintAddress,
-        input.explorerUrl,
-        input.lastOnchainUpdate,
-        input.syncStatus,
-        input.createdBy
-      ];
-
-      await client.query(
-        `INSERT INTO marketplace_entries (
-           ${columns.join(",\n           ")}
-         )
-         VALUES (
-           ${values.map((_, index) => `$${index + 1}`).join(",\n           ")}
-         )`,
-        values
-      );
-    });
-  } catch (error) {
-    const maybePgError = error as { code?: string };
-    if (maybePgError.code === "23505") {
-      throw new Error("A marketplace entry with this id already exists.");
-    }
-
-    throw error;
-  }
-
+  await insertMarketplacePropertyEntry(input);
   return mapCreateInputToPropertyDetail(input);
 }
 
