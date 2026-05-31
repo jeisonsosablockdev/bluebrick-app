@@ -476,6 +476,12 @@ Fallback behavior:
   - rerun local production Lighthouse/browser evidence after S42
   - compare against S15 mobile LCP/TBT and desktop TBT
   - document remaining risk without mixing in runtime changes
+- Completed evidence:
+  - `npm run build` passed.
+  - Local production `/marketplace` returned `200` and initial HTML did not include `marketplace-map-shell` or `marketplace-map-client`, confirming the S42 deferred Mapbox boundary.
+  - Lighthouse desktop: performance `97`, SEO `100`, LCP `1.1s`, TBT `0ms`.
+  - Lighthouse mobile: performance `74`, SEO `100`, LCP `5.1s`, TBT `259ms`, CLS `0.055`.
+  - Compared with S15, mobile LCP improved from `8.0s` to `5.1s` and mobile TBT improved from `870ms` to `259ms`; mobile LCP remains above target and is documented as residual risk.
 
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
