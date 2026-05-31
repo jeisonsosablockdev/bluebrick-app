@@ -181,6 +181,15 @@ Fallback behavior:
   - use the exact same cyan tone as the `Marketplace Map` eyebrow text (`text-cyan-300`, `#67E8F9`)
   - keep the marker accessible as a button and preserve hover/focus camera behavior
 
+### S13 - deferred subtle camera orbit
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s13-deferred-camera-motion`
+- Scope:
+  - TDD first: add coverage proving camera motion does not start during the initial render window
+  - add a delayed, subtle circular camera drift to create depth after the marketplace map has settled
+  - defer the animation with a timer so it does not compete with initial load and Core Web Vitals
+  - respect `prefers-reduced-motion`
+  - keep the movement small enough that pins remain discoverable and readable
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`

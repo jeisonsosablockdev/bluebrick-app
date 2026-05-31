@@ -53,11 +53,13 @@ function renderClient(): RenderHandle {
 describe("components/marketplace/MarketplaceMapClient", () => {
   beforeEach(() => {
     latestMapProps = null;
+    vi.useRealTimers();
   });
 
   afterEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it("renders compact pin content with title and sold percent", () => {
@@ -142,6 +144,59 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     });
     expect(Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0)).toBeGreaterThanOrEqual(7.25);
 
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("defers subtle circular camera motion until after the initial render window", () => {
+    vi.useFakeTimers();
+    const { root } = renderClient();
+    const initialViewState = latestMapProps?.viewState as { latitude: number; longitude: number };
+
+    act(() => {
+      vi.advanceTimersByTime(4499);
+    });
+
+    expect(latestMapProps?.viewState).toMatchObject(initialViewState);
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+
+    const animatedViewState = latestMapProps?.viewState as { latitude: number; longitude: number };
+    expect(animatedViewState.latitude).not.toBe(initialViewState.latitude);
+    expect(animatedViewState.longitude).not.toBe(initialViewState.longitude);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not start deferred camera motion when reduced motion is requested", () => {
+    vi.useFakeTimers();
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+
+    const { root } = renderClient();
+    const initialViewState = latestMapProps?.viewState;
+
+    act(() => {
+      vi.advanceTimersByTime(9000);
+    });
+
+    expect(latestMapProps?.viewState).toMatchObject(initialViewState as Record<string, unknown>);
+
+    window.matchMedia = originalMatchMedia;
     act(() => {
       root.unmount();
     });
