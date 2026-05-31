@@ -47,4 +47,32 @@ describe("components/marketplace/MarketplaceMapShell", () => {
     expect(html).toContain("marketplace-map-client");
     expect(html).not.toContain("marketplace-list");
   });
+
+  it("renders compact side panel pin cards", () => {
+    const html = renderShell(
+      createElement(MarketplaceMapShell, {
+        mapboxAccessToken: "pk.test-token",
+        pins: [
+          {
+            id: "fl-1",
+            title: "Fix & Flip Brandon 117",
+            locationLabel: "Brandon, Florida, 33511, US",
+            href: "/marketplace/fl-1",
+            latitude: 27.9378,
+            longitude: -82.2859,
+            soldPercent: 0
+          }
+        ],
+        map: createElement("div", { "data-testid": "marketplace-map-client" }, "map"),
+        fallback: createElement("div", { "data-testid": "marketplace-list" }, "list")
+      })
+    );
+
+    expect(html).toContain("rounded-xl");
+    expect(html).toContain("px-2.5");
+    expect(html).toContain("py-2");
+    expect(html).toContain("text-xs");
+    expect(html).toContain("text-[10px]");
+    expect(html).toContain("Fix &amp; Flip Brandon 117");
+  });
 });
