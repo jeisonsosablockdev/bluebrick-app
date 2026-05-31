@@ -8,11 +8,18 @@ import { H2, Lead } from "@/components/ui/typography";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { PurchaseCta } from "@/components/marketplace/PurchaseCta";
 import {
+  formatMarketplaceDetailDate,
+  formatMarketplaceDetailLocation,
+  formatMarketplaceDetailMonths,
+  formatMarketplaceDetailPercent,
+  formatMarketplaceDetailUsd,
+  shouldRenderMarketplaceDetailMetric
+} from "@/components/marketplace/property-detail-formatters";
+import {
   buildAdminCollectionGoogleMapsEmbedUrl,
   buildAdminCollectionGoogleMapsUrl,
   buildAdminCollectionLocationLabel
 } from "@/lib/admin/admin-collection-location-view";
-import type { AppLocale } from "@/lib/i18n";
 import type { PropertyDetail } from "@/lib/property-service";
 import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
 import { createDetailOpenMotionVariants } from "@/lib/motion";
@@ -22,74 +29,6 @@ type PropertyDetailContentProps = {
   imageClassName?: string;
   layoutId?: string;
 };
-
-function formatUsd(value: number | null, locale: AppLocale): string {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
-  }
-
-  const normalizedLocale = locale === "en" ? "en-US" : locale === "pt" ? "pt-BR" : "es-CO";
-  return new Intl.NumberFormat(normalizedLocale, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0
-  }).format(value);
-}
-
-function formatMonths(value: number | null, locale: AppLocale): string {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
-  }
-
-  return `${value} ${locale === "en" ? "months" : "meses"}`;
-}
-
-function formatPercent(value: number | null, locale: AppLocale): string {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
-  }
-
-  const normalizedLocale = locale === "en" ? "en-US" : locale === "pt" ? "pt-BR" : "es-CO";
-  return `${new Intl.NumberFormat(normalizedLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)}%`;
-}
-
-function shouldRenderMetric(value: number | null): boolean {
-  return typeof value === "number" && Number.isFinite(value) && value > 0;
-}
-
-function formatDetailedLocation(property: PropertyDetail): string {
-  const detailedLocation = property.detailedLocation.trim();
-  const postalCode = property.postalCode?.trim();
-  if (!postalCode) {
-    return detailedLocation;
-  }
-
-  return detailedLocation
-    .replace(new RegExp(`\\s*,?\\s*${postalCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`), "")
-    .trim();
-}
-
-function formatDate(dateValue: string | null, locale: AppLocale): string {
-  if (!dateValue) {
-    return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
-  }
-
-  const parsed = new Date(dateValue);
-
-  if (Number.isNaN(parsed.valueOf())) {
-    return locale === "en" ? "Unavailable" : locale === "pt" ? "Indisponivel" : "No disponible";
-  }
-
-  const dateLocale = locale === "en" ? "en-US" : locale === "pt" ? "pt-BR" : "es-CO";
-
-  return parsed.toLocaleString(dateLocale, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
 
 function resolvePublicGoogleMapsEmbedApiKey(): string | null {
   const embedApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY?.trim();
@@ -166,7 +105,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             {t({ en: "Price per Fraction", es: "Precio por Fracción", pt: "Preco por Fração" })}: ${property.investment.nftPriceUsd.toFixed(2)}
           </p>
           <p className="text-sm text-slate-300">
-            {t({ en: "Projected ROI", es: "ROI proyectado", pt: "ROI projetado" })}: {formatPercent(property.economics.projectedNetRoiPct ?? property.investment.annualRoiPct, locale)}
+            {t({ en: "Projected ROI", es: "ROI proyectado", pt: "ROI projetado" })}: {formatMarketplaceDetailPercent(property.economics.projectedNetRoiPct ?? property.investment.annualRoiPct, locale)}
           </p>
           <p className="text-sm text-slate-300">
             {t({ en: "Availability", es: "Disponibilidad", pt: "Disponibilidade" })}: {property.investment.availabilityLabel}
@@ -177,7 +116,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
           <H2 className="text-2xl text-white">{t({ en: "Property information", es: "Informacion de la propiedad", pt: "Informacoes da propriedade" })}</H2>
           <p className="text-sm text-slate-300">{property.investmentNotes}</p>
           <p className="text-sm text-slate-300">
-            {t({ en: "Detailed location", es: "Ubicacion detallada", pt: "Localizacao detalhada" })}: {formatDetailedLocation(property)}
+            {t({ en: "Detailed location", es: "Ubicacion detallada", pt: "Localizacao detalhada" })}: {formatMarketplaceDetailLocation(property.detailedLocation, property.postalCode)}
           </p>
           {property.postalCode ? (
             <p className="text-sm text-slate-300">
@@ -227,26 +166,26 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Deal economics", es: "Economia del deal", pt: "Economia do deal" })}</H2>
           <div className="grid gap-2 text-sm text-slate-300">
-            {shouldRenderMetric(property.economics.purchasePriceUsd) ? <p>{t({ en: "Purchase price", es: "Purchase Price", pt: "Purchase Price" })}: {formatUsd(property.economics.purchasePriceUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.afterRepairValueUsd) ? <p>{t({ en: "After Repair Value (ARV)", es: "After Repair Value (ARV)", pt: "After Repair Value (ARV)" })}: {formatUsd(property.economics.afterRepairValueUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.rehabBudgetUsd) ? <p>{t({ en: "Rehab budget", es: "Rehab Budget", pt: "Rehab Budget" })}: {formatUsd(property.economics.rehabBudgetUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.closingCostsUsd) ? <p>{t({ en: "Closing costs", es: "Closing Costs", pt: "Closing Costs" })}: {formatUsd(property.economics.closingCostsUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.holdingCostsUsd) ? <p>{t({ en: "Holding & misc.", es: "Holding & Misc.", pt: "Holding & Misc." })}: {formatUsd(property.economics.holdingCostsUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.sellingCostsUsd) ? <p>{t({ en: "Selling costs", es: "Selling Costs", pt: "Selling Costs" })}: {formatUsd(property.economics.sellingCostsUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.totalProjectCostUsd) ? <p>{t({ en: "Total project cost", es: "Total Project Cost", pt: "Total Project Cost" })}: {formatUsd(property.economics.totalProjectCostUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.minimumCapitalRequiredUsd) ? <p>{t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}: {formatUsd(property.economics.minimumCapitalRequiredUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.purchasePriceUsd) ? <p>{t({ en: "Purchase price", es: "Purchase Price", pt: "Purchase Price" })}: {formatMarketplaceDetailUsd(property.economics.purchasePriceUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.afterRepairValueUsd) ? <p>{t({ en: "After Repair Value (ARV)", es: "After Repair Value (ARV)", pt: "After Repair Value (ARV)" })}: {formatMarketplaceDetailUsd(property.economics.afterRepairValueUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.rehabBudgetUsd) ? <p>{t({ en: "Rehab budget", es: "Rehab Budget", pt: "Rehab Budget" })}: {formatMarketplaceDetailUsd(property.economics.rehabBudgetUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.closingCostsUsd) ? <p>{t({ en: "Closing costs", es: "Closing Costs", pt: "Closing Costs" })}: {formatMarketplaceDetailUsd(property.economics.closingCostsUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.holdingCostsUsd) ? <p>{t({ en: "Holding & misc.", es: "Holding & Misc.", pt: "Holding & Misc." })}: {formatMarketplaceDetailUsd(property.economics.holdingCostsUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.sellingCostsUsd) ? <p>{t({ en: "Selling costs", es: "Selling Costs", pt: "Selling Costs" })}: {formatMarketplaceDetailUsd(property.economics.sellingCostsUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.totalProjectCostUsd) ? <p>{t({ en: "Total project cost", es: "Total Project Cost", pt: "Total Project Cost" })}: {formatMarketplaceDetailUsd(property.economics.totalProjectCostUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.minimumCapitalRequiredUsd) ? <p>{t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}: {formatMarketplaceDetailUsd(property.economics.minimumCapitalRequiredUsd, locale)}</p> : null}
           </div>
         </Card>
 
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Fees and projected return", es: "Fees y retorno proyectado", pt: "Fees e retorno projetado" })}</H2>
           <div className="grid gap-2 text-sm text-slate-300">
-            {shouldRenderMetric(property.economics.structuringFeeUsd) ? <p>{t({ en: "Structuring fee", es: "Structuring Fee", pt: "Structuring Fee" })}: {formatUsd(property.economics.structuringFeeUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.grossProfitProjectedUsd) ? <p>{t({ en: "Net profit (before distribution)", es: "Net Profit (before distribution)", pt: "Net Profit (before distribution)" })}: {formatUsd(property.economics.grossProfitProjectedUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.managementFeeUsd) ? <p>{t({ en: "Management fee", es: "Management Fee", pt: "Management Fee" })}: {formatUsd(property.economics.managementFeeUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.brokerFeeUsd) ? <p>{t({ en: "Broker fee", es: "Broker Fee", pt: "Broker Fee" })}: {formatUsd(property.economics.brokerFeeUsd, locale)}</p> : null}
-            {shouldRenderMetric(property.economics.netInvestorProfitUsd) ? <p>{t({ en: "Net profit for investor", es: "Net Profit for Investor", pt: "Net Profit for Investor" })}: {formatUsd(property.economics.netInvestorProfitUsd, locale)}</p> : null}
-            {property.economics.projectedNetRoiPct !== null ? <p>{t({ en: "Projected ROI", es: "ROI proyectado", pt: "ROI projetado" })}: {formatPercent(property.economics.projectedNetRoiPct, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.structuringFeeUsd) ? <p>{t({ en: "Structuring fee", es: "Structuring Fee", pt: "Structuring Fee" })}: {formatMarketplaceDetailUsd(property.economics.structuringFeeUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.grossProfitProjectedUsd) ? <p>{t({ en: "Net profit (before distribution)", es: "Net Profit (before distribution)", pt: "Net Profit (before distribution)" })}: {formatMarketplaceDetailUsd(property.economics.grossProfitProjectedUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.managementFeeUsd) ? <p>{t({ en: "Management fee", es: "Management Fee", pt: "Management Fee" })}: {formatMarketplaceDetailUsd(property.economics.managementFeeUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.brokerFeeUsd) ? <p>{t({ en: "Broker fee", es: "Broker Fee", pt: "Broker Fee" })}: {formatMarketplaceDetailUsd(property.economics.brokerFeeUsd, locale)}</p> : null}
+            {shouldRenderMarketplaceDetailMetric(property.economics.netInvestorProfitUsd) ? <p>{t({ en: "Net profit for investor", es: "Net Profit for Investor", pt: "Net Profit for Investor" })}: {formatMarketplaceDetailUsd(property.economics.netInvestorProfitUsd, locale)}</p> : null}
+            {property.economics.projectedNetRoiPct !== null ? <p>{t({ en: "Projected ROI", es: "ROI proyectado", pt: "ROI projetado" })}: {formatMarketplaceDetailPercent(property.economics.projectedNetRoiPct, locale)}</p> : null}
           </div>
         </Card>
       </motion.section>
@@ -258,7 +197,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
             {property.project.stage ? <p>{t({ en: "Project stage", es: "Etapa del proyecto", pt: "Etapa do projeto" })}: {property.project.stage}</p> : null}
             {property.project.developerName ? <p>{t({ en: "Operator / developer", es: "Operador / desarrollador", pt: "Operador / desenvolvedor" })}: {property.project.developerName}</p> : null}
             {property.project.exitStrategy ? <p>{t({ en: "Exit strategy", es: "Estrategia de salida", pt: "Estrategia de saida" })}: {property.project.exitStrategy}</p> : null}
-            <p>{t({ en: "Duration", es: "Duracion", pt: "Duracao" })}: {formatMonths(property.project.durationMonths, locale)}</p>
+            <p>{t({ en: "Duration", es: "Duracion", pt: "Duracao" })}: {formatMarketplaceDetailMonths(property.project.durationMonths, locale)}</p>
           </div>
         </Card>
 
@@ -299,7 +238,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
           </a>
           <p className="text-sm text-slate-300">
             {t({ en: "Last on-chain update", es: "Ultima actualizacion on-chain", pt: "Ultima atualizacao on-chain" })}:{" "}
-            {formatDate(property.blockchain.lastOnchainUpdate, locale)}
+            {formatMarketplaceDetailDate(property.blockchain.lastOnchainUpdate, locale)}
           </p>
           {property.blockchain.syncStatus === "unavailable" ? (
             <p className="rounded-md bg-amber-500/15 p-2 text-xs text-amber-100">
