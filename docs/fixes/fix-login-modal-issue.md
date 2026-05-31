@@ -37,6 +37,12 @@ Login is a browser-critical auth entry point. The current behavior makes users u
 - Inline fixed overlays are fragile when any ancestor creates a containing block through transforms, filters, perspective, containment, or route-motion styles.
 - The modal overlay uses centered flex alignment but does not own viewport-level overflow, so a taller or mis-anchored panel can appear clipped.
 - Opening the modal focuses the close button. If the modal layer is page-local instead of viewport-owned, that focus can contribute to page scroll toward the modal's DOM/visual area.
+- BRI-165 intentionally changed wallet recovery behavior for admin deploy:
+  - `WalletRuntimeProvider` enables wallet-adapter `autoConnect`
+  - `WalletModal` exposes a `Reconnect wallet` path for active SIWS sessions with disconnected Phantom
+  - reconnect calls the wallet adapter `connect` path without rerunning SIWS
+  - reconnect validates the recovered public key against the active session public key
+- That BRI-165 behavior solved the admin case where SIWS remained valid but the live signer disappeared. It also makes the inverse public case more visible: Phantom can reconnect or remain connected while the SIWS/auth state is anonymous, expired, or still refreshing.
 - The UI currently mixes these states inside one panel:
   - wallet adapter connected
   - wallet SIWS session active
@@ -84,3 +90,4 @@ Delivery slices must not start until S01 is approved.
 - Does the reported "logged in" state mean the user sees `Connected: <wallet>`, or does `/api/auth/me` return `walletAuthenticated: true` while the modal still shows anonymous entry actions?
 - When sign out appears to fail, does `/api/auth/logout` return non-OK, does Phantom refuse `disconnect()`, or does local UI state refresh back to a connected adapter after logout?
 - Should a connected-but-not-SIWS-authenticated wallet still offer `Mail`, or should the modal switch to a wallet-pending state with a smaller link to use email instead?
+- Should BRI-167 keep BRI-165 `autoConnect` intact and only fix the public modal state matrix, or should `autoConnect` become scoped to admin/protected wallet-signing surfaces?

@@ -67,6 +67,25 @@ Current local draft branch:
 5. Run S05 last as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
 
 ## Root-Cause Analysis
+### BRI-165 reconnect precedent
+BRI-165 slice 16 documented a real admin deploy regression:
+- the UI could show `Connected wallet: Not connected`
+- the admin session/header still showed an authenticated wallet
+- deploy still needed a live wallet adapter signer to submit transactions
+
+The BRI-165 fix intentionally kept two concepts separate:
+- authenticated SIWS/admin session used for server authorization
+- live wallet-adapter connection used for browser transaction signing
+
+The documented implementation enabled wallet-adapter `autoConnect` in `WalletRuntimeProvider` and changed `WalletModal` so an active SIWS wallet session with a disconnected adapter could show `Reconnect wallet`. That reconnect path calls the adapter `connect` flow without rerunning SIWS, then validates that the recovered public key matches the active session public key.
+
+This was correct for the admin deploy case. The likely BRI-167 side effect is that the inverse state became common and visible on public pages:
+- Phantom can be connected or auto-reconnected
+- `/api/auth/me` can still be anonymous, expired, or pending refresh
+- `WalletModal` can therefore show adapter state (`Connected: <wallet>`) alongside anonymous auth entry (`Mail` / `Wallet`)
+
+BRI-167 should preserve the BRI-165 security invariant: reconnecting an adapter must never bypass SIWS authorization and must reject mismatched wallet addresses. The fix should instead make the UI state matrix explicit so adapter connection is not presented as logged-in account state.
+
 ### A. Modal sticks to page content or map
 `WalletModal` currently renders the modal overlay inline in every page that mounts it. The overlay uses `fixed inset-0`, but CSS fixed positioning is only viewport-fixed until an ancestor creates a fixed-position containing block. Common triggers include `transform`, `filter`, `perspective`, `contain`, and motion-generated transform styles.
 
@@ -92,6 +111,11 @@ That leaves a mixed state: wallet adapter connected, but no SIWS wallet session.
 - default direct entry choices: `Mail` and `Wallet`
 
 This is technically possible but confusing. Adapter connection is not login. S03 should introduce a dedicated "wallet connected, sign-in pending" state.
+
+BRI-165 makes this distinction especially important because `autoConnect` can restore the adapter without restoring or extending `siws_session`. The modal must therefore treat these as separate axes:
+- adapter signer availability
+- server-authenticated SIWS wallet session
+- federated WorkOS account session
 
 ### C. Sign out may not visibly clear all local state
 `handleDisconnect` has to coordinate:
@@ -181,6 +205,8 @@ S05 evidence:
 - State-matrix changes can accidentally alter wallet linking or federated-only behavior.
 - Disconnect behavior involves both browser adapter state and server cookies; false positives are possible without browser evidence.
 - Changing auth routes would expand scope and require security/docs review.
+- Regressing the BRI-165 admin deploy recovery path would strand admins with a valid SIWS session but no live signer after refresh/navigation.
+- Removing or weakening wallet-adapter `autoConnect` globally could fix the public confusion while reintroducing the original admin deploy bug.
 
 ## Security Boundary
 No auth authority changes are allowed by default:
@@ -200,6 +226,7 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - The modal is visually centered/reachable on `/marketplace` and `/`.
 - A connected wallet without SIWS auth does not show the same UI as an anonymous disconnected user.
 - Active SIWS wallet sessions do not show a colorful `Signed in` primary CTA.
+- BRI-165 admin reconnect behavior is preserved: active SIWS session plus disconnected adapter can reconnect Phantom without rerunning SIWS, and mismatched wallet recovery is rejected.
 - `Sign out & disconnect wallet` visibly removes connected/session UI after success.
 - If any logout/disconnect layer fails, the modal shows an explicit error and does not claim the user is fully signed out.
 - Required auth/session docs are updated after implementation.
