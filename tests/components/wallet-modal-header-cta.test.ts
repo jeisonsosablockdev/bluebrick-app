@@ -478,6 +478,140 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
+  it("shows a pending sign-in state when the wallet adapter is connected without a SIWS session", async () => {
+    const signMessage = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Ingresar");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).not.toContain("Ingresa a tu cuenta BRIDS");
+    expect(document.body.textContent).not.toContain("Mail");
+    expect(document.body.textContent).toContain("Conectada");
+    expect(document.body.textContent).toContain("Iniciar sesion");
+    expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("renders an authenticated wallet session as neutral status instead of a primary signed-in action", async () => {
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage: vi.fn()
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage: vi.fn()
+    });
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: true,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: true,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Wallet");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).toContain("Sesion wallet activa");
+    expect(document.body.textContent).not.toContain("Sesion iniciada");
+    expect(findButtonByText(document.body, "Sesion iniciada")).toBeUndefined();
+    expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
+    expect(document.body.textContent).toContain("Copiar direccion");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("hides federated login when WorkOS is unavailable", async () => {
     authClientMocks.fetchAuthMe.mockResolvedValue({
       authenticated: false,

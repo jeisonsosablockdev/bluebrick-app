@@ -2,7 +2,8 @@
 
 ## Status
 - S01 artifact slice merged into the initiative branch.
-- S02 modal viewport slice is implemented and under targeted validation.
+- S02 modal viewport slice is merged into the initiative branch.
+- S03 auth-state matrix slice is implemented and under targeted validation.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -54,8 +55,8 @@ Initiative branch:
 | Slice | Status | Branch | Objective | Technical Scope | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |
 | S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
-| S02 | implemented | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | local slice |
-| S03 | pending | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | TBD |
+| S02 | merged | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | merged locally |
+| S03 | implemented | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | local slice |
 | S04 | pending | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | TBD |
 | S05 | pending | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | TBD |
 
@@ -242,3 +243,9 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S02 docs governance validation: `npm run validate:docs-governance` passed.
 - S02 whitespace validation: `git diff --check` passed.
 - S02 observed non-blocking marketplace warnings: existing chart containers can report `width(-1)` / `height(-1)` during the smoke run; the modal viewport assertions and screenshots still passed.
+- S03 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because a connected wallet adapter without SIWS still showed the anonymous `Mail` / `Wallet` chooser, and an authenticated wallet session still exposed the colorful `Sesion iniciada` action.
+- S03 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 15 tests.
+- S03 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests after the state-matrix change.
+- S03 type validation: `npm run typecheck` passed.
+- S03 docs governance validation: `npm run validate:docs-governance` passed.
+- S03 whitespace validation: `git diff --check` passed.
