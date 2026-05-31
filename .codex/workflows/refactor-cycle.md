@@ -20,6 +20,18 @@
 - `testing-policy`
 - Add the dominant runtime policy, such as `frontend-policy`, `blockchain-policy`, or `security-policy`, according to the touched surface.
 
+## Required Skills
+- `tdd-workflows-tdd-refactor`: use during planning and execution when a refactor slice needs RED/GREEN/REFACTOR discipline, characterization tests, or coverage-strengthening before moving code.
+- `code-refactoring-refactor-clean`: use for the explicit clean-code/refactor pass before each slice merge and for the final strict audit slice.
+- `code-refactoring-tech-debt`: use when a clean-code audit finds non-blocking P2/P3 debt that must be split into future atomic slices instead of bundled into the current slice.
+- `code-refactoring-context-restore`: use when resuming a paused refactor to reconstruct branch state, artifact status, completed slices, pending slices, and validation history before editing.
+- `clean-code`: use as the general reviewer gate when no more specific refactor skill is needed, or alongside `code-refactoring-refactor-clean` for broad naming, duplication, dead-code, and coupling review.
+
+## Optional Tooling References
+- OpenAI Developers tooling is not mandatory for every refactor.
+- When a refactor slice depends on AI-assisted API, SDK, framework, or tooling guidance, record the OpenAI Developers docs/tooling reference in the governing artifact before implementation closes.
+- Motion/UI refactors must also follow the `frontend-cycle` Motion 12 and OpenAI Developers documentation requirements when motion behavior, syntax, or tooling is in scope.
+
 ## Execution Sequence
 | Step | Owner | Goal | Gate |
 | --- | --- | --- | --- |
