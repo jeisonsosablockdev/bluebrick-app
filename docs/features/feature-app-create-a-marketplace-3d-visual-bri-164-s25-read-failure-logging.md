@@ -27,3 +27,10 @@ Add structured server-side logging for persisted marketplace read failures using
 - Failed persisted reads are observable.
 - Logs contain source/context but not sensitive data.
 - No user-facing behavior changes beyond previously approved degraded-state behavior.
+
+## Implementation Evidence
+- Added failing coverage for the persisted read failure operability log.
+- Recorded `marketplace.persisted_read_failed` with source, fallback source, and stable error code.
+- Verified the raw thrown error message is not stored in the log entry.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts`.
+- Targeted result: `4` tests passed.
