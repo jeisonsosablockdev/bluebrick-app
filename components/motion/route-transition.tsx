@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { clearNavigationOrigin, getNavigationOrigin } from "@/components/motion/navigation-origin";
 import {
+  createNavigationFallbackMotionVariants,
   createNavigationOriginMotionVariants,
   createPageMotionVariants,
   type MotionDirection,
@@ -47,6 +48,10 @@ export function RouteTransition({
         y: navigationOrigin.y,
         radius
       });
+    }
+
+    if (mode === "navigation-origin") {
+      return createNavigationFallbackMotionVariants();
     }
 
     return createPageMotionVariants(direction);
