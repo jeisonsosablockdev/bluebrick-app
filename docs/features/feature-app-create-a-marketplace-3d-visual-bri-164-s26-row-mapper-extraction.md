@@ -26,3 +26,10 @@ Extract persisted row mapping and create-input-to-detail mapping into a focused 
 - Mapping code is isolated.
 - Public marketplace server behavior is unchanged.
 - No runtime behavior changes.
+
+## Implementation Evidence
+- Preserved the existing server mapping tests before extraction.
+- Extracted persisted row mapping and create-input-to-detail mapping into `lib/marketplace/property-row-mapper.ts`.
+- Kept SQL and write-path location-label derivation in `lib/property-marketplace-server.ts`.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts`.
+- Targeted result: `4` tests passed.
