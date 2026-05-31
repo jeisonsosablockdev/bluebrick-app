@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s20-map-view-state-hook`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -256,20 +256,89 @@ Fallback behavior:
   - keep `MarketplaceMapClient` focused on Mapbox wiring and marker composition
   - preserve existing camera behavior, hover/focus behavior, and deferred motion behavior
 
+### S21 - P2 clean-code debt artifacts
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
+- Documentation scope:
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s22-runtime-observability.md`
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s23-server-boundaries.md`
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s24-detail-decomposition.md`
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s25-map-quality-web-vitals.md`
+- Scope:
+  - document strict audit P2 findings with problem, solution, impact, and prevention plan
+  - split the P2 follow-ups into implementation slices before touching runtime code
+  - preserve runtime behavior
+
+### S22 - runtime observability and error boundaries
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s22-runtime-observability`
+- Runtime file scope:
+  - `app/marketplace/page.tsx`
+  - `lib/property-marketplace-server.ts`
+  - `app/api/admin/marketplace/entries/route.ts`
+- Scope:
+  - TDD first: add tests proving data failures are observable and admin 500 responses do not leak raw internal errors
+  - replace silent failure-to-empty paths with explicit degraded-state metadata or logging
+  - keep list fallback and snapshot fallback behavior user-safe
+  - return stable public error codes/messages from admin create failures
+
+### S23 - marketplace server boundary refactor
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s23-server-boundaries`
+- Runtime file scope:
+  - `lib/property-marketplace-server.ts`
+  - new focused server modules under the approved marketplace lib convention
+- Scope:
+  - TDD first: preserve public function behavior with tests before extraction
+  - split row mapping, repository SQL, selectors, and Solana sync status into focused modules
+  - keep `lib/property-marketplace-server.ts` as a compatibility facade
+  - preserve persisted entries, snapshot fallback, map source projection, and detail retrieval behavior
+
+### S24 - property detail content decomposition
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s24-detail-decomposition`
+- Runtime file scope:
+  - `components/marketplace/PropertyDetailContent.tsx`
+  - focused detail section components under `components/marketplace/`
+  - shared formatting helpers if needed
+- Scope:
+  - TDD first: add focused coverage for Google Maps detail rendering and moved formatters
+  - split the 317-line detail component into stable section components
+  - keep Google Maps preview behavior unchanged
+  - keep marketplace detail as a traditional detail page, not a Mapbox 3D state surface
+
+### S25 - map data quality and Web Vitals boundary
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s25-map-quality-web-vitals`
+- Runtime file scope:
+  - `lib/marketplace-map-pins.ts`
+  - marketplace map selectors/server module
+  - `components/marketplace/MarketplaceExperience.tsx`
+  - `components/marketplace/MarketplaceMapClient.tsx`
+- Scope:
+  - TDD first: add coordinate range edge cases and list-before-map readiness tests
+  - validate latitude and longitude ranges at the public pin projection boundary
+  - keep invalid coordinates out of Mapbox markers and camera calculations
+  - add a measured lazy or deferred Mapbox boundary if browser evidence confirms it improves S15 Web Vitals risk
+  - keep the list immediately usable and preserve map-top as the configured premium state when the map is ready
+
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
 - `61b96ad merge: s13 deferred map camera motion`
 - `d7e55fa merge: s14 marketplace clean code formatting`
 - `1abf11a merge: s15 marketplace web vitals seo audit`
 - `8774866 merge: s16 marketplace clean code refactor audit`
-- `npm run validate` passed after S16 merge.
+- `399f96e merge: s18 marketplace map client refactor`
+- `c5dd9b9 merge: s19 marketplace map marker extraction`
+- `e057152 merge: s20 marketplace map view state hook`
+- `npm run validate` passed after S20 merge and passed again before S21 documentation work.
 
 ## Accepted Follow-Up Backlog
 - Performance: evaluate lazy hydration or delayed mobile activation for the Mapbox island while keeping the list usable immediately.
 - Performance: audit route-level JavaScript, wallet/modal providers, and Mapbox loading boundaries to reduce TBT/INP risk.
 - SEO: align marketplace metadata language with the visible H1 or add an explicit localized metadata strategy.
 - SEO: evaluate approved structured data for marketplace inventory after product/legal schema approval.
-- Refactor: extract `useMarketplaceMapViewState` and `MarketplaceMapMarker` only when the map interaction surface grows or performance work requires it.
+- Reliability: replace silent data-load fallback paths with observable degraded-state metadata or structured logging.
+- API hardening: avoid returning raw internal 500 error messages from admin marketplace entry creation.
+- Architecture: split `lib/property-marketplace-server.ts` into focused repository, mapper, selector, and sync modules.
+- UI maintainability: split `PropertyDetailContent` into focused detail section components.
+- Data quality: validate coordinate ranges at the public map pin projection boundary.
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`

@@ -63,6 +63,15 @@
 - The next meaningful refactor should be tied to either S15 performance remediation or a new interaction requirement.
 - Any map lazy-loading work needs browser evidence because it changes first-load behavior.
 
+## S21 Strict P2 Addendum
+- S21 added a documentation-only P2 inventory after the stricter clean-code pass on the integration branch.
+- The new inventory keeps runtime behavior unchanged and splits remaining P2 work into implementation slices.
+- Central inventory: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- S22 covers runtime observability and safe admin error boundaries.
+- S23 covers the `lib/property-marketplace-server.ts` boundary refactor.
+- S24 covers `PropertyDetailContent` decomposition.
+- S25 covers coordinate projection hardening and the measured Mapbox Web Vitals boundary.
+
 ## Test And Verification Plan
 - Continue using the targeted marketplace suite for behavior-preserving refactors.
 - Add browser evidence before changing the Mapbox loading boundary.
