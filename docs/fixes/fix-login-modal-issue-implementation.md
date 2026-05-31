@@ -8,6 +8,7 @@
 - S05 QA/review/docs slice is implemented and under final merge.
 - S06 modal action layout slice is implemented after visual review.
 - S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
+- S08 wallet intent gating slice is implemented after reload-flow review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -65,6 +66,7 @@ Initiative branch:
 | S05 | implemented | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | local slice |
 | S06 | implemented | `fix/app-login-modal-issue-bri-167-s06-modal-action-layout` | Restore visual harmony for authenticated modal actions | `WalletModal` action layout, component assertion, artifact evidence | targeted Vitest, targeted Playwright modal evidence, docs governance | local slice |
 | S07 | implemented | `fix/app-login-modal-issue-bri-167-s07-disconnect-visual-state` | Fix connected-wallet pending layout and visible disconnect completion | `WalletModal` action stack, disconnect local state, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
+| S08 | implemented | `fix/app-login-modal-issue-bri-167-s08-wallet-intent-gating` | Avoid exposing auto-connected wallet technical state on generic sign-in after reload | `WalletModal` wallet-intent state, connected-wallet UI gating, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -282,3 +284,11 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S07 docs governance validation: `npm run validate:docs-governance` passed.
 - S07 whitespace validation: `git diff --check` passed.
 - S07 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S08 reload-flow review note: Phantom `autoConnect` can restore adapter signer availability after page reload even when BRIDS has no SIWS session; generic `Ingresar` should not expose `Conectada / Iniciar sesion` merely because the adapter rehydrated.
+- S08 implementation: connected-wallet pending UI is now gated by explicit wallet intent. Header `Ingresar` clears wallet intent and shows the normal `Mail` / `Wallet` chooser; wallet-specific events/actions can still enter the connected-wallet signing path.
+- S08 implementation detail: connected wallet status and `Copy Address` are hidden from the generic anonymous chooser unless the user has wallet intent or an authenticated wallet session.
+- S08 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 18 tests, including autoConnect-without-SIWS generic sign-in coverage and explicit wallet-intent coverage.
+- S08 Playwright hardening: the header wallet CTA now has a stable `wallet-modal-open-button` test id, and the smoke helper retries the click once if route hydration delays the modal handler.
+- S08 type validation: `npm run typecheck` passed.
+- S08 docs governance validation: `npm run validate:docs-governance` passed.
+- S08 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
