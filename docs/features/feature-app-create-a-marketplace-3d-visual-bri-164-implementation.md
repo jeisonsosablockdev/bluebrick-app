@@ -196,6 +196,7 @@ Fallback behavior:
   - defer the animation with a timer so it does not compete with initial load and Core Web Vitals
   - respect `prefers-reduced-motion`
   - keep the movement small enough that pins remain discoverable and readable
+- Production status: superseded by `fix/app-marketplace-disable-auto-camera-orbit-bri-164`; only the automatic orbit is disabled while hover focus and selected-pin centering remain active.
 
 ### S14 - clean-code sold-percent formatting
 - Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s14-clean-code-formatting`
