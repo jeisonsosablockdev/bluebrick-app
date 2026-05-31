@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { Card } from "@/components/ui/card";
 import { H2 } from "@/components/ui/typography";
 import { useI18n } from "@/components/i18n/locale-provider";
+import { PropertyDetailDealEconomicsCard } from "@/components/marketplace/PropertyDetailDealEconomicsCard";
 import { PropertyDetailGoogleMapsCard } from "@/components/marketplace/PropertyDetailGoogleMapsCard";
 import { PropertyDetailHeroSection } from "@/components/marketplace/PropertyDetailHeroSection";
 import { PropertyDetailInvestmentSummaryCard } from "@/components/marketplace/PropertyDetailInvestmentSummaryCard";
@@ -42,19 +43,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
       </motion.section>
 
       <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
-        <Card className="space-y-3">
-          <H2 className="text-2xl text-white">{t({ en: "Deal economics", es: "Economia del deal", pt: "Economia do deal" })}</H2>
-          <div className="grid gap-2 text-sm text-slate-300">
-            {shouldRenderMarketplaceDetailMetric(property.economics.purchasePriceUsd) ? <p>{t({ en: "Purchase price", es: "Purchase Price", pt: "Purchase Price" })}: {formatMarketplaceDetailUsd(property.economics.purchasePriceUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.afterRepairValueUsd) ? <p>{t({ en: "After Repair Value (ARV)", es: "After Repair Value (ARV)", pt: "After Repair Value (ARV)" })}: {formatMarketplaceDetailUsd(property.economics.afterRepairValueUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.rehabBudgetUsd) ? <p>{t({ en: "Rehab budget", es: "Rehab Budget", pt: "Rehab Budget" })}: {formatMarketplaceDetailUsd(property.economics.rehabBudgetUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.closingCostsUsd) ? <p>{t({ en: "Closing costs", es: "Closing Costs", pt: "Closing Costs" })}: {formatMarketplaceDetailUsd(property.economics.closingCostsUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.holdingCostsUsd) ? <p>{t({ en: "Holding & misc.", es: "Holding & Misc.", pt: "Holding & Misc." })}: {formatMarketplaceDetailUsd(property.economics.holdingCostsUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.sellingCostsUsd) ? <p>{t({ en: "Selling costs", es: "Selling Costs", pt: "Selling Costs" })}: {formatMarketplaceDetailUsd(property.economics.sellingCostsUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.totalProjectCostUsd) ? <p>{t({ en: "Total project cost", es: "Total Project Cost", pt: "Total Project Cost" })}: {formatMarketplaceDetailUsd(property.economics.totalProjectCostUsd, locale)}</p> : null}
-            {shouldRenderMarketplaceDetailMetric(property.economics.minimumCapitalRequiredUsd) ? <p>{t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}: {formatMarketplaceDetailUsd(property.economics.minimumCapitalRequiredUsd, locale)}</p> : null}
-          </div>
-        </Card>
+        <PropertyDetailDealEconomicsCard economics={property.economics} />
 
         <Card className="space-y-3">
           <H2 className="text-2xl text-white">{t({ en: "Fees and projected return", es: "Fees y retorno proyectado", pt: "Fees e retorno projetado" })}</H2>
