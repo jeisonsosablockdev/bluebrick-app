@@ -173,6 +173,14 @@ Fallback behavior:
   - preserve hover zoom behavior for direct marker interaction
   - keep detail navigation on the traditional list/card path
 
+### S12 - pin location leader line
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s12-pin-location-leader`
+- Scope:
+  - TDD first: add component coverage for a pin leader line and anchor dot
+  - render a subtle vertical leader from the floating pin card down to the geographic anchor point
+  - use the exact same cyan tone as the `Marketplace Map` eyebrow text (`text-cyan-300`, `#67E8F9`)
+  - keep the marker accessible as a button and preserve hover/focus camera behavior
+
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
 - `app/marketplace/loading.tsx`
