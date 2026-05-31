@@ -1,10 +1,10 @@
 # Feature Note: Marketplace 3D Visual (BRI-164)
 
 ## Status
-- Map camera focus slice
+- Clean-code refactor audit slice
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s11-map-camera-focus`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
