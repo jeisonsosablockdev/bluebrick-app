@@ -27,3 +27,10 @@ Extract create/write SQL into a focused write repository module while preserving
 - Write repository owns create SQL.
 - Duplicate entry error mapping remains stable.
 - No UI behavior changes.
+
+## Implementation Evidence
+- Preserved create and duplicate-entry coverage before extraction.
+- Extracted persisted create SQL into `lib/marketplace/property-write-repository.ts`.
+- Kept `createMarketplacePropertyEntryPersistent` as the public server facade.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts tests/api/admin-marketplace-entries-route.test.ts`.
+- Targeted result: `2` test files and `10` tests passed.
