@@ -57,6 +57,7 @@ vi.mock("@/lib/property-service", () => ({
 }));
 
 import { resetMarketplaceEntryLocationColumnSupportCache } from "@/lib/admin/marketplace-entry-location-columns";
+import { listOperabilityLogs, resetObservabilityStateForTests } from "@/lib/observability";
 import {
   createMarketplacePropertyEntryPersistent,
   getMarketplacePropertyDetail,
@@ -73,6 +74,7 @@ describe("lib/property-marketplace-server", () => {
     persistedRows = [];
     failMarketplaceSelect = false;
     propertyServiceMocks.listPropertyDetailsSnapshot.mockReturnValue([]);
+    resetObservabilityStateForTests();
     resetMarketplaceEntryLocationColumnSupportCache();
   });
 
@@ -315,6 +317,7 @@ describe("lib/property-marketplace-server", () => {
 
     const result = await readMarketplaceRecordsResultForServer();
     const listItems = await listMarketplaceProperties({});
+    const logs = listOperabilityLogs(5);
 
     expect(result).toEqual({
       status: "degraded",
@@ -323,5 +326,17 @@ describe("lib/property-marketplace-server", () => {
       errorCode: "PERSISTED_MARKETPLACE_READ_FAILED"
     });
     expect(listItems).toEqual([expect.objectContaining({ id: "snapshot-001" })]);
+    expect(logs[0]).toEqual(
+      expect.objectContaining({
+        level: "warn",
+        event: "marketplace.persisted_read_failed",
+        context: expect.objectContaining({
+          source: "persisted",
+          fallbackSource: "snapshot",
+          errorCode: "PERSISTED_MARKETPLACE_READ_FAILED"
+        })
+      })
+    );
+    expect(JSON.stringify(logs[0])).not.toContain("persisted marketplace read failed");
   });
 });

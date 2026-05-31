@@ -6,6 +6,7 @@ import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-
 import { normalizeCollectionBootstrapGoogleMapsPlaceJson } from "@/lib/admin/collection-bootstrap-mapper";
 import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
 import { withDbClient } from "@/lib/db/pool";
+import { recordOperabilityLog } from "@/lib/observability";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   createEmptyPropertyEconomics,
@@ -82,6 +83,19 @@ type PersistedMarketplaceEntriesResult = {
   degraded: boolean;
   errorCode?: "PERSISTED_MARKETPLACE_READ_FAILED";
 };
+
+function recordPersistedMarketplaceReadFailure(fallbackSource: MarketplaceRecordsResult["source"]): void {
+  recordOperabilityLog({
+    level: "warn",
+    event: "marketplace.persisted_read_failed",
+    message: "Marketplace persisted read failed; using fallback source.",
+    context: {
+      source: "persisted",
+      fallbackSource,
+      errorCode: "PERSISTED_MARKETPLACE_READ_FAILED"
+    }
+  });
+}
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
@@ -490,12 +504,20 @@ export async function readMarketplaceRecordsResultForServer(): Promise<Marketpla
 
   const snapshot = listPropertyDetailsSnapshot();
   if (snapshot.length > 0) {
+    if (persisted.degraded) {
+      recordPersistedMarketplaceReadFailure("snapshot");
+    }
+
     return {
       status: persisted.degraded ? "degraded" : "ok",
       source: "snapshot",
       records: snapshot,
       ...(persisted.errorCode ? { errorCode: persisted.errorCode } : {})
     };
+  }
+
+  if (persisted.degraded) {
+    recordPersistedMarketplaceReadFailure("empty");
   }
 
   return {
