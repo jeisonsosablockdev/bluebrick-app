@@ -9,6 +9,7 @@ import {
   createNavigationFallbackMotionVariants,
   createNavigationOriginMotionVariants,
   createPageMotionVariants,
+  createReducedMotionVariants,
   type MotionDirection,
   type RouteTransitionMode
 } from "@/lib/motion";
@@ -38,6 +39,10 @@ export function RouteTransition({
   }, [navigationOrigin]);
 
   const variants = useMemo(() => {
+    if (prefersReducedMotion) {
+      return createReducedMotionVariants();
+    }
+
     if (mode === "navigation-origin" && navigationOrigin && !prefersReducedMotion) {
       const viewportWidth = typeof window === "undefined" ? 0 : window.innerWidth;
       const viewportHeight = typeof window === "undefined" ? 0 : window.innerHeight;
