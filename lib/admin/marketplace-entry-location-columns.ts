@@ -9,6 +9,7 @@ export type MarketplaceEntryLocationColumnSupport = {
   postalCode: boolean;
   geoLat: boolean;
   geoLng: boolean;
+  googleMapsPlaceJson: boolean;
 };
 
 type ColumnRow = {
@@ -22,7 +23,8 @@ function normalizeSupport(columnNames: string[]): MarketplaceEntryLocationColumn
     stateProvince: available.has("state_province"),
     postalCode: available.has("postal_code"),
     geoLat: available.has("geo_lat"),
-    geoLng: available.has("geo_lng")
+    geoLng: available.has("geo_lng"),
+    googleMapsPlaceJson: available.has("google_maps_place_json")
   };
 }
 
@@ -39,7 +41,7 @@ export async function getMarketplaceEntryLocationColumnSupport(
       WHERE table_schema = 'public'
         AND table_name = 'marketplace_entries'
         AND column_name = ANY($1::text[])`,
-    [["state_province", "postal_code", "geo_lat", "geo_lng"]]
+    [["state_province", "postal_code", "geo_lat", "geo_lng", "google_maps_place_json"]]
   );
 
   return normalizeSupport(result.rows.map((row) => row.column_name));

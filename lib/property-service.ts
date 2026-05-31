@@ -1,3 +1,5 @@
+import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
+
 export type ListingStatus = "active" | "funding" | "sold-out";
 export type BlockchainSyncStatus = "available" | "unavailable" | "rpc_error";
 
@@ -59,6 +61,9 @@ export type PropertyDetail = {
   country: string;
   postalCode: string | null;
   locationLabel: string;
+  geoLat?: number | null;
+  geoLng?: number | null;
+  googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   listingStatus: ListingStatus;
   image: string;
   shortDescription: string;
@@ -103,6 +108,7 @@ export type CreateMarketplaceEntryInput = {
   detailedLocation: string;
   geoLat?: number | null;
   geoLng?: number | null;
+  googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   highlights: string[];
   investmentNotes: string;
   supplyTotal: number;
@@ -158,6 +164,9 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     country: "CO",
     postalCode: null,
     locationLabel: "Bogota, CO",
+    geoLat: null,
+    geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Activo residencial en zona de alta demanda con renta estabilizada.",
@@ -206,6 +215,9 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     country: "CO",
     postalCode: null,
     locationLabel: "Medellin, CO",
+    geoLat: null,
+    geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "funding",
     image: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Complejo mixto con crecimiento de ocupacion en etapa de funding.",
@@ -254,6 +266,9 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     country: "MX",
     postalCode: null,
     locationLabel: "CDMX, MX",
+    geoLat: null,
+    geoLng: null,
+    googleMapsPlace: null,
     listingStatus: "sold-out",
     image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop",
     shortDescription: "Activo completamente distribuido a holders con historial de pago estable.",
@@ -294,6 +309,57 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
       lastOnchainUpdate: "2026-03-03T09:18:00Z",
       syncStatus: "rpc_error"
     }
+  },
+  {
+    id: "boston-harbor-house",
+    title: "Boston Harbor House",
+    city: "Boston",
+    country: "US",
+    postalCode: null,
+    locationLabel: "Boston, MA, US",
+    geoLat: 42.3601,
+    geoLng: -71.0589,
+    googleMapsPlace: null,
+    listingStatus: "active",
+    image: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?q=80&w=1200&auto=format&fit=crop",
+    shortDescription: "U.S. waterfront asset positioned for the discovery-style marketplace map.",
+    detailedLocation: "Seaport District, Boston, MA, United States",
+    highlights: ["Waterfront visibility", "Core U.S. market", "High-traffic location"],
+    investmentNotes: "Seed listing used to exercise the USA-only map surface locally.",
+    investment: {
+      supplyTotal: 2000,
+      mintedOrSold: 500,
+      nftPriceUsd: 180,
+      annualRoiPct: 10.2,
+      availabilityLabel: "Available"
+    },
+    project: {
+      stage: "operating",
+      developerName: "Harbor Street Partners",
+      exitStrategy: "hold",
+      durationMonths: 18
+    },
+    economics: {
+      ...createEmptyPropertyEconomics(),
+      minimumCapitalRequiredUsd: 125000,
+      projectedNetRoiPct: 10.2
+    },
+    governance: {
+      riskNotes: "Seed listing used to validate USA-only map rendering and hover focus."
+    },
+    documents: [
+      { id: "prospectus", label: "Prospectus", url: "https://example.com/docs/boston-harbor-house/prospectus.pdf" },
+      { id: "legal", label: "Legal package", url: "https://example.com/docs/boston-harbor-house/legal.pdf" },
+      { id: "dd", label: "Due diligence", url: "https://example.com/docs/boston-harbor-house/dd.pdf" }
+    ],
+    blockchain: {
+      network: "Solana Devnet",
+      collectionAddress: "J3zJVmhaam33CrheptWxJxLHGFCN5VfeRLtWeqFngXna",
+      assetMintAddress: "Fjg92YY2WDxndECYD42QLj477YitJUnetb1bnMQsQKsJ",
+      explorerUrl: "https://explorer.solana.com/address/J3zJVmhaam33CrheptWxJxLHGFCN5VfeRLtWeqFngXna?cluster=devnet",
+      lastOnchainUpdate: "2026-05-28T18:00:00Z",
+      syncStatus: "available"
+    }
   }
 ];
 
@@ -305,6 +371,7 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     project: { ...detail.project },
     economics: { ...detail.economics },
     governance: { ...detail.governance },
+    googleMapsPlace: detail.googleMapsPlace ? { ...detail.googleMapsPlace } : null,
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -385,6 +452,9 @@ export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInpu
     country: input.country,
     postalCode: input.postalCode ?? null,
     locationLabel: createLocationLabel(input.city, input.country),
+    geoLat: input.geoLat ?? null,
+    geoLng: input.geoLng ?? null,
+    googleMapsPlace: input.googleMapsPlace ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
     shortDescription: input.shortDescription,

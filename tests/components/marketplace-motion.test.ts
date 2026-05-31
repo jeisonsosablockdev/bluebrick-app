@@ -44,6 +44,7 @@ function renderNode(node: ReactElement): RenderHandle {
 
 describe("components/marketplace motion surfaces", () => {
   beforeEach(() => {
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY = "test-google-maps-embed-key";
     localeMocks.useI18n.mockReturnValue({
       locale: "es",
       setLocale: vi.fn(),
@@ -53,6 +54,7 @@ describe("components/marketplace motion surfaces", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY;
     vi.clearAllMocks();
   });
 
@@ -89,12 +91,26 @@ describe("components/marketplace motion surfaces", () => {
           title: "Casa Azul",
           image: "/test.jpg",
           listingStatus: "active",
-          locationLabel: "Medellin, Colombia",
+          postalCode: "33511",
+          googleMapsPlace: {
+            placeLabel: "Casa Azul",
+            formattedAddress: "117 Hickory Creek Blvd, Brandon, FL 33511, USA",
+            lat: 27.9379,
+            lng: -82.2859,
+            googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=117%20Hickory%20Creek%20Blvd",
+            placeId: "place-casa-azul",
+            city: "Brandon",
+            stateProvince: "FL",
+            country: "US",
+            postalCode: "33511"
+          },
+          locationLabel: "Brandon, Florida, 33511, US",
           shortDescription: "Short description",
           investment: {
             supplyTotal: 1000,
             mintedOrSold: 200,
             nftPriceUsd: 100,
+            annualRoiPct: 12.4,
             availabilityLabel: "Disponible"
           },
           economics: {
@@ -124,7 +140,7 @@ describe("components/marketplace motion surfaces", () => {
           },
           documents: [],
           highlights: ["Highlight"],
-          detailedLocation: "Medellin",
+          detailedLocation: "117 Hickory Creek Blvd, Brandon, FL",
           investmentNotes: "Notes",
           blockchain: {
             network: "devnet",
@@ -140,6 +156,82 @@ describe("components/marketplace motion surfaces", () => {
 
     expect(container.textContent).toContain("Resumen de inversion fraccional");
     expect(container.textContent).toContain("purchase-cta");
+    expect(container.textContent).toContain("Ubicacion en Google Maps");
+    expect(container.textContent).toContain("Open in Google Maps");
+
+    const iframe = container.querySelector("iframe[title='Google Maps preview']");
+    expect(iframe?.getAttribute("src")).toContain("google.com/maps/embed/v1/place");
+    expect(iframe?.getAttribute("src")).toContain("place_id%3Aplace-casa-azul");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("keeps the outbound Google Maps fallback when the embed key is unavailable", () => {
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY;
+
+    const { container, root } = renderNode(
+      createElement(PropertyDetailContent, {
+        property: {
+          id: "property-1",
+          title: "Casa Azul",
+          image: "/test.jpg",
+          listingStatus: "active",
+          postalCode: "33511",
+          googleMapsPlace: null,
+          locationLabel: "Brandon, Florida, 33511, US",
+          shortDescription: "Short description",
+          investment: {
+            supplyTotal: 1000,
+            mintedOrSold: 200,
+            nftPriceUsd: 100,
+            annualRoiPct: 12.4,
+            availabilityLabel: "Disponible"
+          },
+          economics: {
+            projectedNetRoiPct: 12.4,
+            purchasePriceUsd: 100000,
+            afterRepairValueUsd: 120000,
+            rehabBudgetUsd: 5000,
+            closingCostsUsd: 2500,
+            holdingCostsUsd: 3000,
+            sellingCostsUsd: 4500,
+            totalProjectCostUsd: 115000,
+            minimumCapitalRequiredUsd: 1000,
+            structuringFeeUsd: 1500,
+            grossProfitProjectedUsd: 18000,
+            managementFeeUsd: 2000,
+            brokerFeeUsd: 1200,
+            netInvestorProfitUsd: 14800
+          },
+          project: {
+            stage: "Acquisition",
+            developerName: "BRIDS",
+            exitStrategy: "Sale",
+            durationMonths: 24
+          },
+          governance: {
+            riskNotes: "Risk notes"
+          },
+          documents: [],
+          highlights: ["Highlight"],
+          detailedLocation: "117 Hickory Creek Blvd, Brandon, FL",
+          investmentNotes: "Notes",
+          blockchain: {
+            network: "devnet",
+            collectionAddress: "collection",
+            assetMintAddress: "mint",
+            explorerUrl: "https://example.com",
+            lastOnchainUpdate: "2026-05-28T00:00:00.000Z",
+            syncStatus: "available"
+          }
+        } as never
+      })
+    );
+
+    expect(container.textContent).toContain("Open in Google Maps");
+    expect(container.querySelector("iframe[title='Google Maps preview']")).toBeNull();
 
     act(() => {
       root.unmount();

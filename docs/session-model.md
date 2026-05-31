@@ -32,6 +32,13 @@ Last Updated: 2026-05-30
   - route animation is not access control
   - motion feedback never widens wallet or admin permissions
 
+## BRI-164 Marketplace 3D Visual Session Boundary
+- The `/marketplace` map surface is presentation-only and does not create a new session layer.
+- No new cookie, token, role, or refresh path is introduced by the marketplace map states.
+- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` is a public client configuration value, not an auth credential.
+- View-mode cycling, pin hover focus, and map loading behavior live entirely in browser UI state.
+- Public marketplace reads remain anonymous-safe and continue to use the existing server-side read model.
+
 ## BRI-5 Stake Session Boundary
 - `Stake / Unstake` reuses the existing SIWS wallet session and does not add a new cookie, session token, or browser authority source.
 - Session requirements:

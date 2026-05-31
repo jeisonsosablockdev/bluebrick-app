@@ -9,6 +9,7 @@ import { createRootMetadata } from "@/lib/seo";
 import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
 
 import "./globals.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 export const metadata: Metadata = createRootMetadata({
   title: "BRIDS",

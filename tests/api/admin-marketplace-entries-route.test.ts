@@ -111,6 +111,18 @@ describe("POST /api/admin/marketplace/entries", () => {
         address: "Calle 10 #12-34",
         geoLat: "4.711",
         geoLng: "-74.072",
+        googleMapsPlace: {
+          placeLabel: "Central Tower",
+          formattedAddress: "Calle 10 #12-34, Bogota, Colombia",
+          lat: 4.711,
+          lng: -74.072,
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Central%20Tower",
+          placeId: "place-central-tower",
+          city: "Bogota",
+          stateProvince: "Bogotá D.C.",
+          country: "CO",
+          postalCode: "110221"
+        },
         imageUrl: "https://cdn.example.com/cover.jpg",
         shortDescription: "Tokenized building",
         highlights: ["Project stage: construction"],
@@ -164,6 +176,10 @@ describe("POST /api/admin/marketplace/entries", () => {
         detailedLocation: "Calle 10 #12-34",
         geoLat: 4.711,
         geoLng: -74.072,
+        googleMapsPlace: expect.objectContaining({
+          placeId: "place-central-tower",
+          formattedAddress: "Calle 10 #12-34, Bogota, Colombia"
+        }),
         project: expect.objectContaining({
           stage: "rehab",
           developerName: "Blue Brick Capital LLC",
@@ -207,5 +223,34 @@ describe("POST /api/admin/marketplace/entries", () => {
 
     expect(response.status).toBe(409);
     expect(payload.error.code).toBe("MARKETPLACE_ENTRY_CONFLICT");
+  });
+
+  it("does not expose internal create errors in 500 responses", async () => {
+    routeMocks.createMarketplacePropertyEntryPersistent.mockImplementationOnce(() => {
+      throw new Error("database password leaked in stack trace");
+    });
+
+    const response = await POST(
+      createRequest({
+        entryId: "asset-001",
+        title: "Central Tower",
+        city: "Bogota",
+        country: "CO",
+        address: "Calle 10 #12-34",
+        imageUrl: "https://cdn.example.com/cover.jpg",
+        shortDescription: "Tokenized building",
+        supplyTotal: 1200,
+        nftPriceUsd: 150,
+        annualRoiPct: 12.5,
+        collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
+        candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error.code).toBe("MARKETPLACE_ENTRY_CREATE_FAILED");
+    expect(payload.error.message).toBe("Could not create marketplace entry.");
+    expect(JSON.stringify(payload)).not.toContain("database password");
   });
 });
