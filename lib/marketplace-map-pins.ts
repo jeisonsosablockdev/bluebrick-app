@@ -37,8 +37,14 @@ function toFiniteNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function isValidCoordinate(value: unknown): value is number {
-  return toFiniteNumber(value) !== null;
+function isValidLatitude(value: unknown): value is number {
+  const latitude = toFiniteNumber(value);
+  return latitude !== null && latitude >= -90 && latitude <= 90;
+}
+
+function isValidLongitude(value: unknown): value is number {
+  const longitude = toFiniteNumber(value);
+  return longitude !== null && longitude >= -180 && longitude <= 180;
 }
 
 function toSoldPercent(source: MarketplaceMapPinSource): number {
@@ -56,7 +62,7 @@ function toSoldPercent(source: MarketplaceMapPinSource): number {
 export function projectMarketplaceMapPins(listings: MarketplaceMapPinSource[]): MarketplaceMapPin[] {
   return listings
     .filter((listing) => isUsListing(listing))
-    .filter((listing) => isValidCoordinate(listing.geoLat) && isValidCoordinate(listing.geoLng))
+    .filter((listing) => isValidLatitude(listing.geoLat) && isValidLongitude(listing.geoLng))
     .map((listing) => {
       const latitude = toFiniteNumber(listing.geoLat);
       const longitude = toFiniteNumber(listing.geoLng);
