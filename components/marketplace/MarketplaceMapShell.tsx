@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { formatMarketplaceSoldPercent } from "@/lib/marketplace-format";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
 type MarketplaceMapShellProps = {
@@ -10,10 +11,6 @@ type MarketplaceMapShellProps = {
   map: ReactNode;
   fallback: ReactNode;
 };
-
-function formatSoldPercent(value: number): string {
-  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(2).replace(/\.00$/, "")}%`;
-}
 
 export function MarketplaceMapShell({ mapboxAccessToken, pins, selectedPinId, onPinSelect, map, fallback }: MarketplaceMapShellProps) {
   if (!mapboxAccessToken || pins.length === 0) {
@@ -59,7 +56,7 @@ export function MarketplaceMapShell({ mapboxAccessToken, pins, selectedPinId, on
                     <p className="text-xs text-slate-400">{pin.locationLabel}</p>
                   </div>
                   <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[11px] font-semibold text-cyan-100">
-                    {formatSoldPercent(pin.soldPercent)}
+                    {formatMarketplaceSoldPercent(pin.soldPercent)}
                   </span>
                 </div>
               </button>

@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s11-map-camera-focus`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s14-clean-code-formatting`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -189,6 +189,14 @@ Fallback behavior:
   - defer the animation with a timer so it does not compete with initial load and Core Web Vitals
   - respect `prefers-reduced-motion`
   - keep the movement small enough that pins remain discoverable and readable
+
+### S14 - clean-code sold-percent formatting
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s14-clean-code-formatting`
+- Scope:
+  - TDD first: add direct coverage for marketplace sold-percent formatting
+  - remove duplicated `% sold` formatting logic from the map pin and pin list panel
+  - keep output stable for integer, decimal, and trailing-zero percentage values
+  - preserve the current visual rendering and map camera behavior
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
