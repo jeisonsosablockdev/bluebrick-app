@@ -5,6 +5,10 @@ Last Updated: 2026-05-31
 ## BRI-167 Login Modal Viewport Session Boundary
 - The login modal viewport fix does not introduce a new session layer.
 - Rendering the open modal through a body-level portal only changes where the dialog/backdrop live in the DOM so transformed page ancestors cannot shift or clip auth UI.
+- The modal state matrix intentionally keeps browser signer availability separate from server-authenticated identity:
+  - a connected wallet adapter means the browser may have a signer available
+  - an active `siws_session` means the server has authenticated the wallet
+  - a connected adapter without SIWS remains unauthenticated until SIWS verification succeeds
 - The session model remains unchanged:
   - WorkOS/account authority still comes from the federated session layer
   - wallet authority still comes from `siws_session`

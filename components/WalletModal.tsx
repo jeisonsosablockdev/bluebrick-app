@@ -350,12 +350,24 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     () => buildPathWithQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM, "1"),
     [pathname, searchParams]
   );
-  const hasWalletSession = authState.walletAuthenticated ?? authState.authenticated;
-  const hasFederatedSession = Boolean(authState.federatedAuthenticated);
-  const hasAccountSession = authState.accountAuthenticated ?? (hasWalletSession || hasFederatedSession);
+  const hasConnectedWalletAdapter = isConnected;
+  const hasAuthenticatedWalletSession = authState.walletAuthenticated ?? Boolean(authState.authenticated && authState.pubkey);
+  const hasAuthenticatedFederatedSession = Boolean(authState.federatedAuthenticated);
+  const hasAuthenticatedAccountSession = authState.accountAuthenticated ?? (hasAuthenticatedWalletSession || hasAuthenticatedFederatedSession);
+  const hasWalletSession = hasAuthenticatedWalletSession;
+  const hasFederatedSession = hasAuthenticatedFederatedSession;
+  const hasAccountSession = hasAuthenticatedAccountSession;
   const isFederatedLoginAvailable = Boolean(authState.federatedAvailable);
-  const shouldShowDirectAuthEntryActions = isFederatedLoginAvailable && !hasWalletSession && !hasFederatedSession;
-  const shouldShowDisconnectButton = hasAccountSession || isConnected;
+  const shouldShowAnonymousAuthEntry = isFederatedLoginAvailable
+    && !hasAuthenticatedWalletSession
+    && !hasAuthenticatedFederatedSession
+    && !hasConnectedWalletAdapter;
+  const shouldShowConnectedWalletPendingAuth = hasConnectedWalletAdapter && !hasAuthenticatedWalletSession;
+  const shouldShowAuthenticatedWalletActions = hasAuthenticatedWalletSession && hasConnectedWalletAdapter;
+  const shouldShowDirectAuthEntryActions = shouldShowAnonymousAuthEntry;
+  const shouldShowDisconnectButton = hasAuthenticatedAccountSession || hasConnectedWalletAdapter;
+  const shouldShowWalletPrimaryAction = !shouldShowDirectAuthEntryActions
+    && (shouldShowConnectedWalletPendingAuth || !shouldShowAuthenticatedWalletActions);
   const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
 
   const menuEntries = useMemo<NavEntry[]>(() => {
@@ -385,16 +397,18 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return t({ en: "Reconnect wallet", es: "Reconectar wallet", pt: "Reconectar wallet" });
     }
 
-    if (hasWalletSession) {
-      return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
-    }
-
     if (isConnected) {
       return t({ en: "Sign in", es: "Iniciar sesion", pt: "Entrar" });
     }
 
     return t({ en: "Connect & Sign in", es: "Conectar e iniciar sesion", pt: "Conectar e entrar" });
   }, [hasWalletSession, isConnected, t]);
+
+  const walletConnectionStatusText = hasAuthenticatedWalletSession && hasConnectedWalletAdapter && authState.pubkey
+    ? `${t({ en: "Wallet session active", es: "Sesion wallet activa", pt: "Sessao wallet ativa" })}: ${truncatePublicKey(authState.pubkey)}`
+    : hasConnectedWalletAdapter
+      ? `${t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: ${truncatePublicKey(walletPublicKey ?? "")}`
+      : null;
 
   const disconnectLabel = hasFederatedSession && !hasWalletSession && !isConnected
     ? t({ en: "Sign out", es: "Cerrar sesion", pt: "Sair" })
@@ -1429,10 +1443,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                 ) : null}
 
                 <>
-                    {isConnected ? (
+                    {walletConnectionStatusText ? (
                       <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                         <p className="text-sm text-white/85">
-                          {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
+                          {walletConnectionStatusText}
                         </p>
                       </div>
                     ) : null}
@@ -1470,23 +1484,19 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       })}
                     />
 
-                    {!shouldShowDirectAuthEntryActions ? (
+                    {shouldShowWalletPrimaryAction || shouldShowDisconnectButton ? (
                       <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
-                        <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled || (hasWalletSession && isConnected)} className="min-h-11 w-full">
-                          {walletPrimaryLabel}
-                        </Button>
+                        {shouldShowWalletPrimaryAction ? (
+                          <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled} className="min-h-11 w-full">
+                            {walletPrimaryLabel}
+                          </Button>
+                        ) : null}
 
                         {shouldShowDisconnectButton ? (
                           <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
                             {disconnectLabel}
                           </Button>
                         ) : null}
-                      </div>
-                    ) : shouldShowDisconnectButton ? (
-                      <div className="grid gap-3">
-                        <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                          {disconnectLabel}
-                        </Button>
                       </div>
                     ) : null}
 
