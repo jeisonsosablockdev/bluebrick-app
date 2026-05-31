@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s19-map-marker-extraction`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s20-map-view-state-hook`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -245,6 +245,16 @@ Fallback behavior:
   - extract the marker card, leader line, anchor dot, and activation handlers out of `MarketplaceMapClient`
   - keep marker visuals, accessibility label, cyan leader color, and activation behavior unchanged
   - leave map camera/orbit state in `MarketplaceMapClient` for a separate slice
+
+### S20 - marketplace map view-state hook extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s20-map-view-state-hook`
+- Runtime file scope:
+  - `components/marketplace/useMarketplaceMapViewState.ts`
+- Scope:
+  - TDD first: add direct hook coverage for selected-pin camera and focus behavior
+  - extract camera key, camera view-state creation, moved state, and deferred orbit state out of `MarketplaceMapClient`
+  - keep `MarketplaceMapClient` focused on Mapbox wiring and marker composition
+  - preserve existing camera behavior, hover/focus behavior, and deferred motion behavior
 
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
