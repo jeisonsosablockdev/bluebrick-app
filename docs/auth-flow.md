@@ -1,6 +1,14 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-30
+Last Updated: 2026-05-31
+
+## BRI-167 Login Modal Viewport Ownership
+- The wallet/login modal now renders its open dialog layer through a browser-body portal so the auth surface is owned by the viewport instead of any page-local map, marketplace, or motion subtree.
+- Opening the modal focuses the close control with `preventScroll`, and the modal layer owns its own vertical overflow and safe-area padding.
+- This is a presentation and accessibility containment change only:
+  - no cookie, token, nonce, role, redirect, or auth route changes were introduced
+  - `GET /api/auth/me` remains the browser's canonical auth introspection surface
+  - wallet adapter connection is still separate from SIWS wallet authentication
 
 ## BRI-165 Admin Asset Upload Session Lifecycle
 - `/admin/assets/new` now assigns a browser-local `editSessionId` to each asset creation form session and sends it with every admin upload request.

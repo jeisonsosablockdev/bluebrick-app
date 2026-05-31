@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
@@ -55,6 +56,10 @@ type WalletModalProps = {
   initialAuth?: AuthMeResponse;
 };
 
+type WalletModalPortalProps = {
+  children: ReactNode;
+};
+
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
 const PHANTOM_INSTALL_URL = "https://phantom.app/download";
 const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
@@ -75,6 +80,20 @@ type Translate = (text: LocaleText) => string;
 const PRIMARY_NAV_LINK_BASE_CLASSNAME =
   "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition";
 const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
+
+function WalletModalPortal({ children }: WalletModalPortalProps): ReactElement | null {
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
+
+  if (!portalRoot) {
+    return null;
+  }
+
+  return createPortal(children, portalRoot);
+}
 
 function WalletCtaIcon() {
   return (
@@ -663,7 +682,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
+    closeButtonRef.current?.focus({ preventScroll: true });
     window.addEventListener("keydown", handleEscape);
 
     return () => {
@@ -1331,30 +1350,32 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         </div>
       </header>
 
-      <AnimatePresence>
-        {isOpen ? (
-          <motion.div
-            key="wallet-modal-overlay"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={MOTION_FAST_OPACITY_TRANSITION}
-            onClick={() => setIsOpen(false)}
-            role="presentation"
-          >
+      <WalletModalPortal>
+        <AnimatePresence>
+          {isOpen ? (
             <motion.div
-              key="wallet-modal-panel"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="wallet-modal-title"
-              className="glass-surface max-h-[85vh] w-full max-w-lg overflow-y-auto p-5 sm:p-6"
-              variants={createPanelMotionVariants()}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              onClick={(event) => event.stopPropagation()}
+              key="wallet-modal-overlay"
+              data-testid="wallet-modal-overlay"
+              className="fixed inset-0 z-[70] flex min-h-svh items-start justify-center overflow-y-auto bg-black/65 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm sm:items-center sm:p-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={MOTION_FAST_OPACITY_TRANSITION}
+              onClick={() => setIsOpen(false)}
+              role="presentation"
             >
+              <motion.div
+                key="wallet-modal-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="wallet-modal-title"
+                className="glass-surface max-h-[calc(100svh-1.5rem)] w-full max-w-lg overflow-y-auto overscroll-contain p-5 sm:max-h-[calc(100svh-3rem)] sm:p-6"
+                variants={createPanelMotionVariants()}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                onClick={(event) => event.stopPropagation()}
+              >
               <div className="pointer-events-none absolute -left-8 top-4 h-20 w-20 rounded-full bg-cyan-300/15 blur-3xl" />
               <div className="pointer-events-none absolute -right-8 bottom-4 h-20 w-20 rounded-full bg-fuchsia-300/15 blur-3xl" />
 
@@ -1487,10 +1508,11 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                 </>
 
               </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+          ) : null}
+        </AnimatePresence>
+      </WalletModalPortal>
 
       <OnboardingRewardDecisionModal
         open={Boolean(postAuthDecisionReward)}

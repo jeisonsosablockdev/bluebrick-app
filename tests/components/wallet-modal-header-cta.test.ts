@@ -136,6 +136,12 @@ function renderWalletModal(initialAuth: AuthMeResponse = {
   return { container, root };
 }
 
+function findButtonByText(root: ParentNode, text: string): HTMLButtonElement | undefined {
+  return Array.from(root.querySelectorAll("button")).find((candidate) =>
+    candidate.textContent?.includes(text)
+  ) as HTMLButtonElement | undefined;
+}
+
 describe("components/WalletModal header CTA", () => {
   beforeEach(() => {
     navigationMocks.pathname = "/";
@@ -226,9 +232,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const button = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresar")
-    );
+    const button = findButtonByText(container, "Ingresar");
 
     expect(button).toBeTruthy();
     expect(button?.textContent).toContain("Ingresar");
@@ -250,9 +254,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresar")
-    );
+    const openButton = findButtonByText(container, "Ingresar");
 
     act(() => {
       openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -262,17 +264,13 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.textContent).toContain("Ingresa a tu cuenta BRIDS");
-    expect(container.textContent).toContain("Mail");
-    expect(container.textContent).toContain("Wallet");
-    expect(container.textContent).not.toContain("Continuar con email");
-    expect(container.textContent).not.toContain("Conectar e iniciar sesion");
-    const mailButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Mail")
-    );
-    const walletButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Wallet")
-    );
+    expect(document.body.textContent).toContain("Ingresa a tu cuenta BRIDS");
+    expect(document.body.textContent).toContain("Mail");
+    expect(document.body.textContent).toContain("Wallet");
+    expect(document.body.textContent).not.toContain("Continuar con email");
+    expect(document.body.textContent).not.toContain("Conectar e iniciar sesion");
+    const mailButton = findButtonByText(document.body, "Mail");
+    const walletButton = findButtonByText(document.body, "Wallet");
     expect(mailButton?.className).toContain("bg-transparent");
     expect(mailButton?.className).toContain("border-white/25");
     expect(mailButton?.className).toContain("rounded-full");
@@ -281,12 +279,47 @@ describe("components/WalletModal header CTA", () => {
     expect(walletButton?.className).toContain("border-white/25");
     expect(walletButton?.className).toContain("rounded-full");
     expect(walletButton?.className).toContain("active:bg-gradientPrimary");
-    expect(container.textContent).not.toContain("Usa WorkOS para empezar con una cuenta por email o conecta Phantom para SIWS.");
-    expect(container.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
+    expect(document.body.textContent).not.toContain("Usa WorkOS para empezar con una cuenta por email o conecta Phantom para SIWS.");
+    expect(document.body.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
 
     act(() => {
       root.unmount();
     });
+  });
+
+  it("renders the open dialog outside the page container and focuses without scrolling the page", async () => {
+    const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
+    const { container, root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Ingresar");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const dialog = document.body.querySelector('[role="dialog"][aria-labelledby="wallet-modal-title"]');
+
+    expect(dialog).toBeTruthy();
+    expect(container.contains(dialog)).toBe(false);
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+
+    act(() => {
+      root.unmount();
+    });
+
+    focusSpy.mockRestore();
   });
 
   it("keeps the referral input hidden until the user asks for it", async () => {
@@ -300,9 +333,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresar")
-    );
+    const openButton = findButtonByText(container, "Ingresar");
 
     act(() => {
       openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -312,13 +343,11 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
-    expect(container.textContent).toContain("Ingresa tu codigo de referido (opcional)");
-    expect(container.querySelector('input[placeholder="Pega o edita tu codigo de invitacion"]')).toBeNull();
+    expect(document.body.textContent).not.toContain("Conecta Phantom para continuar con la autenticacion SIWS.");
+    expect(document.body.textContent).toContain("Ingresa tu codigo de referido (opcional)");
+    expect(document.body.querySelector('input[placeholder="Pega o edita tu codigo de invitacion"]')).toBeNull();
 
-    const referralToggle = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresa tu codigo de referido")
-    );
+    const referralToggle = findButtonByText(document.body, "Ingresa tu codigo de referido");
 
     act(() => {
       referralToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -328,7 +357,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.querySelector('input[placeholder="Pega o edita tu codigo de invitacion"]')).toBeTruthy();
+    expect(document.body.querySelector('input[placeholder="Pega o edita tu codigo de invitacion"]')).toBeTruthy();
 
     act(() => {
       root.unmount();
@@ -352,9 +381,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const button = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Wallet")
-    );
+    const button = findButtonByText(container, "Wallet");
 
     expect(button).toBeTruthy();
     expect(button?.textContent).toContain("Wallet");
@@ -421,9 +448,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Wallet")
-    );
+    const openButton = findButtonByText(container, "Wallet");
 
     act(() => {
       openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -433,9 +458,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const reconnectButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Reconectar wallet")
-    );
+    const reconnectButton = findButtonByText(document.body, "Reconectar wallet");
 
     expect(reconnectButton).toBeTruthy();
     expect((reconnectButton as HTMLButtonElement | undefined)?.disabled).toBe(false);
@@ -472,9 +495,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresar")
-    );
+    const openButton = findButtonByText(container, "Ingresar");
 
     expect(openButton).toBeTruthy();
 
@@ -486,9 +507,9 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.textContent).not.toContain("Continuar con email");
-    expect(container.textContent).not.toContain("Mail");
-    expect(container.textContent).not.toContain("Ingresa a tu cuenta BRIDS");
+    expect(document.body.textContent).not.toContain("Continuar con email");
+    expect(document.body.textContent).not.toContain("Mail");
+    expect(document.body.textContent).not.toContain("Ingresa a tu cuenta BRIDS");
 
     act(() => {
       root.unmount();
@@ -506,9 +527,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Ingresar")
-    );
+    const openButton = findButtonByText(container, "Ingresar");
 
     act(() => {
       openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -518,9 +537,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const walletTab = Array.from(container.querySelectorAll("button")).find((candidate) =>
-      candidate.textContent?.includes("Wallet")
-    );
+    const walletTab = findButtonByText(document.body, "Wallet");
 
     act(() => {
       walletTab?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -530,9 +547,9 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.textContent).not.toContain("Copiar direccion");
-    expect(container.textContent).not.toContain("Cerrar sesion y desconectar wallet");
-    expect(container.textContent).not.toContain("Desconectar wallet");
+    expect(document.body.textContent).not.toContain("Copiar direccion");
+    expect(document.body.textContent).not.toContain("Cerrar sesion y desconectar wallet");
+    expect(document.body.textContent).not.toContain("Desconectar wallet");
 
     act(() => {
       root.unmount();
@@ -688,8 +705,8 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    expect(container.textContent).toContain("Ingresa tu codigo de referido (opcional)");
-    expect(container.textContent).not.toContain("Continuar con email");
+    expect(document.body.textContent).toContain("Ingresa tu codigo de referido (opcional)");
+    expect(document.body.textContent).not.toContain("Continuar con email");
 
     act(() => {
       root.unmount();
