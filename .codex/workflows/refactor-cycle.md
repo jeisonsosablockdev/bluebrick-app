@@ -41,6 +41,7 @@
 - For small single-slice refactors, the slice branch can merge directly to the target branch when the artifact says so.
 
 ## Required Artifact Content
+- Refactor work uses the same artifact enforcement path as feature/security/nft work: `docs/features/feature-<slug>.md` and `docs/features/feature-<slug>-implementation.md`.
 - Problem: what structure is hurting maintainability, testability, reliability, or clarity.
 - Current behavior: what must not change.
 - Invariants: user-visible behavior, API contracts, data contracts, security assumptions, and performance boundaries.
@@ -57,10 +58,12 @@
 - Never rely on "it compiles" as the only proof for a behavior-preserving refactor.
 
 ## Branching Contract
-- Parent integration branch: `refactor/<scope>-<slug>-<linear-id>` for multi-slice refactors.
-- Spec/documentation slice: `refactor/<scope>-<slug>-<linear-id>-s01-spec`.
-- Delivery slices: `refactor/<scope>-<slug>-<linear-id>-sNN-<one-change-name>`.
-- Final audit slice: `refactor/<scope>-<slug>-<linear-id>-sNN-clean-code-audit`.
+- Multi-slice refactors use the Linear initiative branch as the integration branch: `initiative/bri-<id>-<name>`.
+- The Linear initiative branch starts from latest `develop` and must match the parent Linear issue `git branch name` field.
+- Slice branches start from the Linear initiative branch, not directly from `develop`.
+- Spec/documentation slice: `refactor/<scope>-<slug>-bri-<id>-s01-spec`.
+- Delivery slices: `refactor/<scope>-<slug>-bri-<id>-sNN-<one-change-name>`.
+- Final audit slice: `refactor/<scope>-<slug>-bri-<id>-sNN-clean-code-audit`.
 - Commit messages should identify the preserved behavior or extracted boundary, not just say "cleanup".
 
 ## Blocking Gates
