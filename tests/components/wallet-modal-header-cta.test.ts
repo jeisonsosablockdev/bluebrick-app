@@ -612,6 +612,88 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
+  it("disconnects the wallet adapter during sign out when an adapter public key is present", async () => {
+    const disconnect = vi.fn(async () => undefined);
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage: vi.fn()
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: null,
+      connected: false,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect,
+      select: vi.fn(),
+      signMessage: undefined
+    });
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Wallet");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const signOutButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+
+    await act(async () => {
+      signOutButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
+    expect(document.body.textContent).not.toContain("Reconectar wallet");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("hides federated login when WorkOS is unavailable", async () => {
     authClientMocks.fetchAuthMe.mockResolvedValue({
       authenticated: false,

@@ -4,6 +4,7 @@
 - S01 artifact slice merged into the initiative branch.
 - S02 modal viewport slice is merged into the initiative branch.
 - S03 auth-state matrix slice is implemented and under targeted validation.
+- S04 disconnect/sign-out slice is implemented and under targeted validation.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -56,8 +57,8 @@ Initiative branch:
 | --- | --- | --- | --- | --- | --- | --- |
 | S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
 | S02 | merged | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | merged locally |
-| S03 | implemented | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | local slice |
-| S04 | pending | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | TBD |
+| S03 | merged | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | merged locally |
+| S04 | implemented | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | local slice |
 | S05 | pending | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | TBD |
 
 ## Order Of Execution
@@ -249,3 +250,9 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S03 type validation: `npm run typecheck` passed.
 - S03 docs governance validation: `npm run validate:docs-governance` passed.
 - S03 whitespace validation: `git diff --check` passed.
+- S04 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because `Sign out & disconnect wallet` did not call wallet-adapter `disconnect()` when the adapter still exposed a public key but `connected` was false.
+- S04 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests.
+- S04 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests after the disconnect tightening.
+- S04 type validation: `npm run typecheck` passed.
+- S04 docs governance validation: `npm run validate:docs-governance` passed.
+- S04 whitespace validation: `git diff --check` passed.
