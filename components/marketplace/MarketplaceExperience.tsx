@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import type { ReactElement } from "react";
 
 import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
-import { MarketplaceMapClient } from "@/components/marketplace/MarketplaceMapClient";
 import { MarketplaceMapShell } from "@/components/marketplace/MarketplaceMapShell";
 import { MarketplaceViewModeShell } from "@/components/marketplace/MarketplaceViewModeShell";
 import { projectMarketplaceMapPins, type MarketplaceMapPinSource } from "@/lib/marketplace-map-pins";
 import type { PropertyListItem } from "@/lib/property-service";
+
+const DeferredMarketplaceMapClient = dynamic(
+  () => import("@/components/marketplace/MarketplaceMapClient").then((module) => module.MarketplaceMapClient),
+  {
+    ssr: false,
+    loading: () => <div data-testid="marketplace-map-loading" className="h-full min-h-[28rem] w-full" />
+  }
+);
 
 type MarketplaceExperienceProps = {
   properties: PropertyListItem[];
@@ -23,8 +31,9 @@ function renderList(properties: PropertyListItem[]): ReactElement {
 
 export function MarketplaceExperience({ properties, mapSources, mapboxAccessToken, mapboxStyleUrl }: MarketplaceExperienceProps) {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const [isMapBoundaryReady, setIsMapBoundaryReady] = useState(false);
   const pins = projectMarketplaceMapPins(mapSources);
-  const canRenderMap = Boolean(mapboxAccessToken && pins.length > 0);
+  const canRenderMap = Boolean(mapboxAccessToken && pins.length > 0 && isMapBoundaryReady);
   const listNode = renderList(properties);
   const mapNode = (
     <MarketplaceMapShell
@@ -33,7 +42,7 @@ export function MarketplaceExperience({ properties, mapSources, mapboxAccessToke
       onPinSelect={setSelectedPinId}
       pins={pins}
       map={
-        <MarketplaceMapClient
+        <DeferredMarketplaceMapClient
           mapboxAccessToken={mapboxAccessToken ?? ""}
           mapStyleUrl={mapboxStyleUrl}
           pins={pins}
@@ -43,6 +52,25 @@ export function MarketplaceExperience({ properties, mapSources, mapboxAccessToke
       fallback={listNode}
     />
   );
+
+  useEffect(() => {
+    if (!mapboxAccessToken || pins.length === 0) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const requestIdleCallback = window.requestIdleCallback;
+    if (typeof requestIdleCallback === "function") {
+      const idleId = requestIdleCallback(() => setIsMapBoundaryReady(true), { timeout: 1200 });
+      return () => window.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = window.setTimeout(() => setIsMapBoundaryReady(true), 250);
+    return () => window.clearTimeout(timeoutId);
+  }, [mapboxAccessToken, pins.length]);
 
   return (
     <MarketplaceViewModeShell
