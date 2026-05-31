@@ -9,6 +9,7 @@ Last Updated: 2026-05-31
   - a connected wallet adapter means the browser may have a signer available
   - an active `siws_session` means the server has authenticated the wallet
   - a connected adapter without SIWS remains unauthenticated until SIWS verification succeeds
+- Sign-out/disconnect still clears server authority through the existing logout route; the client-side improvement only broadens when the wallet adapter receives a disconnect request so adapter signer availability does not linger after logout.
 - The session model remains unchanged:
   - WorkOS/account authority still comes from the federated session layer
   - wallet authority still comes from `siws_session`

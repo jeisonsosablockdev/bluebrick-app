@@ -1015,7 +1015,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     try {
       try {
-        if (isConnected) {
+        const adapterPublicKey = resolveCurrentWalletPublicKey();
+
+        if (isConnected || adapterPublicKey) {
           await disconnect();
         }
       } catch (error) {
