@@ -6,6 +6,7 @@
 - S03 auth-state matrix slice is merged into the initiative branch.
 - S04 disconnect/sign-out slice is merged into the initiative branch.
 - S05 QA/review/docs slice is implemented and under final merge.
+- S06 modal action layout slice is implemented after visual review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -61,6 +62,7 @@ Initiative branch:
 | S03 | merged | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | merged locally |
 | S04 | merged | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | merged locally |
 | S05 | implemented | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | local slice |
+| S06 | implemented | `fix/app-login-modal-issue-bri-167-s06-modal-action-layout` | Restore visual harmony for authenticated modal actions | `WalletModal` action layout, component assertion, artifact evidence | targeted Vitest, targeted Playwright modal evidence, docs governance | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -263,3 +265,10 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S05 final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
 - S05 Synpress validation: `npm run e2e:synpress` passed with 1 test (`phantom cache boots and the app shell loads`).
 - S05 observed non-blocking warnings: Playwright marketplace smoke still reports existing chart container width/height warnings and the database validator reports the existing pg SSL mode warning; neither blocked validation.
+- S06 visual review note: authenticated wallet sessions can show only `Sign out & disconnect wallet` in the action group; that single action must occupy the full row rather than inheriting the split two-column layout used when primary and secondary actions are both visible.
+- S06 implementation: the wallet action group now uses `sm:grid-cols-2` only when both primary wallet action and disconnect action are visible; single-action states use `grid-cols-1`, and action labels use `whitespace-nowrap` to preserve button rhythm.
+- S06 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests, including a regression assertion that the authenticated-wallet sign-out action is full-row and not split into two columns.
+- S06 type validation: `npm run typecheck` passed.
+- S06 docs governance validation: `npm run validate:docs-governance` passed.
+- S06 whitespace validation: `git diff --check` passed.
+- S06 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on rerun. One previous run had a non-reproduced `/marketplace` 768 px click miss where the modal never opened despite the header `Sign in` button remaining visible; rerun passed without code changes.
