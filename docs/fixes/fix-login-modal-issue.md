@@ -2,7 +2,9 @@
 
 ## Status
 - Initial implementation merged into `develop`.
-- Post-review hardening reopened for P1/P2/P3 and clean-code slices.
+- Post-review P1/P2 hardening implemented in S12-S13.
+- P3 artifact sync implemented in S14.
+- Clean-code extraction remains planned as S15.
 - Multi-slice fix plan remains active for follow-up hardening.
 - Linear issue key: `BRI-167`.
 
@@ -68,10 +70,12 @@ The reviewer pass after the first implementation found three follow-up issues an
 3. P3 artifact drift
 - The problem and implementation artifacts still contain some pre-implementation status language.
 - Risk: future slices and Linear updates can inherit stale assumptions about approval state or delivery status.
+- Status: corrected in S14.
 
 4. Clean-code extraction opportunity
 - `components/WalletModal.tsx` now owns the portal, auth-state matrix, wallet proof panel, copy, disconnect, and motion presentation.
 - Risk: the component remains correct but too concentrated, making future auth-state regressions easier to introduce.
+- Status: planned for S15.
 
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
@@ -104,9 +108,9 @@ Out of scope:
 - S04: sign-out/disconnect investigation and fix.
 - S05: responsive QA, docs sync, security/reviewer closeout.
 - S06-S11: visual, reload-flow, sharpness, signing-intent, and progress-polish follow-up slices from browser review.
-- S12: P1 wallet-only logout route refresh hardening.
-- S13: P2 `prefers-reduced-motion` hardening for modal progress and route transitions.
-- S14: P3 artifact status synchronization.
+- S12: P1 wallet-only logout route refresh hardening. Implemented.
+- S13: P2 `prefers-reduced-motion` hardening for modal progress and route transitions. Implemented.
+- S14: P3 artifact status synchronization. Implemented.
 - S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
