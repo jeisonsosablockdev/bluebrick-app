@@ -14,6 +14,12 @@ vi.mock("@/components/marketplace/MarketplaceGridClient", () => ({
     )
 }));
 
+vi.mock("next/dynamic", () => ({
+  default: () =>
+    ({ selectedPinId }: { selectedPinId?: string | null }) =>
+      createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
+}));
+
 vi.mock("@/components/marketplace/MarketplaceMapClient", () => ({
   MarketplaceMapClient: ({ selectedPinId }: { selectedPinId?: string | null }) =>
     createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
@@ -114,10 +120,28 @@ function renderExperience(): RenderHandle {
 describe("components/marketplace/MarketplaceExperience", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+    vi.useRealTimers();
   });
 
-  it("renders the map above the list in the default combined state", () => {
+  it("renders the list before the deferred map boundary is ready", () => {
+    vi.useFakeTimers();
     const { container, root } = renderExperience();
+
+    expect(container.querySelector('[data-testid="marketplace-grid"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="marketplace-map-shell"]')).toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("renders the map above the list in the default combined state after the deferred boundary is ready", () => {
+    vi.useFakeTimers();
+    const { container, root } = renderExperience();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
 
     const shell = container.querySelector('[data-testid="marketplace-map-shell"]');
     const grid = container.querySelector('[data-testid="marketplace-grid"]');
@@ -133,7 +157,12 @@ describe("components/marketplace/MarketplaceExperience", () => {
   });
 
   it("passes selected pin state from the pin list into the map client", () => {
+    vi.useFakeTimers();
     const { container, root } = renderExperience();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
 
     const pinButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Boston Harbor House");
     expect(pinButton).toBeTruthy();
