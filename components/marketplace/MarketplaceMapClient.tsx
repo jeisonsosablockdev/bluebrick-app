@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Map, { Marker, type ViewState } from "react-map-gl/mapbox";
 
+import { formatMarketplaceSoldPercent } from "@/lib/marketplace-format";
 import { createMarketplaceMapCameraViewState } from "@/lib/marketplace-map-camera";
 import { createMarketplaceMapOrbitViewState } from "@/lib/marketplace-map-camera-motion";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
@@ -133,7 +134,7 @@ export function MarketplaceMapClient({
                   {pin.title}
                 </span>
                 <span className="rounded-full bg-slate-950/85 px-2 py-1 text-[11px] font-semibold shadow-inner shadow-black/25">
-                  {pin.soldPercent.toFixed(Number.isInteger(pin.soldPercent) ? 0 : 2).replace(/\.00$/, "")}%
+                  {formatMarketplaceSoldPercent(pin.soldPercent)}
                 </span>
               </button>
               <span
