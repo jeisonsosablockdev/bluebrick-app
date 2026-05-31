@@ -32,6 +32,21 @@
 - When a refactor slice depends on AI-assisted API, SDK, framework, or tooling guidance, record the OpenAI Developers docs/tooling reference in the governing artifact before implementation closes.
 - Motion/UI refactors must also follow the `frontend-cycle` Motion 12 and OpenAI Developers documentation requirements when motion behavior, syntax, or tooling is in scope.
 
+## Change-Type Routing
+| Refactor Type | Activate | Extra Gates |
+| --- | --- | --- |
+| UI, `/app`, `components`, client hooks, route shells | `frontend-cycle` | Browser evidence for browser-critical flows; `responsive-qa` when layout, touch targets, modals, or viewport behavior can change |
+| Motion-driven UI or transition refactor | `frontend-cycle` | Motion 12 current syntax, reduced-motion behavior, and OpenAI Developers tooling reference when docs/tooling guidance is used |
+| Backend API routes, server actions, service modules, repositories without schema changes | Dominant runtime workflow plus `qa` and `reviewer` | Targeted API/unit tests, trust-boundary notes, and `security` when auth/admin/payment/session behavior is touched |
+| DB schema, migrations, persistence adapters, SQL assumptions | Dominant runtime workflow plus DB gate | Tracked migration, `validate:db`, no pending migrations, and migration evidence when `DATABASE_URL` is available |
+| Shared packages, `/packages`, shared `lib`, scripts, tests, e2e harnesses | Dominant runtime workflow plus `reviewer` | Full type-check, no circular dependencies, relevant test harness validation, and docs when traceability changes |
+| Solana programs or on-chain request contracts | `blockchain-cycle` | Devnet-only proof, real signatures, fetched account state, no simulation-only final evidence |
+| NFT mint, metadata, collection, royalty, or Metaplex scope | `nft-cycle` plus dominant runtime workflow | NFT policy docs, devnet proof, authority validation, metadata and collection invariants |
+| Auth, wallet, admin, payment, signer, compliance, or privileged paths | Dominant runtime workflow plus `security` | Trust-boundary review, replay/authorization evidence, and no unresolved high-risk findings |
+| Release hardening or security-critical rollout refactor | `mainnet-hardening` plus all touched runtime workflows | Security findings and mitigations, dependency/audit outputs when applicable, final reviewer gate |
+
+When a slice touches multiple types, activate every matching workflow and aggregate all gates before merge.
+
 ## Execution Sequence
 | Step | Owner | Goal | Gate |
 | --- | --- | --- | --- |
