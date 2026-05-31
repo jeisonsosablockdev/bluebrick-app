@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s14-clean-code-formatting`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -197,6 +197,15 @@ Fallback behavior:
   - remove duplicated `% sold` formatting logic from the map pin and pin list panel
   - keep output stable for integer, decimal, and trailing-zero percentage values
   - preserve the current visual rendering and map camera behavior
+
+### S15 - Core Web Vitals and SEO audit
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit`
+- Scope:
+  - audit `/marketplace` SEO readiness and Core Web Vitals risk after the Mapbox visual slices
+  - document assumptions, evidence, findings, score, and limitations
+  - verify that deferred map motion does not intentionally compete with initial page load
+  - do not implement SEO or performance fixes in this slice unless a blocking configuration issue is discovered
+  - preserve runtime behavior
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
