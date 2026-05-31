@@ -28,3 +28,10 @@ Consume the S23 read result metadata and render a small user-safe degraded-state
 - Degraded data and empty inventory are distinguishable.
 - The traditional list remains the stable fallback.
 - No Mapbox behavior changes.
+
+## Implementation Evidence
+- Added failing page coverage for degraded marketplace data.
+- Rendered a user-safe fallback-source notice without exposing internal error codes.
+- Kept marketplace content rendering when fallback data is available.
+- Targeted test command: `npm run test -- tests/app/marketplace-page.test.ts`.
+- Targeted result: `6` tests passed.

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const pageMocks = vi.hoisted(() => ({
   getAuthenticatedPublicKeyFromCookies: vi.fn(),
   getServerLocale: vi.fn(),
+  readMarketplaceRecordsResultForServer: vi.fn(),
   listMarketplaceProperties: vi.fn(),
   listMarketplacePropertyCities: vi.fn(),
   getRoleForWallet: vi.fn()
@@ -53,6 +54,7 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 vi.mock("@/lib/property-marketplace-server", () => ({
+  readMarketplaceRecordsResultForServer: pageMocks.readMarketplaceRecordsResultForServer,
   listMarketplaceProperties: pageMocks.listMarketplaceProperties,
   listMarketplaceMapEntries: vi.fn(() => []),
   listMarketplacePropertyCities: pageMocks.listMarketplacePropertyCities
@@ -90,6 +92,11 @@ describe("app/marketplace/page", () => {
     vi.clearAllMocks();
     pageMocks.getAuthenticatedPublicKeyFromCookies.mockResolvedValue(null);
     pageMocks.getServerLocale.mockResolvedValue("en");
+    pageMocks.readMarketplaceRecordsResultForServer.mockResolvedValue({
+      status: "ok",
+      source: "empty",
+      records: []
+    });
     pageMocks.listMarketplaceProperties.mockResolvedValue([]);
     pageMocks.listMarketplacePropertyCities.mockResolvedValue([]);
     pageMocks.getRoleForWallet.mockReturnValue(undefined);
@@ -136,6 +143,27 @@ describe("app/marketplace/page", () => {
     const html = await renderMarketplacePage();
 
     expect(html).toContain("app-footer");
+  });
+
+  it("shows a safe degraded data notice while keeping marketplace content available", async () => {
+    pageMocks.readMarketplaceRecordsResultForServer.mockResolvedValueOnce({
+      status: "degraded",
+      source: "snapshot",
+      records: [],
+      errorCode: "PERSISTED_MARKETPLACE_READ_FAILED"
+    });
+    pageMocks.listMarketplaceProperties.mockResolvedValueOnce([
+      {
+        id: "snapshot-001",
+        title: "Snapshot Entry"
+      }
+    ]);
+
+    const html = await renderMarketplacePage();
+
+    expect(html).toContain("marketplace-experience");
+    expect(html).toContain("Marketplace data is temporarily using a fallback source");
+    expect(html).not.toContain("PERSISTED_MARKETPLACE_READ_FAILED");
   });
 
   it("keeps the marketplace route dynamic so Safari does not keep stale deployed entry imagery", () => {
