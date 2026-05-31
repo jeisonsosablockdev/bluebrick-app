@@ -8,6 +8,7 @@ import {
   MOTION_NAVIGATION_ORIGIN_SCALE,
   MOTION_THEME_DISTANCE,
   createDetailOpenMotionVariants,
+  createNavigationFallbackMotionVariants,
   createNavigationOriginMotionVariants,
   createPageMotionVariants,
   createPanelMotionVariants,
@@ -59,5 +60,13 @@ describe("lib/motion", () => {
     expect(variants.initial.clipPath).toBe("circle(0px at 120px 48px)");
     expect(variants.animate.clipPath).toBe("circle(960px at 120px 48px)");
     expect(variants.initial.scale).toBe(MOTION_NAVIGATION_ORIGIN_SCALE);
+  });
+
+  it("keeps navigation fallback transitions sharp for refresh-only updates", () => {
+    const variants = createNavigationFallbackMotionVariants();
+
+    expect("filter" in variants.initial).toBe(false);
+    expect("filter" in variants.animate).toBe(false);
+    expect(variants.animate.opacity).toBe(1);
   });
 });

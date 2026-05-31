@@ -9,6 +9,7 @@
 - S06 modal action layout slice is implemented after visual review.
 - S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
 - S08 wallet intent gating slice is implemented after reload-flow review.
+- S09 wallet-connected page sharpness slice is implemented after visual review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -16,7 +17,10 @@ Fix the login modal so it behaves as viewport-owned auth chrome and presents a c
 
 ## Scope
 - `components/WalletModal.tsx`
+- `components/motion/route-transition.tsx`
+- `lib/motion.ts`
 - `tests/components/wallet-modal-header-cta.test.ts`
+- `tests/lib/motion.test.ts`
 - `e2e/wallet-modal-auth-entry.pw.spec.ts`
 - `docs/auth-flow.md`
 - `docs/session-model.md`
@@ -67,13 +71,15 @@ Initiative branch:
 | S06 | implemented | `fix/app-login-modal-issue-bri-167-s06-modal-action-layout` | Restore visual harmony for authenticated modal actions | `WalletModal` action layout, component assertion, artifact evidence | targeted Vitest, targeted Playwright modal evidence, docs governance | local slice |
 | S07 | implemented | `fix/app-login-modal-issue-bri-167-s07-disconnect-visual-state` | Fix connected-wallet pending layout and visible disconnect completion | `WalletModal` action stack, disconnect local state, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 | S08 | implemented | `fix/app-login-modal-issue-bri-167-s08-wallet-intent-gating` | Avoid exposing auto-connected wallet technical state on generic sign-in after reload | `WalletModal` wallet-intent state, connected-wallet UI gating, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
+| S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
 2. Run S02 first because viewport anchoring affects all modal evidence and screenshots.
 3. Run S03 after viewport behavior is stable so UI-state assertions are not polluted by layout bugs.
 4. Run S04 after state labels are clear, because disconnect success/failure must be validated against the final state matrix.
-5. Run S05 last as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
+5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
+6. Run follow-up slices S06-S09 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -107,6 +113,13 @@ Likely S02 fix:
 - focus the close button with `preventScroll`
 - give the overlay its own `overflow-y-auto` and safe-area-aware vertical padding
 - constrain the panel with `100svh`
+
+### A2. Marketplace remains blurred after wallet connection
+The marketplace route uses `PathRouteTransition` with `mode="navigation-origin"` so route changes can expand from the clicked navigation control. Wallet sign-in, however, completes with an in-place `router.refresh()` rather than a route navigation with a recorded click origin.
+
+When there is no navigation origin, the previous fallback reused full page motion variants. Those variants include `filter: blur(2px)` in the initial/exit states. If a wallet sign-in refresh lands during that page-level fallback transition, the entire marketplace shell can visually remain softened even though the modal has closed and the wallet session is valid.
+
+S09 keeps the navigation-origin fallback visually sharp by using opacity/scale-only motion for refresh-style updates. Origin-based route changes still keep their intended clip-path animation; regular page transitions outside navigation-origin mode keep their existing behavior.
 
 ### B. Connected wallet is being mistaken for authenticated login
 The component currently derives:
@@ -292,3 +305,11 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S08 type validation: `npm run typecheck` passed.
 - S08 docs governance validation: `npm run validate:docs-governance` passed.
 - S08 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S09 visual review note: after wallet sign-in, `/marketplace` can refresh in-place without a navigation origin; the route shell should not use a page-level blur fallback for that auth refresh.
+- S09 implementation: `navigation-origin` fallback motion now uses opacity/scale only, leaving origin-based route transitions intact while preventing full-page blur residue after wallet connection.
+- S09 targeted validation: `npm test -- tests/lib/motion.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 24 tests, including a regression assertion that navigation fallback variants do not include `filter`.
+- S09 type validation: `npm run typecheck` passed.
+- S09 docs governance validation: `npm run validate:docs-governance` passed.
+- S09 whitespace validation: `git diff --check` passed.
+- S09 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S09 runtime browser check: `/marketplace` route wrapper computed `filter: none` with no wallet or onboarding overlay mounted after load.

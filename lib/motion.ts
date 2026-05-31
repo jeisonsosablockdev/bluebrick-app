@@ -87,6 +87,25 @@ export function createNavigationOriginMotionVariants(origin: { x: number; y: num
   } as const;
 }
 
+export function createNavigationFallbackMotionVariants() {
+  return {
+    initial: {
+      opacity: 0.98,
+      scale: 0.998
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: MOTION_GENTLE_TRANSITION
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.998,
+      transition: MOTION_FAST_OPACITY_TRANSITION
+    }
+  } as const;
+}
+
 export function createPanelMotionVariants() {
   return {
     initial: {
