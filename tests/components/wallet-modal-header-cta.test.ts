@@ -142,6 +142,12 @@ function findButtonByText(root: ParentNode, text: string): HTMLButtonElement | u
   ) as HTMLButtonElement | undefined;
 }
 
+function findElementByText(root: ParentNode, text: string): HTMLElement | undefined {
+  return Array.from(root.querySelectorAll<HTMLElement>("*")).find((candidate) =>
+    candidate.textContent?.trim() === text
+  );
+}
+
 describe("components/WalletModal header CTA", () => {
   beforeEach(() => {
     navigationMocks.pathname = "/";
@@ -592,10 +598,12 @@ describe("components/WalletModal header CTA", () => {
     const signInButton = findButtonByText(document.body, "Solicitar firma en Phantom");
     const disconnectButton = findButtonByText(document.body, "Cancelar y desconectar wallet");
     const actionGroup = disconnectButton?.parentElement;
+    const pendingBadge = findElementByText(document.body, "Pendiente");
     expect(signInButton?.className).toContain("w-full");
     expect(disconnectButton?.className).toContain("w-full");
     expect(actionGroup?.className).toContain("grid-cols-1");
     expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
+    expect(pendingBadge?.className).toContain("bg-white");
 
     act(() => {
       root.unmount();
@@ -744,9 +752,12 @@ describe("components/WalletModal header CTA", () => {
     expect(document.body.textContent).toContain("Copiar direccion");
     const signOutButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
     const actionGroup = signOutButton?.parentElement;
+    const activeBadge = findElementByText(document.body, "Activa");
     expect(signOutButton?.className).toContain("w-full");
     expect(actionGroup?.className).toContain("grid-cols-1");
     expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
+    expect(activeBadge?.className).toContain("bg-white");
+    expect(activeBadge?.className).not.toContain("emerald");
 
     act(() => {
       root.unmount();

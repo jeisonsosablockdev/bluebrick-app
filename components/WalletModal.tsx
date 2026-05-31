@@ -1557,11 +1557,11 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                         </div>
                         <motion.span
                           className={cn(
-                            "inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold",
+                            "inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
                             isWalletAuthInProgress
-                              ? "border-cyan-300/35 bg-cyan-300/12 text-cyan-100"
+                              ? "border-white/[0.18] bg-white/[0.07] text-cyan-100"
                               : hasWalletSession
-                                ? "border-emerald-300/35 bg-emerald-300/12 text-emerald-100"
+                                ? "border-white/[0.18] bg-white/[0.07] text-white/85"
                                 : "border-white/15 bg-white/[0.08] text-white/75"
                           )}
                           animate={isWalletAuthInProgress ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
@@ -1601,9 +1601,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                           className={cn(
                             "relative overflow-hidden rounded-2xl border px-3 py-2 text-center text-xs font-semibold transition-colors",
                             step.complete
-                              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+                              ? "border-white/[0.16] bg-white/[0.08] text-white/85"
                               : step.active
-                                ? "border-cyan-300/40 bg-cyan-300/12 text-cyan-100"
+                                ? "border-cyan-200/28 bg-white/[0.07] text-cyan-100 shadow-[inset_0_-1px_0_rgba(103,232,249,0.22)]"
                                 : "border-white/10 bg-white/[0.04] text-white/55"
                           )}
                           aria-current={step.active ? "step" : undefined}
@@ -1611,10 +1611,13 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                           {step.active ? (
                             <motion.span
                               aria-hidden="true"
-                              className="absolute inset-y-0 left-0 w-1/2 bg-white/10"
+                              className="absolute inset-x-3 bottom-0 h-px bg-cyan-100/70 shadow-[0_0_18px_rgba(103,232,249,0.72)]"
                               animate={{ x: ["-100%", "220%"] }}
                               transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                             />
+                          ) : null}
+                          {step.complete ? (
+                            <span aria-hidden="true" className="absolute inset-x-3 bottom-0 h-px bg-white/35" />
                           ) : null}
                           <span className="relative z-10">{step.label}</span>
                         </div>
