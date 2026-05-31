@@ -70,6 +70,19 @@ type PersistedMarketplaceEconomics = Partial<Record<keyof PropertyEconomics, unk
 type PersistedMarketplaceProject = Partial<Record<keyof PropertyProject, unknown>>;
 type PersistedMarketplaceGovernance = Partial<Record<keyof PropertyGovernance, unknown>>;
 
+export type MarketplaceRecordsResult = {
+  status: "ok" | "degraded";
+  source: "persisted" | "snapshot" | "empty";
+  records: PropertyDetail[];
+  errorCode?: "PERSISTED_MARKETPLACE_READ_FAILED";
+};
+
+type PersistedMarketplaceEntriesResult = {
+  records: PropertyDetail[];
+  degraded: boolean;
+  errorCode?: "PERSISTED_MARKETPLACE_READ_FAILED";
+};
+
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
 }
@@ -409,13 +422,13 @@ function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
   }));
 }
 
-async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
+async function readPersistedMarketplaceEntries(): Promise<PersistedMarketplaceEntriesResult> {
   if (!isDatabaseConfigured()) {
-    return [];
+    return { records: [], degraded: false };
   }
 
   try {
-    return withDbClient(async (client) => {
+    const records = await withDbClient(async (client) => {
       const support = await getMarketplaceEntryLocationColumnSupport(client);
       const result = await client.query<PersistedMarketplaceRow>(
         `SELECT
@@ -454,18 +467,48 @@ async function readPersistedMarketplaceEntries(): Promise<PropertyDetail[]> {
 
       return result.rows.map(mapPersistedRowToPropertyDetail);
     });
+
+    return { records, degraded: false };
   } catch {
-    return [];
+    return {
+      records: [],
+      degraded: true,
+      errorCode: "PERSISTED_MARKETPLACE_READ_FAILED"
+    };
   }
 }
 
-async function readMarketplaceRecordsForServer(): Promise<PropertyDetail[]> {
+export async function readMarketplaceRecordsResultForServer(): Promise<MarketplaceRecordsResult> {
   const persisted = await readPersistedMarketplaceEntries();
-  if (persisted.length > 0) {
-    return persisted;
+  if (persisted.records.length > 0) {
+    return {
+      status: "ok",
+      source: "persisted",
+      records: persisted.records
+    };
   }
 
-  return listPropertyDetailsSnapshot();
+  const snapshot = listPropertyDetailsSnapshot();
+  if (snapshot.length > 0) {
+    return {
+      status: persisted.degraded ? "degraded" : "ok",
+      source: "snapshot",
+      records: snapshot,
+      ...(persisted.errorCode ? { errorCode: persisted.errorCode } : {})
+    };
+  }
+
+  return {
+    status: persisted.degraded ? "degraded" : "ok",
+    source: "empty",
+    records: [],
+    ...(persisted.errorCode ? { errorCode: persisted.errorCode } : {})
+  };
+}
+
+async function readMarketplaceRecordsForServer(): Promise<PropertyDetail[]> {
+  const result = await readMarketplaceRecordsResultForServer();
+  return result.records;
 }
 
 export async function createMarketplacePropertyEntryPersistent(input: CreateMarketplaceEntryPersistentInput): Promise<PropertyDetail> {
