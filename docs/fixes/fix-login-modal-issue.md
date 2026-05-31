@@ -1,9 +1,9 @@
 # Fix: Login modal viewport anchoring and auth state clarity
 
 ## Status
-- Artifact-only scope review.
-- No implementation is approved yet.
-- Multi-slice fix plan.
+- Initial implementation merged into `develop`.
+- Post-review hardening reopened for P1/P2/P3 and clean-code slices.
+- Multi-slice fix plan remains active for follow-up hardening.
 - Linear issue key: `BRI-167`.
 
 ## Problem
@@ -52,6 +52,27 @@ Login is a browser-critical auth entry point. The current behavior makes users u
 - The primary wallet action can render `Signed in` as a prominent gradient button even when it is not an action the user should take.
 - Existing component coverage checks content, but not the full state matrix for adapter connection, SIWS session, federated session, and disconnect.
 
+## Post-Review Hardening Findings
+The reviewer pass after the first implementation found three follow-up issues and one clean-code improvement area:
+
+1. P1 logout refresh asymmetry
+- Wallet login success refreshes the route after creating the SIWS session.
+- Wallet-only logout clears local state and broadcasts logout, but does not refresh the route in the same branch.
+- Risk: server-rendered protected or session-sensitive content can remain visible until the next navigation or manual refresh.
+
+2. P2 reduced-motion coverage
+- The new wallet proof progress states use Motion animation for progress and status feedback.
+- Route-transition fallback/page variants can still animate even when `prefers-reduced-motion` is enabled.
+- Risk: users who request reduced motion still receive repeated or page-level animation.
+
+3. P3 artifact drift
+- The problem and implementation artifacts still contain some pre-implementation status language.
+- Risk: future slices and Linear updates can inherit stale assumptions about approval state or delivery status.
+
+4. Clean-code extraction opportunity
+- `components/WalletModal.tsx` now owns the portal, auth-state matrix, wallet proof panel, copy, disconnect, and motion presentation.
+- Risk: the component remains correct but too concentrated, making future auth-state regressions easier to introduce.
+
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
 - Opening the modal does not scroll the underlying page.
@@ -82,8 +103,13 @@ Out of scope:
 - S03: auth state matrix and `Signed in` CTA cleanup.
 - S04: sign-out/disconnect investigation and fix.
 - S05: responsive QA, docs sync, security/reviewer closeout.
+- S06-S11: visual, reload-flow, sharpness, signing-intent, and progress-polish follow-up slices from browser review.
+- S12: P1 wallet-only logout route refresh hardening.
+- S13: P2 `prefers-reduced-motion` hardening for modal progress and route transitions.
+- S14: P3 artifact status synchronization.
+- S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority.
 
-Delivery slices must not start until S01 is approved.
+New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 
 ## Open Questions
 - The deployed screenshot may include a route-transition or browser-state combination not present in local JSDOM. The fix should therefore address the structural class of bug instead of only matching one browser capture.
