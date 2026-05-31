@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -205,6 +205,15 @@ Fallback behavior:
   - document assumptions, evidence, findings, score, and limitations
   - verify that deferred map motion does not intentionally compete with initial page load
   - do not implement SEO or performance fixes in this slice unless a blocking configuration issue is discovered
+  - preserve runtime behavior
+
+### S16 - clean-code refactor audit
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit`
+- Scope:
+  - run a final clean-code/refactor audit over the marketplace map surface
+  - document blocking and non-blocking findings with file references
+  - avoid broad rewrites in the audit slice
+  - confirm targeted marketplace map tests still pass
   - preserve runtime behavior
 
 ## Files Most Likely to Change
