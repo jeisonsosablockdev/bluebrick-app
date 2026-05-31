@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Map, { Marker, type ViewState } from "react-map-gl/mapbox";
 
 import { createMarketplaceMapCameraViewState } from "@/lib/marketplace-map-camera";
+import { createMarketplaceMapOrbitViewState } from "@/lib/marketplace-map-camera-motion";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
 type MapViewState = ViewState & {
@@ -26,6 +27,12 @@ const MAPBOX_DIMENSION_PLACEHOLDER = {
 };
 
 const MARKETPLACE_MAP_ACCENT_COLOR = "#67E8F9";
+const MARKETPLACE_MAP_CAMERA_MOTION_DELAY_MS = 4500;
+const MARKETPLACE_MAP_CAMERA_MOTION_INTERVAL_MS = 4200;
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
 
 function createCameraKey(pins: MarketplaceMapPin[], selectedPinId?: string | null): string {
   return `${selectedPinId ?? "aggregate"}:${pins.map((pin) => `${pin.id}:${pin.latitude}:${pin.longitude}`).join("|")}`;
@@ -56,8 +63,34 @@ export function MarketplaceMapClient({
     ...initialViewState
   };
   const [movedViewState, setMovedViewState] = useState<{ cameraKey: string; viewState: MapViewState } | null>(null);
+  const [orbitStepByCameraKey, setOrbitStepByCameraKey] = useState<{ cameraKey: string; step: number } | null>(null);
+  const orbitStep = orbitStepByCameraKey?.cameraKey === cameraKey ? orbitStepByCameraKey.step : 0;
   const viewState = movedViewState?.cameraKey === cameraKey ? movedViewState.viewState : cameraViewState;
+  const displayedViewState = orbitStep > 0 ? createMarketplaceMapOrbitViewState(viewState, orbitStep) : viewState;
 
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      return;
+    }
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const delayId = setTimeout(() => {
+      setOrbitStepByCameraKey({ cameraKey, step: 1 });
+      intervalId = setInterval(() => {
+        setOrbitStepByCameraKey((current) => ({
+          cameraKey,
+          step: current?.cameraKey === cameraKey ? current.step + 1 : 1
+        }));
+      }, MARKETPLACE_MAP_CAMERA_MOTION_INTERVAL_MS);
+    }, MARKETPLACE_MAP_CAMERA_MOTION_DELAY_MS);
+
+    return () => {
+      clearTimeout(delayId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [cameraKey]);
 
   return (
     <div data-testid="marketplace-map-client" className="h-full min-h-[28rem] w-full">
@@ -65,7 +98,7 @@ export function MarketplaceMapClient({
         reuseMaps
         mapStyle={mapStyleUrl}
         mapboxAccessToken={mapboxAccessToken}
-        viewState={viewState}
+        viewState={displayedViewState}
         onMove={(event) =>
           setMovedViewState((current) => ({
             cameraKey,

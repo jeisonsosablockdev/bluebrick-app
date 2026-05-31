@@ -38,6 +38,8 @@ The detail page stays as it is today.
 - Hovering a pin zooms the map to that property.
 - Selecting a marketplace pin from the map panel centers the camera on that property.
 - When no property is selected, the map camera centers on the midpoint that keeps the available marketplace pins visually grouped.
+- After initial load settles, the map may use a subtle circular camera drift to create depth.
+- Camera drift must be deferred and disabled for reduced-motion users so it does not compete with Core Web Vitals or accessibility.
 - The map should emphasize the single property being shown so the user feels like they are discovering that location.
 - The marketplace detail page remains a normal detail entry point and does not adopt the 3D states.
 - S08 exception: the detail page may render the existing Google Maps location preview for the property, using the canonical admin location payload, as long as it does not introduce the Mapbox 3D marketplace state machine into detail.
