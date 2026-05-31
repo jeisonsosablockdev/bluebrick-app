@@ -66,4 +66,41 @@ describe("lib/marketplace-map-pins", () => {
 
     expect(pins[0]?.soldPercent).toBe(31.25);
   });
+
+  it("filters out US pins with out-of-range latitude or longitude", () => {
+    const pins = projectMarketplaceMapPins([
+      {
+        id: "bad-lat",
+        title: "Bad Latitude",
+        locationLabel: "Invalid, US",
+        country: "US",
+        geoLat: 91,
+        geoLng: -80,
+        supplyTotal: 100,
+        mintedOrSold: 10
+      },
+      {
+        id: "bad-lng",
+        title: "Bad Longitude",
+        locationLabel: "Invalid, US",
+        country: "US",
+        geoLat: 27,
+        geoLng: -181,
+        supplyTotal: 100,
+        mintedOrSold: 10
+      },
+      {
+        id: "valid-edge",
+        title: "Valid Edge",
+        locationLabel: "Edge, US",
+        country: "US",
+        geoLat: 90,
+        geoLng: 180,
+        supplyTotal: 100,
+        mintedOrSold: 10
+      }
+    ]);
+
+    expect(pins.map((pin) => pin.id)).toEqual(["valid-edge"]);
+  });
 });
