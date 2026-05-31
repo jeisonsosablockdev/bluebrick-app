@@ -8,9 +8,9 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { PropertyDetailGoogleMapsCard } from "@/components/marketplace/PropertyDetailGoogleMapsCard";
 import { PropertyDetailHeroSection } from "@/components/marketplace/PropertyDetailHeroSection";
 import { PropertyDetailInvestmentSummaryCard } from "@/components/marketplace/PropertyDetailInvestmentSummaryCard";
+import { PropertyDetailPropertyInfoCard } from "@/components/marketplace/PropertyDetailPropertyInfoCard";
 import {
   formatMarketplaceDetailDate,
-  formatMarketplaceDetailLocation,
   formatMarketplaceDetailMonths,
   formatMarketplaceDetailPercent,
   formatMarketplaceDetailUsd,
@@ -36,23 +36,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
       <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <PropertyDetailInvestmentSummaryCard property={property} />
 
-        <Card className="space-y-3">
-          <H2 className="text-2xl text-white">{t({ en: "Property information", es: "Informacion de la propiedad", pt: "Informacoes da propriedade" })}</H2>
-          <p className="text-sm text-slate-300">{property.investmentNotes}</p>
-          <p className="text-sm text-slate-300">
-            {t({ en: "Detailed location", es: "Ubicacion detallada", pt: "Localizacao detalhada" })}: {formatMarketplaceDetailLocation(property.detailedLocation, property.postalCode)}
-          </p>
-          {property.postalCode ? (
-            <p className="text-sm text-slate-300">
-              {t({ en: "Postal code", es: "Codigo postal", pt: "Codigo postal" })}: {property.postalCode}
-            </p>
-          ) : null}
-          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-300">
-            {property.highlights.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </Card>
+        <PropertyDetailPropertyInfoCard property={property} />
 
         <PropertyDetailGoogleMapsCard property={property} />
       </motion.section>
