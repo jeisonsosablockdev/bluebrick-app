@@ -28,3 +28,10 @@ Return a stable public 500 response with code `MARKETPLACE_ENTRY_CREATE_FAILED` 
 - Admin 500 responses do not expose raw internal error messages.
 - Existing 400 and 409 behavior remains unchanged.
 - Targeted API tests pass before full validation.
+
+## Implementation Evidence
+- Added failing coverage for an internal `createMarketplacePropertyEntryPersistent` error.
+- Confirmed the failing state exposed the internal error message before implementation.
+- Updated the route to keep duplicate-entry conflicts specific while returning a generic message for 500 responses.
+- Targeted test command: `npm run test -- tests/api/admin-marketplace-entries-route.test.ts`.
+- Targeted result: `6` tests passed.

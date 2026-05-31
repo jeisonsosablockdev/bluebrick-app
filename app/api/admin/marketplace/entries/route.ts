@@ -396,12 +396,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not create marketplace entry.";
     const status = message.includes("already exists") ? 409 : 500;
+    const publicMessage = status === 409 ? message : "Could not create marketplace entry.";
 
     return NextResponse.json(
       {
         error: {
           code: status === 409 ? "MARKETPLACE_ENTRY_CONFLICT" : "MARKETPLACE_ENTRY_CREATE_FAILED",
-          message
+          message: publicMessage
         }
       },
       { status }

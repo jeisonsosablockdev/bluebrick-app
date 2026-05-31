@@ -224,4 +224,33 @@ describe("POST /api/admin/marketplace/entries", () => {
     expect(response.status).toBe(409);
     expect(payload.error.code).toBe("MARKETPLACE_ENTRY_CONFLICT");
   });
+
+  it("does not expose internal create errors in 500 responses", async () => {
+    routeMocks.createMarketplacePropertyEntryPersistent.mockImplementationOnce(() => {
+      throw new Error("database password leaked in stack trace");
+    });
+
+    const response = await POST(
+      createRequest({
+        entryId: "asset-001",
+        title: "Central Tower",
+        city: "Bogota",
+        country: "CO",
+        address: "Calle 10 #12-34",
+        imageUrl: "https://cdn.example.com/cover.jpg",
+        shortDescription: "Tokenized building",
+        supplyTotal: 1200,
+        nftPriceUsd: 150,
+        annualRoiPct: 12.5,
+        collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
+        candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111"
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error.code).toBe("MARKETPLACE_ENTRY_CREATE_FAILED");
+    expect(payload.error.message).toBe("Could not create marketplace entry.");
+    expect(JSON.stringify(payload)).not.toContain("database password");
+  });
 });
