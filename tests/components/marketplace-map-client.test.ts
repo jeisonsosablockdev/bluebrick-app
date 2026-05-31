@@ -149,10 +149,10 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     });
   });
 
-  it("defers subtle circular camera motion until after the initial render window", () => {
+  it("does not start automatic circular camera motion after the initial render window", () => {
     vi.useFakeTimers();
     const { root } = renderClient();
-    const initialViewState = latestMapProps?.viewState as { latitude: number; longitude: number };
+    const initialViewState = latestMapProps?.viewState as Record<string, unknown>;
 
     act(() => {
       vi.advanceTimersByTime(4499);
@@ -164,9 +164,7 @@ describe("components/marketplace/MarketplaceMapClient", () => {
       vi.advanceTimersByTime(1);
     });
 
-    const animatedViewState = latestMapProps?.viewState as { latitude: number; longitude: number };
-    expect(animatedViewState.latitude).not.toBe(initialViewState.latitude);
-    expect(animatedViewState.longitude).not.toBe(initialViewState.longitude);
+    expect(latestMapProps?.viewState).toMatchObject(initialViewState);
 
     act(() => {
       root.unmount();

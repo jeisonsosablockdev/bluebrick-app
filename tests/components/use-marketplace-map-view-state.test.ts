@@ -42,7 +42,6 @@ function ViewStateProbe({
   selectedPinId?: string;
   onController: (controller: MarketplaceMapViewStateController) => void;
 }) {
-  renderCount += 1;
   const controller = useMarketplaceMapViewState({ pins, selectedPinId });
 
   useEffect(() => {
@@ -94,9 +93,9 @@ describe("components/marketplace/useMarketplaceMapViewState", () => {
     function StableMoveProbe() {
       const controller = useMarketplaceMapViewState({ pins, selectedPinId: "tx-1" });
       const hasAppliedMove = useRef(false);
-      renderCount += 1;
 
       useEffect(() => {
+        renderCount += 1;
         latestController = controller;
         if (hasAppliedMove.current) {
           return;
