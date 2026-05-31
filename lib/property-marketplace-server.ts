@@ -12,13 +12,18 @@ import {
   insertMarketplacePropertyEntry,
   type CreateMarketplaceEntryPersistentInput
 } from "@/lib/marketplace/property-write-repository";
+import {
+  filterMarketplacePropertyDetails,
+  listMarketplacePropertyCitiesFromRecords,
+  mapMarketplaceMapEntries,
+  mapMarketplacePropertyListItems
+} from "@/lib/marketplace/property-selectors";
 import { recordOperabilityLog } from "@/lib/observability";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   listPropertyDetailsSnapshot,
   PropertyRpcError,
   type BlockchainSyncStatus,
-  type ListingStatus,
   type PropertyDetail,
   type PropertyFilters,
   type PropertyListItem
@@ -120,49 +125,6 @@ async function resolveRealtimeSyncStatus(property: PropertyDetail): Promise<{
   }
 }
 
-function filterPropertyDetails(records: PropertyDetail[], filters: PropertyFilters): PropertyDetail[] {
-  const normalizedSearch = filters.search?.trim().toLowerCase();
-
-  return records.filter((property) => {
-    if (normalizedSearch) {
-      const inTitle = property.title.toLowerCase().includes(normalizedSearch);
-      const inLocation = property.locationLabel.toLowerCase().includes(normalizedSearch);
-
-      if (!inTitle && !inLocation) {
-        return false;
-      }
-    }
-
-    if (filters.city && property.city !== filters.city) {
-      return false;
-    }
-
-    if (filters.status && property.listingStatus !== filters.status) {
-      return false;
-    }
-
-    if (typeof filters.minRoi === "number" && property.investment.annualRoiPct < filters.minRoi) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
-function mapListItems(records: PropertyDetail[]): PropertyListItem[] {
-  return records.map((property) => ({
-    id: property.id,
-    title: property.title,
-    locationLabel: property.locationLabel,
-    listingStatus: property.listingStatus,
-    image: property.image,
-    nftPriceUsd: property.investment.nftPriceUsd,
-    annualRoiPct: property.investment.annualRoiPct,
-    minimumCapitalRequiredUsd: property.economics.minimumCapitalRequiredUsd,
-    projectDurationMonths: property.project.durationMonths
-  }));
-}
-
 export async function readMarketplaceRecordsResultForServer(): Promise<MarketplaceRecordsResult> {
   const persisted = await readPersistedMarketplaceEntries();
   if (persisted.records.length > 0) {
@@ -211,30 +173,17 @@ export async function createMarketplacePropertyEntryPersistent(input: CreateMark
 
 export async function listMarketplaceProperties(filters: PropertyFilters): Promise<PropertyListItem[]> {
   const records = await readMarketplaceRecordsForServer();
-  return mapListItems(filterPropertyDetails(records, filters));
+  return mapMarketplacePropertyListItems(filterMarketplacePropertyDetails(records, filters));
 }
 
 export async function listMarketplaceMapEntries(filters: PropertyFilters): Promise<MarketplaceMapPinSource[]> {
   const records = await readMarketplaceRecordsForServer();
-
-  return filterPropertyDetails(records, filters)
-    .filter((property) => property.country.trim().toUpperCase() === "US")
-    .filter((property) => property.geoLat !== null && property.geoLat !== undefined && property.geoLng !== null && property.geoLng !== undefined)
-    .map((property) => ({
-      id: property.id,
-      title: property.title,
-      locationLabel: property.locationLabel,
-      country: property.country,
-      geoLat: property.geoLat ?? null,
-      geoLng: property.geoLng ?? null,
-      supplyTotal: property.investment.supplyTotal,
-      mintedOrSold: property.investment.mintedOrSold
-    }));
+  return mapMarketplaceMapEntries(filterMarketplacePropertyDetails(records, filters));
 }
 
 export async function listMarketplacePropertyCities(): Promise<string[]> {
   const records = await readMarketplaceRecordsForServer();
-  return Array.from(new Set(records.map((property) => property.city))).sort((a, b) => a.localeCompare(b));
+  return listMarketplacePropertyCitiesFromRecords(records);
 }
 
 export async function getMarketplacePropertyDetail(id: string): Promise<PropertyDetail | null> {
