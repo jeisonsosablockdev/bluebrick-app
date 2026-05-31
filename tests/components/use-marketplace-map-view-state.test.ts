@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { createElement, useEffect } from "react";
+import { createElement, useEffect, useRef } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -33,6 +33,7 @@ const pins: MarketplaceMapPin[] = [
 ];
 
 let latestController: MarketplaceMapViewStateController | null = null;
+let renderCount = 0;
 
 function ViewStateProbe({
   selectedPinId,
@@ -41,6 +42,7 @@ function ViewStateProbe({
   selectedPinId?: string;
   onController: (controller: MarketplaceMapViewStateController) => void;
 }) {
+  renderCount += 1;
   const controller = useMarketplaceMapViewState({ pins, selectedPinId });
 
   useEffect(() => {
@@ -54,6 +56,7 @@ describe("components/marketplace/useMarketplaceMapViewState", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     latestController = null;
+    renderCount = 0;
     vi.useRealTimers();
   });
 
@@ -81,6 +84,40 @@ describe("components/marketplace/useMarketplaceMapViewState", () => {
       longitude: -82.2859,
       pitch: 52
     });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not schedule another render when Mapbox reports the same view state", () => {
+    function StableMoveProbe() {
+      const controller = useMarketplaceMapViewState({ pins, selectedPinId: "tx-1" });
+      const hasAppliedMove = useRef(false);
+      renderCount += 1;
+
+      useEffect(() => {
+        latestController = controller;
+        if (hasAppliedMove.current) {
+          return;
+        }
+
+        hasAppliedMove.current = true;
+        controller.applyMapMove(controller.displayedViewState);
+      }, [controller]);
+
+      return null;
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(createElement(StableMoveProbe));
+    });
+
+    expect(renderCount).toBe(1);
 
     act(() => {
       root.unmount();
