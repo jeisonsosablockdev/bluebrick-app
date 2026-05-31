@@ -307,6 +307,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const [isInPhantomApp, setIsInPhantomApp] = useState(false);
   const [showPhantomFallback, setShowPhantomFallback] = useState(false);
   const [isReferralFieldVisible, setIsReferralFieldVisible] = useState(false);
+  const [hasWalletAuthIntent, setHasWalletAuthIntent] = useState(false);
   const [suppressedWalletPublicKey, setSuppressedWalletPublicKey] = useState<string | null>(null);
   const rawWalletPublicKey = publicKey?.toBase58() ?? null;
   const walletPublicKey = rawWalletPublicKey && rawWalletPublicKey !== suppressedWalletPublicKey ? rawWalletPublicKey : null;
@@ -357,11 +358,11 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const shouldShowAnonymousAuthEntry = isFederatedLoginAvailable
     && !hasAuthenticatedWalletSession
     && !hasAuthenticatedFederatedSession
-    && !hasConnectedWalletAdapter;
-  const shouldShowConnectedWalletPendingAuth = hasConnectedWalletAdapter && !hasAuthenticatedWalletSession;
+    && !hasWalletAuthIntent;
+  const shouldShowConnectedWalletPendingAuth = hasWalletAuthIntent && hasConnectedWalletAdapter && !hasAuthenticatedWalletSession;
   const shouldShowAuthenticatedWalletActions = hasAuthenticatedWalletSession && hasConnectedWalletAdapter;
   const shouldShowDirectAuthEntryActions = shouldShowAnonymousAuthEntry;
-  const shouldShowDisconnectButton = hasAuthenticatedAccountSession || hasConnectedWalletAdapter;
+  const shouldShowDisconnectButton = hasAuthenticatedAccountSession || shouldShowConnectedWalletPendingAuth;
   const shouldShowWalletPrimaryAction = !shouldShowDirectAuthEntryActions
     && (shouldShowConnectedWalletPendingAuth || !shouldShowAuthenticatedWalletActions);
   const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
@@ -402,7 +403,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
   const walletConnectionStatusText = hasAuthenticatedWalletSession && hasConnectedWalletAdapter && authState.pubkey
     ? `${t({ en: "Wallet session active", es: "Sesion wallet activa", pt: "Sessao wallet ativa" })}: ${truncatePublicKey(authState.pubkey)}`
-    : hasConnectedWalletAdapter
+    : shouldShowConnectedWalletPendingAuth
       ? `${t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: ${truncatePublicKey(walletPublicKey ?? "")}`
       : null;
 
@@ -716,6 +717,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       }
 
       setIsOpen(true);
+      setHasWalletAuthIntent(nextLoginMethod === "wallet");
       setLastError(null);
     };
 
@@ -1000,6 +1002,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return;
     }
 
+    setHasWalletAuthIntent(true);
     void handleWalletPrimaryAction();
   }
 
@@ -1047,6 +1050,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
       } else {
         setSuppressedWalletPublicKey(disconnectedPublicKey);
+        setHasWalletAuthIntent(false);
         setAuthState((previous) => ({
           authenticated: false,
           accountAuthenticated: false,
@@ -1272,7 +1276,14 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
             </div>
 
             <div className="group relative shrink-0">
-              <Button onClick={() => setIsOpen(true)} className="min-h-11 px-4">
+              <Button
+                data-testid="wallet-modal-open-button"
+                onClick={() => {
+                  setHasWalletAuthIntent(false);
+                  setIsOpen(true);
+                }}
+                className="min-h-11 px-4"
+              >
                 <span className="inline-flex items-center gap-2">
                   <WalletCtaIcon />
                   <span>{headerWalletCtaLabel}</span>
@@ -1513,7 +1524,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       </Button>
                     ) : null}
 
-                    {walletPublicKey ? (
+                    {walletPublicKey && (hasWalletAuthIntent || hasWalletSession) ? (
                       <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
                         {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
                       </Button>

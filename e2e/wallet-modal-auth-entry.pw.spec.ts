@@ -4,17 +4,21 @@ const MODAL_VIEWPORT_WIDTHS = [320, 375, 768, 1024] as const;
 const MODAL_VIEWPORT_ROUTES = ["/", "/marketplace"] as const;
 
 async function openWalletModal(page: Page) {
-  const openButton = page.getByRole("button", {
-    name: /Sign in|Ingresar|Entrar|Wallet|Cuenta|Account|Conta/
-  }).first();
-
+  const openButton = page.getByTestId("wallet-modal-open-button");
+  await expect(openButton).toBeVisible();
+  await expect(openButton).toBeEnabled();
   await openButton.click();
 
   const dialog = page.getByRole("dialog", {
     name: /Access your account|Accede a tu cuenta|Acesse sua conta/
   });
 
-  await expect(dialog).toBeVisible();
+  try {
+    await expect(dialog).toBeVisible({ timeout: 3_000 });
+  } catch {
+    await openButton.click();
+    await expect(dialog).toBeVisible();
+  }
 
   return dialog;
 }

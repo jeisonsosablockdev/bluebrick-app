@@ -478,7 +478,7 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
-  it("shows a pending sign-in state when the wallet adapter is connected without a SIWS session", async () => {
+  it("keeps the generic sign-in chooser when autoConnect restores a wallet without a SIWS session", async () => {
     const signMessage = vi.fn();
     const phantomAdapter = {
       name: "Phantom",
@@ -518,6 +518,63 @@ describe("components/WalletModal header CTA", () => {
 
     act(() => {
       openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).toContain("Ingresa a tu cuenta BRIDS");
+    expect(document.body.textContent).toContain("Mail");
+    expect(document.body.textContent).toContain("Wallet");
+    expect(document.body.textContent).not.toContain("Conectada");
+    expect(document.body.textContent).not.toContain("Cerrar sesion y desconectar wallet");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows connected-wallet pending actions only for an explicit wallet intent", async () => {
+    const signMessage = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage
+    });
+
+    const { root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WALLET_MODAL_OPEN_EVENT, {
+        detail: { loginMethod: "wallet" }
+      }));
     });
 
     await act(async () => {
@@ -733,7 +790,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage
     });
 
-    const { container, root } = renderWalletModal({
+    const { root } = renderWalletModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -743,10 +800,10 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const openButton = findButtonByText(container, "Ingresar");
-
     act(() => {
-      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      window.dispatchEvent(new CustomEvent(WALLET_MODAL_OPEN_EVENT, {
+        detail: { loginMethod: "wallet" }
+      }));
     });
 
     await act(async () => {
