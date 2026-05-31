@@ -7,6 +7,7 @@
 - S04 disconnect/sign-out slice is merged into the initiative branch.
 - S05 QA/review/docs slice is implemented and under final merge.
 - S06 modal action layout slice is implemented after visual review.
+- S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -63,6 +64,7 @@ Initiative branch:
 | S04 | merged | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | merged locally |
 | S05 | implemented | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | local slice |
 | S06 | implemented | `fix/app-login-modal-issue-bri-167-s06-modal-action-layout` | Restore visual harmony for authenticated modal actions | `WalletModal` action layout, component assertion, artifact evidence | targeted Vitest, targeted Playwright modal evidence, docs governance | local slice |
+| S07 | implemented | `fix/app-login-modal-issue-bri-167-s07-disconnect-visual-state` | Fix connected-wallet pending layout and visible disconnect completion | `WalletModal` action stack, disconnect local state, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -272,3 +274,11 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S06 docs governance validation: `npm run validate:docs-governance` passed.
 - S06 whitespace validation: `git diff --check` passed.
 - S06 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on rerun. One previous run had a non-reproduced `/marketplace` 768 px click miss where the modal never opened despite the header `Sign in` button remaining visible; rerun passed without code changes.
+- S07 visual review note: the connected-wallet pending state still used the split action grid, so Spanish `Cerrar sesion y desconectar wallet` crowded the right column and could look unclickable/unfinished.
+- S07 implementation: wallet modal actions now stack full-width for wallet states instead of splitting `Iniciar sesion` and disconnect into two columns.
+- S07 disconnect behavior: after a successful adapter disconnect/logout, the modal suppresses the just-disconnected adapter public key locally so stale wallet-adapter state does not continue rendering `Conectada`; the anonymous state preserves `federatedAvailable` so the modal returns to the normal `Mail` / `Wallet` chooser.
+- S07 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 17 tests, including the connected-wallet pending disconnect regression.
+- S07 type validation: `npm run typecheck` passed.
+- S07 docs governance validation: `npm run validate:docs-governance` passed.
+- S07 whitespace validation: `git diff --check` passed.
+- S07 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.

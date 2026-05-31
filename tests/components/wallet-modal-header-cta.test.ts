@@ -529,6 +529,13 @@ describe("components/WalletModal header CTA", () => {
     expect(document.body.textContent).toContain("Conectada");
     expect(document.body.textContent).toContain("Iniciar sesion");
     expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
+    const signInButton = findButtonByText(document.body, "Iniciar sesion");
+    const disconnectButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+    const actionGroup = disconnectButton?.parentElement;
+    expect(signInButton?.className).toContain("w-full");
+    expect(disconnectButton?.className).toContain("w-full");
+    expect(actionGroup?.className).toContain("grid-cols-1");
+    expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
 
     act(() => {
       root.unmount();
@@ -608,7 +615,7 @@ describe("components/WalletModal header CTA", () => {
     expect(document.body.textContent).toContain("Copiar direccion");
     const signOutButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
     const actionGroup = signOutButton?.parentElement;
-    expect(signOutButton?.className).toContain("whitespace-nowrap");
+    expect(signOutButton?.className).toContain("w-full");
     expect(actionGroup?.className).toContain("grid-cols-1");
     expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
 
@@ -693,6 +700,72 @@ describe("components/WalletModal header CTA", () => {
     expect(disconnect).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
     expect(document.body.textContent).not.toContain("Reconectar wallet");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("visibly leaves the connected-wallet pending state after disconnect succeeds", async () => {
+    const disconnect = vi.fn(async () => undefined);
+    const signMessage = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect,
+      select: vi.fn(),
+      signMessage
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Ingresar");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const disconnectButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+
+    await act(async () => {
+      disconnectButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(document.body.textContent).not.toContain("Conectada");
+    expect(document.body.textContent).toContain("Ingresa a tu cuenta BRIDS");
+    expect(document.body.textContent).toContain("Mail");
+    expect(document.body.textContent).toContain("Wallet");
 
     act(() => {
       root.unmount();
