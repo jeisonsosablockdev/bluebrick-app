@@ -3,8 +3,9 @@
 ## Status
 - S01 artifact slice merged into the initiative branch.
 - S02 modal viewport slice is merged into the initiative branch.
-- S03 auth-state matrix slice is implemented and under targeted validation.
-- S04 disconnect/sign-out slice is implemented and under targeted validation.
+- S03 auth-state matrix slice is merged into the initiative branch.
+- S04 disconnect/sign-out slice is merged into the initiative branch.
+- S05 QA/review/docs slice is implemented and under final merge.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -58,8 +59,8 @@ Initiative branch:
 | S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
 | S02 | merged | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | merged locally |
 | S03 | merged | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | merged locally |
-| S04 | implemented | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | local slice |
-| S05 | pending | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | TBD |
+| S04 | merged | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | merged locally |
+| S05 | implemented | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -256,3 +257,9 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S04 type validation: `npm run typecheck` passed.
 - S04 docs governance validation: `npm run validate:docs-governance` passed.
 - S04 whitespace validation: `git diff --check` passed.
+- S05 clean-code pass: `code-refactoring-refactor-clean` review found one lint/performance cleanup in `WalletModalPortal`; the portal now avoids effect-driven state and reads `document.body` directly on the client.
+- S05 targeted component validation after cleanup: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests.
+- S05 full validation: `npm run validate` passed.
+- S05 final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S05 Synpress validation: `npm run e2e:synpress` passed with 1 test (`phantom cache boots and the app shell loads`).
+- S05 observed non-blocking warnings: Playwright marketplace smoke still reports existing chart container width/height warnings and the database validator reports the existing pg SSL mode warning; neither blocked validation.

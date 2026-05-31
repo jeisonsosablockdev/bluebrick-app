@@ -82,17 +82,11 @@ const PRIMARY_NAV_LINK_BASE_CLASSNAME =
 const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
 
 function WalletModalPortal({ children }: WalletModalPortalProps): ReactElement | null {
-  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortalRoot(document.body);
-  }, []);
-
-  if (!portalRoot) {
+  if (typeof document === "undefined") {
     return null;
   }
 
-  return createPortal(children, portalRoot);
+  return createPortal(children, document.body);
 }
 
 function WalletCtaIcon() {
