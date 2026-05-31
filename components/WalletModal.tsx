@@ -362,6 +362,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const shouldShowDisconnectButton = hasAuthenticatedAccountSession || hasConnectedWalletAdapter;
   const shouldShowWalletPrimaryAction = !shouldShowDirectAuthEntryActions
     && (shouldShowConnectedWalletPendingAuth || !shouldShowAuthenticatedWalletActions);
+  const shouldUseSplitWalletActions = shouldShowWalletPrimaryAction && shouldShowDisconnectButton;
   const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
 
   const menuEntries = useMemo<NavEntry[]>(() => {
@@ -1481,15 +1482,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                     />
 
                     {shouldShowWalletPrimaryAction || shouldShowDisconnectButton ? (
-                      <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                      <div className={cn("grid gap-3", shouldUseSplitWalletActions ? "sm:grid-cols-2" : "grid-cols-1")}>
                         {shouldShowWalletPrimaryAction ? (
-                          <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled} className="min-h-11 w-full">
+                          <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled} className="min-h-11 w-full whitespace-nowrap px-5">
                             {walletPrimaryLabel}
                           </Button>
                         ) : null}
 
                         {shouldShowDisconnectButton ? (
-                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
+                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full whitespace-nowrap px-5">
                             {disconnectLabel}
                           </Button>
                         ) : null}

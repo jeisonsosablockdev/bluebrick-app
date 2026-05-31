@@ -606,6 +606,11 @@ describe("components/WalletModal header CTA", () => {
     expect(findButtonByText(document.body, "Sesion iniciada")).toBeUndefined();
     expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
     expect(document.body.textContent).toContain("Copiar direccion");
+    const signOutButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+    const actionGroup = signOutButton?.parentElement;
+    expect(signOutButton?.className).toContain("whitespace-nowrap");
+    expect(actionGroup?.className).toContain("grid-cols-1");
+    expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
 
     act(() => {
       root.unmount();
