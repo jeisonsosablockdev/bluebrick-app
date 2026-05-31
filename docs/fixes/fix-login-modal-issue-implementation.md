@@ -13,7 +13,10 @@
 - S10 wallet signing intent modal redesign slice is implemented after UX review.
 - S11 wallet proof progress polish slice is implemented after visual color review.
 - Initial BRI-167 implementation was merged into `develop`.
-- Post-review hardening reopened as S12-S15 for P1/P2/P3 and clean-code follow-up.
+- S12 P1 logout refresh hardening is merged into the hardening branch.
+- S13 P2 reduced-motion hardening is merged into the hardening branch.
+- S14 P3 artifact status sync is implemented in this slice.
+- S15 clean-code extraction remains planned.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -78,9 +81,9 @@ Initiative branch:
 | S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
 | S10 | implemented | `fix/app-login-modal-issue-bri-167-s10-wallet-signing-intent-modal` | Redesign wallet-signing modal so it communicates intent and progress | `WalletModal` wallet proof panel, Motion progress states, copy/action hierarchy, component assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
 | S11 | implemented | `fix/app-login-modal-issue-bri-167-s11-wallet-progress-polish` | Align wallet proof progress indicators with the BRIDS glass palette | `WalletModal` progress/status styling, component assertions, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
-| S12 | planned | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, Playwright smoke if UI behavior changes | local slice |
-| S13 | planned | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
-| S14 | planned | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
+| S12 | merged | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | planned | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, wallet modal child component/helpers, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
@@ -107,6 +110,10 @@ Acceptance:
 - successful wallet-only logout clears local UI state and requests a route refresh
 - federated sign-out behavior remains unchanged
 
+Status:
+- Implemented in S12 by refreshing the route after successful wallet-only logout.
+- Component regression coverage confirms `router.refresh()` is called in that branch.
+
 ### S13 - P2 Prefers Reduced Motion Hardening
 Problem:
 - the wallet proof panel can animate status/progress even when the user requests reduced motion
@@ -121,6 +128,10 @@ Acceptance:
 - reduced-motion users do not receive repeated progress sweeps or page transform/filter transitions
 - existing visual states remain legible without animation
 
+Status:
+- Implemented in S13 by gating wallet proof repeated animations with `useReducedMotion`.
+- Route transitions now use reduced-motion variants without transform/filter movement when the preference is active.
+
 ### S14 - P3 Artifact Status Sync
 Problem:
 - artifacts still carried stale pre-implementation wording after the initial merge
@@ -132,6 +143,10 @@ Implementation:
 Acceptance:
 - docs governance passes
 - artifacts describe current branch intent and remaining slices without contradicting implementation state
+
+Status:
+- Implemented in S14.
+- S15 remains as the only planned post-review hardening slice before final clean-code closeout.
 
 ### S15 - Clean-Code Wallet Proof Refactor
 Problem:
@@ -414,3 +429,13 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S11 docs governance validation: `npm run validate:docs-governance` passed.
 - S11 whitespace validation: `git diff --check` passed.
 - S11 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+
+## Post-Review Hardening Validation Results
+- S12 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests.
+- S12 type validation: `npm run typecheck` passed.
+- S12 docs governance validation: `npm run validate:docs-governance` passed.
+- S12 whitespace validation: `git diff --check` passed.
+- S13 targeted motion/modal validation: `npm test -- tests/lib/motion.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 26 tests.
+- S13 type validation: `npm run typecheck` passed.
+- S13 docs governance validation: `npm run validate:docs-governance` passed.
+- S13 whitespace validation: `git diff --check` passed.
