@@ -11,6 +11,7 @@
 - S08 wallet intent gating slice is implemented after reload-flow review.
 - S09 wallet-connected page sharpness slice is implemented after visual review.
 - S10 wallet signing intent modal redesign slice is implemented after UX review.
+- S11 wallet proof progress polish slice is implemented after visual color review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -74,6 +75,7 @@ Initiative branch:
 | S08 | implemented | `fix/app-login-modal-issue-bri-167-s08-wallet-intent-gating` | Avoid exposing auto-connected wallet technical state on generic sign-in after reload | `WalletModal` wallet-intent state, connected-wallet UI gating, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 | S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
 | S10 | implemented | `fix/app-login-modal-issue-bri-167-s10-wallet-signing-intent-modal` | Redesign wallet-signing modal so it communicates intent and progress | `WalletModal` wallet proof panel, Motion progress states, copy/action hierarchy, component assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
+| S11 | implemented | `fix/app-login-modal-issue-bri-167-s11-wallet-progress-polish` | Align wallet proof progress indicators with the BRIDS glass palette | `WalletModal` progress/status styling, component assertions, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -81,7 +83,7 @@ Initiative branch:
 3. Run S03 after viewport behavior is stable so UI-state assertions are not polluted by layout bugs.
 4. Run S04 after state labels are clear, because disconnect success/failure must be validated against the final state matrix.
 5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
-6. Run follow-up slices S06-S10 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
+6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -137,6 +139,11 @@ That combination is confusing because the user already chose `Ingresar > Wallet`
 - disconnect is an escape action, not a competing primary path
 
 S10 changes the wallet-specific surface into a wallet proof panel with Motion-powered progress states (`Conectar`, `Firmar`, `Sesion`), a selected-wallet status, and phase-aware primary copy. The generic `Iniciar sesion` label is removed from the wallet proof path; signing now shows `Esperando confirmacion en Phantom` as a disabled progress state.
+
+### F. Wallet proof indicators overused status colors
+The S10 structure clarified the wallet signing intent, but the step chips and status badge used strong cyan/emerald treatments that read like separate colored buttons. That clashed with the modal's subdued BRIDS glass language and made `Verificando` / `Activa` feel too prominent.
+
+S11 keeps the same information architecture but restyles those indicators as quiet glass states. Completed and active steps use white glass surfaces with a restrained cyan underline for motion; active wallet session status uses a neutral white glass badge instead of emerald. The result keeps progress legible without introducing a competing color system.
 
 ### B. Connected wallet is being mistaken for authenticated login
 The component currently derives:
@@ -338,3 +345,10 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S10 docs governance validation: `npm run validate:docs-governance` passed.
 - S10 whitespace validation: `git diff --check` passed.
 - S10 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S11 visual review note: the S10 progress chips communicated intent, but their cyan/emerald badge palette felt disconnected from the BRIDS glass modal.
+- S11 implementation: wallet proof status and progress chips now use quiet white-glass surfaces, restrained cyan underline motion, and no emerald active-session badge.
+- S11 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests, including assertions that `Pendiente` / `Activa` use glass styling and `Activa` avoids emerald styling.
+- S11 type validation: `npm run typecheck` passed.
+- S11 docs governance validation: `npm run validate:docs-governance` passed.
+- S11 whitespace validation: `git diff --check` passed.
+- S11 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
