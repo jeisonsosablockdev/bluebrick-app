@@ -4,7 +4,7 @@
 - Linear and artifact sync
 - Parent issue: `BRI-164`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s17-linear-artifact-sync`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 
 ## Summary
 Create a premium 3D marketplace exploration experience on `/marketplace` that complements the current traditional listing instead of replacing it.
@@ -164,8 +164,12 @@ The new 3D visual is meant to add the missing layer of presence:
 - S14 merged: shared marketplace `% sold` formatter to remove duplication between map marker and pin panel.
 - S15 merged: Core Web Vitals and SEO audit for `/marketplace`.
 - S16 merged: final clean-code/refactor audit for marketplace map surface.
-- Latest integration merge commit: `8774866 merge: s16 marketplace clean code refactor audit`.
-- Final validation after S16: `npm run validate` passed.
+- S17 merged: Linear and artifact sync for audit outcomes.
+- S18 merged: `MarketplaceMapClient` refactor to keep Mapbox wiring small.
+- S19 merged: `MarketplaceMapMarker` extraction.
+- S20 merged: marketplace map view-state hook extraction.
+- Latest integration merge commit at S21 documentation start: `e057152 merge: s20 marketplace map view state hook`.
+- Final validation after S20: `npm run validate` passed.
 
 ## Audit Outcomes
 - SEO readiness is strong in local production evidence: Lighthouse SEO `100` desktop and mobile.
@@ -175,13 +179,27 @@ The new 3D visual is meant to add the missing layer of presence:
 - Total Blocking Time remained high: `870ms` mobile and `830ms` desktop.
 - The default map-first state loads Mapbox resources early; this is intentional for the premium first release, but it is the next performance boundary to optimize.
 - S16 found no blocking clean-code issue before merge.
+- S21 strict debt review normalized the remaining non-blocking issues as P2 follow-ups and split them into S22-S43 atomic implementation artifacts before runtime changes.
+
+## P2 Debt Follow-Up Artifacts
+- S21 inventory and atomic queue: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- S22-S25: reliability, safe admin errors, degraded read state, and read-failure logging split into one-change TDD slices.
+- S26-S31: `lib/property-marketplace-server.ts` boundary cleanup split into one extraction per slice.
+- S32-S40: `PropertyDetailContent` decomposition split into one formatter or section extraction per slice.
+- S41: coordinate range validation as a single map data-quality slice.
+- S42-S43: Mapbox lazy boundary and Web Vitals recheck split into runtime change and evidence-only follow-up.
+- Each runtime slice must start with failing tests for its one behavior and must not bundle adjacent refactors.
 
 ## Follow-Up Backlog
 - Evaluate lazy hydration or delayed activation for the Mapbox island on mobile while keeping the list immediately usable.
 - Audit marketplace route client bundles, wallet/modal providers, and dynamic imports to reduce blocking JavaScript.
 - Align marketplace metadata language with the visible H1 or define a localized metadata strategy.
 - Decide whether `/marketplace` should include approved structured data such as `ItemList`/listing schema.
-- If map interactions grow, extract a `useMarketplaceMapViewState` hook and `MarketplaceMapMarker` component.
+- Add explicit degraded-state handling or structured logging for marketplace data-read failures.
+- Harden admin marketplace create failures so 500 responses do not expose raw internal error messages.
+- Split `lib/property-marketplace-server.ts` into focused server modules.
+- Split `PropertyDetailContent` into focused section components.
+- Add defensive public coordinate range validation before Mapbox marker/camera projection.
 
 ## Open Questions
 - Should the map mount into the combined state immediately after it is ready, or should it first appear in the lower slot and then be promoted by the button cycle?

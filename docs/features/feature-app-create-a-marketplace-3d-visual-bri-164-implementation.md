@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s20-map-view-state-hook`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -28,6 +28,13 @@ The result should feel premium and discovery-driven, but still conversion-friend
 - Each slice ends with the smallest possible green implementation and a short cleanup pass.
 - The final audit slice uses the `code-refactoring-refactor-clean` skill to inspect the finished diff for smells, coupling, duplication, and naming issues.
 - Behavior changes are not allowed in the final audit slice unless the user explicitly approves them.
+
+## Atomic Slice Gate
+- A slice may implement only one behavior, one extraction, or one evidence task.
+- A slice may touch multiple files only when that one behavior requires a boundary handoff.
+- A slice must not combine reliability, refactor, UI decomposition, coordinate validation, performance, and evidence work.
+- Each slice must merge back to the integration branch before the next slice starts.
+- If a planned slice reveals a second necessary change, open a new slice instead of expanding the current one.
 
 ## Technical Architecture
 The implementation should use `Mapbox GL JS v3` as the rendering engine and `React Map GL` as the React integration layer.
@@ -256,20 +263,241 @@ Fallback behavior:
   - keep `MarketplaceMapClient` focused on Mapbox wiring and marker composition
   - preserve existing camera behavior, hover/focus behavior, and deferred motion behavior
 
+### S21 - P2 clean-code debt artifacts
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
+- Documentation scope:
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
+  - atomic implementation artifacts S22-S43 under `docs/features/`
+- Scope:
+  - document strict audit P2 findings with problem, solution, impact, and prevention plan
+  - split the P2 follow-ups into one-change implementation slices before touching runtime code
+  - require TDD-first execution in every runtime slice
+  - preserve runtime behavior
+
+### S22 - admin safe create errors
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors`
+- Runtime file scope:
+  - `app/api/admin/marketplace/entries/route.ts`
+- Scope:
+  - TDD first: add an API test proving internal create errors are not returned in 500 response bodies
+  - return a generic public `MARKETPLACE_ENTRY_CREATE_FAILED` message for non-conflict 500s
+  - preserve existing 400 and 409 behavior
+
+### S23 - marketplace read result contract
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract`
+- Runtime file scope:
+  - `lib/property-marketplace-server.ts`
+- Scope:
+  - TDD first: add server tests proving degraded persisted reads are representable
+  - introduce a minimal read result contract without changing existing public return shapes
+  - do not render UI or add logging in this slice
+
+### S24 - marketplace page degraded state
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state`
+- Runtime file scope:
+  - `app/marketplace/page.tsx`
+- Scope:
+  - TDD first: add a page test for degraded marketplace data
+  - render a user-safe degraded-state signal while keeping the list usable
+  - preserve true empty inventory behavior
+
+### S25 - marketplace read failure logging
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging`
+- Runtime file scope:
+  - `lib/property-marketplace-server.ts`
+- Scope:
+  - TDD first: add a server/observability test proving persisted read failures emit a structured event
+  - add logging only for marketplace read failures
+  - preserve user-facing behavior from S23/S24
+
+### S26 - row mapper extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction`
+- Runtime file scope:
+  - `lib/property-marketplace-server.ts`
+  - one new marketplace row mapper module
+- Scope:
+  - TDD first: preserve persisted row mapping outcomes
+  - move row-to-domain and create-input-to-detail mapping only
+  - preserve all public server exports
+
+### S27 - read repository extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction`
+- Runtime file scope:
+  - marketplace persisted read SQL
+- Scope:
+  - TDD first: preserve persisted read success/fallback behavior
+  - extract read SQL only
+  - do not move write SQL or selectors
+
+### S28 - write repository extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction`
+- Runtime file scope:
+  - marketplace persisted create SQL
+- Scope:
+  - TDD first: preserve successful create and duplicate-entry behavior
+  - extract write SQL only
+  - preserve admin route behavior
+
+### S29 - selector extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction`
+- Runtime file scope:
+  - marketplace filter/list/city/map source selector logic
+- Scope:
+  - TDD first: add direct pure selector coverage
+  - extract filtering and projection logic only
+  - do not add coordinate range validation in this slice
+
+### S30 - sync status extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction`
+- Runtime file scope:
+  - marketplace Solana sync status logic
+- Scope:
+  - TDD first: preserve available, unavailable, and rpc-error behavior
+  - extract sync status and best-effort persistence only
+  - preserve `getMarketplacePropertyDetailOrThrowRpc`
+
+### S31 - server facade cleanup
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup`
+- Runtime file scope:
+  - `lib/property-marketplace-server.ts`
+- Scope:
+  - TDD first: run targeted server suite before cleanup
+  - remove only orphaned implementation after S26-S30 extractions
+  - keep public exports stable
+
+### S32 - detail formatter extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction`
+- Runtime file scope:
+  - `components/marketplace/PropertyDetailContent.tsx`
+  - one formatter helper
+- Scope:
+  - TDD first: add direct formatter tests
+  - move only detail formatting helpers
+  - preserve detail UI output
+
+### S33 - detail Google Maps card
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card`
+- Runtime file scope:
+  - Google Maps section in `PropertyDetailContent.tsx`
+- Scope:
+  - TDD first: add embed and fallback-link component tests
+  - extract only the Google Maps card
+  - preserve detail page behavior
+
+### S34 - detail hero section
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section`
+- Runtime file scope:
+  - hero section in `PropertyDetailContent.tsx`
+- Scope:
+  - TDD first: add hero title/status/CTA tests
+  - extract only the hero section
+  - preserve `imageClassName` and `layoutId` behavior
+
+### S35 - detail investment summary
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary`
+- Runtime file scope:
+  - fractional investment summary card
+- Scope:
+  - TDD first: add supply/sold/price/ROI/availability tests
+  - extract only the investment summary card
+  - preserve locale labels
+
+### S36 - detail property information
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info`
+- Runtime file scope:
+  - property information card
+- Scope:
+  - TDD first: add location/postal/highlights tests
+  - extract only the property information card
+  - preserve optional postal code behavior
+
+### S37 - detail deal economics
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics`
+- Runtime file scope:
+  - deal economics card
+- Scope:
+  - TDD first: add visible/hidden metric tests
+  - extract only the deal economics card
+  - preserve conditional metric behavior
+
+### S38 - detail fees and return
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return`
+- Runtime file scope:
+  - fees and projected return card
+- Scope:
+  - TDD first: add fee and projected ROI tests
+  - extract only the fees and return card
+  - preserve conditional metric behavior
+
+### S39 - detail execution and governance
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance`
+- Runtime file scope:
+  - execution/exit card
+  - governance card
+- Scope:
+  - TDD first: add execution/governance tests
+  - extract only the paired execution/governance cards
+  - preserve optional project field behavior
+
+### S40 - detail documents and blockchain
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain`
+- Runtime file scope:
+  - documents card
+  - blockchain info card
+- Scope:
+  - TDD first: add documents/blockchain tests
+  - extract only the paired documents/blockchain cards
+  - preserve link and unavailable-state behavior
+
+### S41 - coordinate range validation
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation`
+- Runtime file scope:
+  - `lib/marketplace-map-pins.ts`
+- Scope:
+  - TDD first: add out-of-range latitude and longitude tests
+  - enforce public pin latitude/longitude ranges
+  - preserve valid pin projection behavior
+
+### S42 - Mapbox lazy boundary
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary`
+- Runtime file scope:
+  - `components/marketplace/MarketplaceExperience.tsx`
+  - `components/marketplace/MarketplaceMapClient.tsx`
+- Scope:
+  - TDD first: add list-before-map readiness tests
+  - add only the measured lazy/deferred Mapbox client boundary
+  - keep map-top as the configured premium state when ready
+
+### S43 - Web Vitals recheck
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck`
+- Runtime file scope:
+  - none expected
+- Scope:
+  - rerun local production Lighthouse/browser evidence after S42
+  - compare against S15 mobile LCP/TBT and desktop TBT
+  - document remaining risk without mixing in runtime changes
+
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
 - `61b96ad merge: s13 deferred map camera motion`
 - `d7e55fa merge: s14 marketplace clean code formatting`
 - `1abf11a merge: s15 marketplace web vitals seo audit`
 - `8774866 merge: s16 marketplace clean code refactor audit`
-- `npm run validate` passed after S16 merge.
+- `399f96e merge: s18 marketplace map client refactor`
+- `c5dd9b9 merge: s19 marketplace map marker extraction`
+- `e057152 merge: s20 marketplace map view state hook`
+- `npm run validate` passed after S20 merge and passed again before S21 documentation work.
 
 ## Accepted Follow-Up Backlog
 - Performance: evaluate lazy hydration or delayed mobile activation for the Mapbox island while keeping the list usable immediately.
 - Performance: audit route-level JavaScript, wallet/modal providers, and Mapbox loading boundaries to reduce TBT/INP risk.
 - SEO: align marketplace metadata language with the visible H1 or add an explicit localized metadata strategy.
 - SEO: evaluate approved structured data for marketplace inventory after product/legal schema approval.
-- Refactor: extract `useMarketplaceMapViewState` and `MarketplaceMapMarker` only when the map interaction surface grows or performance work requires it.
+- Reliability: replace silent data-load fallback paths with observable degraded-state metadata or structured logging.
+- API hardening: avoid returning raw internal 500 error messages from admin marketplace entry creation.
+- Architecture: split `lib/property-marketplace-server.ts` into focused repository, mapper, selector, and sync modules.
+- UI maintainability: split `PropertyDetailContent` into focused detail section components.
+- Data quality: validate coordinate ranges at the public map pin projection boundary.
 
 ## Files Most Likely to Change
 - `app/marketplace/page.tsx`
