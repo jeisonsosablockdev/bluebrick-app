@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Map, { Marker, type ViewState } from "react-map-gl/mapbox";
+import Map, { type ViewState } from "react-map-gl/mapbox";
 
-import { formatMarketplaceSoldPercent } from "@/lib/marketplace-format";
+import { MarketplaceMapMarker } from "@/components/marketplace/MarketplaceMapMarker";
 import { createMarketplaceMapCameraViewState } from "@/lib/marketplace-map-camera";
 import { createMarketplaceMapOrbitViewState } from "@/lib/marketplace-map-camera-motion";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
@@ -32,11 +32,6 @@ type CameraScopedOrbitStep = {
   step: number;
 };
 
-type MarketplaceMapMarkerProps = {
-  pin: MarketplaceMapPin;
-  onActivate: (pin: MarketplaceMapPin) => void;
-};
-
 type CreateMovedViewStateInput = {
   current: CameraScopedViewState | null;
   cameraKey: string;
@@ -49,7 +44,6 @@ const MAPBOX_DIMENSION_PLACEHOLDER = {
   height: 1
 };
 
-const MARKETPLACE_MAP_ACCENT_COLOR = "#67E8F9";
 const MARKETPLACE_MAP_CAMERA_MOTION_DELAY_MS = 4500;
 const MARKETPLACE_MAP_CAMERA_MOTION_INTERVAL_MS = 4200;
 
@@ -146,39 +140,6 @@ function useDeferredOrbitStep(cameraKey: string): number {
 
 function createDisplayedViewState(viewState: MapViewState, orbitStep: number): MapViewState {
   return orbitStep > 0 ? createMarketplaceMapOrbitViewState(viewState, orbitStep) : viewState;
-}
-
-function MarketplaceMapMarker({ pin, onActivate }: MarketplaceMapMarkerProps) {
-  return (
-    <Marker latitude={pin.latitude} longitude={pin.longitude} anchor="bottom">
-      <div className="flex flex-col items-center">
-        <button
-          type="button"
-          className="group flex min-h-11 min-w-16 items-center gap-2 rounded-full border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.18)] transition hover:scale-105 hover:bg-cyan-300/25"
-          aria-label={`${pin.title}, ${pin.locationLabel}, ${formatMarketplaceSoldPercent(pin.soldPercent)} sold`}
-          onMouseEnter={() => onActivate(pin)}
-          onFocus={() => onActivate(pin)}
-        >
-          <span className="max-w-[7.5rem] truncate text-[11px] font-semibold leading-none">{pin.title}</span>
-          <span className="rounded-full bg-slate-950/85 px-2 py-1 text-[11px] font-semibold shadow-inner shadow-black/25">
-            {formatMarketplaceSoldPercent(pin.soldPercent)}
-          </span>
-        </button>
-        <span
-          data-testid="marketplace-map-pin-leader"
-          aria-hidden="true"
-          className="h-9 w-px opacity-80 shadow-[0_0_12px_rgba(103,232,249,0.42)]"
-          style={{ backgroundColor: MARKETPLACE_MAP_ACCENT_COLOR }}
-        />
-        <span
-          data-testid="marketplace-map-pin-anchor"
-          aria-hidden="true"
-          className="h-2.5 w-2.5 rounded-full border bg-slate-950 shadow-[0_0_14px_rgba(103,232,249,0.55)]"
-          style={{ borderColor: MARKETPLACE_MAP_ACCENT_COLOR }}
-        />
-      </div>
-    </Marker>
-  );
 }
 
 export function MarketplaceMapClient({
