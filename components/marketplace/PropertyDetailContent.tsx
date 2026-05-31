@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
 
 import { Card } from "@/components/ui/card";
-import { H2, Lead } from "@/components/ui/typography";
+import { H2 } from "@/components/ui/typography";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { PropertyDetailGoogleMapsCard } from "@/components/marketplace/PropertyDetailGoogleMapsCard";
-import { PurchaseCta } from "@/components/marketplace/PurchaseCta";
+import { PropertyDetailHeroSection } from "@/components/marketplace/PropertyDetailHeroSection";
 import {
   formatMarketplaceDetailDate,
   formatMarketplaceDetailLocation,
@@ -17,7 +16,6 @@ import {
   shouldRenderMarketplaceDetailMetric
 } from "@/components/marketplace/property-detail-formatters";
 import type { PropertyDetail } from "@/lib/property-service";
-import { listingStatusClasses, listingStatusLabel } from "@/components/marketplace/status-utils";
 import { createDetailOpenMotionVariants } from "@/lib/motion";
 
 type PropertyDetailContentProps = {
@@ -32,27 +30,7 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
 
   return (
     <>
-      <motion.section
-        className="rounded-2xl border border-white/10 bg-panel p-5 md:p-6"
-        variants={motionVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        layoutId={layoutId}
-      >
-        <div className="grid gap-6 md:grid-cols-2">
-          <Image src={property.image} alt={property.title} width={900} height={600} className={`w-full rounded-xl object-cover ${imageClassName}`} />
-          <div className="space-y-4">
-            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${listingStatusClasses(property.listingStatus)}`}>
-              {listingStatusLabel(property.listingStatus, locale)}
-            </span>
-            <h1 className="text-3xl font-bold tracking-tight text-white">{property.title}</h1>
-            <Lead>{property.locationLabel}</Lead>
-            <p className="text-sm text-slate-300">{property.shortDescription}</p>
-            <PurchaseCta propertyId={property.id} nftPriceUsd={property.investment.nftPriceUsd} />
-          </div>
-        </div>
-      </motion.section>
+      <PropertyDetailHeroSection property={property} locale={locale} imageClassName={imageClassName} layoutId={layoutId} />
 
       <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <Card className="space-y-3">
