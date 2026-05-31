@@ -77,22 +77,38 @@ function createFocusedPinViewState(pin: MarketplaceMapPin, current: MarketplaceM
   };
 }
 
+function areViewStatesEqual(left: MarketplaceMapViewState, right: MarketplaceMapViewState): boolean {
+  return (
+    left.latitude === right.latitude
+    && left.longitude === right.longitude
+    && left.zoom === right.zoom
+    && left.pitch === right.pitch
+    && left.bearing === right.bearing
+    && left.padding === right.padding
+  );
+}
+
 function createMovedViewState({
   current,
   cameraKey,
   cameraViewState,
   nextViewState
-}: CreateMovedViewStateInput): CameraScopedViewState {
+}: CreateMovedViewStateInput): CameraScopedViewState | null {
   const previousViewState = current?.cameraKey === cameraKey ? current.viewState : cameraViewState;
+  const movedViewState = {
+    ...previousViewState,
+    ...nextViewState,
+    width: previousViewState.width,
+    height: previousViewState.height
+  };
+
+  if (areViewStatesEqual(previousViewState, movedViewState)) {
+    return current?.cameraKey === cameraKey ? current : null;
+  }
 
   return {
     cameraKey,
-    viewState: {
-      ...previousViewState,
-      ...nextViewState,
-      width: previousViewState.width,
-      height: previousViewState.height
-    }
+    viewState: movedViewState
   };
 }
 
