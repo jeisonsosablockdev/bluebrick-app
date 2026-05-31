@@ -31,6 +31,7 @@
   - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any OpenAI Developers tooling references explicit in the governing artifact.
 - Mint, metadata, collection, royalty, or Metaplex scope: `.codex/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.codex/workflows/mainnet-hardening.md`
+- Explicit `refactor/*` work, clean-code debt slices, or behavior-preserving structural changes: `.codex/workflows/refactor-cycle.md`
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
 - `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose the dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce the DB migration gate from `testing-policy`.
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
