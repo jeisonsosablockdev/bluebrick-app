@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
@@ -49,10 +50,14 @@ import {
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
-import { createPanelMotionVariants, MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
+import { createPanelMotionVariants, MOTION_FAST_OPACITY_TRANSITION, MOTION_GENTLE_TRANSITION } from "@/lib/motion";
 
 type WalletModalProps = {
   initialAuth?: AuthMeResponse;
+};
+
+type WalletModalPortalProps = {
+  children: ReactNode;
 };
 
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
@@ -75,6 +80,14 @@ type Translate = (text: LocaleText) => string;
 const PRIMARY_NAV_LINK_BASE_CLASSNAME =
   "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition";
 const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
+
+function WalletModalPortal({ children }: WalletModalPortalProps): ReactElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(children, document.body);
+}
 
 function WalletCtaIcon() {
   return (
@@ -256,6 +269,35 @@ function getStatusText(phase: ActionPhase, t: Translate): string | null {
   return null;
 }
 
+function getWalletIntentPrimaryLabel(input: {
+  phase: ActionPhase;
+  hasWalletSession: boolean;
+  isConnected: boolean;
+  t: Translate;
+}): string {
+  if (input.phase === "connecting") {
+    return input.t({ en: "Opening Phantom", es: "Abriendo Phantom", pt: "Abrindo Phantom" });
+  }
+
+  if (input.phase === "signing") {
+    return input.t({ en: "Waiting for Phantom confirmation", es: "Esperando confirmacion en Phantom", pt: "Aguardando confirmacao no Phantom" });
+  }
+
+  if (input.phase === "verifying") {
+    return input.t({ en: "Creating BRIDS session", es: "Creando sesion BRIDS", pt: "Criando sessao BRIDS" });
+  }
+
+  if (input.hasWalletSession && !input.isConnected) {
+    return input.t({ en: "Reconnect Phantom", es: "Reconectar Phantom", pt: "Reconectar Phantom" });
+  }
+
+  if (input.isConnected) {
+    return input.t({ en: "Request signature in Phantom", es: "Solicitar firma en Phantom", pt: "Solicitar assinatura no Phantom" });
+  }
+
+  return input.t({ en: "Connect Phantom", es: "Conectar Phantom", pt: "Conectar Phantom" });
+}
+
 function isActivePath(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === href;
@@ -294,7 +336,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const [isInPhantomApp, setIsInPhantomApp] = useState(false);
   const [showPhantomFallback, setShowPhantomFallback] = useState(false);
   const [isReferralFieldVisible, setIsReferralFieldVisible] = useState(false);
-  const walletPublicKey = publicKey?.toBase58() ?? null;
+  const [hasWalletAuthIntent, setHasWalletAuthIntent] = useState(false);
+  const [suppressedWalletPublicKey, setSuppressedWalletPublicKey] = useState<string | null>(null);
+  const rawWalletPublicKey = publicKey?.toBase58() ?? null;
+  const walletPublicKey = rawWalletPublicKey && rawWalletPublicKey !== suppressedWalletPublicKey ? rawWalletPublicKey : null;
   const phantomWallet = useMemo(() => wallets.find((item) => item.adapter.name === PhantomWalletName), [wallets]);
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
   const isConnected = connected && Boolean(walletPublicKey);
@@ -331,13 +376,28 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     () => buildPathWithQueryParam(pathname, new URLSearchParams(searchParams.toString()), POST_AUTH_DECISION_QUERY_PARAM, "1"),
     [pathname, searchParams]
   );
-  const hasWalletSession = authState.walletAuthenticated ?? authState.authenticated;
-  const hasFederatedSession = Boolean(authState.federatedAuthenticated);
-  const hasAccountSession = authState.accountAuthenticated ?? (hasWalletSession || hasFederatedSession);
+  const hasConnectedWalletAdapter = isConnected;
+  const hasAuthenticatedWalletSession = authState.walletAuthenticated ?? Boolean(authState.authenticated && authState.pubkey);
+  const hasAuthenticatedFederatedSession = Boolean(authState.federatedAuthenticated);
+  const hasAuthenticatedAccountSession = authState.accountAuthenticated ?? (hasAuthenticatedWalletSession || hasAuthenticatedFederatedSession);
+  const hasWalletSession = hasAuthenticatedWalletSession;
+  const hasFederatedSession = hasAuthenticatedFederatedSession;
+  const hasAccountSession = hasAuthenticatedAccountSession;
   const isFederatedLoginAvailable = Boolean(authState.federatedAvailable);
-  const shouldShowDirectAuthEntryActions = isFederatedLoginAvailable && !hasWalletSession && !hasFederatedSession;
-  const shouldShowDisconnectButton = hasAccountSession || isConnected;
+  const shouldShowAnonymousAuthEntry = isFederatedLoginAvailable
+    && !hasAuthenticatedWalletSession
+    && !hasAuthenticatedFederatedSession
+    && !hasWalletAuthIntent;
+  const shouldShowConnectedWalletPendingAuth = hasWalletAuthIntent && hasConnectedWalletAdapter && !hasAuthenticatedWalletSession;
+  const shouldShowAuthenticatedWalletActions = hasAuthenticatedWalletSession && hasConnectedWalletAdapter;
+  const shouldShowDirectAuthEntryActions = shouldShowAnonymousAuthEntry;
+  const shouldShowDisconnectButton = hasAuthenticatedAccountSession || shouldShowConnectedWalletPendingAuth;
+  const shouldShowWalletPrimaryAction = !shouldShowDirectAuthEntryActions
+    && (shouldShowConnectedWalletPendingAuth || !shouldShowAuthenticatedWalletActions);
   const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
+  const shouldShowWalletIntentCard = !shouldShowDirectAuthEntryActions
+    && (hasWalletAuthIntent || hasAuthenticatedWalletSession || hasAuthenticatedFederatedSession || !isFederatedLoginAvailable);
+  const isWalletAuthInProgress = phase === "connecting" || phase === "signing" || phase === "verifying";
 
   const menuEntries = useMemo<NavEntry[]>(() => {
     const entries: NavEntry[] = [{ href: "/marketplace", label: t({ en: "Marketplace", es: "Marketplace", pt: "Marketplace" }) }];
@@ -362,26 +422,28 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       : t({ en: "Sign in", es: "Ingresar", pt: "Entrar" });
 
   const walletPrimaryLabel = useMemo(() => {
-    if (hasWalletSession && !isConnected) {
-      return t({ en: "Reconnect wallet", es: "Reconectar wallet", pt: "Reconectar wallet" });
-    }
+    return getWalletIntentPrimaryLabel({
+      phase,
+      hasWalletSession,
+      isConnected,
+      t
+    });
+  }, [hasWalletSession, isConnected, phase, t]);
 
-    if (hasWalletSession) {
-      return t({ en: "Signed in", es: "Sesion iniciada", pt: "Sessao iniciada" });
-    }
-
-    if (isConnected) {
-      return t({ en: "Sign in", es: "Iniciar sesion", pt: "Entrar" });
-    }
-
-    return t({ en: "Connect & Sign in", es: "Conectar e iniciar sesion", pt: "Conectar e entrar" });
-  }, [hasWalletSession, isConnected, t]);
+  const walletConnectionStatusText = hasAuthenticatedWalletSession && hasConnectedWalletAdapter && authState.pubkey
+    ? `${t({ en: "Wallet session active", es: "Sesion wallet activa", pt: "Sessao wallet ativa" })}: ${truncatePublicKey(authState.pubkey)}`
+    : shouldShowConnectedWalletPendingAuth
+      ? `${t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: ${truncatePublicKey(walletPublicKey ?? "")}`
+      : null;
 
   const disconnectLabel = hasFederatedSession && !hasWalletSession && !isConnected
     ? t({ en: "Sign out", es: "Cerrar sesion", pt: "Sair" })
     : hasWalletSession || isConnected
       ? t({ en: "Sign out & disconnect wallet", es: "Cerrar sesion y desconectar wallet", pt: "Sair e desconectar carteira" })
       : t({ en: "Disconnect wallet", es: "Desconectar wallet", pt: "Desconectar carteira" });
+  const walletDisconnectActionLabel = shouldShowConnectedWalletPendingAuth && !hasWalletSession
+    ? t({ en: "Cancel and disconnect wallet", es: "Cancelar y desconectar wallet", pt: "Cancelar e desconectar carteira" })
+    : disconnectLabel;
 
   const signInStatement = t({
     en: "Sign this message to authenticate with the app.",
@@ -663,7 +725,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
+    closeButtonRef.current?.focus({ preventScroll: true });
     window.addEventListener("keydown", handleEscape);
 
     return () => {
@@ -687,6 +749,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       }
 
       setIsOpen(true);
+      setHasWalletAuthIntent(nextLoginMethod === "wallet");
       setLastError(null);
     };
 
@@ -822,6 +885,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return;
     }
 
+    setSuppressedWalletPublicKey(null);
     setLastError(null);
 
     try {
@@ -970,6 +1034,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return;
     }
 
+    setHasWalletAuthIntent(true);
     void handleWalletPrimaryAction();
   }
 
@@ -979,11 +1044,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     let disconnectError: string | null = null;
     let logoutError: string | null = null;
+    let disconnectedPublicKey: string | null = null;
 
     try {
       try {
-        if (isConnected) {
+        const adapterPublicKey = resolveCurrentWalletPublicKey();
+
+        if (isConnected || adapterPublicKey) {
           await disconnect();
+          disconnectedPublicKey = adapterPublicKey;
         }
       } catch (error) {
         disconnectError = getFriendlyWalletErrorMessage(error, t);
@@ -1012,7 +1081,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       } else if (hasFederatedSession && typeof window !== "undefined") {
         window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
       } else {
-        setAuthState({
+        setSuppressedWalletPublicKey(disconnectedPublicKey);
+        setHasWalletAuthIntent(false);
+        setAuthState((previous) => ({
           authenticated: false,
           accountAuthenticated: false,
           federatedAuthenticated: false,
@@ -1021,8 +1092,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
           accountId: null,
           workosUserId: null,
           email: null,
-          pubkey: null
-        });
+          pubkey: null,
+          federatedAvailable: previous.federatedAvailable
+        }));
         broadcastAuthSync("logout", walletPublicKey);
       }
     } finally {
@@ -1236,7 +1308,14 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
             </div>
 
             <div className="group relative shrink-0">
-              <Button onClick={() => setIsOpen(true)} className="min-h-11 px-4">
+              <Button
+                data-testid="wallet-modal-open-button"
+                onClick={() => {
+                  setHasWalletAuthIntent(false);
+                  setIsOpen(true);
+                }}
+                className="min-h-11 px-4"
+              >
                 <span className="inline-flex items-center gap-2">
                   <WalletCtaIcon />
                   <span>{headerWalletCtaLabel}</span>
@@ -1331,30 +1410,32 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         </div>
       </header>
 
-      <AnimatePresence>
-        {isOpen ? (
-          <motion.div
-            key="wallet-modal-overlay"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={MOTION_FAST_OPACITY_TRANSITION}
-            onClick={() => setIsOpen(false)}
-            role="presentation"
-          >
+      <WalletModalPortal>
+        <AnimatePresence>
+          {isOpen ? (
             <motion.div
-              key="wallet-modal-panel"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="wallet-modal-title"
-              className="glass-surface max-h-[85vh] w-full max-w-lg overflow-y-auto p-5 sm:p-6"
-              variants={createPanelMotionVariants()}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              onClick={(event) => event.stopPropagation()}
+              key="wallet-modal-overlay"
+              data-testid="wallet-modal-overlay"
+              className="fixed inset-0 z-[70] flex min-h-svh items-start justify-center overflow-y-auto bg-black/65 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm sm:items-center sm:p-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={MOTION_FAST_OPACITY_TRANSITION}
+              onClick={() => setIsOpen(false)}
+              role="presentation"
             >
+              <motion.div
+                key="wallet-modal-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="wallet-modal-title"
+                className="glass-surface max-h-[calc(100svh-1.5rem)] w-full max-w-lg overflow-y-auto overscroll-contain p-5 sm:max-h-[calc(100svh-3rem)] sm:p-6"
+                variants={createPanelMotionVariants()}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                onClick={(event) => event.stopPropagation()}
+              >
               <div className="pointer-events-none absolute -left-8 top-4 h-20 w-20 rounded-full bg-cyan-300/15 blur-3xl" />
               <div className="pointer-events-none absolute -right-8 bottom-4 h-20 w-20 rounded-full bg-fuchsia-300/15 blur-3xl" />
 
@@ -1376,7 +1457,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                   </button>
                 </div>
 
-                {topFeedbackText ? (
+                {topFeedbackText && !(isTopFeedbackStatus && shouldShowWalletIntentCard) ? (
                   <div
                     className={cn(
                       "flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-sm",
@@ -1395,26 +1476,153 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                 ) : null}
 
                 {shouldShowDirectAuthEntryActions ? (
-                  <AuthEntryActionCard
-                    title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
-                    mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
-                    walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
-                    mailIcon={<MailMethodIcon />}
-                    walletIcon={<WalletCtaIcon />}
-                    onMailClick={handleStartMailSignIn}
-                    onWalletClick={handleStartWalletSignIn}
-                    disabled={isBusy}
-                  />
+                  <>
+                    <AuthEntryActionCard
+                      title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
+                      mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
+                      walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
+                      mailIcon={<MailMethodIcon />}
+                      walletIcon={<WalletCtaIcon />}
+                      onMailClick={handleStartMailSignIn}
+                      onWalletClick={handleStartWalletSignIn}
+                      disabled={isBusy}
+                    />
+                    <ReferralCodeField
+                      inputId="wallet-referral-code"
+                      value={referralCode}
+                      isVisible={isReferralFieldVisible}
+                      onToggle={() => setIsReferralFieldVisible((previous) => !previous)}
+                      onChange={handleReferralCodeChange}
+                      toggleLabel={t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}
+                      inputPlaceholder={t({
+                        en: "Paste or edit your invite code",
+                        es: "Pega o edita tu codigo de invitacion",
+                        pt: "Cole ou edite seu codigo de convite"
+                      })}
+                      helpText={t({
+                        en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                        es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                        pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+                      })}
+                    />
+                  </>
                 ) : null}
 
-                <>
-                    {isConnected ? (
-                      <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                        <p className="text-sm text-white/85">
-                          {t({ en: "Connected", es: "Conectada", pt: "Conectada" })}: {truncatePublicKey(walletPublicKey ?? "")}
-                        </p>
+                {shouldShowWalletIntentCard ? (
+                  <motion.div
+                    className="space-y-4 rounded-[28px] border border-white/15 bg-white/[0.08] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={MOTION_GENTLE_TRANSITION}
+                  >
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/90">
+                        {hasWalletSession
+                          ? t({ en: "Wallet session", es: "Sesion wallet", pt: "Sessao wallet" })
+                          : t({ en: "Wallet proof", es: "Prueba de wallet", pt: "Prova de wallet" })}
+                      </p>
+                      <h3 className="text-xl font-semibold leading-tight text-white">
+                        {phase === "signing"
+                          ? t({ en: "Confirm the signature in Phantom", es: "Confirma la firma en Phantom", pt: "Confirme a assinatura no Phantom" })
+                          : phase === "verifying"
+                            ? t({ en: "Verifying your wallet proof", es: "Verificando tu prueba de wallet", pt: "Verificando sua prova de wallet" })
+                            : hasWalletSession
+                              ? t({ en: "Your BRIDS wallet session is active", es: "Tu sesion wallet BRIDS esta activa", pt: "Sua sessao wallet BRIDS esta ativa" })
+                              : t({ en: "Prove this wallet belongs to you", es: "Prueba que esta wallet es tuya", pt: "Prove que esta wallet e sua" })}
+                      </h3>
+                      <p className="text-sm leading-6 text-white/70">
+                        {hasWalletSession
+                          ? t({
+                              en: "You can manage this wallet session or link email sign-in.",
+                              es: "Puedes gestionar esta sesion wallet o vincular ingreso por email.",
+                              pt: "Voce pode gerenciar esta sessao wallet ou vincular login por email."
+                            })
+                          : t({
+                              en: "BRIDS uses a signed message to create your session. This does not send a transaction.",
+                              es: "BRIDS usa un mensaje firmado para crear tu sesion. Esto no envia una transaccion.",
+                              pt: "A BRIDS usa uma mensagem assinada para criar sua sessao. Isso nao envia uma transacao."
+                            })}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/15 bg-slate-950/35 p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/45">
+                            {t({ en: "Selected wallet", es: "Wallet seleccionada", pt: "Carteira selecionada" })}
+                          </p>
+                          <p className="mt-1 font-mono text-sm text-white/[0.88]">
+                            {walletConnectionStatusText ?? t({ en: "Phantom not connected", es: "Phantom sin conectar", pt: "Phantom nao conectada" })}
+                          </p>
+                        </div>
+                        <motion.span
+                          className={cn(
+                            "inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+                            isWalletAuthInProgress
+                              ? "border-white/[0.18] bg-white/[0.07] text-cyan-100"
+                              : hasWalletSession
+                                ? "border-white/[0.18] bg-white/[0.07] text-white/85"
+                                : "border-white/15 bg-white/[0.08] text-white/75"
+                          )}
+                          animate={isWalletAuthInProgress ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
+                          transition={isWalletAuthInProgress ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : MOTION_FAST_OPACITY_TRANSITION}
+                        >
+                          {phase === "signing"
+                            ? t({ en: "Waiting in Phantom", es: "Esperando en Phantom", pt: "Aguardando no Phantom" })
+                            : phase === "verifying"
+                              ? t({ en: "Verifying", es: "Verificando", pt: "Verificando" })
+                              : hasWalletSession
+                                ? t({ en: "Active", es: "Activa", pt: "Ativa" })
+                                : t({ en: "Pending", es: "Pendiente", pt: "Pendente" })}
+                        </motion.span>
                       </div>
-                    ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2" aria-label={t({ en: "Wallet sign-in progress", es: "Progreso de ingreso con wallet", pt: "Progresso de login com wallet" })}>
+                      {[
+                        {
+                          label: t({ en: "Connect", es: "Conectar", pt: "Conectar" }),
+                          active: phase === "connecting",
+                          complete: isConnected || hasWalletSession
+                        },
+                        {
+                          label: t({ en: "Sign", es: "Firmar", pt: "Assinar" }),
+                          active: phase === "signing",
+                          complete: hasWalletSession
+                        },
+                        {
+                          label: t({ en: "Session", es: "Sesion", pt: "Sessao" }),
+                          active: phase === "verifying",
+                          complete: hasWalletSession
+                        }
+                      ].map((step) => (
+                        <div
+                          key={step.label}
+                          className={cn(
+                            "relative overflow-hidden rounded-2xl border px-3 py-2 text-center text-xs font-semibold transition-colors",
+                            step.complete
+                              ? "border-white/[0.16] bg-white/[0.08] text-white/85"
+                              : step.active
+                                ? "border-cyan-200/28 bg-white/[0.07] text-cyan-100 shadow-[inset_0_-1px_0_rgba(103,232,249,0.22)]"
+                                : "border-white/10 bg-white/[0.04] text-white/55"
+                          )}
+                          aria-current={step.active ? "step" : undefined}
+                        >
+                          {step.active ? (
+                            <motion.span
+                              aria-hidden="true"
+                              className="absolute inset-x-3 bottom-0 h-px bg-cyan-100/70 shadow-[0_0_18px_rgba(103,232,249,0.72)]"
+                              animate={{ x: ["-100%", "220%"] }}
+                              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                            />
+                          ) : null}
+                          {step.complete ? (
+                            <span aria-hidden="true" className="absolute inset-x-3 bottom-0 h-px bg-white/35" />
+                          ) : null}
+                          <span className="relative z-10">{step.label}</span>
+                        </div>
+                      ))}
+                    </div>
 
                     {!isPhantomInstalled ? (
                       <p className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-200">
@@ -1449,23 +1657,19 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       })}
                     />
 
-                    {!shouldShowDirectAuthEntryActions ? (
-                      <div className={shouldShowDisconnectButton ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
-                        <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled || (hasWalletSession && isConnected)} className="min-h-11 w-full">
-                          {walletPrimaryLabel}
-                        </Button>
-
-                        {shouldShowDisconnectButton ? (
-                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                            {disconnectLabel}
+                    {shouldShowWalletPrimaryAction || shouldShowDisconnectButton ? (
+                      <div className="grid grid-cols-1 gap-3">
+                        {shouldShowWalletPrimaryAction ? (
+                          <Button onClick={handleStartWalletSignIn} disabled={isBusy || !isPhantomInstalled} className="min-h-12 w-full px-5 text-center leading-snug">
+                            {walletPrimaryLabel}
                           </Button>
                         ) : null}
-                      </div>
-                    ) : shouldShowDisconnectButton ? (
-                      <div className="grid gap-3">
-                        <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full">
-                          {disconnectLabel}
-                        </Button>
+
+                        {shouldShowDisconnectButton ? (
+                          <Button variant="outline" onClick={handleDisconnect} disabled={phase === "disconnecting"} className="min-h-11 w-full px-5 text-center leading-snug">
+                            {walletDisconnectActionLabel}
+                          </Button>
+                        ) : null}
                       </div>
                     ) : null}
 
@@ -1479,18 +1683,20 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       </Button>
                     ) : null}
 
-                    {walletPublicKey ? (
-                      <Button variant="ghost" onClick={copyAddress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
+                    {walletPublicKey && (hasWalletAuthIntent || hasWalletSession) ? (
+                      <Button variant="ghost" onClick={copyAddress} disabled={isWalletAuthInProgress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
                         {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
                       </Button>
                     ) : null}
-                </>
+                  </motion.div>
+                ) : null}
 
               </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+          ) : null}
+        </AnimatePresence>
+      </WalletModalPortal>
 
       <OnboardingRewardDecisionModal
         open={Boolean(postAuthDecisionReward)}
