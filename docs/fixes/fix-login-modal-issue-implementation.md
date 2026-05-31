@@ -10,6 +10,7 @@
 - S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
 - S08 wallet intent gating slice is implemented after reload-flow review.
 - S09 wallet-connected page sharpness slice is implemented after visual review.
+- S10 wallet signing intent modal redesign slice is implemented after UX review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -72,6 +73,7 @@ Initiative branch:
 | S07 | implemented | `fix/app-login-modal-issue-bri-167-s07-disconnect-visual-state` | Fix connected-wallet pending layout and visible disconnect completion | `WalletModal` action stack, disconnect local state, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 | S08 | implemented | `fix/app-login-modal-issue-bri-167-s08-wallet-intent-gating` | Avoid exposing auto-connected wallet technical state on generic sign-in after reload | `WalletModal` wallet-intent state, connected-wallet UI gating, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
 | S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
+| S10 | implemented | `fix/app-login-modal-issue-bri-167-s10-wallet-signing-intent-modal` | Redesign wallet-signing modal so it communicates intent and progress | `WalletModal` wallet proof panel, Motion progress states, copy/action hierarchy, component assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -79,7 +81,7 @@ Initiative branch:
 3. Run S03 after viewport behavior is stable so UI-state assertions are not polluted by layout bugs.
 4. Run S04 after state labels are clear, because disconnect success/failure must be validated against the final state matrix.
 5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
-6. Run follow-up slices S06-S09 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
+6. Run follow-up slices S06-S10 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -120,6 +122,21 @@ The marketplace route uses `PathRouteTransition` with `mode="navigation-origin"`
 When there is no navigation origin, the previous fallback reused full page motion variants. Those variants include `filter: blur(2px)` in the initial/exit states. If a wallet sign-in refresh lands during that page-level fallback transition, the entire marketplace shell can visually remain softened even though the modal has closed and the wallet session is valid.
 
 S09 keeps the navigation-origin fallback visually sharp by using opacity/scale-only motion for refresh-style updates. Origin-based route changes still keep their intended clip-path animation; regular page transitions outside navigation-origin mode keep their existing behavior.
+
+### E. Wallet signing modal reused a generic login action model
+The post-S08 state model was technically correct but still reused the same generic action surface for a different job: proving wallet ownership through SIWS. In the explicit wallet path, the UI could show:
+- `Conectada: <wallet>`
+- a primary `Iniciar sesion` button
+- `Cerrar sesion y desconectar wallet`
+- `Copiar direccion`
+
+That combination is confusing because the user already chose `Ingresar > Wallet`; the next task is not a generic login choice but an external Phantom signature confirmation. While Phantom is open, the modal must communicate:
+- BRIDS is waiting on Phantom
+- the signature creates the BRIDS session
+- this is not a transaction
+- disconnect is an escape action, not a competing primary path
+
+S10 changes the wallet-specific surface into a wallet proof panel with Motion-powered progress states (`Conectar`, `Firmar`, `Sesion`), a selected-wallet status, and phase-aware primary copy. The generic `Iniciar sesion` label is removed from the wallet proof path; signing now shows `Esperando confirmacion en Phantom` as a disabled progress state.
 
 ### B. Connected wallet is being mistaken for authenticated login
 The component currently derives:
@@ -313,3 +330,11 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S09 whitespace validation: `git diff --check` passed.
 - S09 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
 - S09 runtime browser check: `/marketplace` route wrapper computed `filter: none` with no wallet or onboarding overlay mounted after load.
+- S10 UX review note: the wallet path needs its own intent model; after `Ingresar > Wallet`, showing `Iniciar sesion` beside disconnect reads as two competing actions while Phantom is actually waiting for a SIWS signature.
+- S10 implementation: the wallet-specific modal content is now a wallet proof panel with selected-wallet status, `Conectar / Firmar / Sesion` progress chips, phase-aware Motion feedback, and copy that states the signature creates the BRIDS session without sending a transaction.
+- S10 action hierarchy: the wallet proof primary action now reads `Solicitar firma en Phantom` when idle and `Esperando confirmacion en Phantom` while signing; the generic `Iniciar sesion` label is not rendered in this path. Pending disconnect copy is now `Cancelar y desconectar wallet`.
+- S10 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests, including signing-progress copy and disabled CTA coverage.
+- S10 type validation: `npm run typecheck` passed.
+- S10 docs governance validation: `npm run validate:docs-governance` passed.
+- S10 whitespace validation: `git diff --check` passed.
+- S10 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.

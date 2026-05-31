@@ -458,7 +458,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const reconnectButton = findButtonByText(document.body, "Reconectar wallet");
+    const reconnectButton = findButtonByText(document.body, "Reconectar Phantom");
 
     expect(reconnectButton).toBeTruthy();
     expect((reconnectButton as HTMLButtonElement | undefined)?.disabled).toBe(false);
@@ -583,16 +583,88 @@ describe("components/WalletModal header CTA", () => {
 
     expect(document.body.textContent).not.toContain("Ingresa a tu cuenta BRIDS");
     expect(document.body.textContent).not.toContain("Mail");
-    expect(document.body.textContent).toContain("Conectada");
-    expect(document.body.textContent).toContain("Iniciar sesion");
-    expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
-    const signInButton = findButtonByText(document.body, "Iniciar sesion");
-    const disconnectButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+    expect(document.body.textContent).toContain("Prueba de wallet");
+    expect(document.body.textContent).toContain("Prueba que esta wallet es tuya");
+    expect(document.body.textContent).toContain("Wallet seleccionada");
+    expect(document.body.textContent).toContain("Solicitar firma en Phantom");
+    expect(document.body.textContent).not.toContain("Iniciar sesion");
+    expect(document.body.textContent).toContain("Cancelar y desconectar wallet");
+    const signInButton = findButtonByText(document.body, "Solicitar firma en Phantom");
+    const disconnectButton = findButtonByText(document.body, "Cancelar y desconectar wallet");
     const actionGroup = disconnectButton?.parentElement;
     expect(signInButton?.className).toContain("w-full");
     expect(disconnectButton?.className).toContain("w-full");
     expect(actionGroup?.className).toContain("grid-cols-1");
     expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("communicates Phantom signing progress without a generic sign-in CTA", async () => {
+    const signMessage = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage
+    });
+    authClientMocks.startSiws.mockImplementation(((input: { onStatus?: (status: string) => void }) => {
+      input.onStatus?.("signing");
+      return new Promise(() => undefined);
+    }) as never);
+
+    const { root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WALLET_MODAL_OPEN_EVENT, {
+        detail: { loginMethod: "wallet" }
+      }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const signatureButton = findButtonByText(document.body, "Solicitar firma en Phantom");
+
+    await act(async () => {
+      signatureButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).toContain("Confirma la firma en Phantom");
+    expect(document.body.textContent).toContain("Esperando en Phantom");
+    expect(document.body.textContent).toContain("Esperando confirmacion en Phantom");
+    expect(document.body.textContent).not.toContain("Iniciar sesion");
+    expect(findButtonByText(document.body, "Esperando confirmacion en Phantom")?.disabled).toBe(true);
 
     act(() => {
       root.unmount();
@@ -810,7 +882,7 @@ describe("components/WalletModal header CTA", () => {
       await Promise.resolve();
     });
 
-    const disconnectButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+    const disconnectButton = findButtonByText(document.body, "Cancelar y desconectar wallet");
 
     await act(async () => {
       disconnectButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -900,6 +972,7 @@ describe("components/WalletModal header CTA", () => {
 
     expect(document.body.textContent).not.toContain("Copiar direccion");
     expect(document.body.textContent).not.toContain("Cerrar sesion y desconectar wallet");
+    expect(document.body.textContent).not.toContain("Cancelar y desconectar wallet");
     expect(document.body.textContent).not.toContain("Desconectar wallet");
 
     act(() => {
