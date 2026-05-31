@@ -26,3 +26,10 @@ Extract persisted read SQL and location-column support into a focused read repos
 - Read repository owns read SQL.
 - Existing public functions remain stable.
 - No behavior changes beyond prior approved observability slices.
+
+## Implementation Evidence
+- Preserved persisted read success, map source, detail, and degraded fallback coverage before extraction.
+- Extracted read SQL and location-column support into `lib/marketplace/property-read-repository.ts`.
+- Left write SQL in `lib/property-marketplace-server.ts` for S28.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts`.
+- Targeted result: `4` tests passed.
