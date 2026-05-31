@@ -4,7 +4,7 @@
 - Solution artifact
 - Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
-- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s18-map-client-refactor`
+- Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s19-map-marker-extraction`
 
 ## Goal
 Implement a single `/marketplace` experience that can cycle through four visual states while keeping the traditional list as the safe fallback and the detail page untouched.
@@ -235,6 +235,16 @@ Fallback behavior:
   - do not create new runtime files in this slice
   - preserve visual behavior, map camera behavior, accessibility labels, and deferred motion behavior
   - validate with the existing marketplace map component tests before and after refactor
+
+### S19 - MarketplaceMapMarker extraction
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s19-map-marker-extraction`
+- Runtime file scope:
+  - `components/marketplace/MarketplaceMapMarker.tsx`
+- Scope:
+  - TDD first: add direct marker rendering coverage before extraction
+  - extract the marker card, leader line, anchor dot, and activation handlers out of `MarketplaceMapClient`
+  - keep marker visuals, accessibility label, cyan leader color, and activation behavior unchanged
+  - leave map camera/orbit state in `MarketplaceMapClient` for a separate slice
 
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
