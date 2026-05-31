@@ -307,7 +307,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const [isInPhantomApp, setIsInPhantomApp] = useState(false);
   const [showPhantomFallback, setShowPhantomFallback] = useState(false);
   const [isReferralFieldVisible, setIsReferralFieldVisible] = useState(false);
-  const walletPublicKey = publicKey?.toBase58() ?? null;
+  const [suppressedWalletPublicKey, setSuppressedWalletPublicKey] = useState<string | null>(null);
+  const rawWalletPublicKey = publicKey?.toBase58() ?? null;
+  const walletPublicKey = rawWalletPublicKey && rawWalletPublicKey !== suppressedWalletPublicKey ? rawWalletPublicKey : null;
   const phantomWallet = useMemo(() => wallets.find((item) => item.adapter.name === PhantomWalletName), [wallets]);
   const isPhantomInstalled = phantomWallet?.readyState === WalletReadyState.Installed;
   const isConnected = connected && Boolean(walletPublicKey);
@@ -362,7 +364,6 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const shouldShowDisconnectButton = hasAuthenticatedAccountSession || hasConnectedWalletAdapter;
   const shouldShowWalletPrimaryAction = !shouldShowDirectAuthEntryActions
     && (shouldShowConnectedWalletPendingAuth || !shouldShowAuthenticatedWalletActions);
-  const shouldUseSplitWalletActions = shouldShowWalletPrimaryAction && shouldShowDisconnectButton;
   const authLinkStatusContent = useMemo(() => getAuthLinkStatusContent(authLinkStatus, t), [authLinkStatus, t]);
 
   const menuEntries = useMemo<NavEntry[]>(() => {
@@ -850,6 +851,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return;
     }
 
+    setSuppressedWalletPublicKey(null);
     setLastError(null);
 
     try {
@@ -1007,6 +1009,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     let disconnectError: string | null = null;
     let logoutError: string | null = null;
+    let disconnectedPublicKey: string | null = null;
 
     try {
       try {
@@ -1014,6 +1017,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
         if (isConnected || adapterPublicKey) {
           await disconnect();
+          disconnectedPublicKey = adapterPublicKey;
         }
       } catch (error) {
         disconnectError = getFriendlyWalletErrorMessage(error, t);
@@ -1042,7 +1046,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       } else if (hasFederatedSession && typeof window !== "undefined") {
         window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
       } else {
-        setAuthState({
+        setSuppressedWalletPublicKey(disconnectedPublicKey);
+        setAuthState((previous) => ({
           authenticated: false,
           accountAuthenticated: false,
           federatedAuthenticated: false,
@@ -1051,8 +1056,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
           accountId: null,
           workosUserId: null,
           email: null,
-          pubkey: null
-        });
+          pubkey: null,
+          federatedAvailable: previous.federatedAvailable
+        }));
         broadcastAuthSync("logout", walletPublicKey);
       }
     } finally {
@@ -1482,15 +1488,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                     />
 
                     {shouldShowWalletPrimaryAction || shouldShowDisconnectButton ? (
-                      <div className={cn("grid gap-3", shouldUseSplitWalletActions ? "sm:grid-cols-2" : "grid-cols-1")}>
+                      <div className="grid grid-cols-1 gap-3">
                         {shouldShowWalletPrimaryAction ? (
-                          <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled} className="min-h-11 w-full whitespace-nowrap px-5">
+                          <Button onClick={handleWalletPrimaryAction} disabled={isBusy || !isPhantomInstalled} className="min-h-11 w-full px-5 text-center leading-snug">
                             {walletPrimaryLabel}
                           </Button>
                         ) : null}
 
                         {shouldShowDisconnectButton ? (
-                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full whitespace-nowrap px-5">
+                          <Button variant="outline" onClick={handleDisconnect} disabled={isBusy} className="min-h-11 w-full px-5 text-center leading-snug">
                             {disconnectLabel}
                           </Button>
                         ) : null}
