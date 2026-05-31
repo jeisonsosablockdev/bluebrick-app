@@ -106,6 +106,22 @@ export function createNavigationFallbackMotionVariants() {
   } as const;
 }
 
+export function createReducedMotionVariants() {
+  return {
+    initial: {
+      opacity: 1
+    },
+    animate: {
+      opacity: 1,
+      transition: { duration: 0 }
+    },
+    exit: {
+      opacity: 1,
+      transition: { duration: 0 }
+    }
+  } as const;
+}
+
 export function createPanelMotionVariants() {
   return {
     initial: {

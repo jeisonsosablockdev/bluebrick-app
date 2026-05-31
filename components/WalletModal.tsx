@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -316,6 +316,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
+  const shouldReduceMotion = prefersReducedMotion === true;
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
@@ -1512,9 +1514,9 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                 {shouldShowWalletIntentCard ? (
                   <motion.div
                     className="space-y-4 rounded-[28px] border border-white/15 bg-white/[0.08] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={MOTION_GENTLE_TRANSITION}
+                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                    transition={shouldReduceMotion ? MOTION_FAST_OPACITY_TRANSITION : MOTION_GENTLE_TRANSITION}
                   >
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/90">
@@ -1565,8 +1567,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                                 ? "border-white/[0.18] bg-white/[0.07] text-white/85"
                                 : "border-white/15 bg-white/[0.08] text-white/75"
                           )}
-                          animate={isWalletAuthInProgress ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
-                          transition={isWalletAuthInProgress ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : MOTION_FAST_OPACITY_TRANSITION}
+                          animate={isWalletAuthInProgress && !shouldReduceMotion ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
+                          transition={isWalletAuthInProgress && !shouldReduceMotion ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : MOTION_FAST_OPACITY_TRANSITION}
                         >
                           {phase === "signing"
                             ? t({ en: "Waiting in Phantom", es: "Esperando en Phantom", pt: "Aguardando no Phantom" })
@@ -1610,12 +1612,19 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                           aria-current={step.active ? "step" : undefined}
                         >
                           {step.active ? (
-                            <motion.span
-                              aria-hidden="true"
-                              className="absolute inset-x-3 bottom-0 h-px bg-cyan-100/70 shadow-[0_0_18px_rgba(103,232,249,0.72)]"
-                              animate={{ x: ["-100%", "220%"] }}
-                              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                            />
+                            shouldReduceMotion ? (
+                              <span
+                                aria-hidden="true"
+                                className="absolute inset-x-3 bottom-0 h-px bg-cyan-100/70 shadow-[0_0_18px_rgba(103,232,249,0.72)]"
+                              />
+                            ) : (
+                              <motion.span
+                                aria-hidden="true"
+                                className="absolute inset-x-3 bottom-0 h-px bg-cyan-100/70 shadow-[0_0_18px_rgba(103,232,249,0.72)]"
+                                animate={{ x: ["-100%", "220%"] }}
+                                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                              />
+                            )
                           ) : null}
                           {step.complete ? (
                             <span aria-hidden="true" className="absolute inset-x-3 bottom-0 h-px bg-white/35" />
