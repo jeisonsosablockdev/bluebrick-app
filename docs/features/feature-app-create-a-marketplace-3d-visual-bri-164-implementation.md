@@ -483,6 +483,22 @@ Fallback behavior:
   - Lighthouse mobile: performance `74`, SEO `100`, LCP `5.1s`, TBT `259ms`, CLS `0.055`.
   - Compared with S15, mobile LCP improved from `8.0s` to `5.1s` and mobile TBT improved from `870ms` to `259ms`; mobile LCP remains above target and is documented as residual risk.
 
+### S44 - Marketplace security audit and remediation plan
+- Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan`
+- Runtime file scope:
+  - none expected
+- Documentation file scope:
+  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md`
+- Scope:
+  - run an exhaustive security audit over marketplace routes, detail, public APIs, admin create, purchase APIs, Mapbox/Google Maps surfaces, repositories, CSP, dependencies, and secret patterns
+  - document findings with severity, evidence, impact, and solution
+  - split remediation into TDD-first follow-up slices so fixes do not land as one large branch
+- Completed evidence:
+  - `npm run validate:operability` passed.
+  - Targeted security-relevant API/unit tests passed.
+  - `npm audit --omit=dev --json` reported release-blocking direct dependency findings that are documented in the S44 artifact.
+  - Secret-pattern scan found only placeholders and test fixtures, not committed production-looking Mapbox, Google Maps, private key, or webhook secrets.
+
 ## Latest Merge Evidence
 - `bfc4d8d merge: s12 marketplace pin leader line`
 - `61b96ad merge: s13 deferred map camera motion`
