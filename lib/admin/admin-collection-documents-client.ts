@@ -3,6 +3,7 @@ import type {
   CollectionBootstrapDocumentTag
 } from "@/lib/admin/collection-bootstrap-mapper";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
+import type { FinalizeResponse } from "@/lib/admin/asset-upload-client";
 
 type AdminCollectionDetailErrorResponse = {
   error: {
@@ -62,6 +63,39 @@ export function createEmptyAdminCollectionDocumentDraft(input: {
     fileName: null,
     fileRefId: null,
     source: "marketplace"
+  };
+}
+
+function stripFileExtension(fileName: string): string {
+  const normalized = fileName.trim();
+  const dotIndex = normalized.lastIndexOf(".");
+  const withoutExtension = dotIndex > 0 ? normalized.slice(0, dotIndex) : normalized;
+  return withoutExtension.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim() || "Uploaded document";
+}
+
+function defaultDocumentTagForUpload(file: Pick<File, "type">): CollectionBootstrapDocumentTag {
+  return file.type.trim().toLowerCase() === "application/pdf" ? "brochure" : "other";
+}
+
+export function createUploadedAdminCollectionDocumentDraft(input: {
+  index: number;
+  file: Pick<File, "name" | "type">;
+  upload: FinalizeResponse;
+}): AdminCollectionDocumentDraft {
+  const title = stripFileExtension(input.file.name);
+
+  return {
+    id: `document-upload-${input.upload.fileRefId}`,
+    tag: defaultDocumentTagForUpload(input.file),
+    title,
+    label: title,
+    description: "",
+    url: input.upload.cdnUrl,
+    displayOrder: input.index + 1,
+    mimeType: input.file.type.trim() || null,
+    fileName: input.file.name.trim() || null,
+    fileRefId: input.upload.fileRefId,
+    source: "upload"
   };
 }
 

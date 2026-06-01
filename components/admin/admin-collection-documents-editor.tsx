@@ -3,16 +3,22 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { useState } from "react";
+import type { DragEvent, ChangeEvent } from "react";
 
 import { formatAdminCollectionDocumentTag } from "@/components/admin/admin-collection-document-copy";
 import { AdminCollectionDetailSectionShell } from "@/components/admin/admin-collection-detail-section-primitives";
 import {
   createEmptyAdminCollectionDocumentDraft,
+  createUploadedAdminCollectionDocumentDraft,
   AdminCollectionDocumentsMutationError,
   isAdminCollectionDocumentsDirty,
   updateAdminCollectionDocuments,
   type AdminCollectionDocumentDraft
 } from "@/lib/admin/admin-collection-documents-client";
+import {
+  promoteAssetUploadEditSession,
+  uploadAssetFileViaClientBlob
+} from "@/lib/admin/asset-upload-client";
 import type {
   CollectionBootstrapDocumentItem,
   CollectionBootstrapDocumentTag
@@ -24,6 +30,12 @@ type DocumentsFeedbackState =
   | { kind: "saving" }
   | { kind: "success" }
   | { kind: "error"; message: string };
+
+type DocumentsUploadState =
+  | { kind: "idle"; dragActive: boolean }
+  | { kind: "uploading"; dragActive: boolean; message: string }
+  | { kind: "success"; dragActive: boolean; message: string }
+  | { kind: "error"; dragActive: boolean; message: string };
 
 const DOCUMENT_TAGS: CollectionBootstrapDocumentTag[] = [
   "brochure",
@@ -52,6 +64,29 @@ function toDraftDocuments(items: CollectionBootstrapDocumentItem[]): AdminCollec
     ...item,
     displayOrder: index + 1
   }));
+}
+
+function createLocalUuid(): string {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (character) => {
+    const value = Number(character);
+    return (value ^ Math.random() * 16 >> value / 4).toString(16);
+  });
+}
+
+function uploadMessage(locale: AppLocale, state: DocumentsUploadState): string {
+  if (state.kind === "uploading" || state.kind === "success" || state.kind === "error") {
+    return state.message;
+  }
+
+  return localize(locale, {
+    en: "Files are uploaded to Vercel Blob first, then added as unsaved document rows.",
+    es: "Los archivos se suben primero a Vercel Blob y luego se agregan como filas de documentos sin guardar.",
+    pt: "Os arquivos sao enviados primeiro ao Vercel Blob e depois adicionados como linhas de documentos nao salvas."
+  });
 }
 
 function DocumentsStatusPill({
@@ -307,14 +342,130 @@ export function AdminCollectionDocumentsEditor({
   const [persistedDocuments, setPersistedDocuments] = useState<CollectionBootstrapDocumentItem[]>(initialDocuments);
   const [draftDocuments, setDraftDocuments] = useState<AdminCollectionDocumentDraft[]>(toDraftDocuments(initialDocuments));
   const [feedback, setFeedback] = useState<DocumentsFeedbackState>({ kind: "idle" });
+  const [uploadState, setUploadState] = useState<DocumentsUploadState>({ kind: "idle", dragActive: false });
+  const [uploadDraftId] = useState(() => createLocalUuid());
+  const [uploadEditSessionId] = useState(() => createLocalUuid());
+  const [hasUnpromotedUploads, setHasUnpromotedUploads] = useState(false);
 
   const dirty = isAdminCollectionDocumentsDirty({
     persistedDocuments,
     draftDocuments
   });
 
+  async function uploadDocumentFiles(files: File[]): Promise<void> {
+    const filesToUpload = files.filter((file) => file.size > 0);
+    if (filesToUpload.length === 0 || uploadState.kind === "uploading") {
+      return;
+    }
+
+    setUploadState({
+      kind: "uploading",
+      dragActive: false,
+      message: localize(locale, {
+        en: "Uploading documents...",
+        es: "Subiendo documentos...",
+        pt: "Enviando documentos..."
+      })
+    });
+
+    const uploadedDrafts: AdminCollectionDocumentDraft[] = [];
+    const failed: string[] = [];
+
+    for (const [index, file] of filesToUpload.entries()) {
+      setUploadState({
+        kind: "uploading",
+        dragActive: false,
+        message: localize(locale, {
+          en: `Uploading ${index + 1}/${filesToUpload.length}: ${file.name}`,
+          es: `Subiendo ${index + 1}/${filesToUpload.length}: ${file.name}`,
+          pt: `Enviando ${index + 1}/${filesToUpload.length}: ${file.name}`
+        })
+      });
+
+      try {
+        const upload = await uploadAssetFileViaClientBlob({
+          file,
+          category: "brochureFile",
+          draftId: uploadDraftId,
+          editSessionId: uploadEditSessionId
+        });
+
+        uploadedDrafts.push(createUploadedAdminCollectionDocumentDraft({
+          index: draftDocuments.length + uploadedDrafts.length,
+          file,
+          upload
+        }));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown upload error.";
+        failed.push(`${file.name}: ${message}`);
+      }
+    }
+
+    if (uploadedDrafts.length > 0) {
+      setDraftDocuments((current) => [
+        ...current,
+        ...uploadedDrafts.map((draft, offset) => ({
+          ...draft,
+          displayOrder: current.length + offset + 1
+        }))
+      ]);
+      setHasUnpromotedUploads(true);
+      setFeedback({ kind: "idle" });
+    }
+
+    if (failed.length > 0) {
+      setUploadState({
+        kind: "error",
+        dragActive: false,
+        message: failed.join(" | ")
+      });
+      return;
+    }
+
+    setUploadState({
+      kind: "success",
+      dragActive: false,
+      message: localize(locale, {
+        en: `${uploadedDrafts.length} document(s) uploaded. Save this section to persist them.`,
+        es: `${uploadedDrafts.length} documento(s) subidos. Guarda esta seccion para persistirlos.`,
+        pt: `${uploadedDrafts.length} documento(s) enviados. Salve esta secao para persisti-los.`
+      })
+    });
+  }
+
+  function handleFileInput(event: ChangeEvent<HTMLInputElement>): void {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    void uploadDocumentFiles(files);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!uploadState.dragActive) {
+      setUploadState((current) => ({ ...current, dragActive: true }));
+    }
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
+      return;
+    }
+    setUploadState((current) => ({ ...current, dragActive: false }));
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    setUploadState((current) => ({ ...current, dragActive: false }));
+    void uploadDocumentFiles(Array.from(event.dataTransfer.files ?? []));
+  }
+
   async function handleSave(): Promise<void> {
-    if (!dirty || feedback.kind === "saving") {
+    if (!dirty || feedback.kind === "saving" || uploadState.kind === "uploading") {
       return;
     }
 
@@ -325,6 +476,15 @@ export function AdminCollectionDocumentsEditor({
         entryId,
         documents: draftDocuments
       });
+
+      if (hasUnpromotedUploads) {
+        await promoteAssetUploadEditSession({
+          draftId: uploadDraftId,
+          editSessionId: uploadEditSessionId
+        });
+        setHasUnpromotedUploads(false);
+      }
+
       const nextPersistedDocuments = updatedContent.documents;
 
       setPersistedDocuments(nextPersistedDocuments);
@@ -367,9 +527,9 @@ export function AdminCollectionDocumentsEditor({
             </p>
             <p className="text-sm text-white/55">
               {localize(locale, {
-                en: "Existing upload metadata stays attached to each row when available. New rows default to marketplace-managed links until file-upload integration is layered in.",
-                es: "La metadata de uploads existentes se mantiene adjunta a cada fila cuando exista. Las nuevas filas usan enlaces gestionados por marketplace hasta que la integracion de subida de archivos llegue en el siguiente slice.",
-                pt: "A metadata de uploads existentes permanece anexada a cada linha quando disponivel. Novas linhas usam links geridos pelo marketplace ate a integracao de upload de arquivos chegar no proximo slice."
+                en: "Existing upload metadata stays attached to each row when available. New rows can use marketplace-managed links or uploaded files.",
+                es: "La metadata de uploads existentes se mantiene adjunta a cada fila cuando exista. Las nuevas filas pueden usar enlaces gestionados por marketplace o archivos subidos.",
+                pt: "A metadata de uploads existentes permanece anexada a cada linha quando disponivel. Novas linhas podem usar links geridos pelo marketplace ou arquivos enviados."
               })}
             </p>
           </div>
@@ -386,6 +546,72 @@ export function AdminCollectionDocumentsEditor({
           >
             {localize(locale, { en: "Add document", es: "Agregar documento", pt: "Adicionar documento" })}
           </button>
+        </div>
+
+        <div
+          className={`rounded-2xl border border-dashed p-4 transition ${
+            uploadState.dragActive
+              ? "border-sky-300/60 bg-sky-400/10"
+              : "border-white/15 bg-white/[0.03]"
+          }`}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">
+                {localize(locale, { en: "Upload documents", es: "Subir documentos", pt: "Enviar documentos" })}
+              </p>
+              <p className="text-sm text-white/60">
+                {localize(locale, {
+                  en: "Drag and drop files here. Uploads use the canonical Vercel Blob pipeline.",
+                  es: "Arrastra archivos aqui. Las subidas usan el flujo canonico de Vercel Blob.",
+                  pt: "Arraste arquivos aqui. Os uploads usam o fluxo canonico do Vercel Blob."
+                })}
+              </p>
+              <p className="text-sm text-white/55">
+                {localize(locale, {
+                  en: "PDF, CSV, XLS, and XLSX files are limited to 10 MB. If a PDF is too large, compress it with ",
+                  es: "Los archivos PDF, CSV, XLS y XLSX tienen limite de 10 MB. Si un PDF pesa demasiado, comprimelo con ",
+                  pt: "Arquivos PDF, CSV, XLS e XLSX tem limite de 10 MB. Se um PDF for muito grande, comprima com "
+                })}
+                <a
+                  className="font-semibold text-sky-100 underline decoration-sky-100/50 underline-offset-4 transition hover:text-white"
+                  href="https://www.ilovepdf.com/compress_pdf"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  iLovePDF
+                </a>
+                .
+              </p>
+              <p aria-live="polite" className={`text-sm ${
+                uploadState.kind === "error"
+                  ? "text-rose-100"
+                  : uploadState.kind === "success"
+                    ? "text-emerald-100"
+                    : uploadState.kind === "uploading"
+                      ? "text-sky-100"
+                      : "text-white/50"
+              }`}>
+                {uploadMessage(locale, uploadState)}
+              </p>
+            </div>
+            <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10">
+              <input
+                accept=".pdf,.csv,.xls,.xlsx,application/pdf,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="sr-only"
+                disabled={uploadState.kind === "uploading"}
+                multiple
+                onChange={handleFileInput}
+                type="file"
+              />
+              {uploadState.kind === "uploading"
+                ? localize(locale, { en: "Uploading", es: "Subiendo", pt: "Enviando" })
+                : localize(locale, { en: "Choose files", es: "Elegir archivos", pt: "Escolher arquivos" })}
+            </label>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -431,7 +657,7 @@ export function AdminCollectionDocumentsEditor({
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/75 transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={!dirty || feedback.kind === "saving"}
+              disabled={!dirty || feedback.kind === "saving" || uploadState.kind === "uploading"}
               onClick={handleCancel}
               type="button"
             >
@@ -439,7 +665,7 @@ export function AdminCollectionDocumentsEditor({
             </button>
             <button
               className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={!dirty || feedback.kind === "saving"}
+              disabled={!dirty || feedback.kind === "saving" || uploadState.kind === "uploading"}
               onClick={() => {
                 void handleSave();
               }}

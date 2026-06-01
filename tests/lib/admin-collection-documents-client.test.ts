@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   createEmptyAdminCollectionDocumentDraft,
+  createUploadedAdminCollectionDocumentDraft,
   isAdminCollectionDocumentsDirty,
   normalizeAdminCollectionDocumentDrafts,
   updateAdminCollectionDocuments,
@@ -22,6 +23,35 @@ describe("lib/admin/admin-collection-documents-client", () => {
       fileName: null,
       fileRefId: null,
       source: "marketplace"
+    });
+  });
+
+  it("creates uploaded document drafts from finalized upload metadata", () => {
+    expect(createUploadedAdminCollectionDocumentDraft({
+      index: 1,
+      file: {
+        name: "Operating Agreement.pdf",
+        type: "application/pdf"
+      },
+      upload: {
+        fileRefId: "file-upload-1",
+        bucket: "admin-assets",
+        objectKey: "asset-uploads/draft/legal/operating-agreement.pdf",
+        cdnUrl: "https://blob.example.com/operating-agreement.pdf",
+        uploadedAt: "2026-06-01T00:00:00.000Z"
+      }
+    })).toEqual({
+      id: "document-upload-file-upload-1",
+      tag: "brochure",
+      title: "Operating Agreement",
+      label: "Operating Agreement",
+      description: "",
+      url: "https://blob.example.com/operating-agreement.pdf",
+      displayOrder: 2,
+      mimeType: "application/pdf",
+      fileName: "Operating Agreement.pdf",
+      fileRefId: "file-upload-1",
+      source: "upload"
     });
   });
 
