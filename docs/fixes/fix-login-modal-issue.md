@@ -4,7 +4,7 @@
 - Initial implementation merged into `develop`.
 - Post-review P1/P2 hardening implemented in S12-S13.
 - P3 artifact sync implemented in S14.
-- Clean-code extraction remains planned as S15.
+- Clean-code extraction implemented in S15.
 - Multi-slice fix plan remains active for follow-up hardening.
 - Linear issue key: `BRI-167`.
 
@@ -75,7 +75,7 @@ The reviewer pass after the first implementation found three follow-up issues an
 4. Clean-code extraction opportunity
 - `components/WalletModal.tsx` now owns the portal, auth-state matrix, wallet proof panel, copy, disconnect, and motion presentation.
 - Risk: the component remains correct but too concentrated, making future auth-state regressions easier to introduce.
-- Status: planned for S15.
+- Status: corrected in S15 by extracting wallet proof presentation into `WalletProofPanel`.
 
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
@@ -111,7 +111,7 @@ Out of scope:
 - S12: P1 wallet-only logout route refresh hardening. Implemented.
 - S13: P2 `prefers-reduced-motion` hardening for modal progress and route transitions. Implemented.
 - S14: P3 artifact status synchronization. Implemented.
-- S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority.
+- S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority. Implemented.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 
