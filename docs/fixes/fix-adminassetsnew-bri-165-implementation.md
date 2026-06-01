@@ -248,6 +248,11 @@ Apply the smallest safe changes that unblock the admin flow:
 - Verify there is no duplicate upload policy logic between the signed-contract route, client-upload token route, and frontend client.
 - Verify the deleted `/binary` route has no remaining references.
 - Confirm tests, lint, typecheck, validate, and documentation gates pass before merge.
+- Implementation evidence:
+  - Clean-code audit found no blocking duplication or dead upload transport code after removing `/binary`.
+  - The `10 MB` limit remains centralized in `lib/asset-uploads/policy.ts`; the client displays the server message instead of duplicating size policy.
+  - The client-upload route validates authority against the existing upload contract instead of introducing a parallel permission model.
+  - `rg` found no remaining code references to the removed binary route or old upload helper names.
 
 ## Test-First Contract
 
