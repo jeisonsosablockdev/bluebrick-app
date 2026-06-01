@@ -24,7 +24,7 @@ type PostAuthDecision =
   | { kind: "none" }
   | { kind: "show"; reward: PostAuthOnboardingReward | null };
 
-function createFallbackReward(now = new Date()): PostAuthOnboardingReward {
+export function createPostAuthFallbackReward(now = new Date()): PostAuthOnboardingReward {
   return {
     status: "pending_profile",
     rewardAmountUsdSnapshot: 10,
@@ -42,7 +42,7 @@ export function resolvePostAuthDecision(input: PostAuthDecisionInput): PostAuthD
   if (input.status === "not_found") {
     return {
       kind: "show",
-      reward: createFallbackReward(input.now)
+      reward: createPostAuthFallbackReward(input.now)
     };
   }
 
