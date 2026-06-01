@@ -198,7 +198,19 @@ Out of scope:
 - S20: remove brittle `as never` test mock typing. Implemented.
 - S21: redirect private-route logout to public main instead of refreshing into forbidden content. Implemented.
 - S22: document Clean Code audit findings and TDD remediation slices. Implemented.
-- S23-S30: planned TDD-first clean-code remediation slices.
+- S23-S30: implemented TDD-first clean-code remediation slices.
+
+### Clean Code Closeout After S30
+S23-S30 resolved the post-S21 clean-code findings without changing auth authority:
+- private-route logout routing now lives in `lib/navigation/private-routes.ts`
+- auth-state equality now lives in `lib/auth-state.ts`
+- repeated wallet modal test setup now uses local test factories
+- referral auth payload construction now lives in `lib/referrals/client-state.ts`
+- wallet signing preparation now lives in `lib/wallet-signing-prep.ts`
+- post-auth decision and fallback reward contracts now live in `lib/post-auth-decision.ts`
+- wallet proof copy, status, and progress derivation now lives in `lib/wallet-proof-view-model.ts`
+
+Final clean-code pass after S30 found no new blocking issues in the wallet modal module. Accepted residual debt: `WalletModal` remains a large auth/navigation orchestrator, but the high-risk decision branches identified in this audit are now extracted behind focused tests.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 

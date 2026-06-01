@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolvePostAuthDecision } from "@/lib/post-auth-decision";
+import { createPostAuthFallbackReward, resolvePostAuthDecision } from "@/lib/post-auth-decision";
 
 const COMPLETE_PROFILE = {
   firstName: "Ada",
@@ -55,6 +55,16 @@ describe("post auth decision", () => {
         shouldShowReminder: true,
         isProfileComplete: false
       }
+    });
+  });
+
+  it("exposes the same fallback reward contract for prompted post-auth flows", () => {
+    expect(createPostAuthFallbackReward(new Date("2026-05-10T00:00:00.000Z"))).toEqual({
+      status: "pending_profile",
+      rewardAmountUsdSnapshot: 10,
+      qualificationDeadlineAt: "2026-05-17T00:00:00.000Z",
+      shouldShowReminder: true,
+      isProfileComplete: false
     });
   });
 

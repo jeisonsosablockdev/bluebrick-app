@@ -54,7 +54,7 @@ import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-
 import { areAuthMeResponsesEquivalent } from "@/lib/auth-state";
 import { shouldUseReducedMotion } from "@/lib/motion";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
-import { resolvePostAuthDecision, type PostAuthOnboardingReward } from "@/lib/post-auth-decision";
+import { createPostAuthFallbackReward, resolvePostAuthDecision, type PostAuthOnboardingReward } from "@/lib/post-auth-decision";
 import { cn } from "@/lib/utils";
 import { resolveWalletSigningPreparation } from "@/lib/wallet-signing-prep";
 
@@ -650,13 +650,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     let cancelled = false;
 
-    const fallbackReward: PostAuthOnboardingReward = {
-      status: "pending_profile",
-      rewardAmountUsdSnapshot: 10,
-      qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      shouldShowReminder: true,
-      isProfileComplete: false
-    };
+    const fallbackReward = createPostAuthFallbackReward();
 
     const openDecisionModal = async (): Promise<void> => {
       try {
