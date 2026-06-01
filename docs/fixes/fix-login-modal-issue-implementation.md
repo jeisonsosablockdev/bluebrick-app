@@ -103,7 +103,7 @@ Initiative branch:
 | S26 | implemented | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S27 | implemented | `fix/app-login-modal-issue-bri-167-s27-wallet-signing-prep` | Extract wallet connection/sign-message preparation from `handleWalletPrimaryAction` | wallet signing preparation helper/hook boundary, `WalletModal`, focused tests | RED connect/signature-prep tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S28 | implemented | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
-| S29 | planned | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S29 | implemented | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S30 | planned | `fix/app-login-modal-issue-bri-167-s30-wallet-modal-orchestration-cleanup` | Compose extracted helpers and reduce `WalletModal` orchestration density | `WalletModal`, extracted helper imports, component regressions | RED characterization gap if needed, implementation, full targeted wallet modal suite, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
@@ -490,6 +490,15 @@ Validation:
 - `npm run typecheck`
 - `npm run validate:docs-governance`
 - `git diff --check`
+
+Status:
+- Implemented in S29 by adding `lib/wallet-proof-view-model.ts`.
+- RED confirmed before implementation: `tests/lib/wallet-proof-view-model.test.ts` failed because the helper module did not exist.
+- `WalletProofPanel` now renders a tested view model for eyebrow, title, description, status tone, status label, selected-wallet copy, and progress steps.
+- S29 targeted validation: `npm test -- tests/lib/wallet-proof-view-model.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S29 type validation: `npm run typecheck` passed.
+- S29 docs governance validation: `npm run validate:docs-governance` passed.
+- S29 whitespace validation: `git diff --check` passed.
 
 ### S30 - Wallet Modal Orchestration Cleanup
 Problem:

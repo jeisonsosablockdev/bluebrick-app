@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
 import { MOTION_FAST_OPACITY_TRANSITION, MOTION_GENTLE_TRANSITION, shouldUseReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { getWalletProofViewModel, type WalletProofPhase } from "@/lib/wallet-proof-view-model";
 
-type WalletProofPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 type Translate = (text: LocaleText) => string;
 
 type WalletProofSessionState = {
@@ -97,23 +97,13 @@ export function WalletProofPanel({
   } = actions;
   const prefersReducedMotion = useReducedMotion();
   const shouldReduceMotion = shouldUseReducedMotion(prefersReducedMotion);
-  const walletProofSteps = [
-    {
-      label: t({ en: "Connect", es: "Conectar", pt: "Conectar" }),
-      active: phase === "connecting",
-      complete: isConnected || hasWalletSession
-    },
-    {
-      label: t({ en: "Sign", es: "Firmar", pt: "Assinar" }),
-      active: phase === "signing",
-      complete: hasWalletSession
-    },
-    {
-      label: t({ en: "Session", es: "Sesion", pt: "Sessao" }),
-      active: phase === "verifying",
-      complete: hasWalletSession
-    }
-  ];
+  const viewModel = getWalletProofViewModel({
+    t,
+    phase,
+    hasWalletSession,
+    hasWalletSessionAdapterMismatch,
+    isConnected
+  });
 
   return (
     <motion.div
@@ -124,41 +114,13 @@ export function WalletProofPanel({
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/90">
-          {hasWalletSessionAdapterMismatch
-            ? t({ en: "Wallet mismatch", es: "Wallet no coincide", pt: "Carteira divergente" })
-            : hasWalletSession
-            ? t({ en: "Wallet session", es: "Sesion wallet", pt: "Sessao wallet" })
-            : t({ en: "Wallet proof", es: "Prueba de wallet", pt: "Prova de wallet" })}
+          {viewModel.eyebrow}
         </p>
         <h3 className="text-xl font-semibold leading-tight text-white">
-          {hasWalletSessionAdapterMismatch
-            ? t({ en: "Reconnect the signed-in wallet", es: "Reconecta la wallet de la sesion", pt: "Reconecte a carteira da sessao" })
-            : phase === "signing"
-            ? t({ en: "Confirm the signature in Phantom", es: "Confirma la firma en Phantom", pt: "Confirme a assinatura no Phantom" })
-            : phase === "verifying"
-              ? t({ en: "Verifying your wallet proof", es: "Verificando tu prueba de wallet", pt: "Verificando sua prova de wallet" })
-              : hasWalletSession
-                ? t({ en: "Your BRIDS wallet session is active", es: "Tu sesion wallet BRIDS esta activa", pt: "Sua sessao wallet BRIDS esta ativa" })
-                : t({ en: "Prove this wallet belongs to you", es: "Prueba que esta wallet es tuya", pt: "Prove que esta wallet e sua" })}
+          {viewModel.title}
         </h3>
         <p className="text-sm leading-6 text-white/70">
-          {hasWalletSessionAdapterMismatch
-            ? t({
-                en: "The connected Phantom wallet does not match your BRIDS session. Disconnect it and reconnect the signed-in wallet.",
-                es: "La wallet conectada en Phantom no coincide con tu sesion BRIDS. Desconectala y reconecta la wallet de la sesion.",
-                pt: "A carteira conectada na Phantom nao corresponde a sua sessao BRIDS. Desconecte e reconecte a carteira da sessao."
-              })
-            : hasWalletSession
-            ? t({
-                en: "You can manage this wallet session or link email sign-in.",
-                es: "Puedes gestionar esta sesion wallet o vincular ingreso por email.",
-                pt: "Voce pode gerenciar esta sessao wallet ou vincular login por email."
-              })
-            : t({
-                en: "BRIDS uses a signed message to create your session. This does not send a transaction.",
-                es: "BRIDS usa un mensaje firmado para crear tu sesion. Esto no envia una transaccion.",
-                pt: "A BRIDS usa uma mensagem assinada para criar sua sessao. Isso nao envia uma transacao."
-              })}
+          {viewModel.description}
         </p>
       </div>
 
@@ -166,41 +128,33 @@ export function WalletProofPanel({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/45">
-              {t({ en: "Selected wallet", es: "Wallet seleccionada", pt: "Carteira selecionada" })}
+              {viewModel.selectedWalletLabel}
             </p>
             <p className="mt-1 font-mono text-sm text-white/[0.88]">
-              {walletConnectionStatusText ?? t({ en: "Phantom not connected", es: "Phantom sin conectar", pt: "Phantom nao conectada" })}
+              {walletConnectionStatusText ?? viewModel.disconnectedWalletLabel}
             </p>
           </div>
           <motion.span
             className={cn(
               "inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
-              isWalletAuthInProgress
+              viewModel.statusTone === "progress"
                 ? "border-white/[0.18] bg-white/[0.07] text-cyan-100"
-                : hasWalletSessionAdapterMismatch
+                : viewModel.statusTone === "warning"
                   ? "border-amber-200/35 bg-amber-400/10 text-amber-100"
-                : hasWalletSession
+                : viewModel.statusTone === "active"
                   ? "border-white/[0.18] bg-white/[0.07] text-white/85"
                   : "border-white/15 bg-white/[0.08] text-white/75"
             )}
             animate={isWalletAuthInProgress && !shouldReduceMotion ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
             transition={isWalletAuthInProgress && !shouldReduceMotion ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : MOTION_FAST_OPACITY_TRANSITION}
           >
-            {hasWalletSessionAdapterMismatch
-              ? t({ en: "Mismatch", es: "No coincide", pt: "Divergente" })
-              : phase === "signing"
-              ? t({ en: "Waiting in Phantom", es: "Esperando en Phantom", pt: "Aguardando no Phantom" })
-              : phase === "verifying"
-                ? t({ en: "Verifying", es: "Verificando", pt: "Verificando" })
-                : hasWalletSession
-                  ? t({ en: "Active", es: "Activa", pt: "Ativa" })
-                  : t({ en: "Pending", es: "Pendiente", pt: "Pendente" })}
+            {viewModel.statusLabel}
           </motion.span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2" aria-label={t({ en: "Wallet sign-in progress", es: "Progreso de ingreso con wallet", pt: "Progresso de login com wallet" })}>
-        {walletProofSteps.map((step) => (
+      <div className="grid grid-cols-3 gap-2" aria-label={viewModel.progressLabel}>
+        {viewModel.steps.map((step) => (
           <div
             key={step.label}
             className={cn(
