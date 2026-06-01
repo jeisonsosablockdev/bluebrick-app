@@ -24,6 +24,8 @@ type StartSiwsMockOutput = Promise<{
   referralBindingOutcome?: string | null;
 }>;
 
+const TEST_WALLET_PUBLIC_KEY = "Wallet11111111111111111111111111111111111";
+
 const localeMocks = vi.hoisted(() => ({
   useI18n: vi.fn()
 }));
@@ -170,6 +172,61 @@ function findElementByText(root: ParentNode, text: string): HTMLElement | undefi
   return Array.from(root.querySelectorAll<HTMLElement>("*")).find((candidate) =>
     candidate.textContent?.trim() === text
   );
+}
+
+function createWalletAuthSession(overrides: Partial<AuthMeResponse> = {}): AuthMeResponse {
+  return {
+    authenticated: true,
+    accountAuthenticated: true,
+    walletAuthenticated: true,
+    federatedAuthenticated: false,
+    federatedAvailable: false,
+    authMethod: "wallet",
+    accountId: "account_123",
+    workosUserId: null,
+    email: null,
+    pubkey: TEST_WALLET_PUBLIC_KEY,
+    role: "user",
+    ...overrides
+  };
+}
+
+function mockAuthenticatedPhantomWalletSession(options: {
+  connected?: boolean;
+  role?: AuthMeResponse["role"];
+} = {}): { disconnect: ReturnType<typeof vi.fn>; signMessage: ReturnType<typeof vi.fn> } {
+  const connected = options.connected ?? true;
+  const disconnect = vi.fn(async () => undefined);
+  const signMessage = vi.fn();
+  const phantomAdapter = {
+    name: "Phantom",
+    readyState: WalletReadyState.Installed,
+    publicKey: {
+      toBase58: () => TEST_WALLET_PUBLIC_KEY
+    },
+    signMessage
+  };
+
+  walletMocks.useWallet.mockReturnValue({
+    wallet: { adapter: phantomAdapter },
+    wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+    publicKey: connected
+      ? {
+          toBase58: () => TEST_WALLET_PUBLIC_KEY
+        }
+      : null,
+    connected,
+    connecting: false,
+    disconnecting: false,
+    connect: vi.fn(),
+    disconnect,
+    select: vi.fn(),
+    signMessage: connected ? signMessage : undefined
+  });
+
+  authClientMocks.fetchAuthMe.mockResolvedValue(createWalletAuthSession({ role: options.role ?? "user" }));
+
+  return { disconnect, signMessage };
 }
 
 describe("components/WalletModal header CTA", () => {
@@ -928,55 +985,9 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("disconnects the wallet adapter during sign out when an adapter public key is present", async () => {
-    const disconnect = vi.fn(async () => undefined);
-    const phantomAdapter = {
-      name: "Phantom",
-      readyState: WalletReadyState.Installed,
-      publicKey: {
-        toBase58: () => "Wallet11111111111111111111111111111111111"
-      },
-      signMessage: vi.fn()
-    };
+    const { disconnect } = mockAuthenticatedPhantomWalletSession({ connected: false });
 
-    walletMocks.useWallet.mockReturnValue({
-      wallet: { adapter: phantomAdapter },
-      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
-      publicKey: null,
-      connected: false,
-      connecting: false,
-      disconnecting: false,
-      connect: vi.fn(),
-      disconnect,
-      select: vi.fn(),
-      signMessage: undefined
-    });
-    authClientMocks.fetchAuthMe.mockResolvedValue({
-      authenticated: true,
-      accountAuthenticated: true,
-      walletAuthenticated: true,
-      federatedAuthenticated: false,
-      federatedAvailable: false,
-      authMethod: "wallet",
-      accountId: "account_123",
-      workosUserId: null,
-      email: null,
-      pubkey: "Wallet11111111111111111111111111111111111",
-      role: "user"
-    });
-
-    const { container, root } = renderWalletModal({
-      authenticated: true,
-      accountAuthenticated: true,
-      walletAuthenticated: true,
-      federatedAuthenticated: false,
-      federatedAvailable: false,
-      authMethod: "wallet",
-      accountId: "account_123",
-      workosUserId: null,
-      email: null,
-      pubkey: "Wallet11111111111111111111111111111111111",
-      role: "user"
-    });
+    const { container, root } = renderWalletModal(createWalletAuthSession());
 
     await act(async () => {
       await Promise.resolve();
@@ -1013,58 +1024,9 @@ describe("components/WalletModal header CTA", () => {
 
   it("redirects private admin route sign out to public main instead of refreshing forbidden content", async () => {
     navigationMocks.pathname = "/admin/dashboard";
-    const disconnect = vi.fn(async () => undefined);
-    const signMessage = vi.fn();
-    const phantomAdapter = {
-      name: "Phantom",
-      readyState: WalletReadyState.Installed,
-      publicKey: {
-        toBase58: () => "Wallet11111111111111111111111111111111111"
-      },
-      signMessage
-    };
+    const { disconnect } = mockAuthenticatedPhantomWalletSession({ role: "admin" });
 
-    walletMocks.useWallet.mockReturnValue({
-      wallet: { adapter: phantomAdapter },
-      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
-      publicKey: {
-        toBase58: () => "Wallet11111111111111111111111111111111111"
-      },
-      connected: true,
-      connecting: false,
-      disconnecting: false,
-      connect: vi.fn(),
-      disconnect,
-      select: vi.fn(),
-      signMessage
-    });
-    authClientMocks.fetchAuthMe.mockResolvedValue({
-      authenticated: true,
-      accountAuthenticated: true,
-      walletAuthenticated: true,
-      federatedAuthenticated: false,
-      federatedAvailable: false,
-      authMethod: "wallet",
-      accountId: "account_123",
-      workosUserId: null,
-      email: null,
-      pubkey: "Wallet11111111111111111111111111111111111",
-      role: "admin"
-    });
-
-    const { container, root } = renderWalletModal({
-      authenticated: true,
-      accountAuthenticated: true,
-      walletAuthenticated: true,
-      federatedAuthenticated: false,
-      federatedAvailable: false,
-      authMethod: "wallet",
-      accountId: "account_123",
-      workosUserId: null,
-      email: null,
-      pubkey: "Wallet11111111111111111111111111111111111",
-      role: "admin"
-    });
+    const { container, root } = renderWalletModal(createWalletAuthSession({ role: "admin" }));
 
     await act(async () => {
       await Promise.resolve();
