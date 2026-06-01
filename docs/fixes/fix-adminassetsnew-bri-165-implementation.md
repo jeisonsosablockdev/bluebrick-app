@@ -16,6 +16,7 @@ Apply the smallest safe changes that unblock the admin flow:
 10. make PDF quick import production-safe by avoiding runtime resolution of the packaged `pdf.worker.mjs` asset in Vercel serverless functions.
 11. keep the live Phantom wallet adapter recoverable for admin deploy after SIWS/session refreshes.
 12. allow marketplace image rendering for Vercel Blob URLs produced by the admin upload pipeline.
+13. require Core Candy Machine deploy to finalize a verified mint snapshot before `/admin/assets/new` enables marketplace entry creation.
 
 ## Slice Plan
 
@@ -180,6 +181,20 @@ Apply the smallest safe changes that unblock the admin flow:
 - Verify marketplace cover/gallery/property image URLs from `/admin/assets/new` are accepted without opening arbitrary remote image hosts.
 - Add regression coverage for the Vercel Blob image remote pattern.
 
+### Slice BRI-165-18
+- Investigate the deploy handoff where `/admin/assets/new` creates marketplace entries even though `asset_mint_snapshots`, `mint_jobs`, and `asset_mint_onchain_proofs` remain empty.
+- Wire the existing `finalizeSnapshot` helper in `components/admin/core-candy-machine-panel.tsx` into the successful deploy path before `onDeployCompleted` is emitted.
+- Keep transaction submission and confirmation behavior intact, but do not mark deploy as complete for `Create Asset` when snapshot finalization fails or returns `canCreateAsset: false`.
+- Preserve `onSnapshotFinalized` so `/admin/assets/new` stores the returned `snapshotId` and sends it to `app/api/admin/marketplace/entries/route.ts`.
+- Keep pending-background-confirmation deploys visible to the operator, but block marketplace entry creation until a verified snapshot exists.
+- Add regression coverage for:
+  - verified snapshot finalization before deploy completion,
+  - blocked deploy completion when snapshot verification is degraded or failed.
+- Implementation evidence:
+  - `runDeployFlow` now finalizes `/api/admin/core-candy-machine/snapshot/finalize` after confirmed deploy transactions and before `onDeployCompleted`.
+  - `onDeployCompleted` only fires when the snapshot response has `canCreateAsset: true`.
+  - Snapshot verification errors stay visible in the panel and the Create Asset gate remains blocked instead of creating a marketplace entry with `snapshotId: null`.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -200,6 +215,7 @@ Targeted regression coverage will verify:
 - PDF parsing does not directly resolve `pdf.worker.mjs` from app code, keeps the `pdfjs` API/fake-worker bundles in the production trace, and still extracts text through the app-owned Node worker.
 - Admin deploy can recover the live Phantom signer after navigation/refresh without clearing the authenticated admin session.
 - Next Image allows Vercel Blob URLs under `/admin-assets/**` so minted assets can be opened in marketplace immediately after creation.
+- Core Candy Machine deploy finalizes a verified snapshot before enabling Create Asset and blocks deploy completion when the snapshot is not ready.
 
 ## Final Review
 
@@ -211,6 +227,7 @@ Targeted regression coverage will verify:
 - The Pinata follow-up must confirm no secrets are logged or returned while still surfacing enough provider/source context for operators.
 - The wallet reconnect follow-up must confirm reconnecting the adapter does not bypass SIWS authorization and rejects mismatched wallet addresses.
 - The Vercel Blob image follow-up must confirm the allowlist remains scoped to HTTPS `admin-assets` URLs instead of allowing all remote hosts.
+- The deploy snapshot follow-up must confirm marketplace entries cannot be created from `/admin/assets/new` without a verified `snapshotId`.
 
 ## Tooling
 
@@ -233,4 +250,5 @@ Targeted regression coverage will verify:
   - PDF worker regression output showing production-safe `pdfjs` API and fake-worker tracing,
   - wallet runtime/modal regression output for admin deploy signer recovery,
   - Next Image config regression output for Vercel Blob admin-assets URLs,
+  - deploy snapshot gate regression output proving snapshot finalization precedes Create Asset enablement,
   - explicit clean-code pass or no-blockers result

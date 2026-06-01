@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-05-29
+Last Updated: 2026-06-01
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
@@ -261,9 +261,12 @@ Last Updated: 2026-05-29
   - Primary method: DAS `getAssetsByGroup` by `collectionAddress`.
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.
   - `Create Asset` is enabled only when `verificationStatus=verified` and job status is `completed`.
+  - `/admin/assets/new` must call `POST /api/admin/core-candy-machine/snapshot/finalize` after confirmed Core Candy Machine deploy transactions and before emitting deploy completion to the asset creation form.
+  - Deploy completion for marketplace handoff requires `canCreateAsset=true`; failed, degraded, or missing snapshot responses keep `Create Asset` blocked.
 - Business safety:
   - `partial` mint state is treated as non-eligible for `Create Asset`.
   - Marketplace handoff remains `ready` only for fully verified snapshots.
+  - Marketplace entries created from the admin deploy handoff must carry the verified `snapshotId`; publishing with `snapshotId=null` is not an accepted `/admin/assets/new` completion state.
 
 ## Metadata URI Provider (Core Candy Machine)
 - Metadata URI generation endpoint:
