@@ -62,6 +62,7 @@ const DOCUMENT_MIME_TYPES = new Set<string>([
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 ]);
 const DOCUMENT_EXTENSIONS = new Set<string>(["pdf", "csv", "xls", "xlsx"]);
+const PDF_COMPRESSION_URL = "https://www.ilovepdf.com/compress_pdf";
 
 const CATEGORY_POLICY: Record<AssetUploadCategory, CategoryPolicy> = {
   galleryImage: {
@@ -347,6 +348,31 @@ export function getCategoryPolicy(category: AssetUploadCategory): CategoryPolicy
   return CATEGORY_POLICY[category];
 }
 
+function formatUploadLimit(sizeBytes: number): string {
+  return `${Math.round(sizeBytes / (1024 * 1024))} MB`;
+}
+
+function uploadCategoryLabel(category: AssetUploadCategory): string {
+  if (category === "brochureFile") return "Brochure";
+  if (category === "legalDoc") return "Legal document";
+  if (category === "financialDoc") return "Financial document";
+  if (category === "galleryImage") return "Gallery image";
+  if (category === "propertyImage") return "Property image";
+  return "File";
+}
+
+function isDocumentUploadCategory(category: AssetUploadCategory): boolean {
+  return category === "brochureFile" || category === "legalDoc" || category === "financialDoc";
+}
+
+function buildFileTooLargeMessage(category: AssetUploadCategory, maxSizeBytes: number): string {
+  const compressionHint = isDocumentUploadCategory(category)
+    ? ` Compress PDF files at ${PDF_COMPRESSION_URL} and try again.`
+    : "";
+
+  return `${uploadCategoryLabel(category)} exceeds the ${formatUploadLimit(maxSizeBytes)} upload limit.${compressionHint}`;
+}
+
 function parseCategory(value: unknown): AssetUploadCategory | null {
   if (typeof value !== "string") {
     return null;
@@ -452,7 +478,7 @@ export function parseSignedUrlRequest(
     return {
       ok: false,
       code: "FILE_TOO_LARGE",
-      message: `sizeBytes exceeds maxSizeBytes (${policy.maxSizeBytes}) for category ${category}.`
+      message: buildFileTooLargeMessage(category, policy.maxSizeBytes)
     };
   }
 
