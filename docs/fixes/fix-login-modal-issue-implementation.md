@@ -563,3 +563,11 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S20 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
 - S20 type validation: `npm run typecheck` passed.
 - S20 whitespace validation: `git diff --check` passed.
+- S17-S20 integrated targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 29 tests.
+- S17-S20 integrated type validation: `npm run typecheck` passed.
+- S17-S20 integrated docs governance validation: `npm run validate:docs-governance` passed.
+- S17-S20 integrated full validation: `npm run validate` passed.
+- S17-S20 integrated browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on sequential rerun.
+- S17-S20 integrated Synpress validation: `npm run e2e:synpress` passed with 1 test on sequential rerun.
+- S17-S20 initial parallel browser/Synpress run timed out during `page.goto("/")` while full validation was also running; sequential reruns passed and found no modal assertion failures.
+- S17-S20 reviewer pass: subagent reviewer found no blockers in the wallet/login modal module and confirmed SIWS session, connected adapter, mismatch state, federated flow, and reduced-motion boundaries are consistent.
