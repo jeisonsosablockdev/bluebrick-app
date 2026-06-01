@@ -19,6 +19,7 @@
 - S15 clean-code extraction is implemented in this slice.
 - S16 reviewer clean-code follow-up is implemented in this slice.
 - S17-S20 technical-debt cleanup slices are implemented from the strict audit.
+- S21 private-route logout redirect is implemented after admin dashboard regression review.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -92,6 +93,7 @@ Initiative branch:
 | S18 | implemented | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-props` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
 | S19 | implemented | `fix/app-login-modal-issue-bri-167-s19-referral-section` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
 | S20 | implemented | `fix/app-login-modal-issue-bri-167-s20-test-mock-types` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, whitespace check | local slice |
+| S21 | implemented | `fix/app-login-modal-issue-bri-167-s21-private-logout-redirect` | Redirect logout from private routes to public main instead of refreshing into forbidden content | `WalletModal` disconnect success branch, component assertion, artifacts | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -102,6 +104,7 @@ Initiative branch:
 6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 7. Run S12-S15 as post-review hardening after the first merge to `develop`: P1 behavioral fix, P2 accessibility/motion fix, P3 artifact sync, then clean-code extraction.
 8. Run S17-S20 as strict audit remediation after S16: modal shell extraction, wallet proof prop grouping, shared referral section, then typed test mocks.
+9. Run S21 after admin dashboard regression review: private-route logout must leave the private route before the route refresh can render forbidden state.
 
 ## Post-Reviewer Hardening Plan
 ### S12 - P1 Logout Refresh Hardening
@@ -260,6 +263,32 @@ Acceptance:
 Status:
 - Implemented in S20 by typing referral hint fixtures and the SIWS mock input/output.
 - `tests/components/wallet-modal-header-cta.test.ts` no longer uses `as never`.
+
+### S21 - Private Route Logout Redirect
+Problem:
+- From `/admin/dashboard`, wallet sign-out clears admin authorization and then refreshes the same private route.
+- The admin layout correctly renders forbidden content after auth is gone, so the user lands on `/403`/forbidden instead of returning to the public main surface.
+
+Implementation:
+- detect private current paths during logout (`/admin`, `/protected`, `/checkout`)
+- after successful wallet-only logout, push to `/` when the current path is private
+- keep public-route wallet logout behavior as a refresh so public content can revalidate auth-dependent chrome in place
+- keep federated sign-out return target public when initiated from a private route
+
+Acceptance:
+- signing out from `/admin/dashboard` navigates to `/`
+- existing public-route logout refresh behavior remains covered
+- server-side admin authorization remains unchanged
+
+Status:
+- Implemented in S21 by routing wallet-only logout from private paths to `/` instead of refreshing the private route.
+- Federated sign-out also uses `/` as the `returnTo` target when initiated from a private path.
+- Public-route wallet logout still refreshes in place.
+- S21 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S21 type validation: `npm run typecheck` passed.
+- S21 docs governance validation: `npm run validate:docs-governance` passed.
+- S21 whitespace validation: `git diff --check` passed.
+- S21 full validation: `npm run validate` passed with the known `pg` SSL mode warning.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent

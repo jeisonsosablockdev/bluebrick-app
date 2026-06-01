@@ -1003,7 +1003,95 @@ describe("components/WalletModal header CTA", () => {
     expect(disconnect).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
     expect(navigationMocks.refresh).toHaveBeenCalledTimes(1);
+    expect(navigationMocks.push).not.toHaveBeenCalled();
     expect(document.body.textContent).not.toContain("Reconectar wallet");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("redirects private admin route sign out to public main instead of refreshing forbidden content", async () => {
+    navigationMocks.pathname = "/admin/dashboard";
+    const disconnect = vi.fn(async () => undefined);
+    const signMessage = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      signMessage
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet11111111111111111111111111111111111"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect,
+      select: vi.fn(),
+      signMessage
+    });
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "admin"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: false,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "admin"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Wallet");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const signOutButton = findButtonByText(document.body, "Cerrar sesion y desconectar wallet");
+
+    await act(async () => {
+      signOutButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
+    expect(navigationMocks.push).toHaveBeenCalledWith("/");
+    expect(navigationMocks.refresh).not.toHaveBeenCalled();
 
     act(() => {
       root.unmount();
