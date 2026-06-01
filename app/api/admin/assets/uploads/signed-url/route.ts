@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { buildUploadContractRequirements, getGcsUploadConfig } from "@/lib/asset-uploads/gcs";
+import { buildUploadContractExpiresAt, getGcsUploadConfig } from "@/lib/asset-uploads/gcs";
 import {
   buildVersionedObjectKey,
   generateUploadId,
@@ -104,12 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
     const categoryPolicy = getCategoryPolicy(payload.category);
 
-    const uploadRequirements = await buildUploadContractRequirements({
-      config,
-      mimeType: payload.mimeType,
-      sizeBytes: payload.sizeBytes,
-      contentMd5Base64: payload.contentMd5Base64
-    });
+    const expiresAt = buildUploadContractExpiresAt(config);
 
     await createSignedUploadContract({
       uploadId,
@@ -124,13 +119,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       mimeType: payload.mimeType,
       sizeBytes: payload.sizeBytes,
       contentMd5Base64: payload.contentMd5Base64,
-      expiresAt: uploadRequirements.expiresAt
+      expiresAt
     });
 
     return NextResponse.json({
       uploadId,
       objectKey,
-      expiresAt: uploadRequirements.expiresAt,
+      expiresAt,
       maxSizeBytes: categoryPolicy.maxSizeBytes,
       clientUploadUrl: CLIENT_UPLOAD_URL,
       finalizeUrl: `/api/admin/assets/uploads/${uploadId}/finalize`

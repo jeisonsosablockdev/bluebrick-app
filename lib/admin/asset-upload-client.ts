@@ -15,7 +15,7 @@ export type SeoImageUploadContext = {
   imageRole?: string | null;
 };
 
-export type SignedUrlResponse = {
+export type AssetUploadContractResponse = {
   uploadId: string;
   objectKey: string;
   expiresAt: string;
@@ -93,7 +93,7 @@ async function safeJson(response: Response): Promise<unknown> {
   return response.json().catch(() => ({}));
 }
 
-export async function uploadAssetFileViaSignedUrl(input: {
+export async function uploadAssetFileViaClientBlob(input: {
   file: File;
   category: AssetUploadCategory;
   draftId: string;
@@ -125,7 +125,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
     throw new Error(parseApiErrorMessage(signedPayload, "Could not get a signed upload URL."));
   }
 
-  const signed = signedPayload as SignedUrlResponse;
+  const signed = signedPayload as AssetUploadContractResponse;
 
   const blob = await upload(signed.objectKey, input.file, {
     access: "public",

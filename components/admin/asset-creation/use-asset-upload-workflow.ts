@@ -8,7 +8,7 @@ import {
   type AssetUploadCategory,
   type FinalizeResponse,
   type SeoImageUploadContext,
-  uploadAssetFileViaSignedUrl
+  uploadAssetFileViaClientBlob
 } from "@/lib/admin/asset-upload-client";
 
 type SetStateAction<T> = T | ((prev: T) => T);
@@ -189,7 +189,7 @@ export function useAssetUploadWorkflow({
       });
 
       try {
-        const result = await uploadAssetFileViaSignedUrl({
+        const result = await uploadAssetFileViaClientBlob({
           file,
           category,
           draftId,
