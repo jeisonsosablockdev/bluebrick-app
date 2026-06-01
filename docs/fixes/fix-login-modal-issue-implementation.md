@@ -5,13 +5,18 @@
 - S02 modal viewport slice is merged into the initiative branch.
 - S03 auth-state matrix slice is merged into the initiative branch.
 - S04 disconnect/sign-out slice is merged into the initiative branch.
-- S05 QA/review/docs slice is implemented and under final merge.
+- S05 QA/review/docs slice is merged into the initiative branch.
 - S06 modal action layout slice is implemented after visual review.
 - S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
 - S08 wallet intent gating slice is implemented after reload-flow review.
 - S09 wallet-connected page sharpness slice is implemented after visual review.
 - S10 wallet signing intent modal redesign slice is implemented after UX review.
 - S11 wallet proof progress polish slice is implemented after visual color review.
+- Initial BRI-167 implementation was merged into `develop`.
+- S12 P1 logout refresh hardening is merged into the hardening branch.
+- S13 P2 reduced-motion hardening is merged into the hardening branch.
+- S14 P3 artifact status sync is implemented in this slice.
+- S15 clean-code extraction is implemented in this slice.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -76,6 +81,10 @@ Initiative branch:
 | S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
 | S10 | implemented | `fix/app-login-modal-issue-bri-167-s10-wallet-signing-intent-modal` | Redesign wallet-signing modal so it communicates intent and progress | `WalletModal` wallet proof panel, Motion progress states, copy/action hierarchy, component assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
 | S11 | implemented | `fix/app-login-modal-issue-bri-167-s11-wallet-progress-polish` | Align wallet proof progress indicators with the BRIDS glass palette | `WalletModal` progress/status styling, component assertions, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
+| S12 | merged | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
+| S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -84,6 +93,79 @@ Initiative branch:
 4. Run S04 after state labels are clear, because disconnect success/failure must be validated against the final state matrix.
 5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
 6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
+7. Run S12-S15 as post-review hardening after the first merge to `develop`: P1 behavioral fix, P2 accessibility/motion fix, P3 artifact sync, then clean-code extraction.
+
+## Post-Reviewer Hardening Plan
+### S12 - P1 Logout Refresh Hardening
+Problem:
+- wallet login success calls `router.refresh()` after SIWS session creation
+- wallet-only logout clears local state and broadcasts auth sync, but the non-federated success branch does not refresh the route
+
+Implementation:
+- add route refresh after successful wallet-only logout/disconnect
+- keep server auth authority unchanged
+- add a component regression assertion for the logout refresh branch
+
+Acceptance:
+- successful wallet-only logout clears local UI state and requests a route refresh
+- federated sign-out behavior remains unchanged
+
+Status:
+- Implemented in S12 by refreshing the route after successful wallet-only logout.
+- Component regression coverage confirms `router.refresh()` is called in that branch.
+
+### S13 - P2 Prefers Reduced Motion Hardening
+Problem:
+- the wallet proof panel can animate status/progress even when the user requests reduced motion
+- route transition fallback/page variants still animate in reduced-motion mode
+
+Implementation:
+- gate repeated wallet proof animations with `useReducedMotion`
+- add reduced-motion route variants that avoid transform/filter motion
+- preserve the normal BRIDS Motion 12 experience for users without reduced-motion preference
+
+Acceptance:
+- reduced-motion users do not receive repeated progress sweeps or page transform/filter transitions
+- existing visual states remain legible without animation
+
+Status:
+- Implemented in S13 by gating wallet proof repeated animations with `useReducedMotion`.
+- Route transitions now use reduced-motion variants without transform/filter movement when the preference is active.
+
+### S14 - P3 Artifact Status Sync
+Problem:
+- artifacts still carried stale pre-implementation wording after the initial merge
+
+Implementation:
+- update problem and implementation artifacts to reflect merged implementation plus reopened hardening slices
+- keep Linear issue key and artifact pair traceability explicit
+
+Acceptance:
+- docs governance passes
+- artifacts describe current branch intent and remaining slices without contradicting implementation state
+
+Status:
+- Implemented in S14.
+- S15 remains as the clean-code closeout slice before final validation.
+
+### S15 - Clean-Code Wallet Proof Refactor
+Problem:
+- `WalletModal` has become a large orchestration component that also owns detailed wallet proof presentation
+
+Implementation:
+- extract wallet proof presentation into a focused child component or narrow helpers
+- keep auth decisions, fetch/logout, SIWS signing, and router refresh in the parent
+- preserve copy, state names, and tests unless the extraction reveals a safer naming improvement
+
+Acceptance:
+- no auth behavior change
+- component tests still pass
+- clean-code review has no blocking findings
+
+Status:
+- Implemented in S15 by extracting the wallet proof presentation into `components/wallet-modal/wallet-proof-panel.tsx`.
+- The parent modal still owns auth decisions, SIWS signing, disconnect/logout, and route refresh.
+- Phantom install URL now lives in `components/wallet-modal/constants.ts` to avoid duplicate presentation constants.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -352,3 +434,23 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S11 docs governance validation: `npm run validate:docs-governance` passed.
 - S11 whitespace validation: `git diff --check` passed.
 - S11 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+
+## Post-Review Hardening Validation Results
+- S12 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests.
+- S12 type validation: `npm run typecheck` passed.
+- S12 docs governance validation: `npm run validate:docs-governance` passed.
+- S12 whitespace validation: `git diff --check` passed.
+- S13 targeted motion/modal validation: `npm test -- tests/lib/motion.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 26 tests.
+- S13 type validation: `npm run typecheck` passed.
+- S13 docs governance validation: `npm run validate:docs-governance` passed.
+- S13 whitespace validation: `git diff --check` passed.
+- S15 clean-code pass: wallet proof UI was extracted from `WalletModal` into `WalletProofPanel`; auth authority remains in the parent.
+- S15 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 26 tests.
+- S15 type validation: `npm run typecheck` passed.
+- S15 docs governance validation: `npm run validate:docs-governance` passed.
+- S15 whitespace validation: `git diff --check` passed.
+- Final clean-code audit: no blocking findings. Non-blocking residual debt is limited to broad `WalletProofPanel` props, duplicated referral copy, and dense-but-localized auth-state derivation in `WalletModal`.
+- Final full validation: `npm run validate` passed.
+- Final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- Final Synpress validation: `npm run e2e:synpress` passed with 1 test.
+- Final observed non-blocking warning: database validation still emits the known `pg` SSL mode warning.
