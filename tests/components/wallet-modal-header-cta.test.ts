@@ -50,6 +50,11 @@ const authClientMocks = vi.hoisted(() => ({
 
 const referralStateMocks = vi.hoisted(() => ({
   buildPhantomBrowseDeepLink: vi.fn(() => "phantom://browse"),
+  buildReferralAuthPayload: vi.fn((input: { referralCode: string }) => ({
+    normalizedReferralCode: input.referralCode.trim(),
+    referralSource: input.referralCode.trim() ? "manual" : undefined,
+    referralMetadata: input.referralCode.trim() ? {} : undefined
+  })),
   buildReferralAuthMetadata: vi.fn(() => ({})),
   buildStoredReferralHint: vi.fn(() => null),
   clearStoredReferralHint: vi.fn(),
@@ -112,6 +117,7 @@ vi.mock("@/components/onboarding/onboarding-reward-decision-modal", () => ({
 
 vi.mock("@/lib/referrals/client-state", () => ({
   buildPhantomBrowseDeepLink: referralStateMocks.buildPhantomBrowseDeepLink,
+  buildReferralAuthPayload: referralStateMocks.buildReferralAuthPayload,
   buildReferralAuthMetadata: referralStateMocks.buildReferralAuthMetadata,
   buildStoredReferralHint: referralStateMocks.buildStoredReferralHint,
   clearStoredReferralHint: referralStateMocks.clearStoredReferralHint,

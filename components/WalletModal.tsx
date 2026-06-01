@@ -24,6 +24,7 @@ import type { LocaleText } from "@/lib/i18n";
 import { ANONYMOUS_AUTH_STATE, fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
 import {
   buildPhantomBrowseDeepLink,
+  buildReferralAuthPayload,
   buildReferralAuthMetadata,
   buildStoredReferralHint,
   clearStoredReferralHint,
@@ -928,22 +929,16 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         throw new Error("Current wallet does not support message signing.");
       }
 
-      const normalizedReferralCode = normalizeReferralCodeInput(referralCode);
-      const referralSource =
-        normalizedReferralCode
-          ? deriveReferralAttributionSource({
-              origin: referralOrigin,
-              isMobileWalletFlow: isMobileUserAgent || isInPhantomApp
-            })
-          : undefined;
-      const referralMetadata =
-        normalizedReferralCode && referralSource
-          ? buildReferralAuthMetadata({
-              landingPath: currentLandingPath,
-              origin: referralOrigin,
-              source: referralSource
-            })
-          : undefined;
+      const {
+        normalizedReferralCode,
+        referralSource,
+        referralMetadata
+      } = buildReferralAuthPayload({
+        referralCode,
+        origin: referralOrigin,
+        landingPath: currentLandingPath,
+        isMobileWalletFlow: isMobileUserAgent || isInPhantomApp
+      });
 
       if (hasFederatedSession && normalizedReferralCode && referralSource) {
         await persistReferralIntent({
