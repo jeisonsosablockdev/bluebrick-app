@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
   getRequestRole: vi.fn(),
-  buildSignedPutUrl: vi.fn(),
+  buildUploadContractExpiresAt: vi.fn(),
   getGcsUploadConfig: vi.fn(() => ({
     bucketName: "vercel-blob",
     cdnBaseUrl: null,
@@ -18,7 +18,7 @@ vi.mock("@/lib/auth-session", () => ({
 }));
 
 vi.mock("@/lib/asset-uploads/gcs", () => ({
-  buildSignedPutUrl: routeMocks.buildSignedPutUrl,
+  buildUploadContractExpiresAt: routeMocks.buildUploadContractExpiresAt,
   getGcsUploadConfig: routeMocks.getGcsUploadConfig
 }));
 
@@ -50,15 +50,7 @@ describe("POST /api/admin/assets/uploads/signed-url", () => {
       role: "admin",
       pubkey: actorPubkey
     });
-    routeMocks.buildSignedPutUrl.mockResolvedValue({
-      uploadUrl: "https://blob.example.com/upload",
-      requiredHeaders: {
-        "Content-Type": "image/jpeg",
-        "Content-Length": "512000",
-        "Content-MD5": "1B2M2Y8AsgTpgAmY7PhCfg=="
-      },
-      expiresAt: "2026-05-30T12:00:00.000Z"
-    });
+    routeMocks.buildUploadContractExpiresAt.mockReturnValue("2026-05-30T12:00:00.000Z");
     routeMocks.createSignedUploadContract.mockResolvedValue(undefined);
   });
 
@@ -86,6 +78,8 @@ describe("POST /api/admin/assets/uploads/signed-url", () => {
 
     expect(response.status).toBe(200);
     expect(payload.objectKey).toContain("hickory-brandon-117-brandon-fl-usa-fix-flip-br-117-cover");
+    expect(payload.clientUploadUrl).toBe("/api/admin/assets/uploads/client-upload");
+    expect(payload.uploadUrl).toBeUndefined();
     expect(contractInput).toMatchObject({
       actorPubkey,
       draftId,

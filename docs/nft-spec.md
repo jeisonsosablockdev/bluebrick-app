@@ -324,6 +324,15 @@ Last Updated: 2026-06-01
 
 Last Updated: 2026-04-12 21:07:07 UTC
 
+## BRI-165 S20-S23 Asset Document Upload Transport Note
+- `/admin/assets/new` now sends brochure, legal, financial, and media bytes directly from the browser to Vercel Blob through `@vercel/blob/client`.
+- This is an off-chain storage transport change only:
+  - Core Candy Machine collection/asset metadata URI rules remain unchanged.
+  - Pinata/IPFS metadata pinning behavior remains unchanged.
+  - Mint authority, collection authority, royalties, guards, and on-chain transaction construction are not modified.
+- The existing upload contract, finalize validation, `editSessionId` lifecycle, and marketplace handoff remain the source of app-side traceability for files attached before mint/deploy.
+- The document limit stays `10 MB`; oversized PDFs are rejected before upload with a compression recommendation rather than being sent through a Vercel Function that can return `413`.
+
 ## EPIC-002 Implementation Notes (Core Candy Machine Mint Module)
 - Status: `in-review` (2026-03-16)
 - Scope implemented in this iteration:

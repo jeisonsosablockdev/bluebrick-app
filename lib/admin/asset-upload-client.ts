@@ -1,5 +1,6 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import SparkMD5 from "spark-md5";
 
 export type AssetUploadCategory = "galleryImage" | "propertyImage" | "brochureFile" | "legalDoc" | "financialDoc";
@@ -14,18 +15,12 @@ export type SeoImageUploadContext = {
   imageRole?: string | null;
 };
 
-export type SignedUrlResponse = {
+export type AssetUploadContractResponse = {
   uploadId: string;
-  uploadUrl: string;
-  method: "PUT";
-  requiredHeaders: {
-    "Content-Type": string;
-    "Content-Length": string;
-    "Content-MD5": string;
-  };
   objectKey: string;
   expiresAt: string;
   maxSizeBytes: number;
+  clientUploadUrl: string;
   finalizeUrl: string;
 };
 
@@ -98,17 +93,7 @@ async function safeJson(response: Response): Promise<unknown> {
   return response.json().catch(() => ({}));
 }
 
-function buildUploadHeaders(
-  requiredHeaders: SignedUrlResponse["requiredHeaders"]
-): Record<string, string> {
-  // Browsers do not allow setting Content-Length manually.
-  return {
-    "Content-Type": requiredHeaders["Content-Type"],
-    "Content-MD5": requiredHeaders["Content-MD5"]
-  };
-}
-
-export async function uploadAssetFileViaSignedUrl(input: {
+export async function uploadAssetFileViaClientBlob(input: {
   file: File;
   category: AssetUploadCategory;
   draftId: string;
@@ -140,17 +125,15 @@ export async function uploadAssetFileViaSignedUrl(input: {
     throw new Error(parseApiErrorMessage(signedPayload, "Could not get a signed upload URL."));
   }
 
-  const signed = signedPayload as SignedUrlResponse;
+  const signed = signedPayload as AssetUploadContractResponse;
 
-  const putResponse = await fetch(signed.uploadUrl, {
-    method: signed.method,
-    headers: buildUploadHeaders(signed.requiredHeaders),
-    body: input.file
+  const blob = await upload(signed.objectKey, input.file, {
+    access: "public",
+    handleUploadUrl: signed.clientUploadUrl,
+    clientPayload: JSON.stringify({ uploadId: signed.uploadId }),
+    contentType: input.file.type,
+    multipart: input.file.size > 8 * 1024 * 1024
   });
-
-  if (!putResponse.ok) {
-    throw new Error(`Storage upload failed (${putResponse.status}).`);
-  }
 
   const finalizeResponse = await fetch(signed.finalizeUrl, {
     method: "POST",
@@ -160,7 +143,7 @@ export async function uploadAssetFileViaSignedUrl(input: {
     body: JSON.stringify({
       draftId: input.draftId,
       editSessionId: input.editSessionId?.trim() || null,
-      etag: putResponse.headers.get("etag"),
+      etag: blob.etag,
       sizeBytes: input.file.size,
       mimeType: input.file.type,
       contentMd5Base64,

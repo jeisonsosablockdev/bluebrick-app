@@ -18,6 +18,7 @@ Apply the smallest safe changes that unblock the admin flow:
 12. allow marketplace image rendering for Vercel Blob URLs produced by the admin upload pipeline.
 13. require Core Candy Machine deploy to finalize a verified mint snapshot before `/admin/assets/new` enables marketplace entry creation.
 14. carry `/admin/assets/new` gallery and property uploads through the marketplace create handoff and render them on marketplace detail pages.
+15. route brochure, legal, and financial document bytes directly from the browser to Vercel Blob with `@vercel/blob/client`, keeping the product's `10 MB` document limit and avoiding Vercel Function `413` payload failures.
 
 ## Slice Plan
 
@@ -53,7 +54,7 @@ Apply the smallest safe changes that unblock the admin flow:
 
 ### Slice BRI-165-7
 - Generate a stable `editSessionId` for each `/admin/assets/new` form session.
-- Pass that `editSessionId` through `use-asset-upload-workflow.ts` into `uploadAssetFileViaSignedUrl`.
+- Pass that `editSessionId` through `use-asset-upload-workflow.ts` into the shared asset upload client.
 - Ensure signed-url and finalize requests persist the session identifier through the existing upload contract.
 - Keep existing upload refs and form field hydration behavior intact.
 
@@ -212,6 +213,47 @@ Apply the smallest safe changes that unblock the admin flow:
   - Uploaded image objects remain in Vercel Blob and their original upload audit trail is preserved.
   - Marketplace detail no longer depends only on `image_url`; attached gallery/property images are visible from the same persisted entry.
 
+### Slice BRI-165-20
+- Document the production `Storage upload failed (413)` failure for brochure, legal, and financial document uploads.
+- Keep the existing document upload limit at `10 MB` for `brochureFile`, `legalDoc`, and `financialDoc`.
+- Adopt Vercel Blob client uploads as the transport for document and media bytes so file bodies do not pass through an app Function.
+- Reject files above `10 MB` before upload with a clear admin-facing message and a compression link to [iLovePDF Compress PDF](https://www.ilovepdf.com/compress_pdf).
+- Preserve the existing upload contract audit trail, checksum/finalize validation, `editSessionId` lifecycle, and orphan cleanup behavior.
+
+### Slice BRI-165-21
+- Add an authenticated Vercel Blob client-upload token route for asset uploads.
+- Validate the client token request against the existing signed upload contract:
+  - admin role is required,
+  - requested pathname must match the contract object key,
+  - MIME type and maximum size must match the contract,
+  - expired, finalized, or missing contracts are rejected.
+- Update the shared asset upload client to use `@vercel/blob/client` instead of `fetch(.../binary)` for the actual file bytes.
+- Keep the existing finalization request after Blob confirms the upload, so DB persistence still happens through the current finalize route.
+
+### Slice BRI-165-22
+- Remove the obsolete `/api/admin/assets/uploads/[uploadId]/binary` route after all callers use Vercel Blob client uploads.
+- Improve frontend upload error handling so over-limit documents explain:
+  - the current `10 MB` maximum,
+  - the failed file name/category,
+  - the recommended compression URL.
+- Add regression coverage for over-limit policy messaging and absence of the old binary transport path.
+- Implementation evidence:
+  - `uploadAssetFileViaClientBlob` now requests the existing upload contract, uploads bytes through `@vercel/blob/client`, and then calls the existing finalize route.
+  - `/api/admin/assets/uploads/client-upload` generates Vercel Blob client tokens only after validating the contract owner, object key, MIME type, exact size limit, expiration, and finalized state.
+  - `/api/admin/assets/uploads/[uploadId]/binary` was removed because no caller should stream file bytes through an app Function.
+  - Oversized document uploads keep the `10 MB` policy and return a clear compression hint with the iLovePDF URL.
+
+### Slice BRI-165-23
+- Run the final clean-code audit for this upload transport follow-up.
+- Verify there is no duplicate upload policy logic between the signed-contract route, client-upload token route, and frontend client.
+- Verify the deleted `/binary` route has no remaining references.
+- Confirm tests, lint, typecheck, validate, and documentation gates pass before merge.
+- Implementation evidence:
+  - Clean-code audit found no blocking duplication or dead upload transport code after removing `/binary`.
+  - The `10 MB` limit remains centralized in `lib/asset-uploads/policy.ts`; the client displays the server message instead of duplicating size policy.
+  - The client-upload route validates authority against the existing upload contract instead of introducing a parallel permission model.
+  - `rg` found no remaining code references to the removed binary route or old upload helper names.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -234,6 +276,7 @@ Targeted regression coverage will verify:
 - Next Image allows Vercel Blob URLs under `/admin-assets/**` so minted assets can be opened in marketplace immediately after creation.
 - Core Candy Machine deploy finalizes a verified snapshot before enabling Create Asset and blocks deploy completion when the snapshot is not ready.
 - Marketplace create handoff persists and renders gallery/property images uploaded during `/admin/assets/new`.
+- Brochure, legal, and financial document uploads no longer call the app `/binary` Function for file bytes and still fail fast above `10 MB` with a clear compression recommendation.
 
 ## Final Review
 
@@ -247,6 +290,7 @@ Targeted regression coverage will verify:
 - The Vercel Blob image follow-up must confirm the allowlist remains scoped to HTTPS `admin-assets` URLs instead of allowing all remote hosts.
 - The deploy snapshot follow-up must confirm marketplace entries cannot be created from `/admin/assets/new` without a verified `snapshotId`.
 - The marketplace media follow-up must confirm gallery/property images use the existing collection media item contract instead of a parallel format.
+- The document upload transport follow-up must confirm the browser-to-Blob path reuses the existing signed upload contract instead of introducing a second authority model.
 
 ## Tooling
 
