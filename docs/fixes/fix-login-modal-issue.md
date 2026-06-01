@@ -123,6 +123,39 @@ Resolution:
 - S19 introduced `components/wallet-modal/referral-code-section.tsx` as the shared referral presentation owner.
 - S20 typed the wallet modal test mocks and removed the brittle `as never` casts.
 
+### Clean Code Audit After S21
+The Clean Code audit after the private-route logout fix found no new blockers, but identified follow-up debt that should be resolved through TDD-first slices:
+
+1. Oversized wallet modal orchestrator
+- `components/WalletModal.tsx` still owns too many reasons to change: navigation chrome, auth derivation, wallet adapter effects, referrals, WorkOS entry, SIWS, onboarding reward, auth sync, mobile Phantom fallback, and render composition.
+- Risk: a small auth or routing fix can unintentionally affect unrelated wallet, referral, or modal behavior.
+- Slices: S23-S30 reduce this by extracting tested helpers one responsibility at a time.
+
+2. `handleWalletPrimaryAction` mixes abstraction levels
+- One function currently performs Phantom connection, SIWS signing, referral attribution, local auth mutation, profile fetch, onboarding decision, and navigation.
+- Risk: future wallet sign-in changes are difficult to reason about and hard to test without full component setup.
+- Slices: S26-S28 extract referral payload, wallet signing preparation, and post-auth decision handling behind focused tests.
+
+3. Private route knowledge is hardcoded in the modal
+- `WalletModal` knows private route prefixes directly.
+- Risk: private route changes can drift from logout redirect behavior.
+- Slice: S23 moves private-route detection to a shared tested helper.
+
+4. Auth-state equality is noisy and duplicated
+- `refreshAuthState` repeats the `federatedAvailable` comparison and keeps a long inline equality check inside the component.
+- Risk: auth payload additions can be missed or duplicated in an inline conditional.
+- Slice: S24 extracts an equality helper with tests.
+
+5. Wallet modal tests are becoming a second hotspot
+- `tests/components/wallet-modal-header-cta.test.ts` repeats large Phantom and auth fixtures.
+- Risk: adding regressions requires copying setup, making test intent harder to read.
+- Slice: S25 introduces focused test factories/helpers and migrates the duplicated setup incrementally.
+
+6. `WalletProofPanel` still derives copy inside JSX
+- The panel is presentational, but still computes titles, descriptions, status labels, and step state inline.
+- Risk: visual copy/state changes require scanning nested ternaries in markup.
+- Slice: S29 extracts a tested wallet proof view model.
+
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
 - Opening the modal does not scroll the underlying page.
@@ -164,6 +197,8 @@ Out of scope:
 - S19: extract shared referral code section. Implemented.
 - S20: remove brittle `as never` test mock typing. Implemented.
 - S21: redirect private-route logout to public main instead of refreshing into forbidden content. Implemented.
+- S22: document Clean Code audit findings and TDD remediation slices. Implemented.
+- S23-S30: planned TDD-first clean-code remediation slices.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 
