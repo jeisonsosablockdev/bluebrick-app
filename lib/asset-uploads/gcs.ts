@@ -21,17 +21,14 @@ export type DeleteGcsObjectResult = {
   notFound: boolean;
 };
 
-type BuildSignedPutUrlInput = {
+type BuildUploadContractRequirementsInput = {
   config: GcsUploadConfig;
-  uploadId: string;
-  objectKey: string;
   mimeType: string;
   sizeBytes: number;
   contentMd5Base64: string;
 };
 
-export type SignedPutUrl = {
-  uploadUrl: string;
+export type UploadContractRequirements = {
   expiresAt: string;
   requiredHeaders: Record<"Content-Type" | "Content-Length" | "Content-MD5", string>;
 };
@@ -93,13 +90,12 @@ export function getGcsUploadConfig(): GcsUploadConfig {
   };
 }
 
-export async function buildSignedPutUrl(input: BuildSignedPutUrlInput): Promise<SignedPutUrl> {
+export async function buildUploadContractRequirements(
+  input: BuildUploadContractRequirementsInput
+): Promise<UploadContractRequirements> {
   const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + input.config.signedUrlTtlSeconds;
 
   return {
-    // Keep signed-url contract stable for the frontend:
-    // upload directly to an internal route that streams to Vercel Blob.
-    uploadUrl: `/api/admin/assets/uploads/${input.uploadId}/binary`,
     expiresAt: new Date(expiresAtEpochSeconds * 1000).toISOString(),
     requiredHeaders: {
       "Content-Type": input.mimeType,

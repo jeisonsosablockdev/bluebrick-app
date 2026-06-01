@@ -165,6 +165,27 @@ describe("lib/asset-uploads/policy", () => {
     expect(parsed.code).toBe("MIME_NOT_ALLOWED");
   });
 
+  it("returns a clear compression hint when a document exceeds the 10 MB limit", () => {
+    const parsed = parseSignedUrlRequest({
+      category: "brochureFile",
+      fileName: "Englelake Oportunidad de Inversion.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: 10 * 1024 * 1024 + 1,
+      contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
+      draftId: DRAFT_ID
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+
+    expect(parsed.code).toBe("FILE_TOO_LARGE");
+    expect(parsed.message).toBe(
+      "Brochure exceeds the 10 MB upload limit. Compress PDF files at https://www.ilovepdf.com/compress_pdf and try again."
+    );
+  });
+
   it("builds safe versioned object keys", () => {
     const objectKey = buildVersionedObjectKey({
       category: "legalDoc",
