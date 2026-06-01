@@ -5,6 +5,25 @@ import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+type ReferralAttributionSourceFixture = "link" | "manual" | "deep_link" | "unknown";
+
+type ReferralHintFixture = {
+  referralCode: string;
+  origin: ReferralAttributionSourceFixture;
+  landingPath: string;
+  capturedAt: string;
+};
+
+type StartSiwsMockInput = {
+  onStatus?: (status: "signing" | "verifying") => void;
+};
+
+type StartSiwsMockOutput = Promise<{
+  publicKey: string;
+  isNewUser: boolean;
+  referralBindingOutcome?: string | null;
+}>;
+
 const localeMocks = vi.hoisted(() => ({
   useI18n: vi.fn()
 }));
@@ -24,7 +43,7 @@ const navigationMocks = vi.hoisted(() => ({
 const authClientMocks = vi.hoisted(() => ({
   fetchAuthMe: vi.fn(),
   persistReferralIntent: vi.fn(),
-  startSiws: vi.fn()
+  startSiws: vi.fn<(input: StartSiwsMockInput) => StartSiwsMockOutput>()
 }));
 
 const referralStateMocks = vi.hoisted(() => ({
@@ -32,9 +51,9 @@ const referralStateMocks = vi.hoisted(() => ({
   buildReferralAuthMetadata: vi.fn(() => ({})),
   buildStoredReferralHint: vi.fn(() => null),
   clearStoredReferralHint: vi.fn(),
-  deriveReferralAttributionSource: vi.fn(() => "unknown"),
+  deriveReferralAttributionSource: vi.fn<() => ReferralAttributionSourceFixture>(() => "unknown"),
   normalizeReferralCodeInput: vi.fn((value: string) => value),
-  readStoredReferralHint: vi.fn(() => null),
+  readStoredReferralHint: vi.fn<() => ReferralHintFixture | null>(() => null),
   writeStoredReferralHint: vi.fn()
 }));
 
@@ -701,10 +720,10 @@ describe("components/WalletModal header CTA", () => {
       select: vi.fn(),
       signMessage
     });
-    authClientMocks.startSiws.mockImplementation(((input: { onStatus?: (status: string) => void }) => {
+    authClientMocks.startSiws.mockImplementation((input) => {
       input.onStatus?.("signing");
       return new Promise(() => undefined);
-    }) as never);
+    });
 
     const { root } = renderWalletModal({
       authenticated: false,
@@ -1137,12 +1156,12 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("persists a stored referral hint after federated login without a wallet session", async () => {
-    referralStateMocks.readStoredReferralHint.mockImplementation((() => ({
+    referralStateMocks.readStoredReferralHint.mockReturnValue({
       referralCode: "REF123",
       origin: "manual",
       landingPath: "/marketplace",
       capturedAt: "2026-05-10T00:00:00.000Z"
-    })) as never);
+    });
     referralStateMocks.deriveReferralAttributionSource.mockReturnValue("manual");
 
     const { root } = renderWalletModal({
@@ -1177,12 +1196,12 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("does not persist the same stored referral hint twice across rerenders", async () => {
-    referralStateMocks.readStoredReferralHint.mockImplementation((() => ({
+    referralStateMocks.readStoredReferralHint.mockReturnValue({
       referralCode: "REF123",
       origin: "manual",
       landingPath: "/marketplace",
       capturedAt: "2026-05-10T00:00:00.000Z"
-    })) as never);
+    });
     referralStateMocks.deriveReferralAttributionSource.mockReturnValue("manual");
 
     const { root } = renderWalletModal({
