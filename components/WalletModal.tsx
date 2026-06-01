@@ -3,12 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WalletReadyState, type MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/locale-provider";
@@ -19,9 +18,9 @@ import { recordNavigationOriginFromClick } from "@/components/motion/navigation-
 import { AuthEntryActionCard } from "@/components/wallet-modal/auth-entry-action-card";
 import { PHANTOM_INSTALL_URL } from "@/components/wallet-modal/constants";
 import { ReferralCodeField } from "@/components/wallet-modal/referral-code-field";
+import { WalletModalShell } from "@/components/wallet-modal/wallet-modal-shell";
 import { WalletProofPanel } from "@/components/wallet-modal/wallet-proof-panel";
 import type { LocaleText } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 import { ANONYMOUS_AUTH_STATE, fetchAuthMe, persistReferralIntent, startSiws, type AuthMeResponse } from "@/lib/auth-client";
 import {
   buildPhantomBrowseDeepLink,
@@ -52,14 +51,11 @@ import {
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
-import { createPanelMotionVariants, createReducedMotionVariants, MOTION_FAST_OPACITY_TRANSITION, shouldUseReducedMotion } from "@/lib/motion";
+import { shouldUseReducedMotion } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 type WalletModalProps = {
   initialAuth?: AuthMeResponse;
-};
-
-type WalletModalPortalProps = {
-  children: ReactNode;
 };
 
 const WALLET_MODAL_IDLE_TIMEOUT_MS = 30_000;
@@ -81,14 +77,6 @@ type Translate = (text: LocaleText) => string;
 const PRIMARY_NAV_LINK_BASE_CLASSNAME =
   "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition";
 const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
-
-function WalletModalPortal({ children }: WalletModalPortalProps): ReactElement | null {
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  return createPortal(children, document.body);
-}
 
 function WalletCtaIcon() {
   return (
@@ -1438,145 +1426,80 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         </div>
       </header>
 
-      <WalletModalPortal>
-        <AnimatePresence>
-          {isOpen ? (
-            <motion.div
-              key="wallet-modal-overlay"
-              data-testid="wallet-modal-overlay"
-              className="fixed inset-0 z-[70] flex min-h-svh items-start justify-center overflow-y-auto bg-black/65 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm sm:items-center sm:p-6"
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              transition={shouldReduceMotion ? { duration: 0 } : MOTION_FAST_OPACITY_TRANSITION}
-              onClick={() => setIsOpen(false)}
-              role="presentation"
-            >
-              <motion.div
-                key="wallet-modal-panel"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="wallet-modal-title"
-                className="glass-surface max-h-[calc(100svh-1.5rem)] w-full max-w-lg overflow-y-auto overscroll-contain p-5 sm:max-h-[calc(100svh-3rem)] sm:p-6"
-                variants={shouldReduceMotion ? createReducedMotionVariants() : createPanelMotionVariants()}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                onClick={(event) => event.stopPropagation()}
-              >
-              <div className="pointer-events-none absolute -left-8 top-4 h-20 w-20 rounded-full bg-cyan-300/15 blur-3xl" />
-              <div className="pointer-events-none absolute -right-8 bottom-4 h-20 w-20 rounded-full bg-fuchsia-300/15 blur-3xl" />
+      <WalletModalShell
+        isOpen={isOpen}
+        closeButtonRef={closeButtonRef}
+        closeLabel={t({ en: "Close wallet modal", es: "Cerrar modal de wallet", pt: "Fechar modal da wallet" })}
+        feedback={topFeedbackText && !(isTopFeedbackStatus && shouldShowWalletIntentCard)
+          ? { text: topFeedbackText, isStatus: isTopFeedbackStatus }
+          : null}
+        shouldReduceMotion={shouldReduceMotion}
+        title={t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
+        onClose={() => setIsOpen(false)}
+      >
+        {shouldShowDirectAuthEntryActions ? (
+          <>
+            <AuthEntryActionCard
+              title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
+              mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
+              walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
+              mailIcon={<MailMethodIcon />}
+              walletIcon={<WalletCtaIcon />}
+              onMailClick={handleStartMailSignIn}
+              onWalletClick={handleStartWalletSignIn}
+              disabled={isBusy}
+            />
+            <ReferralCodeField
+              inputId="wallet-referral-code"
+              value={referralCode}
+              isVisible={isReferralFieldVisible}
+              onToggle={() => setIsReferralFieldVisible((previous) => !previous)}
+              onChange={handleReferralCodeChange}
+              toggleLabel={t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}
+              inputPlaceholder={t({
+                en: "Paste or edit your invite code",
+                es: "Pega o edita tu codigo de invitacion",
+                pt: "Cole ou edite seu codigo de convite"
+              })}
+              helpText={t({
+                en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
+                es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
+                pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
+              })}
+            />
+          </>
+        ) : null}
 
-              <div className="relative z-10 space-y-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 id="wallet-modal-title" className="text-xl font-semibold text-white">
-                      {t({ en: "Access your account", es: "Accede a tu cuenta", pt: "Acesse sua conta" })}
-                    </h2>
-                  </div>
-                  <button
-                    ref={closeButtonRef}
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 px-3 text-sm text-white/80 transition hover:bg-white/20"
-                    aria-label={t({ en: "Close wallet modal", es: "Cerrar modal de wallet", pt: "Fechar modal da wallet" })}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                {topFeedbackText && !(isTopFeedbackStatus && shouldShowWalletIntentCard) ? (
-                  <div
-                    className={cn(
-                      "flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-sm",
-                      isTopFeedbackStatus
-                        ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
-                        : "border-red-300/35 bg-red-500/10 text-red-200"
-                    )}
-                    role={isTopFeedbackStatus ? "status" : "alert"}
-                    aria-live={isTopFeedbackStatus ? "polite" : "assertive"}
-                  >
-                    {isTopFeedbackStatus ? (
-                      <span
-                        className={cn(
-                          "inline-block h-4 w-4 rounded-full border-2 border-cyan-300",
-                          shouldReduceMotion ? "bg-cyan-300/60" : "animate-spin border-t-transparent"
-                        )}
-                      />
-                    ) : null}
-                    {topFeedbackText}
-                  </div>
-                ) : null}
-
-                {shouldShowDirectAuthEntryActions ? (
-                  <>
-                    <AuthEntryActionCard
-                      title={t({ en: "Access your BRIDS account", es: "Ingresa a tu cuenta BRIDS", pt: "Entre na sua conta BRIDS" })}
-                      mailLabel={t({ en: "Mail", es: "Mail", pt: "Mail" })}
-                      walletLabel={t({ en: "Wallet", es: "Wallet", pt: "Wallet" })}
-                      mailIcon={<MailMethodIcon />}
-                      walletIcon={<WalletCtaIcon />}
-                      onMailClick={handleStartMailSignIn}
-                      onWalletClick={handleStartWalletSignIn}
-                      disabled={isBusy}
-                    />
-                    <ReferralCodeField
-                      inputId="wallet-referral-code"
-                      value={referralCode}
-                      isVisible={isReferralFieldVisible}
-                      onToggle={() => setIsReferralFieldVisible((previous) => !previous)}
-                      onChange={handleReferralCodeChange}
-                      toggleLabel={t({ en: "Enter your referral code (optional)", es: "Ingresa tu codigo de referido (opcional)", pt: "Digite seu codigo de indicacao (opcional)" })}
-                      inputPlaceholder={t({
-                        en: "Paste or edit your invite code",
-                        es: "Pega o edita tu codigo de invitacion",
-                        pt: "Cole ou edite seu codigo de convite"
-                      })}
-                      helpText={t({
-                        en: "If you arrived through a referral link, the code is prefilled and you can still adjust it before your first sign-in.",
-                        es: "Si llegaste por un link de referido, el codigo se precarga y aun puedes ajustarlo antes de tu primer inicio de sesion.",
-                        pt: "Se voce chegou por um link de referido, o codigo e preenchido automaticamente e ainda pode ser ajustado antes do primeiro login."
-                      })}
-                    />
-                  </>
-                ) : null}
-
-                {shouldShowWalletIntentCard ? (
-                  <WalletProofPanel
-                    t={t}
-                    phase={phase}
-                    hasWalletSession={hasWalletSession}
-                    hasWalletSessionAdapterMismatch={hasWalletSessionAdapterMismatch}
-                    hasFederatedSession={hasFederatedSession}
-                    hasWalletAuthIntent={hasWalletAuthIntent}
-                    isConnected={isConnected}
-                    isBusy={isBusy}
-                    isFederatedLoginAvailable={isFederatedLoginAvailable}
-                    isPhantomInstalled={isPhantomInstalled}
-                    isReferralFieldVisible={isReferralFieldVisible}
-                    isWalletAuthInProgress={isWalletAuthInProgress}
-                    referralCode={referralCode}
-                    walletConnectionStatusText={walletConnectionStatusText}
-                    walletPublicKey={copyableWalletPublicKey}
-                    walletPrimaryLabel={walletPrimaryLabel}
-                    walletDisconnectActionLabel={walletDisconnectActionLabel}
-                    shouldShowWalletPrimaryAction={shouldShowWalletPrimaryAction}
-                    shouldShowDisconnectButton={shouldShowDisconnectButton}
-                    onCopyAddress={copyAddress}
-                    onDisconnect={handleDisconnect}
-                    onReferralChange={handleReferralCodeChange}
-                    onReferralToggle={() => setIsReferralFieldVisible((previous) => !previous)}
-                    onStartFederatedLink={handleStartFederatedLink}
-                    onStartWalletSignIn={handleStartWalletSignIn}
-                  />
-                ) : null}
-
-              </div>
-              </motion.div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </WalletModalPortal>
+        {shouldShowWalletIntentCard ? (
+          <WalletProofPanel
+            t={t}
+            phase={phase}
+            hasWalletSession={hasWalletSession}
+            hasWalletSessionAdapterMismatch={hasWalletSessionAdapterMismatch}
+            hasFederatedSession={hasFederatedSession}
+            hasWalletAuthIntent={hasWalletAuthIntent}
+            isConnected={isConnected}
+            isBusy={isBusy}
+            isFederatedLoginAvailable={isFederatedLoginAvailable}
+            isPhantomInstalled={isPhantomInstalled}
+            isReferralFieldVisible={isReferralFieldVisible}
+            isWalletAuthInProgress={isWalletAuthInProgress}
+            referralCode={referralCode}
+            walletConnectionStatusText={walletConnectionStatusText}
+            walletPublicKey={copyableWalletPublicKey}
+            walletPrimaryLabel={walletPrimaryLabel}
+            walletDisconnectActionLabel={walletDisconnectActionLabel}
+            shouldShowWalletPrimaryAction={shouldShowWalletPrimaryAction}
+            shouldShowDisconnectButton={shouldShowDisconnectButton}
+            onCopyAddress={copyAddress}
+            onDisconnect={handleDisconnect}
+            onReferralChange={handleReferralCodeChange}
+            onReferralToggle={() => setIsReferralFieldVisible((previous) => !previous)}
+            onStartFederatedLink={handleStartFederatedLink}
+            onStartWalletSignIn={handleStartWalletSignIn}
+          />
+        ) : null}
+      </WalletModalShell>
 
       <OnboardingRewardDecisionModal
         open={Boolean(postAuthDecisionReward)}
