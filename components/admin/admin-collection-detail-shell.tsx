@@ -34,13 +34,6 @@ function DetailShellFooter({
       >
         {localize(locale, { en: "Back to collections", es: "Volver a colecciones", pt: "Voltar para colecoes" })}
       </Link>
-      <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/65">
-        {localize(locale, {
-          en: "Summary, property information, and documents editing are live. Gallery mutations remain staged for the next STORY-011-06 slice.",
-          es: "La edicion de summary, property information y documents ya esta activa. Las mutaciones de gallery siguen preparadas para el siguiente slice de STORY-011-06.",
-          pt: "A edicao de summary, property information e documents ja esta ativa. As mutacoes de gallery permanecem preparadas para o proximo slice da STORY-011-06."
-        })}
-      </span>
     </div>
   );
 }
@@ -56,41 +49,61 @@ export function AdminCollectionDetailShell({
   return (
     <div className="space-y-4">
       <AdminCollectionDetailHero content={content} locale={locale} ownership={ownership} />
-      <AdminCollectionBlockchainBasePanel blockchain={blockchain} locale={locale} />
-      <AdminCollectionDetailSections
-        content={content}
-        locale={locale}
-        summarySection={
-          <AdminCollectionSummaryEditor
-            entryId={content.entryId}
-            initialValue={content.fractionalInvestmentSummary}
-            locale={locale}
-          />
-        }
-        propertyInformationSection={
-          <AdminCollectionPropertyInformationEditor
-            entryId={content.entryId}
-            initialValue={content.propertyInformation}
-            locale={locale}
-          />
-        }
-        locationSection={
-          <AdminCollectionLocationEditor
-            content={content}
-            entryId={content.entryId}
-            googleMapsEmbedApiKey={googleMapsEmbedApiKey}
-            locale={locale}
-          />
-        }
-        gallerySection={<AdminCollectionGalleryShell content={content} locale={locale} />}
-        documentsSection={
-          <AdminCollectionDocumentsEditor
-            entryId={content.entryId}
-            initialDocuments={content.documents}
-            locale={locale}
-          />
-        }
-      />
+      <section className="space-y-3" aria-labelledby="collection-content-workspace-heading">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {localize(locale, { en: "Content workspace", es: "Workspace de contenido", pt: "Workspace de conteudo" })}
+          </p>
+          <h3 id="collection-content-workspace-heading" className="text-lg font-semibold text-white">
+            {localize(locale, { en: "Editable marketplace content", es: "Contenido editable de marketplace", pt: "Conteudo editavel de marketplace" })}
+          </h3>
+        </div>
+        <AdminCollectionDetailSections
+          content={content}
+          locale={locale}
+          summarySection={
+            <AdminCollectionSummaryEditor
+              entryId={content.entryId}
+              initialValue={content.fractionalInvestmentSummary}
+              locale={locale}
+            />
+          }
+          propertyInformationSection={
+            <AdminCollectionPropertyInformationEditor
+              entryId={content.entryId}
+              initialValue={content.propertyInformation}
+              locale={locale}
+            />
+          }
+          locationSection={
+            <AdminCollectionLocationEditor
+              content={content}
+              entryId={content.entryId}
+              googleMapsEmbedApiKey={googleMapsEmbedApiKey}
+              locale={locale}
+            />
+          }
+          gallerySection={<AdminCollectionGalleryShell content={content} locale={locale} />}
+          documentsSection={
+            <AdminCollectionDocumentsEditor
+              entryId={content.entryId}
+              initialDocuments={content.documents}
+              locale={locale}
+            />
+          }
+        />
+      </section>
+      <section className="space-y-3" aria-labelledby="collection-blockchain-reference-heading">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {localize(locale, { en: "Blockchain reference", es: "Referencia blockchain", pt: "Referencia blockchain" })}
+          </p>
+          <h3 id="collection-blockchain-reference-heading" className="text-lg font-semibold text-white">
+            {localize(locale, { en: "Read-only collection evidence", es: "Evidencia read-only de coleccion", pt: "Evidencia read-only da colecao" })}
+          </h3>
+        </div>
+        <AdminCollectionBlockchainBasePanel blockchain={blockchain} locale={locale} />
+      </section>
       <DetailShellFooter locale={locale} />
     </div>
   );

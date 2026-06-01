@@ -91,11 +91,14 @@ describe("app/admin/health/collections/page", () => {
     const html = renderToStaticMarkup(await AdminCollectionsHealthPage());
 
     expect(html).toContain("Collections health");
-    expect(html).toContain("Collections requiring review");
+    expect(html).toContain("Review queue");
+    expect(html).toContain("Review items");
     expect(html).toContain("Manual review entry");
     expect(html).toContain("Missing snapshot entry");
     expect(html).toContain("View collection context");
     expect(html).toContain("Manual review");
     expect(html).toContain("Missing snapshot");
+    expect(html).not.toContain("Health queue contract");
+    expect(html).not.toContain("This queue stays read-only");
   });
 });

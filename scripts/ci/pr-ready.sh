@@ -80,6 +80,11 @@ if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then
   exit 1
 fi
 
+HEAD_REVISION="HEAD"
+if [[ -n "${HEAD_BRANCH_OVERRIDE}" ]] && git show-ref --verify --quiet "refs/remotes/origin/${HEAD_BRANCH_OVERRIDE}"; then
+  HEAD_REVISION="origin/${HEAD_BRANCH_OVERRIDE}"
+fi
+
 echo
 echo "1) Running local validation gate..."
 VALIDATE_COMMAND="$(resolve_pr_ready_validate_command "${VALIDATE_MODE}")"
@@ -92,8 +97,8 @@ fi
 
 echo
 echo "2) Checking commit convention for branch commits..."
-MERGE_BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"
-COMMITS="$(git log --format='%H%x09%s' "${MERGE_BASE}..HEAD")"
+MERGE_BASE="$(git merge-base "origin/${BASE_REF}" "${HEAD_REVISION}")"
+COMMITS="$(git log --format='%H%x09%s' "${MERGE_BASE}..${HEAD_REVISION}")"
 
 if [[ -z "${COMMITS}" ]]; then
   echo "❌ No branch commits detected relative to origin/${BASE_REF}."
@@ -116,7 +121,7 @@ echo "✅ Commit convention check passed."
 
 echo
 echo "3) Checking PR-size discipline..."
-ADDITIONS="$(git diff --numstat "${MERGE_BASE}..HEAD" | awk '{a+=$1} END {print a+0}')"
+ADDITIONS="$(git diff --numstat "${MERGE_BASE}..${HEAD_REVISION}" | awk '{a+=$1} END {print a+0}')"
 echo "Added lines vs origin/${BASE_REF}: ${ADDITIONS}"
 if (( ADDITIONS > MAX_ADDITIONS )); then
   if [[ "${SIZE_EXEMPT_ENV}" != "1" ]]; then
@@ -130,7 +135,7 @@ fi
 
 echo
 echo "4) Checking branch-age discipline..."
-FIRST_COMMIT_EPOCH="$(git log --reverse --format='%ct' "${MERGE_BASE}..HEAD" | head -n1)"
+FIRST_COMMIT_EPOCH="$(git log --reverse --format='%ct' "${MERGE_BASE}..${HEAD_REVISION}" | head -n1)"
 NOW_EPOCH="$(date +%s)"
 AGE_DAYS="$(awk -v now="${NOW_EPOCH}" -v first="${FIRST_COMMIT_EPOCH}" 'BEGIN {printf "%.2f", (now-first)/86400}')"
 echo "Branch age (days): ${AGE_DAYS}"

@@ -27,13 +27,13 @@ export default async function AdminCollectionDetailPage({
         highlights={[
           localize(locale, { en: "Route contract is live", es: "El contrato de ruta ya esta activo", pt: "O contrato de rota ja esta ativo" }),
           localize(locale, { en: "Ownership stays server-side", es: "El ownership sigue server-side", pt: "O ownership permanece server-side" }),
-          localize(locale, { en: "Editor UI remains deferred", es: "La UI del editor sigue diferida", pt: "A UI do editor permanece adiada" })
+          localize(locale, { en: "Editor requires payload", es: "El editor requiere payload", pt: "O editor requer payload" })
         ]}
-        listTitle={localize(locale, { en: "Detail handoff", es: "Handoff de detalle", pt: "Handoff de detalhe" })}
+        listTitle={localize(locale, { en: "Detail state", es: "Estado de detalle", pt: "Estado de detalhe" })}
         subtitle={localize(locale, {
-          en: "This route now exists, but it only exposes a safe handoff while the modular editor arrives in the next story slices.",
-          es: "Esta ruta ya existe, pero por ahora solo expone un handoff seguro mientras el editor modular llega en los siguientes slices.",
-          pt: "Esta rota ja existe, mas por enquanto expoe apenas um handoff seguro enquanto o editor modular chega nos proximos slices."
+          en: "This route exists, but the server did not return an editable collection payload.",
+          es: "Esta ruta existe, pero el servidor no devolvio un payload editable de coleccion.",
+          pt: "Esta rota existe, mas o servidor nao retornou um payload editavel de colecao."
         })}
         title={localize(locale, { en: "Collection detail", es: "Detalle de coleccion", pt: "Detalhe da colecao" })}
       >
@@ -55,19 +55,15 @@ export default async function AdminCollectionDetailPage({
   return (
     <AdminModulePlaceholder
       highlights={[
-        localize(locale, { en: "Summary editor mounted", es: "Editor de summary montado", pt: "Editor de summary montado" }),
-        localize(locale, { en: "Property information editor mounted", es: "Editor de property information montado", pt: "Editor de property information montado" }),
-        localize(locale, { en: "Gallery tabs shell mounted", es: "Shell de tabs de gallery montado", pt: "Shell de abas de gallery montado" }),
-        localize(locale, { en: "Documents editor mounted", es: "Editor de documents montado", pt: "Editor de documents montado" }),
-        localize(locale, { en: "Blockchain addresses panel mounted", es: "Panel de direcciones blockchain montado", pt: "Painel de enderecos blockchain montado" }),
-        localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" }),
-        localize(locale, { en: "Gallery mutations remain staged for the next slice", es: "Las mutaciones de gallery quedan para el siguiente slice", pt: "As mutacoes de gallery ficam para o proximo slice" })
+        localize(locale, { en: "Editable content first", es: "Contenido editable primero", pt: "Conteudo editavel primeiro" }),
+        localize(locale, { en: "Blockchain stays read-only", es: "Blockchain sigue read-only", pt: "Blockchain permanece read-only" }),
+        localize(locale, { en: "Cover stays locked from Candy Machine", es: "La caratula sigue bloqueada desde Candy Machine", pt: "A capa segue bloqueada pela Candy Machine" })
       ]}
-      listTitle={localize(locale, { en: "Detail shell", es: "Shell de detalle", pt: "Shell de detalhe" })}
+      listTitle={localize(locale, { en: "Detail editor", es: "Editor de detalle", pt: "Editor de detalhe" })}
       subtitle={localize(locale, {
-        en: "Detail layout over the approved contract, now with summary, property, and documents edit loops live plus a dedicated gallery tabs shell staged for the next media mutation slice.",
-        es: "Layout de detalle sobre el contrato aprobado, ahora con los loops de edicion de summary, property information y documents activos mas un shell dedicado de tabs para gallery preparado para el siguiente slice de mutaciones de media.",
-        pt: "Layout de detalhe sobre o contrato aprovado, agora com os loops de edicao de summary, property information e documents ativos mais um shell dedicado de abas para gallery preparado para o proximo slice de mutacoes de midia."
+        en: "Edit marketplace content while immutable collection evidence remains read-only.",
+        es: "Edita contenido de marketplace mientras la evidencia inmutable de coleccion permanece read-only.",
+        pt: "Edite conteudo de marketplace enquanto a evidencia imutavel da colecao permanece read-only."
         })}
       title={state.content.title}
     >

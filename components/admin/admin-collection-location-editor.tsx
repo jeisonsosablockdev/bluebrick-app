@@ -79,9 +79,9 @@ export function AdminCollectionLocationEditor({
   const [feedback, setFeedback] = useState<FeedbackState>({ kind: "idle" });
   const [selectionMessage, setSelectionMessage] = useState<string>(
     localize(locale, {
-      en: "Autocomplete selection stays local in this slice. Save/cancel will land in the next steps.",
-      es: "La seleccion del autocomplete se mantiene local en este slice. Save/cancel llegara en los siguientes pasos.",
-      pt: "A selecao do autocomplete permanece local neste slice. Save/cancel chegara nos proximos passos."
+      en: "Select an address to preview the reduced Maps payload before saving.",
+      es: "Selecciona una direccion para previsualizar el payload reducido de Maps antes de guardar.",
+      pt: "Selecione um endereco para previsualizar o payload reduzido do Maps antes de salvar."
     })
   );
   const [sessionToken] = useState(() => createAdminCollectionLocationSessionToken());
@@ -160,9 +160,9 @@ export function AdminCollectionLocationEditor({
       setFeedback({ kind: "idle" });
       setSelectionMessage(
         localize(locale, {
-          en: "Location selection resolved locally. The reduced payload is ready for the later save slice.",
-          es: "La seleccion de ubicacion ya se resolvio localmente. El payload reducido esta listo para el slice de guardado posterior.",
-          pt: "A selecao de localizacao foi resolvida localmente. O payload reduzido esta pronto para o slice posterior de salvamento."
+          en: "Location selection resolved. Save to persist the reduced Maps payload.",
+          es: "La seleccion de ubicacion se resolvio. Guarda para persistir el payload reducido de Maps.",
+          pt: "A selecao de localizacao foi resolvida. Salve para persistir o payload reduzido do Maps."
         })
       );
     } catch (error) {

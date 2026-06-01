@@ -24,9 +24,9 @@ function DocumentsList({
     return (
       <AdminCollectionDetailEmptyState
         message={localize(locale, {
-          en: "No documents were linked yet. The editor slice will mount document controls here next.",
-          es: "Aun no hay documentos vinculados. El siguiente slice montara aqui los controles de documentos.",
-          pt: "Ainda nao ha documentos vinculados. O proximo slice montara aqui os controles de documentos."
+          en: "No documents are linked yet.",
+          es: "Aun no hay documentos vinculados.",
+          pt: "Ainda nao ha documentos vinculados."
         })}
       />
     );
@@ -72,18 +72,18 @@ function SummarySection({
   return (
     <AdminCollectionDetailSectionShell
       description={localize(locale, {
-        en: "Long-form commercial narrative stays in its own module so the future summary editor can mount here without disturbing the page shell.",
-        es: "La narrativa comercial larga vive en su propio modulo para que el futuro editor de resumen se monte aqui sin perturbar el shell.",
-        pt: "A narrativa comercial longa vive em seu proprio modulo para que o futuro editor de resumo seja montado aqui sem perturbar o shell."
+        en: "Long-form commercial narrative stays in its own module for focused review.",
+        es: "La narrativa comercial larga vive en su propio modulo para una revision enfocada.",
+        pt: "A narrativa comercial longa vive em seu proprio modulo para uma revisao focada."
       })}
-      eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
+      eyebrow={localize(locale, { en: "Content section", es: "Seccion de contenido", pt: "Secao de conteudo" })}
       title={localize(locale, { en: "Fractional investment summary", es: "Fractional investment summary", pt: "Fractional investment summary" })}
     >
       <AdminCollectionDetailTextContent
         emptyMessage={localize(locale, {
-          en: "No summary content was persisted yet. The editor slice will mount save/cancel controls here next.",
-          es: "Aun no se persistio contenido de resumen. El siguiente slice montara aqui los controles save/cancel.",
-          pt: "Ainda nao foi persistido conteudo de resumo. O proximo slice montara aqui os controles save/cancel."
+          en: "No summary content has been persisted yet.",
+          es: "Aun no se ha persistido contenido de resumen.",
+          pt: "Ainda nao foi persistido conteudo de resumo."
         })}
         value={content.fractionalInvestmentSummary}
       />
@@ -101,18 +101,18 @@ function PropertyInformationSection({
   return (
     <AdminCollectionDetailSectionShell
       description={localize(locale, {
-        en: "Property information stays isolated so the future text editor can reuse the same layout and status surface.",
-        es: "La informacion de propiedad queda aislada para que el futuro editor de texto reutilice el mismo layout y superficie de estado.",
-        pt: "A informacao da propriedade fica isolada para que o futuro editor de texto reutilize o mesmo layout e superficie de estado."
+        en: "Property information stays isolated for focused review and section-level updates.",
+        es: "La informacion de propiedad queda aislada para revision enfocada y actualizaciones por seccion.",
+        pt: "A informacao da propriedade fica isolada para revisao focada e atualizacoes por secao."
       })}
-      eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
+      eyebrow={localize(locale, { en: "Content section", es: "Seccion de contenido", pt: "Secao de conteudo" })}
       title={localize(locale, { en: "Property information", es: "Property information", pt: "Property information" })}
     >
       <AdminCollectionDetailTextContent
         emptyMessage={localize(locale, {
-          en: "No property information was persisted yet. This block is ready for the dedicated editor slice.",
-          es: "Aun no se persistio property information. Este bloque ya esta listo para el slice del editor dedicado.",
-          pt: "Ainda nao foi persistida a property information. Este bloco ja esta pronto para o slice do editor dedicado."
+          en: "No property information has been persisted yet.",
+          es: "Aun no se ha persistido property information.",
+          pt: "Ainda nao foi persistida a property information."
         })}
         value={content.propertyInformation}
       />
@@ -130,11 +130,11 @@ function DocumentsSection({
   return (
     <AdminCollectionDetailSectionShell
       description={localize(locale, {
-        en: "Documents stay rendered in a stable read-only list so the later editor can focus on mutation flows instead of rebuilding layout and metadata presentation.",
-        es: "Los documentos quedan renderizados en una lista read-only estable para que el editor posterior se enfoque en los flujos de mutacion y no en rehacer layout y metadata.",
-        pt: "Os documentos permanecem renderizados em uma lista read-only estavel para que o editor posterior foque nos fluxos de mutacao e nao em reconstruir layout e metadata."
+        en: "Documents render in a stable list for review and editing context.",
+        es: "Los documentos se renderizan en una lista estable para revision y contexto de edicion.",
+        pt: "Os documentos renderizam em uma lista estavel para revisao e contexto de edicao."
       })}
-      eyebrow={localize(locale, { en: "Section scaffold", es: "Scaffold de seccion", pt: "Scaffold de secao" })}
+      eyebrow={localize(locale, { en: "Content section", es: "Seccion de contenido", pt: "Secao de conteudo" })}
       title={localize(locale, { en: "Documents", es: "Documents", pt: "Documents" })}
     >
       <DocumentsList items={content.documents} locale={locale} />

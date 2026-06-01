@@ -55,7 +55,7 @@ describe("app/admin/collections/page", () => {
     expect(html).toContain("Retry loading");
   });
 
-  it("renders the success state with summary and rows", async () => {
+  it("renders the compact operations workspace with summary and ready rows", async () => {
     pageMocks.loadAdminCollectionsPageState.mockResolvedValueOnce({
       kind: "success",
       summary: {
@@ -80,17 +80,18 @@ describe("app/admin/collections/page", () => {
 
     const html = renderToStaticMarkup(await AdminCollectionsPage());
 
-    expect(html).toContain("Collections dashboard");
-    expect(html).toContain("Owned projects workspace");
+    expect(html).toContain("Operations console");
+    expect(html).toContain("Ready to edit");
     expect(html).toContain("Ocean View Residences");
     expect(html).not.toContain("Harbor Point");
-    expect(html).toContain("Collection cards");
     expect(html).toContain("Open health queue");
-    expect(html).toContain("requires review");
+    expect(html).toContain("1 needs review");
     expect(html).toContain("Manage project");
     expect(html).toContain("href=\"/admin/collections/entry-1\"");
     expect(html).toContain("Location unavailable");
     expect(html).toContain("Summary");
     expect(html).toContain("Gallery");
+    expect(html).not.toContain("Each card mirrors");
+    expect(html).not.toContain("Owned projects workspace");
   });
 });

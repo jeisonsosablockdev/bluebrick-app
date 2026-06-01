@@ -50,9 +50,9 @@ export function AdminCollectionPropertyInformationEditor({
         })
       }}
       description={localize(locale, {
-        en: "Property context now has its own editing loop so operational details can evolve independently from the summary and later media/document slices.",
-        es: "El contexto de la propiedad ahora tiene su propio loop de edicion para que los detalles operativos evolucionen de forma independiente del summary y de los futuros slices de media/documentos.",
-        pt: "O contexto da propriedade agora tem seu proprio loop de edicao para que os detalhes operacionais evoluam de forma independente do summary e dos futuros slices de midia/documentos."
+        en: "Property context has its own save boundary so operational details can evolve independently from summary, media, and documents.",
+        es: "El contexto de la propiedad tiene su propio limite de guardado para que los detalles operativos evolucionen de forma independiente del summary, media y documentos.",
+        pt: "O contexto da propriedade tem seu proprio limite de salvamento para que os detalhes operacionais evoluam de forma independente do summary, midia e documentos."
       })}
       entryId={entryId}
       eyebrow={localize(locale, { en: "Editable section", es: "Seccion editable", pt: "Secao editavel" })}

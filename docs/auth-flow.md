@@ -801,3 +801,23 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `POST /api/admin/assets/uploads/client-upload` derives the admin role from the same SIWS cookie/session boundary, then validates the upload contract owner, object key, MIME type, size, expiration, and finalized state before issuing a Blob client token.
 - The browser still cannot grant itself upload authority: it first needs a server-created upload contract and still finalizes through the authenticated finalize route before DB persistence.
 - No SIWS challenge, signature verification, cookie strategy, nonce lifecycle, or admin role derivation changed in this slice.
+
+## BRI-169 S02 Admin Collections Index UI Reorganization
+- `/admin/collections` now presents the collection list as a compact operations console with ready rows, summary metrics, and an inline health-queue handoff.
+- The slice changes presentation and copy only. It still consumes `loadAdminCollectionsPageState()` server-side and only renders rows returned by the existing admin collections read model.
+- No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, snapshot validation, or ownership enforcement changed in this slice.
+
+## BRI-169 S03 Admin Collection Detail IA
+- `/admin/collections/[id]` now prioritizes editable marketplace content before the read-only blockchain reference panel.
+- The route still resolves the detail payload server-side through `loadAdminCollectionDetailPageState()` and mounts the same authenticated section editors.
+- No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, PATCH ownership guard, snapshot validation, or blockchain mutation authority changed in this slice.
+
+## BRI-169 S04 Admin Collection Editor Surface Consistency
+- `/admin/collections/[id]` now removes planning-era copy from mounted editor surfaces, fallback sections, loading state, error state, gallery reference UI, and the blockchain reference label.
+- The slice changes presentation and copy only. Summary, property, location, documents, gallery reference, and blockchain reference surfaces still use the same authenticated route boundaries and server-provided payload.
+- No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, PATCH ownership guard, snapshot validation, document upload authority, or blockchain mutation authority changed in this slice.
+
+## BRI-169 S05 Admin Collections Health Responsive QA
+- `/admin/health/collections` now uses the same compact review-queue language as the main collections console.
+- The health surface still renders only rows returned by `loadAdminCollectionsHealthPageState()` and keeps ready collections separated from review-required rows.
+- No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, snapshot validation, ownership enforcement, document upload authority, or blockchain mutation authority changed in this slice.

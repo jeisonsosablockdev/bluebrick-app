@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 export default function LoadingAdminCollectionDetailPage() {
   return (
     <AdminModulePlaceholder
-      highlights={["Ownership contract re-check", "Read-only detail handoff", "Section-level editor follows next story"]}
+      highlights={["Ownership contract re-check", "Read-only blockchain reference", "Section editor loading"]}
       listTitle="Loading collection detail"
       subtitle="Resolving ownership evidence and detail payload."
       title="Collection detail"

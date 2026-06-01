@@ -132,9 +132,9 @@ export function AdminCollectionBlockchainBasePanel({
               emptyLabel={localize(locale, { en: "Read-only", es: "Read-only", pt: "Read-only" })}
               label={localize(locale, { en: "Mutation access", es: "Mutation access", pt: "Mutation access" })}
               value={localize(locale, {
-                en: "No write controls in this story",
-                es: "Sin controles de escritura en esta story",
-                pt: "Sem controles de escrita nesta story"
+                en: "Read-only reference",
+                es: "Referencia read-only",
+                pt: "Referencia read-only"
               })}
             />
             <ValueCard

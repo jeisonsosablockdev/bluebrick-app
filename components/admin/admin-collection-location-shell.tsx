@@ -59,13 +59,13 @@ function MapPreview({
         message={localize(locale, {
           en: outboundUrl
             ? "Map preview is unavailable for embedding right now. Use the outbound Google Maps link while the embed configuration is completed."
-            : "No location preview is available yet. The next slices will add autocomplete and reduced place persistence here.",
+            : "No location preview is available yet.",
           es: outboundUrl
             ? "El preview del mapa no esta disponible para embebido en este momento. Usa el enlace externo de Google Maps mientras se completa la configuracion del embed."
-            : "Aun no hay un preview de ubicacion disponible. Los siguientes slices agregaran autocomplete y persistencia reducida del place.",
+            : "Aun no hay un preview de ubicacion disponible.",
           pt: outboundUrl
             ? "O preview do mapa nao esta disponivel para embed agora. Use o link externo do Google Maps enquanto a configuracao do embed e concluida."
-            : "Ainda nao ha um preview de localizacao disponivel. Os proximos slices adicionarao autocomplete e persistencia reduzida do place."
+            : "Ainda nao ha um preview de localizacao disponivel."
         })}
       />
     );
@@ -117,9 +117,9 @@ export function AdminCollectionLocationShell({
         </span>
       }
       description={localize(locale, {
-        en: "The location section now exposes the current address context, a visible map preview, and a direct outbound jump to Google Maps before the editor/autocomplete slices land.",
-        es: "La seccion de ubicacion ahora expone el contexto actual de direccion, un preview visible del mapa y un salto directo a Google Maps antes de que lleguen los slices de editor/autocomplete.",
-        pt: "A secao de localizacao agora expoe o contexto atual do endereco, um preview visivel do mapa e um salto direto para o Google Maps antes que os slices de editor/autocomplete cheguem."
+        en: "The location section exposes the current address context, a visible map preview, and a direct outbound jump to Google Maps.",
+        es: "La seccion de ubicacion expone el contexto actual de direccion, un preview visible del mapa y un salto directo a Google Maps.",
+        pt: "A secao de localizacao expoe o contexto atual do endereco, um preview visivel do mapa e um salto direto para o Google Maps."
       })}
       eyebrow={localize(locale, { en: "Location section", es: "Seccion de ubicacion", pt: "Secao de localizacao" })}
       title={localize(locale, { en: "Google Maps location", es: "Google Maps location", pt: "Google Maps location" })}
@@ -131,9 +131,9 @@ export function AdminCollectionLocationShell({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-white/55">
           {localize(locale, {
-            en: "Clicking the preview or CTA opens Google Maps in a separate tab, while the editor flow remains staged for the next slices.",
-            es: "Hacer click en el preview o en el CTA abre Google Maps en otra pestana, mientras el flujo de edicion queda preparado para los siguientes slices.",
-            pt: "Clicar no preview ou no CTA abre o Google Maps em outra aba, enquanto o fluxo de edicao permanece preparado para os proximos slices."
+            en: "Clicking the preview or CTA opens Google Maps in a separate tab.",
+            es: "Hacer click en el preview o en el CTA abre Google Maps en otra pestana.",
+            pt: "Clicar no preview ou no CTA abre o Google Maps em outra aba."
           })}
         </p>
         {outboundUrl ? (

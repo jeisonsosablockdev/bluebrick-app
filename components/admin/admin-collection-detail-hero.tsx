@@ -22,34 +22,6 @@ function MetaStat({
   );
 }
 
-function MountingPlan({
-  locale
-}: {
-  locale: AppLocale;
-}): ReactElement {
-  const mountedEditors = [
-    localize(locale, { en: "Summary editor", es: "Editor de resumen", pt: "Editor de resumo" }),
-    localize(locale, { en: "Property info editor", es: "Editor de property info", pt: "Editor de property info" }),
-    localize(locale, { en: "Gallery tabs", es: "Tabs de galeria", pt: "Tabs de galeria" }),
-    localize(locale, { en: "Documents editor", es: "Editor de documentos", pt: "Editor de documentos" })
-  ];
-
-  return (
-    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-        {localize(locale, { en: "Mounting plan", es: "Plan de montaje", pt: "Plano de montagem" })}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {mountedEditors.map((label) => (
-          <span key={label} className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs text-white/70">
-            {label}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function AdminCollectionDetailHero({
   locale,
   ownership,
@@ -101,14 +73,14 @@ export function AdminCollectionDetailHero({
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/45">
-                  {localize(locale, { en: "Collection detail shell", es: "Shell de detalle de coleccion", pt: "Shell de detalhe da colecao" })}
+                  {localize(locale, { en: "Detail editor", es: "Editor de detalle", pt: "Editor de detalhe" })}
                 </p>
                 <h2 className="text-2xl font-semibold text-white sm:text-3xl">{content.title}</h2>
                 <p className="text-sm leading-6 text-white/70">
                   {localize(locale, {
-                    en: "This shell separates immutable blockchain-derived cover and metadata from the editable sections that will mount in later slices.",
-                    es: "Este shell separa la caratula y metadata inmutables derivadas de blockchain de las secciones editables que se montaran en slices posteriores.",
-                    pt: "Este shell separa a capa e a metadata imutaveis derivadas do blockchain das secoes editaveis que serao montadas em slices posteriores."
+                    en: "Edit marketplace content while cover, snapshots, and blockchain evidence remain locked to the server-derived collection record.",
+                    es: "Edita contenido de marketplace mientras caratula, snapshots y evidencia blockchain siguen bloqueados al registro server-derived.",
+                    pt: "Edite conteudo de marketplace enquanto capa, snapshots e evidencia blockchain seguem bloqueados ao registro server-derived."
                   })}
                 </p>
               </div>
@@ -124,14 +96,25 @@ export function AdminCollectionDetailHero({
                 />
               </div>
 
-              <MountingPlan locale={locale} />
+              <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                  {localize(locale, { en: "Editor status", es: "Estado del editor", pt: "Estado do editor" })}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {localize(locale, {
+                    en: "Summary, property, location, gallery, and documents are available in the content workspace.",
+                    es: "Resumen, propiedad, ubicacion, galeria y documentos estan disponibles en el workspace de contenido.",
+                    pt: "Resumo, propriedade, localizacao, galeria e documentos estao disponiveis no workspace de conteudo."
+                  })}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-3 p-5 sm:p-6">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-            {localize(locale, { en: "Read-only metadata", es: "Metadata read-only", pt: "Metadata read-only" })}
+            {localize(locale, { en: "Snapshot reference", es: "Referencia snapshot", pt: "Referencia snapshot" })}
           </p>
           <MetaStat label={localize(locale, { en: "Collection", es: "Coleccion", pt: "Colecao" })} value={ownership.collectionAddress} />
           <MetaStat label={localize(locale, { en: "Candy machine", es: "Candy machine", pt: "Candy machine" })} value={ownership.candyMachineAddress} />

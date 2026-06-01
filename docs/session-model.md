@@ -736,3 +736,39 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - no new session token shape or refresh rule
   - no browser-owned authority state
 - Moving bytes from the app `/binary` Function to `@vercel/blob/client` changes transport only; DB finalization, promotion, cancellation, and admin authorization remain server-mediated.
+
+## BRI-169 S02 Admin Collections Index UI Session Notes
+- `/admin/collections` was reorganized into a denser server-rendered operations workspace.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - no new session token shape or refresh rule
+  - no browser-owned ownership, snapshot, or editable-section authority state
+- The health queue link and detail links are navigation-only affordances over the existing authenticated routes.
+
+## BRI-169 S03 Admin Collection Detail IA Session Notes
+- `/admin/collections/[id]` now renders editable content before read-only blockchain evidence.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated GET/PATCH routes for collection detail sections
+  - no new session token shape, refresh rule, or browser-owned authority state
+- Moving blockchain evidence later in the UI does not change the server-owned ownership, snapshot, or editability decisions.
+
+## BRI-169 S04 Admin Collection Editor Surface Consistency Session Notes
+- `/admin/collections/[id]` copy now describes current editor capabilities instead of delivery-plan states.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same authenticated GET/PATCH routes for collection detail sections
+  - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
+- The cleanup is presentation-only and does not change ownership, snapshot, editability, or document upload decisions.
+
+## BRI-169 S05 Admin Collections Health Responsive QA Session Notes
+- `/admin/health/collections` now presents degraded rows as a compact review queue aligned with the redesigned collections workspace.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation
+  - same server-owned health read model
+  - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
+- Responsive QA is evidence-only for the existing authenticated admin routes and does not change ownership, snapshot, editability, or document upload decisions.

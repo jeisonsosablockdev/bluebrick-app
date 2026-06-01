@@ -163,33 +163,35 @@ export function AdminCollectionsHealthWorkspace({
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-          {localize(locale, { en: "Operational queue", es: "Cola operacional", pt: "Fila operacional" })}
-        </p>
-        <h3 className="text-sm font-semibold text-white">
-          {localize(locale, { en: "Collections requiring review", es: "Colecciones que requieren revision", pt: "Colecoes que requerem revisao" })}
-        </h3>
-        <p className="text-sm text-white/70">
-          {localize(locale, {
-            en: "This queue stays read-only and separates degraded collection rows from the main editable workspace.",
-            es: "Esta cola permanece read-only y separa las filas degradadas de colecciones del workspace principal editable.",
-            pt: "Esta fila permanece read-only e separa as linhas degradadas de colecoes do workspace principal editavel."
-          })}
-        </p>
-      </Card>
-
-      <Card className="space-y-3">
-        <h3 className="text-sm font-semibold text-white">
-          {localize(locale, { en: "Health rows", es: "Filas de health", pt: "Linhas de health" })}
-        </h3>
-        <ul className="grid gap-4 lg:grid-cols-2">
-          {state.rows.map((row) => (
-            <HealthRowCard key={row.entryId} locale={locale} row={row} />
-          ))}
-        </ul>
-      </Card>
-    </div>
+    <Card className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {localize(locale, { en: "Review queue", es: "Cola de revision", pt: "Fila de revisao" })}
+          </p>
+          <h3 className="text-sm font-semibold text-white">
+            {localize(locale, { en: "Review items", es: "Items de revision", pt: "Itens de revisao" })}
+          </h3>
+          <p className="text-sm leading-6 text-white/70">
+            {localize(locale, {
+              en: "Rows here need operator context before they can return to the editable collections list.",
+              es: "Las filas aqui necesitan contexto operativo antes de volver a la lista editable de colecciones.",
+              pt: "As linhas aqui precisam de contexto operacional antes de voltar para a lista editavel de colecoes."
+            })}
+          </p>
+        </div>
+        <span className="inline-flex min-h-9 items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-white/75">
+          {state.rows.length}{" "}
+          {state.rows.length === 1
+            ? localize(locale, { en: "row", es: "fila", pt: "linha" })
+            : localize(locale, { en: "rows", es: "filas", pt: "linhas" })}
+        </span>
+      </div>
+      <ul className="grid gap-4 lg:grid-cols-2">
+        {state.rows.map((row) => (
+          <HealthRowCard key={row.entryId} locale={locale} row={row} />
+        ))}
+      </ul>
+    </Card>
   );
 }

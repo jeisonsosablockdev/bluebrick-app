@@ -86,9 +86,9 @@ function resolveGalleryActionCopy(locale: AppLocale, key: AdminCollectionGallery
       replaceLabel: localize(locale, { en: "Replace gallery image", es: "Reemplazar imagen de galeria", pt: "Substituir imagem da galeria" }),
       deleteLabel: localize(locale, { en: "Delete gallery image", es: "Eliminar imagen de galeria", pt: "Excluir imagem da galeria" }),
       note: localize(locale, {
-        en: "Add, replace, and delete hooks stay staged here for the upcoming media mutation slice.",
-        es: "Los hooks de agregar, reemplazar y eliminar quedan preparados aqui para el siguiente slice de mutacion de media.",
-        pt: "Os hooks de adicionar, substituir e excluir permanecem preparados aqui para o proximo slice de mutacao de midia."
+        en: "Add, replace, and delete controls are reserved for media management and stay disabled on this page.",
+        es: "Los controles de agregar, reemplazar y eliminar quedan reservados para gestion de media y permanecen desactivados en esta pagina.",
+        pt: "Os controles de adicionar, substituir e excluir ficam reservados para gestao de midia e permanecem desativados nesta pagina."
       })
     };
   }
@@ -98,9 +98,9 @@ function resolveGalleryActionCopy(locale: AppLocale, key: AdminCollectionGallery
     replaceLabel: localize(locale, { en: "Replace property image", es: "Reemplazar imagen de propiedad", pt: "Substituir imagem da propriedade" }),
     deleteLabel: localize(locale, { en: "Delete property image", es: "Eliminar imagen de propiedad", pt: "Excluir imagem da propriedade" }),
     note: localize(locale, {
-      en: "Operational media keeps its own add, replace, and delete handoff so later workflows remain scoped to this tab.",
-      es: "La media operativa conserva su propio handoff de agregar, reemplazar y eliminar para que los siguientes flujos sigan acotados a esta tab.",
-      pt: "A midia operacional mantem seu proprio handoff de adicionar, substituir e excluir para que os proximos fluxos permaneçam limitados a esta aba."
+      en: "Operational media keeps its own disabled add, replace, and delete controls so review stays scoped to this tab.",
+      es: "La media operativa conserva sus propios controles desactivados de agregar, reemplazar y eliminar para que la revision siga acotada a esta tab.",
+      pt: "A midia operacional mantem seus proprios controles desativados de adicionar, substituir e excluir para que a revisao permaneca limitada a esta aba."
     })
   };
 }
@@ -108,16 +108,16 @@ function resolveGalleryActionCopy(locale: AppLocale, key: AdminCollectionGallery
 function resolveGalleryEmptyMessage(locale: AppLocale, key: AdminCollectionGalleryGroupKey): string {
   if (key === "gallery") {
     return localize(locale, {
-      en: "No marketplace gallery images were linked yet. The next slice will connect add/replace/delete actions in this tab.",
-      es: "Aun no hay imagenes en la galeria del marketplace. El siguiente slice conectara aqui las acciones de agregar/reemplazar/eliminar.",
-      pt: "Ainda nao ha imagens na galeria do marketplace. O proximo slice conectara aqui as acoes de adicionar/substituir/excluir."
+      en: "No marketplace gallery images are linked yet.",
+      es: "Aun no hay imagenes vinculadas en la galeria del marketplace.",
+      pt: "Ainda nao ha imagens vinculadas na galeria do marketplace."
     });
   }
 
   return localize(locale, {
-    en: "No property imagery was linked yet. The next slice will connect add/replace/delete actions in this tab.",
-    es: "Aun no hay imagenes de propiedad vinculadas. El siguiente slice conectara aqui las acciones de agregar/reemplazar/eliminar.",
-    pt: "Ainda nao ha imagens da propriedade vinculadas. O proximo slice conectara aqui as acoes de adicionar/substituir/excluir."
+    en: "No property imagery is linked yet.",
+    es: "Aun no hay imagenes de propiedad vinculadas.",
+    pt: "Ainda nao ha imagens da propriedade vinculadas."
   });
 }
 
@@ -269,15 +269,15 @@ export function AdminCollectionGalleryShell({
     <AdminCollectionDetailSectionShell
       aside={
         <span className="inline-flex min-h-9 items-center rounded-full border border-sky-300/25 bg-sky-400/10 px-3 py-1 text-xs font-medium text-sky-100">
-          {localize(locale, { en: "Gallery shell live", es: "Shell de galeria activo", pt: "Shell da galeria ativo" })}
+          {localize(locale, { en: "Media reference", es: "Referencia de media", pt: "Referencia de midia" })}
         </span>
       }
       description={localize(locale, {
-        en: "Gallery editing now has a dedicated shell with separate lanes for marketplace gallery and property imagery before upload mutations are introduced.",
-        es: "La edicion de galeria ahora tiene un shell dedicado con carriles separados para la galeria del marketplace y las imagenes de propiedad antes de introducir mutaciones de upload.",
-        pt: "A edicao da galeria agora tem um shell dedicado com trilhos separados para a galeria do marketplace e as imagens da propriedade antes da introducao das mutacoes de upload."
+        en: "Gallery media has separate lanes for marketplace imagery and property evidence.",
+        es: "La media de galeria tiene carriles separados para imagenes del marketplace y evidencia de la propiedad.",
+        pt: "A midia da galeria tem trilhos separados para imagens do marketplace e evidencia da propriedade."
       })}
-      eyebrow={localize(locale, { en: "Editable media shell", es: "Shell editable de media", pt: "Shell editavel de midia" })}
+      eyebrow={localize(locale, { en: "Media reference", es: "Referencia de media", pt: "Referencia de midia" })}
       title={localize(locale, { en: "Project gallery", es: "Project gallery", pt: "Project gallery" })}
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,24rem)_1fr]">

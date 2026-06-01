@@ -11,15 +11,15 @@ export default async function AdminCollectionsPage() {
   return (
     <AdminModulePlaceholder
       highlights={[
-        localize(locale, { en: "Ownership checked server-side", es: "Ownership verificado server-side", pt: "Ownership verificado server-side" }),
-        localize(locale, { en: "Collection cards with visual status", es: "Cards de colecciones con estado visual", pt: "Cards de colecoes com estado visual" }),
-        localize(locale, { en: "Detail route now active for ready entries", es: "La ruta de detalle ya esta activa para entries listas", pt: "A rota de detalhe ja esta ativa para entradas prontas" })
+        localize(locale, { en: "Server-side ownership checks", es: "Ownership verificado server-side", pt: "Ownership verificado server-side" }),
+        localize(locale, { en: "Ready rows open the detail editor", es: "Las filas listas abren el editor de detalle", pt: "Linhas prontas abrem o editor de detalhe" }),
+        localize(locale, { en: "Review rows stay in the health queue", es: "Las filas en revision quedan en la cola health", pt: "Linhas em revisao ficam na fila health" })
       ]}
-      listTitle={localize(locale, { en: "Index readiness", es: "Preparacion del index", pt: "Preparacao do index" })}
+      listTitle={localize(locale, { en: "Index controls", es: "Controles del index", pt: "Controles do index" })}
       subtitle={localize(locale, {
-        en: "Visual admin index for owned collections using the approved read-model contract and handoff route to detail.",
-        es: "Index visual admin para colecciones propias usando el contrato aprobado del read-model y la ruta de handoff al detalle.",
-        pt: "Index visual admin para colecoes proprias usando o contrato aprovado do read-model e a rota de handoff para detalhe."
+        en: "Manage ready collection entries and route degraded rows to health review.",
+        es: "Gestiona entries de coleccion listas y envia filas degradadas a revision health.",
+        pt: "Gerencie entradas de colecao prontas e envie linhas degradadas para revisao health."
       })}
       title={localize(locale, { en: "Collections", es: "Colecciones", pt: "Colecoes" })}
     >

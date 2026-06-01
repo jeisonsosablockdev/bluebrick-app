@@ -11,15 +11,15 @@ export default async function AdminCollectionsHealthPage() {
   return (
     <AdminModulePlaceholder
       highlights={[
-        localize(locale, { en: "Read-only queue over actor-scoped failures", es: "Cola read-only sobre fallas del actor", pt: "Fila read-only sobre falhas do ator" }),
-        localize(locale, { en: "Bootstrap and consistency degradations unified", es: "Degradaciones de bootstrap y consistencia unificadas", pt: "Degradacoes de bootstrap e consistencia unificadas" }),
-        localize(locale, { en: "Happy-path collections stay separate", es: "Las colecciones happy-path permanecen separadas", pt: "As colecoes happy-path permanecem separadas" })
+        localize(locale, { en: "Actor-scoped review queue", es: "Cola de revision acotada al actor", pt: "Fila de revisao limitada ao ator" }),
+        localize(locale, { en: "Bootstrap and consistency checks", es: "Checks de bootstrap y consistencia", pt: "Checks de bootstrap e consistencia" }),
+        localize(locale, { en: "Ready projects stay in collections", es: "Los proyectos listos siguen en colecciones", pt: "Projetos prontos ficam em colecoes" })
       ]}
-      listTitle={localize(locale, { en: "Health queue contract", es: "Contrato de la cola health", pt: "Contrato da fila health" })}
+      listTitle={localize(locale, { en: "Review queue", es: "Cola de revision", pt: "Fila de revisao" })}
       subtitle={localize(locale, {
-        en: "Operational read-only queue for collection rows that require review before they can safely rejoin the editable admin workspace.",
-        es: "Cola operacional read-only para filas de colecciones que requieren revision antes de poder volver de forma segura al workspace editable admin.",
-        pt: "Fila operacional read-only para linhas de colecoes que requerem revisao antes de voltar com seguranca ao workspace editavel admin."
+        en: "Collections that need operator review before returning to the editable admin workspace.",
+        es: "Colecciones que necesitan revision operativa antes de volver al workspace editable admin.",
+        pt: "Colecoes que precisam de revisao operacional antes de voltar ao workspace editavel admin."
       })}
       title={localize(locale, { en: "Collections health", es: "Salud de colecciones", pt: "Saude de colecoes" })}
     >

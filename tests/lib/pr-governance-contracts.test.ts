@@ -16,6 +16,17 @@ describe("PR governance contracts", () => {
     expect(source).toContain("spec slice");
   });
 
+  it("validates the PR head branch instead of the synthetic merge commit when available", () => {
+    const source = readFileSync(
+      path.join(repoRoot, "scripts", "ci", "pr-ready.sh"),
+      "utf8"
+    );
+
+    expect(source).toContain("HEAD_REVISION=\"origin/${HEAD_BRANCH_OVERRIDE}\"");
+    expect(source).toContain("git merge-base \"origin/${BASE_REF}\" \"${HEAD_REVISION}\"");
+    expect(source).toContain("\"${MERGE_BASE}..${HEAD_REVISION}\"");
+  });
+
   it("keeps docs governance aware of Linear initiative branches", () => {
     const source = readFileSync(
       path.join(repoRoot, "scripts", "ci", "check-required-docs.sh"),
