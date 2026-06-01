@@ -51,6 +51,7 @@ import {
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
+import { areAuthMeResponsesEquivalent } from "@/lib/auth-state";
 import { shouldUseReducedMotion } from "@/lib/motion";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
 import { cn } from "@/lib/utils";
@@ -541,22 +542,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
     const refreshPromise = (async () => {
       try {
         const currentAuth = await fetchAuthMe();
-        setAuthState((previous) => (
-          previous.authenticated === currentAuth.authenticated
-          && previous.federatedAvailable === currentAuth.federatedAvailable
-          && previous.accountAuthenticated === currentAuth.accountAuthenticated
-          && previous.federatedAuthenticated === currentAuth.federatedAuthenticated
-          && previous.walletAuthenticated === currentAuth.walletAuthenticated
-          && previous.authMethod === currentAuth.authMethod
-          && previous.accountId === currentAuth.accountId
-          && previous.workosUserId === currentAuth.workosUserId
-          && previous.federatedAvailable === currentAuth.federatedAvailable
-          && previous.email === currentAuth.email
-          && previous.pubkey === currentAuth.pubkey
-          && previous.role === currentAuth.role
-            ? previous
-            : currentAuth
-        ));
+        setAuthState((previous) => areAuthMeResponsesEquivalent(previous, currentAuth) ? previous : currentAuth);
 
         if (!silent) {
           setLastError(null);
