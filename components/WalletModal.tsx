@@ -45,7 +45,6 @@ import { getAuthLinkStatusContent, parseAuthLinkStatus } from "@/lib/auth-link-s
 import { getWalletModalAutoClose } from "@/lib/solana";
 import {
   formatOnboardingRewardDeadlineLabel,
-  type OnboardingRewardStatus
 } from "@/lib/onboarding-reward-copy";
 import {
   ONBOARDING_REWARD_COMPLETE_PROFILE_HREF,
@@ -55,6 +54,7 @@ import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-
 import { areAuthMeResponsesEquivalent } from "@/lib/auth-state";
 import { shouldUseReducedMotion } from "@/lib/motion";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
+import { resolvePostAuthDecision, type PostAuthOnboardingReward } from "@/lib/post-auth-decision";
 import { cn } from "@/lib/utils";
 import { resolveWalletSigningPreparation } from "@/lib/wallet-signing-prep";
 
@@ -131,21 +131,13 @@ function MailMethodIcon() {
   );
 }
 
-type OnboardingRewardSnapshot = {
-  status: OnboardingRewardStatus;
-  rewardAmountUsdSnapshot: number;
-  qualificationDeadlineAt: string;
-  shouldShowReminder: boolean;
-  isProfileComplete: boolean;
-};
-
 type ProtectedProfileResponse = {
   ok?: boolean;
   data?: {
     firstName: string | null;
     email: string | null;
     phone: string | null;
-    onboardingReward?: OnboardingRewardSnapshot | null;
+    onboardingReward?: PostAuthOnboardingReward | null;
   };
 };
 
@@ -316,7 +308,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   const [authState, setAuthState] = useState<AuthMeResponse>(initialAuth);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
-  const [postAuthDecisionReward, setPostAuthDecisionReward] = useState<OnboardingRewardSnapshot | null>(null);
+  const [postAuthDecisionReward, setPostAuthDecisionReward] = useState<PostAuthOnboardingReward | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [referralOrigin, setReferralOrigin] = useState<ReferralHintOrigin>("auto");
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -658,7 +650,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
     let cancelled = false;
 
-    const fallbackReward: OnboardingRewardSnapshot = {
+    const fallbackReward: PostAuthOnboardingReward = {
       status: "pending_profile",
       rewardAmountUsdSnapshot: 10,
       qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -997,31 +989,20 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
       try {
         const profileRes = await fetch("/api/protected/profile");
+        let postAuthDecision = resolvePostAuthDecision({ status: "error" });
+
         if (profileRes.ok) {
           const profileData = (await profileRes.json()) as ProtectedProfileResponse;
-          const onboardingReward = profileData.data?.onboardingReward ?? null;
-          const shouldShowDecision =
-            Boolean(onboardingReward?.shouldShowReminder)
-            || onboardingReward?.isProfileComplete === false
-            || Boolean(
-              !profileData.data?.firstName ||
-              !profileData.data?.email ||
-              !profileData.data?.phone
-            );
-
-          if (shouldShowDecision) {
-            setPostAuthDecisionReward(onboardingReward);
-            setIsOpen(false);
-            return;
-          }
-        } else if (profileRes.status === 404) {
-          setPostAuthDecisionReward({
-            status: "pending_profile",
-            rewardAmountUsdSnapshot: 10,
-            qualificationDeadlineAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            shouldShowReminder: true,
-            isProfileComplete: false
+          postAuthDecision = resolvePostAuthDecision({
+            status: "ok",
+            profile: profileData.data
           });
+        } else if (profileRes.status === 404) {
+          postAuthDecision = resolvePostAuthDecision({ status: "not_found" });
+        }
+
+        if (postAuthDecision.kind === "show") {
+          setPostAuthDecisionReward(postAuthDecision.reward);
           setIsOpen(false);
           return;
         }
