@@ -24,6 +24,7 @@ export function MarketplaceMapClient({
   onPinHover
 }: MarketplaceMapClientProps) {
   const mapViewState = useMarketplaceMapViewState({ pins, selectedPinId, initialViewState });
+  const markerRenderPins = [...pins].sort((firstPin, secondPin) => secondPin.latitude - firstPin.latitude);
 
   function handlePinActivation(pin: MarketplaceMapPin): void {
     mapViewState.focusPin(pin);
@@ -41,7 +42,7 @@ export function MarketplaceMapClient({
         style={{ width: "100%", height: "100%" }}
         attributionControl={false}
       >
-        {pins.map((pin) => (
+        {markerRenderPins.map((pin) => (
           <MarketplaceMapMarker key={pin.id} pin={pin} onActivate={handlePinActivation} />
         ))}
       </Map>

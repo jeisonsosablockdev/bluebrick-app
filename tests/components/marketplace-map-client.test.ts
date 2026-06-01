@@ -50,6 +50,32 @@ function renderClient(): RenderHandle {
   return { container, root };
 }
 
+function renderClientWithPins(pins: Array<{
+  id: string;
+  title: string;
+  locationLabel: string;
+  href: string;
+  latitude: number;
+  longitude: number;
+  soldPercent: number;
+}>): RenderHandle {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  act(() => {
+    root.render(
+      createElement(MarketplaceMapClient, {
+        mapboxAccessToken: "pk.test-token",
+        mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
+        pins
+      })
+    );
+  });
+
+  return { container, root };
+}
+
 describe("components/marketplace/MarketplaceMapClient", () => {
   beforeEach(() => {
     latestMapProps = null;
@@ -71,6 +97,38 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="marketplace-map-pin-anchor"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')?.getAttribute("style")).toContain("rgb(103, 232, 249)");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("renders northern pins first so southern cards cover crossed leader lines", () => {
+    const { container, root } = renderClientWithPins([
+      {
+        id: "south-fl-1",
+        title: "Fix & Flip Bradenton",
+        locationLabel: "Bradenton, Florida, US",
+        href: "/marketplace/south-fl-1",
+        latitude: 27.4989,
+        longitude: -82.5748,
+        soldPercent: 0
+      },
+      {
+        id: "north-fl-1",
+        title: "Fix & Flip Brandon",
+        locationLabel: "Brandon, Florida, US",
+        href: "/marketplace/north-fl-1",
+        latitude: 27.9378,
+        longitude: -82.2859,
+        soldPercent: 0
+      }
+    ]);
+
+    const markers = Array.from(container.querySelectorAll('[data-testid="marker"]'));
+    expect(markers).toHaveLength(2);
+    expect(markers[0]?.textContent).toContain("Fix & Flip Brandon");
+    expect(markers[1]?.textContent).toContain("Fix & Flip Bradenton");
 
     act(() => {
       root.unmount();
