@@ -17,6 +17,11 @@
 - S13 P2 reduced-motion hardening is merged into the hardening branch.
 - S14 P3 artifact status sync is implemented in this slice.
 - S15 clean-code extraction is implemented in this slice.
+- S16 reviewer clean-code follow-up is implemented in this slice.
+- S17-S20 technical-debt cleanup slices are implemented from the strict audit.
+- S21 private-route logout redirect is implemented after admin dashboard regression review.
+- S22 Clean Code remediation plan is documented from the post-S21 audit.
+- S23-S30 are planned as TDD-first clean-code remediation slices.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -85,6 +90,21 @@ Initiative branch:
 | S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S17 | implemented | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S18 | implemented | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-props` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S19 | implemented | `fix/app-login-modal-issue-bri-167-s19-referral-section` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S20 | implemented | `fix/app-login-modal-issue-bri-167-s20-test-mock-types` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, whitespace check | local slice |
+| S21 | implemented | `fix/app-login-modal-issue-bri-167-s21-private-logout-redirect` | Redirect logout from private routes to public main instead of refreshing into forbidden content | `WalletModal` disconnect success branch, component assertion, artifacts | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S22 | implemented | `fix/app-login-modal-issue-bri-167-s22-clean-code-remediation-plan` | Capture Clean Code findings and TDD remediation slice map | artifacts only | docs governance, artifact review | local slice |
+| S23 | implemented | `fix/app-login-modal-issue-bri-167-s23-private-route-helper` | Move private-route logout detection out of `WalletModal` | new private-route helper, `WalletModal`, helper tests, modal regression | RED helper test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S24 | implemented | `fix/app-login-modal-issue-bri-167-s24-auth-state-equality` | Extract auth-state equality and remove duplicated comparison noise | auth equality helper, `WalletModal`, helper tests | RED equality test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S25 | implemented | `fix/app-login-modal-issue-bri-167-s25-wallet-modal-test-factories` | Reduce wallet modal test fixture duplication | wallet modal test helpers/factories, migrated focused tests | RED helper-backed regression shape, helper implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S26 | implemented | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S27 | implemented | `fix/app-login-modal-issue-bri-167-s27-wallet-signing-prep` | Extract wallet connection/sign-message preparation from `handleWalletPrimaryAction` | wallet signing preparation helper/hook boundary, `WalletModal`, focused tests | RED connect/signature-prep tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S28 | implemented | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S29 | implemented | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S30 | implemented | `fix/app-login-modal-issue-bri-167-s30-wallet-modal-orchestration-cleanup` | Compose extracted helpers and reduce `WalletModal` orchestration density | `WalletModal`, extracted helper imports, component regressions | RED characterization gap if needed, implementation, full targeted wallet modal suite, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -94,6 +114,10 @@ Initiative branch:
 5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
 6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 7. Run S12-S15 as post-review hardening after the first merge to `develop`: P1 behavioral fix, P2 accessibility/motion fix, P3 artifact sync, then clean-code extraction.
+8. Run S17-S20 as strict audit remediation after S16: modal shell extraction, wallet proof prop grouping, shared referral section, then typed test mocks.
+9. Run S21 after admin dashboard regression review: private-route logout must leave the private route before the route refresh can render forbidden state.
+10. Run S22 as a documentation-only planning slice for the post-S21 Clean Code audit.
+11. Run S23-S30 in order. Each slice starts with a failing or missing targeted test, lands the smallest implementation needed to pass, and then updates this artifact with evidence.
 
 ## Post-Reviewer Hardening Plan
 ### S12 - P1 Logout Refresh Hardening
@@ -166,6 +190,349 @@ Status:
 - Implemented in S15 by extracting the wallet proof presentation into `components/wallet-modal/wallet-proof-panel.tsx`.
 - The parent modal still owns auth decisions, SIWS signing, disconnect/logout, and route refresh.
 - Phantom install URL now lives in `components/wallet-modal/constants.ts` to avoid duplicate presentation constants.
+
+### S16 - Reviewer Clean-Code Boundary Follow-Up
+Problem:
+- A connected Phantom adapter could differ from the active SIWS session wallet while the modal still presented the SIWS session as active.
+- `Copy Address` could copy the adapter public key even when the SIWS session belonged to a different public key.
+- The modal shell still used entrance/exit motion and an animated status spinner when `prefers-reduced-motion` was active.
+
+Implementation:
+- derive `hasWalletSessionAdapterMismatch` explicitly in `WalletModal`
+- remove primary wallet and copy actions from the mismatch state
+- show a wallet mismatch status in `WalletProofPanel`
+- keep sign-out/disconnect as the recovery action
+- gate overlay, panel, and top status indicator motion with reduced-motion preference
+
+Acceptance:
+- SIWS wallet A plus connected adapter wallet B is not rendered as an active matching wallet session
+- copy address is hidden in mismatch state
+- reduced-motion users do not receive shell transform/scale motion or spinning status feedback
+
+Status:
+- Implemented in S16.
+
+### S17 - Modal Shell Extraction
+Problem:
+- `WalletModal` remains a large orchestration component and still owns modal shell markup.
+
+Implementation:
+- extract portal overlay, panel motion, close control, title, and top feedback presentation into a focused shell component
+- keep auth state, wallet adapter logic, SIWS, logout, referrals, and navigation decisions in `WalletModal`
+
+Acceptance:
+- no auth behavior change
+- modal remains viewport-owned and reduced-motion aware
+- component tests still pass
+
+Status:
+- Implemented in S17 by extracting `components/wallet-modal/wallet-modal-shell.tsx`.
+- The shell now owns portal, overlay, panel, close action, title, top feedback, and reduced-motion motion variants.
+
+### S18 - Wallet Proof Prop Groups
+Problem:
+- `WalletProofPanel` receives many scalar props, making parent/presentational coupling noisy.
+
+Implementation:
+- group props into `session`, `walletStatus`, `referral`, and `actions`
+- preserve the same UI states and copy
+
+Acceptance:
+- no behavior change
+- easier review surface for future wallet proof changes
+
+Status:
+- Implemented in S18 by grouping `WalletProofPanel` inputs into `session`, `connection`, `referral`, and `actions`.
+- Auth authority and derived state ownership remain in `WalletModal`.
+
+### S19 - Referral Section Extraction
+Problem:
+- referral field presentation is duplicated between anonymous auth and wallet proof flows.
+
+Implementation:
+- extract a shared `ReferralCodeSection` wrapper around `ReferralCodeField`
+- use it in both auth entry and wallet proof paths
+
+Acceptance:
+- copy remains identical
+- future referral field changes have one presentation owner
+
+Status:
+- Implemented in S19 by introducing `components/wallet-modal/referral-code-section.tsx`.
+- Anonymous auth entry and wallet proof now share the same referral presentation owner.
+
+### S20 - Wallet Modal Test Mock Typing
+Problem:
+- wallet modal tests use `as never` for referral mock implementations.
+
+Implementation:
+- introduce typed referral hint fixtures/helpers
+- remove `as never` casts while preserving test intent
+
+Acceptance:
+- component tests pass
+- test helper types better reflect production referral hint shape
+
+Status:
+- Implemented in S20 by typing referral hint fixtures and the SIWS mock input/output.
+- `tests/components/wallet-modal-header-cta.test.ts` no longer uses `as never`.
+
+### S21 - Private Route Logout Redirect
+Problem:
+- From `/admin/dashboard`, wallet sign-out clears admin authorization and then refreshes the same private route.
+- The admin layout correctly renders forbidden content after auth is gone, so the user lands on `/403`/forbidden instead of returning to the public main surface.
+
+Implementation:
+- detect private current paths during logout (`/admin`, `/protected`, `/checkout`)
+- after successful wallet-only logout, push to `/` when the current path is private
+- keep public-route wallet logout behavior as a refresh so public content can revalidate auth-dependent chrome in place
+- keep federated sign-out return target public when initiated from a private route
+
+Acceptance:
+- signing out from `/admin/dashboard` navigates to `/`
+- existing public-route logout refresh behavior remains covered
+- server-side admin authorization remains unchanged
+
+Status:
+- Implemented in S21 by routing wallet-only logout from private paths to `/` instead of refreshing the private route.
+- Federated sign-out also uses `/` as the `returnTo` target when initiated from a private path.
+- Public-route wallet logout still refreshes in place.
+- S21 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S21 type validation: `npm run typecheck` passed.
+- S21 docs governance validation: `npm run validate:docs-governance` passed.
+- S21 whitespace validation: `git diff --check` passed.
+- S21 full validation: `npm run validate` passed with the known `pg` SSL mode warning.
+
+### S22 - Clean Code Remediation Plan
+Problem:
+- The post-S21 Clean Code audit found no blockers, but `WalletModal` and its test file remain high-change hotspots.
+
+Implementation:
+- add the audit findings to the problem artifact
+- create the TDD-first remediation slice map in this implementation artifact
+- keep this slice documentation-only
+
+Acceptance:
+- artifacts identify every Clean Code finding and the slice that owns it
+- every remediation slice states the RED test first, implementation scope, and validation gate
+
+Status:
+- Implemented in S22.
+- S22 docs governance validation: `npm run validate:docs-governance` passed.
+- S22 whitespace validation: `git diff --check` passed.
+
+### S23 - Private Route Helper Extraction
+Problem:
+- Private route prefixes are hardcoded inside `WalletModal`.
+
+TDD plan:
+1. RED: add helper tests proving `/admin`, `/admin/dashboard`, `/protected`, `/protected/perfil`, and `/checkout` are private post-logout paths, while `/`, `/marketplace`, and `/403` are not.
+2. Implement a shared helper, likely under `lib/navigation/private-routes.ts` or an equivalent local navigation helper module.
+3. Replace `WalletModal` local constants and `shouldRedirectToPublicAfterLogout` with the helper.
+4. Re-run the S21 component regression to confirm `/admin/dashboard` still pushes `/`.
+
+Validation:
+- new helper unit test
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts <new-helper-test>`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S23 by adding `lib/navigation/private-routes.ts`.
+- RED confirmed before implementation: `tests/lib/private-routes.test.ts` failed because the helper module did not exist.
+- S23 targeted validation: `npm test -- tests/lib/private-routes.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 24 tests.
+- S23 type validation: `npm run typecheck` passed.
+- S23 docs governance validation: `npm run validate:docs-governance` passed.
+- S23 whitespace validation: `git diff --check` passed.
+
+### S24 - Auth State Equality Extraction
+Problem:
+- `refreshAuthState` keeps a long inline equality check and repeats `federatedAvailable`.
+
+TDD plan:
+1. RED: add tests for an `areAuthMeResponsesEquivalent` helper covering identical auth payloads, role changes, pubkey changes, federated availability changes, and optional account flags.
+2. Implement the helper in a focused auth client/state module.
+3. Replace the inline comparison in `WalletModal`.
+4. Confirm `refreshAuthState` still preserves the previous object when the payload is equivalent.
+
+Validation:
+- new auth equality unit test
+- targeted wallet modal component test
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S24 by adding `lib/auth-state.ts`.
+- RED confirmed before implementation: `tests/lib/auth-state.test.ts` failed because the helper module did not exist.
+- S24 targeted validation: `npm test -- tests/lib/auth-state.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S24 type validation: `npm run typecheck` passed.
+- S24 docs governance validation: `npm run validate:docs-governance` passed.
+- S24 whitespace validation: `git diff --check` passed.
+
+### S25 - Wallet Modal Test Factories
+Problem:
+- `tests/components/wallet-modal-header-cta.test.ts` repeats large Phantom wallet and auth fixtures.
+
+TDD plan:
+1. RED: add or migrate one regression to express setup through helper intent, for example `mockConnectedPhantomWallet()` plus `mockWalletAuthSession()`.
+2. Implement test factories in the test file or a colocated test helper.
+3. Migrate only the duplicated logout/mismatch setup first; keep assertions unchanged.
+4. Verify the suite remains behavior-equivalent.
+
+Validation:
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S25 by adding `createWalletAuthSession` and `mockAuthenticatedPhantomWalletSession` test helpers.
+- RED confirmed before implementation: the private admin logout regression failed with `mockAuthenticatedPhantomWalletSession is not defined`.
+- Migrated the private admin logout and public logout regression setup to the helper-backed shape.
+- S25 targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S25 type validation: `npm run typecheck` passed.
+- S25 docs governance validation: `npm run validate:docs-governance` passed.
+- S25 whitespace validation: `git diff --check` passed.
+
+### S26 - Referral Auth Payload Extraction
+Problem:
+- `handleWalletPrimaryAction` builds referral normalization, attribution source, and metadata inline.
+
+TDD plan:
+1. RED: add tests for a pure referral auth payload helper covering empty codes, manual codes, auto query hints, mobile/Phantom-app attribution, and metadata landing path.
+2. Implement the helper.
+3. Replace the inline referral block in `handleWalletPrimaryAction`.
+4. Preserve existing SIWS and referral intent behavior.
+
+Validation:
+- new referral payload unit test
+- targeted wallet modal referral tests
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S26 by adding `buildReferralAuthPayload` to `lib/referrals/client-state.ts`.
+- RED confirmed before implementation: referral client-state tests failed because `buildReferralAuthPayload` was not a function.
+- Updated the wallet modal referral client-state mock to expose the new helper contract.
+- S26 targeted validation: `npm test -- tests/lib/referral-client-state.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 29 tests.
+- S26 type validation: `npm run typecheck` passed.
+- S26 docs governance validation: `npm run validate:docs-governance` passed.
+- S26 whitespace validation: `git diff --check` passed.
+
+### S27 - Wallet Signing Preparation Extraction
+Problem:
+- `handleWalletPrimaryAction` mixes adapter selection/connection, public-key waiting, and sign-message waiting with SIWS/session behavior.
+
+TDD plan:
+1. RED: add tests for the smallest extractable wallet signing decision helper, covering already-connected wallet, missing public key, reconnecting existing session, and mismatched session wallet.
+2. Implement the helper or hook boundary without changing wallet adapter authority.
+3. Update `handleWalletPrimaryAction` to call the helper before SIWS.
+4. Keep Phantom selection/connect side effects in the React boundary where adapter APIs require it.
+
+Validation:
+- new helper/hook tests where practical
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S27 by adding `lib/wallet-signing-prep.ts`.
+- RED confirmed before implementation: `tests/lib/wallet-signing-prep.test.ts` failed because the helper module did not exist.
+- The helper now owns mismatch, already-authenticated, needs-connection, and ready decisions while adapter side effects remain in `WalletModal`.
+- S27 targeted validation: `npm test -- tests/lib/wallet-signing-prep.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S27 type validation: `npm run typecheck` passed.
+- S27 docs governance validation: `npm run validate:docs-governance` passed.
+- S27 whitespace validation: `git diff --check` passed.
+
+### S28 - Post Auth Decision Extraction
+Problem:
+- After SIWS success, `handleWalletPrimaryAction` fetches profile data, derives onboarding reward UI state, mutates modal state, and navigates.
+
+TDD plan:
+1. RED: add tests for a pure post-auth decision helper covering profile complete, reward reminder, missing profile fields, 404 fallback, and fetch failure fail-open.
+2. Implement the helper with the fallback reward contract.
+3. Replace the inline profile/reward decision branch in `handleWalletPrimaryAction`.
+4. Preserve new-user navigation to `/protected`.
+
+Validation:
+- new post-auth decision unit test
+- targeted wallet modal post-auth tests
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S28 by adding `lib/post-auth-decision.ts`.
+- RED confirmed before implementation: `tests/lib/post-auth-decision.test.ts` failed because the helper module did not exist.
+- `WalletModal` now delegates post-SIWS profile/reward modal routing decisions to the pure helper while keeping fetch and navigation side effects in the component.
+- S28 targeted validation: `npm test -- tests/lib/post-auth-decision.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S28 type validation: `npm run typecheck` passed.
+- S28 docs governance validation: `npm run validate:docs-governance` passed.
+- S28 whitespace validation: `git diff --check` passed.
+
+### S29 - Wallet Proof View Model
+Problem:
+- `WalletProofPanel` still derives title, description, status badge, and progress steps inline in JSX.
+
+TDD plan:
+1. RED: add view-model tests for mismatch, signing, verifying, active session, pending wallet proof, reduced-motion neutral state, and step completion.
+2. Implement `getWalletProofViewModel` or equivalent.
+3. Update `WalletProofPanel` to render the view model.
+4. Keep visual output and copy unchanged.
+
+Validation:
+- new wallet proof view-model test
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S29 by adding `lib/wallet-proof-view-model.ts`.
+- RED confirmed before implementation: `tests/lib/wallet-proof-view-model.test.ts` failed because the helper module did not exist.
+- `WalletProofPanel` now renders a tested view model for eyebrow, title, description, status tone, status label, selected-wallet copy, and progress steps.
+- S29 targeted validation: `npm test -- tests/lib/wallet-proof-view-model.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S29 type validation: `npm run typecheck` passed.
+- S29 docs governance validation: `npm run validate:docs-governance` passed.
+- S29 whitespace validation: `git diff --check` passed.
+
+### S30 - Wallet Modal Orchestration Cleanup
+Problem:
+- After helper extractions, `WalletModal` should be simplified so the top-level component reads as orchestration instead of mixed business logic and low-level side effects.
+
+TDD plan:
+1. RED: identify any missing characterization test before moving composition code; if no gap exists, run the existing wallet modal suite as the safety net and document why no new behavior test is needed.
+2. Replace remaining inline helper glue with named calls from S23-S29.
+3. Remove now-dead constants, duplicated branches, and noisy temporary variables.
+4. Run a final Clean Code pass against `WalletModal` and update residual debt notes.
+
+Validation:
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `npm run validate`
+- Playwright/Synpress if auth-critical behavior moved across boundaries
+- final clean-code review
+
+Status:
+- Implemented in S30 by reusing the tested post-auth fallback reward builder in `WalletModal`.
+- RED confirmed before implementation: `tests/lib/post-auth-decision.test.ts` failed because `createPostAuthFallbackReward` was not exported.
+- The prompted post-auth effect no longer rebuilds fallback reward data inline; it now shares the S28 contract without changing modal side effects or routing behavior.
+- S30 targeted validation: `npm test -- tests/lib/post-auth-decision.test.ts tests/components/wallet-modal-header-cta.test.ts tests/lib/wallet-proof-view-model.test.ts` passed with 33 tests.
+- S30 type validation: `npm run typecheck` passed.
+- S30 docs governance validation: `npm run validate:docs-governance` passed.
+- S30 whitespace validation: `git diff --check` passed.
+- S30 clean-code pass: no new blocking findings in the wallet modal module; accepted residual debt is that `WalletModal` remains a large auth/navigation orchestrator, now with private-route, auth equality, referral payload, signing prep, post-auth decision, fallback reward, and proof view-model logic extracted behind tests.
+
+Final closeout validation:
+- Full targeted wallet modal/helper suite passed: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts tests/lib/private-routes.test.ts tests/lib/auth-state.test.ts tests/lib/referral-client-state.test.ts tests/lib/wallet-signing-prep.test.ts tests/lib/post-auth-decision.test.ts tests/lib/wallet-proof-view-model.test.ts` passed with 60 tests.
+- `npm run validate` passed, including lint, typecheck, DB validation, content, route, SEO, schema, AI, feeds, operability, knowledge, workflow, and docs-governance gates.
+- `npm run e2e:synpress` passed with the `synpress-phantom` project.
+- `npm run e2e:playwright` passed the wallet modal auth entry coverage across `/` and `/marketplace` at 320/375/768/1024 and passed 20 of 22 smoke specs. `e2e/story-010-03-routes.responsive.pw.spec.ts` passed on isolated retry. `e2e/protected-profile-push-enrollment.pw.spec.ts` still fails outside this modal scope because the profile push-enrollment assertion is blocked by the protected profile onboarding/tour state during smoke execution.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -454,3 +821,26 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - Final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
 - Final Synpress validation: `npm run e2e:synpress` passed with 1 test.
 - Final observed non-blocking warning: database validation still emits the known `pg` SSL mode warning.
+- S16 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 28 tests.
+- S16 type validation: `npm run typecheck` passed.
+- S16 whitespace validation: `git diff --check` passed.
+- S17 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S17 type validation: `npm run typecheck` passed.
+- S17 whitespace validation: `git diff --check` passed.
+- S18 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S18 type validation: `npm run typecheck` passed.
+- S18 whitespace validation: `git diff --check` passed.
+- S19 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S19 type validation: `npm run typecheck` passed.
+- S19 whitespace validation: `git diff --check` passed.
+- S20 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S20 type validation: `npm run typecheck` passed.
+- S20 whitespace validation: `git diff --check` passed.
+- S17-S20 integrated targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 29 tests.
+- S17-S20 integrated type validation: `npm run typecheck` passed.
+- S17-S20 integrated docs governance validation: `npm run validate:docs-governance` passed.
+- S17-S20 integrated full validation: `npm run validate` passed.
+- S17-S20 integrated browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on sequential rerun.
+- S17-S20 integrated Synpress validation: `npm run e2e:synpress` passed with 1 test on sequential rerun.
+- S17-S20 initial parallel browser/Synpress run timed out during `page.goto("/")` while full validation was also running; sequential reruns passed and found no modal assertion failures.
+- S17-S20 reviewer pass: subagent reviewer found no blockers in the wallet/login modal module and confirmed SIWS session, connected adapter, mismatch state, federated flow, and reduced-motion boundaries are consistent.

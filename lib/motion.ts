@@ -122,6 +122,11 @@ export function createReducedMotionVariants() {
   } as const;
 }
 
+export function shouldUseReducedMotion(prefersReducedMotion: boolean | null): boolean {
+  return prefersReducedMotion === true
+    || (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true);
+}
+
 export function createPanelMotionVariants() {
   return {
     initial: {

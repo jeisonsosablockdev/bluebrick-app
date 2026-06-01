@@ -13,7 +13,8 @@ import {
   createPageMotionVariants,
   createPanelMotionVariants,
   createReducedMotionVariants,
-  createThemeMotionVariants
+  createThemeMotionVariants,
+  shouldUseReducedMotion
 } from "@/lib/motion";
 
 describe("lib/motion", () => {
@@ -80,5 +81,10 @@ describe("lib/motion", () => {
     expect("filter" in variants.initial).toBe(false);
     expect(variants.animate.transition.duration).toBe(0);
     expect(variants.exit.opacity).toBe(1);
+  });
+
+  it("detects explicit reduced-motion preference from Motion", () => {
+    expect(shouldUseReducedMotion(true)).toBe(true);
+    expect(shouldUseReducedMotion(false)).toBe(false);
   });
 });
