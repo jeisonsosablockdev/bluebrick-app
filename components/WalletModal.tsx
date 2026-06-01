@@ -56,6 +56,7 @@ import { areAuthMeResponsesEquivalent } from "@/lib/auth-state";
 import { shouldUseReducedMotion } from "@/lib/motion";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
 import { cn } from "@/lib/utils";
+import { resolveWalletSigningPreparation } from "@/lib/wallet-signing-prep";
 
 type WalletModalProps = {
   initialAuth?: AuthMeResponse;
@@ -875,7 +876,16 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   }, [autoCloseOnConnect, connected, isOpen, walletPublicKey]);
 
   async function handleWalletPrimaryAction(): Promise<void> {
-    if (hasWalletSessionAdapterMismatch) {
+    let activePublicKey = resolveCurrentWalletPublicKey();
+    const initialSigningPreparation = resolveWalletSigningPreparation({
+      activePublicKey,
+      authenticatedPublicKey: authState.pubkey,
+      hasWalletSession,
+      hasWalletSessionAdapterMismatch,
+      isConnected
+    });
+
+    if (initialSigningPreparation.status === "mismatch") {
       setLastError(t({
         en: "Connected wallet does not match the signed-in session. Sign out and reconnect the correct wallet.",
         es: "La wallet conectada no coincide con la sesion iniciada. Cierra sesion y reconecta la wallet correcta.",
@@ -884,7 +894,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       return;
     }
 
-    if (hasWalletSession && isConnected) {
+    if (initialSigningPreparation.status === "already_authenticated") {
       return;
     }
 
@@ -896,10 +906,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         throw new Error("Phantom wallet was not found in this browser.");
       }
 
-      let activePublicKey = resolveCurrentWalletPublicKey();
-      const needsWalletAdapterConnection = !activePublicKey || (hasWalletSession && !isConnected);
-
-      if (needsWalletAdapterConnection) {
+      if (initialSigningPreparation.status === "needs_connection") {
         setPhase("connecting");
 
         if (!wallet || wallet.adapter.name !== PhantomWalletName) {
@@ -916,7 +923,15 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       }
 
       if (hasWalletSession) {
-        if (authState.pubkey && activePublicKey !== authState.pubkey) {
+        const sessionSigningPreparation = resolveWalletSigningPreparation({
+          activePublicKey,
+          authenticatedPublicKey: authState.pubkey,
+          hasWalletSession,
+          hasWalletSessionAdapterMismatch: false,
+          isConnected: true
+        });
+
+        if (sessionSigningPreparation.status === "mismatch") {
           throw new Error("Connected wallet does not match the signed-in session. Sign out and reconnect the correct wallet.");
         }
 
