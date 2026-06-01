@@ -94,6 +94,29 @@ The follow-up reviewer pass found one blocking boundary issue and one reduced-mo
 
 S16 corrected both issues. The modal now treats SIWS pubkey / adapter pubkey mismatch as an explicit mismatch state, hides copy/primary wallet actions in that state, and keeps disconnect available as the recovery action. The modal shell also gates overlay, panel, and status indicator motion for `prefers-reduced-motion`.
 
+## Technical Debt Audit
+The strict technical-debt audit after S16 found no behavior blockers, but identified four cleanup items that should be remediated before final closeout:
+
+1. Large modal orchestrator
+- `components/WalletModal.tsx` remains a high-change hotspot because it owns navigation chrome, modal shell, auth derivation, wallet adapter effects, referrals, WorkOS entry, onboarding, and auth sync.
+- Risk: future auth/UI fixes can trigger shotgun changes in one large file.
+- Slice: S17.
+
+2. Broad wallet proof panel API
+- `WalletProofPanel` receives many scalar props from `WalletModal`.
+- Risk: prop drift and accidental coupling between parent state names and presentational UI.
+- Slice: S18.
+
+3. Duplicated referral field presentation
+- Anonymous auth entry and wallet proof path repeat `ReferralCodeField` labels, placeholder, help text, value, and handlers.
+- Risk: future copy/behavior changes can diverge across auth paths.
+- Slice: S19.
+
+4. Brittle test mock typing
+- `tests/components/wallet-modal-header-cta.test.ts` uses `as never` for referral mock implementations.
+- Risk: mocks can hide contract drift in referral hint shape.
+- Slice: S20.
+
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
 - Opening the modal does not scroll the underlying page.
@@ -130,6 +153,10 @@ Out of scope:
 - S14: P3 artifact status synchronization. Implemented.
 - S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority. Implemented.
 - S16: clean-code reviewer follow-up for SIWS/adapter mismatch and reduced-motion modal shell. Implemented.
+- S17: extract modal shell presentation from `WalletModal`. Planned.
+- S18: group `WalletProofPanel` props into cohesive prop objects. Planned.
+- S19: extract shared referral code section. Planned.
+- S20: remove brittle `as never` test mock typing. Planned.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 

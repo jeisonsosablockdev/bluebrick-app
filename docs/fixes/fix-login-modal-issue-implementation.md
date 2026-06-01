@@ -18,6 +18,7 @@
 - S14 P3 artifact status sync is implemented in this slice.
 - S15 clean-code extraction is implemented in this slice.
 - S16 reviewer clean-code follow-up is implemented in this slice.
+- S17-S20 technical-debt cleanup slices are planned from the strict audit.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -87,6 +88,10 @@ Initiative branch:
 | S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 | S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S17 | planned | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, docs governance | local slice |
+| S18 | planned | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-prop-groups` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, docs governance | local slice |
+| S19 | planned | `fix/app-login-modal-issue-bri-167-s19-referral-section-extraction` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, docs governance | local slice |
+| S20 | planned | `fix/app-login-modal-issue-bri-167-s20-test-mock-typing` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, docs governance | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -189,6 +194,55 @@ Acceptance:
 
 Status:
 - Implemented in S16.
+
+### S17 - Modal Shell Extraction
+Problem:
+- `WalletModal` remains a large orchestration component and still owns modal shell markup.
+
+Implementation:
+- extract portal overlay, panel motion, close control, title, and top feedback presentation into a focused shell component
+- keep auth state, wallet adapter logic, SIWS, logout, referrals, and navigation decisions in `WalletModal`
+
+Acceptance:
+- no auth behavior change
+- modal remains viewport-owned and reduced-motion aware
+- component tests still pass
+
+### S18 - Wallet Proof Prop Groups
+Problem:
+- `WalletProofPanel` receives many scalar props, making parent/presentational coupling noisy.
+
+Implementation:
+- group props into `session`, `walletStatus`, `referral`, and `actions`
+- preserve the same UI states and copy
+
+Acceptance:
+- no behavior change
+- easier review surface for future wallet proof changes
+
+### S19 - Referral Section Extraction
+Problem:
+- referral field presentation is duplicated between anonymous auth and wallet proof flows.
+
+Implementation:
+- extract a shared `ReferralCodeSection` wrapper around `ReferralCodeField`
+- use it in both auth entry and wallet proof paths
+
+Acceptance:
+- copy remains identical
+- future referral field changes have one presentation owner
+
+### S20 - Wallet Modal Test Mock Typing
+Problem:
+- wallet modal tests use `as never` for referral mock implementations.
+
+Implementation:
+- introduce typed referral hint fixtures/helpers
+- remove `as never` casts while preserving test intent
+
+Acceptance:
+- component tests pass
+- test helper types better reflect production referral hint shape
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
