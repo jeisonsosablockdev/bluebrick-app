@@ -103,6 +103,41 @@ export function buildReferralAuthMetadata(input: {
   };
 }
 
+export function buildReferralAuthPayload(input: {
+  referralCode: string;
+  origin: ReferralHintOrigin;
+  landingPath: string | null;
+  isMobileWalletFlow: boolean;
+}): {
+  normalizedReferralCode: string;
+  referralSource: ReferralAttributionSource | undefined;
+  referralMetadata: Record<string, unknown> | undefined;
+} {
+  const normalizedReferralCode = normalizeReferralCodeInput(input.referralCode);
+  if (!normalizedReferralCode) {
+    return {
+      normalizedReferralCode: "",
+      referralSource: undefined,
+      referralMetadata: undefined
+    };
+  }
+
+  const referralSource = deriveReferralAttributionSource({
+    origin: input.origin,
+    isMobileWalletFlow: input.isMobileWalletFlow
+  });
+
+  return {
+    normalizedReferralCode,
+    referralSource,
+    referralMetadata: buildReferralAuthMetadata({
+      landingPath: input.landingPath,
+      origin: input.origin,
+      source: referralSource
+    })
+  };
+}
+
 export function buildPhantomBrowseDeepLink(siteUrl: string): string {
   return `https://phantom.app/ul/browse/${encodeURIComponent(siteUrl)}`;
 }

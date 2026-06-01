@@ -100,7 +100,7 @@ Initiative branch:
 | S23 | implemented | `fix/app-login-modal-issue-bri-167-s23-private-route-helper` | Move private-route logout detection out of `WalletModal` | new private-route helper, `WalletModal`, helper tests, modal regression | RED helper test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S24 | implemented | `fix/app-login-modal-issue-bri-167-s24-auth-state-equality` | Extract auth-state equality and remove duplicated comparison noise | auth equality helper, `WalletModal`, helper tests | RED equality test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S25 | implemented | `fix/app-login-modal-issue-bri-167-s25-wallet-modal-test-factories` | Reduce wallet modal test fixture duplication | wallet modal test helpers/factories, migrated focused tests | RED helper-backed regression shape, helper implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
-| S26 | planned | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S26 | implemented | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S27 | planned | `fix/app-login-modal-issue-bri-167-s27-wallet-signing-prep` | Extract wallet connection/sign-message preparation from `handleWalletPrimaryAction` | wallet signing preparation helper/hook boundary, `WalletModal`, focused tests | RED connect/signature-prep tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S28 | planned | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S29 | planned | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
@@ -412,6 +412,15 @@ Validation:
 - `npm run typecheck`
 - `npm run validate:docs-governance`
 - `git diff --check`
+
+Status:
+- Implemented in S26 by adding `buildReferralAuthPayload` to `lib/referrals/client-state.ts`.
+- RED confirmed before implementation: referral client-state tests failed because `buildReferralAuthPayload` was not a function.
+- Updated the wallet modal referral client-state mock to expose the new helper contract.
+- S26 targeted validation: `npm test -- tests/lib/referral-client-state.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 29 tests.
+- S26 type validation: `npm run typecheck` passed.
+- S26 docs governance validation: `npm run validate:docs-governance` passed.
+- S26 whitespace validation: `git diff --check` passed.
 
 ### S27 - Wallet Signing Preparation Extraction
 Problem:
