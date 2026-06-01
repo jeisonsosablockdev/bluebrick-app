@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildPhantomBrowseDeepLink,
+  buildReferralAuthPayload,
   buildReferralAuthMetadata,
   buildStoredReferralHint,
   deriveReferralAttributionSource,
@@ -56,5 +57,52 @@ describe("lib/referrals/client-state", () => {
     expect(buildPhantomBrowseDeepLink("https://example.com/?ref=REF-10")).toContain(
       encodeURIComponent("https://example.com/?ref=REF-10")
     );
+  });
+
+  it("builds empty referral auth payloads for blank codes", () => {
+    expect(buildReferralAuthPayload({
+      referralCode: " ",
+      origin: "manual",
+      landingPath: "/marketplace",
+      isMobileWalletFlow: false
+    })).toEqual({
+      normalizedReferralCode: "",
+      referralSource: undefined,
+      referralMetadata: undefined
+    });
+  });
+
+  it("builds manual referral auth payloads", () => {
+    expect(buildReferralAuthPayload({
+      referralCode: " ref-123 ",
+      origin: "manual",
+      landingPath: "/marketplace?ref=ref-123",
+      isMobileWalletFlow: false
+    })).toEqual({
+      normalizedReferralCode: "REF-123",
+      referralSource: "manual",
+      referralMetadata: {
+        landingPath: "/marketplace?ref=ref-123",
+        captureOrigin: "manual",
+        inferredSource: "manual"
+      }
+    });
+  });
+
+  it("builds deep-link attribution for auto mobile wallet flows", () => {
+    expect(buildReferralAuthPayload({
+      referralCode: " auto-123 ",
+      origin: "auto",
+      landingPath: "/?ref=auto-123",
+      isMobileWalletFlow: true
+    })).toEqual({
+      normalizedReferralCode: "AUTO-123",
+      referralSource: "deep_link",
+      referralMetadata: {
+        landingPath: "/?ref=auto-123",
+        captureOrigin: "auto",
+        inferredSource: "deep_link"
+      }
+    });
   });
 });

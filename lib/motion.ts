@@ -106,6 +106,27 @@ export function createNavigationFallbackMotionVariants() {
   } as const;
 }
 
+export function createReducedMotionVariants() {
+  return {
+    initial: {
+      opacity: 1
+    },
+    animate: {
+      opacity: 1,
+      transition: { duration: 0 }
+    },
+    exit: {
+      opacity: 1,
+      transition: { duration: 0 }
+    }
+  } as const;
+}
+
+export function shouldUseReducedMotion(prefersReducedMotion: boolean | null): boolean {
+  return prefersReducedMotion === true
+    || (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true);
+}
+
 export function createPanelMotionVariants() {
   return {
     initial: {
