@@ -163,6 +163,7 @@ Out of scope:
 - S18: group `WalletProofPanel` props into cohesive prop objects. Implemented.
 - S19: extract shared referral code section. Implemented.
 - S20: remove brittle `as never` test mock typing. Implemented.
+- S21: redirect private-route logout to public main instead of refreshing into forbidden content. Implemented.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 

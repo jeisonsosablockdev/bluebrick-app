@@ -63,6 +63,8 @@ const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
 const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
 const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
 const POST_AUTH_DECISION_QUERY_PARAM = "postAuthDecision";
+const POST_LOGOUT_PUBLIC_HREF = "/";
+const PRIVATE_POST_LOGOUT_PATH_PREFIXES = ["/admin", "/protected", "/checkout"];
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 type MessageSigner = (message: Uint8Array) => Promise<Uint8Array>;
@@ -293,6 +295,12 @@ function isActivePath(pathname: string, href: string): boolean {
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function shouldRedirectToPublicAfterLogout(pathname: string): boolean {
+  return PRIVATE_POST_LOGOUT_PATH_PREFIXES.some((prefix) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
 }
 
 function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSignerWalletAdapter {
@@ -1094,7 +1102,10 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       if (disconnectError || logoutError) {
         setLastError(disconnectError ?? logoutError);
       } else if (hasFederatedSession && typeof window !== "undefined") {
-        window.location.assign(`/sign-out?returnTo=${encodeURIComponent(currentLandingPath || "/")}`);
+        const returnTo = shouldRedirectToPublicAfterLogout(pathname)
+          ? POST_LOGOUT_PUBLIC_HREF
+          : currentLandingPath || POST_LOGOUT_PUBLIC_HREF;
+        window.location.assign(`/sign-out?returnTo=${encodeURIComponent(returnTo)}`);
       } else {
         setSuppressedWalletPublicKey(disconnectedPublicKey);
         setHasWalletAuthIntent(false);
@@ -1111,7 +1122,11 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
           federatedAvailable: previous.federatedAvailable
         }));
         broadcastAuthSync("logout", walletPublicKey);
-        router.refresh();
+        if (shouldRedirectToPublicAfterLogout(pathname)) {
+          router.push(POST_LOGOUT_PUBLIC_HREF);
+        } else {
+          router.refresh();
+        }
       }
     } finally {
       setPhase("idle");
