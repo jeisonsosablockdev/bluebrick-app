@@ -483,7 +483,7 @@ export function CoreCandyMachinePanel({
     candyMachineAddress: string,
     collectionAddress: string,
     signatures: RunSignatureEntry[]
-  ): Promise<void> {
+  ): Promise<SnapshotFinalizeResponse | null> {
     setIsFinalizingSnapshot(true);
 
     try {
@@ -523,9 +523,11 @@ export function CoreCandyMachinePanel({
 
       setSnapshotResult(payload);
       onSnapshotFinalized?.(payload);
+      return payload;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not finalize mint snapshot.";
       setErrorMessage(message);
+      return null;
     } finally {
       setIsFinalizingSnapshot(false);
     }
@@ -679,7 +681,36 @@ export function CoreCandyMachinePanel({
 
       setRunState((current) => ({
         ...current,
-        status: allConfirmed ? "Deploy complete. Candy Machine ready to mint." : "Deploy submitted (pending background confirmation)."
+        status: allConfirmed
+          ? "Deploy confirmed. Finalizing mint snapshot..."
+          : "Deploy submitted (pending background confirmation). Snapshot not finalized yet."
+      }));
+
+      if (!allConfirmed) {
+        return;
+      }
+
+      const finalizedSnapshot = await finalizeSnapshot(
+        quantity,
+        prepared.candyMachineAddress,
+        prepared.collectionAddress,
+        collectedSignatures
+      );
+
+      if (!finalizedSnapshot?.canCreateAsset) {
+        const message = finalizedSnapshot?.verificationError?.message
+          ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
+        setRunState((current) => ({
+          ...current,
+          status: "Deploy confirmed, but mint snapshot is not ready."
+        }));
+        setErrorMessage(message);
+        return;
+      }
+
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
       }));
 
       onDeployCompleted?.({
