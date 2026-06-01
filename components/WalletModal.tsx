@@ -1473,30 +1473,38 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
         {shouldShowWalletIntentCard ? (
           <WalletProofPanel
             t={t}
-            phase={phase}
-            hasWalletSession={hasWalletSession}
-            hasWalletSessionAdapterMismatch={hasWalletSessionAdapterMismatch}
-            hasFederatedSession={hasFederatedSession}
-            hasWalletAuthIntent={hasWalletAuthIntent}
-            isConnected={isConnected}
-            isBusy={isBusy}
-            isFederatedLoginAvailable={isFederatedLoginAvailable}
-            isPhantomInstalled={isPhantomInstalled}
-            isReferralFieldVisible={isReferralFieldVisible}
-            isWalletAuthInProgress={isWalletAuthInProgress}
-            referralCode={referralCode}
-            walletConnectionStatusText={walletConnectionStatusText}
-            walletPublicKey={copyableWalletPublicKey}
-            walletPrimaryLabel={walletPrimaryLabel}
-            walletDisconnectActionLabel={walletDisconnectActionLabel}
-            shouldShowWalletPrimaryAction={shouldShowWalletPrimaryAction}
-            shouldShowDisconnectButton={shouldShowDisconnectButton}
-            onCopyAddress={copyAddress}
-            onDisconnect={handleDisconnect}
-            onReferralChange={handleReferralCodeChange}
-            onReferralToggle={() => setIsReferralFieldVisible((previous) => !previous)}
-            onStartFederatedLink={handleStartFederatedLink}
-            onStartWalletSignIn={handleStartWalletSignIn}
+            session={{
+              phase,
+              hasWalletSession,
+              hasWalletSessionAdapterMismatch,
+              hasFederatedSession,
+              hasWalletAuthIntent,
+              isWalletAuthInProgress
+            }}
+            connection={{
+              isConnected,
+              isBusy,
+              isFederatedLoginAvailable,
+              isPhantomInstalled,
+              walletConnectionStatusText,
+              walletPublicKey: copyableWalletPublicKey
+            }}
+            referral={{
+              code: referralCode,
+              isVisible: isReferralFieldVisible,
+              onChange: handleReferralCodeChange,
+              onToggle: () => setIsReferralFieldVisible((previous) => !previous)
+            }}
+            actions={{
+              primaryLabel: walletPrimaryLabel,
+              disconnectLabel: walletDisconnectActionLabel,
+              shouldShowWalletPrimaryAction,
+              shouldShowDisconnectButton,
+              onCopyAddress: copyAddress,
+              onDisconnect: handleDisconnect,
+              onStartFederatedLink: handleStartFederatedLink,
+              onStartWalletSignIn: handleStartWalletSignIn
+            }}
           />
         ) : null}
       </WalletModalShell>

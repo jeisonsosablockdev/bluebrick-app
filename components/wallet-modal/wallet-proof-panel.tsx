@@ -12,61 +12,89 @@ import { cn } from "@/lib/utils";
 type WalletProofPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 type Translate = (text: LocaleText) => string;
 
-type WalletProofPanelProps = {
-  t: Translate;
+type WalletProofSessionState = {
   phase: WalletProofPhase;
   hasWalletSession: boolean;
   hasWalletSessionAdapterMismatch: boolean;
   hasFederatedSession: boolean;
   hasWalletAuthIntent: boolean;
+  isWalletAuthInProgress: boolean;
+};
+
+type WalletProofConnectionState = {
   isConnected: boolean;
   isBusy: boolean;
   isFederatedLoginAvailable: boolean;
   isPhantomInstalled: boolean;
-  isReferralFieldVisible: boolean;
-  isWalletAuthInProgress: boolean;
-  referralCode: string;
   walletConnectionStatusText: string | null;
   walletPublicKey: string | null;
-  walletPrimaryLabel: string;
-  walletDisconnectActionLabel: string;
+};
+
+type WalletProofReferralState = {
+  code: string;
+  isVisible: boolean;
+  onChange: (nextValue: string) => void;
+  onToggle: () => void;
+};
+
+type WalletProofActions = {
+  primaryLabel: string;
+  disconnectLabel: string;
   shouldShowWalletPrimaryAction: boolean;
   shouldShowDisconnectButton: boolean;
   onCopyAddress: () => void;
   onDisconnect: () => void;
-  onReferralChange: (nextValue: string) => void;
-  onReferralToggle: () => void;
   onStartFederatedLink: () => void;
   onStartWalletSignIn: () => void;
 };
 
+type WalletProofPanelProps = {
+  t: Translate;
+  actions: WalletProofActions;
+  connection: WalletProofConnectionState;
+  referral: WalletProofReferralState;
+  session: WalletProofSessionState;
+};
+
 export function WalletProofPanel({
   t,
-  phase,
-  hasWalletSession,
-  hasWalletSessionAdapterMismatch,
-  hasFederatedSession,
-  hasWalletAuthIntent,
-  isConnected,
-  isBusy,
-  isFederatedLoginAvailable,
-  isPhantomInstalled,
-  isReferralFieldVisible,
-  isWalletAuthInProgress,
-  referralCode,
-  walletConnectionStatusText,
-  walletPublicKey,
-  walletPrimaryLabel,
-  walletDisconnectActionLabel,
-  shouldShowWalletPrimaryAction,
-  shouldShowDisconnectButton,
-  onCopyAddress,
-  onDisconnect,
-  onReferralChange,
-  onReferralToggle,
-  onStartFederatedLink,
-  onStartWalletSignIn
+  actions,
+  connection,
+  referral,
+  session
 }: WalletProofPanelProps) {
+  const {
+    phase,
+    hasWalletSession,
+    hasWalletSessionAdapterMismatch,
+    hasFederatedSession,
+    hasWalletAuthIntent,
+    isWalletAuthInProgress
+  } = session;
+  const {
+    isConnected,
+    isBusy,
+    isFederatedLoginAvailable,
+    isPhantomInstalled,
+    walletConnectionStatusText,
+    walletPublicKey
+  } = connection;
+  const {
+    code: referralCode,
+    isVisible: isReferralFieldVisible,
+    onChange: onReferralChange,
+    onToggle: onReferralToggle
+  } = referral;
+  const {
+    primaryLabel: walletPrimaryLabel,
+    disconnectLabel: walletDisconnectActionLabel,
+    shouldShowWalletPrimaryAction,
+    shouldShowDisconnectButton,
+    onCopyAddress,
+    onDisconnect,
+    onStartFederatedLink,
+    onStartWalletSignIn
+  } = actions;
   const prefersReducedMotion = useReducedMotion();
   const shouldReduceMotion = shouldUseReducedMotion(prefersReducedMotion);
   const walletProofSteps = [
