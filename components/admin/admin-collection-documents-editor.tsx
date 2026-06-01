@@ -59,11 +59,63 @@ type AdminCollectionDocumentsEditorProps = {
   initialDocuments: CollectionBootstrapDocumentItem[];
 };
 
+type DocumentsWorkspaceSummary = {
+  total: number;
+  uploads: number;
+  manualLinks: number;
+};
+
 function toDraftDocuments(items: CollectionBootstrapDocumentItem[]): AdminCollectionDocumentDraft[] {
   return items.map((item, index) => ({
     ...item,
     displayOrder: index + 1
   }));
+}
+
+function summarizeDraftDocuments(items: AdminCollectionDocumentDraft[]): DocumentsWorkspaceSummary {
+  const uploads = items.filter((item) => item.source === "upload").length;
+
+  return {
+    total: items.length,
+    uploads,
+    manualLinks: items.length - uploads
+  };
+}
+
+function formatDocumentCount(locale: AppLocale, count: number): string {
+  if (count === 1) {
+    return localize(locale, { en: "1 document", es: "1 documento", pt: "1 documento" });
+  }
+
+  return localize(locale, {
+    en: `${count} documents`,
+    es: `${count} documentos`,
+    pt: `${count} documentos`
+  });
+}
+
+function formatUploadCount(locale: AppLocale, count: number): string {
+  if (count === 1) {
+    return localize(locale, { en: "1 upload", es: "1 subida", pt: "1 upload" });
+  }
+
+  return localize(locale, {
+    en: `${count} uploads`,
+    es: `${count} subidas`,
+    pt: `${count} uploads`
+  });
+}
+
+function formatManualLinkCount(locale: AppLocale, count: number): string {
+  if (count === 1) {
+    return localize(locale, { en: "1 manual link", es: "1 enlace manual", pt: "1 link manual" });
+  }
+
+  return localize(locale, {
+    en: `${count} manual links`,
+    es: `${count} enlaces manuales`,
+    pt: `${count} links manuais`
+  });
 }
 
 function createLocalUuid(): string {
@@ -188,6 +240,46 @@ function DocumentsStatusMessage({
   );
 }
 
+function WorkspaceMetric({
+  label,
+  value
+}: {
+  label: string;
+  value: string;
+}): ReactElement {
+  return (
+    <div className="min-h-14 rounded-lg border border-white/10 bg-black/10 px-3 py-2">
+      <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/40">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white/85">{value}</p>
+    </div>
+  );
+}
+
+function DocumentsWorkspaceSummaryBar({
+  locale,
+  summary
+}: {
+  locale: AppLocale;
+  summary: DocumentsWorkspaceSummary;
+}): ReactElement {
+  return (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <WorkspaceMetric
+        label={localize(locale, { en: "Rows", es: "Filas", pt: "Linhas" })}
+        value={formatDocumentCount(locale, summary.total)}
+      />
+      <WorkspaceMetric
+        label={localize(locale, { en: "Canonical", es: "Canonico", pt: "Canonico" })}
+        value={formatUploadCount(locale, summary.uploads)}
+      />
+      <WorkspaceMetric
+        label={localize(locale, { en: "Fallback", es: "Fallback", pt: "Fallback" })}
+        value={formatManualLinkCount(locale, summary.manualLinks)}
+      />
+    </div>
+  );
+}
+
 function DocumentMetadataPills({
   locale,
   draft
@@ -197,11 +289,13 @@ function DocumentMetadataPills({
 }): ReactElement {
   return (
     <div className="flex flex-wrap gap-2">
-        <span className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs text-white/70">
+      <span className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs text-white/70">
         {formatAdminCollectionDocumentTag(locale, draft.tag)}
       </span>
       <span className="inline-flex min-h-8 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs text-white/45">
-        {draft.source}
+        {draft.source === "upload"
+          ? localize(locale, { en: "Upload", es: "Subida", pt: "Upload" })
+          : localize(locale, { en: "Manual link", es: "Enlace manual", pt: "Link manual" })}
       </span>
       {draft.fileName ? (
         <span className="inline-flex min-h-8 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs text-white/45">
@@ -230,27 +324,27 @@ function DocumentCard({
   onChange: (nextDraft: AdminCollectionDocumentDraft) => void;
   onRemove: () => void;
 }): ReactElement {
+  const heading = draft.label.trim() || draft.title.trim() || localize(locale, {
+    en: `Document ${index + 1}`,
+    es: `Documento ${index + 1}`,
+    pt: `Documento ${index + 1}`
+  });
+
   return (
-    <div className="space-y-4 rounded-3xl border border-white/10 bg-black/10 p-4">
+    <div className="space-y-4 rounded-lg border border-white/10 bg-black/10 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-white">
+        <div className="min-w-0 space-y-2">
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/40">
             {localize(locale, {
               en: `Document ${index + 1}`,
               es: `Documento ${index + 1}`,
               pt: `Documento ${index + 1}`
             })}
           </p>
+          <h4 className="break-words text-base font-semibold text-white">{heading}</h4>
           <DocumentMetadataPills draft={draft} locale={locale} />
         </div>
         <div className="flex flex-wrap gap-3">
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-rose-300/20 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/15"
-            onClick={onRemove}
-            type="button"
-          >
-            {localize(locale, { en: "Remove document", es: "Eliminar documento", pt: "Remover documento" })}
-          </button>
           <Link
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 transition-all hover:bg-white/15"
             href={draft.url.trim() || "#"}
@@ -264,6 +358,13 @@ function DocumentCard({
           >
             {localize(locale, { en: "Open draft link", es: "Abrir enlace", pt: "Abrir link" })}
           </Link>
+          <button
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-rose-300/20 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/15"
+            onClick={onRemove}
+            type="button"
+          >
+            {localize(locale, { en: "Remove document", es: "Eliminar documento", pt: "Remover documento" })}
+          </button>
         </div>
       </div>
 
@@ -351,6 +452,15 @@ export function AdminCollectionDocumentsEditor({
     persistedDocuments,
     draftDocuments
   });
+  const workspaceSummary = summarizeDraftDocuments(draftDocuments);
+
+  function handleAddManualDocument(): void {
+    setDraftDocuments((current) => [
+      ...current,
+      createEmptyAdminCollectionDocumentDraft({ index: current.length })
+    ]);
+    setFeedback({ kind: "idle" });
+  }
 
   async function uploadDocumentFiles(files: File[]): Promise<void> {
     const filesToUpload = files.filter((file) => file.size > 0);
@@ -512,44 +622,42 @@ export function AdminCollectionDocumentsEditor({
     <AdminCollectionDetailSectionShell
       aside={<DocumentsStatusPill dirty={dirty} feedback={feedback} locale={locale} />}
       description={localize(locale, {
-        en: "Documents now have a dedicated section-level editor so categories, links, and inherited upload metadata can evolve without reopening summary or gallery flows.",
-        es: "Documents ahora tiene un editor dedicado por seccion para que categorias, enlaces y metadata heredada de uploads evolucionen sin reabrir summary ni gallery.",
-        pt: "Documents agora tem um editor dedicado por secao para que categorias, links e metadata herdada de uploads evoluam sem reabrir summary nem gallery."
+        en: "Manage public documents with canonical uploads first and manual links as the fallback.",
+        es: "Gestiona documentos publicos con subidas canonicas primero y enlaces manuales como fallback.",
+        pt: "Gerencie documentos publicos com uploads canonicos primeiro e links manuais como fallback."
       })}
       eyebrow={localize(locale, { en: "Editable section", es: "Seccion editable", pt: "Secao editavel" })}
       title={localize(locale, { en: "Documents", es: "Documents", pt: "Documents" })}
     >
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-white/80">
-              {localize(locale, { en: "Document list", es: "Lista de documentos", pt: "Lista de documentos" })}
-            </p>
-            <p className="text-sm text-white/55">
-              {localize(locale, {
-                en: "Existing upload metadata stays attached to each row when available. New rows can use marketplace-managed links or uploaded files.",
-                es: "La metadata de uploads existentes se mantiene adjunta a cada fila cuando exista. Las nuevas filas pueden usar enlaces gestionados por marketplace o archivos subidos.",
-                pt: "A metadata de uploads existentes permanece anexada a cada linha quando disponivel. Novas linhas podem usar links geridos pelo marketplace ou arquivos enviados."
-              })}
-            </p>
+        <div className="space-y-3 rounded-lg border border-white/10 bg-black/10 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">
+                {localize(locale, { en: "Document workspace", es: "Workspace de documentos", pt: "Workspace de documentos" })}
+              </p>
+              <p className="max-w-3xl text-sm leading-6 text-white/60">
+                {localize(locale, {
+                  en: "Upload files for the canonical path, or add a manual link when a document already lives in an approved CDN.",
+                  es: "Sube archivos para el camino canonico, o agrega un enlace manual cuando el documento ya viva en un CDN aprobado.",
+                  pt: "Envie arquivos pelo caminho canonico, ou adicione um link manual quando o documento ja estiver em um CDN aprovado."
+                })}
+              </p>
+            </div>
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10"
+              onClick={handleAddManualDocument}
+              type="button"
+            >
+              {localize(locale, { en: "Manual link fallback", es: "Fallback de enlace manual", pt: "Fallback de link manual" })}
+            </button>
           </div>
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10"
-            onClick={() => {
-              setDraftDocuments((current) => [
-                ...current,
-                createEmptyAdminCollectionDocumentDraft({ index: current.length })
-              ]);
-              setFeedback({ kind: "idle" });
-            }}
-            type="button"
-          >
-            {localize(locale, { en: "Add document", es: "Agregar documento", pt: "Adicionar documento" })}
-          </button>
+
+          <DocumentsWorkspaceSummaryBar locale={locale} summary={workspaceSummary} />
         </div>
 
         <div
-          className={`rounded-2xl border border-dashed p-4 transition ${
+          className={`rounded-lg border border-dashed p-4 transition ${
             uploadState.dragActive
               ? "border-sky-300/60 bg-sky-400/10"
               : "border-white/15 bg-white/[0.03]"
@@ -560,6 +668,9 @@ export function AdminCollectionDocumentsEditor({
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">
+                {localize(locale, { en: "Upload or link documents", es: "Subir o enlazar documentos", pt: "Enviar ou vincular documentos" })}
+              </p>
               <p className="text-sm font-semibold text-white">
                 {localize(locale, { en: "Upload documents", es: "Subir documentos", pt: "Enviar documentos" })}
               </p>
@@ -616,11 +727,11 @@ export function AdminCollectionDocumentsEditor({
 
         <div className="space-y-4">
           {draftDocuments.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-white/60">
+            <div className="rounded-lg border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-white/60">
               {localize(locale, {
-                en: "No documents are linked yet. Add the first document row and save this section when ready.",
-                es: "Aun no hay documentos vinculados. Agrega la primera fila y guarda esta seccion cuando este lista.",
-                pt: "Ainda nao ha documentos vinculados. Adicione a primeira linha e salve esta secao quando estiver pronta."
+                en: "No documents yet. Upload files or add a manual link to create the first row.",
+                es: "Aun no hay documentos. Sube archivos o agrega un enlace manual para crear la primera fila.",
+                pt: "Ainda nao ha documentos. Envie arquivos ou adicione um link manual para criar a primeira linha."
               })}
             </div>
           ) : (

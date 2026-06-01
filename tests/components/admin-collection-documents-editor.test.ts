@@ -64,7 +64,10 @@ describe("components/admin/admin-collection-documents-editor", () => {
     }));
 
     expect(html).toContain("Documents");
-    expect(html).toContain("Document list");
+    expect(html).toContain("Document workspace");
+    expect(html).toContain("1 document");
+    expect(html).toContain("1 upload");
+    expect(html).toContain("0 manual links");
     expect(html).toContain("Investor brochure");
     expect(html).toContain("fileRefId: file-brochure-1");
     expect(html).toContain("Save documents");
@@ -79,6 +82,9 @@ describe("components/admin/admin-collection-documents-editor", () => {
     }));
 
     expect(html).toContain("Upload documents");
+    expect(html).toContain("Upload or link documents");
+    expect(html).toContain("0 documents");
+    expect(html).toContain("Manual link fallback");
     expect(html).toContain("Drag and drop files here");
     expect(html).toContain("Vercel Blob");
     expect(html).toContain("10 MB");

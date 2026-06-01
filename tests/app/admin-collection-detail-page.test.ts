@@ -187,9 +187,11 @@ describe("app/admin/collections/[id]/page", () => {
     expect(html).toContain("Replace gallery image");
     expect(html).toContain("Delete gallery image");
     expect(html).toContain("Documents");
-    expect(html).toContain("Document list");
+    expect(html).toContain("Document workspace");
+    expect(html).toContain("1 document");
+    expect(html).toContain("1 upload");
+    expect(html).toContain("Manual link fallback");
     expect(html).toContain("Save documents");
-    expect(html).toContain("Add document");
     expect(html).toContain("Investor brochure");
     expect(html).toContain("Blockchain panel");
     expect(html).toContain("Read-only blockchain state");
