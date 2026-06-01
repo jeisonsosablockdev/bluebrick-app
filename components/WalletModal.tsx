@@ -52,6 +52,7 @@ import {
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
 import { shouldUseReducedMotion } from "@/lib/motion";
+import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
 import { cn } from "@/lib/utils";
 
 type WalletModalProps = {
@@ -63,8 +64,6 @@ const MOBILE_MEDIA_QUERY = "(max-width: 639px)";
 const MOBILE_USER_AGENT_PATTERN = /android|iphone|ipad|ipod|mobile/i;
 const PHANTOM_USER_AGENT_PATTERN = /phantom/i;
 const POST_AUTH_DECISION_QUERY_PARAM = "postAuthDecision";
-const POST_LOGOUT_PUBLIC_HREF = "/";
-const PRIVATE_POST_LOGOUT_PATH_PREFIXES = ["/admin", "/protected", "/checkout"];
 
 type ActionPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
 type MessageSigner = (message: Uint8Array) => Promise<Uint8Array>;
@@ -295,12 +294,6 @@ function isActivePath(pathname: string, href: string): boolean {
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function shouldRedirectToPublicAfterLogout(pathname: string): boolean {
-  return PRIVATE_POST_LOGOUT_PATH_PREFIXES.some((prefix) =>
-    pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
 }
 
 function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSignerWalletAdapter {
