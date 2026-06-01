@@ -99,7 +99,7 @@ Initiative branch:
 | S22 | implemented | `fix/app-login-modal-issue-bri-167-s22-clean-code-remediation-plan` | Capture Clean Code findings and TDD remediation slice map | artifacts only | docs governance, artifact review | local slice |
 | S23 | implemented | `fix/app-login-modal-issue-bri-167-s23-private-route-helper` | Move private-route logout detection out of `WalletModal` | new private-route helper, `WalletModal`, helper tests, modal regression | RED helper test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S24 | implemented | `fix/app-login-modal-issue-bri-167-s24-auth-state-equality` | Extract auth-state equality and remove duplicated comparison noise | auth equality helper, `WalletModal`, helper tests | RED equality test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
-| S25 | planned | `fix/app-login-modal-issue-bri-167-s25-wallet-modal-test-factories` | Reduce wallet modal test fixture duplication | wallet modal test helpers/factories, migrated focused tests | RED helper-backed regression shape, helper implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S25 | implemented | `fix/app-login-modal-issue-bri-167-s25-wallet-modal-test-factories` | Reduce wallet modal test fixture duplication | wallet modal test helpers/factories, migrated focused tests | RED helper-backed regression shape, helper implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S26 | planned | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S27 | planned | `fix/app-login-modal-issue-bri-167-s27-wallet-signing-prep` | Extract wallet connection/sign-message preparation from `handleWalletPrimaryAction` | wallet signing preparation helper/hook boundary, `WalletModal`, focused tests | RED connect/signature-prep tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S28 | planned | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
@@ -386,6 +386,15 @@ Validation:
 - `npm run typecheck`
 - `npm run validate:docs-governance`
 - `git diff --check`
+
+Status:
+- Implemented in S25 by adding `createWalletAuthSession` and `mockAuthenticatedPhantomWalletSession` test helpers.
+- RED confirmed before implementation: the private admin logout regression failed with `mockAuthenticatedPhantomWalletSession is not defined`.
+- Migrated the private admin logout and public logout regression setup to the helper-backed shape.
+- S25 targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S25 type validation: `npm run typecheck` passed.
+- S25 docs governance validation: `npm run validate:docs-governance` passed.
+- S25 whitespace validation: `git diff --check` passed.
 
 ### S26 - Referral Auth Payload Extraction
 Problem:
