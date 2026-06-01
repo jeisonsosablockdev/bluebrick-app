@@ -16,7 +16,7 @@
 - S12 P1 logout refresh hardening is merged into the hardening branch.
 - S13 P2 reduced-motion hardening is merged into the hardening branch.
 - S14 P3 artifact status sync is implemented in this slice.
-- S15 clean-code extraction remains planned.
+- S15 clean-code extraction is implemented in this slice.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -84,7 +84,7 @@ Initiative branch:
 | S12 | merged | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
-| S15 | planned | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, wallet modal child component/helpers, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -146,7 +146,7 @@ Acceptance:
 
 Status:
 - Implemented in S14.
-- S15 remains as the only planned post-review hardening slice before final clean-code closeout.
+- S15 remains as the clean-code closeout slice before final validation.
 
 ### S15 - Clean-Code Wallet Proof Refactor
 Problem:
@@ -161,6 +161,11 @@ Acceptance:
 - no auth behavior change
 - component tests still pass
 - clean-code review has no blocking findings
+
+Status:
+- Implemented in S15 by extracting the wallet proof presentation into `components/wallet-modal/wallet-proof-panel.tsx`.
+- The parent modal still owns auth decisions, SIWS signing, disconnect/logout, and route refresh.
+- Phantom install URL now lives in `components/wallet-modal/constants.ts` to avoid duplicate presentation constants.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -439,3 +444,8 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S13 type validation: `npm run typecheck` passed.
 - S13 docs governance validation: `npm run validate:docs-governance` passed.
 - S13 whitespace validation: `git diff --check` passed.
+- S15 clean-code pass: wallet proof UI was extracted from `WalletModal` into `WalletProofPanel`; auth authority remains in the parent.
+- S15 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 26 tests.
+- S15 type validation: `npm run typecheck` passed.
+- S15 docs governance validation: `npm run validate:docs-governance` passed.
+- S15 whitespace validation: `git diff --check` passed.
