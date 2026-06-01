@@ -449,3 +449,8 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S15 type validation: `npm run typecheck` passed.
 - S15 docs governance validation: `npm run validate:docs-governance` passed.
 - S15 whitespace validation: `git diff --check` passed.
+- Final clean-code audit: no blocking findings. Non-blocking residual debt is limited to broad `WalletProofPanel` props, duplicated referral copy, and dense-but-localized auth-state derivation in `WalletModal`.
+- Final full validation: `npm run validate` passed.
+- Final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- Final Synpress validation: `npm run e2e:synpress` passed with 1 test.
+- Final observed non-blocking warning: database validation still emits the known `pg` SSL mode warning.

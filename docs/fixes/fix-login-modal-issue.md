@@ -61,11 +61,13 @@ The reviewer pass after the first implementation found three follow-up issues an
 - Wallet login success refreshes the route after creating the SIWS session.
 - Wallet-only logout clears local state and broadcasts logout, but does not refresh the route in the same branch.
 - Risk: server-rendered protected or session-sensitive content can remain visible until the next navigation or manual refresh.
+- Status: corrected in S12.
 
 2. P2 reduced-motion coverage
 - The new wallet proof progress states use Motion animation for progress and status feedback.
 - Route-transition fallback/page variants can still animate even when `prefers-reduced-motion` is enabled.
 - Risk: users who request reduced motion still receive repeated or page-level animation.
+- Status: corrected in S13.
 
 3. P3 artifact drift
 - The problem and implementation artifacts still contain some pre-implementation status language.
@@ -76,6 +78,16 @@ The reviewer pass after the first implementation found three follow-up issues an
 - `components/WalletModal.tsx` now owns the portal, auth-state matrix, wallet proof panel, copy, disconnect, and motion presentation.
 - Risk: the component remains correct but too concentrated, making future auth-state regressions easier to introduce.
 - Status: corrected in S15 by extracting wallet proof presentation into `WalletProofPanel`.
+
+## Final Clean-Code Audit
+The final `code-refactoring-refactor-clean` audit found no blocking issues after S15.
+
+Accepted residual debt:
+- `WalletProofPanel` still receives a broad prop set; a future cleanup can group props into `session`, `actions`, `referral`, and `walletStatus`.
+- Referral field copy is duplicated between the anonymous auth entry and wallet proof path; a future cleanup can extract a shared `ReferralCodeSection`.
+- The wallet auth-state matrix in `WalletModal` is still dense but localized and covered by component tests.
+
+No additional refactor was applied in this closure because the remaining findings are ergonomics debt, not behavior or maintainability blockers for BRI-167.
 
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
