@@ -117,6 +117,12 @@ The strict technical-debt audit after S16 found no behavior blockers, but identi
 - Risk: mocks can hide contract drift in referral hint shape.
 - Slice: S20.
 
+Resolution:
+- S17 extracted the viewport modal shell into `components/wallet-modal/wallet-modal-shell.tsx`.
+- S18 grouped `WalletProofPanel` props into `session`, `connection`, `referral`, and `actions`.
+- S19 introduced `components/wallet-modal/referral-code-section.tsx` as the shared referral presentation owner.
+- S20 typed the wallet modal test mocks and removed the brittle `as never` casts.
+
 ## Expected Outcome
 - The wallet/login modal is anchored to the browser viewport, not visually attached to the marketplace map or any page-local section.
 - Opening the modal does not scroll the underlying page.
@@ -153,10 +159,10 @@ Out of scope:
 - S14: P3 artifact status synchronization. Implemented.
 - S15: clean-code extraction/refactor of wallet proof presentation without changing auth authority. Implemented.
 - S16: clean-code reviewer follow-up for SIWS/adapter mismatch and reduced-motion modal shell. Implemented.
-- S17: extract modal shell presentation from `WalletModal`. Planned.
-- S18: group `WalletProofPanel` props into cohesive prop objects. Planned.
-- S19: extract shared referral code section. Planned.
-- S20: remove brittle `as never` test mock typing. Planned.
+- S17: extract modal shell presentation from `WalletModal`. Implemented.
+- S18: group `WalletProofPanel` props into cohesive prop objects. Implemented.
+- S19: extract shared referral code section. Implemented.
+- S20: remove brittle `as never` test mock typing. Implemented.
 
 New delivery slices must keep the existing BRI-167 auth boundary intact and land through the initiative hardening branch before merging back to `develop`.
 

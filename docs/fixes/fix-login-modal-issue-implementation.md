@@ -18,7 +18,7 @@
 - S14 P3 artifact status sync is implemented in this slice.
 - S15 clean-code extraction is implemented in this slice.
 - S16 reviewer clean-code follow-up is implemented in this slice.
-- S17-S20 technical-debt cleanup slices are planned from the strict audit.
+- S17-S20 technical-debt cleanup slices are implemented from the strict audit.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -88,10 +88,10 @@ Initiative branch:
 | S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 | S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
-| S17 | planned | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, docs governance | local slice |
-| S18 | planned | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-prop-groups` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, docs governance | local slice |
-| S19 | planned | `fix/app-login-modal-issue-bri-167-s19-referral-section-extraction` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, docs governance | local slice |
-| S20 | planned | `fix/app-login-modal-issue-bri-167-s20-test-mock-typing` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, docs governance | local slice |
+| S17 | implemented | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S18 | implemented | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-props` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S19 | implemented | `fix/app-login-modal-issue-bri-167-s19-referral-section` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S20 | implemented | `fix/app-login-modal-issue-bri-167-s20-test-mock-types` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, whitespace check | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -101,6 +101,7 @@ Initiative branch:
 5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
 6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
 7. Run S12-S15 as post-review hardening after the first merge to `develop`: P1 behavioral fix, P2 accessibility/motion fix, P3 artifact sync, then clean-code extraction.
+8. Run S17-S20 as strict audit remediation after S16: modal shell extraction, wallet proof prop grouping, shared referral section, then typed test mocks.
 
 ## Post-Reviewer Hardening Plan
 ### S12 - P1 Logout Refresh Hardening
@@ -208,6 +209,10 @@ Acceptance:
 - modal remains viewport-owned and reduced-motion aware
 - component tests still pass
 
+Status:
+- Implemented in S17 by extracting `components/wallet-modal/wallet-modal-shell.tsx`.
+- The shell now owns portal, overlay, panel, close action, title, top feedback, and reduced-motion motion variants.
+
 ### S18 - Wallet Proof Prop Groups
 Problem:
 - `WalletProofPanel` receives many scalar props, making parent/presentational coupling noisy.
@@ -219,6 +224,10 @@ Implementation:
 Acceptance:
 - no behavior change
 - easier review surface for future wallet proof changes
+
+Status:
+- Implemented in S18 by grouping `WalletProofPanel` inputs into `session`, `connection`, `referral`, and `actions`.
+- Auth authority and derived state ownership remain in `WalletModal`.
 
 ### S19 - Referral Section Extraction
 Problem:
@@ -232,6 +241,10 @@ Acceptance:
 - copy remains identical
 - future referral field changes have one presentation owner
 
+Status:
+- Implemented in S19 by introducing `components/wallet-modal/referral-code-section.tsx`.
+- Anonymous auth entry and wallet proof now share the same referral presentation owner.
+
 ### S20 - Wallet Modal Test Mock Typing
 Problem:
 - wallet modal tests use `as never` for referral mock implementations.
@@ -243,6 +256,10 @@ Implementation:
 Acceptance:
 - component tests pass
 - test helper types better reflect production referral hint shape
+
+Status:
+- Implemented in S20 by typing referral hint fixtures and the SIWS mock input/output.
+- `tests/components/wallet-modal-header-cta.test.ts` no longer uses `as never`.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -534,3 +551,15 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - S16 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 28 tests.
 - S16 type validation: `npm run typecheck` passed.
 - S16 whitespace validation: `git diff --check` passed.
+- S17 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S17 type validation: `npm run typecheck` passed.
+- S17 whitespace validation: `git diff --check` passed.
+- S18 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S18 type validation: `npm run typecheck` passed.
+- S18 whitespace validation: `git diff --check` passed.
+- S19 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S19 type validation: `npm run typecheck` passed.
+- S19 whitespace validation: `git diff --check` passed.
+- S20 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S20 type validation: `npm run typecheck` passed.
+- S20 whitespace validation: `git diff --check` passed.
