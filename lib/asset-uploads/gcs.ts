@@ -1,4 +1,4 @@
-import { del, head, put } from "@vercel/blob";
+import { del, head } from "@vercel/blob";
 
 export type GcsUploadConfig = {
   bucketName: string;
@@ -19,18 +19,6 @@ export type GcsObjectMetadata = {
 export type DeleteGcsObjectResult = {
   deleted: boolean;
   notFound: boolean;
-};
-
-type BuildUploadContractRequirementsInput = {
-  config: GcsUploadConfig;
-  mimeType: string;
-  sizeBytes: number;
-  contentMd5Base64: string;
-};
-
-export type UploadContractRequirements = {
-  expiresAt: string;
-  requiredHeaders: Record<"Content-Type" | "Content-Length" | "Content-MD5", string>;
 };
 
 function requireEnv(name: string): string {
@@ -90,40 +78,9 @@ export function getGcsUploadConfig(): GcsUploadConfig {
   };
 }
 
-export async function buildUploadContractRequirements(
-  input: BuildUploadContractRequirementsInput
-): Promise<UploadContractRequirements> {
-  const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + input.config.signedUrlTtlSeconds;
-
-  return {
-    expiresAt: new Date(expiresAtEpochSeconds * 1000).toISOString(),
-    requiredHeaders: {
-      "Content-Type": input.mimeType,
-      "Content-Length": String(input.sizeBytes),
-      "Content-MD5": input.contentMd5Base64
-    }
-  };
-}
-
-export async function putBlobObject(input: {
-  config: GcsUploadConfig;
-  objectKey: string;
-  mimeType: string;
-  body: Buffer;
-}): Promise<{ url: string; pathname: string; etag: string | null }> {
-  const result = await put(input.objectKey, input.body, {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: input.mimeType,
-    token: input.config.blobReadWriteToken
-  });
-
-  return {
-    url: result.url,
-    pathname: result.pathname,
-    etag: result.etag ?? null
-  };
+export function buildUploadContractExpiresAt(config: GcsUploadConfig): string {
+  const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + config.signedUrlTtlSeconds;
+  return new Date(expiresAtEpochSeconds * 1000).toISOString();
 }
 
 export async function headGcsObject(config: GcsUploadConfig, objectKey: string): Promise<GcsObjectMetadata> {

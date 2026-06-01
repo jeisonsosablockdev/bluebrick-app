@@ -54,7 +54,7 @@ Apply the smallest safe changes that unblock the admin flow:
 
 ### Slice BRI-165-7
 - Generate a stable `editSessionId` for each `/admin/assets/new` form session.
-- Pass that `editSessionId` through `use-asset-upload-workflow.ts` into `uploadAssetFileViaSignedUrl`.
+- Pass that `editSessionId` through `use-asset-upload-workflow.ts` into the shared asset upload client.
 - Ensure signed-url and finalize requests persist the session identifier through the existing upload contract.
 - Keep existing upload refs and form field hydration behavior intact.
 
@@ -227,7 +227,7 @@ Apply the smallest safe changes that unblock the admin flow:
   - requested pathname must match the contract object key,
   - MIME type and maximum size must match the contract,
   - expired, finalized, or missing contracts are rejected.
-- Update `uploadAssetFileViaSignedUrl` to use `@vercel/blob/client` instead of `fetch(.../binary)` for the actual file bytes.
+- Update the shared asset upload client to use `@vercel/blob/client` instead of `fetch(.../binary)` for the actual file bytes.
 - Keep the existing finalization request after Blob confirms the upload, so DB persistence still happens through the current finalize route.
 
 ### Slice BRI-165-22
@@ -237,6 +237,11 @@ Apply the smallest safe changes that unblock the admin flow:
   - the failed file name/category,
   - the recommended compression URL.
 - Add regression coverage for over-limit policy messaging and absence of the old binary transport path.
+- Implementation evidence:
+  - `uploadAssetFileViaClientBlob` now requests the existing upload contract, uploads bytes through `@vercel/blob/client`, and then calls the existing finalize route.
+  - `/api/admin/assets/uploads/client-upload` generates Vercel Blob client tokens only after validating the contract owner, object key, MIME type, exact size limit, expiration, and finalized state.
+  - `/api/admin/assets/uploads/[uploadId]/binary` was removed because no caller should stream file bytes through an app Function.
+  - Oversized document uploads keep the `10 MB` policy and return a clear compression hint with the iLovePDF URL.
 
 ### Slice BRI-165-23
 - Run the final clean-code audit for this upload transport follow-up.

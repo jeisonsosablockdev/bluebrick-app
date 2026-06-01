@@ -10,10 +10,10 @@
 
 ## What Changed
 - `lib/asset-uploads/gcs.ts` now uses Vercel Blob SDK under the same public API used by existing routes.
-- Added internal upload endpoint:
-  - `PUT /api/admin/assets/uploads/[uploadId]/binary`
-  - Validates admin auth, upload contract, content type, size, and MD5 before writing to Blob.
-- `POST /api/admin/assets/uploads/signed-url` now returns an internal `uploadUrl` to preserve current frontend flow.
+- Added authenticated Vercel Blob client-upload endpoint:
+  - `POST /api/admin/assets/uploads/client-upload`
+  - Validates admin auth, upload contract ownership, object key, content type, exact size limit, expiration, and finalized state before issuing a Blob client token.
+- `POST /api/admin/assets/uploads/signed-url` now creates the upload contract and returns the `clientUploadUrl` used by `@vercel/blob/client`.
 - `POST /api/admin/assets/uploads/[uploadId]/finalize` now validates object existence/metadata from Blob and persists Blob URL as `cdnUrl`.
 
 ## Environment Variables
@@ -27,5 +27,6 @@
   - `PINATA_GATEWAY_BASE_URL`
 
 ## Compatibility Notes
-- Existing frontend upload client contract remains intact (`signed-url` -> `PUT uploadUrl` -> `finalize`).
+- Current frontend upload client contract is `signed-url` contract creation -> Vercel Blob client upload -> `finalize`.
+- File bytes must not pass through app Functions; this avoids Vercel Function `413` payload failures while keeping app-level policy and finalize validation.
 - Legacy GCS env vars are kept as compatibility placeholders in `.env.example`, but are no longer required for the Blob path.
