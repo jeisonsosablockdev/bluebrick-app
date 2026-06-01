@@ -6,7 +6,7 @@ import { ReferralCodeField } from "@/components/wallet-modal/referral-code-field
 import { PHANTOM_INSTALL_URL } from "@/components/wallet-modal/constants";
 import { Button } from "@/components/ui/button";
 import type { LocaleText } from "@/lib/i18n";
-import { MOTION_FAST_OPACITY_TRANSITION, MOTION_GENTLE_TRANSITION } from "@/lib/motion";
+import { MOTION_FAST_OPACITY_TRANSITION, MOTION_GENTLE_TRANSITION, shouldUseReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type WalletProofPhase = "idle" | "connecting" | "signing" | "verifying" | "disconnecting";
@@ -16,6 +16,7 @@ type WalletProofPanelProps = {
   t: Translate;
   phase: WalletProofPhase;
   hasWalletSession: boolean;
+  hasWalletSessionAdapterMismatch: boolean;
   hasFederatedSession: boolean;
   hasWalletAuthIntent: boolean;
   isConnected: boolean;
@@ -43,6 +44,7 @@ export function WalletProofPanel({
   t,
   phase,
   hasWalletSession,
+  hasWalletSessionAdapterMismatch,
   hasFederatedSession,
   hasWalletAuthIntent,
   isConnected,
@@ -66,7 +68,7 @@ export function WalletProofPanel({
   onStartWalletSignIn
 }: WalletProofPanelProps) {
   const prefersReducedMotion = useReducedMotion();
-  const shouldReduceMotion = prefersReducedMotion === true;
+  const shouldReduceMotion = shouldUseReducedMotion(prefersReducedMotion);
   const walletProofSteps = [
     {
       label: t({ en: "Connect", es: "Conectar", pt: "Conectar" }),
@@ -94,12 +96,16 @@ export function WalletProofPanel({
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/90">
-          {hasWalletSession
+          {hasWalletSessionAdapterMismatch
+            ? t({ en: "Wallet mismatch", es: "Wallet no coincide", pt: "Carteira divergente" })
+            : hasWalletSession
             ? t({ en: "Wallet session", es: "Sesion wallet", pt: "Sessao wallet" })
             : t({ en: "Wallet proof", es: "Prueba de wallet", pt: "Prova de wallet" })}
         </p>
         <h3 className="text-xl font-semibold leading-tight text-white">
-          {phase === "signing"
+          {hasWalletSessionAdapterMismatch
+            ? t({ en: "Reconnect the signed-in wallet", es: "Reconecta la wallet de la sesion", pt: "Reconecte a carteira da sessao" })
+            : phase === "signing"
             ? t({ en: "Confirm the signature in Phantom", es: "Confirma la firma en Phantom", pt: "Confirme a assinatura no Phantom" })
             : phase === "verifying"
               ? t({ en: "Verifying your wallet proof", es: "Verificando tu prueba de wallet", pt: "Verificando sua prova de wallet" })
@@ -108,7 +114,13 @@ export function WalletProofPanel({
                 : t({ en: "Prove this wallet belongs to you", es: "Prueba que esta wallet es tuya", pt: "Prove que esta wallet e sua" })}
         </h3>
         <p className="text-sm leading-6 text-white/70">
-          {hasWalletSession
+          {hasWalletSessionAdapterMismatch
+            ? t({
+                en: "The connected Phantom wallet does not match your BRIDS session. Disconnect it and reconnect the signed-in wallet.",
+                es: "La wallet conectada en Phantom no coincide con tu sesion BRIDS. Desconectala y reconecta la wallet de la sesion.",
+                pt: "A carteira conectada na Phantom nao corresponde a sua sessao BRIDS. Desconecte e reconecte a carteira da sessao."
+              })
+            : hasWalletSession
             ? t({
                 en: "You can manage this wallet session or link email sign-in.",
                 es: "Puedes gestionar esta sesion wallet o vincular ingreso por email.",
@@ -137,6 +149,8 @@ export function WalletProofPanel({
               "inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
               isWalletAuthInProgress
                 ? "border-white/[0.18] bg-white/[0.07] text-cyan-100"
+                : hasWalletSessionAdapterMismatch
+                  ? "border-amber-200/35 bg-amber-400/10 text-amber-100"
                 : hasWalletSession
                   ? "border-white/[0.18] bg-white/[0.07] text-white/85"
                   : "border-white/15 bg-white/[0.08] text-white/75"
@@ -144,7 +158,9 @@ export function WalletProofPanel({
             animate={isWalletAuthInProgress && !shouldReduceMotion ? { opacity: [0.72, 1, 0.72] } : { opacity: 1 }}
             transition={isWalletAuthInProgress && !shouldReduceMotion ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : MOTION_FAST_OPACITY_TRANSITION}
           >
-            {phase === "signing"
+            {hasWalletSessionAdapterMismatch
+              ? t({ en: "Mismatch", es: "No coincide", pt: "Divergente" })
+              : phase === "signing"
               ? t({ en: "Waiting in Phantom", es: "Esperando en Phantom", pt: "Aguardando no Phantom" })
               : phase === "verifying"
                 ? t({ en: "Verifying", es: "Verificando", pt: "Verificando" })
@@ -251,7 +267,7 @@ export function WalletProofPanel({
         </Button>
       ) : null}
 
-      {walletPublicKey && (hasWalletAuthIntent || hasWalletSession) ? (
+      {walletPublicKey && !hasWalletSessionAdapterMismatch && (hasWalletAuthIntent || hasWalletSession) ? (
         <Button variant="ghost" onClick={onCopyAddress} disabled={isWalletAuthInProgress} className="min-h-11 w-full border border-white/10 bg-white/10 hover:bg-white/15">
           {t({ en: "Copy Address", es: "Copiar direccion", pt: "Copiar endereco" })}
         </Button>

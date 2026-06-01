@@ -17,6 +17,7 @@
 - S13 P2 reduced-motion hardening is merged into the hardening branch.
 - S14 P3 artifact status sync is implemented in this slice.
 - S15 clean-code extraction is implemented in this slice.
+- S16 reviewer clean-code follow-up is implemented in this slice.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -85,6 +86,7 @@ Initiative branch:
 | S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -166,6 +168,27 @@ Status:
 - Implemented in S15 by extracting the wallet proof presentation into `components/wallet-modal/wallet-proof-panel.tsx`.
 - The parent modal still owns auth decisions, SIWS signing, disconnect/logout, and route refresh.
 - Phantom install URL now lives in `components/wallet-modal/constants.ts` to avoid duplicate presentation constants.
+
+### S16 - Reviewer Clean-Code Boundary Follow-Up
+Problem:
+- A connected Phantom adapter could differ from the active SIWS session wallet while the modal still presented the SIWS session as active.
+- `Copy Address` could copy the adapter public key even when the SIWS session belonged to a different public key.
+- The modal shell still used entrance/exit motion and an animated status spinner when `prefers-reduced-motion` was active.
+
+Implementation:
+- derive `hasWalletSessionAdapterMismatch` explicitly in `WalletModal`
+- remove primary wallet and copy actions from the mismatch state
+- show a wallet mismatch status in `WalletProofPanel`
+- keep sign-out/disconnect as the recovery action
+- gate overlay, panel, and top status indicator motion with reduced-motion preference
+
+Acceptance:
+- SIWS wallet A plus connected adapter wallet B is not rendered as an active matching wallet session
+- copy address is hidden in mismatch state
+- reduced-motion users do not receive shell transform/scale motion or spinning status feedback
+
+Status:
+- Implemented in S16.
 
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
@@ -454,3 +477,6 @@ Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`,
 - Final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
 - Final Synpress validation: `npm run e2e:synpress` passed with 1 test.
 - Final observed non-blocking warning: database validation still emits the known `pg` SSL mode warning.
+- S16 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 28 tests.
+- S16 type validation: `npm run typecheck` passed.
+- S16 whitespace validation: `git diff --check` passed.

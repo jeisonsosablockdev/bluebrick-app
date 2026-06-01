@@ -299,6 +299,66 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
+  it("does not spin the modal status indicator when reduced motion is requested", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query.includes("prefers-reduced-motion"),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn()
+      }))
+    });
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: null,
+      wallets: [],
+      publicKey: null,
+      connected: false,
+      connecting: true,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage: undefined
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Ingresar");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const statusIndicator = Array.from(document.body.querySelectorAll("span")).find((candidate) =>
+      candidate.className.includes("border-cyan-300")
+    );
+
+    expect(document.body.textContent).toContain("Conectando...");
+    expect(statusIndicator?.className).not.toContain("animate-spin");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("renders the open dialog outside the page container and focuses without scrolling the page", async () => {
     const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
     const { container, root } = renderWalletModal({
@@ -764,6 +824,84 @@ describe("components/WalletModal header CTA", () => {
     expect(actionGroup?.className).not.toContain("sm:grid-cols-2");
     expect(activeBadge?.className).toContain("bg-white");
     expect(activeBadge?.className).not.toContain("emerald");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not treat a connected adapter as active when it differs from the SIWS session wallet", async () => {
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: {
+        toBase58: () => "Wallet22222222222222222222222222222222222"
+      },
+      signMessage: vi.fn()
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: { adapter: phantomAdapter },
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: {
+        toBase58: () => "Wallet22222222222222222222222222222222222"
+      },
+      connected: true,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select: vi.fn(),
+      signMessage: vi.fn()
+    });
+    authClientMocks.fetchAuthMe.mockResolvedValue({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: true,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: true,
+      accountAuthenticated: true,
+      walletAuthenticated: true,
+      federatedAuthenticated: false,
+      federatedAvailable: true,
+      authMethod: "wallet",
+      accountId: "account_123",
+      workosUserId: null,
+      email: null,
+      pubkey: "Wallet11111111111111111111111111111111111",
+      role: "user"
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Wallet");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).toContain("Wallet no coincide");
+    expect(document.body.textContent).toContain("Wallet conectada no coincide");
+    expect(document.body.textContent).toContain("Cerrar sesion y desconectar wallet");
+    expect(document.body.textContent).not.toContain("Copiar direccion");
+    expect(findButtonByText(document.body, "Solicitar firma en Phantom")).toBeUndefined();
+    expect(findElementByText(document.body, "Activa")).toBeUndefined();
 
     act(() => {
       root.unmount();
