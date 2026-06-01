@@ -1,6 +1,12 @@
 # Session Model
 
-Last Updated: 2026-05-31
+Last Updated: 2026-06-01
+
+## BRI-165 Marketplace Media Session Boundary
+- The marketplace media handoff reuses the existing `/admin/assets/new` `draftId` and browser-local `uploadRefs` to identify which finalized uploads should become marketplace gallery/property media.
+- `draftId` and `uploadRefs` are not session credentials and do not authenticate the caller.
+- The server still derives admin authority from the existing SIWS/admin session before resolving upload rows or inserting the marketplace entry.
+- Public marketplace readers receive already-published media JSON only; no public route gains access to upload-session lifecycle state.
 
 ## BRI-167 Login Modal Viewport Session Boundary
 - The login modal viewport fix does not introduce a new session layer.

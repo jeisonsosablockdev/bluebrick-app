@@ -8,7 +8,7 @@ const propertyServiceMocks = vi.hoisted(() => ({
   listPropertyDetailsSnapshot: vi.fn((): unknown[] => [])
 }));
 
-const queryMock = vi.fn(async (sql: string) => {
+const queryMock = vi.fn(async (sql: string, _values?: unknown[]) => {
   if (sql.includes("information_schema.columns")) {
     return {
       rows: locationColumnNames.map((column_name) => ({ column_name })),
@@ -145,6 +145,93 @@ describe("lib/property-marketplace-server", () => {
     expect(sql).toContain("detailed_location");
   });
 
+  it("persists gallery and property media JSON when creating marketplace entries", async () => {
+    await createMarketplacePropertyEntryPersistent({
+      id: "asset-001",
+      title: "Central Tower",
+      city: "Bogota",
+      country: "CO",
+      listingStatus: "funding",
+      image: "https://cdn.example.com/cover.jpg",
+      shortDescription: "Tokenized building",
+      detailedLocation: "Calle 10 #12-34",
+      highlights: [],
+      investmentNotes: "Ready for marketplace listing",
+      supplyTotal: 1200,
+      mintedOrSold: 0,
+      nftPriceUsd: 150,
+      annualRoiPct: 12.5,
+      availabilityLabel: "Funding",
+      project: {
+        stage: "rehab",
+        developerName: "Blue Brick Capital LLC",
+        exitStrategy: "sale",
+        durationMonths: 10
+      },
+      economics: {
+        purchasePriceUsd: null,
+        afterRepairValueUsd: null,
+        rehabBudgetUsd: null,
+        closingCostsUsd: null,
+        holdingCostsUsd: null,
+        sellingCostsUsd: null,
+        totalProjectCostUsd: null,
+        minimumCapitalRequiredUsd: null,
+        structuringFeeUsd: null,
+        grossProfitProjectedUsd: null,
+        managementFeeUsd: null,
+        brokerFeeUsd: null,
+        netInvestorProfitUsd: null,
+        projectedNetRoiPct: null
+      },
+      governance: {
+        riskNotes: "Ready for marketplace listing"
+      },
+      documents: [],
+      galleryImages: [
+        {
+          id: "gallery-file-ref-1",
+          url: "https://cdn.example.com/gallery.jpg",
+          title: "Gallery image 1",
+          alt: "Gallery image 1",
+          displayOrder: 1,
+          mimeType: "image/jpeg",
+          fileName: "gallery.jpg",
+          fileRefId: "file-gallery-1",
+          source: "upload"
+        }
+      ],
+      propertyImages: [
+        {
+          id: "property-file-ref-1",
+          url: "https://cdn.example.com/property.jpg",
+          title: "Property image 1",
+          alt: "Property image 1",
+          displayOrder: 1,
+          mimeType: "image/jpeg",
+          fileName: "property.jpg",
+          fileRefId: "file-property-1",
+          source: "upload"
+        }
+      ],
+      collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
+      assetMintAddress: "CanDyMach1ne1111111111111111111111111111111",
+      explorerUrl: "https://explorer.solana.com/address/test?cluster=devnet",
+      lastOnchainUpdate: null,
+      syncStatus: "available",
+      createdBy: "AdminPubkey111111111111111111111111111111111111"
+    });
+
+    const insertCall = queryMock.mock.calls.find((call) => String(call[0]).includes("INSERT INTO marketplace_entries"));
+    const sql = String(insertCall?.[0] ?? "");
+    const values = insertCall?.[1] as unknown[];
+
+    expect(sql).toContain("gallery_images_json");
+    expect(sql).toContain("property_images_json");
+    expect(JSON.stringify(values)).toContain("https://cdn.example.com/gallery.jpg");
+    expect(JSON.stringify(values)).toContain("https://cdn.example.com/property.jpg");
+  });
+
   it("selects persisted coordinates for marketplace map entries", async () => {
     persistedRows = [
       {
@@ -158,6 +245,32 @@ describe("lib/property-marketplace-server", () => {
         geo_lng: -82.2859,
         listing_status: "funding",
         image_url: "https://cdn.example.com/brandon.jpg",
+        gallery_images_json: [
+          {
+            id: "gallery-1",
+            url: "https://cdn.example.com/gallery.jpg",
+            title: "Gallery image 1",
+            alt: "Gallery image 1",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "gallery.jpg",
+            fileRefId: "file-gallery-1",
+            source: "upload"
+          }
+        ],
+        property_images_json: [
+          {
+            id: "property-1",
+            url: "https://cdn.example.com/property.jpg",
+            title: "Property image 1",
+            alt: "Property image 1",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "property.jpg",
+            fileRefId: "file-property-1",
+            source: "upload"
+          }
+        ],
         short_description: "US listing",
         detailed_location: "Brandon, Florida",
         highlights_json: [],
@@ -223,6 +336,32 @@ describe("lib/property-marketplace-server", () => {
         },
         listing_status: "funding",
         image_url: "https://cdn.example.com/brandon.jpg",
+        gallery_images_json: [
+          {
+            id: "gallery-1",
+            url: "https://cdn.example.com/gallery.jpg",
+            title: "Gallery image 1",
+            alt: "Gallery image 1",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "gallery.jpg",
+            fileRefId: "file-gallery-1",
+            source: "upload"
+          }
+        ],
+        property_images_json: [
+          {
+            id: "property-1",
+            url: "https://cdn.example.com/property.jpg",
+            title: "Property image 1",
+            alt: "Property image 1",
+            displayOrder: 1,
+            mimeType: "image/jpeg",
+            fileName: "property.jpg",
+            fileRefId: "file-property-1",
+            source: "upload"
+          }
+        ],
         short_description: "US listing",
         detailed_location: "117 Hickory Creek Blvd, Brandon, FL",
         highlights_json: [],
@@ -250,6 +389,8 @@ describe("lib/property-marketplace-server", () => {
     expect(selectSql).toContain("google_maps_place_json");
     expect(detail?.googleMapsPlace?.placeId).toBe("place-hickory");
     expect(detail?.googleMapsPlace?.formattedAddress).toContain("Brandon");
+    expect(detail?.galleryImages.map((item) => item.url)).toEqual(["https://cdn.example.com/gallery.jpg"]);
+    expect(detail?.propertyImages.map((item) => item.url)).toEqual(["https://cdn.example.com/property.jpg"]);
   });
 
   it("represents degraded persisted reads while preserving list callers", async () => {

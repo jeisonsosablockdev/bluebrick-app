@@ -1,4 +1,7 @@
-import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
+import type {
+  CollectionBootstrapGoogleMapsPlace,
+  CollectionBootstrapImageItem
+} from "@/lib/admin/collection-bootstrap-mapper";
 
 export type ListingStatus = "active" | "funding" | "sold-out";
 export type BlockchainSyncStatus = "available" | "unavailable" | "rpc_error";
@@ -66,6 +69,8 @@ export type PropertyDetail = {
   googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
   listingStatus: ListingStatus;
   image: string;
+  galleryImages: CollectionBootstrapImageItem[];
+  propertyImages: CollectionBootstrapImageItem[];
   shortDescription: string;
   detailedLocation: string;
   highlights: string[];
@@ -109,6 +114,8 @@ export type CreateMarketplaceEntryInput = {
   geoLat?: number | null;
   geoLng?: number | null;
   googleMapsPlace?: CollectionBootstrapGoogleMapsPlace | null;
+  galleryImages?: CollectionBootstrapImageItem[];
+  propertyImages?: CollectionBootstrapImageItem[];
   highlights: string[];
   investmentNotes: string;
   supplyTotal: number;
@@ -169,6 +176,8 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     googleMapsPlace: null,
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop",
+    galleryImages: [],
+    propertyImages: [],
     shortDescription: "Activo residencial en zona de alta demanda con renta estabilizada.",
     detailedLocation: "Calle 93 #12-40, Bogota, Colombia",
     highlights: ["82 unidades habitacionales", "95% ocupacion", "Contratos renovados en 2026"],
@@ -220,6 +229,8 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     googleMapsPlace: null,
     listingStatus: "funding",
     image: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop",
+    galleryImages: [],
+    propertyImages: [],
     shortDescription: "Complejo mixto con crecimiento de ocupacion en etapa de funding.",
     detailedLocation: "Carrera 43A #7-50, Medellin, Colombia",
     highlights: ["120 locales y apartamentos", "Fase 2 de rehabilitacion", "Cap rate objetivo 11.4%"],
@@ -271,6 +282,8 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     googleMapsPlace: null,
     listingStatus: "sold-out",
     image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop",
+    galleryImages: [],
+    propertyImages: [],
     shortDescription: "Activo completamente distribuido a holders con historial de pago estable.",
     detailedLocation: "Paseo de la Reforma 380, CDMX, Mexico",
     highlights: ["100% tokens emitidos", "Flujo de caja consolidado", "Auditoria financiera completada"],
@@ -322,6 +335,8 @@ const PROPERTY_RECORDS_SEED: PropertyDetail[] = [
     googleMapsPlace: null,
     listingStatus: "active",
     image: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?q=80&w=1200&auto=format&fit=crop",
+    galleryImages: [],
+    propertyImages: [],
     shortDescription: "U.S. waterfront asset positioned for the discovery-style marketplace map.",
     detailedLocation: "Seaport District, Boston, MA, United States",
     highlights: ["Waterfront visibility", "Core U.S. market", "High-traffic location"],
@@ -372,6 +387,8 @@ function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     economics: { ...detail.economics },
     governance: { ...detail.governance },
     googleMapsPlace: detail.googleMapsPlace ? { ...detail.googleMapsPlace } : null,
+    galleryImages: detail.galleryImages.map((item) => ({ ...item })),
+    propertyImages: detail.propertyImages.map((item) => ({ ...item })),
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -457,6 +474,8 @@ export function createMarketplacePropertyEntry(input: CreateMarketplaceEntryInpu
     googleMapsPlace: input.googleMapsPlace ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
+    galleryImages: input.galleryImages?.map((item) => ({ ...item })) ?? [],
+    propertyImages: input.propertyImages?.map((item) => ({ ...item })) ?? [],
     shortDescription: input.shortDescription,
     detailedLocation: input.detailedLocation,
     highlights: input.highlights,

@@ -59,6 +59,8 @@ function createProperty(): PropertyDetail {
     geoLng: -82.2859,
     listingStatus: "funding",
     image: "/test.jpg",
+    galleryImages: [],
+    propertyImages: [],
     shortDescription: "Short description",
     highlights: [],
     investmentNotes: "Notes",

@@ -17,6 +17,7 @@ Apply the smallest safe changes that unblock the admin flow:
 11. keep the live Phantom wallet adapter recoverable for admin deploy after SIWS/session refreshes.
 12. allow marketplace image rendering for Vercel Blob URLs produced by the admin upload pipeline.
 13. require Core Candy Machine deploy to finalize a verified mint snapshot before `/admin/assets/new` enables marketplace entry creation.
+14. carry `/admin/assets/new` gallery and property uploads through the marketplace create handoff and render them on marketplace detail pages.
 
 ## Slice Plan
 
@@ -195,6 +196,22 @@ Apply the smallest safe changes that unblock the admin flow:
   - `onDeployCompleted` only fires when the snapshot response has `canCreateAsset: true`.
   - Snapshot verification errors stay visible in the panel and the Create Asset gate remains blocked instead of creating a marketplace entry with `snapshotId: null`.
 
+### Slice BRI-165-19
+- Investigate why images uploaded in `/admin/assets/new` exist in Vercel Blob and `asset_uploaded_files`, but do not appear on `/marketplace/[id]`.
+- Extend the marketplace create handoff to send the active `draftId` and `uploadRefs` with `Create Asset`.
+- Resolve finalized uploads server-side through `listUploadedFileRefsByDraftId` and reuse the existing collection bootstrap mapper to build `gallery_images_json` and `property_images_json`.
+- Insert the media JSON fields with the marketplace entry so `/admin/collections` and marketplace detail share one image item contract.
+- Extend the persisted marketplace read model and `PropertyDetail` DTO to expose gallery/property images.
+- Render a compact marketplace media section on `/marketplace/[id]` when gallery or property images exist, without replacing the existing cover image.
+- Add regression coverage for:
+  - marketplace entry API resolving `uploadRefs` into media JSON,
+  - repository INSERT carrying `gallery_images_json` and `property_images_json`,
+  - persisted marketplace rows mapping media images into `PropertyDetail`,
+  - detail UI rendering gallery/property media.
+- Implementation evidence:
+  - Uploaded image objects remain in Vercel Blob and their original upload audit trail is preserved.
+  - Marketplace detail no longer depends only on `image_url`; attached gallery/property images are visible from the same persisted entry.
+
 ## Test-First Contract
 
 Targeted regression coverage will verify:
@@ -216,6 +233,7 @@ Targeted regression coverage will verify:
 - Admin deploy can recover the live Phantom signer after navigation/refresh without clearing the authenticated admin session.
 - Next Image allows Vercel Blob URLs under `/admin-assets/**` so minted assets can be opened in marketplace immediately after creation.
 - Core Candy Machine deploy finalizes a verified snapshot before enabling Create Asset and blocks deploy completion when the snapshot is not ready.
+- Marketplace create handoff persists and renders gallery/property images uploaded during `/admin/assets/new`.
 
 ## Final Review
 
@@ -228,6 +246,7 @@ Targeted regression coverage will verify:
 - The wallet reconnect follow-up must confirm reconnecting the adapter does not bypass SIWS authorization and rejects mismatched wallet addresses.
 - The Vercel Blob image follow-up must confirm the allowlist remains scoped to HTTPS `admin-assets` URLs instead of allowing all remote hosts.
 - The deploy snapshot follow-up must confirm marketplace entries cannot be created from `/admin/assets/new` without a verified `snapshotId`.
+- The marketplace media follow-up must confirm gallery/property images use the existing collection media item contract instead of a parallel format.
 
 ## Tooling
 
@@ -251,4 +270,5 @@ Targeted regression coverage will verify:
   - wallet runtime/modal regression output for admin deploy signer recovery,
   - Next Image config regression output for Vercel Blob admin-assets URLs,
   - deploy snapshot gate regression output proving snapshot finalization precedes Create Asset enablement,
+  - marketplace media handoff regression output proving uploaded gallery/property images are persisted and rendered,
   - explicit clean-code pass or no-blockers result

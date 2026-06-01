@@ -12,6 +12,7 @@ import { PropertyDetailFeesReturnCard } from "@/components/marketplace/PropertyD
 import { PropertyDetailGoogleMapsCard } from "@/components/marketplace/PropertyDetailGoogleMapsCard";
 import { PropertyDetailHeroSection } from "@/components/marketplace/PropertyDetailHeroSection";
 import { PropertyDetailInvestmentSummaryCard } from "@/components/marketplace/PropertyDetailInvestmentSummaryCard";
+import { PropertyDetailMediaSection } from "@/components/marketplace/PropertyDetailMediaSection";
 import { PropertyDetailPropertyInfoCard } from "@/components/marketplace/PropertyDetailPropertyInfoCard";
 import type { PropertyDetail } from "@/lib/property-service";
 import { createDetailOpenMotionVariants } from "@/lib/motion";
@@ -23,8 +24,9 @@ type PropertyDetailContentProps = {
 };
 
 export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80", layoutId }: PropertyDetailContentProps) {
-  const { locale, t } = useI18n();
+  const { locale } = useI18n();
   const motionVariants = createDetailOpenMotionVariants();
+  const hasProjectMedia = property.galleryImages.length > 0 || property.propertyImages.length > 0;
 
   return (
     <>
@@ -37,6 +39,12 @@ export function PropertyDetailContent({ property, imageClassName = "h-64 md:h-80
 
         <PropertyDetailGoogleMapsCard property={property} />
       </motion.section>
+
+      {hasProjectMedia ? (
+        <motion.section className="mt-6" variants={motionVariants} initial="initial" animate="animate" exit="exit">
+          <PropertyDetailMediaSection property={property} />
+        </motion.section>
+      ) : null}
 
       <motion.section className="mt-6 grid gap-4 md:grid-cols-2" variants={motionVariants} initial="initial" animate="animate" exit="exit">
         <PropertyDetailDealEconomicsCard economics={property.economics} />

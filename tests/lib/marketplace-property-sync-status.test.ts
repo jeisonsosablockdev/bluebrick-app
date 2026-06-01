@@ -73,7 +73,9 @@ function createProperty(overrides: Partial<PropertyDetail> = {}): PropertyDetail
       lastOnchainUpdate: "2026-05-01T00:00:00.000Z",
       syncStatus: "unavailable"
     },
-    ...overrides
+    ...overrides,
+    galleryImages: overrides.galleryImages ?? [],
+    propertyImages: overrides.propertyImages ?? []
   };
 }
 

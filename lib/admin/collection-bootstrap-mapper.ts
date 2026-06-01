@@ -288,6 +288,50 @@ function buildImageItem(input: {
   };
 }
 
+export function normalizeCollectionBootstrapImageItemsJson(
+  value: unknown,
+  kind: "gallery" | "property"
+): CollectionBootstrapImageItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const titlePrefix = kind === "gallery" ? "Gallery image" : "Property image";
+  const items: CollectionBootstrapImageItem[] = [];
+
+  for (const [index, item] of value.entries()) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      continue;
+    }
+
+    const record = item as Record<string, unknown>;
+    const url = toTrimmedString(record.url);
+    if (!url) {
+      continue;
+    }
+
+    const title = toTrimmedString(record.title) ?? `${titlePrefix} ${index + 1}`;
+    const displayOrder = Number(record.displayOrder);
+    const source = record.source === "upload" || record.source === "snapshot" || record.source === "marketplace"
+      ? record.source
+      : "marketplace";
+
+    items.push({
+      id: toTrimmedString(record.id) ?? `${kind}-${index + 1}`,
+      url,
+      title,
+      alt: toTrimmedString(record.alt) ?? title,
+      displayOrder: Number.isFinite(displayOrder) ? displayOrder : index + 1,
+      mimeType: toTrimmedString(record.mimeType),
+      fileName: toTrimmedString(record.fileName),
+      fileRefId: toTrimmedString(record.fileRefId),
+      source
+    });
+  }
+
+  return items.sort((left, right) => left.displayOrder - right.displayOrder);
+}
+
 function toDocumentTag(value: string | null): CollectionBootstrapDocumentTag {
   if (!value) {
     return "other";

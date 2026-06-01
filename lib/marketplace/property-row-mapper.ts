@@ -1,5 +1,8 @@
 import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
-import { normalizeCollectionBootstrapGoogleMapsPlaceJson } from "@/lib/admin/collection-bootstrap-mapper";
+import {
+  normalizeCollectionBootstrapGoogleMapsPlaceJson,
+  normalizeCollectionBootstrapImageItemsJson
+} from "@/lib/admin/collection-bootstrap-mapper";
 import {
   createEmptyPropertyEconomics,
   type BlockchainSyncStatus,
@@ -24,6 +27,8 @@ export type PersistedMarketplaceRow = {
   google_maps_place_json: unknown;
   listing_status: ListingStatus;
   image_url: string;
+  gallery_images_json?: unknown;
+  property_images_json?: unknown;
   short_description: string;
   detailed_location: string;
   highlights_json: unknown;
@@ -180,6 +185,8 @@ export function mapPersistedRowToPropertyDetail(row: PersistedMarketplaceRow): P
     googleMapsPlace: normalizeCollectionBootstrapGoogleMapsPlaceJson(row.google_maps_place_json),
     listingStatus: row.listing_status,
     image: row.image_url,
+    galleryImages: normalizeCollectionBootstrapImageItemsJson(row.gallery_images_json, "gallery"),
+    propertyImages: normalizeCollectionBootstrapImageItemsJson(row.property_images_json, "property"),
     shortDescription: row.short_description,
     detailedLocation: row.detailed_location,
     highlights: parseHighlightsJson(row.highlights_json),
@@ -220,6 +227,8 @@ export function clonePropertyDetail(detail: PropertyDetail): PropertyDetail {
     economics: { ...detail.economics },
     governance: { ...detail.governance },
     googleMapsPlace: detail.googleMapsPlace ? { ...detail.googleMapsPlace } : null,
+    galleryImages: detail.galleryImages.map((item) => ({ ...item })),
+    propertyImages: detail.propertyImages.map((item) => ({ ...item })),
     documents: detail.documents.map((document) => ({ ...document })),
     blockchain: { ...detail.blockchain }
   };
@@ -243,6 +252,8 @@ export function mapCreateInputToPropertyDetail(input: CreateMarketplaceEntryInpu
     googleMapsPlace: input.googleMapsPlace ?? null,
     listingStatus: input.listingStatus,
     image: input.image,
+    galleryImages: input.galleryImages?.map((item) => ({ ...item })) ?? [],
+    propertyImages: input.propertyImages?.map((item) => ({ ...item })) ?? [],
     shortDescription: input.shortDescription,
     detailedLocation: input.detailedLocation,
     highlights: [...input.highlights],

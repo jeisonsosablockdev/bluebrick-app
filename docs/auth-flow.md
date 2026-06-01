@@ -1,6 +1,12 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-05-31
+Last Updated: 2026-06-01
+
+## BRI-165 Marketplace Media Handoff
+- `/admin/assets/new` now sends `draftId` and upload refs to the existing admin marketplace entry route so uploaded gallery/property images can be resolved server-side and published with the marketplace entry.
+- This does not add a new auth route, role, cookie, token, or browser authority source.
+- `/api/admin/marketplace/entries` still resolves authority exclusively through `getRequestRole` and still requires an authenticated `admin` wallet role before reading upload metadata or creating a marketplace entry.
+- Upload refs are treated as media selection hints only; final URLs and file metadata are loaded from server-owned upload records before persistence.
 
 ## BRI-167 Login Modal Viewport Ownership
 - The wallet/login modal now renders its open dialog layer through a browser-body portal so the auth surface is owned by the viewport instead of any page-local map, marketplace, or motion subtree.
