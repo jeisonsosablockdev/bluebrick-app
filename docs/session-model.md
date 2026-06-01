@@ -724,3 +724,15 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side account and wallet resolution for `/protected/perfil`
   - no new session token shape, refresh rule, or browser-owned authority state
 - The change does not add, remove, or alter any authenticated request path.
+
+## BRI-165 S20-S23 Asset Document Client Blob Upload Session Notes
+- The asset upload flow still uses the same admin SIWS session and server-side role derivation before any upload contract or Blob client token is issued.
+- The client holds only short-lived upload intent data:
+  - `uploadId` returned by the server-created contract
+  - the exact Blob object key bound to that contract
+  - the existing form `editSessionId` used for promote/cancel/orphan cleanup
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - no new session token shape or refresh rule
+  - no browser-owned authority state
+- Moving bytes from the app `/binary` Function to `@vercel/blob/client` changes transport only; DB finalization, promotion, cancellation, and admin authorization remain server-mediated.

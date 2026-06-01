@@ -795,3 +795,9 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - The shared footer now belongs to `ProtectedShell`, so `/protected/perfil` shows the footer as part of the protected page shell instead of a profile-module child.
 - `/protected/perfil` still resolves account and wallet state server-side before rendering profile content.
 - The slice changes footer placement only and does not change SIWS challenge issuance, signature verification, wallet signer behavior, cookie handling, redirects, profile completion authority, reward qualification, or account-linking logic.
+
+## BRI-165 S20-S23 Asset Document Client Blob Upload
+- `/admin/assets/new` document/media bytes now upload through Vercel Blob client uploads, but token issuance remains behind the existing authenticated admin request path.
+- `POST /api/admin/assets/uploads/client-upload` derives the admin role from the same SIWS cookie/session boundary, then validates the upload contract owner, object key, MIME type, size, expiration, and finalized state before issuing a Blob client token.
+- The browser still cannot grant itself upload authority: it first needs a server-created upload contract and still finalizes through the authenticated finalize route before DB persistence.
+- No SIWS challenge, signature verification, cookie strategy, nonce lifecycle, or admin role derivation changed in this slice.

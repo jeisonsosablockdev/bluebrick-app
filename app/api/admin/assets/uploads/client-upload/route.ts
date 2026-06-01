@@ -98,6 +98,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return errorResponse(403, "FORBIDDEN", "Admin role is required.");
   }
 
+  const actorPubkey = roleResult.pubkey;
   const body = await request.json().catch(() => null) as HandleUploadBody | null;
   if (!body) {
     return errorResponse(400, "INVALID_CLIENT_UPLOAD_REQUEST", "Request body must be a Vercel Blob upload event.");
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         ensureActiveUploadContract({
           pathname,
-          actorPubkey: roleResult.pubkey,
+          actorPubkey,
           contract
         });
 
