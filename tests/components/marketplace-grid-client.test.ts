@@ -66,6 +66,8 @@ const propertyDetail: PropertyDetail = {
   googleMapsPlace: null,
   listingStatus: "active",
   image: propertyListItem.image,
+  galleryImages: [],
+  propertyImages: [],
   shortDescription: "Short description",
   detailedLocation: "6677 Engelake Dr, Lakeland, FL 33813",
   highlights: ["Highlight"],

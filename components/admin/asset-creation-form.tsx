@@ -1109,6 +1109,7 @@ export function AssetCreationForm(): ReactElement {
 
     const payload = {
       entryId: normalizeMarketplaceEntryId(form.slug, form.internalCode || draftId),
+      draftId,
       title: form.assetName.trim(),
       city: form.city.trim(),
       country: form.country.trim(),
@@ -1128,6 +1129,9 @@ export function AssetCreationForm(): ReactElement {
       economics,
       governance: buildMarketplaceGovernance(form),
       documents: buildMarketplaceDocuments(form),
+      uploadRefs,
+      galleryImages: form.galleryImages,
+      propertyImages: form.propertyImages,
       collectionAddress: deployCompletedData.collectionAddress,
       candyMachineAddress: deployCompletedData.candyMachineAddress,
       snapshotId: snapshotFinalize?.snapshotId ?? null

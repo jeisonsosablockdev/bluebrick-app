@@ -66,7 +66,9 @@ function createProperty(overrides: Partial<PropertyDetail> = {}): PropertyDetail
       lastOnchainUpdate: null,
       syncStatus: "available"
     },
-    ...overrides
+    ...overrides,
+    galleryImages: overrides.galleryImages ?? [],
+    propertyImages: overrides.propertyImages ?? []
   };
 }
 

@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
   getRequestRole: vi.fn(),
-  createMarketplacePropertyEntryPersistent: vi.fn()
+  createMarketplacePropertyEntryPersistent: vi.fn(),
+  listUploadedFileRefsByDraftId: vi.fn()
 }));
 
 vi.mock("@/lib/auth-session", () => ({
@@ -12,6 +13,10 @@ vi.mock("@/lib/auth-session", () => ({
 
 vi.mock("@/lib/property-marketplace-server", () => ({
   createMarketplacePropertyEntryPersistent: routeMocks.createMarketplacePropertyEntryPersistent
+}));
+
+vi.mock("@/lib/asset-uploads/repository", () => ({
+  listUploadedFileRefsByDraftId: routeMocks.listUploadedFileRefsByDraftId
 }));
 
 import { POST } from "@/app/api/admin/marketplace/entries/route";
@@ -40,6 +45,7 @@ describe("POST /api/admin/marketplace/entries", () => {
       title: "Asset 001",
       listingStatus: "funding"
     });
+    routeMocks.listUploadedFileRefsByDraftId.mockResolvedValue([]);
   });
 
   it("returns 403 when caller is not admin", async () => {
@@ -156,6 +162,11 @@ describe("POST /api/admin/marketplace/entries", () => {
           riskNotes: "Escrow account with milestone-based draws."
         },
         documents: [{ label: "Brochure", url: "https://cdn.example.com/brochure.pdf" }],
+        draftId: "90f27f80-b86d-4156-b556-ab55f17c0575",
+        uploadRefs: {
+          galleryImages: ["file-gallery-1"],
+          propertyImages: ["file-property-1"]
+        },
         collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
         candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111",
         snapshotId: "snapshot-001"
@@ -194,6 +205,87 @@ describe("POST /api/admin/marketplace/entries", () => {
         governance: {
           riskNotes: "Escrow account with milestone-based draws."
         }
+      })
+    );
+  });
+
+  it("resolves uploaded gallery and property images into marketplace media payload", async () => {
+    routeMocks.listUploadedFileRefsByDraftId.mockResolvedValueOnce([
+      {
+        fileRefId: "file-gallery-1",
+        uploadId: "upload-gallery-1",
+        actorPubkey: "AdminPubkey111111111111111111111111111111111111",
+        draftId: "90f27f80-b86d-4156-b556-ab55f17c0575",
+        bucket: "vercel-blob",
+        objectKey: "admin-assets/galleryImage/draft/gallery.jpg",
+        cdnUrl: "https://cdn.example.com/gallery.jpg",
+        mimeType: "image/jpeg",
+        sizeBytes: 1024,
+        contentMd5Base64: "AAAAAAAAAAAAAAAAAAAAAA==",
+        etag: "\"etag\"",
+        uploadedAt: "2026-06-01T10:00:00.000Z",
+        createdAt: "2026-06-01T10:00:00.000Z",
+        category: "galleryImage"
+      },
+      {
+        fileRefId: "file-property-1",
+        uploadId: "upload-property-1",
+        actorPubkey: "AdminPubkey111111111111111111111111111111111111",
+        draftId: "90f27f80-b86d-4156-b556-ab55f17c0575",
+        bucket: "vercel-blob",
+        objectKey: "admin-assets/propertyImage/draft/property.jpg",
+        cdnUrl: "https://cdn.example.com/property.jpg",
+        mimeType: "image/jpeg",
+        sizeBytes: 2048,
+        contentMd5Base64: "AAAAAAAAAAAAAAAAAAAAAA==",
+        etag: "\"etag\"",
+        uploadedAt: "2026-06-01T10:01:00.000Z",
+        createdAt: "2026-06-01T10:01:00.000Z",
+        category: "propertyImage"
+      }
+    ]);
+
+    const response = await POST(
+      createRequest({
+        entryId: "asset-001",
+        title: "Central Tower",
+        city: "Bogota",
+        country: "CO",
+        address: "Calle 10 #12-34",
+        imageUrl: "https://cdn.example.com/cover.jpg",
+        shortDescription: "Tokenized building",
+        supplyTotal: 1200,
+        nftPriceUsd: 150,
+        annualRoiPct: 12.5,
+        documents: [],
+        draftId: "90f27f80-b86d-4156-b556-ab55f17c0575",
+        uploadRefs: {
+          galleryImages: ["file-gallery-1"],
+          propertyImages: ["file-property-1"]
+        },
+        collectionAddress: "CoLLeCt1on111111111111111111111111111111111",
+        candyMachineAddress: "CanDyMach1ne1111111111111111111111111111111"
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(routeMocks.listUploadedFileRefsByDraftId).toHaveBeenCalledWith("90f27f80-b86d-4156-b556-ab55f17c0575");
+    expect(routeMocks.createMarketplacePropertyEntryPersistent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        galleryImages: [
+          expect.objectContaining({
+            url: "https://cdn.example.com/gallery.jpg",
+            fileRefId: "file-gallery-1",
+            source: "upload"
+          })
+        ],
+        propertyImages: [
+          expect.objectContaining({
+            url: "https://cdn.example.com/property.jpg",
+            fileRefId: "file-property-1",
+            source: "upload"
+          })
+        ]
       })
     );
   });

@@ -4,6 +4,7 @@ import { withDbClient } from "@/lib/db/pool";
 import {
   normalizeCollectionBootstrapDocumentsJson,
   normalizeCollectionBootstrapGoogleMapsPlaceJson,
+  normalizeCollectionBootstrapImageItemsJson,
   type CollectionBootstrapDocumentItem,
   type CollectionBootstrapGoogleMapsPlace,
   type CollectionBootstrapImageItem,
@@ -174,62 +175,6 @@ function toOptionalFiniteNumber(value: number | string | null | undefined): numb
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parseCollectionImageItems(
-  value: unknown,
-  kind: "gallery" | "property"
-): CollectionBootstrapImageItem[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  const titlePrefix = kind === "gallery" ? "Gallery image" : "Property image";
-  const items: CollectionBootstrapImageItem[] = [];
-
-  for (const [index, item] of value.entries()) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      continue;
-    }
-
-    const record = item as Record<string, unknown>;
-    const url = typeof record.url === "string" ? record.url.trim() : "";
-    if (!url) {
-      continue;
-    }
-
-    const title = typeof record.title === "string" && record.title.trim()
-      ? record.title.trim()
-      : `${titlePrefix} ${index + 1}`;
-    const alt = typeof record.alt === "string" && record.alt.trim()
-      ? record.alt.trim()
-      : title;
-    const id = typeof record.id === "string" && record.id.trim()
-      ? record.id.trim()
-      : `${kind}-${index + 1}`;
-    const displayOrder =
-      typeof record.displayOrder === "number" && Number.isFinite(record.displayOrder)
-        ? record.displayOrder
-        : index + 1;
-    const source =
-      record.source === "upload" || record.source === "snapshot" || record.source === "marketplace"
-        ? record.source
-        : "marketplace";
-
-    items.push({
-      id,
-      url,
-      title,
-      alt,
-      displayOrder,
-      mimeType: typeof record.mimeType === "string" ? record.mimeType.trim() || null : null,
-      fileName: typeof record.fileName === "string" ? record.fileName.trim() || null : null,
-      fileRefId: typeof record.fileRefId === "string" ? record.fileRefId.trim() || null : null,
-      source
-    });
-  }
-
-  return items.sort((left, right) => left.displayOrder - right.displayOrder);
-}
-
 function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): AdminCollectionContentRecord {
   return {
     entryId: row.id,
@@ -246,8 +191,8 @@ function toAdminCollectionContentRecord(row: MarketplaceEditableCollectionRow): 
     coverImageUrl: row.image_url,
     collectionAddress: row.collection_address,
     candyMachineAddress: row.asset_mint_address,
-    galleryImages: parseCollectionImageItems(row.gallery_images_json, "gallery"),
-    propertyImages: parseCollectionImageItems(row.property_images_json, "property"),
+    galleryImages: normalizeCollectionBootstrapImageItemsJson(row.gallery_images_json, "gallery"),
+    propertyImages: normalizeCollectionBootstrapImageItemsJson(row.property_images_json, "property"),
     documents: normalizeCollectionBootstrapDocumentsJson(row.documents_json),
     fractionalInvestmentSummary: toOptionalTrimmedText(row.fractional_investment_summary),
     propertyInformation: toOptionalTrimmedText(row.property_information),

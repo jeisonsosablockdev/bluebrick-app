@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
 import {
+  mapCollectionBootstrapFromSnapshot,
   normalizeCollectionBootstrapGoogleMapsPlaceJson,
-  type CollectionBootstrapGoogleMapsPlace
+  type CollectionBootstrapGoogleMapsPlace,
+  type CollectionBootstrapImageItem
 } from "@/lib/admin/collection-bootstrap-mapper";
+import { listUploadedFileRefsByDraftId } from "@/lib/asset-uploads/repository";
 import { getRequestRole } from "@/lib/auth-session";
 import {
   createEmptyPropertyEconomics,
@@ -37,6 +40,10 @@ type MarketplaceEntryRequest = {
   project?: unknown;
   economics?: unknown;
   governance?: unknown;
+  draftId?: unknown;
+  uploadRefs?: unknown;
+  galleryImages?: unknown;
+  propertyImages?: unknown;
   collectionAddress?: unknown;
   candyMachineAddress?: unknown;
   snapshotId?: unknown;
@@ -51,6 +58,11 @@ type MarketplaceProjectInput = Partial<Record<keyof PropertyProject, unknown>>;
 type MarketplaceEconomicsInput = Partial<Record<keyof PropertyEconomics, unknown>>;
 type MarketplaceGovernanceInput = Partial<Record<keyof PropertyGovernance, unknown>>;
 
+type MarketplaceMediaPayload = {
+  galleryImages: CollectionBootstrapImageItem[];
+  propertyImages: CollectionBootstrapImageItem[];
+};
+
 function readRequiredText(raw: unknown, fieldName: string): string {
   if (typeof raw !== "string") {
     throw new Error(`${fieldName} must be a string.`);
@@ -62,6 +74,19 @@ function readRequiredText(raw: unknown, fieldName: string): string {
   }
 
   return value;
+}
+
+function readOptionalText(raw: unknown, fieldName: string): string | null {
+  if (raw === undefined || raw === null) {
+    return null;
+  }
+
+  if (typeof raw !== "string") {
+    throw new Error(`${fieldName} must be a string when provided.`);
+  }
+
+  const value = raw.trim();
+  return value || null;
 }
 
 function readNonNegativeNumber(raw: unknown, fieldName: string): number {
@@ -228,6 +253,10 @@ function normalizePayload(rawBody: unknown): {
   economics: PropertyEconomics;
   governance: PropertyGovernance;
   documents: MarketplaceDocumentInput[];
+  draftId: string | null;
+  uploadRefs: unknown;
+  galleryImages: unknown;
+  propertyImages: unknown;
   collectionAddress: string;
   candyMachineAddress: string;
   snapshotId: string | null;
@@ -269,6 +298,7 @@ function normalizePayload(rawBody: unknown): {
   });
   const governance = parseGovernance(body.governance, investmentNotes);
   const googleMapsPlace = parseGoogleMapsPlace(body.googleMapsPlace);
+  const draftId = readOptionalText(body.draftId, "draftId");
 
   const snapshotId = typeof body.snapshotId === "string" && body.snapshotId.trim()
     ? body.snapshotId.trim()
@@ -296,9 +326,38 @@ function normalizePayload(rawBody: unknown): {
     economics,
     governance,
     documents,
+    draftId,
+    uploadRefs: body.uploadRefs,
+    galleryImages: body.galleryImages,
+    propertyImages: body.propertyImages,
     collectionAddress,
     candyMachineAddress,
     snapshotId
+  };
+}
+
+async function resolveMarketplaceMediaPayload(input: {
+  draftId: string | null;
+  uploadRefs: unknown;
+  galleryImages: unknown;
+  propertyImages: unknown;
+}): Promise<MarketplaceMediaPayload> {
+  const uploadedFiles = input.draftId
+    ? await listUploadedFileRefsByDraftId(input.draftId)
+    : [];
+  const bootstrap = mapCollectionBootstrapFromSnapshot({
+    formSnapshot: {
+      uploadRefs: input.uploadRefs,
+      galleryImages: input.galleryImages,
+      propertyImages: input.propertyImages
+    },
+    uploadedFiles,
+    existingDocumentsJson: []
+  });
+
+  return {
+    galleryImages: bootstrap.payload.galleryImagesJson,
+    propertyImages: bootstrap.payload.propertyImagesJson
   };
 }
 
@@ -343,13 +402,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           "Pending first mint confirmation"
         ];
 
-    const documents = payload.documents;
+    const documents = [...payload.documents];
     if (payload.snapshotId) {
       documents.unshift({
         label: "Mint snapshot",
         url: `snapshot:${payload.snapshotId}`
       });
     }
+    const mediaPayload = await resolveMarketplaceMediaPayload({
+      draftId: payload.draftId,
+      uploadRefs: payload.uploadRefs,
+      galleryImages: payload.galleryImages,
+      propertyImages: payload.propertyImages
+    });
 
     const created = await createMarketplacePropertyEntryPersistent({
       id: payload.entryId,
@@ -360,6 +425,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       postalCode: payload.postalCode,
       listingStatus,
       image: payload.imageUrl,
+      galleryImages: mediaPayload.galleryImages,
+      propertyImages: mediaPayload.propertyImages,
       shortDescription: payload.shortDescription,
       detailedLocation: payload.address,
       geoLat: payload.geoLat,

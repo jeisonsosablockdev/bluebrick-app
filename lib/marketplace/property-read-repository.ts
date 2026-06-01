@@ -37,6 +37,8 @@ export async function readPersistedMarketplaceEntries(): Promise<PersistedMarket
            ${support.googleMapsPlaceJson ? "google_maps_place_json" : "NULL::jsonb AS google_maps_place_json"},
            listing_status,
            image_url,
+           gallery_images_json,
+           property_images_json,
            short_description,
            detailed_location,
            highlights_json,
