@@ -528,6 +528,12 @@ Status:
 - S30 whitespace validation: `git diff --check` passed.
 - S30 clean-code pass: no new blocking findings in the wallet modal module; accepted residual debt is that `WalletModal` remains a large auth/navigation orchestrator, now with private-route, auth equality, referral payload, signing prep, post-auth decision, fallback reward, and proof view-model logic extracted behind tests.
 
+Final closeout validation:
+- Full targeted wallet modal/helper suite passed: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts tests/lib/private-routes.test.ts tests/lib/auth-state.test.ts tests/lib/referral-client-state.test.ts tests/lib/wallet-signing-prep.test.ts tests/lib/post-auth-decision.test.ts tests/lib/wallet-proof-view-model.test.ts` passed with 60 tests.
+- `npm run validate` passed, including lint, typecheck, DB validation, content, route, SEO, schema, AI, feeds, operability, knowledge, workflow, and docs-governance gates.
+- `npm run e2e:synpress` passed with the `synpress-phantom` project.
+- `npm run e2e:playwright` passed the wallet modal auth entry coverage across `/` and `/marketplace` at 320/375/768/1024 and passed 20 of 22 smoke specs. `e2e/story-010-03-routes.responsive.pw.spec.ts` passed on isolated retry. `e2e/protected-profile-push-enrollment.pw.spec.ts` still fails outside this modal scope because the profile push-enrollment assertion is blocked by the protected profile onboarding/tour state during smoke execution.
+
 ## Root-Cause Analysis
 ### BRI-165 reconnect precedent
 BRI-165 slice 16 documented a real admin deploy regression:
