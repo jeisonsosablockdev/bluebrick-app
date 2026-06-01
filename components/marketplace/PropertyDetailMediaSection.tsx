@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
 import { H2 } from "@/components/ui/typography";
@@ -12,7 +13,10 @@ type PropertyDetailMediaSectionProps = {
   property: PropertyDetail;
 };
 
+type MediaGroupKey = "gallery" | "property";
+
 type MediaGroup = {
+  key: MediaGroupKey;
   label: string;
   images: CollectionBootstrapImageItem[];
 };
@@ -31,45 +35,134 @@ function uniqueImages(images: CollectionBootstrapImageItem[]): CollectionBootstr
   });
 }
 
+function resolveActiveIndex(index: number | undefined, imageCount: number): number {
+  if (typeof index !== "number" || index < 0 || index >= imageCount) {
+    return 0;
+  }
+
+  return index;
+}
+
 export function PropertyDetailMediaSection({ property }: PropertyDetailMediaSectionProps) {
   const { t } = useI18n();
-  const groups: MediaGroup[] = [
+  const [activeImageByGroup, setActiveImageByGroup] = useState<Partial<Record<MediaGroupKey, number>>>({});
+  const mediaGroups: MediaGroup[] = [
     {
+      key: "gallery",
       label: t({ en: "Gallery", es: "Galeria", pt: "Galeria" }),
       images: uniqueImages(property.galleryImages)
     },
     {
+      key: "property",
       label: t({ en: "Property", es: "Propiedad", pt: "Propriedade" }),
       images: uniqueImages(property.propertyImages)
     }
-  ].filter((group) => group.images.length > 0);
+  ];
+  const groups = mediaGroups.filter((group) => group.images.length > 0);
 
   if (groups.length === 0) {
     return null;
   }
 
+  function formatImageCount(imageCount: number): string {
+    return imageCount === 1
+      ? t({ en: "1 image", es: "1 imagen", pt: "1 imagem" })
+      : `${imageCount} ${t({ en: "images", es: "imagenes", pt: "imagens" })}`;
+  }
+
+  function updateActiveImage(groupKey: MediaGroupKey, imageCount: number, step: number): void {
+    setActiveImageByGroup((current) => {
+      const currentIndex = resolveActiveIndex(current[groupKey], imageCount);
+      const nextIndex = (currentIndex + step + imageCount) % imageCount;
+
+      return {
+        ...current,
+        [groupKey]: nextIndex
+      };
+    });
+  }
+
   return (
-    <Card className="space-y-5">
+    <Card className="space-y-6">
       <H2 className="text-2xl text-white">{t({ en: "Project media", es: "Imagenes del proyecto", pt: "Midia do projeto" })}</H2>
-      {groups.map((group) => (
-        <section className="space-y-3" key={group.label}>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">{group.label}</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {group.images.map((image) => (
-              <figure className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70" key={image.id}>
+
+      {groups.map((group) => {
+        const activeIndex = resolveActiveIndex(activeImageByGroup[group.key], group.images.length);
+        const activeImage = group.images[activeIndex];
+        const hasMultipleImages = group.images.length > 1;
+
+        return (
+          <section
+            aria-label={`${group.label} project media`}
+            aria-roledescription="carousel"
+            className="space-y-3"
+            data-testid={`project-media-carousel-${group.key}`}
+            key={group.key}
+            role="region"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">{group.label}</p>
+                <p className="text-sm text-slate-400">{formatImageCount(group.images.length)}</p>
+              </div>
+
+              {hasMultipleImages ? (
+                <p aria-live="polite" className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-200">
+                  {activeIndex + 1} / {group.images.length}
+                </p>
+              ) : null}
+            </div>
+
+            <figure className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950/70 shadow-[0_24px_80px_rgba(0,0,0,0.26)]">
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
                 <Image
-                  alt={image.alt || image.title || property.title}
-                  className="h-44 w-full object-cover"
-                  height={360}
-                  src={image.url}
-                  width={540}
+                  alt={activeImage.alt || activeImage.title || property.title}
+                  className="object-cover"
+                  fill
+                  sizes="(min-width: 1024px) 960px, 100vw"
+                  src={activeImage.url}
                 />
-                <figcaption className="px-3 py-2 text-xs text-slate-300">{image.title}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      ))}
+
+                {hasMultipleImages ? (
+                  <div className="absolute inset-x-3 top-1/2 flex -translate-y-1/2 items-center justify-between">
+                    <button
+                      type="button"
+                      aria-label={t({
+                        en: `Previous ${group.label} image`,
+                        es: `Imagen anterior de ${group.label}`,
+                        pt: `Imagem anterior de ${group.label}`
+                      })}
+                      className="min-h-11 min-w-11 cursor-pointer rounded-full border border-white/15 bg-slate-950/80 px-3 text-lg font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,0.42)] transition hover:border-cyan-200/60 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      onClick={() => updateActiveImage(group.key, group.images.length, -1)}
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={t({
+                        en: `Next ${group.label} image`,
+                        es: `Siguiente imagen de ${group.label}`,
+                        pt: `Proxima imagem de ${group.label}`
+                      })}
+                      className="min-h-11 min-w-11 cursor-pointer rounded-full border border-white/15 bg-slate-950/80 px-3 text-lg font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,0.42)] transition hover:border-cyan-200/60 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      onClick={() => updateActiveImage(group.key, group.images.length, 1)}
+                    >
+                      ›
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              <figcaption className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-slate-300">
+                <span>{activeImage.title}</span>
+                {hasMultipleImages ? (
+                  <span className="text-slate-500">{t({ en: "Use controls to browse", es: "Usa los controles para navegar", pt: "Use os controles para navegar" })}</span>
+                ) : null}
+              </figcaption>
+            </figure>
+          </section>
+        );
+      })}
     </Card>
   );
 }
