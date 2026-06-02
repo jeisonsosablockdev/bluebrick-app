@@ -38,16 +38,18 @@ import { createPurchaseThirdPartySigner } from "@/lib/purchase-third-party-signe
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,
-  createLegacyConnection,
+  createKitRpcConnection,
   deserializeLegacyVersionedTransaction,
-  getLegacySignatureStatus,
   getLegacyTransactionPayer,
   getLegacyTransactionRequiredSignerCount,
   getLegacyTransactionSignatureAt,
   getLegacyTransactionStaticAccountKeys,
+  getSignatureStatusWithKitRpc,
   normalizeLegacyPublicKey,
-  sendLegacyVersionedTransaction,
+  sendRawTransactionWithKitRpc,
   serializeLegacyVersionedMessage,
+  serializeLegacyVersionedTransaction,
+  type KitRpcConnection,
   type LegacyVersionedTransaction
 } from "@/lib/solana-kit/compat/web3-transactions";
 import {
@@ -1042,21 +1044,21 @@ async function sleep(ms: number): Promise<void> {
 }
 
 async function sendSignedTransaction(
-  connection: ReturnType<typeof createLegacyConnection>,
+  rpc: KitRpcConnection,
   transaction: LegacyVersionedTransaction
 ): Promise<string> {
-  return sendLegacyVersionedTransaction(connection, transaction, {
+  return sendRawTransactionWithKitRpc(rpc, serializeLegacyVersionedTransaction(transaction), {
     skipPreflight: false,
     maxRetries: 3
   });
 }
 
 async function waitForConfirmedSignature(
-  connection: ReturnType<typeof createLegacyConnection>,
+  rpc: KitRpcConnection,
   signature: string
 ): Promise<void> {
   for (let attempt = 0; attempt < PURCHASE_SUBMIT_CONFIRMATION_POLLS; attempt += 1) {
-    const status = await getLegacySignatureStatus(connection, signature);
+    const status = await getSignatureStatusWithKitRpc(rpc, signature, { searchTransactionHistory: true });
 
     if (status?.err) {
       throw new PurchaseFlowError("TRANSACTION_FAILED", "Submitted transaction failed on-chain.", 409, {
@@ -1166,7 +1168,7 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
   const transaction = parseSignedTransaction(input.signedTransactionBase64);
   assertPayerMatchesBuyer(transaction, buyerPublicKey);
   const messageBase64 = toBase64(serializeLegacyVersionedMessage(transaction));
-  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
 
   async function confirmAndVerifySubmittedAttempt(inputAttempt: {
     id: string;
@@ -1177,7 +1179,7 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
     submittedAt: string;
   }, options?: { client?: PoolClient }): Promise<PurchaseSubmitResult> {
     try {
-      await waitForConfirmedSignature(connection, inputSignature.signature);
+      await waitForConfirmedSignature(rpc, inputSignature.signature);
       const verifiedAssetAddresses = await verifyExpectedMintedAssets({
         buyerPublicKey,
         collectionAddress: inputAttempt.collectionAddress,
@@ -1270,7 +1272,7 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
     }
 
     try {
-      const signature = await sendSignedTransaction(connection, transaction);
+      const signature = await sendSignedTransaction(rpc, transaction);
       const stored = await markPurchaseAttemptSubmitted(
         {
           id: inputAttempt.id,

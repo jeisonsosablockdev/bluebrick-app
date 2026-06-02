@@ -14,6 +14,11 @@ const DEPLOY_MINT_FILES = [
   "components/admin/metaplex-core-mint-panel.tsx"
 ];
 
+const MARKETPLACE_PURCHASE_FILES = [
+  "lib/purchase-service.ts",
+  "components/marketplace/PurchaseCta.tsx"
+];
+
 function readRepoFile(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), "utf8");
 }
@@ -27,6 +32,17 @@ describe("Solana Kit deploy/mint boundary", () => {
       expect(source, `${relativePath} must not import umi-web3js-adapters directly`).not.toContain("umi-web3js-adapters");
       expect(source, `${relativePath} must not construct legacy web3 connections directly`).not.toContain("new Connection(");
       expect(source, `${relativePath} must not call legacy sendRawTransaction directly`).not.toContain(".sendRawTransaction(");
+    }
+  });
+
+  it("keeps marketplace purchase submit and confirmation on the Kit RPC boundary", () => {
+    for (const relativePath of MARKETPLACE_PURCHASE_FILES) {
+      const source = readRepoFile(relativePath);
+
+      expect(source, `${relativePath} must not import @solana/web3.js directly`).not.toContain("@solana/web3.js");
+      expect(source, `${relativePath} must not construct legacy web3 connections directly`).not.toContain("createLegacyConnection");
+      expect(source, `${relativePath} must not submit through legacy web3 RPC`).not.toContain("sendLegacyVersionedTransaction");
+      expect(source, `${relativePath} must not confirm through legacy web3 RPC`).not.toContain("getLegacySignatureStatus");
     }
   });
 

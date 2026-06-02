@@ -149,6 +149,28 @@ Regla:
 - La dependencia `@solana/web3.js` solo puede permanecer mientras sea transitiva o boundary legacy justificado; no debe ser el API principal del flujo nuevo.
 - Los artefactos y tests deben poder explicar que Kit es el camino canonico y `web3.js` es compatibilidad temporal.
 
+## Regla estricta Solana Kit para compra marketplace
+
+La compra/mint desde marketplace tambien debe usar `@solana/kit` como frontera canonica para RPC.
+
+Aplica a:
+
+- `components/marketplace/PurchaseCta.tsx`;
+- `/api/purchase/prepare`;
+- `/api/purchase/submit`;
+- `lib/purchase-service.ts`;
+- helpers de serializacion, submit, confirmacion y lectura de estado usados por el flujo de compra.
+
+Regla:
+
+- `lib/purchase-service.ts` no debe crear conexiones legacy con `createLegacyConnection`.
+- `lib/purchase-service.ts` no debe enviar transacciones con `sendLegacyVersionedTransaction`.
+- `lib/purchase-service.ts` no debe confirmar firmas con `getLegacySignatureStatus`.
+- El submit de compra debe usar `createKitRpcConnection`, `sendRawTransactionWithKitRpc` y `getSignatureStatusWithKitRpc`.
+- El cliente puede seguir firmando `VersionedTransaction` solo mediante el boundary temporal `lib/solana-kit/compat/*`, porque wallet-adapter y Umi/Metaplex aun exigen esa forma.
+- La compra no puede introducir imports directos de `@solana/web3.js` fuera del boundary.
+- Debe existir una prueba de frontera que falle si marketplace purchase vuelve al RPC legacy.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -368,6 +390,28 @@ Rule:
 - `PublicKey`, `Connection`, `Keypair`, `SystemProgram`, and equivalent helpers must not leak into the deploy/mint domain when a Kit alternative exists.
 - The `@solana/web3.js` dependency may remain only as a transitive or justified legacy boundary; it must not be the primary API for the new flow.
 - Artifacts and tests must make clear that Kit is the canonical path and `web3.js` is temporary compatibility.
+
+## Strict Solana Kit Rule For Marketplace Purchase
+
+The marketplace purchase/mint flow must also use `@solana/kit` as the canonical RPC boundary.
+
+Applies to:
+
+- `components/marketplace/PurchaseCta.tsx`;
+- `/api/purchase/prepare`;
+- `/api/purchase/submit`;
+- `lib/purchase-service.ts`;
+- serialization, submit, confirmation, and status-reading helpers used by the purchase flow.
+
+Rule:
+
+- `lib/purchase-service.ts` must not create legacy connections with `createLegacyConnection`.
+- `lib/purchase-service.ts` must not send transactions with `sendLegacyVersionedTransaction`.
+- `lib/purchase-service.ts` must not confirm signatures with `getLegacySignatureStatus`.
+- Purchase submit must use `createKitRpcConnection`, `sendRawTransactionWithKitRpc`, and `getSignatureStatusWithKitRpc`.
+- The client may still sign `VersionedTransaction` only through the temporary `lib/solana-kit/compat/*` boundary, because wallet-adapter and Umi/Metaplex still require that shape.
+- Purchase must not introduce direct `@solana/web3.js` imports outside the boundary.
+- A boundary test must fail if marketplace purchase returns to legacy RPC.
 
 ## Code To Audit
 
