@@ -255,17 +255,23 @@ async function listBridsStakeInventory(): Promise<BridsInventoryRecord[]> {
 
   return withDbClient(async (client) => {
     const result = await client.query<BridsInventoryRow>(
-      `SELECT DISTINCT
-         e.id AS property_id,
-         e.title AS property_title,
-         e.collection_address,
-         e.asset_mint_address AS candy_machine_address
-       FROM marketplace_entries AS e
-       INNER JOIN asset_mint_snapshots AS s
-         ON s.collection_address = e.collection_address
-        AND s.candy_machine_address = e.asset_mint_address
-       WHERE s.verification_status = 'verified'
-       ORDER BY e.updated_at DESC, e.created_at DESC`
+      `SELECT property_id, property_title, collection_address, candy_machine_address
+       FROM (
+         SELECT DISTINCT ON (e.collection_address, e.asset_mint_address)
+           e.id AS property_id,
+           e.title AS property_title,
+           e.collection_address,
+           e.asset_mint_address AS candy_machine_address,
+           e.updated_at,
+           e.created_at
+         FROM marketplace_entries AS e
+         INNER JOIN asset_mint_snapshots AS s
+           ON s.collection_address = e.collection_address
+          AND s.candy_machine_address = e.asset_mint_address
+         WHERE s.verification_status = 'verified'
+         ORDER BY e.collection_address, e.asset_mint_address, e.updated_at DESC, e.created_at DESC
+       ) AS latest_verified_inventory
+       ORDER BY updated_at DESC, created_at DESC`
     );
 
     return result.rows.map((row) => ({
