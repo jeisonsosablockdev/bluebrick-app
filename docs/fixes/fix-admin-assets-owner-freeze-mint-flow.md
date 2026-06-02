@@ -128,6 +128,27 @@ Cada NFT BRIDS minteado por usuarios desde marketplace debe quedar con:
 - No se debe introducir una dependencia dominante nueva de `@solana/web3.js`.
 - El camino nuevo debe favorecer Solana Kit / framework-kit; cualquier boundary legacy debe quedar encapsulado y justificado.
 
+## Regla estricta Solana Kit para deploy y mint
+
+El codigo de deploy y mint debe migrar hacia `@solana/kit` como SDK principal.
+
+Aplica a:
+
+- deploy/configuracion de Core Candy Machine;
+- derivacion de direcciones y validacion de public keys;
+- envio de transacciones y consulta de confirmacion;
+- serializacion/deserializacion usada por las rutas de deploy/mint;
+- paneles admin que firman transacciones preparadas;
+- mint marketplace del comprador.
+
+Regla:
+
+- No se deben agregar nuevos imports directos de `@solana/web3.js` en servicios, rutas o componentes de deploy/mint.
+- Si una dependencia legacy exige formas `web3.js` (`VersionedTransaction`, wallet-adapter, Umi/Metaplex adapter), ese uso debe quedar encapsulado en un boundary temporal dentro de `lib/solana-kit/compat/*`.
+- Los tipos `PublicKey`, `Connection`, `Keypair`, `SystemProgram` y helpers equivalentes no deben filtrarse al dominio de deploy/mint cuando exista alternativa en Kit.
+- La dependencia `@solana/web3.js` solo puede permanecer mientras sea transitiva o boundary legacy justificado; no debe ser el API principal del flujo nuevo.
+- Los artefactos y tests deben poder explicar que Kit es el camino canonico y `web3.js` es compatibilidad temporal.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -326,6 +347,27 @@ Every BRIDS NFT minted by users from marketplace must have:
 - Do not leave old or orphaned routes that can create user NFTs without the required plugin.
 - Do not introduce a new dominant dependency on `@solana/web3.js`.
 - The new path must favor Solana Kit / framework-kit; any legacy boundary must be encapsulated and justified.
+
+## Strict Solana Kit Rule For Deploy And Mint
+
+Deploy and mint code must migrate toward `@solana/kit` as the primary SDK.
+
+This applies to:
+
+- Core Candy Machine deploy/configuration;
+- address derivation and public key validation;
+- transaction submission and confirmation polling;
+- serialization/deserialization used by deploy/mint routes;
+- admin panels that sign prepared transactions;
+- buyer marketplace mint.
+
+Rule:
+
+- Do not add new direct `@solana/web3.js` imports in deploy/mint services, routes, or components.
+- If a legacy dependency requires `web3.js` shapes (`VersionedTransaction`, wallet-adapter, Umi/Metaplex adapter), that usage must be encapsulated in a temporary boundary under `lib/solana-kit/compat/*`.
+- `PublicKey`, `Connection`, `Keypair`, `SystemProgram`, and equivalent helpers must not leak into the deploy/mint domain when a Kit alternative exists.
+- The `@solana/web3.js` dependency may remain only as a transitive or justified legacy boundary; it must not be the primary API for the new flow.
+- Artifacts and tests must make clear that Kit is the canonical path and `web3.js` is temporary compatibility.
 
 ## Code To Audit
 

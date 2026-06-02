@@ -173,6 +173,15 @@ Responsabilidad:
 - encapsular o eliminar imports de `@solana/web3.js` dentro del scope tocado
 - asegurar que el camino canonico no dependa de una ruta alternativa que salte el plugin owner freeze
 
+Regla Solana Kit para deploy y mint:
+
+- `@solana/kit` es el SDK canonico para el codigo de deploy/mint nuevo o tocado.
+- No se permiten nuevos imports directos de `@solana/web3.js` en servicios, rutas o componentes de deploy/mint.
+- Migrar validacion de public keys, derivacion de direcciones, RPC submit/confirm y lectura de transacciones hacia Kit cuando exista equivalente.
+- Encapsular `VersionedTransaction` y conversiones Umi/Metaplex/wallet-adapter en `lib/solana-kit/compat/*` si aun son inevitables.
+- `lib/core-candy-machine-admin.ts`, `components/admin/core-candy-machine-panel.tsx`, `components/admin/metaplex-core-mint-panel.tsx`, `lib/candy-guard-payment-config.ts` y `lib/purchase-third-party-signer.ts` no deben depender directamente de `@solana/web3.js` despues del slice.
+- Si algun uso no puede migrarse sin reemplazar una dependencia externa, debe quedar documentado como boundary temporal con razon tecnica y test de contencion.
+
 Inventario inicial:
 
 - `app/marketplace/[id]/page.tsx`
@@ -204,6 +213,7 @@ Pruebas primero:
 - pruebas de ausencia, bloqueo o no exposicion de rutas viejas si se eliminan
 - grep/test para evitar que el flujo canonico nuevo dependa directamente de `@solana/web3.js` fuera de boundaries permitidos
 - test de que `prepareCoreCandyMachineMint` no es usado por el flujo marketplace
+- test o grep que demuestre que deploy/mint no importa `@solana/web3.js` fuera de `lib/solana-kit/compat/*`
 
 Gates:
 
@@ -449,6 +459,15 @@ Responsibility:
 - encapsulate or remove `@solana/web3.js` imports inside the touched scope
 - ensure the canonical path does not depend on an alternative route that skips the owner-freeze plugin
 
+Solana Kit rule for deploy and mint:
+
+- `@solana/kit` is the canonical SDK for new or touched deploy/mint code.
+- New direct `@solana/web3.js` imports are not allowed in deploy/mint services, routes, or components.
+- Migrate public key validation, address derivation, RPC submit/confirm, and transaction reads to Kit when an equivalent exists.
+- Encapsulate `VersionedTransaction` and Umi/Metaplex/wallet-adapter conversions in `lib/solana-kit/compat/*` if they remain unavoidable.
+- `lib/core-candy-machine-admin.ts`, `components/admin/core-candy-machine-panel.tsx`, `components/admin/metaplex-core-mint-panel.tsx`, `lib/candy-guard-payment-config.ts`, and `lib/purchase-third-party-signer.ts` must not depend directly on `@solana/web3.js` after the slice.
+- If a usage cannot be migrated without replacing an external dependency, it must be documented as a temporary boundary with a technical reason and containment test.
+
 Initial inventory:
 
 - `app/marketplace/[id]/page.tsx`
@@ -480,6 +499,7 @@ Tests first:
 - tests for absence, blocking, or non-exposure of old routes if removed
 - grep/test to prevent the new canonical flow from depending directly on `@solana/web3.js` outside allowed boundaries
 - test that `prepareCoreCandyMachineMint` is not used by the marketplace flow
+- test or grep proving deploy/mint does not import `@solana/web3.js` outside `lib/solana-kit/compat/*`
 
 Gates:
 

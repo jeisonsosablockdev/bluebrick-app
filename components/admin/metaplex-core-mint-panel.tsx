@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { METAPLEX_CORE_PROGRAM_ID, getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 type PreparedTransaction = {
   kind: "collection" | "asset";
@@ -197,9 +200,9 @@ export function MetaplexCoreMintPanel() {
           status: `Signing ${transactionItem.label} (${index + 1}/${preparedBatch.transactions.length})`
         }));
 
-        const unsignedTransaction = VersionedTransaction.deserialize(fromBase64(transactionItem.transactionBase64));
+        const unsignedTransaction = deserializeLegacyVersionedTransaction(fromBase64(transactionItem.transactionBase64));
         const signedTransaction = await signTransaction(unsignedTransaction);
-        const signedTransactionBase64 = toBase64(signedTransaction.serialize());
+        const signedTransactionBase64 = toBase64(serializeLegacyVersionedTransaction(signedTransaction));
 
         setRunState((current) => ({
           ...current,

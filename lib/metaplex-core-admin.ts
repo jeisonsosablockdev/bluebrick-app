@@ -1,11 +1,18 @@
 import { createCollectionV2, createV2, mplCore } from "@metaplex-foundation/mpl-core";
 import { createNoopSigner, generateSigner, publicKey, signerIdentity, type TransactionBuilder, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
-import { Connection, VersionedTransaction } from "@solana/web3.js";
 
 import { parseCollectionName } from "@/lib/admin/asset-compatibility-validation";
 import { getSolanaRpcUrl } from "@/lib/solana";
+import {
+  convertUmiTransactionToLegacyVersionedTransaction,
+  createKitRpcConnection,
+  deserializeLegacyVersionedTransaction,
+  getSignatureStatusWithKitRpc,
+  sendRawTransactionWithKitRpc,
+  serializeLegacyVersionedTransaction,
+  type LegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 const MAX_TOTAL_ITEMS = 25;
 const MAX_SUBMIT_TRANSACTIONS = 30;
@@ -13,6 +20,8 @@ const MAX_NAME_LENGTH = 64;
 const MAX_URI_LENGTH = 300;
 const MINT_NETWORK = "devnet" as const;
 const ALLOWED_URI_PROTOCOLS = new Set(["https:", "ipfs:"]);
+const SIGNATURE_CONFIRM_TIMEOUT_MS = 120_000;
+const SIGNATURE_CONFIRM_POLL_MS = 1_500;
 
 type PreparedTransactionKind = "collection" | "asset";
 
@@ -212,8 +221,8 @@ function createServerUmi(payerPublicKey: string): Umi {
 
 function serializeSignedBuilderTransaction(transactionBuilder: TransactionBuilder, umi: Umi): Promise<string> {
   return transactionBuilder.buildAndSign(umi).then((transaction) => {
-    const web3Transaction = toWeb3JsTransaction(transaction);
-    return Buffer.from(web3Transaction.serialize()).toString("base64");
+    const legacyTransaction = convertUmiTransactionToLegacyVersionedTransaction(transaction);
+    return Buffer.from(serializeLegacyVersionedTransaction(legacyTransaction)).toString("base64");
   });
 }
 
@@ -302,7 +311,7 @@ export async function prepareMetaplexCoreBatch(rawInput: PrepareMetaplexCoreBatc
   };
 }
 
-function parseSignedTransaction(transactionBase64: string): VersionedTransaction {
+function parseSignedTransaction(transactionBase64: string): LegacyVersionedTransaction {
   let rawTransaction: Buffer;
 
   try {
@@ -316,30 +325,56 @@ function parseSignedTransaction(transactionBase64: string): VersionedTransaction
   }
 
   try {
-    return VersionedTransaction.deserialize(rawTransaction);
+    return deserializeLegacyVersionedTransaction(rawTransaction);
   } catch {
     throw new MetaplexCoreAdminInputError("Signed transaction payload is invalid.");
   }
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForConfirmedSignature(
+  rpc: ReturnType<typeof createKitRpcConnection>,
+  rawSignature: string,
+  label: string
+): Promise<void> {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < SIGNATURE_CONFIRM_TIMEOUT_MS) {
+    const status = await getSignatureStatusWithKitRpc(rpc, rawSignature, { searchTransactionHistory: true });
+
+    if (status?.err) {
+      throw new Error(`Transaction failed for ${label}: ${JSON.stringify(status.err)}`);
+    }
+
+    if (status?.confirmationStatus === "confirmed" || status?.confirmationStatus === "finalized") {
+      return;
+    }
+
+    await sleep(SIGNATURE_CONFIRM_POLL_MS);
+  }
+
+  throw new Error(`Timed out waiting for transaction confirmation for ${label}: ${rawSignature}`);
+}
+
 export async function submitMetaplexCoreTransactions(rawInput: SubmitSignedTransactionsInput): Promise<SubmittedMetaplexCoreTransaction[]> {
   const signedTransactions = validateSubmitInput(rawInput);
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
   const results: SubmittedMetaplexCoreTransaction[] = [];
 
   for (const item of signedTransactions) {
     const transaction = parseSignedTransaction(item.transactionBase64);
-    const signature = await connection.sendRawTransaction(transaction.serialize(), {
+    const signature = await sendRawTransactionWithKitRpc(rpc, serializeLegacyVersionedTransaction(transaction), {
       skipPreflight: true,
       maxRetries: 3
     });
-    const confirmation = await connection.confirmTransaction(signature, "confirmed");
-
-    if (confirmation.value.err) {
-      throw new Error(
-        `Transaction failed for ${item.kind}${item.serial === null ? "" : ` #${item.serial}`}: ${JSON.stringify(confirmation.value.err)}`
-      );
-    }
+    await waitForConfirmedSignature(
+      rpc,
+      signature,
+      `${item.kind}${item.serial === null ? "" : ` #${item.serial}`}`
+    );
 
     results.push({
       kind: item.kind,
