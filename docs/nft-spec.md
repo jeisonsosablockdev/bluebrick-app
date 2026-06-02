@@ -1,6 +1,21 @@
 # NFT Spec
 
-Last Updated: 2026-06-01
+Last Updated: 2026-06-02
+
+## BRI-170 Marketplace Owner-Freeze Mint Contract
+- `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
+- `/marketplace/[id]` is the canonical user mint surface for BRIDS NFT purchases.
+- Every marketplace mint batch must install asset-level MPL Core `FreezeDelegate` with authority `Owner` for each `expectedAssetAddress`.
+- `PermanentFreezeDelegate` on a collection is not equivalent to asset-level owner-managed `FreezeDelegate`; Stake / Unstake support requires the asset-level plugin with `Owner` authority.
+- The buyer wallet must sign the mint/plugin lifecycle because `FreezeDelegate` is owner-managed.
+- `/api/purchase/submit` must confirm the submitted transaction and verify each expected asset on-chain before treating the purchase as confirmed:
+  - asset exists
+  - asset owner equals the buyer wallet
+  - asset collection equals the expected BRIDS collection
+  - `freezeDelegate.authority` is `Owner`
+- `purchase_attempts` stores expected/verified asset addresses plus asset-verification status as attempt evidence. This does not replace on-chain truth and does not create a staking ledger.
+- `GET /api/protected/stake/assets` and stake prepare logic must reject assets that have no `FreezeDelegate` or whose `FreezeDelegate` authority is not `Owner`.
+- The legacy admin Core Candy Machine mint-prepare route is blocked (`410 Gone`) to prevent incomplete or admin-owned mint paths from being used as product flow.
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
@@ -98,17 +113,19 @@ Last Updated: 2026-06-01
   - Backend prepares mint transaction pre-signed by mandatory Candy Guard `thirdPartySigner`.
   - User signs with Phantom wallet client-side.
   - Backend validates payer + prepared message match before sending transaction on devnet.
+  - Marketplace mint transactions also include the owner-managed `FreezeDelegate` plugin lifecycle for every expected asset in the batch.
 - Error contract exposed to UI:
   - `MINT_NOT_STARTED`, `SOLD_OUT`, `PRICE_CHANGED`, `INVALID_QUANTITY`, `INSUFFICIENT_FUNDS`, `INVALID_CHALLENGE`, `RATE_LIMITED`, `TRANSACTION_FAILED`.
 - Traceability persistence:
   - `purchase_attempts` stores wallet, candy machine, challenge linkage (`challenge_id`), client IP, idempotency fields (`idempotency_key`, `idempotency_expires_at`), tx signature, status, and error code/message.
+  - `purchase_attempts` also stores `expected_asset_addresses`, `verified_asset_addresses`, `asset_verification_status`, `asset_verification_error`, and `asset_verification_checked_at` for post-submit asset verification evidence.
   - `purchase_flow_events` stores request timeline (`quote/challenge/prepare/submit`, `request/success/error`) correlated by `flow_id` for UI E2E debugging.
   - State machine: `created -> prepared -> submitted -> confirmed | failed`.
   - Prepare emits server-side `idempotencyKey` (UUIDv7, TTL 5 min).
   - Submit requires `attemptId + idempotencyKey`, enforces DB dedupe (`wallet_public_key + idempotency_key`) and uses row lock to prevent duplicate sends under retry/double-click races.
   - `purchase_challenges` stores challenge nonce/message/TTL and consumption/failure state.
   - `purchase_rate_limit_events` stores rolling rate-limit event evidence by endpoint + wallet + IP.
-  - Submit returns initial `submitted` state; final confirmation/reconciliation is handled server-side in later EPIC stories.
+  - Submit now confirms the transaction and verifies every expected asset before returning `confirmed`; missing assets, wrong owner/collection, or missing `FreezeDelegate Owner` leave the attempt failed/recoverable.
   - Reusable implementation playbook: `docs/purchase-tracing.md`.
 
 ## Mint Authority Model
@@ -151,7 +168,8 @@ Last Updated: 2026-06-01
 - Metadata PDA seeds:
   - Metaplex Core stores metadata in the same Core asset account (no separate Metaplex Token Metadata PDA in this flow).
 - Metadata owner validation:
-  - Owner is set to the admin wallet at mint time (`owner: payerPublicKey` in `createV2`).
+  - Admin-created operational mint helpers may set owner to the admin payer, but they are not the canonical user marketplace mint flow.
+  - Marketplace purchase mint sets owner to the buyer wallet and must attach `FreezeDelegate` with `Owner` authority for Stake / Unstake eligibility.
 - Update authority validation:
   - Collection is created with `updateAuthority = admin wallet`.
   - Assets minted into a collection do not set per-asset `updateAuthority` (Core rejects setting both collection + update authority).
