@@ -148,6 +148,11 @@ Despues de `/api/purchase/submit`, el backend debe:
 - validar `FreezeDelegate Owner`;
 - dejar intento en estado recuperable/fallido si falta cualquier asset o plugin.
 
+Persistencia minima:
+
+- `purchase_attempts` debe guardar `expected_asset_addresses`, `verified_asset_addresses`, `asset_verification_status`, `asset_verification_error` y `asset_verification_checked_at`.
+- Estos campos son evidencia del intento de compra y su verificacion; no reemplazan la verdad on-chain ni crean un ledger de staking.
+
 Gates:
 
 - tests del flujo marketplace
@@ -163,6 +168,7 @@ Responsabilidad:
 - eliminar codigo que sugiera que `/admin/assets/new` mintea NFTs finales del usuario
 - retirar rutas viejas que puedan crear NFTs incompletos o documentarlas como boundary temporal estrictamente bloqueado
 - clasificar `app/api/admin/core-candy-machine/mint/prepare/route.ts`; si produce NFTs owner=admin, no puede ser flujo de producto para compradores
+- si la ruta se conserva temporalmente, debe responder bloqueada (`410 Gone`) para admins autenticados y no preparar transacciones de mint
 - impedir que `prepareCoreCandyMachineMint` sea copiado como solucion marketplace si conserva `owner: payerSigner.publicKey`
 - encapsular o eliminar imports de `@solana/web3.js` dentro del scope tocado
 - asegurar que el camino canonico no dependa de una ruta alternativa que salte el plugin owner freeze
@@ -418,6 +424,11 @@ After `/api/purchase/submit`, the backend must:
 - validate `FreezeDelegate Owner`;
 - leave the attempt recoverable/failed if any asset or plugin is missing.
 
+Minimal persistence:
+
+- `purchase_attempts` must store `expected_asset_addresses`, `verified_asset_addresses`, `asset_verification_status`, `asset_verification_error`, and `asset_verification_checked_at`.
+- These fields are evidence for the purchase attempt and its verification; they do not replace on-chain truth or create a staking ledger.
+
 Gates:
 
 - marketplace flow tests
@@ -433,6 +444,7 @@ Responsibility:
 - remove code that suggests `/admin/assets/new` mints final user NFTs
 - remove old routes that can create incomplete NFTs or document them as strictly blocked temporary boundaries
 - classify `app/api/admin/core-candy-machine/mint/prepare/route.ts`; if it produces NFTs with owner=admin, it cannot be a product flow for buyers
+- if the route is temporarily kept, it must respond as blocked (`410 Gone`) for authenticated admins and must not prepare mint transactions
 - prevent `prepareCoreCandyMachineMint` from being copied as the marketplace solution if it keeps `owner: payerSigner.publicKey`
 - encapsulate or remove `@solana/web3.js` imports inside the touched scope
 - ensure the canonical path does not depend on an alternative route that skips the owner-freeze plugin

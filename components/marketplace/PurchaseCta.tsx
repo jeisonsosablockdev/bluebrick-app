@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 import { getSolscanTransactionUrl } from "@/lib/solana";
 
 type PurchaseCtaProps = {
@@ -78,7 +81,7 @@ type SubmitResponse = {
   ok?: boolean;
   data?: {
     attemptId: string;
-    status: "submitted";
+    status: "submitted" | "confirmed";
     txSignature: string;
     submittedAt: string;
   };
@@ -561,9 +564,9 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
         throw new Error(toBusinessMessage(prepared.error?.code, prepared.error?.message, prepared.error?.details));
       }
 
-      const unsignedTx = VersionedTransaction.deserialize(fromBase64(prepared.data.transactionBase64));
+      const unsignedTx = deserializeLegacyVersionedTransaction(fromBase64(prepared.data.transactionBase64));
       const signedTx = await signTransaction(unsignedTx);
-      const signedTxBase64 = toBase64(signedTx.serialize());
+      const signedTxBase64 = toBase64(serializeLegacyVersionedTransaction(signedTx));
 
       const submitResponse = await fetch("/api/purchase/submit", {
         method: "POST",

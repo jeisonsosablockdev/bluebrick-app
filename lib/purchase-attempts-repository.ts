@@ -5,6 +5,7 @@ import type { PoolClient } from "pg";
 import { withDbClient } from "@/lib/db/pool";
 
 export type PurchaseAttemptStatus = "created" | "prepared" | "submitted" | "confirmed" | "failed";
+export type PurchaseAttemptAssetVerificationStatus = "not_required" | "pending" | "verified" | "failed";
 
 export type PurchaseAttemptRecord = {
   id: string;
@@ -19,6 +20,11 @@ export type PurchaseAttemptRecord = {
   preparedPriceLamports: number | null;
   cacheUpdatedAt: string | null;
   preparedTxMessageBase64: string | null;
+  expectedAssetAddresses: string[];
+  verifiedAssetAddresses: string[];
+  assetVerificationStatus: PurchaseAttemptAssetVerificationStatus;
+  assetVerificationError: string | null;
+  assetVerificationCheckedAt: string | null;
   idempotencyKey: string;
   idempotencyExpiresAt: string;
   preparedAt: string | null;
@@ -58,6 +64,11 @@ type PurchaseAttemptRow = {
   prepared_price_lamports: string | number | null;
   cache_updated_at: string | Date | null;
   prepared_tx_message_b64: string | null;
+  expected_asset_addresses: unknown;
+  verified_asset_addresses: unknown;
+  asset_verification_status: PurchaseAttemptAssetVerificationStatus;
+  asset_verification_error: string | null;
+  asset_verification_checked_at: string | Date | null;
   idempotency_key: string;
   idempotency_expires_at: string | Date;
   prepared_at: string | Date | null;
@@ -89,6 +100,11 @@ const PURCHASE_ATTEMPT_SELECT_COLUMNS = `
   prepared_price_lamports,
   cache_updated_at,
   prepared_tx_message_b64,
+  expected_asset_addresses,
+  verified_asset_addresses,
+  asset_verification_status,
+  asset_verification_error,
+  asset_verification_checked_at,
   idempotency_key,
   idempotency_expires_at,
   prepared_at,
@@ -132,6 +148,35 @@ function toNumber(value: string | number | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeStringArray(value: unknown): string[] {
+  const parsed = typeof value === "string" ? JSON.parse(value) as unknown : value;
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+
+  const normalized = new Set<string>();
+  for (const item of parsed) {
+    if (typeof item !== "string") {
+      continue;
+    }
+
+    const trimmed = item.trim();
+    if (trimmed) {
+      normalized.add(trimmed);
+    }
+  }
+
+  return Array.from(normalized);
+}
+
+function safeNormalizeStringArray(value: unknown): string[] {
+  try {
+    return normalizeStringArray(value);
+  } catch {
+    return [];
+  }
+}
+
 function mapRow(row: PurchaseAttemptRow): PurchaseAttemptRecord {
   const createdAt = toIso(row.created_at);
   const updatedAt = toIso(row.updated_at);
@@ -149,6 +194,11 @@ function mapRow(row: PurchaseAttemptRow): PurchaseAttemptRecord {
     preparedPriceLamports: toNumber(row.prepared_price_lamports),
     cacheUpdatedAt: toIso(row.cache_updated_at),
     preparedTxMessageBase64: row.prepared_tx_message_b64,
+    expectedAssetAddresses: safeNormalizeStringArray(row.expected_asset_addresses),
+    verifiedAssetAddresses: safeNormalizeStringArray(row.verified_asset_addresses),
+    assetVerificationStatus: row.asset_verification_status ?? "not_required",
+    assetVerificationError: row.asset_verification_error,
+    assetVerificationCheckedAt: toIso(row.asset_verification_checked_at),
     idempotencyKey: row.idempotency_key,
     idempotencyExpiresAt: toIso(row.idempotency_expires_at) ?? new Date().toISOString(),
     preparedAt: toIso(row.prepared_at),
@@ -261,6 +311,11 @@ export async function createPurchaseAttempt(input: CreatePurchaseAttemptInput): 
     preparedPriceLamports: null,
     cacheUpdatedAt: null,
     preparedTxMessageBase64: null,
+    expectedAssetAddresses: [],
+    verifiedAssetAddresses: [],
+    assetVerificationStatus: "not_required",
+    assetVerificationError: null,
+    assetVerificationCheckedAt: null,
     idempotencyKey: input.idempotencyKey,
     idempotencyExpiresAt: input.idempotencyExpiresAt,
     preparedAt: null,
@@ -339,8 +394,13 @@ export async function markPurchaseAttemptPrepared(input: {
   preparedPriceLamports: number | null;
   cacheUpdatedAt: string;
   preparedTxMessageBase64: string;
+  expectedAssetAddresses?: string[];
 }, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
   const normalizedPreparedPriceLamports = normalizePreparedPriceLamports(input.preparedPriceLamports);
+  const expectedAssetAddresses = safeNormalizeStringArray(input.expectedAssetAddresses ?? []);
+  const assetVerificationStatus: PurchaseAttemptAssetVerificationStatus = expectedAssetAddresses.length > 0
+    ? "pending"
+    : "not_required";
 
   if (!isPurchaseAttemptsDatabaseConfigured()) {
     const found = inMemoryAttempts.get(input.id);
@@ -357,6 +417,11 @@ export async function markPurchaseAttemptPrepared(input: {
       preparedPriceLamports: normalizedPreparedPriceLamports,
       cacheUpdatedAt: input.cacheUpdatedAt,
       preparedTxMessageBase64: input.preparedTxMessageBase64,
+      expectedAssetAddresses,
+      verifiedAssetAddresses: [],
+      assetVerificationStatus,
+      assetVerificationError: null,
+      assetVerificationCheckedAt: null,
       preparedAt: new Date().toISOString(),
       status: "prepared",
       errorCode: null,
@@ -375,6 +440,11 @@ export async function markPurchaseAttemptPrepared(input: {
          prepared_price_lamports = $2,
          cache_updated_at = $3,
          prepared_tx_message_b64 = $4,
+         expected_asset_addresses = $5::jsonb,
+         verified_asset_addresses = '[]'::jsonb,
+         asset_verification_status = $6,
+         asset_verification_error = NULL,
+         asset_verification_checked_at = NULL,
          prepared_at = NOW(),
          status = 'prepared',
          error_code = NULL,
@@ -382,7 +452,14 @@ export async function markPurchaseAttemptPrepared(input: {
        WHERE id = $1
          AND status = 'created'
        RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
-      [input.id, normalizedPreparedPriceLamports, input.cacheUpdatedAt, input.preparedTxMessageBase64]
+      [
+        input.id,
+        normalizedPreparedPriceLamports,
+        input.cacheUpdatedAt,
+        input.preparedTxMessageBase64,
+        JSON.stringify(expectedAssetAddresses),
+        assetVerificationStatus
+      ]
     );
 
     if (updated) {
@@ -552,6 +629,11 @@ export async function markPurchaseAttemptFailed(input: {
     const updated: PurchaseAttemptRecord = {
       ...found,
       status: "failed",
+      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
+      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
+      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
+        ? new Date().toISOString()
+        : found.assetVerificationCheckedAt,
       errorCode: input.errorCode,
       errorMessage: input.errorMessage,
       updatedAt: new Date().toISOString()
@@ -566,6 +648,18 @@ export async function markPurchaseAttemptFailed(input: {
       `UPDATE purchase_attempts
        SET
          status = 'failed',
+         asset_verification_status = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
+           ELSE asset_verification_status
+         END,
+         asset_verification_error = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $3
+           ELSE asset_verification_error
+         END,
+         asset_verification_checked_at = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
+           ELSE asset_verification_checked_at
+         END,
          error_code = $2,
          error_message = $3
        WHERE id = $1
@@ -590,11 +684,15 @@ export async function markPurchaseAttemptFailed(input: {
 
 export async function markPurchaseAttemptConfirmed(input: {
   signature: string;
+  verifiedAssetAddresses?: string[];
 }, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
   const signature = typeof input.signature === "string" ? input.signature.trim() : "";
   if (!signature) {
     return null;
   }
+  const verifiedAssetAddresses = typeof input.verifiedAssetAddresses === "undefined"
+    ? null
+    : safeNormalizeStringArray(input.verifiedAssetAddresses);
 
   if (!isPurchaseAttemptsDatabaseConfigured()) {
     const found = await getPurchaseAttemptBySignature({ signature });
@@ -610,6 +708,10 @@ export async function markPurchaseAttemptConfirmed(input: {
       ...found,
       status: "confirmed",
       confirmedAt: found.confirmedAt ?? new Date().toISOString(),
+      verifiedAssetAddresses: verifiedAssetAddresses ?? found.verifiedAssetAddresses,
+      assetVerificationStatus: verifiedAssetAddresses ? "verified" : found.assetVerificationStatus,
+      assetVerificationError: verifiedAssetAddresses ? null : found.assetVerificationError,
+      assetVerificationCheckedAt: verifiedAssetAddresses ? new Date().toISOString() : found.assetVerificationCheckedAt,
       errorCode: null,
       errorMessage: null,
       updatedAt: new Date().toISOString()
@@ -625,12 +727,25 @@ export async function markPurchaseAttemptConfirmed(input: {
        SET
          status = 'confirmed',
          confirmed_at = COALESCE(confirmed_at, NOW()),
+         verified_asset_addresses = COALESCE($2::jsonb, verified_asset_addresses),
+         asset_verification_status = CASE
+           WHEN $2::jsonb IS NULL THEN asset_verification_status
+           ELSE 'verified'
+         END,
+         asset_verification_error = CASE
+           WHEN $2::jsonb IS NULL THEN asset_verification_error
+           ELSE NULL
+         END,
+         asset_verification_checked_at = CASE
+           WHEN $2::jsonb IS NULL THEN asset_verification_checked_at
+           ELSE NOW()
+         END,
          error_code = NULL,
          error_message = NULL
        WHERE tx_signature = $1
          AND status IN ('submitted', 'confirmed')
        RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
-      [signature]
+      [signature, verifiedAssetAddresses === null ? null : JSON.stringify(verifiedAssetAddresses)]
     );
 
     if (updated) {
@@ -676,6 +791,11 @@ export async function markPurchaseAttemptFailedBySignature(input: {
     const updated: PurchaseAttemptRecord = {
       ...found,
       status: "failed",
+      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
+      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
+      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
+        ? new Date().toISOString()
+        : found.assetVerificationCheckedAt,
       errorCode: input.errorCode,
       errorMessage: input.errorMessage,
       updatedAt: new Date().toISOString()
@@ -690,6 +810,18 @@ export async function markPurchaseAttemptFailedBySignature(input: {
       `UPDATE purchase_attempts
        SET
          status = 'failed',
+         asset_verification_status = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
+           ELSE asset_verification_status
+         END,
+         asset_verification_error = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $3
+           ELSE asset_verification_error
+         END,
+         asset_verification_checked_at = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
+           ELSE asset_verification_checked_at
+         END,
          error_code = $2,
          error_message = $3
        WHERE tx_signature = $1

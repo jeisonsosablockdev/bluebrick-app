@@ -1,11 +1,11 @@
 import { fetchAsset, fetchCollection, freezeAsset, isFrozen, mplCore, thawAsset } from "@metaplex-foundation/mpl-core";
 import { createNoopSigner, publicKey, signerIdentity } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 
 import { withDbClient } from "@/lib/db/pool";
 import { DasClient } from "@/lib/das-client";
 import {
+  convertUmiTransactionToLegacyVersionedTransaction,
   createLegacyConnection,
   deserializeLegacyVersionedTransaction,
   getLegacyTransactionPayer,
@@ -23,6 +23,7 @@ import {
   markStakeActionAttemptSubmitted,
   type StakeProductAction
 } from "@/lib/stake-attempts-repository";
+import { hasOwnerFreezeDelegatePlugin } from "@/lib/mpl-core-freeze-delegate";
 
 export type StakeVisibleState =
   | "disabled_unsupported"
@@ -351,7 +352,7 @@ async function inspectBridsStakeAsset(input: {
   const asset = await fetchAsset(umi, publicKey(assetAddress));
   const collection = await fetchCollection(umi, publicKey(collectionAddress)).catch(() => null);
   const frozen = isFrozen(asset, collection ?? undefined);
-  const supportsFreeze = Boolean(asset.freezeDelegate);
+  const supportsFreeze = hasOwnerFreezeDelegatePlugin(asset);
 
   return {
     inventory: linkedInventory,
@@ -412,7 +413,7 @@ export async function listStakeAssetsForWallet(walletPublicKey: string): Promise
     const latestAttempt = latestAttemptByAsset.get(asset.assetAddress) ?? null;
     const hasPendingSync = Boolean(latestAttempt && latestAttempt.status === "submitted");
     const visibleState = resolveVisibleState({
-      supportsFreeze: Boolean(onchainAsset.freezeDelegate),
+      supportsFreeze: hasOwnerFreezeDelegatePlugin(onchainAsset),
       isFrozenState: frozen,
       hasPendingSync
     });
@@ -473,7 +474,7 @@ export async function prepareStakeAction(input: {
       });
 
   const built = await builder.buildWithLatestBlockhash(umi);
-  const web3Transaction = toWeb3JsTransaction(built as never);
+  const web3Transaction = convertUmiTransactionToLegacyVersionedTransaction(built);
   const transactionBase64 = toBase64(web3Transaction.serialize());
   const preparedTxMessageBase64 = toBase64(web3Transaction.message.serialize());
   const idempotencyKey = generateUuidV7();
