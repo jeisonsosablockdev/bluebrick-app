@@ -179,7 +179,7 @@ function resolveAuthorityFallbacks(snapshot: unknown): Pick<
   };
 }
 
-function resolveGuardFallbacks(snapshot: unknown): AdminCollectionBlockchainPanel["guards"] {
+async function resolveGuardFallbacks(snapshot: unknown): Promise<AdminCollectionBlockchainPanel["guards"]> {
   const record = asRecord(snapshot);
   const tokenPayment = asRecord(record.tokenPayment);
   const mintAddress = firstPresentAddress([
@@ -188,12 +188,15 @@ function resolveGuardFallbacks(snapshot: unknown): AdminCollectionBlockchainPane
     tokenPayment.mint,
     resolveUsdcMintAddress()
   ]);
+  const fallbackDestination = mintAddress
+    ? await deriveAssociatedTokenAddress(resolveUsdcPaymentRecipient(), mintAddress)
+    : null;
   const destination = firstPresentAddress([
     record.tokenPaymentDestination,
     record.token_payment_destination,
     tokenPayment.destination,
     tokenPayment.destinationAta,
-    mintAddress ? deriveAssociatedTokenAddress(resolveUsdcPaymentRecipient(), mintAddress) : null
+    fallbackDestination
   ]);
 
   return {
@@ -337,7 +340,7 @@ export async function getAdminCollectionBlockchainPanel(
             thirdPartySigner: resolveThirdPartySignerAddress(),
             freezeDelegate: resolveFreezeDelegateAddress()
           },
-          guards: resolveGuardFallbacks({})
+          guards: await resolveGuardFallbacks({})
         };
       }
 
@@ -345,7 +348,7 @@ export async function getAdminCollectionBlockchainPanel(
 
       const authorityByRole = new Map(authorityRows.map((authority) => [authority.role, authority.authority_pubkey]));
       const authorityFallbacks = resolveAuthorityFallbacks(snapshotRecord);
-      const guardFallbacks = resolveGuardFallbacks(snapshotRecord);
+      const guardFallbacks = await resolveGuardFallbacks(snapshotRecord);
       const appdata = resolveAppdata(snapshotRecord);
 
       return {
@@ -372,7 +375,7 @@ export async function getAdminCollectionBlockchainPanel(
         thirdPartySigner: resolveThirdPartySignerAddress(),
         freezeDelegate: resolveFreezeDelegateAddress()
       },
-      guards: resolveGuardFallbacks({}),
+      guards: await resolveGuardFallbacks({}),
       appdata: buildEmptyAppdata()
     };
   }

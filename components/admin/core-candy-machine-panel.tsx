@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { convertUsdToSol, usdToUsdcAtomic } from "@/lib/admin/pricing";
 import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 type PreparedTransaction = {
   kind:
@@ -223,9 +226,9 @@ async function signPreparedTransaction(
   signTransaction: NonNullable<ReturnType<typeof useWallet>["signTransaction"]>,
   transactionBase64: string
 ): Promise<string> {
-  const unsigned = VersionedTransaction.deserialize(fromBase64(transactionBase64));
+  const unsigned = deserializeLegacyVersionedTransaction(fromBase64(transactionBase64));
   const signed = await signTransaction(unsigned);
-  return toBase64(signed.serialize());
+  return toBase64(serializeLegacyVersionedTransaction(signed));
 }
 
 export function CoreCandyMachinePanel({
@@ -457,10 +460,10 @@ export function CoreCandyMachinePanel({
   ): Promise<string[]> {
     if (signAllTransactions) {
       const unsignedTransactions = preparedTransactions.map((transaction) =>
-        VersionedTransaction.deserialize(fromBase64(transaction.transactionBase64))
+        deserializeLegacyVersionedTransaction(fromBase64(transaction.transactionBase64))
       );
       const signedTransactions = await signAllTransactions(unsignedTransactions);
-      return signedTransactions.map((signedTransaction) => toBase64(signedTransaction.serialize()));
+      return signedTransactions.map((signedTransaction) => toBase64(serializeLegacyVersionedTransaction(signedTransaction)));
     }
 
     const signedTransactionsBase64: string[] = [];
