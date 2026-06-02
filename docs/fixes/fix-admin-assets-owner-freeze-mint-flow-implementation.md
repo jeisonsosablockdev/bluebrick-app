@@ -41,8 +41,9 @@ Slices:
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s01-spec
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contract
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -160,7 +161,33 @@ Gates:
 - tests de estado UI para soportado/no soportado
 - `npm run validate`
 
-## S04 - Cleanup de rutas y codigo huerfano
+## S04 - Marketplace purchase Kit RPC boundary
+
+Responsabilidad:
+
+- migrar `lib/purchase-service.ts` para que el submit y la confirmacion de compra marketplace usen `@solana/kit` como frontera RPC canonica
+- reemplazar `createLegacyConnection` por `createKitRpcConnection`
+- reemplazar `sendLegacyVersionedTransaction` por `sendRawTransactionWithKitRpc`
+- reemplazar `getLegacySignatureStatus` por `getSignatureStatusWithKitRpc`
+- mantener `VersionedTransaction` solo como compatibilidad temporal encapsulada en `lib/solana-kit/compat/*`
+- no cambiar el contrato funcional de compra, challenge, firma de wallet ni verificacion post-submit
+- no introducir imports directos de `@solana/web3.js` en rutas, servicios o componentes de compra marketplace
+
+Pruebas primero:
+
+- extender la prueba de frontera para que falle si `lib/purchase-service.ts` vuelve a usar `createLegacyConnection`
+- extender la prueba de frontera para que falle si `lib/purchase-service.ts` vuelve a usar `sendLegacyVersionedTransaction`
+- extender la prueba de frontera para que falle si `lib/purchase-service.ts` vuelve a usar `getLegacySignatureStatus`
+- mantener pruebas del flujo de compra marketplace y verificacion post-submit
+
+Gates:
+
+- `npx vitest run tests/lib/solana-kit-deploy-mint-boundary.test.ts`
+- `npx vitest run tests/lib/purchase-service.test.ts tests/api/purchase-submit-route.test.ts tests/components/marketplace-purchase*.test.ts`
+- `npm run typecheck`
+- `npm run validate`
+
+## S05 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -220,7 +247,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S05 - Verificacion, seguridad y cierre
+## S06 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -274,7 +301,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S05 mergeados en la rama de iniciativa.
+- S01-S06 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -327,8 +354,9 @@ Slices:
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s01-spec
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contract
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -446,7 +474,33 @@ Gates:
 - UI state tests for supported/unsupported
 - `npm run validate`
 
-## S04 - Legacy Route And Orphan-Code Cleanup
+## S04 - Marketplace Purchase Kit RPC Boundary
+
+Responsibility:
+
+- migrate `lib/purchase-service.ts` so marketplace purchase submit and confirmation use `@solana/kit` as the canonical RPC boundary
+- replace `createLegacyConnection` with `createKitRpcConnection`
+- replace `sendLegacyVersionedTransaction` with `sendRawTransactionWithKitRpc`
+- replace `getLegacySignatureStatus` with `getSignatureStatusWithKitRpc`
+- keep `VersionedTransaction` only as temporary compatibility encapsulated in `lib/solana-kit/compat/*`
+- do not change the functional purchase, challenge, wallet signature, or post-submit verification contract
+- do not introduce direct `@solana/web3.js` imports in marketplace purchase routes, services, or components
+
+Tests first:
+
+- extend the boundary test so it fails if `lib/purchase-service.ts` returns to `createLegacyConnection`
+- extend the boundary test so it fails if `lib/purchase-service.ts` returns to `sendLegacyVersionedTransaction`
+- extend the boundary test so it fails if `lib/purchase-service.ts` returns to `getLegacySignatureStatus`
+- keep marketplace purchase flow and post-submit verification tests
+
+Gates:
+
+- `npx vitest run tests/lib/solana-kit-deploy-mint-boundary.test.ts`
+- `npx vitest run tests/lib/purchase-service.test.ts tests/api/purchase-submit-route.test.ts tests/components/marketplace-purchase*.test.ts`
+- `npm run typecheck`
+- `npm run validate`
+
+## S05 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -506,7 +560,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S05 - Verification, Security, And Closure
+## S06 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -560,7 +614,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S05 merged into the initiative branch.
+- S01-S06 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.
