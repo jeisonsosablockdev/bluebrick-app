@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-06-01
+Last Updated: 2026-06-02
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
@@ -19,6 +19,21 @@ Last Updated: 2026-06-01
   - Helius stake webhook data is observational only
   - canonical RPC transaction validation is required before `freeze` / `unfreeze` history is persisted to the user-profile projection
   - persisted profile history is a read model for the protected profile and does not become the source of truth for NFT ownership or freeze state
+
+## BRI-170 Admin Asset Owner Freeze Mint Flow
+- The canonical `/admin/assets/new` mint lifecycle must produce BRIDS NFTs with asset-level `FreezeDelegate` using `Owner` authority before they are considered Stake / Unstake capable.
+- Collection-level `PermanentFreezeDelegate` remains a separate authority control and is not sufficient for owner-managed Stake / Unstake.
+- The admin Core Candy Machine transaction manifest is now the required audit surface for every lifecycle transaction:
+  - `create-collection`
+  - `create-candy-machine`
+  - `add-config-lines`
+  - `mint`
+  - `add-app-data-plugin`
+  - `write-app-data`
+  - `add-owner-freeze-plugin`
+- Manifest rows track transaction order, expected addresses, hashes of prepared/signed payloads, signatures, confirmation status, slot, and structured failure details.
+- The flow must not mark asset creation complete when owner freeze plugin evidence is missing or failed.
+- The implementation path must favor Solana Kit / framework-kit for the new canonical flow. Any unavoidable legacy boundary must be encapsulated and removed or documented during cleanup.
 
 ## BRI-10 Contextual hints in `/admin/assets/new`
 - The admin asset creation route now extends the existing `?` guidance pattern across non-location form fields.

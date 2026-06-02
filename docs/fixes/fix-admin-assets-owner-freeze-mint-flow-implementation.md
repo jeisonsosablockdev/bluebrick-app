@@ -106,6 +106,17 @@ Gates:
 - `npm test -- tests/lib/...`
 - `npm run validate:db`
 
+Estado del slice:
+
+- Migracion definida: `db/migrations/033_core_candy_machine_transaction_manifest.sql`
+- Repositorio definido: `lib/core-candy-machine-transaction-manifest-repository.ts`
+- Tests definidos primero:
+  - `tests/db/core-candy-machine-transaction-manifest-migration.test.ts`
+  - `tests/lib/core-candy-machine-transaction-manifest-repository.test.ts`
+- El manifest registra hashes de transacciones, no payloads completos, para reducir exposicion de datos firmados.
+- La idempotencia base queda en `UNIQUE (flow_id, tx_index)`.
+- La reconciliacion por firma queda protegida con indice unico parcial para `signature IS NOT NULL`.
+
 ## S03 - Flujo canonico admin
 
 Responsabilidad:
@@ -340,6 +351,17 @@ Gates:
 - `npm test -- tests/db/...`
 - `npm test -- tests/lib/...`
 - `npm run validate:db`
+
+Slice status:
+
+- Migration defined: `db/migrations/033_core_candy_machine_transaction_manifest.sql`
+- Repository defined: `lib/core-candy-machine-transaction-manifest-repository.ts`
+- Tests defined first:
+  - `tests/db/core-candy-machine-transaction-manifest-migration.test.ts`
+  - `tests/lib/core-candy-machine-transaction-manifest-repository.test.ts`
+- The manifest stores transaction hashes, not full payloads, to reduce signed-data exposure.
+- Base idempotency is `UNIQUE (flow_id, tx_index)`.
+- Signature reconciliation is protected with a partial unique index for `signature IS NOT NULL`.
 
 ## S03 - Canonical Admin Flow
 
