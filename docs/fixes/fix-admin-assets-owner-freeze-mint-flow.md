@@ -1,37 +1,35 @@
-# BRI-170 - Fix del flujo admin assets para owner freeze
+# BRI-170 - Fix del mint marketplace para owner freeze
 
 ## Espanol
 
 ## Resumen
 
-`BRI-170` corrige el flujo de `/admin/assets/new` para que los NFTs BRIDS minteados desde el flujo canonico reciban la capacidad `FreezeDelegate` con autoridad `Owner`, y para que cada transaccion critica quede trazable desde preparacion hasta confirmacion.
+`BRI-170` corrige el planteamiento del flujo de owner freeze para BRIDS NFTs.
 
-El problema detectado no es que MPL Core no soporte `freeze / unfreeze`. El problema es que el flujo visible de creacion de activos esta ejecutando el deploy/config de la Candy Machine, pero no esta conectando de forma canonica el ciclo posterior de mint + AppData + owner freeze plugin que ya existe parcialmente en codigo.
+La frontera correcta es:
+
+- `/admin/assets/new` crea y configura collections y Candy Machines.
+- `/marketplace/[id]` es donde los usuarios mintean NFTs desde esas Candy Machines.
+- El NFT que queda en la wallet del comprador debe recibir el plugin MPL Core `FreezeDelegate` con autoridad `Owner` durante el flujo de mint de marketplace.
+
+El error de diseno anterior era intentar cerrar el problema desde `/admin/assets/new`, como si esa superficie debiera completar el ciclo de mint de NFTs del usuario. Eso esta mal planteado: el admin no esta minteando los NFTs finales del usuario desde esa pantalla; esta creando la infraestructura de mint.
 
 ## Problema
 
-El usuario admin crea un activo desde `/admin/assets/new`.
+Un usuario puede mintear o poseer un NFT BRIDS valido, pero la UI de Stake / Unstake puede mostrarlo como `No soportado` si el asset no expone `FreezeDelegate` con autoridad `Owner`.
 
-El flujo actual prepara y envia:
+Ese estado es correcto desde la UI: si el asset no tiene el plugin real, el owner no puede ejecutar el freeze/unfreeze esperado para Stake / Unstake.
 
-- `create-collection`
-- `create-candy-machine`
-- `add-config-lines`
+La correccion no debe forzar a `/admin/assets/new` a mintear NFTs. La correccion debe garantizar que el flujo de mint de marketplace produzca assets con la capacidad correcta.
 
-Pero el plugin que Stake / Unstake necesita vive en otro camino:
+## Aclaracion sobre plugins MPL Core
 
-- `mint`
-- `add-app-data-plugin`
-- `write-app-data`
-- `add-owner-freeze-plugin`
+Hay dos conceptos diferentes que no deben mezclarse:
 
-Ese segundo camino existe en codigo, pero no esta integrado al flujo visible de `/admin/assets/new`. Como resultado, un NFT puede:
+- `PermanentFreezeDelegate` en la collection: delega una capacidad permanente a nivel de collection o autoridad configurada. Sirve para control administrativo/delegado, pero no significa que cada NFT tenga freeze/unfreeze manejado por su owner.
+- `FreezeDelegate` en el asset con autoridad `Owner`: es la capacidad que necesita Stake / Unstake para que el owner del NFT pueda congelar y descongelar su propio asset.
 
-- pertenecer a una collection BRIDS valida
-- estar en la wallet del usuario
-- aparecer en DAS como `MplCoreAsset`
-- no estar congelado
-- aun asi quedar como `No soportado` en Stake / Unstake porque no tiene `FreezeDelegate` con autoridad `Owner`
+Por eso, una collection BRIDS puede tener `PermanentFreezeDelegate` y aun asi un NFT individual puede seguir siendo `No soportado` si sus `plugins` estan vacios o no incluyen `FreezeDelegate` con autoridad `Owner`.
 
 ## Evidencia tecnica actual
 
@@ -50,106 +48,89 @@ Si el owner freeze plugin estuviera instalado, el asset deberia exponer un equiv
 plugins.freeze_delegate.authority.type: Owner
 ```
 
-La collection si puede tener `PermanentFreezeDelegate`, pero eso no equivale a que cada NFT tenga `FreezeDelegate` con autoridad `Owner`.
+El resultado `plugins: {}` explica por que Stake / Unstake lo muestra como `No soportado`.
 
-## Causa raiz
+## Causa raiz corregida
 
-La causa raiz es una separacion incompleta entre dos flujos:
+La causa raiz no es que `/admin/assets/new` no ejecute un mint completo.
 
-1. El flujo visible `deploy/prepare` crea collection, Candy Machine y config lines.
-2. El flujo `mint/prepare` prepara mint, AppData y owner freeze plugin.
+La causa raiz real es que el camino canonico donde el comprador mintea en `/marketplace/[id]` no esta garantizando que el asset recien creado reciba `FreezeDelegate` con autoridad `Owner`.
 
-La UI admin actual no garantiza que el segundo flujo se ejecute como parte del ciclo canonico que produce NFTs elegibles para Stake / Unstake.
+Tambien existe codigo parcial asociado a mint/admin, pero ese codigo no debe confundirse con el flujo real de compra/minteo del usuario.
 
-## Brecha de trazabilidad
+## Flujo canonico correcto
 
-La trazabilidad persistida actual tampoco es suficiente.
+El flujo correcto queda definido asi:
 
-La tabla `asset_mint_onchain_proofs` solo acepta estos `tx_kind`:
-
-- `create-collection`
-- `create-candy-machine`
-- `add-config-lines`
-- `mint`
-
-Pero un ciclo NFT completo tambien necesita auditar:
-
-- `add-app-data-plugin`
-- `write-app-data`
-- `add-owner-freeze-plugin`
-
-Sin un manifest transaccional mas completo, no podemos responder de forma estricta:
-
-- que transacciones se prepararon
-- cuales firmo la wallet
-- cuales se enviaron
-- cuales confirmaron
-- cual fallo y en que indice
-- si el owner freeze plugin quedo aplicado on-chain
-
-## Impacto
-
-El impacto es alto para producto porque Stake / Unstake depende de una capacidad on-chain real por NFT.
-
-El impacto tambien es alto para seguridad y auditoria porque el sistema no debe asumir que un NFT soporta freeze solo por pertenecer a una collection. Debe verificar el plugin real del asset.
+1. El admin usa `/admin/assets/new`.
+2. El sistema crea/configura la collection MPL Core.
+3. El sistema crea/configura la Candy Machine y sus config lines.
+4. El usuario entra a `/marketplace/[id]`.
+5. El usuario mintea desde la Candy Machine con su wallet.
+6. El asset minteado queda owned por la wallet del usuario.
+7. En ese mismo lifecycle de mint se adjunta `FreezeDelegate` con autoridad `Owner`.
+8. La UI de Stake / Unstake valida owner, collection y plugin real antes de habilitar acciones.
 
 ## Resultado esperado
 
-El flujo canonico debe producir NFTs con:
+Los NFTs BRIDS minteados por usuarios desde marketplace deben quedar con:
 
 - collection BRIDS valida
-- owner correcto
+- owner igual a la wallet compradora
 - metadata/Core asset correcto
-- `AppData` instalado y escrito cuando aplique
 - `FreezeDelegate` instalado con autoridad `Owner`
-- manifest persistente de todas las transacciones criticas
-- prueba final en devnet con firmas reales
+- estado inicial no congelado salvo que el producto defina otra regla explicita
+- trazabilidad suficiente para auditar preparacion, firma, envio, confirmacion y fallos
 
 ## Reglas estrictas
 
-- No se acepta un workaround manual de DB como solucion.
-- No se acepta evidencia simulada como prueba final blockchain.
-- No se debe dejar ruta vieja u orfana que permita crear NFTs incompletos.
+- No se acepta resolverlo con un override manual de DB.
+- No se acepta asumir soporte de freeze por pertenecer a una collection.
+- No se acepta confundir `PermanentFreezeDelegate` de collection con `FreezeDelegate Owner` del asset.
+- No se debe mover el mint del usuario a `/admin/assets/new`.
+- No se debe dejar ruta vieja u orfana que permita crear NFTs de usuario sin el plugin requerido.
 - No se debe introducir una dependencia dominante nueva de `@solana/web3.js`.
-- El nuevo flujo debe usar Solana Kit / framework-kit como camino canonico.
-- Si queda un boundary legacy inevitable, debe quedar encapsulado y eliminado o justificado en el slice de cleanup.
+- El camino nuevo debe favorecer Solana Kit / framework-kit; cualquier boundary legacy debe quedar encapsulado y justificado.
 
-## Codigo huerfano a auditar
+## Codigo a auditar
 
 Este fix debe revisar y clasificar:
 
-- `/api/admin/core-candy-machine/deploy/prepare`
-- `/api/admin/core-candy-machine/mint/prepare`
-- `/api/admin/core-candy-machine/submit`
-- `CoreCandyMachinePanel`
-- `MintOrchestratorSigningPanel`
-- helpers de serializacion/transaccion en `lib/core-candy-machine-admin.ts`
-- imports y usos de `@solana/web3.js`
+- flujo de creacion/configuracion en `/admin/assets/new`
+- flujo de mint/compra en `/marketplace/[id]`
+- servicios de purchase/mint que construyen transacciones MPL Core
+- endpoints admin de Core Candy Machine que puedan estar huerfanos o ser solo dev/ops
+- helpers de serializacion/transaccion relacionados con Candy Machine y mint
+- imports y usos de `@solana/web3.js` dentro del scope tocado
 
 Cada pieza debe terminar en uno de estos estados:
 
 - parte del flujo canonico
 - reemplazada por el flujo canonico
 - eliminada
-- documentada como boundary temporal estrictamente encapsulado
+- boundary temporal documentado y encapsulado
 
 ## Preguntas resueltas
+
+### `/admin/assets/new` debe mintear los NFTs del usuario?
+
+No. Esa pantalla crea y configura Candy Machines. El mint real del usuario ocurre en `/marketplace/[id]`.
 
 ### La collection tiene freeze?
 
 Puede tener `PermanentFreezeDelegate`, pero eso no habilita owner-managed Stake / Unstake para cada NFT.
 
-### El asset tiene `FreezeDelegate Authority: Owner`?
+### El asset necesita `FreezeDelegate Authority: Owner`?
 
-No, el asset auditado no lo tiene. DAS reporta `plugins: {}`.
+Si. Stake / Unstake depende del plugin real del asset, no solo de la collection.
 
-### El codigo tiene una funcion que prepara ese plugin?
+### Si el asset tiene `plugins: {}`, es soportado?
 
-Si. `prepareCoreCandyMachineMint` prepara `add-owner-freeze-plugin`.
+No. Debe mostrarse como `No soportado` hasta que exista un asset-level `FreezeDelegate` con autoridad `Owner`.
 
-### Esta conectado al flujo visible de `/admin/assets/new`?
+### Donde debe corregirse el bug principal?
 
-No de forma canonica. Ese es el bug que se corrige.
+En el flujo de mint de marketplace, porque alli nace el NFT que queda en la wallet del comprador.
 
 ## Fuera de alcance
 
@@ -157,40 +138,39 @@ No de forma canonica. Ese es el bug que se corrige.
 - Rotacion de autoridades.
 - Cambios al programa Anchor notarial.
 - Reglas economicas de distribucion.
-- Reprocesamiento historico automatico de NFTs ya creados sin plugin.
+- Reprocesamiento automatico de NFTs historicos ya minteados sin plugin.
+- Trasladar el mint de usuario a la pantalla admin.
 
 ## English
 
 ## Summary
 
-`BRI-170` fixes the `/admin/assets/new` flow so BRIDS NFTs minted through the canonical path receive the `FreezeDelegate` capability with `Owner` authority, and every critical transaction is traceable from preparation through confirmation.
+`BRI-170` corrects the owner-freeze flow framing for BRIDS NFTs.
 
-The issue is not that MPL Core lacks `freeze / unfreeze` support. The issue is that the visible asset creation flow runs Candy Machine deploy/config, but does not canonically connect the later mint + AppData + owner freeze plugin cycle that already exists partially in code.
+The correct boundary is:
+
+- `/admin/assets/new` creates and configures collections and Candy Machines.
+- `/marketplace/[id]` is where users mint NFTs from those Candy Machines.
+- The NFT that lands in the buyer wallet must receive the MPL Core `FreezeDelegate` plugin with `Owner` authority during the marketplace mint flow.
+
+The previous design mistake was trying to close the issue from `/admin/assets/new`, as if that surface should complete the user's NFT mint lifecycle. That is incorrectly framed: the admin is not minting the final user NFTs from that screen; the admin is creating the mint infrastructure.
 
 ## Problem
 
-The admin user creates an asset from `/admin/assets/new`.
+A user may mint or own a valid BRIDS NFT, but the Stake / Unstake UI may show it as `Unsupported` if the asset does not expose `FreezeDelegate` with `Owner` authority.
 
-The current flow prepares and submits:
+That UI state is correct: if the asset does not have the real plugin, the owner cannot execute the expected freeze/unfreeze operation for Stake / Unstake.
 
-- `create-collection`
-- `create-candy-machine`
-- `add-config-lines`
+The fix must not force `/admin/assets/new` to mint NFTs. The fix must guarantee that the marketplace mint flow produces assets with the correct capability.
 
-But the plugin required by Stake / Unstake lives in another path:
+## MPL Core Plugin Clarification
 
-- `mint`
-- `add-app-data-plugin`
-- `write-app-data`
-- `add-owner-freeze-plugin`
+There are two different concepts that must not be mixed:
 
-That second path exists in code, but it is not integrated into the visible `/admin/assets/new` flow. As a result, an NFT can:
+- `PermanentFreezeDelegate` on the collection: delegates a permanent capability at collection or configured authority level. It is useful for administrative/delegated control, but it does not mean each NFT has owner-managed freeze/unfreeze.
+- `FreezeDelegate` on the asset with `Owner` authority: this is the capability Stake / Unstake needs so the NFT owner can freeze and unfreeze their own asset.
 
-- belong to a valid BRIDS collection
-- be owned by the user wallet
-- appear in DAS as `MplCoreAsset`
-- be unfrozen
-- still be shown as `Unsupported` in Stake / Unstake because it does not have `FreezeDelegate` with `Owner` authority
+Therefore, a BRIDS collection may have `PermanentFreezeDelegate` and an individual NFT can still be `Unsupported` if its `plugins` are empty or do not include `FreezeDelegate` with `Owner` authority.
 
 ## Current Technical Evidence
 
@@ -209,111 +189,95 @@ If the owner freeze plugin had been installed, the asset should expose something
 plugins.freeze_delegate.authority.type: Owner
 ```
 
-The collection may have `PermanentFreezeDelegate`, but that is not equivalent to each NFT having `FreezeDelegate` with `Owner` authority.
+The `plugins: {}` result explains why Stake / Unstake shows it as `Unsupported`.
 
-## Root Cause
+## Corrected Root Cause
 
-The root cause is an incomplete split between two flows:
+The root cause is not that `/admin/assets/new` fails to run a complete mint.
 
-1. The visible `deploy/prepare` flow creates the collection, Candy Machine, and config lines.
-2. The `mint/prepare` flow prepares mint, AppData, and owner freeze plugin transactions.
+The real root cause is that the canonical buyer mint path in `/marketplace/[id]` does not guarantee that the newly created asset receives `FreezeDelegate` with `Owner` authority.
 
-The current admin UI does not guarantee that the second flow runs as part of the canonical lifecycle that produces NFTs eligible for Stake / Unstake.
+There is also partial mint/admin code, but that code must not be confused with the real user purchase/mint flow.
 
-## Traceability Gap
+## Correct Canonical Flow
 
-The current persisted traceability is also insufficient.
+The correct flow is:
 
-The `asset_mint_onchain_proofs` table only accepts these `tx_kind` values:
-
-- `create-collection`
-- `create-candy-machine`
-- `add-config-lines`
-- `mint`
-
-But a complete NFT lifecycle also needs to audit:
-
-- `add-app-data-plugin`
-- `write-app-data`
-- `add-owner-freeze-plugin`
-
-Without a more complete transaction manifest, we cannot strictly answer:
-
-- which transactions were prepared
-- which transactions the wallet signed
-- which transactions were submitted
-- which transactions confirmed
-- which index failed and why
-- whether the owner freeze plugin was actually applied on-chain
-
-## Impact
-
-The product impact is high because Stake / Unstake depends on a real on-chain capability per NFT.
-
-The security and audit impact is also high because the system must not assume an NFT supports freeze just because it belongs to a collection. It must verify the real asset plugin.
+1. The admin uses `/admin/assets/new`.
+2. The system creates/configures the MPL Core collection.
+3. The system creates/configures the Candy Machine and its config lines.
+4. The user opens `/marketplace/[id]`.
+5. The user mints from the Candy Machine with their wallet.
+6. The minted asset is owned by the user wallet.
+7. The same mint lifecycle attaches `FreezeDelegate` with `Owner` authority.
+8. The Stake / Unstake UI validates owner, collection, and real plugin before enabling actions.
 
 ## Expected Outcome
 
-The canonical flow must produce NFTs with:
+BRIDS NFTs minted by users from marketplace must have:
 
 - valid BRIDS collection
-- correct owner
+- owner equal to the buyer wallet
 - correct metadata/Core asset
-- `AppData` installed and written when applicable
 - `FreezeDelegate` installed with `Owner` authority
-- persistent manifest for every critical transaction
-- final devnet proof with real signatures
+- initially unfrozen state unless the product defines another explicit rule
+- enough traceability to audit preparation, signing, submission, confirmation, and failures
 
 ## Strict Rules
 
-- A manual DB workaround is not an accepted fix.
-- Simulated evidence is not accepted as final blockchain proof.
-- No old or orphan route may remain capable of creating incomplete NFTs.
+- Do not solve this with a manual DB override.
+- Do not assume freeze support only because the NFT belongs to a collection.
+- Do not confuse collection `PermanentFreezeDelegate` with asset `FreezeDelegate Owner`.
+- Do not move user minting into `/admin/assets/new`.
+- Do not leave old or orphaned routes that can create user NFTs without the required plugin.
 - Do not introduce a new dominant dependency on `@solana/web3.js`.
-- The new flow must use Solana Kit / framework-kit as the canonical path.
-- If an unavoidable legacy boundary remains, it must be encapsulated and either removed or justified in the cleanup slice.
+- The new path must favor Solana Kit / framework-kit; any legacy boundary must be encapsulated and justified.
 
-## Orphan Code To Audit
+## Code To Audit
 
 This fix must review and classify:
 
-- `/api/admin/core-candy-machine/deploy/prepare`
-- `/api/admin/core-candy-machine/mint/prepare`
-- `/api/admin/core-candy-machine/submit`
-- `CoreCandyMachinePanel`
-- `MintOrchestratorSigningPanel`
-- transaction serialization helpers in `lib/core-candy-machine-admin.ts`
-- imports and usage of `@solana/web3.js`
+- creation/configuration flow in `/admin/assets/new`
+- purchase/mint flow in `/marketplace/[id]`
+- purchase/mint services that build MPL Core transactions
+- Core Candy Machine admin endpoints that may be orphaned or dev/ops-only
+- serialization/transaction helpers related to Candy Machine and mint
+- imports and uses of `@solana/web3.js` within the touched scope
 
-Each piece must end in one of these states:
+Each piece must end as one of:
 
 - part of the canonical flow
 - replaced by the canonical flow
-- deleted
-- documented as a strictly encapsulated temporary boundary
+- removed
+- documented and encapsulated temporary boundary
 
 ## Resolved Questions
+
+### Should `/admin/assets/new` mint user NFTs?
+
+No. That screen creates and configures Candy Machines. The real user mint happens in `/marketplace/[id]`.
 
 ### Does the collection have freeze?
 
 It may have `PermanentFreezeDelegate`, but that does not enable owner-managed Stake / Unstake for each NFT.
 
-### Does the asset have `FreezeDelegate Authority: Owner`?
+### Does the asset need `FreezeDelegate Authority: Owner`?
 
-No. The audited asset does not have it. DAS reports `plugins: {}`.
+Yes. Stake / Unstake depends on the real asset plugin, not only on the collection.
 
-### Does the code include a function that prepares that plugin?
+### If the asset has `plugins: {}`, is it supported?
 
-Yes. `prepareCoreCandyMachineMint` prepares `add-owner-freeze-plugin`.
+No. It must be shown as `Unsupported` until there is an asset-level `FreezeDelegate` with `Owner` authority.
 
-### Is it connected to the visible `/admin/assets/new` flow?
+### Where should the main bug be fixed?
 
-Not canonically. That is the bug being fixed.
+In the marketplace mint flow, because that is where the NFT that lands in the buyer wallet is created.
 
 ## Out Of Scope
 
 - Mainnet.
 - Authority rotation.
-- Notary Anchor program changes.
-- Distribution economics.
-- Automatic historical reprocessing of NFTs already created without the plugin.
+- Changes to the notary Anchor program.
+- Economic distribution rules.
+- Automatic reprocessing of historical NFTs already minted without the plugin.
+- Moving user minting into the admin screen.
