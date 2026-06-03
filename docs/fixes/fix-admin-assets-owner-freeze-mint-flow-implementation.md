@@ -42,8 +42,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s01-spec
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contract
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -187,7 +188,28 @@ Gates:
 - `npm run typecheck`
 - `npm run validate`
 
-## S05 - Cleanup de rutas y codigo huerfano
+## S05 - Deploy status RPC fallback
+
+Responsabilidad:
+
+- corregir `/api/admin/core-candy-machine/status` para que no dependa solo de eventos webhook
+- conservar webhook Helius como senal rapida cuando existe
+- consultar RPC con Kit cuando una firma no tenga evento webhook
+- devolver una entrada no-null cuando RPC confirme o finalice la firma
+- permitir que `CoreCandyMachinePanel` continue a `finalizeSnapshot` cuando todas las firmas esten confirmadas por webhook o RPC
+
+Pruebas primero:
+
+- route test donde webhook devuelve `null` y RPC Kit devuelve `confirmed`
+- route test conserva el resultado webhook cuando existe
+- route test no permite acceso no-admin
+
+Gates:
+
+- `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts`
+- `npm run validate`
+
+## S06 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -247,7 +269,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S06 - Verificacion, seguridad y cierre
+## S07 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -301,7 +323,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S06 mergeados en la rama de iniciativa.
+- S01-S07 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -355,8 +377,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s01-spec
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contract
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -500,7 +523,28 @@ Gates:
 - `npm run typecheck`
 - `npm run validate`
 
-## S05 - Legacy Route And Orphan-Code Cleanup
+## S05 - Deploy Status RPC Fallback
+
+Responsibility:
+
+- fix `/api/admin/core-candy-machine/status` so it does not depend only on webhook events
+- keep the Helius webhook as the fast signal when present
+- query RPC with Kit when a signature has no webhook event
+- return a non-null entry when RPC confirms or finalizes the signature
+- allow `CoreCandyMachinePanel` to continue to `finalizeSnapshot` when every signature is confirmed by webhook or RPC
+
+Tests first:
+
+- route test where webhook returns `null` and Kit RPC returns `confirmed`
+- route test preserves the webhook result when present
+- route test keeps non-admin access blocked
+
+Gates:
+
+- `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts`
+- `npm run validate`
+
+## S06 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -560,7 +604,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S06 - Verification, Security, And Closure
+## S07 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -614,7 +658,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S06 merged into the initiative branch.
+- S01-S07 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.

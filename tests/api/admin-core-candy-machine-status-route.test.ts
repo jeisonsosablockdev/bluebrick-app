@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
   getRequestRole: vi.fn(),
-  getWebhookEventsBySignatures: vi.fn()
+  getSolanaRpcUrl: vi.fn(),
+  getWebhookEventsBySignatures: vi.fn(),
+  createKitRpcConnection: vi.fn(),
+  getSignatureStatusWithKitRpc: vi.fn()
 }));
 
 vi.mock("@/lib/auth-session", () => ({
@@ -12,6 +15,15 @@ vi.mock("@/lib/auth-session", () => ({
 
 vi.mock("@/lib/mint-orchestrator-store", () => ({
   getWebhookEventsBySignatures: routeMocks.getWebhookEventsBySignatures
+}));
+
+vi.mock("@/lib/solana", () => ({
+  getSolanaRpcUrl: routeMocks.getSolanaRpcUrl
+}));
+
+vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
+  createKitRpcConnection: routeMocks.createKitRpcConnection,
+  getSignatureStatusWithKitRpc: routeMocks.getSignatureStatusWithKitRpc
 }));
 
 import { POST } from "@/app/api/admin/core-candy-machine/status/route";
@@ -24,6 +36,9 @@ describe("api/admin/core-candy-machine/status", () => {
       role: "admin",
       pubkey: "11111111111111111111111111111111"
     });
+    routeMocks.getSolanaRpcUrl.mockReturnValue("https://api.devnet.solana.com");
+    routeMocks.createKitRpcConnection.mockReturnValue({ rpc: true });
+    routeMocks.getSignatureStatusWithKitRpc.mockResolvedValue(null);
   });
 
   it("rejects unauthenticated or non-admin requests", async () => {
@@ -88,6 +103,42 @@ describe("api/admin/core-candy-machine/status", () => {
     expect(payload.statuses).toEqual({
       "sig-1": { confirmed: true },
       "sig-2": null
+    });
+  });
+
+  it("falls back to Kit RPC when webhook status is missing", async () => {
+    routeMocks.getWebhookEventsBySignatures.mockReturnValue({
+      "sig-1": null
+    });
+    routeMocks.getSignatureStatusWithKitRpc.mockResolvedValue({
+      confirmationStatus: "confirmed",
+      err: null,
+      slot: 123n
+    });
+
+    const request = new NextRequest("https://example.com/api/admin/core-candy-machine/status", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ signatures: ["sig-1"] })
+    });
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(routeMocks.createKitRpcConnection).toHaveBeenCalledWith("https://api.devnet.solana.com");
+    expect(routeMocks.getSignatureStatusWithKitRpc).toHaveBeenCalledWith(
+      { rpc: true },
+      "sig-1",
+      { searchTransactionHistory: true }
+    );
+    expect(payload.statuses).toEqual({
+      "sig-1": {
+        confirmed: true,
+        failed: false,
+        confirmationStatus: "confirmed",
+        source: "rpc"
+      }
     });
   });
 });
