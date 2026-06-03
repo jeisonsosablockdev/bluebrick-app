@@ -7,9 +7,8 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { mplCore } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
-import { Connection, PublicKey } from "@solana/web3.js";
 
-import { DasClient, isDasClientError } from "@/lib/das-client";
+import { DasClient } from "@/lib/das-client";
 import {
   type MintJobSnapshotStatus,
   type SnapshotProofConfirmationStatus,
@@ -18,8 +17,12 @@ import {
   upsertMintJobFromSnapshot
 } from "@/lib/core-candy-machine-snapshot-repository";
 import { getSolanaRpcUrl } from "@/lib/solana";
+import {
+  createKitRpcConnection,
+  getSignatureStatusWithKitRpc,
+  normalizeLegacyPublicKey
+} from "@/lib/solana-kit/compat/web3-transactions";
 
-const SIGNATURE_STATUS_CHUNK_SIZE = 200;
 const DAS_PAGE_LIMIT = 1_000;
 const DAS_MAX_PAGES = 100;
 
@@ -154,19 +157,9 @@ function toInteger(value: unknown): number {
   return 0;
 }
 
-function chunk<T>(items: readonly T[], size: number): T[][] {
-  const chunks: T[][] = [];
-
-  for (let offset = 0; offset < items.length; offset += size) {
-    chunks.push(items.slice(offset, offset + size));
-  }
-
-  return chunks;
-}
-
 function assertPublicKey(input: string, fieldName: string): string {
   try {
-    return new PublicKey(input).toBase58();
+    return normalizeLegacyPublicKey(input);
   } catch {
     throw new CoreCandyMachineSnapshotError("INVALID_PUBLIC_KEY", `${fieldName} must be a valid Solana public key.`, 400);
   }
@@ -362,17 +355,16 @@ async function enrichProofsWithSignatureStatus(signatures: SnapshotFinalizeReque
     return [];
   }
 
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
   const bySignature = new Map<string, { confirmationStatus: SnapshotProofConfirmationStatus; slot: number | null; txError: string | null }>();
 
-  for (const signatureChunk of chunk(signatures.map((entry) => entry.signature), SIGNATURE_STATUS_CHUNK_SIZE)) {
-    const result = await connection.getSignatureStatuses(signatureChunk, {
-      searchTransactionHistory: true
-    });
+  await Promise.all(signatures.map(async (entry) => {
+    const signature = entry.signature;
 
-    signatureChunk.forEach((signature, index) => {
-      const status = result.value[index];
-
+    try {
+      const status = await getSignatureStatusWithKitRpc(rpc, signature, {
+        searchTransactionHistory: true
+      });
       if (!status) {
         bySignature.set(signature, {
           confirmationStatus: "submitted",
@@ -396,8 +388,14 @@ async function enrichProofsWithSignatureStatus(signatures: SnapshotFinalizeReque
         slot: typeof status.slot === "number" ? status.slot : null,
         txError: null
       });
-    });
-  }
+    } catch {
+      bySignature.set(signature, {
+        confirmationStatus: "submitted",
+        slot: null,
+        txError: null
+      });
+    }
+  }));
 
   return signatures.map((entry) => {
     const resolved = bySignature.get(entry.signature) ?? {
@@ -425,10 +423,25 @@ function resolveMintJobStatus(expectedQuantity: number, proofs: SignatureProof[]
   failedItems: number;
 } {
   const mintProofs = proofs.filter((proof) => proof.kind === "mint");
+  const proofSet = mintProofs.length > 0 ? mintProofs : proofs;
+  const submittedProofs = proofSet.length;
+  const confirmedProofs = proofSet.filter((proof) => proof.confirmationStatus === "confirmed").length;
+  const failedProofs = proofSet.filter((proof) => proof.confirmationStatus === "failed").length;
+  const pendingProofs = proofSet.filter((proof) => proof.confirmationStatus === "submitted").length;
+
+  if (mintProofs.length === 0 && submittedProofs > 0 && confirmedProofs === submittedProofs && failedProofs === 0 && pendingProofs === 0) {
+    return {
+      status: "completed",
+      submittedItems: expectedQuantity,
+      confirmedItems: expectedQuantity,
+      failedItems: 0
+    };
+  }
+
   const submittedItems = mintProofs.length;
-  const confirmedItems = mintProofs.filter((proof) => proof.confirmationStatus === "confirmed").length;
-  const failedItems = mintProofs.filter((proof) => proof.confirmationStatus === "failed").length;
-  const pendingItems = mintProofs.filter((proof) => proof.confirmationStatus === "submitted").length;
+  const confirmedItems = confirmedProofs;
+  const failedItems = failedProofs;
+  const pendingItems = pendingProofs;
 
   if (confirmedItems === expectedQuantity && failedItems === 0 && pendingItems === 0) {
     return {
@@ -486,7 +499,7 @@ export async function finalizeCoreCandyMachineSnapshot(
   ]);
 
   const mintJob = resolveMintJobStatus(input.mint.quantity, proofs);
-  let verificationMethod: SnapshotVerificationMethod = "das_get_assets_by_group";
+  let verificationMethod: SnapshotVerificationMethod = "candy_machine_items_loaded";
   let verificationStatus: SnapshotVerificationStatus = "failed";
   let verificationError: SnapshotVerificationError | null = null;
   let foundAssets: number | null = null;
@@ -494,34 +507,23 @@ export async function finalizeCoreCandyMachineSnapshot(
   try {
     const dasResult = await countAssetsWithDas(input.mint.collectionAddress);
     foundAssets = dasResult.foundAssets;
+  } catch {
+    foundAssets = null;
+  }
 
-    if (dasResult.foundAssets === input.mint.quantity) {
-      verificationStatus = "verified";
-    } else {
-      verificationStatus = "failed";
-      verificationError = buildVerificationError(
-        "VERIFICATION_MISMATCH",
-        `Expected ${input.mint.quantity} items but found ${dasResult.foundAssets} via DAS.`,
-        {
-          expected: input.mint.quantity,
-          found: dasResult.foundAssets,
-          verificationMethod: "das_get_assets_by_group",
-          pagesFetched: dasResult.pagesFetched
-        }
-      );
-    }
-  } catch (error) {
-    verificationMethod = "candy_machine_items_loaded";
-    verificationStatus = "degraded";
+  if (onchain.itemsLoaded === input.mint.quantity) {
+    verificationStatus = "verified";
+  } else {
+    verificationStatus = "failed";
     verificationError = buildVerificationError(
-      isDasClientError(error) ? error.code : "DAS_VERIFICATION_ERROR",
-      error instanceof Error ? error.message : "DAS verification failed.",
+      "CONFIG_LINES_NOT_LOADED",
+      `Expected ${input.mint.quantity} Candy Machine config lines but found ${onchain.itemsLoaded} loaded on-chain.`,
       {
         expected: input.mint.quantity,
-        found: null,
-        verificationMethod: "candy_machine_items_loaded",
         candyMachineItemsLoaded: onchain.itemsLoaded,
-        candyMachineItemsAvailable: onchain.itemsAvailable
+        candyMachineItemsAvailable: onchain.itemsAvailable,
+        foundAssets,
+        verificationMethod
       }
     );
   }

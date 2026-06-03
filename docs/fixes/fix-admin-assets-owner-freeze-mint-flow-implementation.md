@@ -43,8 +43,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contrac
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -209,7 +210,28 @@ Gates:
 - `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts`
 - `npm run validate`
 
-## S06 - Cleanup de rutas y codigo huerfano
+## S06 - Deploy snapshot readiness
+
+Responsabilidad:
+
+- corregir `finalizeCoreCandyMachineSnapshot` para que el deploy admin no exija NFTs ya minteados por DAS
+- validar readiness contra Candy Machine on-chain: collection correcta, `itemsLoaded` igual a la cantidad esperada, firmas de deploy confirmadas
+- mantener DAS como verificacion del flujo marketplace/post-compra, no como gate del deploy administrativo
+- corregir el status del snapshot cuando las pruebas son `create-collection`, `create-candy-machine` y `add-config-lines` en vez de `mint`
+- evitar que la UI muestre `Deploy confirmed, but mint snapshot is not ready` para una Candy Machine correctamente desplegada pero sin NFTs minteados
+
+Pruebas primero:
+
+- service test donde DAS devuelve `0`, `itemsLoaded === quantity`, collection correcta y deploy proofs confirmadas; resultado esperado `canCreateAsset=true`
+- service test donde `itemsLoaded < quantity`; resultado esperado bloqueado con error claro
+- service test donde alguna firma de deploy no esta confirmada; resultado esperado bloqueado
+
+Gates:
+
+- `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S07 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -269,7 +291,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S07 - Verificacion, seguridad y cierre
+## S08 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -323,7 +345,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S07 mergeados en la rama de iniciativa.
+- S01-S08 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -378,8 +400,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s02-marketplace-mint-contrac
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -544,7 +567,28 @@ Gates:
 - `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts`
 - `npm run validate`
 
-## S06 - Legacy Route And Orphan-Code Cleanup
+## S06 - Deploy Snapshot Readiness
+
+Responsibility:
+
+- fix `finalizeCoreCandyMachineSnapshot` so admin deploy does not require NFTs already minted through DAS
+- validate readiness against on-chain Candy Machine state: correct collection, `itemsLoaded` equal to expected quantity, and confirmed deploy signatures
+- keep DAS as marketplace/post-purchase verification, not as the administrative deploy gate
+- correct snapshot status when proofs are `create-collection`, `create-candy-machine`, and `add-config-lines` instead of `mint`
+- prevent the UI from showing `Deploy confirmed, but mint snapshot is not ready` for a correctly deployed Candy Machine with no minted NFTs yet
+
+Tests first:
+
+- service test where DAS returns `0`, `itemsLoaded === quantity`, collection is correct, and deploy proofs are confirmed; expected result `canCreateAsset=true`
+- service test where `itemsLoaded < quantity`; expected blocked result with clear error
+- service test where any deploy signature is not confirmed; expected blocked result
+
+Gates:
+
+- `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S07 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -604,7 +648,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S07 - Verification, Security, And Closure
+## S08 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -658,7 +702,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S07 merged into the initiative branch.
+- S01-S08 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.
