@@ -183,6 +183,18 @@ Regla:
 - El snapshot solo debe finalizar cuando todas las firmas del deploy tienen confirmacion observable por webhook o RPC.
 - El fallback RPC debe tener test para evitar regresiones cuando Helius no entregue el webhook.
 
+## Regla de readiness del snapshot admin
+
+El snapshot de `/admin/assets/new` no debe exigir NFTs ya minteados.
+
+Regla:
+
+- `/admin/assets/new` crea collection, Candy Machine y config lines; no crea los NFTs finales del comprador.
+- En este punto, DAS puede devolver `0` assets para la collection y eso no es un error.
+- La readiness del snapshot admin debe verificarse contra el estado de la Candy Machine: collection on-chain correcta, `itemsLoaded` igual a la cantidad esperada y firmas de deploy confirmadas.
+- La verificacion por DAS de assets minteados pertenece al flujo marketplace/post-compra, no al deploy administrativo.
+- La UI no debe bloquear `Create Asset` por `Expected N items but found 0 via DAS` despues de desplegar una Candy Machine nueva.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -436,6 +448,18 @@ Rule:
 - The `/admin/assets/new` UI must not remain blocked at `Snapshot not finalized yet` when RPC already confirms the signature.
 - The snapshot may only finalize when every deploy signature has observable confirmation through webhook or RPC.
 - The RPC fallback must have a test to prevent regressions when Helius does not deliver the webhook.
+
+## Admin Snapshot Readiness Rule
+
+The `/admin/assets/new` snapshot must not require already-minted NFTs.
+
+Rule:
+
+- `/admin/assets/new` creates the collection, Candy Machine, and config lines; it does not create the buyer's final NFTs.
+- At this point, DAS may return `0` assets for the collection and that is not an error.
+- Admin snapshot readiness must be verified against Candy Machine state: correct on-chain collection, `itemsLoaded` equal to the expected quantity, and confirmed deploy signatures.
+- DAS verification of minted assets belongs to the marketplace/post-purchase flow, not administrative deploy.
+- The UI must not block `Create Asset` with `Expected N items but found 0 via DAS` after deploying a new Candy Machine.
 
 ## Code To Audit
 
