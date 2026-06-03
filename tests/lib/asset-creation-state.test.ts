@@ -7,6 +7,7 @@ import {
   patchUploadFieldState,
   resetState,
   selectCanContinueToMint,
+  deriveProjectDurationMonths,
   selectDerivedMintQuantityFromType,
   selectMintQuantityValue,
   selectSnapshotFormData,
@@ -136,5 +137,11 @@ describe("asset creation selectors", () => {
         compatibilityErrors: []
       })
     ).toBe(false);
+  });
+
+  it("derives project duration months from construction start and delivery dates", () => {
+    expect(deriveProjectDurationMonths("2026-01-01", "2026-07-01")).toBe("6");
+    expect(deriveProjectDurationMonths("", "2026-07-01")).toBe("");
+    expect(deriveProjectDurationMonths("2026-08-01", "2026-07-01")).toBe("");
   });
 });

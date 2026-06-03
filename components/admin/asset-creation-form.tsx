@@ -8,7 +8,12 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import {
   CoreCandyMachinePanel
 } from "@/components/admin/core-candy-machine-panel";
-import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
+import {
+  deriveProjectDurationMonths,
+  useAssetCreationFormState,
+  useAssetImportJobs,
+  useAssetUploadWorkflow
+} from "@/components/admin/asset-creation";
 import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
 import type { ParsedImportCandidate } from "@/components/admin/asset-creation/use-asset-import-jobs";
 import {
@@ -304,24 +309,6 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
   }
 
   return documents;
-}
-
-function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
-  if (!startDateRaw || !deliveryDateRaw) {
-    return "";
-  }
-
-  const startDate = Date.parse(`${startDateRaw}T00:00:00Z`);
-  const deliveryDate = Date.parse(`${deliveryDateRaw}T00:00:00Z`);
-  if (!Number.isFinite(startDate) || !Number.isFinite(deliveryDate) || deliveryDate < startDate) {
-    return "";
-  }
-
-  const DAY_IN_MS = 1000 * 60 * 60 * 24;
-  const averageMonthInDays = 30.4375;
-  const diffDays = (deliveryDate - startDate) / DAY_IN_MS;
-  const months = Math.max(1, Math.ceil(diffDays / averageMonthInDays));
-  return String(months);
 }
 
 type PriceInputCurrency = "USD" | "SOL";
@@ -913,6 +900,22 @@ export function AssetCreationForm(): ReactElement {
     });
   }, [buildingNftCostSol, buildingNftCostUsd, solUsdRate, t]);
 
+  const onConstructionStartDateChange = (nextStartDate: string) => {
+    setForm((prev) => ({
+      ...prev,
+      buildingConstructionStartDate: nextStartDate,
+      buildingProjectDurationMonths: deriveProjectDurationMonths(nextStartDate, prev.buildingEstimatedDeliveryDate)
+    }));
+  };
+
+  const onEstimatedDeliveryDateChange = (nextDeliveryDate: string) => {
+    setForm((prev) => ({
+      ...prev,
+      buildingEstimatedDeliveryDate: nextDeliveryDate,
+      buildingProjectDurationMonths: deriveProjectDurationMonths(prev.buildingConstructionStartDate, nextDeliveryDate)
+    }));
+  };
+
   const onFundingGoalChange = (nextFundingGoal: string) => {
     setForm((prev) => {
       const next = {
@@ -1294,20 +1297,20 @@ export function AssetCreationForm(): ReactElement {
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))}
                 />
                 <GuidedInputField
-                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
-                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
-                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
-                  type="date"
-                  value={form.buildingEstimatedDeliveryDate}
-                  onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))}
-                />
-                <GuidedInputField
                   label={t({ en: "Construction start date", es: "Fecha de inicio de construccion", pt: "Data de inicio da construcao" })}
                   hint={t({ en: "Together with delivery date defines project months.", es: "Junto con la fecha de entrega define meses del proyecto.", pt: "Junto com a data de entrega define os meses do projeto." })}
                   tooltip={t({ en: "Initial date for timeline and progress baseline.", es: "Fecha inicial para linea de tiempo y progreso.", pt: "Data inicial para linha do tempo e progresso." })}
                   type="date"
                   value={form.buildingConstructionStartDate}
-                  onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))}
+                  onChange={(event) => onConstructionStartDateChange(event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
+                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
+                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
+                  type="date"
+                  value={form.buildingEstimatedDeliveryDate}
+                  onChange={(event) => onEstimatedDeliveryDateChange(event.target.value)}
                 />
                 <GuidedInputField
                   label={t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}
