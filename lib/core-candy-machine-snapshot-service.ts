@@ -383,6 +383,16 @@ async function enrichProofsWithSignatureStatus(signatures: SnapshotFinalizeReque
         return;
       }
 
+      const confirmationStatus = status.confirmationStatus ?? null;
+      if (confirmationStatus !== "confirmed" && confirmationStatus !== "finalized") {
+        bySignature.set(signature, {
+          confirmationStatus: "submitted",
+          slot: typeof status.slot === "number" ? status.slot : null,
+          txError: null
+        });
+        return;
+      }
+
       bySignature.set(signature, {
         confirmationStatus: "confirmed",
         slot: typeof status.slot === "number" ? status.slot : null,

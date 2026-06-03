@@ -178,9 +178,11 @@ El deploy de Candy Machine no debe depender exclusivamente del webhook para desb
 Regla:
 
 - `/api/admin/core-candy-machine/status` puede usar eventos webhook como senal rapida.
-- Si una firma no tiene evento webhook, debe consultar RPC canonico con Kit antes de devolver `null`.
+- Toda firma debe consultar RPC canonico con Kit antes de considerarse confirmada para `Create Asset`.
+- Un evento webhook sin confirmacion RPC solo significa `observedByWebhook`; no desbloquea snapshot ni `Create Asset`.
 - La UI de `/admin/assets/new` no debe quedar bloqueada en `Snapshot not finalized yet` cuando RPC ya confirma la firma.
-- El snapshot solo debe finalizar cuando todas las firmas del deploy tienen confirmacion observable por webhook o RPC.
+- El snapshot solo debe finalizar cuando todas las firmas del deploy tienen `confirmed` o `finalized` por RPC canonico.
+- Un status `processed`, `submitted`, `null` o solo-observado-por-webhook debe mantener el gate bloqueado.
 - El fallback RPC debe tener test para evitar regresiones cuando Helius no entregue el webhook.
 
 ## Regla de readiness del snapshot admin
@@ -444,9 +446,11 @@ Candy Machine deploy must not depend exclusively on webhooks to unlock snapshot 
 Rule:
 
 - `/api/admin/core-candy-machine/status` may use webhook events as the fast signal.
-- If a signature has no webhook event, it must query canonical RPC through Kit before returning `null`.
+- Every signature must query canonical RPC through Kit before it is considered confirmed for `Create Asset`.
+- A webhook event without RPC confirmation only means `observedByWebhook`; it does not unlock the snapshot or `Create Asset`.
 - The `/admin/assets/new` UI must not remain blocked at `Snapshot not finalized yet` when RPC already confirms the signature.
-- The snapshot may only finalize when every deploy signature has observable confirmation through webhook or RPC.
+- The snapshot may only finalize when every deploy signature is `confirmed` or `finalized` by canonical RPC.
+- A `processed`, `submitted`, `null`, or webhook-observed-only status must keep the gate blocked.
 - The RPC fallback must have a test to prevent regressions when Helius does not deliver the webhook.
 
 ## Admin Snapshot Readiness Rule

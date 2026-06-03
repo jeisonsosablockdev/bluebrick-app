@@ -83,26 +83,40 @@ describe("api/admin/core-candy-machine/status", () => {
     expect(payload.error).toBe("At least one signature is required.");
   });
 
-  it("returns signature statuses for valid admin requests", async () => {
+  it("does not treat a webhook observation as confirmed without RPC confirmation", async () => {
     routeMocks.getWebhookEventsBySignatures.mockReturnValue({
-      "sig-1": { confirmed: true },
-      "sig-2": null
+      "sig-1": {
+        provider: "helius",
+        eventId: null,
+        eventFingerprint: "sig-1",
+        signature: "sig-1",
+        eventType: "UNKNOWN",
+        slot: 123,
+        firstSeenAt: "2026-06-03T00:00:00.000Z",
+        lastSeenAt: "2026-06-03T00:00:00.000Z",
+        deliveryCount: 1
+      }
     });
 
     const request = new NextRequest("https://example.com/api/admin/core-candy-machine/status", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ signatures: ["sig-1", "sig-2"] })
+      body: JSON.stringify({ signatures: ["sig-1"] })
     });
 
     const response = await POST(request);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(routeMocks.getWebhookEventsBySignatures).toHaveBeenCalledWith("helius", ["sig-1", "sig-2"]);
+    expect(routeMocks.getWebhookEventsBySignatures).toHaveBeenCalledWith("helius", ["sig-1"]);
     expect(payload.statuses).toEqual({
-      "sig-1": { confirmed: true },
-      "sig-2": null
+      "sig-1": {
+        confirmed: false,
+        failed: false,
+        confirmationStatus: null,
+        observedByWebhook: true,
+        source: "webhook"
+      }
     });
   });
 
@@ -137,6 +151,7 @@ describe("api/admin/core-candy-machine/status", () => {
         confirmed: true,
         failed: false,
         confirmationStatus: "confirmed",
+        observedByWebhook: false,
         source: "rpc"
       }
     });
