@@ -12,49 +12,68 @@ type StatusRequestBody = {
   signatures?: unknown;
 };
 
-type RpcSignatureStatus = {
+type DeploySignatureStatus = {
   confirmed: boolean;
   failed: boolean;
   confirmationStatus: string | null;
-  source: "rpc";
+  observedByWebhook: boolean;
+  source: "rpc" | "webhook";
 };
 
-async function resolveMissingStatusesWithRpc(
+function hasWebhookObservation(value: unknown): boolean {
+  return Boolean(value && typeof value === "object");
+}
+
+async function resolveStatusesWithRpc(
   statuses: Record<string, unknown | null>,
   signatures: string[]
 ): Promise<Record<string, unknown | null>> {
-  const missingSignatures = signatures.filter((signature) => statuses[signature] === null);
-
-  if (missingSignatures.length === 0) {
-    return statuses;
-  }
-
   const rpc = createKitRpcConnection(getSolanaRpcUrl());
-  const resolvedStatuses = { ...statuses };
+  const resolvedStatuses: Record<string, DeploySignatureStatus | null> = {};
 
-  await Promise.all(missingSignatures.map(async (signature) => {
+  await Promise.all(signatures.map(async (signature) => {
+    const observedByWebhook = hasWebhookObservation(statuses[signature]);
+
     try {
       const rpcStatus = await getSignatureStatusWithKitRpc(rpc, signature, {
         searchTransactionHistory: true
       });
 
       if (!rpcStatus) {
+        resolvedStatuses[signature] = observedByWebhook
+          ? {
+              confirmed: false,
+              failed: false,
+              confirmationStatus: null,
+              observedByWebhook,
+              source: "webhook"
+            }
+          : null;
         return;
       }
 
       const confirmationStatus = rpcStatus.confirmationStatus ?? null;
       const failed = Boolean(rpcStatus.err);
       const confirmed = !failed && (confirmationStatus === "confirmed" || confirmationStatus === "finalized");
-      const normalized: RpcSignatureStatus = {
+      const normalized: DeploySignatureStatus = {
         confirmed,
         failed,
         confirmationStatus,
+        observedByWebhook,
         source: "rpc"
       };
 
       resolvedStatuses[signature] = normalized;
     } catch {
-      resolvedStatuses[signature] = null;
+      resolvedStatuses[signature] = observedByWebhook
+        ? {
+            confirmed: false,
+            failed: false,
+            confirmationStatus: null,
+            observedByWebhook,
+            source: "webhook"
+          }
+        : null;
     }
   }));
 
@@ -81,7 +100,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const statuses = getWebhookEventsBySignatures("helius", signatures);
-    const resolvedStatuses = await resolveMissingStatusesWithRpc(statuses, signatures);
+    const resolvedStatuses = await resolveStatusesWithRpc(statuses, signatures);
     return NextResponse.json({ statuses: resolvedStatuses });
   } catch {
     return NextResponse.json({ error: "Could not fetch statuses." }, { status: 500 });

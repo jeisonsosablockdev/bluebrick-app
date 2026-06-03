@@ -4,7 +4,10 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CoreCandyMachinePanel } from "@/components/admin/core-candy-machine-panel";
+import {
+  CoreCandyMachinePanel,
+  isDeploySignatureConfirmedForCreateAsset
+} from "@/components/admin/core-candy-machine-panel";
 
 import type { ReactNode } from "react";
 
@@ -45,6 +48,35 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
   beforeEach(() => {
     Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
     vi.useFakeTimers();
+  });
+
+  it("requires a real confirmed or finalized status before Create Asset snapshot finalization", () => {
+    expect(isDeploySignatureConfirmedForCreateAsset(null)).toBe(false);
+    expect(isDeploySignatureConfirmedForCreateAsset({
+      confirmed: false,
+      failed: false,
+      confirmationStatus: null,
+      observedByWebhook: true,
+      source: "webhook"
+    })).toBe(false);
+    expect(isDeploySignatureConfirmedForCreateAsset({
+      confirmed: false,
+      failed: false,
+      confirmationStatus: "processed",
+      source: "rpc"
+    })).toBe(false);
+    expect(isDeploySignatureConfirmedForCreateAsset({
+      confirmed: true,
+      failed: false,
+      confirmationStatus: "confirmed",
+      source: "rpc"
+    })).toBe(true);
+    expect(isDeploySignatureConfirmedForCreateAsset({
+      confirmed: false,
+      failed: false,
+      confirmationStatus: "finalized",
+      source: "rpc"
+    })).toBe(true);
   });
 
   afterEach(() => {

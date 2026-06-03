@@ -129,6 +129,27 @@ type RunState = {
   signatures: RunSignatureEntry[];
 };
 
+export function isDeploySignatureConfirmedForCreateAsset(status: unknown): boolean {
+  if (!status || typeof status !== "object") {
+    return false;
+  }
+
+  const record = status as { confirmed?: unknown; failed?: unknown; confirmationStatus?: unknown };
+  if (record.failed === true) {
+    return false;
+  }
+
+  if (record.confirmed === true) {
+    return true;
+  }
+
+  return record.confirmationStatus === "confirmed" || record.confirmationStatus === "finalized";
+}
+
+function isDeploySignatureFailedForCreateAsset(status: unknown): boolean {
+  return Boolean(status && typeof status === "object" && (status as { failed?: unknown }).failed === true);
+}
+
 type GeneratedMetadataUris = {
   collectionUri: string;
   assetUri: string;
@@ -654,6 +675,7 @@ export function CoreCandyMachinePanel({
       // --- SMART POLLING (Local Backend) ---
       const signaturesToPoll = collectedSignatures.map(s => s.signature);
       let allConfirmed = false;
+      let hasFailedSignature = false;
       let attempts = 0;
       const maxAttempts = 30; // Max 60 seconds (30 attempts * 2s)
 
@@ -668,13 +690,25 @@ export function CoreCandyMachinePanel({
 
           if (statusRes.ok) {
             const { statuses } = await statusRes.json();
-            // Si todas las firmas tienen un registro (no son null), se confirmó todo
-            allConfirmed = signaturesToPoll.every(sig => statuses[sig] !== null);
+            hasFailedSignature = signaturesToPoll.some(sig => isDeploySignatureFailedForCreateAsset(statuses?.[sig]));
+            allConfirmed = signaturesToPoll.every(sig => isDeploySignatureConfirmedForCreateAsset(statuses?.[sig]));
+            if (hasFailedSignature) {
+              break;
+            }
           }
         } catch (err) {
           // Ignorar errores de red temporales para seguir intentando
         }
         attempts++;
+      }
+
+      if (hasFailedSignature) {
+        setErrorMessage("One or more deploy transactions failed on-chain. Create Asset remains blocked.");
+        setRunState((current) => ({
+          ...current,
+          status: "Deploy failed"
+        }));
+        return;
       }
 
       if (!allConfirmed) {

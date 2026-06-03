@@ -44,8 +44,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -195,14 +196,15 @@ Responsabilidad:
 
 - corregir `/api/admin/core-candy-machine/status` para que no dependa solo de eventos webhook
 - conservar webhook Helius como senal rapida cuando existe
-- consultar RPC con Kit cuando una firma no tenga evento webhook
+- consultar RPC con Kit para decidir confirmacion canonica de cada firma
 - devolver una entrada no-null cuando RPC confirme o finalice la firma
-- permitir que `CoreCandyMachinePanel` continue a `finalizeSnapshot` cuando todas las firmas esten confirmadas por webhook o RPC
+- permitir que `CoreCandyMachinePanel` continue a `finalizeSnapshot` cuando todas las firmas esten `confirmed` o `finalized` por RPC
+- devolver `observedByWebhook` como senal informativa, no como confirmacion suficiente
 
 Pruebas primero:
 
 - route test donde webhook devuelve `null` y RPC Kit devuelve `confirmed`
-- route test conserva el resultado webhook cuando existe
+- route test donde webhook observa la firma pero RPC aun no confirma; resultado esperado `confirmed=false`
 - route test no permite acceso no-admin
 
 Gates:
@@ -231,7 +233,28 @@ Gates:
 - `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S07 - Cleanup de rutas y codigo huerfano
+## S07 - Deploy snapshot confirmation gate
+
+Responsabilidad:
+
+- corregir `CoreCandyMachinePanel` para que no trate cualquier objeto de status como confirmacion suficiente
+- aceptar solo status `confirmed` o `finalized` para continuar a `snapshot/finalize`
+- bloquear `Create Asset` si el status esta `processed`, `submitted`, `null`, fallido o solo observado por webhook
+- corregir `finalizeCoreCandyMachineSnapshot` para que no marque proofs `processed` como `confirmed`
+- mantener Helius como observador rapido y RPC Kit como arbitro final
+
+Pruebas primero:
+
+- component test del helper de confirmacion del panel
+- route test donde webhook observado no desbloquea sin RPC confirmado
+- service test donde proof `processed` queda bloqueado
+
+Gates:
+
+- `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S08 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -552,14 +575,15 @@ Responsibility:
 
 - fix `/api/admin/core-candy-machine/status` so it does not depend only on webhook events
 - keep the Helius webhook as the fast signal when present
-- query RPC with Kit when a signature has no webhook event
+- query RPC with Kit to decide canonical confirmation for every signature
 - return a non-null entry when RPC confirms or finalizes the signature
-- allow `CoreCandyMachinePanel` to continue to `finalizeSnapshot` when every signature is confirmed by webhook or RPC
+- allow `CoreCandyMachinePanel` to continue to `finalizeSnapshot` only when every signature is `confirmed` or `finalized` by RPC
+- return `observedByWebhook` as informational signal, not sufficient confirmation
 
 Tests first:
 
 - route test where webhook returns `null` and Kit RPC returns `confirmed`
-- route test preserves the webhook result when present
+- route test where webhook observes the signature but RPC has not confirmed yet; expected result `confirmed=false`
 - route test keeps non-admin access blocked
 
 Gates:
@@ -588,7 +612,28 @@ Gates:
 - `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S07 - Legacy Route And Orphan-Code Cleanup
+## S07 - Deploy Snapshot Confirmation Gate
+
+Responsibility:
+
+- fix `CoreCandyMachinePanel` so it does not treat any non-null status object as sufficient confirmation
+- accept only `confirmed` or `finalized` status before continuing to `snapshot/finalize`
+- keep `Create Asset` blocked when status is `processed`, `submitted`, `null`, failed, or webhook-observed-only
+- fix `finalizeCoreCandyMachineSnapshot` so it does not mark `processed` proofs as `confirmed`
+- keep Helius as fast observer and Kit RPC as final arbiter
+
+Tests first:
+
+- component test for the panel confirmation helper
+- route test where webhook observation does not unlock without RPC confirmation
+- service test where a `processed` proof remains blocked
+
+Gates:
+
+- `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S08 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 

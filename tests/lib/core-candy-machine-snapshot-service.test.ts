@@ -191,4 +191,22 @@ describe("lib/core-candy-machine-snapshot-service", () => {
       code: "CONFIG_LINES_NOT_LOADED"
     }));
   });
+
+  it("blocks deploy snapshot when a deploy proof is only processed, not confirmed", async () => {
+    mockCandyMachineState(3);
+    mocks.getSignatureStatusWithKitRpc.mockResolvedValue({
+      confirmationStatus: "processed",
+      err: null,
+      slot: 10
+    });
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(false);
+    expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
+      status: "partial",
+      confirmedItems: 0,
+      lastError: "Mint proof status is not completed."
+    }));
+  });
 });
