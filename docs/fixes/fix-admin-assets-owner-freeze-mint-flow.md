@@ -171,6 +171,18 @@ Regla:
 - La compra no puede introducir imports directos de `@solana/web3.js` fuera del boundary.
 - Debe existir una prueba de frontera que falle si marketplace purchase vuelve al RPC legacy.
 
+## Regla de confirmacion para deploy admin
+
+El deploy de Candy Machine no debe depender exclusivamente del webhook para desbloquear la finalizacion del snapshot.
+
+Regla:
+
+- `/api/admin/core-candy-machine/status` puede usar eventos webhook como senal rapida.
+- Si una firma no tiene evento webhook, debe consultar RPC canonico con Kit antes de devolver `null`.
+- La UI de `/admin/assets/new` no debe quedar bloqueada en `Snapshot not finalized yet` cuando RPC ya confirma la firma.
+- El snapshot solo debe finalizar cuando todas las firmas del deploy tienen confirmacion observable por webhook o RPC.
+- El fallback RPC debe tener test para evitar regresiones cuando Helius no entregue el webhook.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -412,6 +424,18 @@ Rule:
 - The client may still sign `VersionedTransaction` only through the temporary `lib/solana-kit/compat/*` boundary, because wallet-adapter and Umi/Metaplex still require that shape.
 - Purchase must not introduce direct `@solana/web3.js` imports outside the boundary.
 - A boundary test must fail if marketplace purchase returns to legacy RPC.
+
+## Admin Deploy Confirmation Rule
+
+Candy Machine deploy must not depend exclusively on webhooks to unlock snapshot finalization.
+
+Rule:
+
+- `/api/admin/core-candy-machine/status` may use webhook events as the fast signal.
+- If a signature has no webhook event, it must query canonical RPC through Kit before returning `null`.
+- The `/admin/assets/new` UI must not remain blocked at `Snapshot not finalized yet` when RPC already confirms the signature.
+- The snapshot may only finalize when every deploy signature has observable confirmation through webhook or RPC.
+- The RPC fallback must have a test to prevent regressions when Helius does not deliver the webhook.
 
 ## Code To Audit
 
