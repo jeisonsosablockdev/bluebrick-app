@@ -46,8 +46,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallba
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-post-create-handoff-ui
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -284,7 +285,30 @@ Gates:
 - `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S09 - Cleanup de rutas y codigo huerfano
+## S09 - Handoff UI despues de Create Asset
+
+Responsabilidad:
+
+- agregar animacion visible en Paso 2 cuando se generan `Collection URI` y `Asset URI`
+- mantener el deploy bloqueado hasta que los URIs sean metadata JSON validos
+- despues de crear la entrada, mostrar `Entrada creada` unos instantes y luego convertir el CTA principal en `Ver marketplace`
+- navegar a `/marketplace/{entryId}` desde el CTA principal cuando el estado ya este listo
+- convertir el CTA secundario en `Crear otro` despues de crear la entrada
+- `Crear otro` debe limpiar formulario, deploy, snapshot, mensajes, uploads temporales y reiniciar con nuevo draft
+
+Pruebas primero:
+
+- reducer/state test donde un estado post-create se resetea y limpia `showMintSetup`, `deployCompletedData`, `snapshotFinalize`, `createdMarketplaceEntryId`, mensajes y uploads
+- typecheck para validar que la navegacion y el reset usan el contrato del hook
+
+Gates:
+
+- `npx vitest run tests/lib/asset-creation-state.test.ts`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run validate`
+
+## S10 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -344,7 +368,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S10 - Verificacion, seguridad y cierre
+## S11 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -398,7 +422,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S10 mergeados en la rama de iniciativa.
+- S01-S11 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -456,8 +480,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallba
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-post-create-handoff-ui
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -694,7 +719,30 @@ Gates:
 - `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S09 - Legacy Route And Orphan-Code Cleanup
+## S09 - Post-Create Asset UI Handoff
+
+Responsibility:
+
+- add visible animation in Step 2 while `Collection URI` and `Asset URI` are being generated
+- keep deploy blocked until the URIs are valid metadata JSON
+- after creating the entry, show `Entry created` briefly and then turn the primary CTA into `View marketplace`
+- navigate to `/marketplace/{entryId}` from the primary CTA once the state is ready
+- turn the secondary CTA into `Create another` after entry creation
+- `Create another` must clear form, deploy, snapshot, messages, temporary uploads, and restart with a new draft
+
+Tests first:
+
+- reducer/state test where a post-create state resets and clears `showMintSetup`, `deployCompletedData`, `snapshotFinalize`, `createdMarketplaceEntryId`, messages, and uploads
+- typecheck to validate that navigation and reset use the hook contract
+
+Gates:
+
+- `npx vitest run tests/lib/asset-creation-state.test.ts`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run validate`
+
+## S10 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -754,7 +802,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S10 - Verification, Security, And Closure
+## S11 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -808,7 +856,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S10 merged into the initiative branch.
+- S01-S11 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.

@@ -209,6 +209,18 @@ Regla:
 - Si la ventana acotada termina y `itemsLoaded` sigue incompleto, el sistema debe bloquear `Create Asset` con error claro de config lines no cargadas, incluyendo intentos de lectura y ultimo estado observado.
 - El mecanismo debe permitir distinguir "todavia no propagado" de "definitivamente mal configurado".
 
+## Regla de handoff UI despues de Create Asset
+
+Cuando `/admin/assets/new` crea la entrada del marketplace desde una Candy Machine ya desplegada, la UI debe cerrar el ciclo sin ambiguedad.
+
+Regla:
+
+- En Paso 2, mientras se generan `Collection URI` y `Asset URI`, la UI debe mostrar un estado animado explicito para que el admin sepa que el sistema esta creando links de metadata.
+- Despues de crear la entrada, el CTA principal debe mostrar `Entrada creada` por un momento breve.
+- Luego el mismo CTA debe cambiar a `Ver marketplace` y navegar a `/marketplace/{entryId}`.
+- El boton secundario debe cambiar a un estado de reinicio como `Crear otro`.
+- `Crear otro` debe limpiar datos del formulario, estado de deploy, snapshot, mensajes, uploads temporales y devolver al inicio del formulario con un nuevo draft.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -488,6 +500,18 @@ Rule:
 - Definitive failures are: on-chain collection differs from the request collection, `itemsAvailable` differs from expected quantity, `itemsLoaded > quantity`, or a failed signature proof.
 - If the bounded window ends and `itemsLoaded` remains incomplete, the system must keep `Create Asset` blocked with a clear config-lines-not-loaded error, including read attempts and the last observed state.
 - The mechanism must distinguish "not propagated yet" from "definitively misconfigured".
+
+## Post-Create Asset UI Handoff Rule
+
+When `/admin/assets/new` creates the marketplace entry from an already deployed Candy Machine, the UI must close the cycle without ambiguity.
+
+Rule:
+
+- In Step 2, while `Collection URI` and `Asset URI` are being generated, the UI must show an explicit animated state so the admin knows the system is creating metadata links.
+- After the entry is created, the primary CTA must show `Entry created` for a short moment.
+- Then the same CTA must become `View marketplace` and navigate to `/marketplace/{entryId}`.
+- The secondary button must switch to a restart state such as `Create another`.
+- `Create another` must clear form data, deploy state, snapshot state, messages, temporary uploads, and return to the top of the form with a new draft.
 
 ## Code To Audit
 

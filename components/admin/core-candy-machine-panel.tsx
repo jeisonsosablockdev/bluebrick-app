@@ -798,7 +798,36 @@ export function CoreCandyMachinePanel({
         <p className="text-xs text-sky-200/85">
           Collection name and asset prefix are auto-generated and server-normalized to avoid Candy Machine length failures.
         </p>
-        {isGeneratingUri ? <p className="text-xs text-cyan-200/90">Generating metadata URIs from uploaded image...</p> : null}
+        {isGeneratingUri ? (
+          <div className="overflow-hidden rounded-2xl border border-cyan-300/35 bg-cyan-400/10 p-3 text-xs text-cyan-50 shadow-[0_0_26px_rgba(34,211,238,0.16)]">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-slate-950/60">
+                <span className="absolute h-full w-full animate-ping rounded-full bg-cyan-300/20" />
+                <span className="h-3 w-3 animate-pulse rounded-full bg-cyan-200 shadow-[0_0_18px_rgba(125,211,252,0.9)]" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-white">Creating metadata links</p>
+                <p className="text-cyan-100/80">Generating Collection URI and Asset URI from the uploaded media.</p>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {["Collection URI", "Asset URI"].map((label) => (
+                <div key={label} className="rounded-xl border border-white/10 bg-slate-950/35 px-3 py-2">
+                  <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">
+                    <span>{label}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+                      Generating
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-white to-emerald-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {!isGeneratingUri && canGenerateMetadataFromPrefill ? (
           <button
             className="text-xs font-semibold text-cyan-200 underline underline-offset-2"
@@ -826,7 +855,11 @@ export function CoreCandyMachinePanel({
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Collection URI
-          <Input value={form.collectionUri} onChange={(event) => setForm((current) => ({ ...current, collectionUri: event.target.value }))} />
+          <Input
+            className={isGeneratingUri ? "animate-pulse border border-cyan-300/60 bg-cyan-300/10 shadow-[0_0_20px_rgba(34,211,238,0.18)]" : undefined}
+            value={form.collectionUri}
+            onChange={(event) => setForm((current) => ({ ...current, collectionUri: event.target.value }))}
+          />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset name prefix
@@ -834,7 +867,11 @@ export function CoreCandyMachinePanel({
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset URI
-          <Input value={form.assetUri} onChange={(event) => setForm((current) => ({ ...current, assetUri: event.target.value }))} />
+          <Input
+            className={isGeneratingUri ? "animate-pulse border border-cyan-300/60 bg-cyan-300/10 shadow-[0_0_20px_rgba(34,211,238,0.18)]" : undefined}
+            value={form.assetUri}
+            onChange={(event) => setForm((current) => ({ ...current, assetUri: event.target.value }))}
+          />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Quantity
