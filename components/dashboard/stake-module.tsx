@@ -1,6 +1,7 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -275,6 +276,62 @@ function StakeConfirmModal(props: {
   );
 }
 
+function StakeProcessingOverlay(props: {
+  assetName: string;
+  action: "Stake" | "Unstake";
+}): ReactElement {
+  const { t } = useI18n();
+  const shouldReduceMotion = useReducedMotion();
+  const processingDescription = props.action === "Stake"
+    ? t({
+        en: "BRIDS is freezing this NFT. Keep the wallet open until confirmation finishes.",
+        es: "BRIDS esta congelando este NFT. Manten la wallet abierta hasta que termine la confirmacion.",
+        pt: "BRIDS esta congelando este NFT. Mantenha a wallet aberta ate a confirmacao terminar."
+      })
+    : t({
+        en: "BRIDS is unfreezing this NFT. Keep the wallet open until confirmation finishes.",
+        es: "BRIDS esta descongelando este NFT. Manten la wallet abierta hasta que termine la confirmacion.",
+        pt: "BRIDS esta descongelando este NFT. Mantenha a wallet aberta ate a confirmacao terminar."
+      });
+
+  return (
+    <motion.div
+      animate={{ opacity: 1 }}
+      aria-live="assertive"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/72 px-4 py-6 backdrop-blur-md"
+      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      role="status"
+      transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
+    >
+      <motion.div
+        animate={{ scale: 1, y: 0 }}
+        className="w-full max-w-md rounded-3xl border border-cyan-300/25 bg-slate-950/90 p-6 text-center shadow-[0_28px_90px_rgba(8,47,73,0.5)]"
+        initial={{ scale: shouldReduceMotion ? 1 : 0.96, y: shouldReduceMotion ? 0 : 10 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: "easeOut" }}
+      >
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-cyan-300/35 bg-cyan-300/10">
+          <span
+            aria-hidden="true"
+            className={shouldReduceMotion
+              ? "h-8 w-8 rounded-full border-2 border-cyan-200"
+              : "h-8 w-8 animate-spin rounded-full border-2 border-cyan-200 border-t-transparent"}
+          />
+        </div>
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">
+          {t({ en: "Processing on-chain action", es: "Procesando accion on-chain", pt: "Processando acao on-chain" })}
+        </p>
+        <h2 className="mt-2 text-xl font-semibold text-white">
+          {props.action} {props.assetName}
+        </h2>
+        <p className="mt-3 text-sm text-white/70">
+          {processingDescription}
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function StakeModule(): ReactElement {
   const { t } = useI18n();
   const { connected, publicKey, signTransaction } = useWallet();
@@ -284,6 +341,7 @@ export function StakeModule(): ReactElement {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<StakeAssetResponse | null>(null);
   const [submittingAssetId, setSubmittingAssetId] = useState<string | null>(null);
+  const [submittingAction, setSubmittingAction] = useState<"Stake" | "Unstake" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -353,6 +411,14 @@ export function StakeModule(): ReactElement {
     return actionLabel(local?.localState ?? selectedAsset.visibleState);
   }, [assetStateById, selectedAsset]);
 
+  const processingAsset = useMemo(() => {
+    if (!submittingAssetId) {
+      return null;
+    }
+
+    return remoteAssets.find((asset) => asset.assetAddress === submittingAssetId) ?? null;
+  }, [remoteAssets, submittingAssetId]);
+
   async function reloadAssets(): Promise<void> {
     const response = await fetch("/api/protected/stake/assets", {
       method: "GET",
@@ -386,6 +452,7 @@ export function StakeModule(): ReactElement {
 
     const optimisticState: LocalStakeState = action === "Stake" ? "pending_stake" : "pending_unstake";
     setSubmittingAssetId(asset.assetAddress);
+    setSubmittingAction(action);
     setAssetStateById((current) => ({
       ...current,
       [asset.assetAddress]: {
@@ -468,11 +535,18 @@ export function StakeModule(): ReactElement {
       setSelectedAsset(null);
     } finally {
       setSubmittingAssetId(null);
+      setSubmittingAction(null);
     }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      <div
+        aria-busy={Boolean(submittingAssetId)}
+        className={submittingAssetId
+          ? "pointer-events-none space-y-4 opacity-60 blur-[2px] transition duration-200"
+          : "space-y-4 transition duration-200"}
+      >
       <Card className="space-y-2">
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "Fractions eligible for Stake / Unstake", es: "Fracciones elegibles para Stake / Unstake", pt: "Frações elegiveis para Stake / Unstake" })}
@@ -600,6 +674,18 @@ export function StakeModule(): ReactElement {
           onConfirm={() => void handleConfirm(selectedAsset, selectedAction)}
         />
       ) : null}
+
+      </div>
+
+      <AnimatePresence>
+        {processingAsset && submittingAction ? (
+          <StakeProcessingOverlay
+            action={submittingAction}
+            assetName={processingAsset.displayName}
+            key={`${processingAsset.assetAddress}-${submittingAction}`}
+          />
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
