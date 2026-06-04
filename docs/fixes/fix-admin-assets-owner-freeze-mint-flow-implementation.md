@@ -567,6 +567,13 @@ Recomendacion:
 - extraer helpers como `waitForDeploySignatures` o `pollDeploySignatureStatuses`;
 - usar constantes nombradas para intentos y delay de polling.
 
+Resolucion:
+
+- Fix aplicado en rama `codex/fix-bri-170-deploy-signature-polling-helper`.
+- `waitForDeploySignatureStatuses` extrae el polling de firmas de deploy desde `runDeployFlow`.
+- Se agregaron constantes nombradas para intentos y delay de polling.
+- Se agrego prueba directa del helper para retries acotados y errores transitorios.
+
 3. Low - `components/admin/asset-creation-form.tsx` sigue concentrando demasiadas responsabilidades.
 
 Problema:
@@ -1212,6 +1219,13 @@ Recommendation:
 
 - extract helpers such as `waitForDeploySignatures` or `pollDeploySignatureStatuses`;
 - use named constants for polling attempts and delay.
+
+Resolution:
+
+- Fix applied in branch `codex/fix-bri-170-deploy-signature-polling-helper`.
+- `waitForDeploySignatureStatuses` extracts deploy signature polling from `runDeployFlow`.
+- Named constants were added for polling attempts and delay.
+- A direct helper test was added for bounded retries and transient errors.
 
 3. Low - `components/admin/asset-creation-form.tsx` still concentrates too many responsibilities.
 
