@@ -768,6 +768,85 @@ export async function markPurchaseAttemptConfirmed(input: {
   return withDbClient(run);
 }
 
+export async function markPurchaseAttemptAssetVerificationFailed(input: {
+  signature: string;
+  errorMessage: string;
+}, options?: DbOptions): Promise<PurchaseAttemptRecord | null> {
+  const signature = typeof input.signature === "string" ? input.signature.trim() : "";
+  if (!signature) {
+    return null;
+  }
+
+  if (!isPurchaseAttemptsDatabaseConfigured()) {
+    const found = await getPurchaseAttemptBySignature({ signature });
+    if (!found) {
+      return null;
+    }
+
+    if (found.status !== "confirmed") {
+      return found;
+    }
+
+    const updated: PurchaseAttemptRecord = {
+      ...found,
+      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
+      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
+      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
+        ? new Date().toISOString()
+        : found.assetVerificationCheckedAt,
+      errorCode: null,
+      errorMessage: null,
+      updatedAt: new Date().toISOString()
+    };
+    setInMemoryAttempt(updated);
+    return { ...updated };
+  }
+
+  const run = async (client: PoolClient) => {
+    const updated = await queryWithClient<PurchaseAttemptRecord>(
+      client,
+      `UPDATE purchase_attempts
+       SET
+         asset_verification_status = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
+           ELSE asset_verification_status
+         END,
+         asset_verification_error = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $2
+           ELSE asset_verification_error
+         END,
+         asset_verification_checked_at = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
+           ELSE asset_verification_checked_at
+         END,
+         error_code = NULL,
+         error_message = NULL
+       WHERE tx_signature = $1
+         AND status = 'confirmed'
+       RETURNING ${PURCHASE_ATTEMPT_SELECT_COLUMNS}`,
+      [signature, input.errorMessage]
+    );
+
+    if (updated) {
+      return updated;
+    }
+
+    return getPurchaseAttemptBySignatureWithClient(
+      client,
+      {
+        signature,
+        forUpdate: false
+      }
+    );
+  };
+
+  if (options?.client) {
+    return run(options.client);
+  }
+
+  return withDbClient(run);
+}
+
 export async function markPurchaseAttemptFailedBySignature(input: {
   signature: string;
   errorCode: string;

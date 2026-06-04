@@ -460,6 +460,13 @@ Requerimiento de fix:
 - registrar la falla en `asset_verification_status = 'failed'` o `reconcile_pending`, preservando `status = 'confirmed'` o un estado equivalente de finalizacion on-chain;
 - permitir que la reconciliacion posterior eleve/verifique assets sin estar bloqueada por un `failed` irreversible.
 
+Resolucion:
+
+- Fix aplicado en rama `fix/bri-170-confirmed-purchase-asset-verification-state`.
+- `confirmAndVerifySubmittedAttempt` marca la compra como `confirmed` despues de confirmar la firma on-chain.
+- si la verificacion posterior de assets falla, solo se actualiza `asset_verification_status = 'failed'` y se conserva `purchase_attempts.status = 'confirmed'`.
+- test agregado para impedir regresion de una compra confirmada a `failed` por falla de verificacion posterior.
+
 2. Medium - Endpoint admin de status hace fan-out RPC sin limite explicito de cantidad, formato o concurrencia.
 
 Evidencia:
@@ -478,6 +485,12 @@ Requerimiento de fix:
 - deduplicar firmas;
 - validar formato de firma antes de tocar RPC;
 - ejecutar RPC con concurrencia acotada o batch seguro si el helper lo soporta.
+
+Decision:
+
+- Ignorado por decision de producto para este ciclo.
+- Riesgo aceptado temporalmente porque la ruta es admin-only y no bloquea el flujo economico de compra.
+- No se implementa fix en BRI-170; si esta ruta crece o se expone a operadores no tecnicos, debe reabrirse como hardening operativo.
 
 3. Medium - Detalles crudos de error RPC pueden exponerse al cliente de compra.
 
@@ -1003,6 +1016,13 @@ Required fix:
 - store the failure in `asset_verification_status = 'failed'` or `reconcile_pending`, preserving `status = 'confirmed'` or an equivalent on-chain-final state;
 - allow later reconciliation to verify assets without being blocked by an irreversible `failed` state.
 
+Resolution:
+
+- Fix applied in branch `fix/bri-170-confirmed-purchase-asset-verification-state`.
+- `confirmAndVerifySubmittedAttempt` marks the purchase as `confirmed` after the on-chain signature is confirmed.
+- if later asset verification fails, only `asset_verification_status = 'failed'` is updated while `purchase_attempts.status = 'confirmed'` is preserved.
+- regression test added to prevent a confirmed purchase from regressing to `failed` because of later verification failure.
+
 2. Medium - Admin status endpoint performs unbounded RPC fan-out without explicit count, format, or concurrency limits.
 
 Evidence:
@@ -1021,6 +1041,12 @@ Required fix:
 - deduplicate signatures;
 - validate signature format before hitting RPC;
 - use bounded concurrency or safe batching if the helper supports it.
+
+Decision:
+
+- Ignored by product decision for this cycle.
+- Risk is temporarily accepted because the route is admin-only and does not block the purchase economic flow.
+- No fix is implemented in BRI-170; if this route grows or is exposed to non-technical operators, reopen it as operational hardening.
 
 3. Medium - Raw RPC/backend error details can be exposed to the purchase client.
 

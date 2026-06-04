@@ -21,6 +21,7 @@ import {
   createPurchaseAttempt,
   getPurchaseAttemptByWalletAndIdempotency,
   isPurchaseAttemptsDatabaseConfigured,
+  markPurchaseAttemptAssetVerificationFailed,
   markPurchaseAttemptConfirmed,
   markPurchaseAttemptPrepared,
   markPurchaseAttemptFailed,
@@ -1228,22 +1229,9 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
   }, options?: { client?: PoolClient }): Promise<PurchaseSubmitResult> {
     try {
       await waitForConfirmedSignature(rpc, inputSignature.signature);
-      const verifiedAssetAddresses = await verifyExpectedMintedAssets({
-        buyerPublicKey,
-        collectionAddress: inputAttempt.collectionAddress,
-        expectedAssetAddresses: inputAttempt.expectedAssetAddresses
-      });
       await markPurchaseAttemptConfirmed({
-        signature: inputSignature.signature,
-        verifiedAssetAddresses
+        signature: inputSignature.signature
       }, options);
-
-      return {
-        attemptId: inputAttempt.id,
-        status: "confirmed",
-        txSignature: inputSignature.signature,
-        submittedAt: inputSignature.submittedAt
-      };
     } catch (error) {
       const mapped = mapSubmitErrorToPurchaseError(error);
       await markPurchaseAttemptFailed(
@@ -1256,6 +1244,32 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
       );
       throw mapped;
     }
+
+    try {
+      const verifiedAssetAddresses = await verifyExpectedMintedAssets({
+        buyerPublicKey,
+        collectionAddress: inputAttempt.collectionAddress,
+        expectedAssetAddresses: inputAttempt.expectedAssetAddresses
+      });
+      await markPurchaseAttemptConfirmed({
+        signature: inputSignature.signature,
+        verifiedAssetAddresses
+      }, options);
+    } catch (error) {
+      const mapped = mapSubmitErrorToPurchaseError(error);
+      await markPurchaseAttemptAssetVerificationFailed({
+        signature: inputSignature.signature,
+        errorMessage: mapped.message
+      }, options);
+      throw mapped;
+    }
+
+    return {
+      attemptId: inputAttempt.id,
+      status: "confirmed",
+      txSignature: inputSignature.signature,
+      submittedAt: inputSignature.submittedAt
+    };
   }
 
   async function submitPreparedAttemptWithCurrentState(inputAttempt: {
