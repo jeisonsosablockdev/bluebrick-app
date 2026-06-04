@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   CoreCandyMachinePanel,
-  isDeploySignatureConfirmedForCreateAsset
+  isDeploySignatureConfirmedForCreateAsset,
+  waitForDeploySignatureStatuses
 } from "@/components/admin/core-candy-machine-panel";
 
 import type { ReactNode } from "react";
@@ -77,6 +78,49 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
       confirmationStatus: "finalized",
       source: "rpc"
     })).toBe(true);
+  });
+
+  it("polls deploy signature statuses with bounded retry helpers", async () => {
+    const fetchStatuses = vi.fn()
+      .mockRejectedValueOnce(new Error("temporary backend failure"))
+      .mockResolvedValueOnce({
+        "sig-1": {
+          confirmed: true,
+          failed: false,
+          confirmationStatus: "confirmed"
+        },
+        "sig-2": {
+          confirmed: false,
+          failed: false,
+          confirmationStatus: "processed"
+        }
+      })
+      .mockResolvedValueOnce({
+        "sig-1": {
+          confirmed: true,
+          failed: false,
+          confirmationStatus: "confirmed"
+        },
+        "sig-2": {
+          confirmed: false,
+          failed: false,
+          confirmationStatus: "finalized"
+        }
+      });
+
+    const result = await waitForDeploySignatureStatuses(["sig-1", "sig-2"], {
+      maxAttempts: 4,
+      pollDelayMs: 0,
+      sleep: async () => undefined,
+      fetchStatuses
+    });
+
+    expect(result).toEqual({
+      allConfirmed: true,
+      hasFailedSignature: false,
+      attempts: 3
+    });
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
   });
 
   afterEach(() => {

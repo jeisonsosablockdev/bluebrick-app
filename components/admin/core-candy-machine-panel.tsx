@@ -83,6 +83,19 @@ type RunSignatureEntry = {
   expectedAddress: string | null;
 };
 
+type DeploySignaturePollResult = {
+  allConfirmed: boolean;
+  hasFailedSignature: boolean;
+  attempts: number;
+};
+
+type DeploySignaturePollOptions = {
+  maxAttempts?: number;
+  pollDelayMs?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
+  fetchStatuses?: (signatures: string[]) => Promise<Record<string, unknown>>;
+};
+
 export type DeployCompletedPayload = {
   candyMachineAddress: string;
   collectionAddress: string;
@@ -160,6 +173,8 @@ type GeneratedMetadataUris = {
 const DEFAULT_START_DATE = () => new Date(Date.now() + 60_000).toISOString();
 const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
+const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
+const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -197,6 +212,62 @@ function readErrorMessage(payload: ErrorResponse | null, fallback: string): stri
   }
 
   return fallback;
+}
+
+function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function fetchDeploySignatureStatuses(signatures: string[]): Promise<Record<string, unknown>> {
+  const statusResponse = await fetch("/api/admin/core-candy-machine/status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signatures })
+  });
+
+  if (!statusResponse.ok) {
+    return {};
+  }
+
+  const payload = await parseJson<{ statuses?: Record<string, unknown> }>(statusResponse);
+  return payload?.statuses ?? {};
+}
+
+export async function waitForDeploySignatureStatuses(
+  signatures: string[],
+  options: DeploySignaturePollOptions = {}
+): Promise<DeploySignaturePollResult> {
+  const maxAttempts = options.maxAttempts ?? DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS;
+  const pollDelayMs = options.pollDelayMs ?? DEPLOY_SIGNATURE_STATUS_POLL_MS;
+  const sleep = options.sleep ?? wait;
+  const fetchStatuses = options.fetchStatuses ?? fetchDeploySignatureStatuses;
+  let allConfirmed = false;
+  let hasFailedSignature = false;
+  let attempts = 0;
+
+  while (!allConfirmed && attempts < maxAttempts) {
+    await sleep(pollDelayMs);
+
+    try {
+      const statuses = await fetchStatuses(signatures);
+      hasFailedSignature = signatures.some((signature) =>
+        isDeploySignatureFailedForCreateAsset(statuses[signature])
+      );
+      allConfirmed = signatures.every((signature) =>
+        isDeploySignatureConfirmedForCreateAsset(statuses[signature])
+      );
+
+      if (hasFailedSignature) {
+        break;
+      }
+    } catch {
+      // Keep polling through transient backend or network errors.
+    }
+
+    attempts++;
+  }
+
+  return { allConfirmed, hasFailedSignature, attempts };
 }
 
 function parsePositiveInt(value: string): number | null {
@@ -672,35 +743,10 @@ export function CoreCandyMachinePanel({
         status: "Waiting for network confirmation via webhook..."
       }));
 
-      // --- SMART POLLING (Local Backend) ---
-      const signaturesToPoll = collectedSignatures.map(s => s.signature);
-      let allConfirmed = false;
-      let hasFailedSignature = false;
-      let attempts = 0;
-      const maxAttempts = 30; // Max 60 seconds (30 attempts * 2s)
-
-      while (!allConfirmed && attempts < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        try {
-          const statusRes = await fetch("/api/admin/core-candy-machine/status", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ signatures: signaturesToPoll })
-          });
-
-          if (statusRes.ok) {
-            const { statuses } = await statusRes.json();
-            hasFailedSignature = signaturesToPoll.some(sig => isDeploySignatureFailedForCreateAsset(statuses?.[sig]));
-            allConfirmed = signaturesToPoll.every(sig => isDeploySignatureConfirmedForCreateAsset(statuses?.[sig]));
-            if (hasFailedSignature) {
-              break;
-            }
-          }
-        } catch (err) {
-          // Ignorar errores de red temporales para seguir intentando
-        }
-        attempts++;
-      }
+      const deploySignatureStatuses = await waitForDeploySignatureStatuses(
+        collectedSignatures.map((entry) => entry.signature)
+      );
+      const { allConfirmed, hasFailedSignature } = deploySignatureStatuses;
 
       if (hasFailedSignature) {
         setErrorMessage("One or more deploy transactions failed on-chain. Create Asset remains blocked.");
@@ -714,7 +760,6 @@ export function CoreCandyMachinePanel({
       if (!allConfirmed) {
          setErrorMessage("Deploy transactions were submitted, but confirmation took too long. They might still succeed in the background. Check Solscan.");
       }
-      // -------------------------------------
 
       setRunState((current) => ({
         ...current,
