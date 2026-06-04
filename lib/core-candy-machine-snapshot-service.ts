@@ -25,6 +25,10 @@ import {
 
 const DAS_PAGE_LIMIT = 1_000;
 const DAS_MAX_PAGES = 100;
+const CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT = 8;
+const CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT = 25;
+const CANDY_MACHINE_STATE_RETRY_MS_DEFAULT = 1_500;
+const CANDY_MACHINE_STATE_RETRY_MS_LIMIT = 5_000;
 
 type SnapshotFinalizeRequest = {
   draftId: string;
@@ -155,6 +159,45 @@ function toInteger(value: unknown): number {
   }
 
   return 0;
+}
+
+function readBoundedIntegerEnv(name: string, fallback: number, min: number, max: number): number {
+  const raw = process.env[name];
+  if (!raw) {
+    return fallback;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < min) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+}
+
+function getCandyMachineStateRetryConfig(): { maxAttempts: number; retryMs: number } {
+  return {
+    maxAttempts: readBoundedIntegerEnv(
+      "CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS",
+      CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT,
+      1,
+      CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT
+    ),
+    retryMs: readBoundedIntegerEnv(
+      "CORE_CM_SNAPSHOT_STATE_RETRY_MS",
+      CANDY_MACHINE_STATE_RETRY_MS_DEFAULT,
+      0,
+      CANDY_MACHINE_STATE_RETRY_MS_LIMIT
+    )
+  };
+}
+
+function wait(ms: number): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function assertPublicKey(input: string, fieldName: string): string {
@@ -496,6 +539,161 @@ function buildVerificationError(code: string, message: string, details: Record<s
   };
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function buildCollectionMismatchError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState
+): SnapshotVerificationError {
+  return buildVerificationError(
+    "COLLECTION_ADDRESS_MISMATCH",
+    "Collection address mismatch between request payload and on-chain candy machine data.",
+    {
+      requestCollectionAddress: input.mint.collectionAddress,
+      onchainCollectionAddress: onchain.collectionAddressOnchain
+    }
+  );
+}
+
+function buildCandyMachineQuantityMismatchError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState,
+  verificationMethod: SnapshotVerificationMethod,
+  foundAssets: number | null
+): SnapshotVerificationError {
+  return buildVerificationError(
+    "CANDY_MACHINE_QUANTITY_MISMATCH",
+    "Candy Machine on-chain quantity does not match the requested deploy quantity.",
+    {
+      expected: input.mint.quantity,
+      candyMachineItemsLoaded: onchain.itemsLoaded,
+      candyMachineItemsAvailable: onchain.itemsAvailable,
+      foundAssets,
+      verificationMethod
+    }
+  );
+}
+
+function buildConfigLinesNotLoadedError({
+  input,
+  onchain,
+  foundAssets,
+  verificationMethod,
+  stateReadAttempts,
+  maxAttempts,
+  lastReadError
+}: {
+  input: SnapshotFinalizeRequest;
+  onchain: CandyMachineOnchainState;
+  foundAssets: number | null;
+  verificationMethod: SnapshotVerificationMethod;
+  stateReadAttempts: number;
+  maxAttempts: number;
+  lastReadError: string | null;
+}): SnapshotVerificationError {
+  return buildVerificationError(
+    "CONFIG_LINES_NOT_LOADED",
+    `Expected ${input.mint.quantity} Candy Machine config lines but found ${onchain.itemsLoaded} loaded on-chain.`,
+    {
+      expected: input.mint.quantity,
+      candyMachineItemsLoaded: onchain.itemsLoaded,
+      candyMachineItemsAvailable: onchain.itemsAvailable,
+      foundAssets,
+      verificationMethod,
+      stateReadAttempts,
+      maxStateReadAttempts: maxAttempts,
+      lastStateReadError: lastReadError
+    }
+  );
+}
+
+function getDefinitiveCandyMachineStateError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState,
+  verificationMethod: SnapshotVerificationMethod,
+  foundAssets: number | null
+): SnapshotVerificationError | null {
+  if (onchain.collectionAddressOnchain !== input.mint.collectionAddress) {
+    return buildCollectionMismatchError(input, onchain);
+  }
+
+  if (onchain.itemsAvailable !== input.mint.quantity || onchain.itemsLoaded > input.mint.quantity) {
+    return buildCandyMachineQuantityMismatchError(input, onchain, verificationMethod, foundAssets);
+  }
+
+  return null;
+}
+
+async function resolveCandyMachineReadiness({
+  input,
+  initialOnchain,
+  mintJobStatus,
+  foundAssets,
+  verificationMethod
+}: {
+  input: SnapshotFinalizeRequest;
+  initialOnchain: CandyMachineOnchainState;
+  mintJobStatus: MintJobSnapshotStatus;
+  foundAssets: number | null;
+  verificationMethod: SnapshotVerificationMethod;
+}): Promise<{
+  onchain: CandyMachineOnchainState;
+  verificationStatus: SnapshotVerificationStatus;
+  verificationError: SnapshotVerificationError | null;
+}> {
+  const retryConfig = getCandyMachineStateRetryConfig();
+  let onchain = initialOnchain;
+  let stateReadAttempts = 1;
+  let lastReadError: string | null = null;
+
+  while (true) {
+    const definitiveError = getDefinitiveCandyMachineStateError(input, onchain, verificationMethod, foundAssets);
+    if (definitiveError) {
+      return {
+        onchain,
+        verificationStatus: "failed",
+        verificationError: definitiveError
+      };
+    }
+
+    if (onchain.itemsLoaded === input.mint.quantity) {
+      return {
+        onchain,
+        verificationStatus: "verified",
+        verificationError: null
+      };
+    }
+
+    if (mintJobStatus !== "completed" || stateReadAttempts >= retryConfig.maxAttempts) {
+      return {
+        onchain,
+        verificationStatus: "failed",
+        verificationError: buildConfigLinesNotLoadedError({
+          input,
+          onchain,
+          foundAssets,
+          verificationMethod,
+          stateReadAttempts,
+          maxAttempts: retryConfig.maxAttempts,
+          lastReadError
+        })
+      };
+    }
+
+    await wait(retryConfig.retryMs);
+    stateReadAttempts += 1;
+
+    try {
+      onchain = await fetchOnchainCandyMachineState(input.mint.candyMachineAddress);
+      lastReadError = null;
+    } catch (error) {
+      lastReadError = getErrorMessage(error);
+    }
+  }
+}
+
 export async function finalizeCoreCandyMachineSnapshot(
   actorPubkey: string,
   rawInput: unknown
@@ -503,15 +701,13 @@ export async function finalizeCoreCandyMachineSnapshot(
   const normalizedActorPubkey = assertPublicKey(actorPubkey, "actorPubkey");
   const input = parseSnapshotFinalizeRequest(rawInput);
 
-  const [proofs, onchain] = await Promise.all([
+  const [proofs, initialOnchain] = await Promise.all([
     enrichProofsWithSignatureStatus(input.mint.signatures),
     fetchOnchainCandyMachineState(input.mint.candyMachineAddress)
   ]);
 
   const mintJob = resolveMintJobStatus(input.mint.quantity, proofs);
-  let verificationMethod: SnapshotVerificationMethod = "candy_machine_items_loaded";
-  let verificationStatus: SnapshotVerificationStatus = "failed";
-  let verificationError: SnapshotVerificationError | null = null;
+  const verificationMethod: SnapshotVerificationMethod = "candy_machine_items_loaded";
   let foundAssets: number | null = null;
 
   try {
@@ -521,34 +717,14 @@ export async function finalizeCoreCandyMachineSnapshot(
     foundAssets = null;
   }
 
-  if (onchain.itemsLoaded === input.mint.quantity) {
-    verificationStatus = "verified";
-  } else {
-    verificationStatus = "failed";
-    verificationError = buildVerificationError(
-      "CONFIG_LINES_NOT_LOADED",
-      `Expected ${input.mint.quantity} Candy Machine config lines but found ${onchain.itemsLoaded} loaded on-chain.`,
-      {
-        expected: input.mint.quantity,
-        candyMachineItemsLoaded: onchain.itemsLoaded,
-        candyMachineItemsAvailable: onchain.itemsAvailable,
-        foundAssets,
-        verificationMethod
-      }
-    );
-  }
-
-  if (onchain.collectionAddressOnchain !== input.mint.collectionAddress) {
-    verificationStatus = "failed";
-    verificationError = buildVerificationError(
-      "COLLECTION_ADDRESS_MISMATCH",
-      "Collection address mismatch between request payload and on-chain candy machine data.",
-      {
-        requestCollectionAddress: input.mint.collectionAddress,
-        onchainCollectionAddress: onchain.collectionAddressOnchain
-      }
-    );
-  }
+  const readiness = await resolveCandyMachineReadiness({
+    input,
+    initialOnchain,
+    mintJobStatus: mintJob.status,
+    foundAssets,
+    verificationMethod
+  });
+  const { onchain, verificationStatus, verificationError } = readiness;
 
   const canCreateAsset = mintJob.status === "completed" && verificationStatus === "verified";
   const marketplaceHandoffStatus: SnapshotMarketplaceHandoffStatus = canCreateAsset ? "ready" : "failed";

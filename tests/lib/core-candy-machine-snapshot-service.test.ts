@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const VALID_ACTOR = "11111111111111111111111111111111";
 const VALID_CANDY_MACHINE = "22222222222222222222222222222222";
@@ -112,9 +112,17 @@ function buildFinalizePayload(overrides?: {
   };
 }
 
-function mockCandyMachineState(itemsLoaded: number, itemsAvailable = 3) {
-  mocks.fetchCandyMachine.mockResolvedValue({
-    collectionMint: VALID_COLLECTION,
+function buildCandyMachineState({
+  itemsLoaded,
+  itemsAvailable = 3,
+  collection = VALID_COLLECTION
+}: {
+  itemsLoaded: number;
+  itemsAvailable?: number;
+  collection?: string;
+}) {
+  return {
+    collectionMint: collection,
     authority: VALID_ACTOR,
     mintAuthority: VALID_ACTOR,
     itemsLoaded,
@@ -128,6 +136,25 @@ function mockCandyMachineState(itemsLoaded: number, itemsAvailable = 3) {
         }
       }
     }
+  };
+}
+
+function mockCandyMachineState(itemsLoaded: number, itemsAvailable = 3) {
+  mocks.fetchCandyMachine.mockResolvedValue(buildCandyMachineState({
+    itemsLoaded,
+    itemsAvailable
+  }));
+}
+
+function mockCandyMachineStateSequence(states: Array<{
+  itemsLoaded: number;
+  itemsAvailable?: number;
+  collection?: string;
+}>) {
+  const fallback = states.at(-1) ?? { itemsLoaded: 0 };
+  mocks.fetchCandyMachine.mockImplementation(async () => {
+    const next = states.shift() ?? fallback;
+    return buildCandyMachineState(next);
   });
 }
 
@@ -159,6 +186,10 @@ describe("lib/core-candy-machine-snapshot-service", () => {
     }));
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("marks deploy snapshot ready when config lines are loaded even if DAS has no minted assets", async () => {
     mockCandyMachineState(3);
 
@@ -180,6 +211,7 @@ describe("lib/core-candy-machine-snapshot-service", () => {
   });
 
   it("blocks deploy snapshot when config lines are not fully loaded", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS", "1");
     mockCandyMachineState(2);
 
     const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
@@ -208,5 +240,56 @@ describe("lib/core-candy-machine-snapshot-service", () => {
       confirmedItems: 0,
       lastError: "Mint proof status is not completed."
     }));
+  });
+
+  it("waits for Candy Machine account state propagation before failing loaded config lines", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS", "2");
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_RETRY_MS", "0");
+    mockCandyMachineStateSequence([
+      { itemsLoaded: 2 },
+      { itemsLoaded: 3 }
+    ]);
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(true);
+    expect(result.verificationStatus).toBe("verified");
+    expect(result.verificationError).toBeNull();
+    expect(mocks.fetchCandyMachine).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails definitively when on-chain Candy Machine quantity does not match the request", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS", "2");
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_RETRY_MS", "0");
+    mockCandyMachineState(2, 2);
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(false);
+    expect(result.verificationStatus).toBe("failed");
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "CANDY_MACHINE_QUANTITY_MISMATCH"
+    }));
+    expect(mocks.fetchCandyMachine).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails definitively when the Candy Machine collection does not match the request", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS", "2");
+    vi.stubEnv("CORE_CM_SNAPSHOT_STATE_RETRY_MS", "0");
+    mockCandyMachineStateSequence([
+      {
+        itemsLoaded: 3,
+        collection: "44444444444444444444444444444444"
+      }
+    ]);
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(false);
+    expect(result.verificationStatus).toBe("failed");
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "COLLECTION_ADDRESS_MISMATCH"
+    }));
+    expect(mocks.fetchCandyMachine).toHaveBeenCalledTimes(1);
   });
 });
