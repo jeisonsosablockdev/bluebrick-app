@@ -79,6 +79,7 @@ Last Updated: 2026-06-02
 - `/admin/mint` is removed from admin navigation and returns `404` on direct access when the release visibility guard is active.
 - This is a surface-area control only; the Solana devnet authority model, mint contracts, and NFT operational policies remain unchanged.
 - Internal non-release environments can re-enable the console with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`.
+- Stake / Unstake is not development-only. `/protected/stake` remains visible in release-like environments, but eligible assets must still pass owner, collection, and `FreezeDelegate Owner` verification.
 
 ## BRIDS Technical Rename
 - Technical project slug references were renamed from `solana-test-1` to `brids`.

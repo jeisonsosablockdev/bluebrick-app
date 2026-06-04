@@ -93,8 +93,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         en: "Manage staking status for your assets.",
         es: "Gestiona el estado de staking de tus activos.",
         pt: "Gerencie o status de staking dos seus ativos."
-      }),
-      releaseControlled: true
+      })
     },
     {
       href: "/protected/rentas",

@@ -13,9 +13,11 @@
 
 ## Protected Routes Hidden In RC/Release
 - `/protected/portfolio`
-- `/protected/stake`
 - `/protected/rentas`
 - `/protected/historial`
+
+## Protected Routes Visible In RC/Release
+- `/protected/stake` is release-visible because Stake / Unstake is now part of the active product flow. Visibility does not bypass wallet/session auth or on-chain NFT eligibility checks.
 
 ## Admin Routes Hidden In RC/Release
 - `/admin/mint`
@@ -34,7 +36,6 @@
 
 ## Scope
 - `app/protected/portfolio/page.tsx`
-- `app/protected/stake/page.tsx`
 - `app/protected/rentas/page.tsx`
 - `app/protected/historial/page.tsx`
 - `app/admin/mint/page.tsx`

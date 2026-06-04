@@ -82,7 +82,16 @@ async function loadSyncPages() {
     import("@/app/admin/distributions/page")
   ]);
 
-  return [portfolio.default, stake.default, rentas.default, historial.default, treasury.default, distributions.default];
+  return {
+    alwaysVisiblePages: [stake.default],
+    releaseControlledPages: [
+      portfolio.default,
+      rentas.default,
+      historial.default,
+      treasury.default,
+      distributions.default
+    ]
+  };
 }
 
 async function loadAsyncPages() {
@@ -113,10 +122,19 @@ describe("release-controlled routes", () => {
     setNodeEnv("production");
     delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
 
-    const syncPages = await loadSyncPages();
+    const { alwaysVisiblePages, releaseControlledPages } = await loadSyncPages();
     const asyncPages = await loadAsyncPages();
 
-    for (const page of syncPages) {
+    for (const page of alwaysVisiblePages) {
+      try {
+        page();
+      } catch (error) {
+        expect(error instanceof Error ? error.message : String(error)).not.toContain("NEXT_NOT_FOUND");
+      }
+    }
+    expect(navigationMocks.notFound).not.toHaveBeenCalled();
+
+    for (const page of releaseControlledPages) {
       expect(() => page()).toThrow("NEXT_NOT_FOUND");
     }
 

@@ -2,7 +2,6 @@ const DEV_ONLY_MODULES_FLAG = "NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES";
 
 const PROTECTED_RELEASE_CONTROLLED_ROUTES = new Set([
   "/protected/portfolio",
-  "/protected/stake",
   "/protected/rentas",
   "/protected/historial"
 ]);

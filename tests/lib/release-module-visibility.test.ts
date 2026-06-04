@@ -56,7 +56,8 @@ describe("lib/release-module-visibility", () => {
   });
 
   it("identifies protected and admin release-controlled routes", () => {
-    expect(isProtectedReleaseControlledRoute("/protected/stake")).toBe(true);
+    expect(isProtectedReleaseControlledRoute("/protected/stake")).toBe(false);
+    expect(isProtectedReleaseControlledRoute("/protected/portfolio")).toBe(true);
     expect(isProtectedReleaseControlledRoute("/protected")).toBe(false);
     expect(isAdminReleaseControlledRoute("/admin/settings")).toBe(true);
     expect(isAdminReleaseControlledRoute("/admin/dashboard")).toBe(false);
@@ -67,6 +68,7 @@ describe("lib/release-module-visibility", () => {
     delete process.env.NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES;
 
     expect(isReleaseControlledRouteVisible("/protected")).toBe(true);
+    expect(isReleaseControlledRouteVisible("/protected/stake")).toBe(true);
     expect(isReleaseControlledRouteVisible("/admin/dashboard")).toBe(true);
     expect(isReleaseControlledRouteVisible("/protected/historial")).toBe(false);
     expect(isReleaseControlledRouteVisible("/admin/treasury")).toBe(false);
