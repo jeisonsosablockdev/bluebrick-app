@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactElement } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
@@ -321,8 +322,9 @@ type SolUsdQuoteResponse = {
 
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
-  const [draftId] = useState<string>(() => createDraftId());
-  const [editSessionId] = useState<string>(() => createDraftId());
+  const router = useRouter();
+  const [draftId, setDraftId] = useState<string>(() => createDraftId());
+  const [editSessionId, setEditSessionId] = useState<string>(() => createDraftId());
   const {
     form,
     formStatus,
@@ -365,11 +367,13 @@ export function AssetCreationForm(): ReactElement {
     setSnapshotFinalize,
     setCreateAssetMessage,
     setIsCreatingMarketplaceEntry,
-    setCreatedMarketplaceEntryId
+    setCreatedMarketplaceEntryId,
+    resetFormState
   } = useAssetCreationFormState(draftId);
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
   const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
   const [isImportFileDragging, setIsImportFileDragging] = useState(false);
+  const [marketplaceCtaReady, setMarketplaceCtaReady] = useState(false);
   const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -1095,8 +1099,23 @@ export function AssetCreationForm(): ReactElement {
     setSnapshotFinalize(null);
     setCreateAssetMessage("");
     setCreatedMarketplaceEntryId(null);
+    setMarketplaceCtaReady(false);
     setShowMintSetup(true);
   };
+
+  const resetAssetCreationFlow = useCallback(() => {
+    cancelCurrentUploadSession(true);
+    const nextDraftId = createDraftId();
+
+    setDraftId(nextDraftId);
+    setEditSessionId(createDraftId());
+    resetFormState(nextDraftId);
+    setPriceInputCurrency("USD");
+    setPendingImportCandidate(null);
+    setIsImportFileDragging(false);
+    setMarketplaceCtaReady(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [cancelCurrentUploadSession, resetFormState]);
 
   const handleCreateAsset = async () => {
     if (!deployCompletedData) {
@@ -1105,6 +1124,7 @@ export function AssetCreationForm(): ReactElement {
 
     setIsCreatingMarketplaceEntry(true);
     setCreateAssetMessage("");
+    setMarketplaceCtaReady(false);
 
     const nftPriceUsd = deriveNftPriceUsd(form);
     const annualRoiPct = deriveAnnualRoiPct(form);
@@ -1194,10 +1214,26 @@ export function AssetCreationForm(): ReactElement {
       });
       setCreateAssetMessage(error instanceof Error ? error.message : fallback);
       setCreatedMarketplaceEntryId(null);
+      setMarketplaceCtaReady(false);
     } finally {
       setIsCreatingMarketplaceEntry(false);
     }
   };
+
+  useEffect(() => {
+    if (!createdMarketplaceEntryId) {
+      setMarketplaceCtaReady(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMarketplaceCtaReady(true);
+    }, 1400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [createdMarketplaceEntryId]);
 
   const handleResetSuggestedCollectionValues = () => {
     const suggestion = suggestCollectionFromIdentity({
@@ -1960,6 +1996,7 @@ export function AssetCreationForm(): ReactElement {
                 setShowMintSetup(false);
                 setCreateAssetMessage("");
                 setCreatedMarketplaceEntryId(null);
+                setMarketplaceCtaReady(false);
               }}
             >
               {t({ en: "Back to step 1", es: "Volver al paso 1", pt: "Voltar ao passo 1" })}
@@ -1987,11 +2024,13 @@ export function AssetCreationForm(): ReactElement {
               setSnapshotFinalize(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
+              setMarketplaceCtaReady(false);
             }}
             onDeployCompleted={(result) => {
               setDeployCompletedData(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
+              setMarketplaceCtaReady(false);
             }}
           />
           <div
@@ -2046,23 +2085,36 @@ export function AssetCreationForm(): ReactElement {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#070b14]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
-          <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
-            <Button className="min-h-11" variant="ghost">
-              {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+          {createdMarketplaceEntryId ? (
+            <Button className="min-h-11" variant="ghost" onClick={resetAssetCreationFlow}>
+              {t({ en: "Create another", es: "Crear otro", pt: "Criar outro" })}
             </Button>
-          </Link>
+          ) : (
+            <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
+              <Button className="min-h-11" variant="ghost">
+                {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+              </Button>
+            </Link>
+          )}
           {showMintSetup ? (
             <Button
               className="min-h-11"
               onClick={() => {
+                if (createdMarketplaceEntryId && marketplaceCtaReady) {
+                  router.push(`/marketplace/${createdMarketplaceEntryId}`);
+                  return;
+                }
+
                 void handleCreateAsset();
               }}
-              disabled={!deployCompletedData || isCreatingMarketplaceEntry || Boolean(createdMarketplaceEntryId)}
+              disabled={!deployCompletedData || isCreatingMarketplaceEntry || (Boolean(createdMarketplaceEntryId) && !marketplaceCtaReady)}
             >
               {isCreatingMarketplaceEntry
                 ? t({ en: "Creating...", es: "Creando...", pt: "Criando..." })
                 : createdMarketplaceEntryId
-                  ? t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
+                  ? marketplaceCtaReady
+                    ? t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })
+                    : t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
                   : t({ en: "Create Asset", es: "Create Asset", pt: "Create Asset" })}
             </Button>
           ) : null}

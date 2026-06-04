@@ -11,8 +11,12 @@ import {
   selectDerivedMintQuantityFromType,
   selectMintQuantityValue,
   selectSnapshotFormData,
+  setCreateAssetFlow,
+  setDeployCompletedData,
   setForm,
   setFormField,
+  setShowMintSetup,
+  setSnapshotFinalize,
   setUploadRefs,
   setUploadState
 } from "@/components/admin/asset-creation";
@@ -56,6 +60,46 @@ describe("asset creation canonical state", () => {
     expect(reset.draftId).toBe("draft-2");
     expect(reset.form.assetName).toBe("");
     expect(reset.validationErrors).toEqual([]);
+  });
+
+  it("clears post-create marketplace and mint handoff state on reset", () => {
+    const initial = createInitialAssetCreationState("draft-1");
+    const withMintSetup = assetCreationReducer(initial, setShowMintSetup(true));
+    const withDeploy = assetCreationReducer(withMintSetup, setDeployCompletedData({
+      candyMachineAddress: "CandyMachine111111111111111111111111111111",
+      collectionAddress: "Collection11111111111111111111111111111111",
+      quantity: 3,
+      signatures: []
+    }));
+    const withSnapshot = assetCreationReducer(withDeploy, setSnapshotFinalize({
+      snapshotId: "snapshot-1",
+      mintJobId: "mint-job-1",
+      verificationStatus: "verified",
+      verificationMethod: "candy_machine_items_loaded",
+      marketplaceHandoffStatus: "ready",
+      expectedQuantity: 3,
+      foundAssets: 0,
+      canCreateAsset: true,
+      verificationError: null
+    }));
+    const withCreatedEntry = assetCreationReducer(withSnapshot, setCreateAssetFlow({
+      createAssetMessage: "Entry created",
+      createdMarketplaceEntryId: "entry-1"
+    }));
+    const withUploads = assetCreationReducer(withCreatedEntry, setUploadRefs({
+      ...withCreatedEntry.uploadRefs,
+      coverImage: ["blob-ref-1"]
+    }));
+
+    const reset = assetCreationReducer(withUploads, resetState("draft-2"));
+
+    expect(reset.draftId).toBe("draft-2");
+    expect(reset.showMintSetup).toBe(false);
+    expect(reset.deployCompletedData).toBeNull();
+    expect(reset.snapshotFinalize).toBeNull();
+    expect(reset.createAssetMessage).toBe("");
+    expect(reset.createdMarketplaceEntryId).toBeNull();
+    expect(reset.uploadRefs.coverImage).toEqual([]);
   });
 
   it("replaces form and upload slices through canonical replace actions", () => {
