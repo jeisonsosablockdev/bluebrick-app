@@ -49,6 +49,16 @@ La comparacion ignora solamente `recentBlockhash`.
 
 Aceptar cambios de blockhash es seguro solo si todo lo demas permanece igual. Por eso el fix no compara una representacion laxa del payload; compara el fingerprint estructural completo de la accion firmada.
 
+## Slice UI de procesamiento
+
+Stake / Unstake debe comunicar claramente que la accion sigue en curso despues de confirmar. Mientras se prepara, firma, envia y resincroniza la accion:
+
+- la superficie de Stake queda desenfocada;
+- las interacciones duplicadas quedan bloqueadas;
+- aparece un overlay fijo con estado de procesamiento on-chain;
+- la animacion usa Motion 12 (`motion/react`) y respeta `prefers-reduced-motion`;
+- no cambia la transaccion preparada ni el contrato de validacion backend.
+
 ## English
 
 ## Summary
@@ -97,3 +107,13 @@ The comparison ignores only `recentBlockhash`.
 ## Risk
 
 Accepting blockhash changes is safe only if everything else stays identical. Therefore, the fix does not compare a loose payload representation; it compares the full structural fingerprint of the signed action.
+
+## Processing UI Slice
+
+Stake / Unstake must clearly communicate that the action is still in progress after confirmation. While the action is prepared, signed, submitted, and resynced:
+
+- the Stake surface is blurred;
+- duplicate interactions remain blocked;
+- a fixed overlay shows on-chain processing status;
+- animation uses Motion 12 (`motion/react`) and respects `prefers-reduced-motion`;
+- the prepared transaction and backend validation contract do not change.
