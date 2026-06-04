@@ -37,6 +37,7 @@ import { withDbClient } from "@/lib/db/pool";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { createPurchaseThirdPartySigner } from "@/lib/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/solana";
+import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createKitRpcConnection,
@@ -200,44 +201,24 @@ const DEFAULT_MAX_PURCHASE_QUANTITY = 10;
 const quoteCache = new Map<string, QuoteCacheEntry>();
 const quoteInFlight = new Map<string, Promise<GuardSnapshot>>();
 
-function readBoundedIntegerEnv(
-  env: Record<string, string | undefined>,
-  name: string,
-  fallback: number,
-  min: number,
-  max: number
-): number {
-  const raw = env[name]?.trim();
-  if (!raw) {
-    return fallback;
-  }
-
-  const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < min) {
-    return fallback;
-  }
-
-  return Math.min(parsed, max);
-}
-
 export function getPurchaseAssetVerificationRetryConfig(
   env: Record<string, string | undefined> = process.env
 ): { maxAttempts: number; retryDelayMs: number } {
   return {
-    maxAttempts: readBoundedIntegerEnv(
+    maxAttempts: readBoundedIntegerEnv({
       env,
-      "PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS",
-      PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT,
-      1,
-      PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT
-    ),
-    retryDelayMs: readBoundedIntegerEnv(
+      name: "PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS",
+      fallback: PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT,
+      min: 1,
+      max: PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT
+    }),
+    retryDelayMs: readBoundedIntegerEnv({
       env,
-      "PURCHASE_ASSET_VERIFICATION_RETRY_MS",
-      PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT,
-      0,
-      PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT
-    )
+      name: "PURCHASE_ASSET_VERIFICATION_RETRY_MS",
+      fallback: PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT,
+      min: 0,
+      max: PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT
+    })
   };
 }
 

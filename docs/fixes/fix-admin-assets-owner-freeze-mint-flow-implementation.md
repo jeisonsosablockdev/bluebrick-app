@@ -603,6 +603,13 @@ Recomendacion:
 
 - mover la logica comun a un helper compartido de runtime config cuando aparezca otro caso similar.
 
+Resolucion:
+
+- Fix aplicado en rama `codex/fix-bri-170-runtime-retry-config-helper`.
+- `readBoundedIntegerEnv` vive en `lib/runtime-config.ts`.
+- `lib/purchase-service.ts` y `lib/core-candy-machine-snapshot-service.ts` usan el helper comun sin cambiar sus nombres publicos de config.
+- Se agregaron tests unitarios de defaults, limites y valores invalidos para el helper comun.
+
 5. Low - `app/api/admin/core-candy-machine/status/route.ts` mezcla parsing de request y resolucion RPC con tipos mas genericos de lo necesario.
 
 Problema:
@@ -1262,6 +1269,13 @@ Problem:
 Recommendation:
 
 - move the common logic into a shared runtime config helper when another similar case appears.
+
+Resolution:
+
+- Fix applied in branch `codex/fix-bri-170-runtime-retry-config-helper`.
+- `readBoundedIntegerEnv` now lives in `lib/runtime-config.ts`.
+- `lib/purchase-service.ts` and `lib/core-candy-machine-snapshot-service.ts` use the shared helper without changing their public config names.
+- Unit tests were added for defaults, limits, and invalid values in the shared helper.
 
 5. Low - `app/api/admin/core-candy-machine/status/route.ts` mixes request parsing and RPC resolution with types that are more generic than needed.
 
