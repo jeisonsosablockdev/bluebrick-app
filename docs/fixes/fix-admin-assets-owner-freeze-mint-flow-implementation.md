@@ -510,6 +510,13 @@ Requerimiento de fix:
 - sanear `error.details` antes de responder en `/api/purchase/submit`;
 - devolver al cliente un error estable con `flowId`, intentos y estado de reconciliacion, no `cause` interno.
 
+Resolucion:
+
+- Fix aplicado en rama `fix/bri-170-sanitize-purchase-submit-errors`.
+- `/api/purchase/submit` devuelve solo detalles cliente permitidos: `flowId`, intentos de verificacion, delay y estado estable `assetVerificationStatus`.
+- `cause`, `assetAddress`, errores RPC crudos y detalles internos dejan de salir en la respuesta HTTP.
+- test agregado para impedir regresion de exposicion de `cause` o direcciones internas.
+
 Estado del audit:
 
 - No se encontro nueva exposicion de private keys; el signer de compra sigue viniendo de `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY` y el fallback deterministico queda limitado a `NODE_ENV === "test"`.
@@ -1065,6 +1072,13 @@ Required fix:
 - keep raw details only in logs/trace/internal DB;
 - sanitize `error.details` before returning from `/api/purchase/submit`;
 - return a stable client error with `flowId`, attempts, and reconciliation state, not internal `cause`.
+
+Resolution:
+
+- Fix applied in branch `fix/bri-170-sanitize-purchase-submit-errors`.
+- `/api/purchase/submit` returns only allowed client details: `flowId`, verification attempts, retry delay, and stable `assetVerificationStatus`.
+- `cause`, `assetAddress`, raw RPC errors, and internal details are no longer returned in the HTTP response.
+- regression test added to prevent future exposure of `cause` or internal addresses.
 
 Audit status:
 
