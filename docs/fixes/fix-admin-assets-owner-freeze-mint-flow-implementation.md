@@ -585,6 +585,13 @@ Recomendacion:
 
 - extraer posteriormente un hook de handoff post-creacion, por ejemplo `usePostCreateMarketplaceHandoff`, si vuelve a crecer la superficie.
 
+Resolucion:
+
+- Fix aplicado en rama `codex/fix-bri-170-asset-creation-handoff-hook`.
+- `usePostCreateMarketplaceHandoff` extrae el delay del CTA, reset del handoff y navegacion a marketplace.
+- `selectMarketplaceHandoffState` centraliza el estado derivado del CTA primario/secundario.
+- El componente conserva la creacion de payload, pero deja de manejar internamente el temporizador y la navegacion post-creacion.
+
 4. Low - `lib/purchase-service.ts` y `lib/core-candy-machine-snapshot-service.ts` tienen helpers similares para parsear configuracion de retry desde env.
 
 Problema:
@@ -1237,6 +1244,13 @@ Problem:
 Recommendation:
 
 - later extract a post-create handoff hook, for example `usePostCreateMarketplaceHandoff`, if this surface grows again.
+
+Resolution:
+
+- Fix applied in branch `codex/fix-bri-170-asset-creation-handoff-hook`.
+- `usePostCreateMarketplaceHandoff` extracts CTA delay, handoff reset, and marketplace navigation.
+- `selectMarketplaceHandoffState` centralizes the derived primary/secondary CTA state.
+- The component still owns payload creation, but no longer manages the post-create timer and navigation internally.
 
 4. Low - `lib/purchase-service.ts` and `lib/core-candy-machine-snapshot-service.ts` have similar helpers for parsing retry config from env.
 
