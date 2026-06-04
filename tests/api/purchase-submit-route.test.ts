@@ -29,11 +29,12 @@ vi.mock("@/lib/purchase-service", () => ({
 
 import { POST } from "@/app/api/purchase/submit/route";
 
-function createRequest(body: unknown): NextRequest {
+function createRequest(body: unknown, headers?: Record<string, string>): NextRequest {
   return new NextRequest("https://example.com/api/purchase/submit", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...headers
     },
     body: JSON.stringify(body)
   });
@@ -133,5 +134,44 @@ describe("POST /api/purchase/submit", () => {
 
     expect(response.status).toBe(409);
     expect(payload.error.code).toBe("INSUFFICIENT_FUNDS");
+  });
+
+  it("sanitizes internal purchase error details before returning them to the client", async () => {
+    routeMocks.submitPurchase.mockRejectedValueOnce(
+      new routeMocks.MockPurchaseFlowError(
+        "TRANSACTION_FAILED",
+        "Could not verify minted asset after transaction confirmation.",
+        409,
+        {
+          assetAddress: "AssetSecret111111111111111111111111111111111",
+          cause: "RPC provider internal timeout at private-host.local",
+          verificationAttempts: 24,
+          verificationRetryDelayMs: 1500
+        }
+      )
+    );
+
+    const response = await POST(
+      createRequest(
+        {
+          attemptId: "attempt-1",
+          idempotencyKey: "0195af5f-95d7-7f28-8fd7-8ad4bc8f6af3",
+          signedTransactionBase64: "AQ=="
+        },
+        { "x-flow-id": "flow-safe-details-123" }
+      )
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(payload.error.details).toEqual({
+      flowId: "flow-safe-details-123",
+      assetVerificationStatus: "failed",
+      verificationAttempts: 24,
+      verificationRetryDelayMs: 1500
+    });
+    expect(JSON.stringify(payload)).not.toContain("private-host.local");
+    expect(JSON.stringify(payload)).not.toContain("AssetSecret");
+    expect(JSON.stringify(payload)).not.toContain("cause");
   });
 });

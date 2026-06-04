@@ -37,6 +37,38 @@ function normalizeBody(raw: unknown): { attemptId: string; idempotencyKey: strin
   };
 }
 
+function numberDetail(details: Record<string, unknown> | undefined, key: string): number | null {
+  const value = details?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function stringDetail(details: Record<string, unknown> | undefined, key: string): string | null {
+  const value = details?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function buildClientSafeErrorDetails(error: PurchaseFlowError, flowId: string): Record<string, unknown> {
+  const safeDetails: Record<string, unknown> = { flowId };
+  const verificationAttempts = numberDetail(error.details, "verificationAttempts");
+  const verificationRetryDelayMs = numberDetail(error.details, "verificationRetryDelayMs");
+  const complianceStatus = stringDetail(error.details, "complianceStatus");
+
+  if (verificationAttempts !== null) {
+    safeDetails.verificationAttempts = verificationAttempts;
+    safeDetails.assetVerificationStatus = "failed";
+  }
+
+  if (verificationRetryDelayMs !== null) {
+    safeDetails.verificationRetryDelayMs = verificationRetryDelayMs;
+  }
+
+  if (complianceStatus) {
+    safeDetails.complianceStatus = complianceStatus;
+  }
+
+  return safeDetails;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const flowId = getFlowId(request.headers.get("x-flow-id"));
   const roleResult = getRequestRole(request);
@@ -131,7 +163,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: {
             code: error.code,
             message: error.message,
-            details: error.details ?? null
+            details: buildClientSafeErrorDetails(error, flowId)
           }
         },
         { status: error.status }
