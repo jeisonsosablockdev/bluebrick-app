@@ -16,6 +16,7 @@ import {
   upsertAssetMintSnapshot,
   upsertMintJobFromSnapshot
 } from "@/lib/core-candy-machine-snapshot-repository";
+import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
   createKitRpcConnection,
@@ -161,34 +162,22 @@ function toInteger(value: unknown): number {
   return 0;
 }
 
-function readBoundedIntegerEnv(name: string, fallback: number, min: number, max: number): number {
-  const raw = process.env[name];
-  if (!raw) {
-    return fallback;
-  }
-
-  const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < min) {
-    return fallback;
-  }
-
-  return Math.min(parsed, max);
-}
-
 function getCandyMachineStateRetryConfig(): { maxAttempts: number; retryMs: number } {
   return {
-    maxAttempts: readBoundedIntegerEnv(
-      "CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS",
-      CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT,
-      1,
-      CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT
-    ),
-    retryMs: readBoundedIntegerEnv(
-      "CORE_CM_SNAPSHOT_STATE_RETRY_MS",
-      CANDY_MACHINE_STATE_RETRY_MS_DEFAULT,
-      0,
-      CANDY_MACHINE_STATE_RETRY_MS_LIMIT
-    )
+    maxAttempts: readBoundedIntegerEnv({
+      env: process.env,
+      name: "CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS",
+      fallback: CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT,
+      min: 1,
+      max: CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT
+    }),
+    retryMs: readBoundedIntegerEnv({
+      env: process.env,
+      name: "CORE_CM_SNAPSHOT_STATE_RETRY_MS",
+      fallback: CANDY_MACHINE_STATE_RETRY_MS_DEFAULT,
+      min: 0,
+      max: CANDY_MACHINE_STATE_RETRY_MS_LIMIT
+    })
   };
 }
 
