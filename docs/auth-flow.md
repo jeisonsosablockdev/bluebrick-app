@@ -234,7 +234,6 @@ Last Updated: 2026-06-02
 - Development-only dashboard/admin modules now follow a release visibility policy.
 - In RC/release-like environments, the following routes are intentionally hidden from navigation and return `404` on direct access:
   - `/protected/portfolio`
-  - `/protected/stake`
   - `/protected/rentas`
   - `/protected/historial`
   - `/admin/mint`
@@ -243,6 +242,7 @@ Last Updated: 2026-06-02
   - `/admin/settings`
 - Local development keeps those modules visible by default.
 - Internal non-release environments can explicitly re-enable them with `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`.
+- `/protected/stake` is no longer development-only; Stake / Unstake is a release-visible protected product route and remains guarded by wallet/session ownership checks.
 
 ## BRIDS Technical Rename
 - Technical project slug references were renamed from `solana-test-1` to `brids`.

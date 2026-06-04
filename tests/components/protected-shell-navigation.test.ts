@@ -73,6 +73,7 @@ describe("components/dashboard/protected-shell", () => {
     expect(routes).toEqual([
       "/protected",
       "/protected/referrals",
+      "/protected/stake",
       "/protected/perfil"
     ]);
   });

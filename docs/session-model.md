@@ -185,6 +185,7 @@ Last Updated: 2026-06-02
 - Hidden routes are removed from navigation and fail closed with `404` on direct access instead of exposing development-only UI.
 - Local development keeps those modules available by default for internal workflows.
 - Explicit non-release reactivation is allowed through `NEXT_PUBLIC_ENABLE_DEV_ONLY_MODULES=true`.
+- `/protected/stake` is excluded from the development-only route list; Stake / Unstake remains release-visible and relies on the existing wallet-bound session plus on-chain ownership checks.
 
 ## BRIDS Technical Rename
 - Technical project slug references were renamed from `solana-test-1` to `brids`.
