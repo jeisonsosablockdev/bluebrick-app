@@ -6,6 +6,7 @@ import {
   createPurchaseAttempt,
   getPurchaseAttemptBySignature,
   getPurchaseAttemptByWalletAndIdempotency,
+  markPurchaseAttemptAssetVerificationFailed,
   markPurchaseAttemptConfirmed,
   markPurchaseAttemptFailed,
   markPurchaseAttemptFailedBySignature,
@@ -213,6 +214,47 @@ describe("lib/purchase-attempts-repository (in-memory)", () => {
     expect(confirmed?.verifiedAssetAddresses).toEqual(["AssetConfirmed11111111111111111111111111111"]);
     expect(confirmed?.assetVerificationStatus).toBe("verified");
     expect(confirmed?.assetVerificationCheckedAt).not.toBeNull();
+  });
+
+  it("keeps an on-chain confirmed purchase confirmed when asset verification fails later", async () => {
+    const walletPublicKey = `wallet-${randomUUID()}`;
+    const idempotencyKey = `idem-${randomUUID()}`;
+    const created = await createPurchaseAttempt({
+      propertyId: "central-norte",
+      walletPublicKey,
+      candyMachineAddress: "CM11111111111111111111111111111111111111111",
+      collectionAddress: "COL1111111111111111111111111111111111111111",
+      challengeId: "challenge-confirmed-asset-verification-failed",
+      clientIp: "127.0.0.1",
+      quotedPriceLamports: 10_000,
+      idempotencyKey,
+      idempotencyExpiresAt: "2026-03-20T12:05:00.000Z"
+    });
+
+    await markPurchaseAttemptPrepared({
+      id: created.id,
+      preparedPriceLamports: 10_000,
+      cacheUpdatedAt: "2026-03-20T12:00:00.000Z",
+      preparedTxMessageBase64: "AQ==",
+      expectedAssetAddresses: ["AssetPending111111111111111111111111111111"]
+    });
+    await markPurchaseAttemptSubmitted({
+      id: created.id,
+      signature: "sig-confirmed-verification-failed-123"
+    });
+    await markPurchaseAttemptConfirmed({ signature: "sig-confirmed-verification-failed-123" });
+
+    const updated = await markPurchaseAttemptAssetVerificationFailed({
+      signature: "sig-confirmed-verification-failed-123",
+      errorMessage: "asset verification failed after confirmation"
+    });
+
+    expect(updated?.status).toBe("confirmed");
+    expect(updated?.errorCode).toBeNull();
+    expect(updated?.errorMessage).toBeNull();
+    expect(updated?.assetVerificationStatus).toBe("failed");
+    expect(updated?.assetVerificationError).toBe("asset verification failed after confirmation");
+    expect(updated?.assetVerificationCheckedAt).not.toBeNull();
   });
 
   it("does not regress confirmed attempt to failed when webhook is late", async () => {
