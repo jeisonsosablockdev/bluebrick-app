@@ -5,3 +5,4 @@ export * from "@/components/admin/asset-creation/selectors";
 export * from "@/components/admin/asset-creation/use-asset-creation-form-state";
 export * from "@/components/admin/asset-creation/use-asset-upload-workflow";
 export * from "@/components/admin/asset-creation/use-asset-import-jobs";
+export * from "@/components/admin/asset-creation/use-post-create-marketplace-handoff";

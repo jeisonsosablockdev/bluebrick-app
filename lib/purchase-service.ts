@@ -1,4 +1,4 @@
-import { mplCore } from "@metaplex-foundation/mpl-core";
+import { addPlugin, fetchAsset, mplCore } from "@metaplex-foundation/mpl-core";
 import {
   fetchCandyMachine,
   findCandyGuardPda,
@@ -15,18 +15,14 @@ import {
   type Umi
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
-import {
-  Connection,
-  PublicKey,
-  VersionedTransaction
-} from "@solana/web3.js";
 import type { PoolClient } from "pg";
 
 import {
   createPurchaseAttempt,
   getPurchaseAttemptByWalletAndIdempotency,
   isPurchaseAttemptsDatabaseConfigured,
+  markPurchaseAttemptAssetVerificationFailed,
+  markPurchaseAttemptConfirmed,
   markPurchaseAttemptPrepared,
   markPurchaseAttemptFailed,
   markPurchaseAttemptSubmitted
@@ -41,6 +37,28 @@ import { withDbClient } from "@/lib/db/pool";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { createPurchaseThirdPartySigner } from "@/lib/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/solana";
+import { readBoundedIntegerEnv } from "@/lib/runtime-config";
+import {
+  convertUmiTransactionToLegacyVersionedTransaction,
+  createKitRpcConnection,
+  deserializeLegacyVersionedTransaction,
+  getLegacyTransactionPayer,
+  getLegacyTransactionRequiredSignerCount,
+  getLegacyTransactionSignatureAt,
+  getLegacyTransactionStaticAccountKeys,
+  getSignatureStatusWithKitRpc,
+  normalizeLegacyPublicKey,
+  sendRawTransactionWithKitRpc,
+  serializeLegacyVersionedMessage,
+  serializeLegacyVersionedTransaction,
+  type KitRpcConnection,
+  type LegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
+import {
+  getMplCoreAssetCollection,
+  getMplCoreAssetOwner,
+  hasOwnerFreezeDelegatePlugin
+} from "@/lib/mpl-core-freeze-delegate";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 export type PurchaseErrorCode =
@@ -141,7 +159,7 @@ export type PurchasePrepareResult = {
 
 export type PurchaseSubmitResult = {
   attemptId: string;
-  status: "submitted";
+  status: "submitted" | "confirmed";
   txSignature: string;
   submittedAt: string;
 };
@@ -172,10 +190,37 @@ export class PurchaseFlowError extends Error {
 
 const QUOTE_CACHE_TTL_MS = 45_000;
 const PURCHASE_ATTEMPT_IDEMPOTENCY_TTL_MS = 5 * 60 * 1_000;
+const PURCHASE_SUBMIT_CONFIRMATION_POLLS = 10;
+const PURCHASE_SUBMIT_CONFIRMATION_DELAY_MS = 1_000;
+const PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT = 24;
+const PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT = 120;
+const PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT = 1_500;
+const PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT = 5_000;
 const DEFAULT_PURCHASE_QUANTITY_MODE: PurchaseQuantityMode = "MULTI_ENABLED";
 const DEFAULT_MAX_PURCHASE_QUANTITY = 10;
 const quoteCache = new Map<string, QuoteCacheEntry>();
 const quoteInFlight = new Map<string, Promise<GuardSnapshot>>();
+
+export function getPurchaseAssetVerificationRetryConfig(
+  env: Record<string, string | undefined> = process.env
+): { maxAttempts: number; retryDelayMs: number } {
+  return {
+    maxAttempts: readBoundedIntegerEnv({
+      env,
+      name: "PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS",
+      fallback: PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT,
+      min: 1,
+      max: PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT
+    }),
+    retryDelayMs: readBoundedIntegerEnv({
+      env,
+      name: "PURCHASE_ASSET_VERIFICATION_RETRY_MS",
+      fallback: PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT,
+      min: 0,
+      max: PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT
+    })
+  };
+}
 
 export function invalidatePurchaseQuoteCache(candyMachineAddress?: string): void {
   const normalized = typeof candyMachineAddress === "string" ? candyMachineAddress.trim() : "";
@@ -259,7 +304,7 @@ export function resolvePreparedPriceLamports(
 
 function parsePublicKey(raw: string, fieldName: string): string {
   try {
-    return new PublicKey(raw).toBase58();
+    return normalizeLegacyPublicKey(raw);
   } catch {
     throw new PurchaseFlowError("TRANSACTION_FAILED", `${fieldName} is not a valid Solana public key.`, 400);
   }
@@ -305,6 +350,10 @@ export function evaluateMintAvailability(
 }
 
 export function mapSubmitErrorToPurchaseError(error: unknown): PurchaseFlowError {
+  if (error instanceof PurchaseFlowError) {
+    return error;
+  }
+
   const message = error instanceof Error ? error.message : "Transaction failed.";
   const normalized = message.toLowerCase();
 
@@ -509,7 +558,7 @@ function isAttemptExpired(idempotencyExpiresAt: string): boolean {
   return expiresAtMs <= Date.now();
 }
 
-function parseSignedTransaction(base64Value: string): VersionedTransaction {
+function parseSignedTransaction(base64Value: string): LegacyVersionedTransaction {
   const raw = fromBase64(base64Value);
 
   if (!raw.length) {
@@ -517,7 +566,7 @@ function parseSignedTransaction(base64Value: string): VersionedTransaction {
   }
 
   try {
-    return VersionedTransaction.deserialize(raw);
+    return deserializeLegacyVersionedTransaction(raw);
   } catch {
     throw new PurchaseFlowError("TRANSACTION_FAILED", "Signed transaction payload is invalid.", 400);
   }
@@ -537,8 +586,8 @@ function hasZeroedSignature(signature: Uint8Array | null | undefined): boolean {
   return true;
 }
 
-function assertThirdPartySignerSigned(transaction: VersionedTransaction, thirdPartySignerPublicKey: string): void {
-  const signerIndex = transaction.message.staticAccountKeys.findIndex((key) => key.toBase58() === thirdPartySignerPublicKey);
+function assertThirdPartySignerSigned(transaction: LegacyVersionedTransaction, thirdPartySignerPublicKey: string): void {
+  const signerIndex = getLegacyTransactionStaticAccountKeys(transaction).findIndex((key) => key === thirdPartySignerPublicKey);
 
   if (signerIndex < 0) {
     throw new PurchaseFlowError(
@@ -548,7 +597,7 @@ function assertThirdPartySignerSigned(transaction: VersionedTransaction, thirdPa
     );
   }
 
-  if (signerIndex >= transaction.message.header.numRequiredSignatures) {
+  if (signerIndex >= getLegacyTransactionRequiredSignerCount(transaction)) {
     throw new PurchaseFlowError(
       "TRANSACTION_FAILED",
       "Candy Guard third-party signer is not marked as a required signer in prepared transaction.",
@@ -556,7 +605,7 @@ function assertThirdPartySignerSigned(transaction: VersionedTransaction, thirdPa
     );
   }
 
-  const signerSignature = transaction.signatures[signerIndex];
+  const signerSignature = getLegacyTransactionSignatureAt(transaction, signerIndex);
   if (hasZeroedSignature(signerSignature)) {
     throw new PurchaseFlowError(
       "TRANSACTION_FAILED",
@@ -566,14 +615,14 @@ function assertThirdPartySignerSigned(transaction: VersionedTransaction, thirdPa
   }
 }
 
-function assertPayerMatchesBuyer(transaction: VersionedTransaction, expectedBuyer: string): void {
-  const payer = transaction.message.staticAccountKeys[0];
+function assertPayerMatchesBuyer(transaction: LegacyVersionedTransaction, expectedBuyer: string): void {
+  const payer = getLegacyTransactionPayer(transaction);
 
   if (!payer) {
     throw new PurchaseFlowError("TRANSACTION_FAILED", "Could not determine transaction payer.", 400);
   }
 
-  if (payer.toBase58() !== expectedBuyer) {
+  if (payer !== expectedBuyer) {
     throw new PurchaseFlowError("UNAUTHORIZED", "Signed transaction payer does not match authenticated wallet.", 403);
   }
 }
@@ -892,16 +941,30 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
               }
             };
 
-        builder = builder.add(mintV1(umi, {
-          candyMachine: candyMachineAddress,
-          candyGuard,
-          collection: collectionAddress,
-          payer: buyerSigner,
-          minter: buyerSigner,
-          owner: buyerSigner.publicKey,
-          asset: assetSigner,
-          mintArgs
-        }));
+        builder = builder
+          .add(mintV1(umi, {
+            candyMachine: candyMachineAddress,
+            candyGuard,
+            collection: collectionAddress,
+            payer: buyerSigner,
+            minter: buyerSigner,
+            owner: buyerSigner.publicKey,
+            asset: assetSigner,
+            mintArgs
+          }))
+          .add(addPlugin(umi, {
+            asset: assetSigner.publicKey,
+            collection: collectionAddress,
+            payer: buyerSigner,
+            authority: buyerSigner,
+            plugin: {
+              type: "FreezeDelegate",
+              frozen: false,
+              authority: {
+                type: "Owner"
+              }
+            }
+          }));
       }
 
       return { expectedAssetAddresses, builder };
@@ -937,10 +1000,10 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
     }
 
     const signedBuilderTx = await mintBatchBuilder.buildAndSign(umi);
-    const web3Tx = toWeb3JsTransaction(signedBuilderTx as never);
+    const web3Tx = convertUmiTransactionToLegacyVersionedTransaction(signedBuilderTx);
     assertThirdPartySignerSigned(web3Tx, freshSnapshot.thirdPartySignerKey);
     const transactionBase64 = toBase64(web3Tx.serialize());
-    const preparedTxMessageBase64 = toBase64(web3Tx.message.serialize());
+    const preparedTxMessageBase64 = toBase64(serializeLegacyVersionedMessage(web3Tx));
     const prepared = await markPurchaseAttemptPrepared({
       id: attempt.id,
       preparedPriceLamports: resolvePreparedPriceLamports(
@@ -948,7 +1011,8 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
         freshSnapshot.priceLamports
       ),
       cacheUpdatedAt: freshSnapshot.fetchedAt,
-      preparedTxMessageBase64
+      preparedTxMessageBase64,
+      expectedAssetAddresses
     });
 
     if (!prepared || prepared.status !== "prepared") {
@@ -1000,11 +1064,132 @@ export async function preparePurchase(input: PreparePurchaseInput): Promise<Purc
   }
 }
 
-async function sendSignedTransaction(connection: Connection, transaction: VersionedTransaction): Promise<string> {
-  return connection.sendRawTransaction(transaction.serialize(), {
-    skipPreflight: true,
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendSignedTransaction(
+  rpc: KitRpcConnection,
+  transaction: LegacyVersionedTransaction
+): Promise<string> {
+  return sendRawTransactionWithKitRpc(rpc, serializeLegacyVersionedTransaction(transaction), {
+    skipPreflight: false,
     maxRetries: 3
   });
+}
+
+async function waitForConfirmedSignature(
+  rpc: KitRpcConnection,
+  signature: string
+): Promise<void> {
+  for (let attempt = 0; attempt < PURCHASE_SUBMIT_CONFIRMATION_POLLS; attempt += 1) {
+    const status = await getSignatureStatusWithKitRpc(rpc, signature, { searchTransactionHistory: true });
+
+    if (status?.err) {
+      throw new PurchaseFlowError("TRANSACTION_FAILED", "Submitted transaction failed on-chain.", 409, {
+        signature,
+        transactionError: status.err
+      });
+    }
+
+    if (status?.confirmationStatus === "confirmed" || status?.confirmationStatus === "finalized") {
+      return;
+    }
+
+    await sleep(PURCHASE_SUBMIT_CONFIRMATION_DELAY_MS);
+  }
+
+  throw new PurchaseFlowError("TRANSACTION_FAILED", "Submitted transaction was not confirmed before verification.", 409, {
+    signature
+  });
+}
+
+async function verifyExpectedMintedAssets(input: {
+  buyerPublicKey: string;
+  collectionAddress: string;
+  expectedAssetAddresses: string[];
+}): Promise<string[]> {
+  if (input.expectedAssetAddresses.length === 0) {
+    throw new PurchaseFlowError(
+      "TRANSACTION_FAILED",
+      "Purchase attempt has no expected asset addresses to verify.",
+      409
+    );
+  }
+
+  const umi = createUmi(getSolanaRpcUrl()).use(mplCore());
+  const verified: string[] = [];
+  const retryConfig = getPurchaseAssetVerificationRetryConfig();
+
+  for (const assetAddress of input.expectedAssetAddresses) {
+    let lastError: unknown = null;
+
+    for (let attempt = 1; attempt <= retryConfig.maxAttempts; attempt += 1) {
+      try {
+        const asset = await fetchAsset(umi, publicKey(assetAddress));
+        const owner = getMplCoreAssetOwner(asset);
+        const collection = getMplCoreAssetCollection(asset);
+
+        if (owner !== input.buyerPublicKey) {
+          throw new PurchaseFlowError("TRANSACTION_FAILED", "Verified asset owner does not match buyer.", 409, {
+            assetAddress,
+            expectedOwner: input.buyerPublicKey,
+            actualOwner: owner
+          });
+        }
+
+        if (collection !== input.collectionAddress) {
+          throw new PurchaseFlowError("TRANSACTION_FAILED", "Verified asset collection does not match purchase collection.", 409, {
+            assetAddress,
+            expectedCollection: input.collectionAddress,
+            actualCollection: collection
+          });
+        }
+
+        if (!hasOwnerFreezeDelegatePlugin(asset)) {
+          throw new PurchaseFlowError(
+            "TRANSACTION_FAILED",
+            "Verified asset does not expose owner-managed FreezeDelegate.",
+            409,
+            { assetAddress }
+          );
+        }
+
+        verified.push(assetAddress);
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+        if (error instanceof PurchaseFlowError) {
+          break;
+        }
+
+        if (attempt < retryConfig.maxAttempts) {
+          await sleep(retryConfig.retryDelayMs);
+        }
+      }
+    }
+
+    if (lastError) {
+      if (lastError instanceof PurchaseFlowError) {
+        throw lastError;
+      }
+
+      throw new PurchaseFlowError(
+        "TRANSACTION_FAILED",
+        "Could not verify minted asset after transaction confirmation.",
+        409,
+        {
+          assetAddress,
+          cause: lastError instanceof Error ? lastError.message : String(lastError),
+          verificationAttempts: retryConfig.maxAttempts,
+          verificationRetryDelayMs: retryConfig.retryDelayMs
+        }
+      );
+    }
+  }
+
+  return verified;
 }
 
 export async function submitPurchase(input: SubmitPurchaseInput): Promise<PurchaseSubmitResult> {
@@ -1012,18 +1197,73 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
   const idempotencyKey = assertIdempotencyKey(input.idempotencyKey);
   const transaction = parseSignedTransaction(input.signedTransactionBase64);
   assertPayerMatchesBuyer(transaction, buyerPublicKey);
-  const messageBase64 = toBase64(transaction.message.serialize());
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const messageBase64 = toBase64(serializeLegacyVersionedMessage(transaction));
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
+
+  async function confirmAndVerifySubmittedAttempt(inputAttempt: {
+    id: string;
+    collectionAddress: string;
+    expectedAssetAddresses: string[];
+  }, inputSignature: {
+    signature: string;
+    submittedAt: string;
+  }, options?: { client?: PoolClient }): Promise<PurchaseSubmitResult> {
+    try {
+      await waitForConfirmedSignature(rpc, inputSignature.signature);
+      await markPurchaseAttemptConfirmed({
+        signature: inputSignature.signature
+      }, options);
+    } catch (error) {
+      const mapped = mapSubmitErrorToPurchaseError(error);
+      await markPurchaseAttemptFailed(
+        {
+          id: inputAttempt.id,
+          errorCode: mapped.code,
+          errorMessage: mapped.message
+        },
+        options
+      );
+      throw mapped;
+    }
+
+    try {
+      const verifiedAssetAddresses = await verifyExpectedMintedAssets({
+        buyerPublicKey,
+        collectionAddress: inputAttempt.collectionAddress,
+        expectedAssetAddresses: inputAttempt.expectedAssetAddresses
+      });
+      await markPurchaseAttemptConfirmed({
+        signature: inputSignature.signature,
+        verifiedAssetAddresses
+      }, options);
+    } catch (error) {
+      const mapped = mapSubmitErrorToPurchaseError(error);
+      await markPurchaseAttemptAssetVerificationFailed({
+        signature: inputSignature.signature,
+        errorMessage: mapped.message
+      }, options);
+      throw mapped;
+    }
+
+    return {
+      attemptId: inputAttempt.id,
+      status: "confirmed",
+      txSignature: inputSignature.signature,
+      submittedAt: inputSignature.submittedAt
+    };
+  }
 
   async function submitPreparedAttemptWithCurrentState(inputAttempt: {
     id: string;
     walletPublicKey: string;
+    collectionAddress: string;
+    expectedAssetAddresses: string[];
     status: "created" | "prepared" | "submitted" | "confirmed" | "failed";
     txSignature: string | null;
     submittedAt: string | null;
     preparedTxMessageBase64: string | null;
     idempotencyExpiresAt: string;
-  }, options?: { client?: PoolClient }): Promise<PurchaseSubmitResult> {
+  }, options?: { client?: PoolClient; deferVerification?: boolean }): Promise<PurchaseSubmitResult> {
     if (inputAttempt.id !== input.attemptId) {
       throw new PurchaseFlowError("TRANSACTION_FAILED", "Attempt id does not match idempotency key.", 409);
     }
@@ -1033,12 +1273,20 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
     }
 
     if ((inputAttempt.status === "submitted" || inputAttempt.status === "confirmed") && inputAttempt.txSignature) {
-      return {
-        attemptId: inputAttempt.id,
-        status: "submitted",
-        txSignature: inputAttempt.txSignature,
-        submittedAt: inputAttempt.submittedAt ?? new Date().toISOString()
-      };
+      const submittedAt = inputAttempt.submittedAt ?? new Date().toISOString();
+      if (options?.deferVerification) {
+        return {
+          attemptId: inputAttempt.id,
+          status: "submitted",
+          txSignature: inputAttempt.txSignature,
+          submittedAt
+        };
+      }
+
+      return confirmAndVerifySubmittedAttempt(inputAttempt, {
+        signature: inputAttempt.txSignature,
+        submittedAt
+      }, options);
     }
 
     if (inputAttempt.status !== "prepared") {
@@ -1067,7 +1315,7 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
     }
 
     try {
-      const signature = await sendSignedTransaction(connection, transaction);
+      const signature = await sendSignedTransaction(rpc, transaction);
       const stored = await markPurchaseAttemptSubmitted(
         {
           id: inputAttempt.id,
@@ -1077,12 +1325,19 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
       );
       const finalSignature = stored?.txSignature ?? signature;
       const submittedAt = stored?.submittedAt ?? new Date().toISOString();
-      return {
-        attemptId: inputAttempt.id,
-        status: "submitted",
-        txSignature: finalSignature,
+      if (options?.deferVerification) {
+        return {
+          attemptId: inputAttempt.id,
+          status: "submitted",
+          txSignature: finalSignature,
+          submittedAt
+        };
+      }
+
+      return await confirmAndVerifySubmittedAttempt(inputAttempt, {
+        signature: finalSignature,
         submittedAt
-      };
+      }, options);
     } catch (error) {
       const mapped = mapSubmitErrorToPurchaseError(error);
       await markPurchaseAttemptFailed(
@@ -1132,9 +1387,15 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
 
       let result: PurchaseSubmitResult | null = null;
       let recoverablePurchaseError: PurchaseFlowError | null = null;
+      let attemptForVerification: {
+        id: string;
+        collectionAddress: string;
+        expectedAssetAddresses: string[];
+      } | null = null;
 
       try {
-        result = await submitPreparedAttemptWithCurrentState(attempt, { client });
+        attemptForVerification = attempt;
+        result = await submitPreparedAttemptWithCurrentState(attempt, { client, deferVerification: true });
       } catch (error) {
         if (error instanceof PurchaseFlowError) {
           recoverablePurchaseError = error;
@@ -1152,6 +1413,13 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<Purcha
 
       if (!result) {
         throw new PurchaseFlowError("TRANSACTION_FAILED", "Submit flow did not produce a result.", 500);
+      }
+
+      if (result.status === "submitted" && attemptForVerification) {
+        return confirmAndVerifySubmittedAttempt(attemptForVerification, {
+          signature: result.txSignature,
+          submittedAt: result.submittedAt
+        });
       }
 
       return result;

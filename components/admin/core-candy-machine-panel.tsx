@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { convertUsdToSol, usdToUsdcAtomic } from "@/lib/admin/pricing";
 import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 type PreparedTransaction = {
   kind:
@@ -80,6 +83,19 @@ type RunSignatureEntry = {
   expectedAddress: string | null;
 };
 
+type DeploySignaturePollResult = {
+  allConfirmed: boolean;
+  hasFailedSignature: boolean;
+  attempts: number;
+};
+
+type DeploySignaturePollOptions = {
+  maxAttempts?: number;
+  pollDelayMs?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
+  fetchStatuses?: (signatures: string[]) => Promise<Record<string, unknown>>;
+};
+
 export type DeployCompletedPayload = {
   candyMachineAddress: string;
   collectionAddress: string;
@@ -126,6 +142,27 @@ type RunState = {
   signatures: RunSignatureEntry[];
 };
 
+export function isDeploySignatureConfirmedForCreateAsset(status: unknown): boolean {
+  if (!status || typeof status !== "object") {
+    return false;
+  }
+
+  const record = status as { confirmed?: unknown; failed?: unknown; confirmationStatus?: unknown };
+  if (record.failed === true) {
+    return false;
+  }
+
+  if (record.confirmed === true) {
+    return true;
+  }
+
+  return record.confirmationStatus === "confirmed" || record.confirmationStatus === "finalized";
+}
+
+function isDeploySignatureFailedForCreateAsset(status: unknown): boolean {
+  return Boolean(status && typeof status === "object" && (status as { failed?: unknown }).failed === true);
+}
+
 type GeneratedMetadataUris = {
   collectionUri: string;
   assetUri: string;
@@ -136,6 +173,8 @@ type GeneratedMetadataUris = {
 const DEFAULT_START_DATE = () => new Date(Date.now() + 60_000).toISOString();
 const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
+const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
+const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -173,6 +212,62 @@ function readErrorMessage(payload: ErrorResponse | null, fallback: string): stri
   }
 
   return fallback;
+}
+
+function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function fetchDeploySignatureStatuses(signatures: string[]): Promise<Record<string, unknown>> {
+  const statusResponse = await fetch("/api/admin/core-candy-machine/status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signatures })
+  });
+
+  if (!statusResponse.ok) {
+    return {};
+  }
+
+  const payload = await parseJson<{ statuses?: Record<string, unknown> }>(statusResponse);
+  return payload?.statuses ?? {};
+}
+
+export async function waitForDeploySignatureStatuses(
+  signatures: string[],
+  options: DeploySignaturePollOptions = {}
+): Promise<DeploySignaturePollResult> {
+  const maxAttempts = options.maxAttempts ?? DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS;
+  const pollDelayMs = options.pollDelayMs ?? DEPLOY_SIGNATURE_STATUS_POLL_MS;
+  const sleep = options.sleep ?? wait;
+  const fetchStatuses = options.fetchStatuses ?? fetchDeploySignatureStatuses;
+  let allConfirmed = false;
+  let hasFailedSignature = false;
+  let attempts = 0;
+
+  while (!allConfirmed && attempts < maxAttempts) {
+    await sleep(pollDelayMs);
+
+    try {
+      const statuses = await fetchStatuses(signatures);
+      hasFailedSignature = signatures.some((signature) =>
+        isDeploySignatureFailedForCreateAsset(statuses[signature])
+      );
+      allConfirmed = signatures.every((signature) =>
+        isDeploySignatureConfirmedForCreateAsset(statuses[signature])
+      );
+
+      if (hasFailedSignature) {
+        break;
+      }
+    } catch {
+      // Keep polling through transient backend or network errors.
+    }
+
+    attempts++;
+  }
+
+  return { allConfirmed, hasFailedSignature, attempts };
 }
 
 function parsePositiveInt(value: string): number | null {
@@ -223,9 +318,9 @@ async function signPreparedTransaction(
   signTransaction: NonNullable<ReturnType<typeof useWallet>["signTransaction"]>,
   transactionBase64: string
 ): Promise<string> {
-  const unsigned = VersionedTransaction.deserialize(fromBase64(transactionBase64));
+  const unsigned = deserializeLegacyVersionedTransaction(fromBase64(transactionBase64));
   const signed = await signTransaction(unsigned);
-  return toBase64(signed.serialize());
+  return toBase64(serializeLegacyVersionedTransaction(signed));
 }
 
 export function CoreCandyMachinePanel({
@@ -457,10 +552,10 @@ export function CoreCandyMachinePanel({
   ): Promise<string[]> {
     if (signAllTransactions) {
       const unsignedTransactions = preparedTransactions.map((transaction) =>
-        VersionedTransaction.deserialize(fromBase64(transaction.transactionBase64))
+        deserializeLegacyVersionedTransaction(fromBase64(transaction.transactionBase64))
       );
       const signedTransactions = await signAllTransactions(unsignedTransactions);
-      return signedTransactions.map((signedTransaction) => toBase64(signedTransaction.serialize()));
+      return signedTransactions.map((signedTransaction) => toBase64(serializeLegacyVersionedTransaction(signedTransaction)));
     }
 
     const signedTransactionsBase64: string[] = [];
@@ -648,36 +743,23 @@ export function CoreCandyMachinePanel({
         status: "Waiting for network confirmation via webhook..."
       }));
 
-      // --- SMART POLLING (Local Backend) ---
-      const signaturesToPoll = collectedSignatures.map(s => s.signature);
-      let allConfirmed = false;
-      let attempts = 0;
-      const maxAttempts = 30; // Max 60 seconds (30 attempts * 2s)
+      const deploySignatureStatuses = await waitForDeploySignatureStatuses(
+        collectedSignatures.map((entry) => entry.signature)
+      );
+      const { allConfirmed, hasFailedSignature } = deploySignatureStatuses;
 
-      while (!allConfirmed && attempts < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        try {
-          const statusRes = await fetch("/api/admin/core-candy-machine/status", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ signatures: signaturesToPoll })
-          });
-
-          if (statusRes.ok) {
-            const { statuses } = await statusRes.json();
-            // Si todas las firmas tienen un registro (no son null), se confirmó todo
-            allConfirmed = signaturesToPoll.every(sig => statuses[sig] !== null);
-          }
-        } catch (err) {
-          // Ignorar errores de red temporales para seguir intentando
-        }
-        attempts++;
+      if (hasFailedSignature) {
+        setErrorMessage("One or more deploy transactions failed on-chain. Create Asset remains blocked.");
+        setRunState((current) => ({
+          ...current,
+          status: "Deploy failed"
+        }));
+        return;
       }
 
       if (!allConfirmed) {
          setErrorMessage("Deploy transactions were submitted, but confirmation took too long. They might still succeed in the background. Check Solscan.");
       }
-      // -------------------------------------
 
       setRunState((current) => ({
         ...current,
@@ -761,7 +843,36 @@ export function CoreCandyMachinePanel({
         <p className="text-xs text-sky-200/85">
           Collection name and asset prefix are auto-generated and server-normalized to avoid Candy Machine length failures.
         </p>
-        {isGeneratingUri ? <p className="text-xs text-cyan-200/90">Generating metadata URIs from uploaded image...</p> : null}
+        {isGeneratingUri ? (
+          <div className="overflow-hidden rounded-2xl border border-cyan-300/35 bg-cyan-400/10 p-3 text-xs text-cyan-50 shadow-[0_0_26px_rgba(34,211,238,0.16)]">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-slate-950/60">
+                <span className="absolute h-full w-full animate-ping rounded-full bg-cyan-300/20" />
+                <span className="h-3 w-3 animate-pulse rounded-full bg-cyan-200 shadow-[0_0_18px_rgba(125,211,252,0.9)]" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-white">Creating metadata links</p>
+                <p className="text-cyan-100/80">Generating Collection URI and Asset URI from the uploaded media.</p>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {["Collection URI", "Asset URI"].map((label) => (
+                <div key={label} className="rounded-xl border border-white/10 bg-slate-950/35 px-3 py-2">
+                  <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">
+                    <span>{label}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+                      Generating
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-white to-emerald-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {!isGeneratingUri && canGenerateMetadataFromPrefill ? (
           <button
             className="text-xs font-semibold text-cyan-200 underline underline-offset-2"
@@ -789,7 +900,11 @@ export function CoreCandyMachinePanel({
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Collection URI
-          <Input value={form.collectionUri} onChange={(event) => setForm((current) => ({ ...current, collectionUri: event.target.value }))} />
+          <Input
+            className={isGeneratingUri ? "animate-pulse border border-cyan-300/60 bg-cyan-300/10 shadow-[0_0_20px_rgba(34,211,238,0.18)]" : undefined}
+            value={form.collectionUri}
+            onChange={(event) => setForm((current) => ({ ...current, collectionUri: event.target.value }))}
+          />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset name prefix
@@ -797,7 +912,11 @@ export function CoreCandyMachinePanel({
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Asset URI
-          <Input value={form.assetUri} onChange={(event) => setForm((current) => ({ ...current, assetUri: event.target.value }))} />
+          <Input
+            className={isGeneratingUri ? "animate-pulse border border-cyan-300/60 bg-cyan-300/10 shadow-[0_0_20px_rgba(34,211,238,0.18)]" : undefined}
+            value={form.assetUri}
+            onChange={(event) => setForm((current) => ({ ...current, assetUri: event.target.value }))}
+          />
         </label>
         <label className="space-y-1 text-xs text-white/70">
           Quantity

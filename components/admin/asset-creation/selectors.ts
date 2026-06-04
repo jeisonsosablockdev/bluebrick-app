@@ -27,6 +27,24 @@ export function areStringArraysEqual(left: string[], right: string[]): boolean {
   return true;
 }
 
+export function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
+  if (!startDateRaw || !deliveryDateRaw) {
+    return "";
+  }
+
+  const startDate = Date.parse(`${startDateRaw}T00:00:00Z`);
+  const deliveryDate = Date.parse(`${deliveryDateRaw}T00:00:00Z`);
+  if (!Number.isFinite(startDate) || !Number.isFinite(deliveryDate) || deliveryDate < startDate) {
+    return "";
+  }
+
+  const dayInMs = 1000 * 60 * 60 * 24;
+  const averageMonthInDays = 30.4375;
+  const diffDays = (deliveryDate - startDate) / dayInMs;
+  const months = Math.max(1, Math.ceil(diffDays / averageMonthInDays));
+  return String(months);
+}
+
 export function selectDerivedMintQuantityFromType(form: AssetForm): number | null {
   if (form.assetType !== "building_new") {
     return null;

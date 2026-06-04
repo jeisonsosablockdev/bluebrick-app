@@ -1,8 +1,24 @@
-import { Connection, PublicKey, VersionedTransaction, type Commitment, type Finality } from "@solana/web3.js";
+import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
+import {
+  address,
+  createSolanaRpc,
+  signature as solanaSignature,
+  type Base64EncodedWireTransaction,
+  type Commitment,
+  type Signature
+} from "@solana/kit";
+import { Connection, VersionedTransaction, type Finality } from "@solana/web3.js";
 
 // TODO(EPIC-005): remove this adapter once stake flows fully migrate off legacy web3 interop.
+export type LegacyVersionedTransaction = VersionedTransaction;
+export type KitRpcConnection = ReturnType<typeof createSolanaRpc>;
+
 export function normalizeLegacyPublicKey(raw: string): string {
-  return new PublicKey(raw).toBase58();
+  return address(raw);
+}
+
+export function convertUmiTransactionToLegacyVersionedTransaction(raw: unknown): VersionedTransaction {
+  return toWeb3JsTransaction(raw as never);
 }
 
 export function deserializeLegacyVersionedTransaction(raw: Uint8Array): VersionedTransaction {
@@ -21,8 +37,96 @@ export function getLegacyTransactionPayer(raw: VersionedTransaction): string | n
   return raw.message.staticAccountKeys[0]?.toBase58() ?? null;
 }
 
+export function getLegacyTransactionRequiredSignerCount(raw: VersionedTransaction): number {
+  return raw.message.header.numRequiredSignatures;
+}
+
+export function getLegacyTransactionStaticAccountKeys(raw: VersionedTransaction): string[] {
+  return raw.message.staticAccountKeys.map((key) => key.toBase58());
+}
+
+export function getLegacyTransactionSignatureAt(raw: VersionedTransaction, index: number): Uint8Array | null {
+  return raw.signatures[index] ?? null;
+}
+
 export function createLegacyConnection(url: string, commitment: Commitment = "confirmed"): Connection {
   return new Connection(url, commitment);
+}
+
+export function createKitRpcConnection(url: string): KitRpcConnection {
+  return createSolanaRpc(url as Parameters<typeof createSolanaRpc>[0]);
+}
+
+function toBase64EncodedWireTransaction(raw: Uint8Array): Base64EncodedWireTransaction {
+  return Buffer.from(raw).toString("base64") as Base64EncodedWireTransaction;
+}
+
+function toKitSignature(raw: string): Signature {
+  return solanaSignature(raw);
+}
+
+export async function sendRawTransactionWithKitRpc(
+  rpc: KitRpcConnection,
+  serializedTransaction: Uint8Array,
+  options?: {
+    maxRetries?: number;
+    skipPreflight?: boolean;
+  }
+): Promise<string> {
+  const config: {
+    encoding: "base64";
+    maxRetries?: bigint;
+    skipPreflight: boolean;
+  } = {
+    encoding: "base64",
+    skipPreflight: options?.skipPreflight ?? false
+  };
+
+  if (typeof options?.maxRetries === "number") {
+    config.maxRetries = BigInt(options.maxRetries);
+  }
+
+  return rpc.sendTransaction(toBase64EncodedWireTransaction(serializedTransaction), config).send();
+}
+
+export async function getSignatureStatusWithKitRpc(
+  rpc: KitRpcConnection,
+  rawSignature: string,
+  options?: {
+    searchTransactionHistory?: boolean;
+  }
+) {
+  const response = await rpc.getSignatureStatuses([toKitSignature(rawSignature)], {
+    searchTransactionHistory: options?.searchTransactionHistory ?? false
+  }).send();
+
+  return response.value[0] ?? null;
+}
+
+export async function getTransactionWithKitRpc(
+  rpc: KitRpcConnection,
+  rawSignature: string,
+  commitment: Commitment = "confirmed"
+) {
+  return rpc.getTransaction(toKitSignature(rawSignature), {
+    commitment,
+    encoding: "json",
+    maxSupportedTransactionVersion: 0
+  }).send();
+}
+
+export async function sendLegacyVersionedTransaction(
+  connection: Connection,
+  transaction: VersionedTransaction,
+  options?: {
+    maxRetries?: number;
+    skipPreflight?: boolean;
+  }
+): Promise<string> {
+  return connection.sendRawTransaction(transaction.serialize(), {
+    maxRetries: options?.maxRetries,
+    skipPreflight: options?.skipPreflight ?? false
+  });
 }
 
 export async function sendAndConfirmLegacyVersionedTransaction(
@@ -47,6 +151,17 @@ export async function getLegacyTransactionBySignature(
     commitment,
     maxSupportedTransactionVersion: 0
   });
+}
+
+export async function getLegacySignatureStatus(
+  connection: Connection,
+  signature: string
+) {
+  const response = await connection.getSignatureStatuses([signature], {
+    searchTransactionHistory: true
+  });
+
+  return response.value[0] ?? null;
 }
 
 export function getLegacyTransactionPayerFromResponse(transaction: {

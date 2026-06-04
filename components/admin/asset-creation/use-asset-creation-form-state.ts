@@ -71,6 +71,7 @@ type AssetCreationFormStateApi = AssetCreationState & {
   setCreateAssetMessage: (value: SetStateAction<string>) => void;
   setIsCreatingMarketplaceEntry: (value: SetStateAction<boolean>) => void;
   setCreatedMarketplaceEntryId: (value: SetStateAction<string | null>) => void;
+  resetFormState: (draftId: string) => void;
 };
 
 export function useAssetCreationFormState(initialDraftId: string): AssetCreationFormStateApi {
@@ -209,6 +210,10 @@ export function useAssetCreationFormState(initialDraftId: string): AssetCreation
     dispatchAndTrack(setCreateAssetFlow({ createdMarketplaceEntryId: next }));
   }, [dispatchAndTrack]);
 
+  const resetFormState = useCallback((draftId: string) => {
+    dispatchAndTrack(resetState(draftId));
+  }, [dispatchAndTrack]);
+
   return {
     ...state,
     setForm,
@@ -233,6 +238,7 @@ export function useAssetCreationFormState(initialDraftId: string): AssetCreation
     setSnapshotFinalize,
     setCreateAssetMessage,
     setIsCreatingMarketplaceEntry,
-    setCreatedMarketplaceEntryId
+    setCreatedMarketplaceEntryId,
+    resetFormState
   };
 }

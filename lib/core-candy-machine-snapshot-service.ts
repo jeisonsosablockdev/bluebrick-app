@@ -7,9 +7,8 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { mplCore } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
-import { Connection, PublicKey } from "@solana/web3.js";
 
-import { DasClient, isDasClientError } from "@/lib/das-client";
+import { DasClient } from "@/lib/das-client";
 import {
   type MintJobSnapshotStatus,
   type SnapshotProofConfirmationStatus,
@@ -17,11 +16,20 @@ import {
   upsertAssetMintSnapshot,
   upsertMintJobFromSnapshot
 } from "@/lib/core-candy-machine-snapshot-repository";
+import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import { getSolanaRpcUrl } from "@/lib/solana";
+import {
+  createKitRpcConnection,
+  getSignatureStatusWithKitRpc,
+  normalizeLegacyPublicKey
+} from "@/lib/solana-kit/compat/web3-transactions";
 
-const SIGNATURE_STATUS_CHUNK_SIZE = 200;
 const DAS_PAGE_LIMIT = 1_000;
 const DAS_MAX_PAGES = 100;
+const CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT = 8;
+const CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT = 25;
+const CANDY_MACHINE_STATE_RETRY_MS_DEFAULT = 1_500;
+const CANDY_MACHINE_STATE_RETRY_MS_LIMIT = 5_000;
 
 type SnapshotFinalizeRequest = {
   draftId: string;
@@ -154,19 +162,36 @@ function toInteger(value: unknown): number {
   return 0;
 }
 
-function chunk<T>(items: readonly T[], size: number): T[][] {
-  const chunks: T[][] = [];
+function getCandyMachineStateRetryConfig(): { maxAttempts: number; retryMs: number } {
+  return {
+    maxAttempts: readBoundedIntegerEnv({
+      env: process.env,
+      name: "CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS",
+      fallback: CANDY_MACHINE_STATE_MAX_ATTEMPTS_DEFAULT,
+      min: 1,
+      max: CANDY_MACHINE_STATE_MAX_ATTEMPTS_LIMIT
+    }),
+    retryMs: readBoundedIntegerEnv({
+      env: process.env,
+      name: "CORE_CM_SNAPSHOT_STATE_RETRY_MS",
+      fallback: CANDY_MACHINE_STATE_RETRY_MS_DEFAULT,
+      min: 0,
+      max: CANDY_MACHINE_STATE_RETRY_MS_LIMIT
+    })
+  };
+}
 
-  for (let offset = 0; offset < items.length; offset += size) {
-    chunks.push(items.slice(offset, offset + size));
+function wait(ms: number): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
   }
 
-  return chunks;
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function assertPublicKey(input: string, fieldName: string): string {
   try {
-    return new PublicKey(input).toBase58();
+    return normalizeLegacyPublicKey(input);
   } catch {
     throw new CoreCandyMachineSnapshotError("INVALID_PUBLIC_KEY", `${fieldName} must be a valid Solana public key.`, 400);
   }
@@ -362,17 +387,16 @@ async function enrichProofsWithSignatureStatus(signatures: SnapshotFinalizeReque
     return [];
   }
 
-  const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
   const bySignature = new Map<string, { confirmationStatus: SnapshotProofConfirmationStatus; slot: number | null; txError: string | null }>();
 
-  for (const signatureChunk of chunk(signatures.map((entry) => entry.signature), SIGNATURE_STATUS_CHUNK_SIZE)) {
-    const result = await connection.getSignatureStatuses(signatureChunk, {
-      searchTransactionHistory: true
-    });
+  await Promise.all(signatures.map(async (entry) => {
+    const signature = entry.signature;
 
-    signatureChunk.forEach((signature, index) => {
-      const status = result.value[index];
-
+    try {
+      const status = await getSignatureStatusWithKitRpc(rpc, signature, {
+        searchTransactionHistory: true
+      });
       if (!status) {
         bySignature.set(signature, {
           confirmationStatus: "submitted",
@@ -391,13 +415,29 @@ async function enrichProofsWithSignatureStatus(signatures: SnapshotFinalizeReque
         return;
       }
 
+      const confirmationStatus = status.confirmationStatus ?? null;
+      if (confirmationStatus !== "confirmed" && confirmationStatus !== "finalized") {
+        bySignature.set(signature, {
+          confirmationStatus: "submitted",
+          slot: typeof status.slot === "number" ? status.slot : null,
+          txError: null
+        });
+        return;
+      }
+
       bySignature.set(signature, {
         confirmationStatus: "confirmed",
         slot: typeof status.slot === "number" ? status.slot : null,
         txError: null
       });
-    });
-  }
+    } catch {
+      bySignature.set(signature, {
+        confirmationStatus: "submitted",
+        slot: null,
+        txError: null
+      });
+    }
+  }));
 
   return signatures.map((entry) => {
     const resolved = bySignature.get(entry.signature) ?? {
@@ -425,10 +465,25 @@ function resolveMintJobStatus(expectedQuantity: number, proofs: SignatureProof[]
   failedItems: number;
 } {
   const mintProofs = proofs.filter((proof) => proof.kind === "mint");
+  const proofSet = mintProofs.length > 0 ? mintProofs : proofs;
+  const submittedProofs = proofSet.length;
+  const confirmedProofs = proofSet.filter((proof) => proof.confirmationStatus === "confirmed").length;
+  const failedProofs = proofSet.filter((proof) => proof.confirmationStatus === "failed").length;
+  const pendingProofs = proofSet.filter((proof) => proof.confirmationStatus === "submitted").length;
+
+  if (mintProofs.length === 0 && submittedProofs > 0 && confirmedProofs === submittedProofs && failedProofs === 0 && pendingProofs === 0) {
+    return {
+      status: "completed",
+      submittedItems: expectedQuantity,
+      confirmedItems: expectedQuantity,
+      failedItems: 0
+    };
+  }
+
   const submittedItems = mintProofs.length;
-  const confirmedItems = mintProofs.filter((proof) => proof.confirmationStatus === "confirmed").length;
-  const failedItems = mintProofs.filter((proof) => proof.confirmationStatus === "failed").length;
-  const pendingItems = mintProofs.filter((proof) => proof.confirmationStatus === "submitted").length;
+  const confirmedItems = confirmedProofs;
+  const failedItems = failedProofs;
+  const pendingItems = pendingProofs;
 
   if (confirmedItems === expectedQuantity && failedItems === 0 && pendingItems === 0) {
     return {
@@ -473,6 +528,161 @@ function buildVerificationError(code: string, message: string, details: Record<s
   };
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function buildCollectionMismatchError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState
+): SnapshotVerificationError {
+  return buildVerificationError(
+    "COLLECTION_ADDRESS_MISMATCH",
+    "Collection address mismatch between request payload and on-chain candy machine data.",
+    {
+      requestCollectionAddress: input.mint.collectionAddress,
+      onchainCollectionAddress: onchain.collectionAddressOnchain
+    }
+  );
+}
+
+function buildCandyMachineQuantityMismatchError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState,
+  verificationMethod: SnapshotVerificationMethod,
+  foundAssets: number | null
+): SnapshotVerificationError {
+  return buildVerificationError(
+    "CANDY_MACHINE_QUANTITY_MISMATCH",
+    "Candy Machine on-chain quantity does not match the requested deploy quantity.",
+    {
+      expected: input.mint.quantity,
+      candyMachineItemsLoaded: onchain.itemsLoaded,
+      candyMachineItemsAvailable: onchain.itemsAvailable,
+      foundAssets,
+      verificationMethod
+    }
+  );
+}
+
+function buildConfigLinesNotLoadedError({
+  input,
+  onchain,
+  foundAssets,
+  verificationMethod,
+  stateReadAttempts,
+  maxAttempts,
+  lastReadError
+}: {
+  input: SnapshotFinalizeRequest;
+  onchain: CandyMachineOnchainState;
+  foundAssets: number | null;
+  verificationMethod: SnapshotVerificationMethod;
+  stateReadAttempts: number;
+  maxAttempts: number;
+  lastReadError: string | null;
+}): SnapshotVerificationError {
+  return buildVerificationError(
+    "CONFIG_LINES_NOT_LOADED",
+    `Expected ${input.mint.quantity} Candy Machine config lines but found ${onchain.itemsLoaded} loaded on-chain.`,
+    {
+      expected: input.mint.quantity,
+      candyMachineItemsLoaded: onchain.itemsLoaded,
+      candyMachineItemsAvailable: onchain.itemsAvailable,
+      foundAssets,
+      verificationMethod,
+      stateReadAttempts,
+      maxStateReadAttempts: maxAttempts,
+      lastStateReadError: lastReadError
+    }
+  );
+}
+
+function getDefinitiveCandyMachineStateError(
+  input: SnapshotFinalizeRequest,
+  onchain: CandyMachineOnchainState,
+  verificationMethod: SnapshotVerificationMethod,
+  foundAssets: number | null
+): SnapshotVerificationError | null {
+  if (onchain.collectionAddressOnchain !== input.mint.collectionAddress) {
+    return buildCollectionMismatchError(input, onchain);
+  }
+
+  if (onchain.itemsAvailable !== input.mint.quantity || onchain.itemsLoaded > input.mint.quantity) {
+    return buildCandyMachineQuantityMismatchError(input, onchain, verificationMethod, foundAssets);
+  }
+
+  return null;
+}
+
+async function resolveCandyMachineReadiness({
+  input,
+  initialOnchain,
+  mintJobStatus,
+  foundAssets,
+  verificationMethod
+}: {
+  input: SnapshotFinalizeRequest;
+  initialOnchain: CandyMachineOnchainState;
+  mintJobStatus: MintJobSnapshotStatus;
+  foundAssets: number | null;
+  verificationMethod: SnapshotVerificationMethod;
+}): Promise<{
+  onchain: CandyMachineOnchainState;
+  verificationStatus: SnapshotVerificationStatus;
+  verificationError: SnapshotVerificationError | null;
+}> {
+  const retryConfig = getCandyMachineStateRetryConfig();
+  let onchain = initialOnchain;
+  let stateReadAttempts = 1;
+  let lastReadError: string | null = null;
+
+  while (true) {
+    const definitiveError = getDefinitiveCandyMachineStateError(input, onchain, verificationMethod, foundAssets);
+    if (definitiveError) {
+      return {
+        onchain,
+        verificationStatus: "failed",
+        verificationError: definitiveError
+      };
+    }
+
+    if (onchain.itemsLoaded === input.mint.quantity) {
+      return {
+        onchain,
+        verificationStatus: "verified",
+        verificationError: null
+      };
+    }
+
+    if (mintJobStatus !== "completed" || stateReadAttempts >= retryConfig.maxAttempts) {
+      return {
+        onchain,
+        verificationStatus: "failed",
+        verificationError: buildConfigLinesNotLoadedError({
+          input,
+          onchain,
+          foundAssets,
+          verificationMethod,
+          stateReadAttempts,
+          maxAttempts: retryConfig.maxAttempts,
+          lastReadError
+        })
+      };
+    }
+
+    await wait(retryConfig.retryMs);
+    stateReadAttempts += 1;
+
+    try {
+      onchain = await fetchOnchainCandyMachineState(input.mint.candyMachineAddress);
+      lastReadError = null;
+    } catch (error) {
+      lastReadError = getErrorMessage(error);
+    }
+  }
+}
+
 export async function finalizeCoreCandyMachineSnapshot(
   actorPubkey: string,
   rawInput: unknown
@@ -480,63 +690,30 @@ export async function finalizeCoreCandyMachineSnapshot(
   const normalizedActorPubkey = assertPublicKey(actorPubkey, "actorPubkey");
   const input = parseSnapshotFinalizeRequest(rawInput);
 
-  const [proofs, onchain] = await Promise.all([
+  const [proofs, initialOnchain] = await Promise.all([
     enrichProofsWithSignatureStatus(input.mint.signatures),
     fetchOnchainCandyMachineState(input.mint.candyMachineAddress)
   ]);
 
   const mintJob = resolveMintJobStatus(input.mint.quantity, proofs);
-  let verificationMethod: SnapshotVerificationMethod = "das_get_assets_by_group";
-  let verificationStatus: SnapshotVerificationStatus = "failed";
-  let verificationError: SnapshotVerificationError | null = null;
+  const verificationMethod: SnapshotVerificationMethod = "candy_machine_items_loaded";
   let foundAssets: number | null = null;
 
   try {
     const dasResult = await countAssetsWithDas(input.mint.collectionAddress);
     foundAssets = dasResult.foundAssets;
-
-    if (dasResult.foundAssets === input.mint.quantity) {
-      verificationStatus = "verified";
-    } else {
-      verificationStatus = "failed";
-      verificationError = buildVerificationError(
-        "VERIFICATION_MISMATCH",
-        `Expected ${input.mint.quantity} items but found ${dasResult.foundAssets} via DAS.`,
-        {
-          expected: input.mint.quantity,
-          found: dasResult.foundAssets,
-          verificationMethod: "das_get_assets_by_group",
-          pagesFetched: dasResult.pagesFetched
-        }
-      );
-    }
-  } catch (error) {
-    verificationMethod = "candy_machine_items_loaded";
-    verificationStatus = "degraded";
-    verificationError = buildVerificationError(
-      isDasClientError(error) ? error.code : "DAS_VERIFICATION_ERROR",
-      error instanceof Error ? error.message : "DAS verification failed.",
-      {
-        expected: input.mint.quantity,
-        found: null,
-        verificationMethod: "candy_machine_items_loaded",
-        candyMachineItemsLoaded: onchain.itemsLoaded,
-        candyMachineItemsAvailable: onchain.itemsAvailable
-      }
-    );
+  } catch {
+    foundAssets = null;
   }
 
-  if (onchain.collectionAddressOnchain !== input.mint.collectionAddress) {
-    verificationStatus = "failed";
-    verificationError = buildVerificationError(
-      "COLLECTION_ADDRESS_MISMATCH",
-      "Collection address mismatch between request payload and on-chain candy machine data.",
-      {
-        requestCollectionAddress: input.mint.collectionAddress,
-        onchainCollectionAddress: onchain.collectionAddressOnchain
-      }
-    );
-  }
+  const readiness = await resolveCandyMachineReadiness({
+    input,
+    initialOnchain,
+    mintJobStatus: mintJob.status,
+    foundAssets,
+    verificationMethod
+  });
+  const { onchain, verificationStatus, verificationError } = readiness;
 
   const canCreateAsset = mintJob.status === "completed" && verificationStatus === "verified";
   const marketplaceHandoffStatus: SnapshotMarketplaceHandoffStatus = canCreateAsset ? "ready" : "failed";

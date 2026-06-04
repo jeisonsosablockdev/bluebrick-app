@@ -8,7 +8,13 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import {
   CoreCandyMachinePanel
 } from "@/components/admin/core-candy-machine-panel";
-import { useAssetCreationFormState, useAssetImportJobs, useAssetUploadWorkflow } from "@/components/admin/asset-creation";
+import {
+  deriveProjectDurationMonths,
+  usePostCreateMarketplaceHandoff,
+  useAssetCreationFormState,
+  useAssetImportJobs,
+  useAssetUploadWorkflow
+} from "@/components/admin/asset-creation";
 import type { AssetForm, AssetType, FileUploadField, TypeFormState } from "@/components/admin/asset-creation/types";
 import type { ParsedImportCandidate } from "@/components/admin/asset-creation/use-asset-import-jobs";
 import {
@@ -306,24 +312,6 @@ function buildMarketplaceDocuments(form: AssetForm): Array<{ label: string; url:
   return documents;
 }
 
-function deriveProjectDurationMonths(startDateRaw: string, deliveryDateRaw: string): string {
-  if (!startDateRaw || !deliveryDateRaw) {
-    return "";
-  }
-
-  const startDate = Date.parse(`${startDateRaw}T00:00:00Z`);
-  const deliveryDate = Date.parse(`${deliveryDateRaw}T00:00:00Z`);
-  if (!Number.isFinite(startDate) || !Number.isFinite(deliveryDate) || deliveryDate < startDate) {
-    return "";
-  }
-
-  const DAY_IN_MS = 1000 * 60 * 60 * 24;
-  const averageMonthInDays = 30.4375;
-  const diffDays = (deliveryDate - startDate) / DAY_IN_MS;
-  const months = Math.max(1, Math.ceil(diffDays / averageMonthInDays));
-  return String(months);
-}
-
 type PriceInputCurrency = "USD" | "SOL";
 
 type SolUsdQuoteResponse = {
@@ -334,8 +322,8 @@ type SolUsdQuoteResponse = {
 
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
-  const [draftId] = useState<string>(() => createDraftId());
-  const [editSessionId] = useState<string>(() => createDraftId());
+  const [draftId, setDraftId] = useState<string>(() => createDraftId());
+  const [editSessionId, setEditSessionId] = useState<string>(() => createDraftId());
   const {
     form,
     formStatus,
@@ -378,7 +366,8 @@ export function AssetCreationForm(): ReactElement {
     setSnapshotFinalize,
     setCreateAssetMessage,
     setIsCreatingMarketplaceEntry,
-    setCreatedMarketplaceEntryId
+    setCreatedMarketplaceEntryId,
+    resetFormState
   } = useAssetCreationFormState(draftId);
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
   const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
@@ -387,6 +376,15 @@ export function AssetCreationForm(): ReactElement {
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [solUsdQuoteError, setSolUsdQuoteError] = useState<string | null>(null);
+  const {
+    marketplaceHandoffState,
+    openCreatedMarketplaceEntry,
+    resetMarketplaceHandoff
+  } = usePostCreateMarketplaceHandoff({
+    createdMarketplaceEntryId,
+    hasDeployCompletedData: Boolean(deployCompletedData),
+    isCreatingMarketplaceEntry
+  });
 
   const refreshSolUsdQuote = useCallback(async () => {
     setSolUsdQuoteStatus((previous) => (previous === "ready" ? "ready" : "loading"));
@@ -913,6 +911,22 @@ export function AssetCreationForm(): ReactElement {
     });
   }, [buildingNftCostSol, buildingNftCostUsd, solUsdRate, t]);
 
+  const onConstructionStartDateChange = (nextStartDate: string) => {
+    setForm((prev) => ({
+      ...prev,
+      buildingConstructionStartDate: nextStartDate,
+      buildingProjectDurationMonths: deriveProjectDurationMonths(nextStartDate, prev.buildingEstimatedDeliveryDate)
+    }));
+  };
+
+  const onEstimatedDeliveryDateChange = (nextDeliveryDate: string) => {
+    setForm((prev) => ({
+      ...prev,
+      buildingEstimatedDeliveryDate: nextDeliveryDate,
+      buildingProjectDurationMonths: deriveProjectDurationMonths(prev.buildingConstructionStartDate, nextDeliveryDate)
+    }));
+  };
+
   const onFundingGoalChange = (nextFundingGoal: string) => {
     setForm((prev) => {
       const next = {
@@ -1092,8 +1106,23 @@ export function AssetCreationForm(): ReactElement {
     setSnapshotFinalize(null);
     setCreateAssetMessage("");
     setCreatedMarketplaceEntryId(null);
+    resetMarketplaceHandoff();
     setShowMintSetup(true);
   };
+
+  const resetAssetCreationFlow = useCallback(() => {
+    cancelCurrentUploadSession(true);
+    const nextDraftId = createDraftId();
+
+    setDraftId(nextDraftId);
+    setEditSessionId(createDraftId());
+    resetFormState(nextDraftId);
+    setPriceInputCurrency("USD");
+    setPendingImportCandidate(null);
+    setIsImportFileDragging(false);
+    resetMarketplaceHandoff();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [cancelCurrentUploadSession, resetFormState, resetMarketplaceHandoff]);
 
   const handleCreateAsset = async () => {
     if (!deployCompletedData) {
@@ -1102,6 +1131,7 @@ export function AssetCreationForm(): ReactElement {
 
     setIsCreatingMarketplaceEntry(true);
     setCreateAssetMessage("");
+    resetMarketplaceHandoff();
 
     const nftPriceUsd = deriveNftPriceUsd(form);
     const annualRoiPct = deriveAnnualRoiPct(form);
@@ -1191,6 +1221,7 @@ export function AssetCreationForm(): ReactElement {
       });
       setCreateAssetMessage(error instanceof Error ? error.message : fallback);
       setCreatedMarketplaceEntryId(null);
+      resetMarketplaceHandoff();
     } finally {
       setIsCreatingMarketplaceEntry(false);
     }
@@ -1294,20 +1325,20 @@ export function AssetCreationForm(): ReactElement {
                   onChange={(event) => setForm((prev) => ({ ...prev, buildingDeveloperName: event.target.value }))}
                 />
                 <GuidedInputField
-                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
-                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
-                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
-                  type="date"
-                  value={form.buildingEstimatedDeliveryDate}
-                  onChange={(event) => setForm((prev) => ({ ...prev, buildingEstimatedDeliveryDate: event.target.value }))}
-                />
-                <GuidedInputField
                   label={t({ en: "Construction start date", es: "Fecha de inicio de construccion", pt: "Data de inicio da construcao" })}
                   hint={t({ en: "Together with delivery date defines project months.", es: "Junto con la fecha de entrega define meses del proyecto.", pt: "Junto com a data de entrega define os meses do projeto." })}
                   tooltip={t({ en: "Initial date for timeline and progress baseline.", es: "Fecha inicial para linea de tiempo y progreso.", pt: "Data inicial para linha do tempo e progresso." })}
                   type="date"
                   value={form.buildingConstructionStartDate}
-                  onChange={(event) => setForm((prev) => ({ ...prev, buildingConstructionStartDate: event.target.value }))}
+                  onChange={(event) => onConstructionStartDateChange(event.target.value)}
+                />
+                <GuidedInputField
+                  label={t({ en: "Estimated delivery date", es: "Fecha estimada de entrega", pt: "Data estimada de entrega" })}
+                  hint={t({ en: "Used to auto-calculate project duration.", es: "Se usa para calcular automaticamente la duracion.", pt: "Usado para calcular automaticamente a duracao." })}
+                  tooltip={t({ en: "End date for construction and handover plan.", es: "Fecha final del plan de construccion y entrega.", pt: "Data final do plano de construcao e entrega." })}
+                  type="date"
+                  value={form.buildingEstimatedDeliveryDate}
+                  onChange={(event) => onEstimatedDeliveryDateChange(event.target.value)}
                 />
                 <GuidedInputField
                   label={t({ en: "Minimum capital required", es: "Capital minimo requerido", pt: "Capital minimo requerido" })}
@@ -1957,6 +1988,7 @@ export function AssetCreationForm(): ReactElement {
                 setShowMintSetup(false);
                 setCreateAssetMessage("");
                 setCreatedMarketplaceEntryId(null);
+                resetMarketplaceHandoff();
               }}
             >
               {t({ en: "Back to step 1", es: "Volver al paso 1", pt: "Voltar ao passo 1" })}
@@ -1984,11 +2016,13 @@ export function AssetCreationForm(): ReactElement {
               setSnapshotFinalize(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
+              resetMarketplaceHandoff();
             }}
             onDeployCompleted={(result) => {
               setDeployCompletedData(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
+              resetMarketplaceHandoff();
             }}
           />
           <div
@@ -2043,23 +2077,35 @@ export function AssetCreationForm(): ReactElement {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#070b14]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2">
-          <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
-            <Button className="min-h-11" variant="ghost">
-              {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+          {createdMarketplaceEntryId ? (
+            <Button className="min-h-11" variant="ghost" onClick={resetAssetCreationFlow}>
+              {t({ en: "Create another", es: "Crear otro", pt: "Criar outro" })}
             </Button>
-          </Link>
+          ) : (
+            <Link href="/admin/assets" onClick={() => cancelCurrentUploadSession(true)}>
+              <Button className="min-h-11" variant="ghost">
+                {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+              </Button>
+            </Link>
+          )}
           {showMintSetup ? (
             <Button
               className="min-h-11"
               onClick={() => {
+                if (openCreatedMarketplaceEntry()) {
+                  return;
+                }
+
                 void handleCreateAsset();
               }}
-              disabled={!deployCompletedData || isCreatingMarketplaceEntry || Boolean(createdMarketplaceEntryId)}
+              disabled={marketplaceHandoffState.primaryDisabled}
             >
               {isCreatingMarketplaceEntry
                 ? t({ en: "Creating...", es: "Creando...", pt: "Criando..." })
-                : createdMarketplaceEntryId
-                  ? t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
+                : marketplaceHandoffState.primaryAction === "view-marketplace"
+                  ? t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })
+                  : marketplaceHandoffState.primaryAction === "entry-created"
+                    ? t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
                   : t({ en: "Create Asset", es: "Create Asset", pt: "Create Asset" })}
             </Button>
           ) : null}

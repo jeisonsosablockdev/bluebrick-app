@@ -1,12 +1,12 @@
 import { createSignerFromKeypair, type Signer, type Umi } from "@metaplex-foundation/umi";
-import { fromWeb3JsKeypair } from "@metaplex-foundation/umi-web3js-adapters";
-import { Keypair } from "@solana/web3.js";
+import { getAddressDecoder } from "@solana/kit";
+import nacl from "tweetnacl";
 
 const THIRD_PARTY_SIGNER_ENV = "PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY";
 const TEST_FALLBACK_SEED_BYTE = 7;
 
 declare global {
-  var __purchaseThirdPartySignerKeypair: Keypair | undefined;
+  var __purchaseThirdPartySignerSecretKey: Uint8Array | undefined;
 }
 
 function parseNumericArray(raw: string): Uint8Array {
@@ -71,17 +71,17 @@ function assertSecretKeyLength(secretKey: Uint8Array): void {
   }
 }
 
-function getFallbackTestKeypair(): Keypair {
+function getFallbackTestSecretKey(): Uint8Array {
   const seed = new Uint8Array(32).fill(TEST_FALLBACK_SEED_BYTE);
-  return Keypair.fromSeed(seed);
+  return nacl.sign.keyPair.fromSeed(seed).secretKey;
 }
 
-function createKeypairFromEnv(): Keypair {
+function createSecretKeyFromEnv(): Uint8Array {
   const raw = process.env[THIRD_PARTY_SIGNER_ENV]?.trim();
 
   if (!raw) {
     if (process.env.NODE_ENV === "test") {
-      return getFallbackTestKeypair();
+      return getFallbackTestSecretKey();
     }
 
     throw new Error(
@@ -93,25 +93,27 @@ function createKeypairFromEnv(): Keypair {
   assertSecretKeyLength(secretKey);
 
   try {
-    return Keypair.fromSecretKey(secretKey);
+    nacl.sign.keyPair.fromSecretKey(secretKey);
+    return secretKey;
   } catch {
-    throw new Error(`${THIRD_PARTY_SIGNER_ENV} could not be parsed into a valid keypair.`);
+    throw new Error(`${THIRD_PARTY_SIGNER_ENV} could not be parsed into a valid Ed25519 secret key.`);
   }
 }
 
-export function getPurchaseThirdPartySignerKeypair(): Keypair {
-  if (!global.__purchaseThirdPartySignerKeypair) {
-    global.__purchaseThirdPartySignerKeypair = createKeypairFromEnv();
+export function getPurchaseThirdPartySignerSecretKey(): Uint8Array {
+  if (!global.__purchaseThirdPartySignerSecretKey) {
+    global.__purchaseThirdPartySignerSecretKey = createSecretKeyFromEnv();
   }
 
-  return global.__purchaseThirdPartySignerKeypair;
+  return global.__purchaseThirdPartySignerSecretKey;
 }
 
 export function getPurchaseThirdPartySignerAddress(): string {
-  return getPurchaseThirdPartySignerKeypair().publicKey.toBase58();
+  const publicKeyBytes = getPurchaseThirdPartySignerSecretKey().slice(32, 64);
+  return getAddressDecoder().decode(publicKeyBytes);
 }
 
 export function createPurchaseThirdPartySigner(umi: Umi): Signer {
-  const keypair = getPurchaseThirdPartySignerKeypair();
-  return createSignerFromKeypair(umi, fromWeb3JsKeypair(keypair));
+  const keypair = umi.eddsa.createKeypairFromSecretKey(getPurchaseThirdPartySignerSecretKey());
+  return createSignerFromKeypair(umi, keypair);
 }

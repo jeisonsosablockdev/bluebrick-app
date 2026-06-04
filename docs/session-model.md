@@ -1,6 +1,13 @@
 # Session Model
 
-Last Updated: 2026-06-01
+Last Updated: 2026-06-02
+
+## BRI-170 Marketplace Mint Session Boundary
+- Marketplace mint continues to use the existing SIWS wallet session; account-only/federated-only authority is not sufficient for purchase prepare or submit.
+- The browser wallet adapter provides signer availability only. Server authority remains the `siws_session` wallet resolved by `getRequestRole`/purchase routes.
+- The buyer wallet must sign the prepared mint/plugin transaction, including the owner-managed `FreezeDelegate` lifecycle for each expected asset.
+- Post-submit asset verification stores purchase-attempt evidence, but it does not create a new session credential or alter cookie semantics.
+- The blocked admin mint prepare route does not grant any session capability; authenticated admins receive a `410 Gone` response instead of a mint transaction.
 
 ## BRI-165 Marketplace Media Session Boundary
 - The marketplace media handoff reuses the existing `/admin/assets/new` `draftId` and browser-local `uploadRefs` to identify which finalized uploads should become marketplace gallery/property media.
