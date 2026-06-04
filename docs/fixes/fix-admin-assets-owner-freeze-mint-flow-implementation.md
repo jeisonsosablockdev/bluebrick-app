@@ -622,6 +622,13 @@ Recomendacion:
 - retornar `Promise<Record<string, DeploySignatureStatus | null>>`;
 - extraer `parseStatusRequestBody`.
 
+Resolucion:
+
+- Fix aplicado en rama `codex/fix-bri-170-core-cm-status-route-contract`.
+- `DeploySignatureStatus` y el parser de body viven en `lib/admin/core-candy-machine-status-contract.ts`.
+- `resolveStatusesWithRpc` retorna `Promise<Record<string, DeploySignatureStatus | null>>`.
+- La ruta conserva solo exports validos de Next App Router y el parser queda testeado de forma directa.
+
 Decision:
 
 - Ningun hallazgo bloquea el cierre actual de BRI-170.
@@ -1288,6 +1295,13 @@ Recommendation:
 
 - return `Promise<Record<string, DeploySignatureStatus | null>>`;
 - extract `parseStatusRequestBody`.
+
+Resolution:
+
+- Fix applied in branch `codex/fix-bri-170-core-cm-status-route-contract`.
+- `DeploySignatureStatus` and the body parser live in `lib/admin/core-candy-machine-status-contract.ts`.
+- `resolveStatusesWithRpc` returns `Promise<Record<string, DeploySignatureStatus | null>>`.
+- The route keeps only valid Next App Router exports, and the parser is directly tested.
 
 Decision:
 

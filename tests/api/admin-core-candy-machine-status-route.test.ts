@@ -27,6 +27,7 @@ vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
 }));
 
 import { POST } from "@/app/api/admin/core-candy-machine/status/route";
+import { parseCoreCandyMachineStatusRequestBody } from "@/lib/admin/core-candy-machine-status-contract";
 
 describe("api/admin/core-candy-machine/status", () => {
   beforeEach(() => {
@@ -81,6 +82,21 @@ describe("api/admin/core-candy-machine/status", () => {
     const payload = await emptyResponse.json();
     expect(emptyResponse.status).toBe(400);
     expect(payload.error).toBe("At least one signature is required.");
+  });
+
+  it("parses status request signatures before route execution", () => {
+    expect(parseCoreCandyMachineStatusRequestBody(null)).toEqual({
+      ok: false,
+      error: "Invalid request body."
+    });
+    expect(parseCoreCandyMachineStatusRequestBody({ signatures: ["  sig-1  ", "", null] })).toEqual({
+      ok: true,
+      signatures: ["sig-1"]
+    });
+    expect(parseCoreCandyMachineStatusRequestBody({ signatures: [null, ""] })).toEqual({
+      ok: false,
+      error: "At least one signature is required."
+    });
   });
 
   it("does not treat a webhook observation as confirmed without RPC confirmation", async () => {
