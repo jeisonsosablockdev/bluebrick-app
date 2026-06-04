@@ -221,6 +221,18 @@ Regla:
 - El boton secundario debe cambiar a un estado de reinicio como `Crear otro`.
 - `Crear otro` debe limpiar datos del formulario, estado de deploy, snapshot, mensajes, uploads temporales y devolver al inicio del formulario con un nuevo draft.
 
+## Regla de verificacion post-confirmacion de compra
+
+Cuando una compra marketplace confirma on-chain, la lectura inmediata de los assets MPL Core puede tardar mas que la firma de transaccion, especialmente en devnet y con mints de multiples assets.
+
+Regla:
+
+- La transaccion confirmada con `meta.err == null` no debe tratarse como fallida solo porque `fetchAsset` no vea el asset en una ventana demasiado corta.
+- La verificacion debe reintentar la lectura de cada asset esperado durante una ventana suficiente para propagacion de RPC.
+- La ventana debe ser configurable y acotada con `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS` y `PURCHASE_ASSET_VERIFICATION_RETRY_MS`.
+- Siguen siendo fallos definitivos: owner distinto al comprador, collection distinta a la compra o ausencia real de `FreezeDelegate Owner` cuando el asset ya se pudo leer.
+- Si se agota la ventana, el error debe conservar detalles de intentos y delay para diagnostico y reconciliacion.
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -512,6 +524,18 @@ Rule:
 - Then the same CTA must become `View marketplace` and navigate to `/marketplace/{entryId}`.
 - The secondary button must switch to a restart state such as `Create another`.
 - `Create another` must clear form data, deploy state, snapshot state, messages, temporary uploads, and return to the top of the form with a new draft.
+
+## Post-Confirmation Purchase Verification Rule
+
+When a marketplace purchase confirms on-chain, immediate MPL Core asset reads can lag behind transaction confirmation, especially on devnet and with multi-asset mints.
+
+Rule:
+
+- A transaction confirmed with `meta.err == null` must not be treated as failed only because `fetchAsset` cannot see the asset inside an overly short window.
+- Verification must retry each expected asset read long enough to cover normal RPC propagation.
+- The window must be configurable and bounded with `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS` and `PURCHASE_ASSET_VERIFICATION_RETRY_MS`.
+- Definitive failures remain definitive: owner differs from buyer, collection differs from purchase collection, or `FreezeDelegate Owner` is truly absent after the asset can be read.
+- If the window is exhausted, the error must keep attempt and delay details for diagnosis and reconciliation.
 
 ## Code To Audit
 
