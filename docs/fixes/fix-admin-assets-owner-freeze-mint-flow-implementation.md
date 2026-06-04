@@ -524,6 +524,82 @@ Estado del audit:
 - No se encontro expansion directa de `@solana/web3.js` fuera del boundary `lib/solana-kit/compat/web3-transactions.ts`; el uso legacy queda encapsulado.
 - Los hallazgos anteriores bloquean cierre de seguridad para BRI-170 hasta que se corrijan o se acepten explicitamente como riesgo documentado.
 
+## Auditoria clean-code global BRI-170
+
+Run:
+
+- Fecha: 2026-06-04.
+- Rama auditada: `initiative/bri-170-admin-assets-owner-freeze-mint-flow`.
+- Alcance: diff completo `develop...initiative/bri-170-admin-assets-owner-freeze-mint-flow`.
+- Resultado: sin hallazgos bloqueantes.
+- Evidencia: `git diff --check develop...HEAD` sin errores de whitespace; working tree limpio al terminar el audit.
+
+Hallazgos no bloqueantes:
+
+1. Medium - `lib/purchase-attempts-repository.ts` duplica reglas de fallo de verificacion de assets en varios caminos.
+
+Problema:
+
+- la misma regla de negocio para `asset_verification_status`, `asset_verification_error` y `asset_verification_checked_at` aparece en paths de memoria y SQL;
+- esto aumenta el riesgo de divergencia futura y de reintroducir una regresion donde una compra confirmada on-chain vuelva a tratarse como fallida por una verificacion posterior.
+
+Recomendacion:
+
+- extraer un helper de mutacion in-memory para fallo de verificacion de assets;
+- centralizar el fragmento SQL o mantener un metodo unico responsable de marcar fallos de verificacion posterior.
+
+2. Medium - `components/admin/core-candy-machine-panel.tsx` mantiene un `runDeployFlow` demasiado amplio.
+
+Problema:
+
+- el flujo mezcla validacion, generacion de metadata URI, preparacion de deploy, firma, submit, polling de status, manejo de firmas fallidas, snapshot finalization y mutacion de UI state;
+- el polling usa constantes inline y queda mas dificil razonar sobre confirmacion, timeout y errores.
+
+Recomendacion:
+
+- extraer helpers como `waitForDeploySignatures` o `pollDeploySignatureStatuses`;
+- usar constantes nombradas para intentos y delay de polling.
+
+3. Low - `components/admin/asset-creation-form.tsx` sigue concentrando demasiadas responsabilidades.
+
+Problema:
+
+- el componente controla formulario, uploads, lifecycle de deploy, snapshot, creacion de marketplace entry, reset y handoff post-creacion;
+- los estados agregados para `Entrada creada`, `Ver marketplace` y `Crear otro` aumentan el acoplamiento.
+
+Recomendacion:
+
+- extraer posteriormente un hook de handoff post-creacion, por ejemplo `usePostCreateMarketplaceHandoff`, si vuelve a crecer la superficie.
+
+4. Low - `lib/purchase-service.ts` y `lib/core-candy-machine-snapshot-service.ts` tienen helpers similares para parsear configuracion de retry desde env.
+
+Problema:
+
+- ambos resuelven limites/defaults de runtime config con nombres cercanos pero no identicos;
+- si se agregan mas ventanas configurables, puede aparecer drift.
+
+Recomendacion:
+
+- mover la logica comun a un helper compartido de runtime config cuando aparezca otro caso similar.
+
+5. Low - `app/api/admin/core-candy-machine/status/route.ts` mezcla parsing de request y resolucion RPC con tipos mas genericos de lo necesario.
+
+Problema:
+
+- `resolveStatusesWithRpc` puede devolver un tipo mas especifico que `Record<string, unknown | null>`;
+- el parsing del body vive dentro del route handler y reduce claridad del contrato.
+
+Recomendacion:
+
+- retornar `Promise<Record<string, DeploySignatureStatus | null>>`;
+- extraer `parseStatusRequestBody`.
+
+Decision:
+
+- Ningun hallazgo bloquea el cierre actual de BRI-170.
+- Los hallazgos `Medium` deben tratarse como deuda tecnica prioritaria si se vuelve a tocar compra/verificacion o deploy/status.
+- Los hallazgos `Low` quedan como deuda de mantenibilidad y no requieren slice inmediato.
+
 ## Restricciones Solana
 
 - Devnet por defecto.
@@ -1086,6 +1162,82 @@ Audit status:
 - No new payer/buyer bypass was found: submit still validates payer against the authenticated wallet and requires the third-party signer.
 - No direct `@solana/web3.js` expansion was found outside `lib/solana-kit/compat/web3-transactions.ts`; legacy usage remains encapsulated.
 - The findings above block security closure for BRI-170 until fixed or explicitly accepted as documented risk.
+
+## BRI-170 Global Clean-Code Audit
+
+Run:
+
+- Date: 2026-06-04.
+- Audited branch: `initiative/bri-170-admin-assets-owner-freeze-mint-flow`.
+- Scope: full `develop...initiative/bri-170-admin-assets-owner-freeze-mint-flow` diff.
+- Result: no blocking findings.
+- Evidence: `git diff --check develop...HEAD` had no whitespace errors; working tree was clean at the end of the audit.
+
+Non-blocking findings:
+
+1. Medium - `lib/purchase-attempts-repository.ts` duplicates asset verification failure rules across multiple paths.
+
+Problem:
+
+- the same business rule for `asset_verification_status`, `asset_verification_error`, and `asset_verification_checked_at` appears in in-memory and SQL paths;
+- this increases future drift risk and can reintroduce a regression where an on-chain-confirmed purchase is treated as failed because later asset verification failed.
+
+Recommendation:
+
+- extract an in-memory mutation helper for asset verification failures;
+- centralize the SQL fragment or keep one repository method as the single owner of post-confirmation verification failure state.
+
+2. Medium - `components/admin/core-candy-machine-panel.tsx` keeps an oversized `runDeployFlow`.
+
+Problem:
+
+- the flow mixes validation, metadata URI generation, deploy preparation, signing, submission, status polling, failed-signature handling, snapshot finalization, and UI state mutation;
+- polling uses inline constants and makes confirmation, timeout, and error handling harder to reason about.
+
+Recommendation:
+
+- extract helpers such as `waitForDeploySignatures` or `pollDeploySignatureStatuses`;
+- use named constants for polling attempts and delay.
+
+3. Low - `components/admin/asset-creation-form.tsx` still concentrates too many responsibilities.
+
+Problem:
+
+- the component controls form state, uploads, deploy lifecycle, snapshot, marketplace entry creation, reset, and post-create handoff;
+- the states added for `Entry created`, `View marketplace`, and `Create another` increase coupling.
+
+Recommendation:
+
+- later extract a post-create handoff hook, for example `usePostCreateMarketplaceHandoff`, if this surface grows again.
+
+4. Low - `lib/purchase-service.ts` and `lib/core-candy-machine-snapshot-service.ts` have similar helpers for parsing retry config from env.
+
+Problem:
+
+- both resolve runtime config limits/defaults with similar but not identical names;
+- if more configurable windows are added, drift can appear.
+
+Recommendation:
+
+- move the common logic into a shared runtime config helper when another similar case appears.
+
+5. Low - `app/api/admin/core-candy-machine/status/route.ts` mixes request parsing and RPC resolution with types that are more generic than needed.
+
+Problem:
+
+- `resolveStatusesWithRpc` can return a more specific type than `Record<string, unknown | null>`;
+- body parsing lives inside the route handler and reduces contract clarity.
+
+Recommendation:
+
+- return `Promise<Record<string, DeploySignatureStatus | null>>`;
+- extract `parseStatusRequestBody`.
+
+Decision:
+
+- No finding blocks the current BRI-170 closure.
+- The `Medium` findings should be treated as priority technical debt if purchase/verification or deploy/status are touched again.
+- The `Low` findings remain maintainability debt and do not require an immediate slice.
 
 ## Solana Restrictions
 
