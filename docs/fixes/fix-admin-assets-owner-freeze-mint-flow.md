@@ -197,6 +197,18 @@ Regla:
 - La verificacion por DAS de assets minteados pertenece al flujo marketplace/post-compra, no al deploy administrativo.
 - La UI no debe bloquear `Create Asset` por `Expected N items but found 0 via DAS` despues de desplegar una Candy Machine nueva.
 
+## Regla de propagacion del estado de Candy Machine
+
+La confirmacion RPC de las transacciones `add-config-lines` prueba que las firmas fueron aceptadas, pero la lectura inmediata de la cuenta Candy Machine puede observar un estado parcial por propagacion de RPC o cache de cuenta.
+
+Regla:
+
+- Si todas las firmas de deploy estan confirmadas/finalizadas y `itemsLoaded < quantity`, el snapshot debe reintentar la lectura on-chain de la Candy Machine por una ventana acotada antes de fallar.
+- El retry solo aplica a propagacion de `itemsLoaded`; no debe ocultar errores definitivos.
+- Son fallos definitivos: collection on-chain distinta a la collection del request, `itemsAvailable` distinto a la cantidad esperada, `itemsLoaded > quantity`, o prueba de firma fallida.
+- Si la ventana acotada termina y `itemsLoaded` sigue incompleto, el sistema debe bloquear `Create Asset` con error claro de config lines no cargadas, incluyendo intentos de lectura y ultimo estado observado.
+- El mecanismo debe permitir distinguir "todavia no propagado" de "definitivamente mal configurado".
+
 ## Codigo a auditar
 
 Este fix debe revisar y clasificar:
@@ -464,6 +476,18 @@ Rule:
 - Admin snapshot readiness must be verified against Candy Machine state: correct on-chain collection, `itemsLoaded` equal to the expected quantity, and confirmed deploy signatures.
 - DAS verification of minted assets belongs to the marketplace/post-purchase flow, not administrative deploy.
 - The UI must not block `Create Asset` with `Expected N items but found 0 via DAS` after deploying a new Candy Machine.
+
+## Candy Machine State Propagation Rule
+
+RPC confirmation for `add-config-lines` transactions proves the signatures were accepted, but an immediate Candy Machine account read can still observe partial state because of RPC propagation or account-cache lag.
+
+Rule:
+
+- If all deploy signatures are confirmed/finalized and `itemsLoaded < quantity`, the snapshot must retry the on-chain Candy Machine read for a bounded window before failing.
+- Retry only applies to `itemsLoaded` propagation; it must not hide definitive errors.
+- Definitive failures are: on-chain collection differs from the request collection, `itemsAvailable` differs from expected quantity, `itemsLoaded > quantity`, or a failed signature proof.
+- If the bounded window ends and `itemsLoaded` remains incomplete, the system must keep `Create Asset` blocked with a clear config-lines-not-loaded error, including read attempts and the last observed state.
+- The mechanism must distinguish "not propagated yet" from "definitively misconfigured".
 
 ## Code To Audit
 

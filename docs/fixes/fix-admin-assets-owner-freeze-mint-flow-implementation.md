@@ -45,8 +45,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -254,7 +255,36 @@ Gates:
 - `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S08 - Cleanup de rutas y codigo huerfano
+## S08 - Propagacion del estado de Candy Machine
+
+Responsabilidad:
+
+- corregir `finalizeCoreCandyMachineSnapshot` para que no falle por una lectura parcial inmediata de `itemsLoaded` cuando todas las firmas `add-config-lines` ya estan confirmadas
+- reintentar la lectura on-chain de la Candy Machine por una ventana acotada antes de marcar `CONFIG_LINES_NOT_LOADED`
+- mantener fallos definitivos sin retry para no ocultar configuraciones incorrectas
+- registrar en el error los intentos de lectura, limite de intentos, `itemsLoaded`, `itemsAvailable` y ultimo error de lectura si existe
+- permitir configurar la ventana con `CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS` y `CORE_CM_SNAPSHOT_STATE_RETRY_MS`
+
+Fallos definitivos:
+
+- collection on-chain distinta a la collection enviada en el request
+- `itemsAvailable` distinto a la cantidad esperada
+- `itemsLoaded` mayor que la cantidad esperada
+- firma de deploy fallida o no confirmada por RPC canonico
+
+Pruebas primero:
+
+- service test donde la primera lectura devuelve `itemsLoaded < quantity`, la segunda devuelve `itemsLoaded === quantity` y el snapshot queda `ready`
+- service test donde `itemsAvailable !== quantity`; resultado esperado `CANDY_MACHINE_QUANTITY_MISMATCH` sin retry
+- service test donde collection on-chain no coincide; resultado esperado `COLLECTION_ADDRESS_MISMATCH` sin retry
+- mantener prueba donde `itemsLoaded < quantity` y se agota la ventana; resultado esperado `CONFIG_LINES_NOT_LOADED`
+
+Gates:
+
+- `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S09 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -314,7 +344,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S08 - Verificacion, seguridad y cierre
+## S10 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -368,7 +398,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S08 mergeados en la rama de iniciativa.
+- S01-S10 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -424,8 +454,10 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s03-marketplace-owner-freeze
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s04-marketplace-purchase-kit-rpc
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s05-deploy-status-rpc-fallback
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readiness
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-verification-security
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -633,7 +665,36 @@ Gates:
 - `npx vitest run tests/api/admin-core-candy-machine-status-route.test.ts tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts`
 - `npm run validate`
 
-## S08 - Legacy Route And Orphan-Code Cleanup
+## S08 - Candy Machine State Propagation
+
+Responsibility:
+
+- fix `finalizeCoreCandyMachineSnapshot` so it does not fail from one immediate partial `itemsLoaded` read when all `add-config-lines` signatures are already confirmed
+- retry the on-chain Candy Machine read for a bounded window before marking `CONFIG_LINES_NOT_LOADED`
+- keep definitive failures non-retriable so incorrect configuration is not hidden
+- record read attempts, max attempts, `itemsLoaded`, `itemsAvailable`, and the last read error when present
+- make the window configurable with `CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS` and `CORE_CM_SNAPSHOT_STATE_RETRY_MS`
+
+Definitive failures:
+
+- on-chain collection differs from the request collection
+- `itemsAvailable` differs from expected quantity
+- `itemsLoaded` is greater than expected quantity
+- deploy signature failed or is not confirmed by canonical RPC
+
+Tests first:
+
+- service test where the first read returns `itemsLoaded < quantity`, the second read returns `itemsLoaded === quantity`, and the snapshot becomes `ready`
+- service test where `itemsAvailable !== quantity`; expected result `CANDY_MACHINE_QUANTITY_MISMATCH` without retry
+- service test where on-chain collection does not match; expected result `COLLECTION_ADDRESS_MISMATCH` without retry
+- keep the test where `itemsLoaded < quantity` and the bounded window is exhausted; expected result `CONFIG_LINES_NOT_LOADED`
+
+Gates:
+
+- `npx vitest run tests/lib/core-candy-machine-snapshot-service.test.ts`
+- `npm run validate`
+
+## S09 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -693,7 +754,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S08 - Verification, Security, And Closure
+## S10 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -747,7 +808,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S08 merged into the initiative branch.
+- S01-S10 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.
