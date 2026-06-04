@@ -425,6 +425,85 @@ Evidencia requerida:
 - resultado de `npm run validate`
 - notas de seguridad
 
+## Auditoria de seguridad BRI-170
+
+Alcance auditado:
+
+- diff completo `develop...initiative/bri-170-admin-assets-owner-freeze-mint-flow`
+- rutas admin de deploy/status y bloqueo de mint admin legacy
+- UI admin de deploy, snapshot gate y handoff a marketplace
+- UI marketplace de compra y firma
+- servicios de Candy Machine, snapshot, compra, signer, FreezeDelegate y boundaries Solana Kit
+- migracion `033_purchase_attempt_asset_verification.sql`
+- tests y documentos tocados por BRI-170 como evidencia de contrato
+
+Hallazgos reportables:
+
+1. High - Una compra confirmada on-chain puede quedar marcada permanentemente como `failed` si falla la verificacion posterior de assets.
+
+Evidencia:
+
+- `lib/purchase-service.ts` ejecuta `waitForConfirmedSignature` y despues `verifyExpectedMintedAssets`; si la verificacion falla, el `catch` de `confirmAndVerifySubmittedAttempt` llama `markPurchaseAttemptFailed`.
+- `lib/purchase-attempts-repository.ts` impide que `markPurchaseAttemptConfirmed` recupere un intento que ya esta en `failed`.
+- `lib/purchase-webhook-reconciliation.ts` confirma por firma, pero no puede recuperar ese caso porque `markPurchaseAttemptConfirmed` devuelve el intento fallido sin cambiarlo.
+
+Impacto:
+
+- si la firma confirmo con `meta.err == null`, el comprador pudo haber pagado y recibido NFT, pero la base de datos de producto queda en estado `failed`;
+- reconciliacion, historial, referidos, soporte y distribucion pueden leer una version falsa del resultado economico;
+- el problema es de integridad contable y de estado, no solo de UX.
+
+Requerimiento de fix:
+
+- separar estado de transaccion y estado de verificacion de assets;
+- despues de una confirmacion on-chain exitosa, no marcar `purchase_attempts.status = 'failed'` por una falla de lectura/verificacion posterior;
+- registrar la falla en `asset_verification_status = 'failed'` o `reconcile_pending`, preservando `status = 'confirmed'` o un estado equivalente de finalizacion on-chain;
+- permitir que la reconciliacion posterior eleve/verifique assets sin estar bloqueada por un `failed` irreversible.
+
+2. Medium - Endpoint admin de status hace fan-out RPC sin limite explicito de cantidad, formato o concurrencia.
+
+Evidencia:
+
+- `app/api/admin/core-candy-machine/status/route.ts` acepta `body.signatures`, filtra strings no vacios y ejecuta `Promise.all` llamando `getSignatureStatusWithKitRpc` por cada firma.
+- no hay maximo de firmas por request, validacion base58/longitud de firma, deduplicacion ni limite de concurrencia.
+
+Impacto:
+
+- aunque la ruta requiere admin, un payload grande puede agotar tiempo de serverless, saturar RPC devnet o degradar deploy/status;
+- tambien permite errores repetidos por firmas malformadas que se transforman en `null`, ocultando input invalido como ausencia de estado.
+
+Requerimiento de fix:
+
+- limitar cantidad por request;
+- deduplicar firmas;
+- validar formato de firma antes de tocar RPC;
+- ejecutar RPC con concurrencia acotada o batch seguro si el helper lo soporta.
+
+3. Medium - Detalles crudos de error RPC pueden exponerse al cliente de compra.
+
+Evidencia:
+
+- `lib/purchase-service.ts` agrega `cause` a `PurchaseFlowError.details` cuando se agota la verificacion de assets.
+- `app/api/purchase/submit/route.ts` devuelve `error.details` completo al cliente autenticado.
+
+Impacto:
+
+- errores de proveedor RPC, mensajes internos de libreria o detalles de infraestructura pueden filtrarse a la superficie cliente;
+- el comprador necesita un mensaje accionable y un `flowId`, no el texto crudo del backend.
+
+Requerimiento de fix:
+
+- conservar detalles crudos solo en logs/trace/DB interna;
+- sanear `error.details` antes de responder en `/api/purchase/submit`;
+- devolver al cliente un error estable con `flowId`, intentos y estado de reconciliacion, no `cause` interno.
+
+Estado del audit:
+
+- No se encontro nueva exposicion de private keys; el signer de compra sigue viniendo de `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY` y el fallback deterministico queda limitado a `NODE_ENV === "test"`.
+- No se encontro nuevo bypass de payer/buyer: el submit mantiene validacion de payer contra wallet autenticada y third-party signer requerido.
+- No se encontro expansion directa de `@solana/web3.js` fuera del boundary `lib/solana-kit/compat/web3-transactions.ts`; el uso legacy queda encapsulado.
+- Los hallazgos anteriores bloquean cierre de seguridad para BRI-170 hasta que se corrijan o se acepten explicitamente como riesgo documentado.
+
 ## Restricciones Solana
 
 - Devnet por defecto.
@@ -888,6 +967,85 @@ Required evidence:
 - Stake / Unstake UI proof of supported state
 - `npm run validate` result
 - security notes
+
+## BRI-170 Security Audit
+
+Audited scope:
+
+- full `develop...initiative/bri-170-admin-assets-owner-freeze-mint-flow` diff
+- admin deploy/status routes and legacy admin mint blocking
+- admin deploy UI, snapshot gate, and marketplace handoff
+- marketplace purchase and signing UI
+- Candy Machine, snapshot, purchase, signer, FreezeDelegate, and Solana Kit boundary services
+- migration `033_purchase_attempt_asset_verification.sql`
+- tests and documents touched by BRI-170 as contract evidence
+
+Reportable findings:
+
+1. High - An on-chain-confirmed purchase can be permanently marked `failed` when post-confirmation asset verification fails.
+
+Evidence:
+
+- `lib/purchase-service.ts` runs `waitForConfirmedSignature` and then `verifyExpectedMintedAssets`; if verification fails, `confirmAndVerifySubmittedAttempt` catches and calls `markPurchaseAttemptFailed`.
+- `lib/purchase-attempts-repository.ts` prevents `markPurchaseAttemptConfirmed` from recovering an attempt that is already `failed`.
+- `lib/purchase-webhook-reconciliation.ts` confirms by signature, but cannot recover this case because `markPurchaseAttemptConfirmed` returns the failed attempt unchanged.
+
+Impact:
+
+- if the signature confirmed with `meta.err == null`, the buyer may have paid and received NFTs while the product database records `failed`;
+- reconciliation, history, referrals, support, and distribution can read a false economic outcome;
+- this is accounting/state integrity risk, not only UX.
+
+Required fix:
+
+- separate transaction state from asset verification state;
+- after successful on-chain confirmation, do not set `purchase_attempts.status = 'failed'` because of a later asset read/verification failure;
+- store the failure in `asset_verification_status = 'failed'` or `reconcile_pending`, preserving `status = 'confirmed'` or an equivalent on-chain-final state;
+- allow later reconciliation to verify assets without being blocked by an irreversible `failed` state.
+
+2. Medium - Admin status endpoint performs unbounded RPC fan-out without explicit count, format, or concurrency limits.
+
+Evidence:
+
+- `app/api/admin/core-candy-machine/status/route.ts` accepts `body.signatures`, filters non-empty strings, and runs `Promise.all` with one `getSignatureStatusWithKitRpc` call per signature.
+- there is no per-request maximum, base58/signature-length validation, deduplication, or concurrency limit.
+
+Impact:
+
+- even though the route is admin-only, a large payload can exhaust serverless time, saturate devnet RPC, or degrade deploy/status;
+- malformed signatures can also be converted into `null`, hiding invalid input as missing state.
+
+Required fix:
+
+- cap signatures per request;
+- deduplicate signatures;
+- validate signature format before hitting RPC;
+- use bounded concurrency or safe batching if the helper supports it.
+
+3. Medium - Raw RPC/backend error details can be exposed to the purchase client.
+
+Evidence:
+
+- `lib/purchase-service.ts` adds `cause` to `PurchaseFlowError.details` when asset verification is exhausted.
+- `app/api/purchase/submit/route.ts` returns full `error.details` to the authenticated client.
+
+Impact:
+
+- RPC provider errors, library messages, or infrastructure details can leak to the client surface;
+- the buyer needs an actionable message and `flowId`, not raw backend text.
+
+Required fix:
+
+- keep raw details only in logs/trace/internal DB;
+- sanitize `error.details` before returning from `/api/purchase/submit`;
+- return a stable client error with `flowId`, attempts, and reconciliation state, not internal `cause`.
+
+Audit status:
+
+- No new private-key exposure was found; the purchase signer still comes from `PURCHASE_THIRD_PARTY_SIGNER_SECRET_KEY`, and the deterministic fallback remains limited to `NODE_ENV === "test"`.
+- No new payer/buyer bypass was found: submit still validates payer against the authenticated wallet and requires the third-party signer.
+- No direct `@solana/web3.js` expansion was found outside `lib/solana-kit/compat/web3-transactions.ts`; legacy usage remains encapsulated.
+- The findings above block security closure for BRI-170 until fixed or explicitly accepted as documented risk.
 
 ## Solana Restrictions
 
