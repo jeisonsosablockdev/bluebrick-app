@@ -16,6 +16,8 @@ Permitir que `/api/protected/stake/submit` acepte una transaccion firmada si la 
 - Agregar overlay de procesamiento en `components/dashboard/stake-module.tsx` mientras Stake / Unstake esta preparando, firmando, enviando o resincronizando.
 - Aplicar blur y bloqueo de interaccion a la superficie de Stake durante el procesamiento.
 - Usar Motion 12 (`motion/react`) para entrada/salida del overlay y respetar `prefers-reduced-motion`.
+- Agregar diagnostico sanitizado para mismatch de transaccion firmada, registrando solo categorias de diferencia (`version`, `header`, `staticAccountKeys`, `compiledInstructions`, `addressTableLookups`) junto con attempt, wallet y asset.
+- Mantener el mensaje publico de error sin payloads ni detalles de transaccion.
 
 ## Pruebas
 
@@ -24,6 +26,8 @@ Permitir que `/api/protected/stake/submit` acepte una transaccion firmada si la 
 - Test que rechaza cambio de account list.
 - Test de boundary para confirmar que el interop legacy sigue contenido.
 - Test de componente que confirma que el overlay y el blur aparecen mientras la firma de wallet sigue pendiente.
+- Test que confirma que el diagnostico devuelve `[]` cuando solo cambia `recentBlockhash`.
+- Test que confirma que el diagnostico distingue cambios reales en instruction data y account list.
 
 ## Evidencia del slice UI
 
@@ -32,6 +36,7 @@ Permitir que `/api/protected/stake/submit` acepte una transaccion firmada si la 
 - El overlay usa `role="status"`, `aria-live="assertive"` y la superficie bloqueada expone `aria-busy`.
 - Clean-code pass: sin hallazgos bloqueantes; se corrigio copy localizado explicito y se evito mezclar textos entre idiomas.
 - E2E wallet/Synpress no se ejecuto en este slice porque no hay firma real ni transaccion on-chain en el cambio visual; la validacion funcional queda cubierta por el test de componente y los tests existentes del contrato submit.
+- Si el error persiste en local, el siguiente intento debe revisarse en logs del servidor buscando `Stake signed transaction mismatch` para conocer la categoria exacta que cambio antes de relajar cualquier validacion.
 
 ## Comandos
 
@@ -58,6 +63,8 @@ Allow `/api/protected/stake/submit` to accept a signed transaction when the prep
 - Add a processing overlay in `components/dashboard/stake-module.tsx` while Stake / Unstake is preparing, signing, submitting, or resyncing.
 - Apply blur and interaction blocking to the Stake surface during processing.
 - Use Motion 12 (`motion/react`) for overlay enter/exit animation and respect `prefers-reduced-motion`.
+- Add sanitized diagnostics for signed transaction mismatches, logging only difference categories (`version`, `header`, `staticAccountKeys`, `compiledInstructions`, `addressTableLookups`) together with attempt, wallet, and asset.
+- Keep the public error message free of payloads and transaction details.
 
 ## Tests
 
@@ -66,6 +73,8 @@ Allow `/api/protected/stake/submit` to accept a signed transaction when the prep
 - Test rejecting account list changes.
 - Boundary test confirming legacy interop remains contained.
 - Component test confirming the overlay and blur appear while the wallet signature is still pending.
+- Test confirming diagnostics return `[]` when only `recentBlockhash` changes.
+- Test confirming diagnostics distinguish real instruction-data and account-list changes.
 
 ## UI Slice Evidence
 
@@ -74,6 +83,7 @@ Allow `/api/protected/stake/submit` to accept a signed transaction when the prep
 - The overlay uses `role="status"`, `aria-live="assertive"`, and the blocked surface exposes `aria-busy`.
 - Clean-code pass: no blocking findings; localized copy was made explicit and language mixing was avoided.
 - Wallet E2E/Synpress was not run for this slice because the visual change does not perform a real signature or on-chain transaction; functional validation is covered by the component test and the existing submit contract tests.
+- If the error persists locally, the next attempt must inspect server logs for `Stake signed transaction mismatch` to identify the exact changed category before relaxing any validation.
 
 ## Commands
 

@@ -73,13 +73,54 @@ function messageActionFingerprint(message: MessageLike) {
   };
 }
 
+export type LegacyTransactionMessageMismatchReason =
+  | "version"
+  | "header"
+  | "staticAccountKeys"
+  | "compiledInstructions"
+  | "addressTableLookups";
+
+function valuesMatch(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+export function getLegacyTransactionMessageMismatchReasons(
+  transaction: VersionedTransaction,
+  preparedMessageBytes: Uint8Array
+): LegacyTransactionMessageMismatchReason[] {
+  const preparedMessage = VersionedMessage.deserialize(preparedMessageBytes) as MessageLike;
+  const signedFingerprint = messageActionFingerprint(transaction.message);
+  const preparedFingerprint = messageActionFingerprint(preparedMessage);
+  const reasons: LegacyTransactionMessageMismatchReason[] = [];
+
+  if (!valuesMatch(signedFingerprint.version, preparedFingerprint.version)) {
+    reasons.push("version");
+  }
+
+  if (!valuesMatch(signedFingerprint.header, preparedFingerprint.header)) {
+    reasons.push("header");
+  }
+
+  if (!valuesMatch(signedFingerprint.staticAccountKeys, preparedFingerprint.staticAccountKeys)) {
+    reasons.push("staticAccountKeys");
+  }
+
+  if (!valuesMatch(signedFingerprint.compiledInstructions, preparedFingerprint.compiledInstructions)) {
+    reasons.push("compiledInstructions");
+  }
+
+  if (!valuesMatch(signedFingerprint.addressTableLookups, preparedFingerprint.addressTableLookups)) {
+    reasons.push("addressTableLookups");
+  }
+
+  return reasons;
+}
+
 export function legacyTransactionMessageMatchesPreparedAction(
   transaction: VersionedTransaction,
   preparedMessageBytes: Uint8Array
 ): boolean {
-  const preparedMessage = VersionedMessage.deserialize(preparedMessageBytes) as MessageLike;
-  return JSON.stringify(messageActionFingerprint(transaction.message))
-    === JSON.stringify(messageActionFingerprint(preparedMessage));
+  return getLegacyTransactionMessageMismatchReasons(transaction, preparedMessageBytes).length === 0;
 }
 
 export function getLegacyTransactionPayer(raw: VersionedTransaction): string | null {
