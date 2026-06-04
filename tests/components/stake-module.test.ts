@@ -242,6 +242,7 @@ describe("components/dashboard/stake-module", () => {
 
     expect(container.textContent).toContain("Processing on-chain action");
     expect(container.textContent).toContain("Stake Fraction #1");
+    expect(container.textContent).toContain("Wait for your wallet to show the confirmation window");
     expect(container.querySelector(".blur-\\[2px\\]")).not.toBeNull();
 
     await act(async () => {
