@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  type DeploySignatureStatus,
+  parseCoreCandyMachineStatusRequestBody,
+  type StatusRequestBody
+} from "@/lib/admin/core-candy-machine-status-contract";
 import { getRequestRole } from "@/lib/auth-session";
 import { getWebhookEventsBySignatures } from "@/lib/mint-orchestrator-store";
 import { getSolanaRpcUrl } from "@/lib/solana";
@@ -8,18 +13,6 @@ import {
   getSignatureStatusWithKitRpc
 } from "@/lib/solana-kit/compat/web3-transactions";
 
-type StatusRequestBody = {
-  signatures?: unknown;
-};
-
-type DeploySignatureStatus = {
-  confirmed: boolean;
-  failed: boolean;
-  confirmationStatus: string | null;
-  observedByWebhook: boolean;
-  source: "rpc" | "webhook";
-};
-
 function hasWebhookObservation(value: unknown): boolean {
   return Boolean(value && typeof value === "object");
 }
@@ -27,7 +20,7 @@ function hasWebhookObservation(value: unknown): boolean {
 async function resolveStatusesWithRpc(
   statuses: Record<string, unknown | null>,
   signatures: string[]
-): Promise<Record<string, unknown | null>> {
+): Promise<Record<string, DeploySignatureStatus | null>> {
   const rpc = createKitRpcConnection(getSolanaRpcUrl());
   const resolvedStatuses: Record<string, DeploySignatureStatus | null> = {};
 
@@ -89,18 +82,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const body = (await request.json().catch(() => null)) as StatusRequestBody | null;
 
-  if (!body || !Array.isArray(body.signatures)) {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
-
-  const signatures = body.signatures.filter((value): value is string => typeof value === "string" && value.trim().length > 0);
-  if (signatures.length === 0) {
-    return NextResponse.json({ error: "At least one signature is required." }, { status: 400 });
+  const parsedBody = parseCoreCandyMachineStatusRequestBody(body);
+  if (!parsedBody.ok) {
+    return NextResponse.json({ error: parsedBody.error }, { status: 400 });
   }
 
   try {
-    const statuses = getWebhookEventsBySignatures("helius", signatures);
-    const resolvedStatuses = await resolveStatusesWithRpc(statuses, signatures);
+    const statuses = getWebhookEventsBySignatures("helius", parsedBody.signatures);
+    const resolvedStatuses = await resolveStatusesWithRpc(statuses, parsedBody.signatures);
     return NextResponse.json({ statuses: resolvedStatuses });
   } catch {
     return NextResponse.json({ error: "Could not fetch statuses." }, { status: 500 });
