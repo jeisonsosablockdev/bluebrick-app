@@ -190,12 +190,55 @@ const QUOTE_CACHE_TTL_MS = 45_000;
 const PURCHASE_ATTEMPT_IDEMPOTENCY_TTL_MS = 5 * 60 * 1_000;
 const PURCHASE_SUBMIT_CONFIRMATION_POLLS = 10;
 const PURCHASE_SUBMIT_CONFIRMATION_DELAY_MS = 1_000;
-const PURCHASE_ASSET_VERIFICATION_POLLS = 8;
-const PURCHASE_ASSET_VERIFICATION_DELAY_MS = 1_000;
+const PURCHASE_ASSET_VERIFICATION_POLLS_DEFAULT = 24;
+const PURCHASE_ASSET_VERIFICATION_POLLS_LIMIT = 120;
+const PURCHASE_ASSET_VERIFICATION_DELAY_MS_DEFAULT = 1_500;
+const PURCHASE_ASSET_VERIFICATION_DELAY_MS_LIMIT = 5_000;
 const DEFAULT_PURCHASE_QUANTITY_MODE: PurchaseQuantityMode = "MULTI_ENABLED";
 const DEFAULT_MAX_PURCHASE_QUANTITY = 10;
 const quoteCache = new Map<string, QuoteCacheEntry>();
 const quoteInFlight = new Map<string, Promise<GuardSnapshot>>();
+
+function readBoundedIntegerEnv(
+  env: Record<string, string | undefined>,
+  name: string,
+  fallback: number,
+  min: number,
+  max: number
+): number {
+  const raw = env[name]?.trim();
+  if (!raw) {
+    return fallback;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < min) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+}
+
+export function getPurchaseAssetVerificationRetryConfig(
+  env: Record<string, string | undefined> = process.env
+): { maxAttempts: number; retryDelayMs: number } {
+  return {
+    maxAttempts: readBoundedIntegerEnv(
+      env,
+      "PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS",
+      PURCHASE_ASSET_VERIFICATION_POLLS_DEFAULT,
+      1,
+      PURCHASE_ASSET_VERIFICATION_POLLS_LIMIT
+    ),
+    retryDelayMs: readBoundedIntegerEnv(
+      env,
+      "PURCHASE_ASSET_VERIFICATION_RETRY_MS",
+      PURCHASE_ASSET_VERIFICATION_DELAY_MS_DEFAULT,
+      0,
+      PURCHASE_ASSET_VERIFICATION_DELAY_MS_LIMIT
+    )
+  };
+}
 
 export function invalidatePurchaseQuoteCache(candyMachineAddress?: string): void {
   const normalized = typeof candyMachineAddress === "string" ? candyMachineAddress.trim() : "";
@@ -1094,11 +1137,12 @@ async function verifyExpectedMintedAssets(input: {
 
   const umi = createUmi(getSolanaRpcUrl()).use(mplCore());
   const verified: string[] = [];
+  const retryConfig = getPurchaseAssetVerificationRetryConfig();
 
   for (const assetAddress of input.expectedAssetAddresses) {
     let lastError: unknown = null;
 
-    for (let attempt = 0; attempt < PURCHASE_ASSET_VERIFICATION_POLLS; attempt += 1) {
+    for (let attempt = 1; attempt <= retryConfig.maxAttempts; attempt += 1) {
       try {
         const asset = await fetchAsset(umi, publicKey(assetAddress));
         const owner = getMplCoreAssetOwner(asset);
@@ -1138,7 +1182,9 @@ async function verifyExpectedMintedAssets(input: {
           break;
         }
 
-        await sleep(PURCHASE_ASSET_VERIFICATION_DELAY_MS);
+        if (attempt < retryConfig.maxAttempts) {
+          await sleep(retryConfig.retryDelayMs);
+        }
       }
     }
 
@@ -1153,7 +1199,9 @@ async function verifyExpectedMintedAssets(input: {
         409,
         {
           assetAddress,
-          cause: lastError instanceof Error ? lastError.message : String(lastError)
+          cause: lastError instanceof Error ? lastError.message : String(lastError),
+          verificationAttempts: retryConfig.maxAttempts,
+          verificationRetryDelayMs: retryConfig.retryDelayMs
         }
       );
     }

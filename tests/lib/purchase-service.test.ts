@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/property-marketplace-server", () => ({
   getMarketplacePropertyDetailOrThrowRpc: vi.fn()
@@ -8,11 +8,16 @@ import {
   amountToLamports,
   evaluateMintAvailability,
   evaluatePurchaseQuantity,
+  getPurchaseAssetVerificationRetryConfig,
   mapSubmitErrorToPurchaseError,
   resolvePreparedPriceLamports
 } from "@/lib/purchase-service";
 
 describe("lib/purchase-service", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns INVALID_QUANTITY when quantity is not a positive integer", () => {
     const error = evaluatePurchaseQuantity({
       quantityMode: "SINGLE_ONLY",
@@ -117,5 +122,32 @@ describe("lib/purchase-service", () => {
   it("returns SOL prepared price when payment currency is SOL", () => {
     expect(resolvePreparedPriceLamports("SOL", 100_000)).toBe(100_000);
     expect(resolvePreparedPriceLamports("SOL", null)).toBe(0);
+  });
+
+  it("uses a longer asset verification window after confirmed Core mint transactions", () => {
+    const config = getPurchaseAssetVerificationRetryConfig({});
+
+    expect(config.maxAttempts).toBe(24);
+    expect(config.retryDelayMs).toBe(1500);
+  });
+
+  it("allows bounded asset verification window overrides for devnet propagation", () => {
+    const config = getPurchaseAssetVerificationRetryConfig({
+      PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS: "200",
+      PURCHASE_ASSET_VERIFICATION_RETRY_MS: "9000"
+    });
+
+    expect(config.maxAttempts).toBe(120);
+    expect(config.retryDelayMs).toBe(5000);
+  });
+
+  it("ignores invalid asset verification window overrides", () => {
+    const config = getPurchaseAssetVerificationRetryConfig({
+      PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS: "4.5",
+      PURCHASE_ASSET_VERIFICATION_RETRY_MS: "-1"
+    });
+
+    expect(config.maxAttempts).toBe(24);
+    expect(config.retryDelayMs).toBe(1500);
   });
 });

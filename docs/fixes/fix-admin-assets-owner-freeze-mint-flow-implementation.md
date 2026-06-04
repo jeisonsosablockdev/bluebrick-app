@@ -47,8 +47,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readines
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-post-create-handoff-ui
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-verification-security
+fix/app-marketplace-purchase-asset-verification-window-bri-170-s10
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s12-verification-security
 ```
 
 Todos los slices salen de la rama de iniciativa y abren PR contra la rama de iniciativa. La iniciativa completa abre PR final hacia `develop`.
@@ -308,7 +309,30 @@ Gates:
 - `npm run typecheck`
 - `npm run validate`
 
-## S10 - Cleanup de rutas y codigo huerfano
+## S10 - Ventana de verificacion de assets post-compra
+
+Responsabilidad:
+
+- ampliar la ventana de verificacion de assets MPL Core despues de que la transaccion de compra confirma
+- hacer la ventana configurable y acotada con `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS` y `PURCHASE_ASSET_VERIFICATION_RETRY_MS`
+- mantener fallos definitivos cuando el asset leido tiene owner incorrecto, collection incorrecta o no expone `FreezeDelegate Owner`
+- agregar detalles de diagnostico al error cuando se agota la ventana
+- evitar que un caso normal de propagacion RPC/devnet vuelva a marcar como `TRANSACTION_FAILED` una compra que si confirmo on-chain
+
+Pruebas primero:
+
+- test de configuracion default que evita regresar a una ventana corta de 8 segundos
+- test de overrides acotados para evitar ventanas absurdas
+- test de overrides invalidos que vuelven al default seguro
+
+Gates:
+
+- `npx vitest run tests/lib/purchase-service.test.ts`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run validate`
+
+## S11 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
 
@@ -368,7 +392,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S11 - Verificacion, seguridad y cierre
+## S12 - Verificacion, seguridad y cierre
 
 Responsabilidad:
 
@@ -422,7 +446,7 @@ El repo tiene dependencias y codigo legacy con `@solana/web3.js`. Para este fix:
 
 ## Definition of Done
 
-- S01-S11 mergeados en la rama de iniciativa.
+- S01-S12 mergeados en la rama de iniciativa.
 - PR final de iniciativa mergeado a `develop`.
 - `/admin/assets/new` queda limitado a crear/configurar collections y Candy Machines.
 - `/marketplace/[id]` mintea NFTs con `FreezeDelegate Owner`.
@@ -481,8 +505,9 @@ fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s06-deploy-snapshot-readines
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s07-snapshot-confirmation-gate
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s08-snapshot-state-propagation
 fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s09-post-create-handoff-ui
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s10-cleanup-legacy-paths
-fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-verification-security
+fix/app-marketplace-purchase-asset-verification-window-bri-170-s10
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s11-cleanup-legacy-paths
+fix/app-admin-assets-owner-freeze-mint-flow-bri-170-s12-verification-security
 ```
 
 All slices branch from the initiative branch and open PRs into the initiative branch. The complete initiative opens a final PR into `develop`.
@@ -742,7 +767,30 @@ Gates:
 - `npm run typecheck`
 - `npm run validate`
 
-## S10 - Legacy Route And Orphan-Code Cleanup
+## S10 - Post-Purchase Asset Verification Window
+
+Responsibility:
+
+- extend the MPL Core asset verification window after the purchase transaction confirms
+- make the window configurable and bounded with `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS` and `PURCHASE_ASSET_VERIFICATION_RETRY_MS`
+- keep definitive failures when the readable asset has the wrong owner, wrong collection, or no `FreezeDelegate Owner`
+- add diagnostic details to the exhausted-window error
+- prevent normal RPC/devnet propagation from marking an on-chain-confirmed purchase as `TRANSACTION_FAILED`
+
+Tests first:
+
+- default configuration test that prevents returning to the short 8-second window
+- bounded override test to avoid absurd windows
+- invalid override test that falls back to safe defaults
+
+Gates:
+
+- `npx vitest run tests/lib/purchase-service.test.ts`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run validate`
+
+## S11 - Legacy Route And Orphan-Code Cleanup
 
 Responsibility:
 
@@ -802,7 +850,7 @@ Gates:
 - `npm test`
 - `npm run validate`
 
-## S11 - Verification, Security, And Closure
+## S12 - Verification, Security, And Closure
 
 Responsibility:
 
@@ -856,7 +904,7 @@ The repo has legacy `@solana/web3.js` dependencies and code. For this fix:
 
 ## Definition of Done
 
-- S01-S11 merged into the initiative branch.
+- S01-S12 merged into the initiative branch.
 - Final initiative PR merged into `develop`.
 - `/admin/assets/new` remains limited to creating/configuring collections and Candy Machines.
 - `/marketplace/[id]` mints NFTs with `FreezeDelegate Owner`.
