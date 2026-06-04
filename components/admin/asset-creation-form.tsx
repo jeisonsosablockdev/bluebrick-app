@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactElement } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
@@ -11,6 +10,7 @@ import {
 } from "@/components/admin/core-candy-machine-panel";
 import {
   deriveProjectDurationMonths,
+  usePostCreateMarketplaceHandoff,
   useAssetCreationFormState,
   useAssetImportJobs,
   useAssetUploadWorkflow
@@ -322,7 +322,6 @@ type SolUsdQuoteResponse = {
 
 export function AssetCreationForm(): ReactElement {
   const { t } = useI18n();
-  const router = useRouter();
   const [draftId, setDraftId] = useState<string>(() => createDraftId());
   const [editSessionId, setEditSessionId] = useState<string>(() => createDraftId());
   const {
@@ -373,11 +372,19 @@ export function AssetCreationForm(): ReactElement {
   const [priceInputCurrency, setPriceInputCurrency] = useState<PriceInputCurrency>("USD");
   const [pendingImportCandidate, setPendingImportCandidate] = useState<ParsedImportCandidate | null>(null);
   const [isImportFileDragging, setIsImportFileDragging] = useState(false);
-  const [marketplaceCtaReady, setMarketplaceCtaReady] = useState(false);
   const [solUsdRate, setSolUsdRate] = useState<number | null>(null);
   const [solUsdUpdatedAt, setSolUsdUpdatedAt] = useState<string | null>(null);
   const [solUsdQuoteStatus, setSolUsdQuoteStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [solUsdQuoteError, setSolUsdQuoteError] = useState<string | null>(null);
+  const {
+    marketplaceHandoffState,
+    openCreatedMarketplaceEntry,
+    resetMarketplaceHandoff
+  } = usePostCreateMarketplaceHandoff({
+    createdMarketplaceEntryId,
+    hasDeployCompletedData: Boolean(deployCompletedData),
+    isCreatingMarketplaceEntry
+  });
 
   const refreshSolUsdQuote = useCallback(async () => {
     setSolUsdQuoteStatus((previous) => (previous === "ready" ? "ready" : "loading"));
@@ -1099,7 +1106,7 @@ export function AssetCreationForm(): ReactElement {
     setSnapshotFinalize(null);
     setCreateAssetMessage("");
     setCreatedMarketplaceEntryId(null);
-    setMarketplaceCtaReady(false);
+    resetMarketplaceHandoff();
     setShowMintSetup(true);
   };
 
@@ -1113,9 +1120,9 @@ export function AssetCreationForm(): ReactElement {
     setPriceInputCurrency("USD");
     setPendingImportCandidate(null);
     setIsImportFileDragging(false);
-    setMarketplaceCtaReady(false);
+    resetMarketplaceHandoff();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [cancelCurrentUploadSession, resetFormState]);
+  }, [cancelCurrentUploadSession, resetFormState, resetMarketplaceHandoff]);
 
   const handleCreateAsset = async () => {
     if (!deployCompletedData) {
@@ -1124,7 +1131,7 @@ export function AssetCreationForm(): ReactElement {
 
     setIsCreatingMarketplaceEntry(true);
     setCreateAssetMessage("");
-    setMarketplaceCtaReady(false);
+    resetMarketplaceHandoff();
 
     const nftPriceUsd = deriveNftPriceUsd(form);
     const annualRoiPct = deriveAnnualRoiPct(form);
@@ -1214,26 +1221,11 @@ export function AssetCreationForm(): ReactElement {
       });
       setCreateAssetMessage(error instanceof Error ? error.message : fallback);
       setCreatedMarketplaceEntryId(null);
-      setMarketplaceCtaReady(false);
+      resetMarketplaceHandoff();
     } finally {
       setIsCreatingMarketplaceEntry(false);
     }
   };
-
-  useEffect(() => {
-    if (!createdMarketplaceEntryId) {
-      setMarketplaceCtaReady(false);
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setMarketplaceCtaReady(true);
-    }, 1400);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [createdMarketplaceEntryId]);
 
   const handleResetSuggestedCollectionValues = () => {
     const suggestion = suggestCollectionFromIdentity({
@@ -1996,7 +1988,7 @@ export function AssetCreationForm(): ReactElement {
                 setShowMintSetup(false);
                 setCreateAssetMessage("");
                 setCreatedMarketplaceEntryId(null);
-                setMarketplaceCtaReady(false);
+                resetMarketplaceHandoff();
               }}
             >
               {t({ en: "Back to step 1", es: "Volver al paso 1", pt: "Voltar ao passo 1" })}
@@ -2024,13 +2016,13 @@ export function AssetCreationForm(): ReactElement {
               setSnapshotFinalize(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
-              setMarketplaceCtaReady(false);
+              resetMarketplaceHandoff();
             }}
             onDeployCompleted={(result) => {
               setDeployCompletedData(result);
               setCreateAssetMessage("");
               setCreatedMarketplaceEntryId(null);
-              setMarketplaceCtaReady(false);
+              resetMarketplaceHandoff();
             }}
           />
           <div
@@ -2100,21 +2092,20 @@ export function AssetCreationForm(): ReactElement {
             <Button
               className="min-h-11"
               onClick={() => {
-                if (createdMarketplaceEntryId && marketplaceCtaReady) {
-                  router.push(`/marketplace/${createdMarketplaceEntryId}`);
+                if (openCreatedMarketplaceEntry()) {
                   return;
                 }
 
                 void handleCreateAsset();
               }}
-              disabled={!deployCompletedData || isCreatingMarketplaceEntry || (Boolean(createdMarketplaceEntryId) && !marketplaceCtaReady)}
+              disabled={marketplaceHandoffState.primaryDisabled}
             >
               {isCreatingMarketplaceEntry
                 ? t({ en: "Creating...", es: "Creando...", pt: "Criando..." })
-                : createdMarketplaceEntryId
-                  ? marketplaceCtaReady
-                    ? t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })
-                    : t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
+                : marketplaceHandoffState.primaryAction === "view-marketplace"
+                  ? t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })
+                  : marketplaceHandoffState.primaryAction === "entry-created"
+                    ? t({ en: "Entry created", es: "Entrada creada", pt: "Entrada criada" })
                   : t({ en: "Create Asset", es: "Create Asset", pt: "Create Asset" })}
             </Button>
           ) : null}

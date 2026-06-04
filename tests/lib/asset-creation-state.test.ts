@@ -15,6 +15,7 @@ import {
   setDeployCompletedData,
   setForm,
   setFormField,
+  selectMarketplaceHandoffState,
   setShowMintSetup,
   setSnapshotFinalize,
   setUploadRefs,
@@ -161,6 +162,44 @@ describe("asset creation selectors", () => {
     expect(snapshot.draftId).toBe("draft-9");
     expect(snapshot.assetName).toBe("Proyecto A");
     expect(snapshot.mintQuantity).toBe(1);
+  });
+
+  it("derives marketplace handoff CTA state", () => {
+    expect(selectMarketplaceHandoffState({
+      createdMarketplaceEntryId: null,
+      marketplaceCtaReady: false,
+      hasDeployCompletedData: true,
+      isCreatingMarketplaceEntry: false
+    })).toEqual({
+      primaryAction: "create-asset",
+      secondaryAction: "cancel",
+      primaryDisabled: false,
+      canOpenMarketplace: false
+    });
+
+    expect(selectMarketplaceHandoffState({
+      createdMarketplaceEntryId: "entry-1",
+      marketplaceCtaReady: false,
+      hasDeployCompletedData: true,
+      isCreatingMarketplaceEntry: false
+    })).toEqual({
+      primaryAction: "entry-created",
+      secondaryAction: "create-another",
+      primaryDisabled: true,
+      canOpenMarketplace: false
+    });
+
+    expect(selectMarketplaceHandoffState({
+      createdMarketplaceEntryId: "entry-1",
+      marketplaceCtaReady: true,
+      hasDeployCompletedData: true,
+      isCreatingMarketplaceEntry: false
+    })).toEqual({
+      primaryAction: "view-marketplace",
+      secondaryAction: "create-another",
+      primaryDisabled: false,
+      canOpenMarketplace: true
+    });
   });
 
   it("dedupes validation errors and computes continuation guard", () => {
