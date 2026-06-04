@@ -213,6 +213,41 @@ function mapRow(row: PurchaseAttemptRow): PurchaseAttemptRecord {
   };
 }
 
+function buildAssetVerificationFailurePatch(
+  record: PurchaseAttemptRecord,
+  errorMessage: string,
+  checkedAt: string
+): Pick<PurchaseAttemptRecord, "assetVerificationCheckedAt" | "assetVerificationError" | "assetVerificationStatus"> {
+  if (record.expectedAssetAddresses.length === 0) {
+    return {
+      assetVerificationStatus: record.assetVerificationStatus,
+      assetVerificationError: record.assetVerificationError,
+      assetVerificationCheckedAt: record.assetVerificationCheckedAt
+    };
+  }
+
+  return {
+    assetVerificationStatus: "failed",
+    assetVerificationError: errorMessage,
+    assetVerificationCheckedAt: checkedAt
+  };
+}
+
+function assetVerificationFailureSetSql(errorMessagePlaceholder: "$2" | "$3"): string {
+  return `asset_verification_status = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
+           ELSE asset_verification_status
+         END,
+         asset_verification_error = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN ${errorMessagePlaceholder}
+           ELSE asset_verification_error
+         END,
+         asset_verification_checked_at = CASE
+           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
+           ELSE asset_verification_checked_at
+         END`;
+}
+
 function normalizePreparedPriceLamports(value: number | null): number {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
     return 0;
@@ -626,17 +661,14 @@ export async function markPurchaseAttemptFailed(input: {
       return { ...found };
     }
 
+    const now = new Date().toISOString();
     const updated: PurchaseAttemptRecord = {
       ...found,
       status: "failed",
-      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
-      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
-      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
-        ? new Date().toISOString()
-        : found.assetVerificationCheckedAt,
+      ...buildAssetVerificationFailurePatch(found, input.errorMessage, now),
       errorCode: input.errorCode,
       errorMessage: input.errorMessage,
-      updatedAt: new Date().toISOString()
+      updatedAt: now
     };
     setInMemoryAttempt(updated);
     return { ...updated };
@@ -648,18 +680,7 @@ export async function markPurchaseAttemptFailed(input: {
       `UPDATE purchase_attempts
        SET
          status = 'failed',
-         asset_verification_status = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
-           ELSE asset_verification_status
-         END,
-         asset_verification_error = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $3
-           ELSE asset_verification_error
-         END,
-         asset_verification_checked_at = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
-           ELSE asset_verification_checked_at
-         END,
+         ${assetVerificationFailureSetSql("$3")},
          error_code = $2,
          error_message = $3
        WHERE id = $1
@@ -787,16 +808,13 @@ export async function markPurchaseAttemptAssetVerificationFailed(input: {
       return found;
     }
 
+    const now = new Date().toISOString();
     const updated: PurchaseAttemptRecord = {
       ...found,
-      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
-      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
-      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
-        ? new Date().toISOString()
-        : found.assetVerificationCheckedAt,
+      ...buildAssetVerificationFailurePatch(found, input.errorMessage, now),
       errorCode: null,
       errorMessage: null,
-      updatedAt: new Date().toISOString()
+      updatedAt: now
     };
     setInMemoryAttempt(updated);
     return { ...updated };
@@ -807,18 +825,7 @@ export async function markPurchaseAttemptAssetVerificationFailed(input: {
       client,
       `UPDATE purchase_attempts
        SET
-         asset_verification_status = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
-           ELSE asset_verification_status
-         END,
-         asset_verification_error = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $2
-           ELSE asset_verification_error
-         END,
-         asset_verification_checked_at = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
-           ELSE asset_verification_checked_at
-         END,
+         ${assetVerificationFailureSetSql("$2")},
          error_code = NULL,
          error_message = NULL
        WHERE tx_signature = $1
@@ -867,17 +874,14 @@ export async function markPurchaseAttemptFailedBySignature(input: {
       return found;
     }
 
+    const now = new Date().toISOString();
     const updated: PurchaseAttemptRecord = {
       ...found,
       status: "failed",
-      assetVerificationStatus: found.expectedAssetAddresses.length > 0 ? "failed" : found.assetVerificationStatus,
-      assetVerificationError: found.expectedAssetAddresses.length > 0 ? input.errorMessage : found.assetVerificationError,
-      assetVerificationCheckedAt: found.expectedAssetAddresses.length > 0
-        ? new Date().toISOString()
-        : found.assetVerificationCheckedAt,
+      ...buildAssetVerificationFailurePatch(found, input.errorMessage, now),
       errorCode: input.errorCode,
       errorMessage: input.errorMessage,
-      updatedAt: new Date().toISOString()
+      updatedAt: now
     };
     setInMemoryAttempt(updated);
     return { ...updated };
@@ -889,18 +893,7 @@ export async function markPurchaseAttemptFailedBySignature(input: {
       `UPDATE purchase_attempts
        SET
          status = 'failed',
-         asset_verification_status = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN 'failed'
-           ELSE asset_verification_status
-         END,
-         asset_verification_error = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN $3
-           ELSE asset_verification_error
-         END,
-         asset_verification_checked_at = CASE
-           WHEN jsonb_array_length(expected_asset_addresses) > 0 THEN NOW()
-           ELSE asset_verification_checked_at
-         END,
+         ${assetVerificationFailureSetSql("$3")},
          error_code = $2,
          error_message = $3
        WHERE tx_signature = $1

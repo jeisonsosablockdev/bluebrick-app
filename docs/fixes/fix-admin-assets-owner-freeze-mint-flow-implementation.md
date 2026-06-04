@@ -548,6 +548,13 @@ Recomendacion:
 - extraer un helper de mutacion in-memory para fallo de verificacion de assets;
 - centralizar el fragmento SQL o mantener un metodo unico responsable de marcar fallos de verificacion posterior.
 
+Resolucion:
+
+- Fix aplicado en rama `codex/fix-bri-170-purchase-attempt-verification-helper`.
+- `buildAssetVerificationFailurePatch` centraliza la mutacion in-memory de fallo de verificacion de assets.
+- `assetVerificationFailureSetSql` centraliza el fragmento SQL equivalente para los caminos por `id`, por firma y post-confirmacion.
+- Las pruebas de repositorio siguen cubriendo que una compra confirmada on-chain no regresa a `failed` por una verificacion posterior.
+
 2. Medium - `components/admin/core-candy-machine-panel.tsx` mantiene un `runDeployFlow` demasiado amplio.
 
 Problema:
@@ -1186,6 +1193,13 @@ Recommendation:
 
 - extract an in-memory mutation helper for asset verification failures;
 - centralize the SQL fragment or keep one repository method as the single owner of post-confirmation verification failure state.
+
+Resolution:
+
+- Fix applied in branch `codex/fix-bri-170-purchase-attempt-verification-helper`.
+- `buildAssetVerificationFailurePatch` centralizes the in-memory asset verification failure mutation.
+- `assetVerificationFailureSetSql` centralizes the equivalent SQL fragment for the by-id, by-signature, and post-confirmation paths.
+- Repository tests still cover that an on-chain-confirmed purchase does not regress to `failed` because of later verification failure.
 
 2. Medium - `components/admin/core-candy-machine-panel.tsx` keeps an oversized `runDeployFlow`.
 
