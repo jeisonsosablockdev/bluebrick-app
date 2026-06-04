@@ -7,7 +7,7 @@ import {
   type Commitment,
   type Signature
 } from "@solana/kit";
-import { Connection, VersionedTransaction, type Finality } from "@solana/web3.js";
+import { Connection, VersionedMessage, VersionedTransaction, type Finality } from "@solana/web3.js";
 
 // TODO(EPIC-005): remove this adapter once stake flows fully migrate off legacy web3 interop.
 export type LegacyVersionedTransaction = VersionedTransaction;
@@ -31,6 +31,55 @@ export function serializeLegacyVersionedTransaction(raw: VersionedTransaction): 
 
 export function serializeLegacyVersionedMessage(raw: VersionedTransaction): Uint8Array {
   return raw.message.serialize();
+}
+
+type MessageLike = VersionedTransaction["message"];
+
+function publicKeyListFingerprint(keys: Array<{ toBase58(): string }>): string[] {
+  return keys.map((key) => key.toBase58());
+}
+
+function bytesFingerprint(raw: Uint8Array): string {
+  return Buffer.from(raw).toString("base64");
+}
+
+function compiledInstructionsFingerprint(message: MessageLike) {
+  return message.compiledInstructions.map((instruction) => ({
+    programIdIndex: instruction.programIdIndex,
+    accountKeyIndexes: [...instruction.accountKeyIndexes],
+    data: bytesFingerprint(instruction.data)
+  }));
+}
+
+function addressTableLookupsFingerprint(message: MessageLike) {
+  if (!("addressTableLookups" in message)) {
+    return [];
+  }
+
+  return message.addressTableLookups.map((lookup) => ({
+    accountKey: lookup.accountKey.toBase58(),
+    writableIndexes: [...lookup.writableIndexes],
+    readonlyIndexes: [...lookup.readonlyIndexes]
+  }));
+}
+
+function messageActionFingerprint(message: MessageLike) {
+  return {
+    version: message.version,
+    header: message.header,
+    staticAccountKeys: publicKeyListFingerprint(message.staticAccountKeys),
+    compiledInstructions: compiledInstructionsFingerprint(message),
+    addressTableLookups: addressTableLookupsFingerprint(message)
+  };
+}
+
+export function legacyTransactionMessageMatchesPreparedAction(
+  transaction: VersionedTransaction,
+  preparedMessageBytes: Uint8Array
+): boolean {
+  const preparedMessage = VersionedMessage.deserialize(preparedMessageBytes) as MessageLike;
+  return JSON.stringify(messageActionFingerprint(transaction.message))
+    === JSON.stringify(messageActionFingerprint(preparedMessage));
 }
 
 export function getLegacyTransactionPayer(raw: VersionedTransaction): string | null {

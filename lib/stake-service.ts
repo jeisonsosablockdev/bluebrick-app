@@ -9,6 +9,7 @@ import {
   createLegacyConnection,
   deserializeLegacyVersionedTransaction,
   getLegacyTransactionPayer,
+  legacyTransactionMessageMatchesPreparedAction,
   normalizeLegacyPublicKey,
   sendAndConfirmLegacyVersionedTransaction,
   serializeLegacyVersionedMessage
@@ -243,8 +244,8 @@ function assertPayerMatchesWallet(transaction: ReturnType<typeof parseSignedTran
 }
 
 function assertPreparedMessageMatches(transaction: ReturnType<typeof parseSignedTransaction>, preparedMessageBase64: string): void {
-  const signedMessageBase64 = toBase64(serializeLegacyVersionedMessage(transaction));
-  if (signedMessageBase64 !== preparedMessageBase64) {
+  const preparedMessageBytes = fromBase64(preparedMessageBase64);
+  if (!legacyTransactionMessageMatchesPreparedAction(transaction, preparedMessageBytes)) {
     throw new StakeFlowError("INVALID_TRANSACTION", "Signed transaction does not match the prepared stake action.", 409);
   }
 }
