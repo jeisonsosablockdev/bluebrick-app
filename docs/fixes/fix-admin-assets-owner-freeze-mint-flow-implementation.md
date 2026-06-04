@@ -332,6 +332,12 @@ Gates:
 - `npm run typecheck`
 - `npm run validate`
 
+Auditoria clean-code:
+
+- Hallazgo corregido: las constantes internas usaban `POLLS` y `DELAY_MS`, mientras el contrato publico del slice usa `MAX_ATTEMPTS` y `RETRY_MS`. Eso introducia una distincion innecesaria y reducia la buscabilidad del codigo. Se renombraron a `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT`, `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT`, `PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT` y `PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT`.
+- Hallazgo no bloqueante: `verifyExpectedMintedAssets` conserva dos responsabilidades cercanas, leer/verificar assets y orquestar retries. Se acepta para S10 porque mantiene el cambio acotado y probado; si el flujo crece, extraer un helper especifico de retry por asset para reducir anidamiento.
+- Sin hallazgos bloqueantes en tests: los casos agregados son rapidos, deterministas y cubren default, limites superiores y overrides invalidos sin depender de red.
+
 ## S11 - Cleanup de rutas y codigo huerfano
 
 Responsabilidad:
@@ -789,6 +795,12 @@ Gates:
 - `npm run lint`
 - `npm run typecheck`
 - `npm run validate`
+
+Clean-code audit:
+
+- Fixed finding: internal constants used `POLLS` and `DELAY_MS`, while the slice public contract uses `MAX_ATTEMPTS` and `RETRY_MS`. That created an unnecessary distinction and reduced code searchability. They were renamed to `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_DEFAULT`, `PURCHASE_ASSET_VERIFICATION_MAX_ATTEMPTS_LIMIT`, `PURCHASE_ASSET_VERIFICATION_RETRY_MS_DEFAULT`, and `PURCHASE_ASSET_VERIFICATION_RETRY_MS_LIMIT`.
+- Non-blocking finding: `verifyExpectedMintedAssets` still keeps two close responsibilities, reading/verifying assets and orchestrating retries. This is accepted for S10 because it keeps the change bounded and tested; if the flow grows, extract a dedicated per-asset retry helper to reduce nesting.
+- No blocking findings in tests: added cases are fast, deterministic, and cover defaults, upper bounds, and invalid overrides without network dependency.
 
 ## S11 - Legacy Route And Orphan-Code Cleanup
 
