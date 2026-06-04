@@ -8,8 +8,8 @@ import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createLegacyConnection,
   deserializeLegacyVersionedTransaction,
+  getLegacyTransactionMessageMismatchReasons,
   getLegacyTransactionPayer,
-  legacyTransactionMessageMatchesPreparedAction,
   normalizeLegacyPublicKey,
   sendAndConfirmLegacyVersionedTransaction,
   serializeLegacyVersionedMessage
@@ -243,9 +243,22 @@ function assertPayerMatchesWallet(transaction: ReturnType<typeof parseSignedTran
   }
 }
 
-function assertPreparedMessageMatches(transaction: ReturnType<typeof parseSignedTransaction>, preparedMessageBase64: string): void {
-  const preparedMessageBytes = fromBase64(preparedMessageBase64);
-  if (!legacyTransactionMessageMatchesPreparedAction(transaction, preparedMessageBytes)) {
+function assertPreparedMessageMatches(input: {
+  transaction: ReturnType<typeof parseSignedTransaction>;
+  preparedMessageBase64: string;
+  attemptId: string;
+  walletPublicKey: string;
+  assetAddress: string;
+}): void {
+  const preparedMessageBytes = fromBase64(input.preparedMessageBase64);
+  const mismatchReasons = getLegacyTransactionMessageMismatchReasons(input.transaction, preparedMessageBytes);
+  if (mismatchReasons.length > 0) {
+    console.warn("Stake signed transaction mismatch", {
+      attemptId: input.attemptId,
+      walletPublicKey: input.walletPublicKey,
+      assetAddress: input.assetAddress,
+      mismatchReasons
+    });
     throw new StakeFlowError("INVALID_TRANSACTION", "Signed transaction does not match the prepared stake action.", 409);
   }
 }
@@ -528,7 +541,13 @@ export async function submitStakeAction(input: {
 
   const signedTransaction = parseSignedTransaction(signedTransactionBase64);
   assertPayerMatchesWallet(signedTransaction, walletPublicKey);
-  assertPreparedMessageMatches(signedTransaction, attempt.preparedTxMessageBase64);
+  assertPreparedMessageMatches({
+    transaction: signedTransaction,
+    preparedMessageBase64: attempt.preparedTxMessageBase64,
+    attemptId,
+    walletPublicKey,
+    assetAddress: attempt.assetAddress
+  });
 
   const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
 

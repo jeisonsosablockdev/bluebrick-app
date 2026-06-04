@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getLegacyTransactionMessageMismatchReasons,
   legacyTransactionMessageMatchesPreparedAction,
   serializeLegacyVersionedMessage
 } from "@/lib/solana-kit/compat/web3-transactions";
@@ -65,6 +66,10 @@ describe("solana-kit web3 transaction boundary", () => {
       signedWithRefreshedBlockhash,
       serializeLegacyVersionedMessage(prepared)
     )).toBe(true);
+    expect(getLegacyTransactionMessageMismatchReasons(
+      signedWithRefreshedBlockhash,
+      serializeLegacyVersionedMessage(prepared)
+    )).toEqual([]);
   });
 
   it("rejects a signed transaction when the instruction data changes", async () => {
@@ -88,6 +93,10 @@ describe("solana-kit web3 transaction boundary", () => {
       changedAmount,
       serializeLegacyVersionedMessage(prepared)
     )).toBe(false);
+    expect(getLegacyTransactionMessageMismatchReasons(
+      changedAmount,
+      serializeLegacyVersionedMessage(prepared)
+    )).toEqual(["compiledInstructions"]);
   });
 
   it("rejects a signed transaction when the account list changes", async () => {
@@ -110,5 +119,9 @@ describe("solana-kit web3 transaction boundary", () => {
       changedRecipient,
       serializeLegacyVersionedMessage(prepared)
     )).toBe(false);
+    expect(getLegacyTransactionMessageMismatchReasons(
+      changedRecipient,
+      serializeLegacyVersionedMessage(prepared)
+    )).toEqual(["staticAccountKeys"]);
   });
 });
