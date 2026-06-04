@@ -284,14 +284,14 @@ function StakeProcessingOverlay(props: {
   const shouldReduceMotion = useReducedMotion();
   const processingDescription = props.action === "Stake"
     ? t({
-        en: "BRIDS is freezing this NFT. Keep the wallet open until confirmation finishes.",
-        es: "BRIDS esta congelando este NFT. Manten la wallet abierta hasta que termine la confirmacion.",
-        pt: "BRIDS esta congelando este NFT. Mantenha a wallet aberta ate a confirmacao terminar."
+        en: "Wait for your wallet to show the confirmation window, then sign to complete the NFT lock.",
+        es: "Espera a que tu wallet muestre la ventana de confirmacion y firma para completar el bloqueo del NFT.",
+        pt: "Aguarde a wallet mostrar a janela de confirmacao e assine para concluir o bloqueio do NFT."
       })
     : t({
-        en: "BRIDS is unfreezing this NFT. Keep the wallet open until confirmation finishes.",
-        es: "BRIDS esta descongelando este NFT. Manten la wallet abierta hasta que termine la confirmacion.",
-        pt: "BRIDS esta descongelando este NFT. Mantenha a wallet aberta ate a confirmacao terminar."
+        en: "Wait for your wallet to show the confirmation window, then sign to complete the NFT unlock.",
+        es: "Espera a que tu wallet muestre la ventana de confirmacion y firma para completar el desbloqueo del NFT.",
+        pt: "Aguarde a wallet mostrar a janela de confirmacao e assine para concluir o desbloqueio do NFT."
       });
 
   return (
