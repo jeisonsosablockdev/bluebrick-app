@@ -307,6 +307,20 @@ Reglas obligatorias:
   - UI no calcula montos ni elegibilidad; solo presenta valores server-returned.
   - Fetch aislado, estados tipados y helpers de formato pequeños.
 
+## Estado de S06
+- Estado: closeout ejecutado en subrama `feature/shared-stake-event-distribution-bri-6-s06-closeout`.
+- Evidencia:
+  - `npm run validate` - passed.
+  - `validate:db` - skipped porque `DATABASE_URL` no esta configurado en el entorno local.
+  - `npm test -- tests/components/admin-distributions-console.test.ts tests/lib/distribution-service.test.ts tests/api/admin-distribution-runs-route.test.ts tests/api/admin-distribution-run-finalize-route.test.ts tests/lib/distribution-engine.test.ts tests/lib/distribution-repository.test.ts tests/db/distribution-preparation-migration.test.ts` - passed.
+- Clean-code pass:
+  - Sin `TODO`, `FIXME`, `console.log`, `any` ni mock `BATCHES` en codigo de produccion tocado.
+  - Responsabilidades separadas por slice: persistencia, motor puro, servicio/API y UI.
+  - Hallazgos bloqueantes: ninguno.
+  - Observacion no bloqueante: `distribution-repository.ts` es el archivo mas grande porque concentra DB + fallback in-memory para tests; se mantiene cohesivo y cubierto por tests, pero debe dividirse si crece con nuevas operaciones.
+- Pendiente operativo:
+  - Ejecutar `npm run db:migrate` y `npm run validate:db` en un entorno con `DATABASE_URL` antes de promover a ambiente persistente.
+
 ## EN
 
 ## Status
@@ -613,3 +627,17 @@ Mandatory rules:
 - Clean-code:
   - UI does not calculate amounts or eligibility; it only presents server-returned values.
   - Fetch is isolated, state is typed, and formatting helpers stay small.
+
+## S06 Status
+- Status: closeout executed in sub-branch `feature/shared-stake-event-distribution-bri-6-s06-closeout`.
+- Evidence:
+  - `npm run validate` - passed.
+  - `validate:db` - skipped because `DATABASE_URL` is not configured in the local environment.
+  - `npm test -- tests/components/admin-distributions-console.test.ts tests/lib/distribution-service.test.ts tests/api/admin-distribution-runs-route.test.ts tests/api/admin-distribution-run-finalize-route.test.ts tests/lib/distribution-engine.test.ts tests/lib/distribution-repository.test.ts tests/db/distribution-preparation-migration.test.ts` - passed.
+- Clean-code pass:
+  - No `TODO`, `FIXME`, `console.log`, `any`, or production `BATCHES` mock remains in touched production code.
+  - Responsibilities are separated by slice: persistence, pure engine, service/API, and UI.
+  - Blocking findings: none.
+  - Non-blocking note: `distribution-repository.ts` is the largest file because it contains DB persistence plus in-memory test fallback; it remains cohesive and tested, but should be split if new operations expand it.
+- Operational pending item:
+  - Run `npm run db:migrate` and `npm run validate:db` in an environment with `DATABASE_URL` before promoting to a persistent environment.
