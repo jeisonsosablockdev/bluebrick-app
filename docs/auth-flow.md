@@ -1,6 +1,6 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-06-02
+Last Updated: 2026-06-05
 
 ## BRI-170 Marketplace Owner-Freeze Mint Boundary
 - Marketplace mint now requires the existing authenticated SIWS wallet session before `prepare` and `submit`; no new auth cookie, token, route role, or browser authority source was introduced.
@@ -8,6 +8,8 @@ Last Updated: 2026-06-02
 - `/api/purchase/submit` now confirms and verifies every expected minted asset before returning final purchase success, but this verification is transaction integrity, not a new authentication layer.
 - `/admin/assets/new` remains an admin-only Candy Machine/configuration surface and does not become a user mint authority path.
 - The legacy admin mint prepare route is explicitly blocked for authenticated admins so it cannot be mistaken for the canonical user marketplace mint flow.
+- Stake / Unstake submit still requires the existing authenticated SIWS wallet session; `BLOCKHASH_EXPIRED` is returned only after the authenticated owner wallet signed a stale transaction and is recoverable by preparing and signing a fresh transaction.
+- `BLOCKHASH_EXPIRED` does not grant a new auth capability, bypass payer/prepared-message checks, or reuse the expired signature.
 
 ## BRI-165 Marketplace Media Handoff
 - `/admin/assets/new` now sends `draftId` and upload refs to the existing admin marketplace entry route so uploaded gallery/property images can be resolved server-side and published with the marketplace entry.

@@ -21,6 +21,7 @@ Last Updated: 2026-06-05
   - `/api/protected/stake/assets` retries canonical reconciliation for signed attempts in `submitted` or `reconcile_pending` before computing the visible asset state
   - cards in `sync_pending` show per-asset processing feedback and block duplicate actions until the backend returns a resolved state
   - bounded UI polling may refresh the card state, but it does not replace canonical RPC validation or the derived profile persistence contract
+  - `BLOCKHASH_EXPIRED` during Stake / Unstake submit is recoverable: the signed transaction is not mutated server-side, the attempt is marked failed, and the UI must ask the owner wallet to sign a fresh transaction while keeping the original action available
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.

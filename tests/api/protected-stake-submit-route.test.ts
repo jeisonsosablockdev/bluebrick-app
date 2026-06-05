@@ -14,11 +14,13 @@ vi.mock("@/lib/stake-service", () => ({
   StakeFlowError: class StakeFlowError extends Error {
     code: string;
     status: number;
+    recoverable: boolean;
 
-    constructor(code: string, message: string, status: number) {
+    constructor(code: string, message: string, status: number, options?: { recoverable?: boolean }) {
       super(message);
       this.code = code;
       this.status = status;
+      this.recoverable = options?.recoverable ?? false;
     }
   },
   submitStakeAction: routeMocks.submitStakeAction
@@ -90,5 +92,30 @@ describe("POST /api/protected/stake/submit", () => {
       signedTransactionBase64: "AQ=="
     });
   });
-});
 
+  it("returns recoverable blockhash expiration metadata", async () => {
+    const { StakeFlowError } = await import("@/lib/stake-service");
+    routeMocks.submitStakeAction.mockRejectedValueOnce(
+      new StakeFlowError(
+        "BLOCKHASH_EXPIRED",
+        "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature.",
+        409,
+        { recoverable: true }
+      )
+    );
+
+    const response = await POST(createRequest({
+      attemptId: "attempt-1",
+      idempotencyKey: "idem-1",
+      signedTransactionBase64: "AQ=="
+    }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(payload.error).toMatchObject({
+      code: "BLOCKHASH_EXPIRED",
+      message: "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature.",
+      recoverable: true
+    });
+  });
+});
