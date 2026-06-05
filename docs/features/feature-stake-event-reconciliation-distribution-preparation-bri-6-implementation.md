@@ -261,6 +261,22 @@ Reglas obligatorias:
   - Persistencia aislada; no incluye motor de cálculo, rutas HTTP ni UI.
   - Nombres de dominio explícitos para run, items, audit events y scope.
 
+## Estado de S03
+- Estado: implementado en subrama `feature/shared-stake-event-distribution-bri-6-s03-engine`.
+- Alcance entregado:
+  - Motor puro `lib/distributions/distribution-engine.ts`.
+  - Cálculo de intervalos frozen por asset dentro del período.
+  - Filtro estricto por `collection_address`/`property_id`.
+  - Bloqueo por eventos `pending`/`reconcile_pending` y `block_time` faltante.
+  - Exclusión por compliance distinto de `fully_verified`.
+  - Asignación con enteros y ranking determinístico de remanentes.
+- Evidencia:
+  - RED: test falló por módulo de motor ausente.
+  - GREEN: `npm test -- tests/lib/distribution-engine.test.ts` - passed.
+- Clean-code:
+  - Motor aislado de DB, HTTP, env vars, wallet adapter y sesiones.
+  - Funciones pequeñas por responsabilidad: scope, blocking reasons, intervalos, elegibilidad, asignación y checksum.
+
 ## EN
 
 ## Status
@@ -521,3 +537,19 @@ Mandatory rules:
 - Clean-code:
   - Persistence remains isolated; no calculation engine, HTTP routes, or UI.
   - Explicit domain names for run, items, audit events, and scope.
+
+## S03 Status
+- Status: implemented in sub-branch `feature/shared-stake-event-distribution-bri-6-s03-engine`.
+- Delivered scope:
+  - Pure engine `lib/distributions/distribution-engine.ts`.
+  - Frozen interval calculation per asset inside the period.
+  - Strict filtering by `collection_address`/`property_id`.
+  - Blocking for `pending`/`reconcile_pending` events and missing `block_time`.
+  - Compliance exclusion when status is not `fully_verified`.
+  - Integer allocation and deterministic remainder ranking.
+- Evidence:
+  - RED: test failed because the engine module was absent.
+  - GREEN: `npm test -- tests/lib/distribution-engine.test.ts` - passed.
+- Clean-code:
+  - Engine isolated from DB, HTTP, env vars, wallet adapter, and sessions.
+  - Small functions by responsibility: scope, blocking reasons, intervals, eligibility, allocation, and checksum.
