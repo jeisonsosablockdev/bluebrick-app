@@ -32,6 +32,8 @@ vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
 
 import { StakeModule } from "@/components/dashboard/stake-module";
 
+const LONG_STAKE_ASSET_ADDRESS = "12dbThcSbsv1HmVFEc388oiB5BFXVyxzP8ZPwprVDbrt";
+
 type RenderHandle = {
   container: HTMLDivElement;
   root: Root;
@@ -115,7 +117,7 @@ describe("components/dashboard/stake-module", () => {
             walletPublicKey: "Wallet11111111111111111111111111111111111",
             items: [
               {
-                assetAddress: "Asset111",
+                assetAddress: LONG_STAKE_ASSET_ADDRESS,
                 propertyId: "property-1",
                 propertyTitle: "Torre Magnolia Medellin",
                 collectionAddress: "Collection111",
@@ -168,6 +170,30 @@ describe("components/dashboard/stake-module", () => {
     expect(container.textContent).toContain("Vista Mar Cartagena");
     expect(container.textContent).toContain("Stake");
     expect(container.textContent).toContain("Unstake");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("contains long stake card identifiers inside the mobile card width", async () => {
+    const { container, root } = renderModule();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const assetAddress = Array.from(container.querySelectorAll("p")).find((node) => node.textContent === LONG_STAKE_ASSET_ADDRESS);
+    expect(assetAddress).toBeDefined();
+    expect(assetAddress?.className).toContain("break-all");
+    expect(assetAddress?.className).toContain("font-mono");
+    expect(assetAddress?.parentElement?.className).toContain("min-w-0");
+    expect(assetAddress?.closest("article")?.className).toContain("min-w-0");
+
+    const statusBadge = Array.from(container.querySelectorAll("span")).find((node) => node.textContent?.includes("Ready to stake"));
+    expect(statusBadge?.className).toContain("max-w-full");
+    expect(statusBadge?.className).toContain("shrink-0");
 
     act(() => {
       root.unmount();
