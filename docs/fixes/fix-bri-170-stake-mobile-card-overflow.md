@@ -28,11 +28,13 @@ S02 - UI responsive
 - Envolver direcciones y nombres largos sin romper desktop.
 - Mantener el badge visible sin forzar overflow.
 - Aplicar el mismo wrapping en el modal de confirmacion.
+- Asegurar que el wrapper protegido y el modulo Stake no escondan overflow estructural del card.
 
 S03 - Pruebas y cierre
 
 - Tests de componente para verificar las clases anti-overflow en address/header.
-- Playwright responsive en `/protected/stake` con anchos 320, 375, 768 y 1024.
+- Playwright responsive en `/protected/stake` con anchos 320, 375, 640, 700, 768 y 1024.
+- Verificar por bounding box que cada card y boton queda dentro del viewport, no solo `scrollWidth`.
 - `npm run validate`.
 
 ## Fuera de alcance
@@ -70,11 +72,13 @@ S02 - Responsive UI
 - Wrap long addresses and names without breaking desktop.
 - Keep the status badge visible without forcing overflow.
 - Apply the same wrapping in the confirmation modal.
+- Ensure the protected wrapper and Stake module do not hide structural card overflow.
 
 S03 - Tests and closeout
 
 - Component tests for anti-overflow classes on address/header.
-- Playwright responsive coverage on `/protected/stake` at 320, 375, 768, and 1024 widths.
+- Playwright responsive coverage on `/protected/stake` at 320, 375, 640, 700, 768, and 1024 widths.
+- Verify by bounding box that each card and button stays inside the viewport, not only `scrollWidth`.
 - `npm run validate`.
 
 ## Out of Scope

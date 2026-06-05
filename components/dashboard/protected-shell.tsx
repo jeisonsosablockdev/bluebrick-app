@@ -178,7 +178,7 @@ export function ProtectedShell({
         </Suspense>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">
+      <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:grid lg:grid-cols-[260px,minmax(0,1fr)] lg:gap-6">
         <aside className="hidden lg:block">
           <Card className="glass-surface dashboard-sidebar sticky top-6 h-[calc(100vh-3rem)] space-y-4 bg-transparent p-3">
             <div>
@@ -206,7 +206,7 @@ export function ProtectedShell({
           </Card>
         </aside>
 
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-5">
           <header className="space-y-4 border-b border-white/10 pb-4">
             <div className="flex items-center justify-between gap-3">
               <Button
@@ -240,7 +240,7 @@ export function ProtectedShell({
             </div>
           </header>
 
-          <RouteTransition routeKey={pathname} className="space-y-5" mode="navigation-origin">
+          <RouteTransition routeKey={pathname} className="min-w-0 space-y-5" mode="navigation-origin">
             <OnboardingRewardReminder />
             {children}
           </RouteTransition>

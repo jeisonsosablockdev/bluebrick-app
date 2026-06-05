@@ -193,7 +193,10 @@ describe("components/dashboard/stake-module", () => {
 
     const statusBadge = Array.from(container.querySelectorAll("span")).find((node) => node.textContent?.includes("Ready to stake"));
     expect(statusBadge?.className).toContain("max-w-full");
-    expect(statusBadge?.className).toContain("shrink-0");
+    expect(statusBadge?.className).toContain("self-start");
+
+    const stakeButton = Array.from(container.querySelectorAll("button")).find((node) => node.textContent?.includes("Stake"));
+    expect(stakeButton?.className).toContain("max-w-full");
 
     act(() => {
       root.unmount();
