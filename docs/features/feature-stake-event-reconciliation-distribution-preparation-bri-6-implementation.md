@@ -241,12 +241,25 @@ Reglas obligatorias:
 - Final initiative PR merges to `develop`.
 
 ## Estado de S01
-- Estado: PR documental abierto hacia rama de iniciativa.
+- Estado: mergeado en `initiative/bri-6-stake-event-reconciliation-distribution`.
 - Evidencia:
   - `npm run validate:docs-governance` - passed.
   - Linear BRI-6 sincronizado con rama de iniciativa, artefactos y slice plan.
-- Pendiente:
-  - Revisión del PR de S01 antes de merge a initiative branch.
+
+## Estado de S02
+- Estado: implementado en subrama `feature/shared-stake-event-distribution-bri-6-s02-persistence`.
+- Alcance entregado:
+  - Migración `034_distribution_preparation.sql`.
+  - Tablas `distribution_runs`, `distribution_items` y `distribution_audit_events`.
+  - Repositorio `lib/distributions/distribution-repository.ts`.
+  - Idempotencia por `period_key + policy_version + collection_address + property_id`.
+  - Inmutabilidad de corridas finalizadas.
+- Evidencia:
+  - RED: tests fallaron por migración/repositorio ausentes.
+  - GREEN: `npm test -- tests/db/distribution-preparation-migration.test.ts tests/lib/distribution-repository.test.ts` - passed.
+- Clean-code:
+  - Persistencia aislada; no incluye motor de cálculo, rutas HTTP ni UI.
+  - Nombres de dominio explícitos para run, items, audit events y scope.
 
 ## EN
 
@@ -489,9 +502,22 @@ Mandatory rules:
 - Final initiative PR merges to `develop`.
 
 ## S01 Status
-- Status: documentation PR opened into the initiative branch.
+- Status: merged into `initiative/bri-6-stake-event-reconciliation-distribution`.
 - Evidence:
   - `npm run validate:docs-governance` - passed.
   - Linear BRI-6 synced with initiative branch, artifacts, and slice plan.
-- Pending:
-  - S01 PR review before merge into the initiative branch.
+
+## S02 Status
+- Status: implemented in sub-branch `feature/shared-stake-event-distribution-bri-6-s02-persistence`.
+- Delivered scope:
+  - Migration `034_distribution_preparation.sql`.
+  - Tables `distribution_runs`, `distribution_items`, and `distribution_audit_events`.
+  - Repository `lib/distributions/distribution-repository.ts`.
+  - Idempotency by `period_key + policy_version + collection_address + property_id`.
+  - Immutability for finalized runs.
+- Evidence:
+  - RED: tests failed because migration/repository were absent.
+  - GREEN: `npm test -- tests/db/distribution-preparation-migration.test.ts tests/lib/distribution-repository.test.ts` - passed.
+- Clean-code:
+  - Persistence remains isolated; no calculation engine, HTTP routes, or UI.
+  - Explicit domain names for run, items, audit events, and scope.
