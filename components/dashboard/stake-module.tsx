@@ -348,7 +348,7 @@ function StakeConfirmModal(props: {
           {t({ en: "for", es: "para", pt: "para" })}{" "}
           <span className="font-semibold text-white">{props.asset.displayName}</span>.
         </p>
-        <p className="mt-2 text-xs text-white/60">{props.asset.assetAddress}</p>
+        <p className="mt-2 break-all font-mono text-xs text-white/60">{props.asset.assetAddress}</p>
 
         <Card className="mt-4 space-y-2 border-amber-400/30 bg-amber-500/5">
           <p className="text-sm text-amber-100">
@@ -705,12 +705,12 @@ export function StakeModule(): ReactElement {
   }
 
   return (
-    <div className="relative space-y-4">
+    <div className="relative w-full max-w-[calc(100vw-2rem)] min-w-0 overflow-x-clip lg:max-w-full space-y-4">
       <div
         aria-busy={Boolean(submittingAssetId)}
         className={submittingAssetId
-          ? "pointer-events-none space-y-4 opacity-60 blur-[2px] transition duration-200"
-          : "space-y-4 transition duration-200"}
+          ? "pointer-events-none w-full max-w-full min-w-0 space-y-4 opacity-60 blur-[2px] transition duration-200"
+          : "w-full max-w-full min-w-0 space-y-4 transition duration-200"}
       >
       <Card className="space-y-2">
         <h2 className="text-lg font-semibold text-white">
@@ -796,21 +796,21 @@ export function StakeModule(): ReactElement {
         </Card>
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid w-full max-w-full min-w-0 gap-3 md:grid-cols-2">
         {effectiveAssets.map((asset) => {
           const availableAction = actionLabel(asset.effectiveState);
           const busy = submittingAssetId === asset.assetAddress;
           const processing = busy || isProcessingStakeState(asset.effectiveState);
 
           return (
-            <Card key={asset.assetAddress} className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold text-white">{asset.propertyTitle}</p>
-                  <p className="text-xs text-white/60">{asset.displayName}</p>
-                  <p className="text-xs text-white/50">{asset.assetAddress}</p>
+            <Card key={asset.assetAddress} className="w-full max-w-full min-w-0 overflow-hidden space-y-3 p-4 sm:p-5">
+              <div className="flex min-w-0 flex-col gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-semibold text-white">{asset.propertyTitle}</p>
+                  <p className="break-words text-xs text-white/60">{asset.displayName}</p>
+                  <p className="break-all font-mono text-xs text-white/50">{asset.assetAddress}</p>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs ${statusClassName(asset.effectiveState)}`}>
+                <span className={`inline-flex w-fit max-w-full items-center gap-1.5 self-start whitespace-normal rounded-full px-2 py-1 text-left text-xs ${statusClassName(asset.effectiveState)}`}>
                   {processing ? <StakeInlineSpinner reduceMotion={shouldReduceMotion} /> : null}
                   {statusLabel(asset.effectiveState, t)}
                 </span>
@@ -822,7 +822,7 @@ export function StakeModule(): ReactElement {
 
               {availableAction && !processing ? (
                 <Button
-                  className="min-h-11 w-full"
+                  className="min-h-11 w-full max-w-full"
                   disabled={busy}
                   variant={availableAction === "Stake" ? "primary" : "outline"}
                   onClick={() => setSelectedAsset(asset)}
@@ -830,12 +830,12 @@ export function StakeModule(): ReactElement {
                   {availableAction}
                 </Button>
               ) : processing ? (
-                <Button className="min-h-11 w-full gap-2" disabled variant="ghost">
+                <Button className="min-h-11 w-full max-w-full gap-2" disabled variant="ghost">
                   <StakeInlineSpinner reduceMotion={shouldReduceMotion} />
                   {processingLabel(asset.effectiveState, t)}
                 </Button>
               ) : (
-                <Button className="min-h-11 w-full" disabled variant="ghost">
+                <Button className="min-h-11 w-full max-w-full" disabled variant="ghost">
                   {t({ en: "No action available", es: "Sin accion disponible", pt: "Sem acao disponivel" })}
                 </Button>
               )}
