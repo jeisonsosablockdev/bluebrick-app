@@ -293,6 +293,20 @@ Reglas obligatorias:
   - Rutas solo validan auth, parsean request y delegan al servicio.
   - Servicio orquesta repositorios y motor sin SQL inline ni matemática duplicada.
 
+## Estado de S05
+- Estado: implementado en subrama `feature/app-stake-event-distribution-bri-6-s05-admin-ui`.
+- Alcance entregado:
+  - `components/admin/distributions-console.tsx` reemplaza mock data por `GET /api/admin/distributions/runs`.
+  - Estados UI: loading, error, empty, draft, blocked, finalized y failed.
+  - Vista desktop en tabla y mobile en cards para evitar overflow.
+  - Detalle de corrida con scope, wallets, items, monto menor, checksum y bloqueo.
+- Evidencia:
+  - RED: test falló porque la consola no llamaba API y renderizaba `D-2026-03`.
+  - GREEN: `npm test -- tests/components/admin-distributions-console.test.ts` - passed.
+- Clean-code:
+  - UI no calcula montos ni elegibilidad; solo presenta valores server-returned.
+  - Fetch aislado, estados tipados y helpers de formato pequeños.
+
 ## EN
 
 ## Status
@@ -585,3 +599,17 @@ Mandatory rules:
 - Clean-code:
   - Routes only validate auth, parse requests, and delegate to the service.
   - Service orchestrates repositories and engine without inline SQL or duplicated math.
+
+## S05 Status
+- Status: implemented in sub-branch `feature/app-stake-event-distribution-bri-6-s05-admin-ui`.
+- Delivered scope:
+  - `components/admin/distributions-console.tsx` replaces mock data with `GET /api/admin/distributions/runs`.
+  - UI states: loading, error, empty, draft, blocked, finalized, and failed.
+  - Desktop table and mobile cards to avoid overflow.
+  - Run detail with scope, wallets, items, minor amount, checksum, and block reason.
+- Evidence:
+  - RED: test failed because the console did not call the API and rendered `D-2026-03`.
+  - GREEN: `npm test -- tests/components/admin-distributions-console.test.ts` - passed.
+- Clean-code:
+  - UI does not calculate amounts or eligibility; it only presents server-returned values.
+  - Fetch is isolated, state is typed, and formatting helpers stay small.
