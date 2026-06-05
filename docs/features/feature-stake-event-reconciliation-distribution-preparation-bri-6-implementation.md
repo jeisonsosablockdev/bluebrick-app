@@ -29,6 +29,21 @@ flowchart LR
 
 ## Contratos de entrada
 
+### Distribution scope
+Fuente: input admin/server-side de la corrida.
+
+Campos requeridos v1:
+
+- `collection_address`
+- `property_id`
+
+Reglas:
+
+- El motor no calcula una distribución global de todo BRIDS.
+- El monto de una corrida pertenece a una collection/property concreta.
+- Solo eventos, NFTs y wallets vinculados a ese scope pueden participar.
+- El scope se persiste en la corrida y en el payload exportado.
+
 ### Stake events
 Fuente: `user_profile_stake_events`
 
@@ -50,6 +65,7 @@ Campos requeridos:
 Reglas:
 
 - Solo `validation_status = 'validated'`.
+- Solo eventos cuyo `collection_address` y `property_id` coinciden con el scope de la corrida.
 - Orden estable: `COALESCE(block_time, observed_at)`, `slot`, `instruction_index`, `tx_signature`.
 - Para finalizar, `block_time` debe estar disponible para todos los eventos incluidos en el período.
 
@@ -78,6 +94,8 @@ Reglas:
 ### `distribution_runs`
 - `id`
 - `period_key`
+- `collection_address`
+- `property_id`
 - `period_start_at`
 - `period_end_at`
 - `period_timezone`
@@ -124,44 +142,83 @@ Reglas:
 - `event_payload`
 - `created_at`
 
-## Slice plan
+## Contrato clean-code por slice
 
-| Slice | Branch | Scope | Tests first | Merge target |
-| --- | --- | --- | --- | --- |
-| S01 - Spec | `feature/shared-stake-event-distribution-bri-6-s01-spec` | Artifact pair, decisions, slice map, Linear sync | docs governance | `initiative/bri-6-stake-event-reconciliation-distribution` |
-| S02 - Persistence | `feature/shared-stake-event-distribution-bri-6-s02-persistence` | SQL migration, repositories, status/idempotency constraints | repository tests + migration validation | initiative |
-| S03 - Calculation Engine | `feature/shared-stake-event-distribution-bri-6-s03-engine` | pure interval and allocation engine | unit tests for intervals, pending events, rounding, KYC exclusion | initiative |
-| S04 - Service/API | `feature/app-stake-event-distribution-bri-6-s04-service-api` | admin/server API to create draft, finalize, export | route/service tests | initiative |
-| S05 - Admin UI | `feature/app-stake-event-distribution-bri-6-s05-admin-ui` | replace distribution mock data with real run reads and states | component/Playwright responsive tests | initiative |
-| S06 - Initiative closeout | `feature/shared-stake-event-distribution-bri-6-s06-closeout` | full validate, docs sync, Linear, final PR to develop | full validation | develop |
+Cada slice debe entregar una responsabilidad dominante y nada más. El objetivo es que el sistema pueda leerse, probarse y extenderse sin mezclar cálculo financiero, persistencia, HTTP y UI en el mismo lugar.
 
-## TDD plan
+Reglas obligatorias:
+
+- Cada slice empieza con pruebas que fallan antes de escribir implementación.
+- Las pruebas deben ser rápidas, independientes, repetibles, auto-verificables y oportunas.
+- Los nombres deben expresar intención de dominio: `distributionRun`, `eligibleFrozenSeconds`, `allocationRemainder`, no abreviaturas ambiguas.
+- Las funciones deben hacer una sola cosa y no ocultar efectos secundarios.
+- No se permite floating point para dinero ni porcentajes de reparto.
+- No se permite estado global mutable para cálculo de distribución.
+- Los DTOs de entrada/salida deben ser explícitos y validados en el borde del sistema.
+- Los errores de dominio deben ser distinguibles: período inválido, eventos pendientes, wallet no elegible, scope inválido, corrida finalizada.
+- El refactor de clean-code se ejecuta antes de mergear cada slice, no al final de la iniciativa.
+- Cualquier hallazgo que no se corrija debe quedar documentado en el artefacto del slice antes de merge.
+
+## Plan de slices
+
+| Slice | Branch | Responsabilidad única | TDD RED obligatorio | Límites clean-code | Merge target |
+| --- | --- | --- | --- | --- | --- |
+| S01 - Spec | `feature/shared-stake-event-distribution-bri-6-s01-spec` | Definir verdad, alcance, slices y gates | `npm run validate:docs-governance` debe fallar si falta artefacto requerido | No toca runtime, DB, API ni UI | `initiative/bri-6-stake-event-reconciliation-distribution` |
+| S02 - Persistence | `feature/shared-stake-event-distribution-bri-6-s02-persistence` | Migraciones, constraints y repositorios de distribución | Tests de repositorio fallan por tablas/contratos inexistentes | No calcula repartos, no expone rutas HTTP, no renderiza UI | initiative |
+| S03 - Calculation Engine | `feature/shared-stake-event-distribution-bri-6-s03-engine` | Motor puro de intervalos, elegibilidad y asignación | Unit tests fallan por casos de tiempo, KYC, pending y redondeo | Sin DB, HTTP, env vars, wallet adapter ni sesiones | initiative |
+| S04 - Service/API | `feature/app-stake-event-distribution-bri-6-s04-service-api` | Orquestar repositorio + motor para crear, bloquear, finalizar y exportar corridas | Tests de servicio/ruta fallan por auth, DTOs, finalización y export determinístico | Sin SQL inline en rutas, sin duplicar matemática del motor, sin lógica de presentación | initiative |
+| S05 - Admin UI | `feature/app-stake-event-distribution-bri-6-s05-admin-ui` | Reemplazar mock data por lectura real y estados operativos | Component/Playwright tests fallan por estados y responsive | Sin cálculos financieros en cliente, sin writes directos a resultados | initiative |
+| S06 - Initiative closeout | `feature/shared-stake-event-distribution-bri-6-s06-closeout` | Validación total, docs, Linear, PR final y evidencia | `npm run validate` y gates específicos deben ejecutarse limpios | No agrega comportamiento nuevo; solo cierre, auditoría y trazabilidad | develop |
+
+## Flujo TDD por slice
+
+1. RED: escribir la prueba mínima que demuestra el contrato del slice y verla fallar por la razón esperada.
+2. GREEN: implementar lo mínimo para pasar esa prueba sin resolver responsabilidades de otro slice.
+3. REFACTOR: aplicar clean-code, reducir duplicación, aclarar nombres y separar efectos secundarios.
+4. GATE: ejecutar pruebas focalizadas, `npm run validate` cuando aplique y validaciones de DB si hay migraciones.
+5. EVIDENCE: registrar comandos, resultados y hallazgos en el artefacto o comentario Linear antes del merge.
+
+## Casos TDD mínimos
 
 ### S02 tests
-- migration creates tables and constraints.
-- repository creates idempotent draft by `period_key + policy_version`.
-- repository prevents finalization without finalized data.
-- audit event is append-only.
+- La migración crea tablas, constraints e índices requeridos.
+- El repositorio crea drafts idempotentes por `period_key + policy_version + collection_address + property_id`.
+- El repositorio impide finalizar sin datos finalizables.
+- Los audit events son append-only.
+- Una corrida finalizada no puede ser modificada por update directo de repositorio.
 
 ### S03 tests
-- stake then unstake inside period counts exact seconds.
-- stake before period and unstake inside period counts from `period_start_at`.
-- unstake without prior stake does not infer frozen state.
-- pending/reconcile events block finalization.
-- wallet not `fully_verified` is excluded.
-- allocation uses integer math and records remainder.
-- repeated calculation produces identical output checksum.
+- Solo cuentan eventos cuyo `collection_address` y `property_id` coinciden con el scope de la corrida.
+- Stake y unstake dentro del período cuentan segundos exactos.
+- Stake antes del período y unstake dentro del período cuenta desde `period_start_at`.
+- Stake antes del período sin unstake cuenta hasta `period_end_at` si el estado inicial validado era frozen.
+- Unstake sin stake previo no infiere estado frozen.
+- Eventos `pending` o `reconcile_pending` bloquean finalización.
+- Wallet sin `fully_verified` queda excluida con razón auditable.
+- La asignación usa enteros y registra remanente.
+- Recalcular con la misma entrada produce el mismo checksum.
 
 ### S04 tests
-- unauthenticated/admin-missing request is rejected.
-- create draft validates period and amount.
-- finalize blocks when unresolved events exist.
-- export returns deterministic JSON/CSV payload.
+- Requests sin sesión admin son rechazados.
+- Crear draft valida período, monto, scope y versión de política.
+- Finalizar bloquea si existen eventos unresolved.
+- Finalizar bloquea si el checksum calculado no coincide con el draft.
+- Export devuelve JSON/CSV determinístico.
+- Reintentar la misma creación no duplica corridas.
 
 ### S05 tests
-- admin distribution console reads real runs.
-- mobile table/card layout does not overflow.
-- blocked/finalized/draft states are visually distinct.
+- La consola admin lee corridas reales desde API.
+- La UI no permite finalizar cuando el backend reporta `blocked`.
+- Los estados `draft`, `blocked`, `finalized` y `failed` son visualmente distintos.
+- El layout mobile no desborda tablas/cards.
+- La UI no calcula montos; solo muestra los valores devueltos por el servidor.
+
+## Dependencias entre slices
+
+- S03 no inicia hasta que S02 defina contratos de datos o mocks equivalentes documentados.
+- S04 no inicia hasta que S02 y S03 tengan contratos estables.
+- S05 no inicia hasta que S04 defina DTOs de lectura y mutación.
+- S06 solo inicia cuando S01-S05 estén mergeados en la rama de iniciativa.
 
 ## Security gates
 - No client-provided wallet eligibility is trusted.
@@ -184,12 +241,12 @@ Reglas:
 - Final initiative PR merges to `develop`.
 
 ## Estado de S01
-- Estado: completado localmente, pendiente de PR hacia rama de iniciativa.
+- Estado: PR documental abierto hacia rama de iniciativa.
 - Evidencia:
   - `npm run validate:docs-governance` - passed.
   - Linear BRI-6 sincronizado con rama de iniciativa, artefactos y slice plan.
 - Pendiente:
-  - PR de S01 hacia initiative branch.
+  - Revisión del PR de S01 antes de merge a initiative branch.
 
 ## EN
 
@@ -220,6 +277,21 @@ flowchart LR
 
 ## Input Contracts
 
+### Distribution scope
+Source: admin/server-side run input.
+
+Required v1 fields:
+
+- `collection_address`
+- `property_id`
+
+Rules:
+
+- The engine does not calculate one global BRIDS-wide distribution.
+- A run amount belongs to a concrete collection/property.
+- Only events, NFTs, and wallets linked to that scope may participate.
+- The scope is persisted on the run and in the exported payload.
+
 ### Stake events
 Source: `user_profile_stake_events`
 
@@ -241,6 +313,7 @@ Required fields:
 Rules:
 
 - Only `validation_status = 'validated'`.
+- Only events whose `collection_address` and `property_id` match the run scope.
 - Stable ordering: `COALESCE(block_time, observed_at)`, `slot`, `instruction_index`, `tx_signature`.
 - To finalize, `block_time` must be available for every included event in the period.
 
@@ -269,6 +342,8 @@ Rules:
 ### `distribution_runs`
 - `id`
 - `period_key`
+- `collection_address`
+- `property_id`
 - `period_start_at`
 - `period_end_at`
 - `period_timezone`
@@ -315,44 +390,83 @@ Rules:
 - `event_payload`
 - `created_at`
 
+## Clean-Code Slice Contract
+
+Each slice must deliver one dominant responsibility and nothing more. The goal is for the system to be readable, testable, and extensible without mixing financial calculation, persistence, HTTP, and UI in the same place.
+
+Mandatory rules:
+
+- Every slice starts with failing tests before implementation.
+- Tests must be fast, independent, repeatable, self-validating, and timely.
+- Names must reveal domain intent: `distributionRun`, `eligibleFrozenSeconds`, `allocationRemainder`, not ambiguous abbreviations.
+- Functions must do one thing and must not hide side effects.
+- Floating point is forbidden for money and distribution percentages.
+- Global mutable state is forbidden for distribution calculation.
+- Input/output DTOs must be explicit and validated at the system boundary.
+- Domain errors must be distinguishable: invalid period, pending events, ineligible wallet, invalid scope, finalized run.
+- The clean-code refactor runs before each slice merge, not only at initiative closeout.
+- Any finding that is not fixed must be documented in the slice artifact before merge.
+
 ## Slice Plan
 
-| Slice | Branch | Scope | Tests first | Merge target |
-| --- | --- | --- | --- | --- |
-| S01 - Spec | `feature/shared-stake-event-distribution-bri-6-s01-spec` | Artifact pair, decisions, slice map, Linear sync | docs governance | `initiative/bri-6-stake-event-reconciliation-distribution` |
-| S02 - Persistence | `feature/shared-stake-event-distribution-bri-6-s02-persistence` | SQL migration, repositories, status/idempotency constraints | repository tests + migration validation | initiative |
-| S03 - Calculation Engine | `feature/shared-stake-event-distribution-bri-6-s03-engine` | pure interval and allocation engine | unit tests for intervals, pending events, rounding, KYC exclusion | initiative |
-| S04 - Service/API | `feature/app-stake-event-distribution-bri-6-s04-service-api` | admin/server API to create draft, finalize, export | route/service tests | initiative |
-| S05 - Admin UI | `feature/app-stake-event-distribution-bri-6-s05-admin-ui` | replace distribution mock data with real run reads and states | component/Playwright responsive tests | initiative |
-| S06 - Initiative closeout | `feature/shared-stake-event-distribution-bri-6-s06-closeout` | full validate, docs sync, Linear, final PR to develop | full validation | develop |
+| Slice | Branch | Single responsibility | Required TDD RED | Clean-code boundaries | Merge target |
+| --- | --- | --- | --- | --- | --- |
+| S01 - Spec | `feature/shared-stake-event-distribution-bri-6-s01-spec` | Define truth, scope, slices, and gates | `npm run validate:docs-governance` must fail if a required artifact is missing | No runtime, DB, API, or UI changes | `initiative/bri-6-stake-event-reconciliation-distribution` |
+| S02 - Persistence | `feature/shared-stake-event-distribution-bri-6-s02-persistence` | Distribution migrations, constraints, and repositories | Repository tests fail because tables/contracts do not exist yet | No allocation math, HTTP routes, or UI rendering | initiative |
+| S03 - Calculation Engine | `feature/shared-stake-event-distribution-bri-6-s03-engine` | Pure interval, eligibility, and allocation engine | Unit tests fail for time, KYC, pending-event, and rounding cases | No DB, HTTP, env vars, wallet adapter, or sessions | initiative |
+| S04 - Service/API | `feature/app-stake-event-distribution-bri-6-s04-service-api` | Orchestrate repository + engine to create, block, finalize, and export runs | Service/route tests fail for auth, DTOs, finalization, and deterministic export | No inline SQL in routes, no duplicated engine math, no presentation logic | initiative |
+| S05 - Admin UI | `feature/app-stake-event-distribution-bri-6-s05-admin-ui` | Replace mock data with real reads and operational states | Component/Playwright tests fail for states and responsive behavior | No client-side financial calculation, no direct writes to results | initiative |
+| S06 - Initiative closeout | `feature/shared-stake-event-distribution-bri-6-s06-closeout` | Full validation, docs, Linear, final PR, and evidence | `npm run validate` and specific gates must run cleanly | No new behavior; closeout, audit, and traceability only | develop |
 
-## TDD Plan
+## TDD Workflow Per Slice
+
+1. RED: write the minimum test that proves the slice contract and verify it fails for the expected reason.
+2. GREEN: implement the minimum required to pass without solving another slice's responsibility.
+3. REFACTOR: apply clean-code, reduce duplication, clarify names, and separate side effects.
+4. GATE: run focused tests, `npm run validate` when applicable, and DB validation when migrations exist.
+5. EVIDENCE: record commands, results, and findings in the artifact or Linear comment before merge.
+
+## Minimum TDD Cases
 
 ### S02 tests
-- migration creates tables and constraints.
-- repository creates idempotent draft by `period_key + policy_version`.
-- repository prevents finalization without finalized data.
-- audit event is append-only.
+- Migration creates required tables, constraints, and indexes.
+- Repository creates idempotent drafts by `period_key + policy_version + collection_address + property_id`.
+- Repository prevents finalization without finalizable data.
+- Audit events are append-only.
+- A finalized run cannot be modified through a direct repository update.
 
 ### S03 tests
-- stake then unstake inside period counts exact seconds.
-- stake before period and unstake inside period counts from `period_start_at`.
-- unstake without prior stake does not infer frozen state.
-- pending/reconcile events block finalization.
-- wallet not `fully_verified` is excluded.
-- allocation uses integer math and records remainder.
-- repeated calculation produces identical output checksum.
+- Only events matching the run `collection_address` and `property_id` are counted.
+- Stake then unstake inside the period counts exact seconds.
+- Stake before the period and unstake inside the period counts from `period_start_at`.
+- Stake before the period without unstake counts until `period_end_at` when the validated initial state was frozen.
+- Unstake without a previous stake does not infer frozen state.
+- `pending` or `reconcile_pending` events block finalization.
+- Wallets without `fully_verified` are excluded with an auditable reason.
+- Allocation uses integer math and records remainder.
+- Recalculation with the same input produces the same checksum.
 
 ### S04 tests
-- unauthenticated/admin-missing request is rejected.
-- create draft validates period and amount.
-- finalize blocks when unresolved events exist.
-- export returns deterministic JSON/CSV payload.
+- Requests without admin session are rejected.
+- Draft creation validates period, amount, scope, and policy version.
+- Finalization blocks when unresolved events exist.
+- Finalization blocks when the calculated checksum differs from the draft.
+- Export returns deterministic JSON/CSV.
+- Retrying the same creation does not duplicate runs.
 
 ### S05 tests
-- admin distribution console reads real runs.
-- mobile table/card layout does not overflow.
-- blocked/finalized/draft states are visually distinct.
+- Admin console reads real runs from the API.
+- UI cannot finalize when the backend reports `blocked`.
+- `draft`, `blocked`, `finalized`, and `failed` states are visually distinct.
+- Mobile layout does not overflow tables/cards.
+- UI does not calculate amounts; it only displays server-returned values.
+
+## Slice Dependencies
+
+- S03 does not start until S02 defines data contracts or documented equivalent mocks.
+- S04 does not start until S02 and S03 have stable contracts.
+- S05 does not start until S04 defines read and mutation DTOs.
+- S06 starts only after S01-S05 are merged into the initiative branch.
 
 ## Security Gates
 - No client-provided wallet eligibility is trusted.
@@ -375,9 +489,9 @@ Rules:
 - Final initiative PR merges to `develop`.
 
 ## S01 Status
-- Status: completed locally, pending PR into the initiative branch.
+- Status: documentation PR opened into the initiative branch.
 - Evidence:
   - `npm run validate:docs-governance` - passed.
   - Linear BRI-6 synced with initiative branch, artifacts, and slice plan.
 - Pending:
-  - S01 PR into initiative branch.
+  - S01 PR review before merge into the initiative branch.

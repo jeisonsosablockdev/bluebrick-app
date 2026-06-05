@@ -44,6 +44,7 @@ Sin un microservicio de preparación, no hay una respuesta determinística para:
 Implementar una preparación de distribución off-chain que:
 
 - lea eventos `Stake / Unstake` validados
+- filtre la corrida por `collection_address` y/o `property_id`
 - cruce wallets contra compliance/KYC
 - reciba o capture un snapshot de tesorería disponible
 - calcule montos pro-rata por tiempo frozen validado
@@ -65,8 +66,18 @@ Implementar una preparación de distribución off-chain que:
 - La zona horaria canónica de producto es `America/Bogota`.
 - El cálculo usa instantes UTC en base de datos, pero el período se define y se audita con referencia `America/Bogota`.
 
+### Alcance de distribución
+- Cada corrida debe tener un scope explícito.
+- Scope mínimo v1:
+  - `collection_address`
+  - `property_id`
+- El motor no reparte globalmente entre todas las wallets BRIDS.
+- El motor reparte el monto de una collection/property específica entre las wallets elegibles que tuvieron NFTs de ese scope frozen durante el período.
+- Si en el futuro se soportan bundles multi-collection, deben modelarse como otro `distribution_scope_type`, no como comportamiento implícito.
+
 ### Elegibilidad de eventos
 - Solo cuentan eventos con `validation_status = 'validated'`.
+- Solo cuentan eventos cuyo `collection_address` y `property_id` coinciden con el scope de la corrida.
 - Eventos `pending`, `reconcile_pending` o `rejected` no pueden entrar en una distribución finalizada.
 - Si un período tiene eventos pendientes relevantes, la corrida puede quedar en `blocked` o `draft`, pero no `finalized`.
 
@@ -76,6 +87,7 @@ Implementar una preparación de distribución off-chain que:
 
 ### Fórmula v1
 - Unidad base: segundos frozen validados por NFT dentro del período.
+- El universo de cálculo es la collection/property de la corrida.
 - Peso v1: `1` por NFT elegible.
 - Contribución de wallet: suma de segundos frozen de sus NFTs elegibles.
 - Distribución: `wallet_amount = floor(total_amount_minor * wallet_seconds / total_seconds)`.
@@ -89,7 +101,7 @@ Implementar una preparación de distribución off-chain que:
 ### Salida
 - La salida v1 prepara un archivo JSON y/o CSV.
 - La salida no ejecuta pago.
-- La salida incluye: período, política, token, monto total, wallets, items por wallet, segundos, monto asignado, exclusiones y hash/checksum.
+- La salida incluye: período, scope de collection/property, política, token, monto total, wallets, items por wallet, segundos, monto asignado, exclusiones y hash/checksum.
 
 ## Alcance v1
 - Modelo de datos para `distribution_runs`, `distribution_items` y auditoría mínima.
@@ -123,6 +135,8 @@ Implementar una preparación de distribución off-chain que:
 4. El modelo de estados de distribución distingue `draft`, `blocked`, `finalized` y errores.
 5. El plan TDD cubre cálculo temporal, KYC, idempotencia, redondeo y eventos pendientes.
 6. El resultado de distribución queda preparado para claim, no ejecutado.
+7. Cada corrida reparte únicamente dentro de su `collection_address`/`property_id`.
+8. El plan de slices exige TDD, responsabilidad única, gates de clean-code y evidencia antes de cada merge.
 
 ## EN
 
@@ -168,6 +182,7 @@ Without a preparation service, there is no deterministic answer for:
 Implement off-chain distribution preparation that:
 
 - reads validated `Stake / Unstake` events
+- filters the run by `collection_address` and/or `property_id`
 - joins wallets against compliance/KYC
 - receives or captures an available treasury snapshot
 - calculates pro-rata amounts by validated frozen time
@@ -189,8 +204,18 @@ Implement off-chain distribution preparation that:
 - The canonical product timezone is `America/Bogota`.
 - Calculation uses UTC instants in the database, while the period is defined and audited with `America/Bogota` reference.
 
+### Distribution Scope
+- Each run must have an explicit scope.
+- Minimum v1 scope:
+  - `collection_address`
+  - `property_id`
+- The engine does not distribute globally across all BRIDS wallets.
+- The engine distributes the amount for one specific collection/property among eligible wallets that had NFTs from that scope frozen during the period.
+- If future versions support multi-collection bundles, they must be modeled as another `distribution_scope_type`, not as implicit behavior.
+
 ### Event Eligibility
 - Only events with `validation_status = 'validated'` count.
+- Only events whose `collection_address` and `property_id` match the run scope count.
 - `pending`, `reconcile_pending`, or `rejected` events cannot enter a finalized distribution.
 - If a period has relevant pending events, the run may remain `blocked` or `draft`, but not `finalized`.
 
@@ -200,6 +225,7 @@ Implement off-chain distribution preparation that:
 
 ### v1 Formula
 - Base unit: validated frozen seconds per NFT inside the period.
+- The calculation universe is the run collection/property.
 - v1 weight: `1` per eligible NFT.
 - Wallet contribution: sum of frozen seconds across eligible NFTs.
 - Distribution: `wallet_amount = floor(total_amount_minor * wallet_seconds / total_seconds)`.
@@ -213,7 +239,7 @@ Implement off-chain distribution preparation that:
 ### Output
 - v1 prepares JSON and/or CSV output.
 - v1 does not execute payment.
-- Output includes: period, policy, token, total amount, wallets, wallet items, seconds, allocated amount, exclusions, and hash/checksum.
+- Output includes: period, collection/property scope, policy, token, total amount, wallets, wallet items, seconds, allocated amount, exclusions, and hash/checksum.
 
 ## v1 Scope
 - Data model for `distribution_runs`, `distribution_items`, and minimum audit records.
@@ -247,3 +273,5 @@ Implement off-chain distribution preparation that:
 4. Distribution states distinguish `draft`, `blocked`, `finalized`, and errors.
 5. TDD plan covers temporal calculation, KYC, idempotency, rounding, and pending events.
 6. Distribution output is prepared for claim, not executed.
+7. Each run distributes only within its `collection_address`/`property_id`.
+8. The slice plan requires TDD, single responsibility, clean-code gates, and evidence before every merge.
