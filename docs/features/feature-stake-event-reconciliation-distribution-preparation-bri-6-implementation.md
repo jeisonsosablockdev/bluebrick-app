@@ -277,6 +277,22 @@ Reglas obligatorias:
   - Motor aislado de DB, HTTP, env vars, wallet adapter y sesiones.
   - Funciones pequeñas por responsabilidad: scope, blocking reasons, intervalos, elegibilidad, asignación y checksum.
 
+## Estado de S04
+- Estado: implementado en subrama `feature/app-stake-event-distribution-bri-6-s04-service-api`.
+- Alcance entregado:
+  - Servicio `lib/distributions/distribution-service.ts`.
+  - Rutas admin `GET/POST /api/admin/distributions/runs`.
+  - Ruta admin `POST /api/admin/distributions/runs/[runId]/finalize`.
+  - Lectura de eventos stake validados por scope desde `user_profile_stake_events`.
+  - Lectura de compliance por wallet desde `user_profiles`.
+  - Serialización segura de `bigint` para API.
+- Evidencia:
+  - RED: tests fallaron por servicio/rutas ausentes.
+  - GREEN: `npm test -- tests/lib/distribution-service.test.ts tests/api/admin-distribution-runs-route.test.ts tests/api/admin-distribution-run-finalize-route.test.ts` - passed.
+- Clean-code:
+  - Rutas solo validan auth, parsean request y delegan al servicio.
+  - Servicio orquesta repositorios y motor sin SQL inline ni matemática duplicada.
+
 ## EN
 
 ## Status
@@ -553,3 +569,19 @@ Mandatory rules:
 - Clean-code:
   - Engine isolated from DB, HTTP, env vars, wallet adapter, and sessions.
   - Small functions by responsibility: scope, blocking reasons, intervals, eligibility, allocation, and checksum.
+
+## S04 Status
+- Status: implemented in sub-branch `feature/app-stake-event-distribution-bri-6-s04-service-api`.
+- Delivered scope:
+  - Service `lib/distributions/distribution-service.ts`.
+  - Admin routes `GET/POST /api/admin/distributions/runs`.
+  - Admin route `POST /api/admin/distributions/runs/[runId]/finalize`.
+  - Scoped validated stake-event reads from `user_profile_stake_events`.
+  - Wallet compliance reads from `user_profiles`.
+  - Safe `bigint` API serialization.
+- Evidence:
+  - RED: tests failed because service/routes were absent.
+  - GREEN: `npm test -- tests/lib/distribution-service.test.ts tests/api/admin-distribution-runs-route.test.ts tests/api/admin-distribution-run-finalize-route.test.ts` - passed.
+- Clean-code:
+  - Routes only validate auth, parse requests, and delegate to the service.
+  - Service orchestrates repositories and engine without inline SQL or duplicated math.

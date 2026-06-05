@@ -66,6 +66,7 @@ export type CreateDistributionDraftInput = {
 
 export type ReplaceDistributionItemsInput = {
   runId: string;
+  outputChecksum?: string | null;
   items: Array<{
     walletPublicKey: string;
     assetAddress?: string | null;
@@ -89,6 +90,11 @@ export type AppendDistributionAuditEventInput = {
   actorType: string;
   actorId: string;
   eventPayload?: Record<string, unknown>;
+};
+
+export type BlockDistributionRunInput = {
+  runId: string;
+  blockedReason: string;
 };
 
 type DistributionRunRow = {
@@ -437,8 +443,26 @@ export async function getDistributionRunById(runId: string): Promise<Distributio
   });
 }
 
+export async function listDistributionRuns(): Promise<DistributionRunRecord[]> {
+  if (!isDatabaseConfigured()) {
+    return Array.from(inMemoryRunsById.values()).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<DistributionRunRow>(
+      `SELECT ${runColumns}
+       FROM distribution_runs
+       ORDER BY created_at DESC, id DESC
+       LIMIT 100`
+    );
+
+    return result.rows.map((row) => mapRunRow(row));
+  });
+}
+
 export async function replaceDistributionItems(input: ReplaceDistributionItemsInput): Promise<DistributionItemRecord[]> {
   const runId = assertNonEmpty(input.runId, "runId");
+  const outputChecksum = input.outputChecksum ? assertNonEmpty(input.outputChecksum, "outputChecksum") : null;
   const items = input.items.map((item) => ({
     walletPublicKey: assertNonEmpty(item.walletPublicKey, "walletPublicKey"),
     assetAddress: item.assetAddress ? assertNonEmpty(item.assetAddress, "assetAddress") : null,
@@ -473,6 +497,7 @@ export async function replaceDistributionItems(input: ReplaceDistributionItemsIn
     inMemoryItemsByRunId.set(runId, records);
     inMemoryRunsById.set(runId, {
       ...run,
+      outputChecksum,
       itemCount: records.length,
       totalWallets: uniqueWallets.size,
       updatedAt: now
@@ -520,9 +545,10 @@ export async function replaceDistributionItems(input: ReplaceDistributionItemsIn
       await client.query(
         `UPDATE distribution_runs
          SET item_count = $2,
-             total_wallets = $3
+             total_wallets = $3,
+             output_checksum = $4
          WHERE id = $1`,
-        [runId, records.length, uniqueWallets.size]
+        [runId, records.length, uniqueWallets.size, outputChecksum]
       );
       await client.query("COMMIT");
       return records;
@@ -530,6 +556,44 @@ export async function replaceDistributionItems(input: ReplaceDistributionItemsIn
       await client.query("ROLLBACK");
       throw error;
     }
+  });
+}
+
+export async function blockDistributionRun(input: BlockDistributionRunInput): Promise<DistributionRunRecord> {
+  const runId = assertNonEmpty(input.runId, "runId");
+  const blockedReason = assertNonEmpty(input.blockedReason, "blockedReason");
+
+  if (!isDatabaseConfigured()) {
+    const run = requireRun(runId);
+    if (run.status === "finalized") {
+      throw new Error("Finalized distribution runs are immutable.");
+    }
+
+    const blocked = {
+      ...run,
+      status: "blocked" as const,
+      blockedReason,
+      updatedAt: new Date().toISOString()
+    };
+    inMemoryRunsById.set(runId, blocked);
+    return blocked;
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<DistributionRunRow>(
+      `UPDATE distribution_runs
+       SET status = 'blocked',
+           blocked_reason = $2
+       WHERE id = $1
+       RETURNING ${runColumns}`,
+      [runId, blockedReason]
+    );
+
+    if (!result.rows[0]) {
+      throw new Error("Distribution run not found.");
+    }
+
+    return mapRunRow(result.rows[0]);
   });
 }
 
@@ -542,6 +606,9 @@ export async function finalizeDistributionRun(input: FinalizeDistributionRunInpu
     const run = requireRun(runId);
     if (run.itemCount <= 0) {
       throw new Error("Distribution run has no prepared items.");
+    }
+    if (run.outputChecksum && run.outputChecksum !== outputChecksum) {
+      throw new Error("Distribution run checksum does not match prepared output.");
     }
 
     const now = new Date().toISOString();
@@ -583,6 +650,9 @@ async function finalizeDistributionRunWithClient(
 
   if (run.itemCount <= 0) {
     throw new Error("Distribution run has no prepared items.");
+  }
+  if (run.outputChecksum && run.outputChecksum !== input.outputChecksum) {
+    throw new Error("Distribution run checksum does not match prepared output.");
   }
 
   const result = await client.query<DistributionRunRow>(
