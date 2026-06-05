@@ -142,6 +142,7 @@ describe("components/dashboard/stake-module", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.clearAllMocks();
     vi.unstubAllGlobals();
     document.body.innerHTML = "";
@@ -159,6 +160,116 @@ describe("components/dashboard/stake-module", () => {
     expect(container.textContent).toContain("Vista Mar Cartagena");
     expect(container.textContent).toContain("Stake");
     expect(container.textContent).toContain("Unstake");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows a card-level spinner while profile sync is pending", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+
+      if (url.includes("/api/protected/stake/assets")) {
+        return createJsonResponse({
+          ok: true,
+          data: {
+            walletPublicKey: "Wallet11111111111111111111111111111111111",
+            items: [
+              {
+                assetAddress: "Asset111",
+                propertyId: "property-1",
+                propertyTitle: "Torre Magnolia Medellin",
+                collectionAddress: "Collection111",
+                candyMachineAddress: "Candy111",
+                displayName: "Fraction #1",
+                imageUrl: null,
+                visibleState: "sync_pending",
+                action: null,
+                isFrozen: true,
+                syncPending: true
+              }
+            ]
+          }
+        });
+      }
+
+      return createJsonResponse({ ok: true, data: {} });
+    }));
+
+    const { container, root } = renderModule();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain("Sync pending");
+    expect(container.textContent).toContain("Syncing profile...");
+    expect(container.textContent).not.toContain("No action available");
+    expect(container.querySelector(".animate-spin")).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("polls pending stake sync and updates the card without manual reload", async () => {
+    vi.useFakeTimers();
+    let assetRequests = 0;
+
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+
+      if (url.includes("/api/protected/stake/assets")) {
+        assetRequests += 1;
+
+        return createJsonResponse({
+          ok: true,
+          data: {
+            walletPublicKey: "Wallet11111111111111111111111111111111111",
+            items: [
+              {
+                assetAddress: "Asset111",
+                propertyId: "property-1",
+                propertyTitle: "Torre Magnolia Medellin",
+                collectionAddress: "Collection111",
+                candyMachineAddress: "Candy111",
+                displayName: "Fraction #1",
+                imageUrl: null,
+                visibleState: assetRequests === 1 ? "sync_pending" : "ready_to_unstake",
+                action: assetRequests === 1 ? null : "Unstake",
+                isFrozen: true,
+                syncPending: assetRequests === 1
+              }
+            ]
+          }
+        });
+      }
+
+      return createJsonResponse({ ok: true, data: {} });
+    }));
+
+    const { container, root } = renderModule();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain("Sync pending");
+    expect(container.textContent).toContain("Syncing profile...");
+
+    await act(async () => {
+      vi.advanceTimersByTime(4_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(assetRequests).toBe(2);
+    expect(container.textContent).toContain("Ready to unstake");
+    expect(container.textContent).toContain("Unstake");
+    expect(container.textContent).not.toContain("Syncing profile...");
 
     act(() => {
       root.unmount();

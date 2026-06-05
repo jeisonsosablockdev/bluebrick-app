@@ -23,6 +23,7 @@ import {
   listStakeActionAttemptsByWallet,
   markStakeActionAttemptFailed,
   markStakeActionAttemptSubmitted,
+  type StakeActionAttemptRecord,
   type StakeProductAction
 } from "@/lib/stake-attempts-repository";
 import { reconcileSubmittedStakeActionBySignature } from "@/lib/stake-webhook-reconciliation";
@@ -277,6 +278,58 @@ function reconcileSubmittedStakeActionInBackground(txSignature: string): void {
   });
 }
 
+function shouldRetryStakeAttemptReconciliation(attempt: StakeActionAttemptRecord): boolean {
+  return Boolean(
+    attempt.txSignature
+    && (attempt.status === "submitted" || attempt.status === "reconcile_pending")
+  );
+}
+
+function listRetryableStakeAttemptSignatures(attempts: StakeActionAttemptRecord[]): string[] {
+  const signatures = new Set<string>();
+
+  for (const attempt of attempts) {
+    if (!shouldRetryStakeAttemptReconciliation(attempt) || !attempt.txSignature) {
+      continue;
+    }
+
+    signatures.add(attempt.txSignature);
+
+    if (signatures.size >= 10) {
+      break;
+    }
+  }
+
+  return Array.from(signatures);
+}
+
+function logStakeReconciliationRetryFailures(results: PromiseSettledResult<unknown>[]): void {
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.warn(JSON.stringify({
+        event: "Stake pending reconciliation retry failed",
+        errorMessage: result.reason instanceof Error ? result.reason.message : "Unknown reconciliation retry error"
+      }));
+    }
+  }
+}
+
+async function reconcilePendingStakeAttempts(attempts: StakeActionAttemptRecord[]): Promise<boolean> {
+  const signatures = listRetryableStakeAttemptSignatures(attempts);
+
+  if (signatures.length === 0) {
+    return false;
+  }
+
+  const results = await Promise.allSettled(
+    signatures.map((signature) => reconcileSubmittedStakeActionBySignature({ signature }))
+  );
+
+  logStakeReconciliationRetryFailures(results);
+
+  return true;
+}
+
 async function listBridsStakeInventory(): Promise<BridsInventoryRecord[]> {
   if (!isDatabaseConfigured()) {
     return [];
@@ -417,7 +470,11 @@ export async function listStakeAssetsForWallet(walletPublicKey: string): Promise
 
   const ownerAssets = await listOwnerBridsDasAssets(wallet);
   const inventoryByCollection = new Map(inventory.map((entry) => [entry.collectionAddress, entry]));
-  const attempts = await listStakeActionAttemptsByWallet(wallet);
+  let attempts = await listStakeActionAttemptsByWallet(wallet);
+  if (await reconcilePendingStakeAttempts(attempts)) {
+    attempts = await listStakeActionAttemptsByWallet(wallet);
+  }
+
   const latestAttemptByAsset = new Map<string, Awaited<ReturnType<typeof listStakeActionAttemptsByWallet>>[number]>();
 
   for (const attempt of attempts) {
@@ -439,7 +496,10 @@ export async function listStakeAssetsForWallet(walletPublicKey: string): Promise
     const onchainCollection = await fetchCollection(umi, publicKey(inventoryEntry.collectionAddress)).catch(() => null);
     const frozen = isFrozen(onchainAsset, onchainCollection ?? undefined);
     const latestAttempt = latestAttemptByAsset.get(asset.assetAddress) ?? null;
-    const hasPendingSync = Boolean(latestAttempt && latestAttempt.status === "submitted");
+    const hasPendingSync = Boolean(
+      latestAttempt
+      && (latestAttempt.status === "submitted" || latestAttempt.status === "reconcile_pending")
+    );
     const visibleState = resolveVisibleState({
       supportsFreeze: hasOwnerFreezeDelegatePlugin(onchainAsset),
       isFrozenState: frozen,
