@@ -68,7 +68,11 @@ type SubmittedStakePayload = {
 type LocalAssetState = {
   localState: LocalStakeState;
   errorMessage?: string | null;
+  expectedResolvedState?: RemoteStakeState | null;
 };
+
+const STAKE_SYNC_POLL_INTERVAL_MS = 4_000;
+const STAKE_SYNC_POLL_TIMEOUT_MS = 120_000;
 
 function fromBase64(base64Value: string): Uint8Array {
   const binary = atob(base64Value);
@@ -93,6 +97,20 @@ function toBase64(bytes: Uint8Array): string {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   return (await response.json().catch(() => null)) as T;
+}
+
+async function fetchStakeAssets(): Promise<StakeAssetResponse[]> {
+  const response = await fetch("/api/protected/stake/assets", {
+    method: "GET",
+    cache: "no-store"
+  });
+  const payload = await parseResponse<StakeAssetsPayload>(response);
+
+  if (!response.ok || !payload.data) {
+    throw new Error(payload.error?.message ?? "Could not load stake assets.");
+  }
+
+  return payload.data.items;
 }
 
 function statusClassName(state: LocalStakeState): string {
@@ -149,6 +167,53 @@ function actionLabel(state: LocalStakeState): "Stake" | "Unstake" | null {
   }
 
   return null;
+}
+
+function isProcessingStakeState(state: LocalStakeState): boolean {
+  return state === "pending_stake" || state === "pending_unstake" || state === "sync_pending";
+}
+
+function processingLabel(state: LocalStakeState, t: ReturnType<typeof useI18n>["t"]): string {
+  if (state === "sync_pending") {
+    return t({
+      en: "Syncing profile...",
+      es: "Sincronizando perfil...",
+      pt: "Sincronizando perfil..."
+    });
+  }
+
+  return t({ en: "Processing...", es: "Procesando...", pt: "Processando..." });
+}
+
+function reconcileLocalAssetStatesWithRemoteAssets(
+  current: Record<string, LocalAssetState>,
+  remoteAssets: StakeAssetResponse[]
+): Record<string, LocalAssetState> {
+  const remoteByAsset = new Map(remoteAssets.map((asset) => [asset.assetAddress, asset]));
+  let changed = false;
+  const next = { ...current };
+
+  for (const [assetAddress, local] of Object.entries(current)) {
+    const remote = remoteByAsset.get(assetAddress);
+
+    if (!remote) {
+      delete next[assetAddress];
+      changed = true;
+      continue;
+    }
+
+    if (!isProcessingStakeState(local.localState) || remote.visibleState === "sync_pending") {
+      continue;
+    }
+
+    const expected = local.expectedResolvedState ?? null;
+    if (!expected || remote.visibleState === expected || remote.visibleState === "disabled_unsupported") {
+      delete next[assetAddress];
+      changed = true;
+    }
+  }
+
+  return changed ? next : current;
 }
 
 function reasonLabel(
@@ -212,6 +277,17 @@ function isWalletUserRejectedError(error: unknown): boolean {
 
   const message = error.message.toLowerCase();
   return message.includes("user rejected") || message.includes("rejected the request");
+}
+
+function StakeInlineSpinner(props: { reduceMotion: boolean }): ReactElement {
+  return (
+    <span
+      aria-hidden="true"
+      className={props.reduceMotion
+        ? "inline-block h-4 w-4 rounded-full border border-current"
+        : "inline-block h-4 w-4 animate-spin rounded-full border border-current border-t-transparent"}
+    />
+  );
 }
 
 function StakeConfirmModal(props: {
@@ -335,6 +411,7 @@ function StakeProcessingOverlay(props: {
 export function StakeModule(): ReactElement {
   const { t } = useI18n();
   const { connected, publicKey, signTransaction } = useWallet();
+  const shouldReduceMotion = Boolean(useReducedMotion());
   const [remoteAssets, setRemoteAssets] = useState<StakeAssetResponse[]>([]);
   const [assetStateById, setAssetStateById] = useState<Record<string, LocalAssetState>>({});
   const [loading, setLoading] = useState(true);
@@ -352,18 +429,11 @@ export function StakeModule(): ReactElement {
       setFetchError(null);
 
       try {
-        const response = await fetch("/api/protected/stake/assets", {
-          method: "GET",
-          cache: "no-store"
-        });
-        const payload = await parseResponse<StakeAssetsPayload>(response);
-
-        if (!response.ok || !payload.data) {
-          throw new Error(payload.error?.message ?? "Could not load stake assets.");
-        }
+        const items = await fetchStakeAssets();
 
         if (!cancelled) {
-          setRemoteAssets(payload.data.items);
+          setRemoteAssets(items);
+          setAssetStateById((current) => reconcileLocalAssetStatesWithRemoteAssets(current, items));
         }
       } catch (error) {
         if (!cancelled) {
@@ -419,18 +489,50 @@ export function StakeModule(): ReactElement {
     return remoteAssets.find((asset) => asset.assetAddress === submittingAssetId) ?? null;
   }, [remoteAssets, submittingAssetId]);
 
-  async function reloadAssets(): Promise<void> {
-    const response = await fetch("/api/protected/stake/assets", {
-      method: "GET",
-      cache: "no-store"
-    });
-    const payload = await parseResponse<StakeAssetsPayload>(response);
+  const hasSyncPendingAsset = useMemo(() => {
+    return effectiveAssets.some((asset) => asset.effectiveState === "sync_pending");
+  }, [effectiveAssets]);
 
-    if (!response.ok || !payload.data) {
-      throw new Error(payload.error?.message ?? "Could not reload stake assets.");
+  useEffect(() => {
+    if (!hasSyncPendingAsset) {
+      return;
     }
 
-    setRemoteAssets(payload.data.items);
+    let cancelled = false;
+    const startedAt = Date.now();
+    const interval = window.setInterval(() => {
+      if (Date.now() - startedAt > STAKE_SYNC_POLL_TIMEOUT_MS) {
+        window.clearInterval(interval);
+        return;
+      }
+
+      void fetchStakeAssets()
+        .then((items) => {
+          if (cancelled) {
+            return;
+          }
+
+          setRemoteAssets(items);
+          setAssetStateById((current) => reconcileLocalAssetStatesWithRemoteAssets(current, items));
+        })
+        .catch((error) => {
+          console.warn(JSON.stringify({
+            event: "Stake sync polling failed",
+            errorMessage: error instanceof Error ? error.message : "Unknown stake sync polling error"
+          }));
+        });
+    }, STAKE_SYNC_POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [hasSyncPendingAsset]);
+
+  async function reloadAssets(): Promise<void> {
+    const items = await fetchStakeAssets();
+    setRemoteAssets(items);
+    setAssetStateById((current) => reconcileLocalAssetStatesWithRemoteAssets(current, items));
   }
 
   async function handleConfirm(asset: StakeAssetResponse, action: "Stake" | "Unstake"): Promise<void> {
@@ -451,13 +553,15 @@ export function StakeModule(): ReactElement {
     }
 
     const optimisticState: LocalStakeState = action === "Stake" ? "pending_stake" : "pending_unstake";
+    const expectedResolvedState: RemoteStakeState = action === "Stake" ? "ready_to_unstake" : "ready_to_stake";
     setSubmittingAssetId(asset.assetAddress);
     setSubmittingAction(action);
     setAssetStateById((current) => ({
       ...current,
       [asset.assetAddress]: {
         localState: optimisticState,
-        errorMessage: null
+        errorMessage: null,
+        expectedResolvedState
       }
     }));
 
@@ -498,7 +602,8 @@ export function StakeModule(): ReactElement {
         ...current,
         [asset.assetAddress]: {
           localState: "sync_pending",
-          errorMessage: null
+          errorMessage: null,
+          expectedResolvedState
         }
       }));
       setNotice(
@@ -636,6 +741,7 @@ export function StakeModule(): ReactElement {
         {effectiveAssets.map((asset) => {
           const availableAction = actionLabel(asset.effectiveState);
           const busy = submittingAssetId === asset.assetAddress;
+          const processing = busy || isProcessingStakeState(asset.effectiveState);
 
           return (
             <Card key={asset.assetAddress} className="space-y-3">
@@ -645,7 +751,8 @@ export function StakeModule(): ReactElement {
                   <p className="text-xs text-white/60">{asset.displayName}</p>
                   <p className="text-xs text-white/50">{asset.assetAddress}</p>
                 </div>
-                <span className={`rounded-full px-2 py-1 text-xs ${statusClassName(asset.effectiveState)}`}>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs ${statusClassName(asset.effectiveState)}`}>
+                  {processing ? <StakeInlineSpinner reduceMotion={shouldReduceMotion} /> : null}
                   {statusLabel(asset.effectiveState, t)}
                 </span>
               </div>
@@ -654,16 +761,19 @@ export function StakeModule(): ReactElement {
                 {reasonLabel(asset, asset.effectiveState, asset.localErrorMessage, t)}
               </p>
 
-              {availableAction ? (
+              {availableAction && !processing ? (
                 <Button
                   className="min-h-11 w-full"
                   disabled={busy}
                   variant={availableAction === "Stake" ? "primary" : "outline"}
                   onClick={() => setSelectedAsset(asset)}
                 >
-                  {busy
-                    ? t({ en: "Processing...", es: "Procesando...", pt: "Processando..." })
-                    : availableAction}
+                  {availableAction}
+                </Button>
+              ) : processing ? (
+                <Button className="min-h-11 w-full gap-2" disabled variant="ghost">
+                  <StakeInlineSpinner reduceMotion={shouldReduceMotion} />
+                  {processingLabel(asset.effectiveState, t)}
                 </Button>
               ) : (
                 <Button className="min-h-11 w-full" disabled variant="ghost">

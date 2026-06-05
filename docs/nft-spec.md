@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-06-02
+Last Updated: 2026-06-05
 
 ## BRI-170 Marketplace Owner-Freeze Mint Contract
 - `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
@@ -16,6 +16,11 @@ Last Updated: 2026-06-02
 - `purchase_attempts` stores expected/verified asset addresses plus asset-verification status as attempt evidence. This does not replace on-chain truth and does not create a staking ledger.
 - `GET /api/protected/stake/assets` and stake prepare logic must reject assets that have no `FreezeDelegate` or whose `FreezeDelegate` authority is not `Owner`.
 - The legacy admin Core Candy Machine mint-prepare route is blocked (`410 Gone`) to prevent incomplete or admin-owned mint paths from being used as product flow.
+- Stake / Unstake profile sync must preserve the BRI-5 contract:
+  - `sync_pending` is explicit user-facing lag between a confirmed on-chain action and derived profile persistence
+  - `/api/protected/stake/assets` retries canonical reconciliation for signed attempts in `submitted` or `reconcile_pending` before computing the visible asset state
+  - cards in `sync_pending` show per-asset processing feedback and block duplicate actions until the backend returns a resolved state
+  - bounded UI polling may refresh the card state, but it does not replace canonical RPC validation or the derived profile persistence contract
 
 ## BRI-5 Stake / Unstake Ownership Contract
 - The protected profile now exposes owner-driven `Stake / Unstake` as a product alias for NFT `freeze / unfreeze`.
