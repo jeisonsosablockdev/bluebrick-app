@@ -48,6 +48,30 @@ describe("lib/mpl-core-freeze-delegate", () => {
     })).toBe(true);
   });
 
+  it("accepts frozen owner delegate shapes where authority address equals the asset owner", () => {
+    expect(hasOwnerFreezeDelegatePlugin({
+      owner: "Owner111111111111111111111111111111111111",
+      freezeDelegate: {
+        frozen: true,
+        authority: {
+          type: "Address",
+          address: "Owner111111111111111111111111111111111111"
+        }
+      }
+    })).toBe(true);
+
+    expect(hasOwnerFreezeDelegatePlugin({
+      owner: "Owner111111111111111111111111111111111111",
+      freezeDelegate: {
+        frozen: true,
+        authority: {
+          type: "Address",
+          address: "Delegate1111111111111111111111111111111"
+        }
+      }
+    })).toBe(false);
+  });
+
   it("extracts owner and collection from MPL Core asset account shapes", () => {
     expect(getMplCoreAssetOwner({
       owner: "Owner111111111111111111111111111111111111"

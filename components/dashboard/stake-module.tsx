@@ -509,7 +509,17 @@ export function StakeModule(): ReactElement {
         })
       );
       setSelectedAsset(null);
-      await reloadAssets();
+      void reloadAssets().catch((reloadError) => {
+        setFetchError(
+          reloadError instanceof Error
+            ? reloadError.message
+            : t({
+                en: "Could not refresh the stake inventory after submission.",
+                es: "No se pudo refrescar el inventario de stake despues del envio.",
+                pt: "Nao foi possivel atualizar o inventario de stake apos o envio."
+              })
+        );
+      });
     } catch (error) {
       const errorMessage = isWalletUserRejectedError(error)
         ? t({

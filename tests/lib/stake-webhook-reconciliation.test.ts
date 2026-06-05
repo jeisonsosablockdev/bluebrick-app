@@ -17,10 +17,14 @@ vi.mock("@solana/web3.js", async () => {
 
 import {
   createStakeActionAttempt,
+  getStakeActionAttemptBySignature,
   markStakeActionAttemptSubmitted
 } from "@/lib/stake-attempts-repository";
 import { listStakeProfileEventsByWallet } from "@/lib/stake-profile-events-repository";
-import { processStakeHeliusWebhookPayload } from "@/lib/stake-webhook-reconciliation";
+import {
+  processStakeHeliusWebhookPayload,
+  reconcileSubmittedStakeActionBySignature
+} from "@/lib/stake-webhook-reconciliation";
 
 describe("lib/stake-webhook-reconciliation", () => {
   beforeEach(() => {
@@ -91,5 +95,55 @@ describe("lib/stake-webhook-reconciliation", () => {
     expect(events[0]?.blockchainAction).toBe("freeze");
     expect(events[0]?.validationStatus).toBe("validated");
   });
-});
 
+  it("reconciles submitted stake attempts directly from canonical RPC without a webhook", async () => {
+    web3Mocks.getTransaction.mockResolvedValue({
+      slot: 456,
+      blockTime: 1_800_000_100,
+      meta: { err: null },
+      transaction: {
+        message: {
+          staticAccountKeys: [
+            {
+              toBase58: () => "Wallet22222222222222222222222222222222222"
+            }
+          ]
+        }
+      }
+    });
+
+    const attempt = await createStakeActionAttempt({
+      idempotencyKey: "idem-2",
+      walletPublicKey: "Wallet22222222222222222222222222222222222",
+      assetAddress: "Asset222",
+      collectionAddress: "Collection222",
+      candyMachineAddress: "Candy222",
+      propertyId: "property-2",
+      propertyTitle: "Vista Mar",
+      productAction: "unstake",
+      preparedTxMessageBase64: "AQ=="
+    });
+
+    await markStakeActionAttemptSubmitted({
+      attemptId: attempt.id,
+      txSignature: "sig-2"
+    });
+
+    const reconciled = await reconcileSubmittedStakeActionBySignature({ signature: "sig-2" });
+
+    expect(reconciled).toMatchObject({
+      status: "validated",
+      attemptId: attempt.id,
+      errorMessage: null
+    });
+
+    const updatedAttempt = await getStakeActionAttemptBySignature("sig-2");
+    expect(updatedAttempt?.status).toBe("validated");
+
+    const events = await listStakeProfileEventsByWallet("Wallet22222222222222222222222222222222222");
+    expect(events).toHaveLength(1);
+    expect(events[0]?.productAction).toBe("unstake");
+    expect(events[0]?.blockchainAction).toBe("unfreeze");
+    expect(events[0]?.validationStatus).toBe("validated");
+  });
+});

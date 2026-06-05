@@ -10,7 +10,8 @@ import {
   getStakeActionAttemptBySignature,
   markStakeActionAttemptFailed,
   markStakeActionAttemptReconcilePending,
-  markStakeActionAttemptValidated
+  markStakeActionAttemptValidated,
+  type StakeActionAttemptRecord
 } from "@/lib/stake-attempts-repository";
 import { upsertStakeProfileEvent } from "@/lib/stake-profile-events-repository";
 import { getSolanaRpcUrl } from "@/lib/solana";
@@ -20,6 +21,12 @@ export type StakeWebhookProcessResult = {
   processed: number;
   duplicates: number;
   reconciled: number;
+};
+
+export type StakeCanonicalReconciliationResult = {
+  status: "missing_attempt" | "pending" | "reconcile_pending" | "validated" | "failed";
+  attemptId: string | null;
+  errorMessage: string | null;
 };
 
 type NormalizedStakeHeliusEvent = {
@@ -45,6 +52,8 @@ type RawWebhookEventRow = {
   received_at: string | Date;
   processed_at: string | Date | null;
 };
+
+type CanonicalStakeTransaction = NonNullable<Awaited<ReturnType<typeof getLegacyTransactionBySignature>>>;
 
 function parseSlot(value: unknown): number | null {
   const parsed = Number(value);
@@ -186,6 +195,138 @@ async function recordStakeRawWebhookEvent(event: NormalizedStakeHeliusEvent): Pr
   });
 }
 
+function reconciliationResult(
+  status: StakeCanonicalReconciliationResult["status"],
+  attemptId: string | null,
+  errorMessage: string | null
+): StakeCanonicalReconciliationResult {
+  return {
+    status,
+    attemptId,
+    errorMessage
+  };
+}
+
+async function fetchCanonicalStakeTransaction(signature: string): Promise<CanonicalStakeTransaction | null> {
+  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
+  return getLegacyTransactionBySignature(connection, signature, "confirmed");
+}
+
+async function markCanonicalReconciliationPending(
+  attempt: StakeActionAttemptRecord,
+  errorMessage: string
+): Promise<StakeCanonicalReconciliationResult> {
+  await markStakeActionAttemptReconcilePending({
+    attemptId: attempt.id,
+    errorMessage
+  });
+
+  return reconciliationResult("pending", attempt.id, errorMessage);
+}
+
+async function markCanonicalReconciliationFailed(
+  attempt: StakeActionAttemptRecord,
+  errorMessage: string
+): Promise<StakeCanonicalReconciliationResult> {
+  await markStakeActionAttemptFailed({
+    attemptId: attempt.id,
+    errorMessage
+  });
+
+  return reconciliationResult("failed", attempt.id, errorMessage);
+}
+
+function getCanonicalBlockTime(transaction: CanonicalStakeTransaction): string | null {
+  return typeof transaction.blockTime === "number"
+    ? new Date(transaction.blockTime * 1000).toISOString()
+    : null;
+}
+
+async function upsertCanonicalStakeProfileEvent(input: {
+  attempt: StakeActionAttemptRecord;
+  signature: string;
+  transaction: CanonicalStakeTransaction;
+  webhookEventId?: string | null;
+  eventSlot?: number | null;
+  observedAt?: string;
+}): Promise<"validated" | "reconcile_pending"> {
+  const blockTime = getCanonicalBlockTime(input.transaction);
+  const validationStatus = blockTime ? "validated" : "reconcile_pending";
+
+  await upsertStakeProfileEvent({
+    webhookEventId: input.webhookEventId ?? null,
+    assetAddress: input.attempt.assetAddress,
+    ownerWallet: input.attempt.walletPublicKey,
+    collectionAddress: input.attempt.collectionAddress,
+    candyMachineAddress: input.attempt.candyMachineAddress,
+    propertyId: input.attempt.propertyId,
+    propertyTitle: input.attempt.propertyTitle,
+    productAction: input.attempt.productAction,
+    txSignature: input.attempt.txSignature ?? input.signature,
+    instructionIndex: 0,
+    slot: input.transaction.slot ?? input.eventSlot ?? null,
+    blockTime,
+    observedAt: input.observedAt ?? new Date().toISOString(),
+    validationStatus,
+    validationError: blockTime ? null : "block_time is null; canonical time remains pending."
+  });
+
+  return validationStatus;
+}
+
+export async function reconcileSubmittedStakeActionBySignature(input: {
+  signature: string;
+  webhookEventId?: string | null;
+  eventSlot?: number | null;
+  observedAt?: string;
+}): Promise<StakeCanonicalReconciliationResult> {
+  const signature = input.signature.trim();
+  if (!signature) {
+    return reconciliationResult("missing_attempt", null, "Signature is required.");
+  }
+
+  const attempt = await getStakeActionAttemptBySignature(signature);
+  if (!attempt) {
+    return reconciliationResult("missing_attempt", null, "No stake attempt was found for the signature.");
+  }
+
+  const transaction = await fetchCanonicalStakeTransaction(signature);
+
+  if (!transaction) {
+    return markCanonicalReconciliationPending(attempt, "Canonical transaction validation is still pending.");
+  }
+
+  if (transaction.meta?.err) {
+    return markCanonicalReconciliationFailed(attempt, "Canonical transaction failed on-chain.");
+  }
+
+  const payer = getLegacyTransactionPayerFromResponse(transaction);
+  if (payer !== attempt.walletPublicKey) {
+    return markCanonicalReconciliationFailed(attempt, "Canonical validation detected a payer mismatch.");
+  }
+
+  const validationStatus = await upsertCanonicalStakeProfileEvent({
+    attempt,
+    signature,
+    transaction,
+    webhookEventId: input.webhookEventId,
+    eventSlot: input.eventSlot,
+    observedAt: input.observedAt
+  });
+
+  if (validationStatus === "validated") {
+    await markStakeActionAttemptValidated({ attemptId: attempt.id });
+    return reconciliationResult("validated", attempt.id, null);
+  }
+
+  await markStakeActionAttemptReconcilePending({
+    attemptId: attempt.id,
+    errorMessage: "Canonical transaction has no block_time yet."
+  });
+
+  return reconciliationResult("reconcile_pending", attempt.id, "Canonical transaction has no block_time yet.");
+}
+
 export async function processStakeHeliusWebhookPayload(payload: unknown): Promise<StakeWebhookProcessResult> {
   const events = Array.isArray(payload) ? payload : [];
   const result: StakeWebhookProcessResult = {
@@ -194,7 +335,6 @@ export async function processStakeHeliusWebhookPayload(payload: unknown): Promis
     duplicates: 0,
     reconciled: 0
   };
-  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
 
   for (const rawEvent of events) {
     const event = normalizeHeliusEvent(rawEvent);
@@ -227,59 +367,15 @@ export async function processStakeHeliusWebhookPayload(payload: unknown): Promis
       continue;
     }
 
-    const transaction = await getLegacyTransactionBySignature(connection, event.signature, "confirmed");
-
-    if (!transaction || transaction.meta?.err) {
-      await markStakeActionAttemptReconcilePending({
-        attemptId: attempt.id,
-        errorMessage: "Canonical transaction validation is still pending."
-      });
-      continue;
-    }
-
-    const payer = getLegacyTransactionPayerFromResponse(transaction);
-    if (payer !== attempt.walletPublicKey) {
-      await markStakeActionAttemptFailed({
-        attemptId: attempt.id,
-        errorMessage: "Canonical validation detected a payer mismatch."
-      });
-      result.reconciled += 1;
-      continue;
-    }
-
-    const blockTime = typeof transaction.blockTime === "number"
-      ? new Date(transaction.blockTime * 1000).toISOString()
-      : null;
-    const validationStatus = blockTime ? "validated" : "reconcile_pending";
-
-      await upsertStakeProfileEvent({
+    const reconciled = await reconcileSubmittedStakeActionBySignature({
+      signature: event.signature,
       webhookEventId: recorded.event.id,
-      assetAddress: attempt.assetAddress,
-      ownerWallet: attempt.walletPublicKey,
-      collectionAddress: attempt.collectionAddress,
-      candyMachineAddress: attempt.candyMachineAddress,
-      propertyId: attempt.propertyId,
-      propertyTitle: attempt.propertyTitle,
-      productAction: attempt.productAction,
-      txSignature: attempt.txSignature ?? event.signature,
-      instructionIndex: 0,
-      slot: transaction.slot ?? event.slot,
-      blockTime,
-      observedAt: new Date().toISOString(),
-      validationStatus,
-      validationError: blockTime ? null : "block_time is null; canonical time remains pending."
+      eventSlot: event.slot,
+      observedAt: new Date().toISOString()
     });
-
-    if (validationStatus === "validated") {
-      await markStakeActionAttemptValidated({ attemptId: attempt.id });
+    if (reconciled.status === "validated" || reconciled.status === "failed") {
       result.reconciled += 1;
-      continue;
     }
-
-    await markStakeActionAttemptReconcilePending({
-      attemptId: attempt.id,
-      errorMessage: "Canonical transaction has no block_time yet."
-    });
   }
 
   return result;

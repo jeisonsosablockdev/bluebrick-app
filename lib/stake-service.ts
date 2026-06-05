@@ -8,10 +8,11 @@ import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createLegacyConnection,
   deserializeLegacyVersionedTransaction,
+  getLegacyTransactionMessageMismatchDiagnostics,
   getLegacyTransactionMessageMismatchReasons,
   getLegacyTransactionPayer,
   normalizeLegacyPublicKey,
-  sendAndConfirmLegacyVersionedTransaction,
+  sendLegacyVersionedTransaction,
   serializeLegacyVersionedMessage
 } from "@/lib/solana-kit/compat/web3-transactions";
 import { generateUuidV7 } from "@/lib/uuid-v7";
@@ -24,6 +25,7 @@ import {
   markStakeActionAttemptSubmitted,
   type StakeProductAction
 } from "@/lib/stake-attempts-repository";
+import { reconcileSubmittedStakeActionBySignature } from "@/lib/stake-webhook-reconciliation";
 import { hasOwnerFreezeDelegatePlugin } from "@/lib/mpl-core-freeze-delegate";
 
 export type StakeVisibleState =
@@ -253,14 +255,26 @@ function assertPreparedMessageMatches(input: {
   const preparedMessageBytes = fromBase64(input.preparedMessageBase64);
   const mismatchReasons = getLegacyTransactionMessageMismatchReasons(input.transaction, preparedMessageBytes);
   if (mismatchReasons.length > 0) {
-    console.warn("Stake signed transaction mismatch", {
+    console.warn(JSON.stringify({
+      event: "Stake signed transaction mismatch",
       attemptId: input.attemptId,
       walletPublicKey: input.walletPublicKey,
       assetAddress: input.assetAddress,
-      mismatchReasons
-    });
+      mismatchReasons,
+      diagnostics: getLegacyTransactionMessageMismatchDiagnostics(input.transaction, preparedMessageBytes)
+    }));
     throw new StakeFlowError("INVALID_TRANSACTION", "Signed transaction does not match the prepared stake action.", 409);
   }
+}
+
+function reconcileSubmittedStakeActionInBackground(txSignature: string): void {
+  void reconcileSubmittedStakeActionBySignature({ signature: txSignature }).catch((error) => {
+    console.warn(JSON.stringify({
+      event: "Stake canonical reconciliation failed",
+      txSignature,
+      errorMessage: error instanceof Error ? error.message : "Unknown reconciliation error"
+    }));
+  });
 }
 
 async function listBridsStakeInventory(): Promise<BridsInventoryRecord[]> {
@@ -552,8 +566,9 @@ export async function submitStakeAction(input: {
   const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
 
   try {
-    const txSignature = await sendAndConfirmLegacyVersionedTransaction(connection, signedTransaction, "confirmed");
+    const txSignature = await sendLegacyVersionedTransaction(connection, signedTransaction);
     await markStakeActionAttemptSubmitted({ attemptId, txSignature });
+    reconcileSubmittedStakeActionInBackground(txSignature);
 
     return {
       attemptId,

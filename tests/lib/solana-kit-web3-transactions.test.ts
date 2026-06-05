@@ -23,22 +23,41 @@ async function createTransferTransaction(input: {
   recipient: TestPublicKey;
   blockhash: string;
   lamports: number;
+  includeComputeBudget?: boolean;
+  includeExtraTransfer?: boolean;
 }): Promise<TestTransaction> {
   const {
+    ComputeBudgetProgram,
     SystemProgram,
     TransactionMessage,
     VersionedTransaction
   } = await loadWeb3TestTools();
+  const instructions = [
+    ...(input.includeComputeBudget
+      ? [
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
+          ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1 })
+        ]
+      : []),
+    SystemProgram.transfer({
+      fromPubkey: input.payer,
+      toPubkey: input.recipient,
+      lamports: input.lamports
+    }),
+    ...(input.includeExtraTransfer
+      ? [
+          SystemProgram.transfer({
+            fromPubkey: input.payer,
+            toPubkey: input.recipient,
+            lamports: input.lamports
+          })
+        ]
+      : [])
+  ];
   const message = new TransactionMessage({
     payerKey: input.payer,
     recentBlockhash: input.blockhash,
-    instructions: [
-      SystemProgram.transfer({
-        fromPubkey: input.payer,
-        toPubkey: input.recipient,
-        lamports: input.lamports
-      })
-    ]
+    instructions
   }).compileToV0Message();
 
   return new VersionedTransaction(message);
@@ -122,6 +141,62 @@ describe("solana-kit web3 transaction boundary", () => {
     expect(getLegacyTransactionMessageMismatchReasons(
       changedRecipient,
       serializeLegacyVersionedMessage(prepared)
-    )).toEqual(["staticAccountKeys"]);
+    )).toEqual(["compiledInstructions"]);
+  });
+
+  it("accepts wallet-added leading compute budget instructions", async () => {
+    const { Keypair } = await loadWeb3TestTools();
+    const payer = Keypair.generate().publicKey;
+    const recipient = Keypair.generate().publicKey;
+    const prepared = await createTransferTransaction({
+      payer,
+      recipient,
+      blockhash: randomBlockhash(Keypair.generate),
+      lamports: 1
+    });
+    const signedWithComputeBudget = await createTransferTransaction({
+      payer,
+      recipient,
+      blockhash: randomBlockhash(Keypair.generate),
+      lamports: 1,
+      includeComputeBudget: true
+    });
+
+    expect(legacyTransactionMessageMatchesPreparedAction(
+      signedWithComputeBudget,
+      serializeLegacyVersionedMessage(prepared)
+    )).toBe(true);
+    expect(getLegacyTransactionMessageMismatchReasons(
+      signedWithComputeBudget,
+      serializeLegacyVersionedMessage(prepared)
+    )).toEqual([]);
+  });
+
+  it("rejects non-compute-budget extra instructions", async () => {
+    const { Keypair } = await loadWeb3TestTools();
+    const payer = Keypair.generate().publicKey;
+    const recipient = Keypair.generate().publicKey;
+    const prepared = await createTransferTransaction({
+      payer,
+      recipient,
+      blockhash: randomBlockhash(Keypair.generate),
+      lamports: 1
+    });
+    const signedWithExtraTransfer = await createTransferTransaction({
+      payer,
+      recipient,
+      blockhash: randomBlockhash(Keypair.generate),
+      lamports: 1,
+      includeExtraTransfer: true
+    });
+
+    expect(legacyTransactionMessageMatchesPreparedAction(
+      signedWithExtraTransfer,
+      serializeLegacyVersionedMessage(prepared)
+    )).toBe(false);
+    expect(getLegacyTransactionMessageMismatchReasons(
+      signedWithExtraTransfer,
+      serializeLegacyVersionedMessage(prepared)
+    )).toEqual(["compiledInstructions"]);
   });
 });

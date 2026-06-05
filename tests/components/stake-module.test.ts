@@ -255,4 +255,92 @@ describe("components/dashboard/stake-module", () => {
       root.unmount();
     });
   });
+
+  it("dismisses the processing overlay after submit while inventory reload is still pending", async () => {
+    const reload = deferred<Response>();
+    let assetRequests = 0;
+
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+
+      if (url.includes("/api/protected/stake/assets")) {
+        assetRequests += 1;
+
+        if (assetRequests > 1) {
+          return reload.promise;
+        }
+
+        return createJsonResponse({
+          ok: true,
+          data: {
+            walletPublicKey: "Wallet11111111111111111111111111111111111",
+            items: [
+              {
+                assetAddress: "Asset111",
+                propertyId: "property-1",
+                propertyTitle: "Torre Magnolia Medellin",
+                collectionAddress: "Collection111",
+                candyMachineAddress: "Candy111",
+                displayName: "Fraction #1",
+                imageUrl: null,
+                visibleState: "ready_to_stake",
+                action: "Stake",
+                isFrozen: false,
+                syncPending: false
+              }
+            ]
+          }
+        });
+      }
+
+      if (url.includes("/api/protected/stake/prepare")) {
+        return createJsonResponse({
+          ok: true,
+          data: {
+            attemptId: "attempt-1",
+            idempotencyKey: "idempotency-1",
+            transactionBase64: "AA=="
+          }
+        });
+      }
+
+      return createJsonResponse({ ok: true, data: { attemptId: "attempt-1", txSignature: "sig-1" } });
+    }));
+
+    const { container, root } = renderModule();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    act(() => {
+      clickButton(container, "Stake");
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      clickButton(container, "Confirm Stake");
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(assetRequests).toBe(2);
+    expect(container.textContent).toContain("Action submitted");
+    expect(container.textContent).toContain("Sync pending");
+    expect(container.querySelector("[aria-busy='true']")).toBeNull();
+    expect(container.querySelector(".blur-\\[2px\\]")).toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

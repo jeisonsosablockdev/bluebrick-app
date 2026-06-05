@@ -34,6 +34,7 @@ export function serializeLegacyVersionedMessage(raw: VersionedTransaction): Uint
 }
 
 type MessageLike = VersionedTransaction["message"];
+const COMPUTE_BUDGET_PROGRAM_ID = "ComputeBudget111111111111111111111111111111";
 
 function publicKeyListFingerprint(keys: Array<{ toBase58(): string }>): string[] {
   return keys.map((key) => key.toBase58());
@@ -43,8 +44,19 @@ function bytesFingerprint(raw: Uint8Array): string {
   return Buffer.from(raw).toString("base64");
 }
 
+function bytesHashFingerprint(raw: Uint8Array): string {
+  let hash = 0x811c9dc5;
+
+  for (const byte of raw) {
+    hash ^= byte;
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
 function compiledInstructionsFingerprint(message: MessageLike) {
-  return message.compiledInstructions.map((instruction) => ({
+  return getPreparedActionInstructions(message).map((instruction) => ({
     programIdIndex: instruction.programIdIndex,
     accountKeyIndexes: [...instruction.accountKeyIndexes],
     data: bytesFingerprint(instruction.data)
@@ -73,6 +85,87 @@ function messageActionFingerprint(message: MessageLike) {
   };
 }
 
+function getStaticMessageAccountKey(message: MessageLike, index: number): string | null {
+  return message.staticAccountKeys[index]?.toBase58() ?? null;
+}
+
+function isLeadingComputeBudgetInstruction(message: MessageLike, instruction: MessageLike["compiledInstructions"][number]): boolean {
+  return getStaticMessageAccountKey(message, instruction.programIdIndex) === COMPUTE_BUDGET_PROGRAM_ID
+    && instruction.accountKeyIndexes.length === 0;
+}
+
+function getPreparedActionInstructions(message: MessageLike): MessageLike["compiledInstructions"] {
+  let firstActionInstructionIndex = 0;
+
+  while (
+    firstActionInstructionIndex < message.compiledInstructions.length
+    && isLeadingComputeBudgetInstruction(message, message.compiledInstructions[firstActionInstructionIndex] as MessageLike["compiledInstructions"][number])
+  ) {
+    firstActionInstructionIndex += 1;
+  }
+
+  return message.compiledInstructions.slice(firstActionInstructionIndex);
+}
+
+function compiledInstructionsUseOnlyStaticKeys(message: MessageLike): boolean {
+  return getPreparedActionInstructions(message).every((instruction) => {
+    if (instruction.programIdIndex >= message.staticAccountKeys.length) {
+      return false;
+    }
+
+    return instruction.accountKeyIndexes.every((accountIndex) => accountIndex < message.staticAccountKeys.length);
+  });
+}
+
+function semanticInstructionsFingerprint(message: MessageLike) {
+  return getPreparedActionInstructions(message).map((instruction) => ({
+    programId: getStaticMessageAccountKey(message, instruction.programIdIndex),
+    accounts: instruction.accountKeyIndexes.map((accountIndex) => ({
+      pubkey: getStaticMessageAccountKey(message, accountIndex),
+      signer: message.isAccountSigner(accountIndex),
+      writable: message.isAccountWritable(accountIndex)
+    })),
+    data: bytesFingerprint(instruction.data)
+  }));
+}
+
+function semanticInstructionsDiagnosticFingerprint(message: MessageLike) {
+  return getPreparedActionInstructions(message).map((instruction) => ({
+    programId: getStaticMessageAccountKey(message, instruction.programIdIndex),
+    accounts: instruction.accountKeyIndexes.map((accountIndex) => ({
+      pubkey: getStaticMessageAccountKey(message, accountIndex),
+      signer: message.isAccountSigner(accountIndex),
+      writable: message.isAccountWritable(accountIndex)
+    })),
+    dataHash: bytesHashFingerprint(instruction.data),
+    dataLength: instruction.data.length
+  }));
+}
+
+function messageSemanticActionFingerprint(message: MessageLike) {
+  if (!compiledInstructionsUseOnlyStaticKeys(message)) {
+    return null;
+  }
+
+  return {
+    feePayer: getStaticMessageAccountKey(message, 0),
+    instructions: semanticInstructionsFingerprint(message)
+  };
+}
+
+function messageSemanticDiagnosticFingerprint(message: MessageLike) {
+  if (!compiledInstructionsUseOnlyStaticKeys(message)) {
+    return null;
+  }
+
+  return {
+    feePayer: getStaticMessageAccountKey(message, 0),
+    ignoredLeadingComputeBudgetInstructionCount: message.compiledInstructions.length - getPreparedActionInstructions(message).length,
+    instructionCount: getPreparedActionInstructions(message).length,
+    instructions: semanticInstructionsDiagnosticFingerprint(message)
+  };
+}
+
 export type LegacyTransactionMessageMismatchReason =
   | "version"
   | "header"
@@ -89,6 +182,13 @@ export function getLegacyTransactionMessageMismatchReasons(
   preparedMessageBytes: Uint8Array
 ): LegacyTransactionMessageMismatchReason[] {
   const preparedMessage = VersionedMessage.deserialize(preparedMessageBytes) as MessageLike;
+  const signedSemanticFingerprint = messageSemanticActionFingerprint(transaction.message);
+  const preparedSemanticFingerprint = messageSemanticActionFingerprint(preparedMessage);
+
+  if (signedSemanticFingerprint && preparedSemanticFingerprint) {
+    return valuesMatch(signedSemanticFingerprint, preparedSemanticFingerprint) ? [] : ["compiledInstructions"];
+  }
+
   const signedFingerprint = messageActionFingerprint(transaction.message);
   const preparedFingerprint = messageActionFingerprint(preparedMessage);
   const reasons: LegacyTransactionMessageMismatchReason[] = [];
@@ -114,6 +214,18 @@ export function getLegacyTransactionMessageMismatchReasons(
   }
 
   return reasons;
+}
+
+export function getLegacyTransactionMessageMismatchDiagnostics(
+  transaction: VersionedTransaction,
+  preparedMessageBytes: Uint8Array
+) {
+  const preparedMessage = VersionedMessage.deserialize(preparedMessageBytes) as MessageLike;
+
+  return {
+    signed: messageSemanticDiagnosticFingerprint(transaction.message) ?? messageActionFingerprint(transaction.message),
+    prepared: messageSemanticDiagnosticFingerprint(preparedMessage) ?? messageActionFingerprint(preparedMessage)
+  };
 }
 
 export function legacyTransactionMessageMatchesPreparedAction(

@@ -53,8 +53,20 @@ export function hasOwnerFreezeDelegatePlugin(assetLike: unknown): boolean {
   const asset = asRecord(assetLike);
   const freezeDelegate = asRecord(asset.freezeDelegate);
   const authority = asRecord(freezeDelegate.authority);
+  const kind = authorityKind(authority);
 
-  return authorityKind(authority) === "Owner";
+  if (kind === "Owner") {
+    return true;
+  }
+
+  if (kind !== "Address") {
+    return false;
+  }
+
+  const owner = getMplCoreAssetOwner(asset);
+  const authorityAddress = asPublicKeyString(authority.address);
+
+  return Boolean(owner && authorityAddress && owner === authorityAddress);
 }
 
 export function getMplCoreAssetOwner(assetLike: unknown): string | null {
