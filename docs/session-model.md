@@ -1,6 +1,6 @@
 # Session Model
 
-Last Updated: 2026-06-02
+Last Updated: 2026-06-05
 
 ## BRI-170 Marketplace Mint Session Boundary
 - Marketplace mint continues to use the existing SIWS wallet session; account-only/federated-only authority is not sufficient for purchase prepare or submit.
@@ -8,6 +8,8 @@ Last Updated: 2026-06-02
 - The buyer wallet must sign the prepared mint/plugin transaction, including the owner-managed `FreezeDelegate` lifecycle for each expected asset.
 - Post-submit asset verification stores purchase-attempt evidence, but it does not create a new session credential or alter cookie semantics.
 - The blocked admin mint prepare route does not grant any session capability; authenticated admins receive a `410 Gone` response instead of a mint transaction.
+- Stake / Unstake `BLOCKHASH_EXPIRED` handling is a recoverable transaction-lifetime state, not a session state.
+- Retrying after `BLOCKHASH_EXPIRED` requires the same active SIWS wallet session and a fresh wallet signature; no stale signature, browser token, or cached transaction becomes valid authority.
 
 ## BRI-165 Marketplace Media Session Boundary
 - The marketplace media handoff reuses the existing `/admin/assets/new` `draftId` and browser-local `uploadRefs` to identify which finalized uploads should become marketplace gallery/property media.

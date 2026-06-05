@@ -50,7 +50,9 @@ type PreparedStakePayload = {
     transactionBase64: string;
   };
   error?: {
+    code?: string;
     message?: string;
+    recoverable?: boolean;
   };
 };
 
@@ -61,7 +63,9 @@ type SubmittedStakePayload = {
     txSignature: string;
   };
   error?: {
+    code?: string;
     message?: string;
+    recoverable?: boolean;
   };
 };
 
@@ -70,6 +74,18 @@ type LocalAssetState = {
   errorMessage?: string | null;
   expectedResolvedState?: RemoteStakeState | null;
 };
+
+class StakeActionClientError extends Error {
+  readonly code: string | null;
+  readonly recoverable: boolean;
+
+  constructor(message: string, input?: { code?: string; recoverable?: boolean }) {
+    super(message);
+    this.name = "StakeActionClientError";
+    this.code = input?.code ?? null;
+    this.recoverable = input?.recoverable ?? false;
+  }
+}
 
 const STAKE_SYNC_POLL_INTERVAL_MS = 4_000;
 const STAKE_SYNC_POLL_TIMEOUT_MS = 120_000;
@@ -97,6 +113,16 @@ function toBase64(bytes: Uint8Array): string {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   return (await response.json().catch(() => null)) as T;
+}
+
+function createStakeActionClientError(
+  payload: PreparedStakePayload | SubmittedStakePayload,
+  fallbackMessage: string
+): StakeActionClientError {
+  return new StakeActionClientError(payload.error?.message ?? fallbackMessage, {
+    code: payload.error?.code,
+    recoverable: payload.error?.recoverable
+  });
 }
 
 async function fetchStakeAssets(): Promise<StakeAssetResponse[]> {
@@ -279,6 +305,10 @@ function isWalletUserRejectedError(error: unknown): boolean {
   return message.includes("user rejected") || message.includes("rejected the request");
 }
 
+function isRecoverableBlockhashError(error: unknown): boolean {
+  return error instanceof StakeActionClientError && error.code === "BLOCKHASH_EXPIRED" && error.recoverable;
+}
+
 function StakeInlineSpinner(props: { reduceMotion: boolean }): ReactElement {
   return (
     <span
@@ -420,6 +450,7 @@ export function StakeModule(): ReactElement {
   const [submittingAssetId, setSubmittingAssetId] = useState<string | null>(null);
   const [submittingAction, setSubmittingAction] = useState<"Stake" | "Unstake" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [actionErrorNotice, setActionErrorNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -556,6 +587,8 @@ export function StakeModule(): ReactElement {
     const expectedResolvedState: RemoteStakeState = action === "Stake" ? "ready_to_unstake" : "ready_to_stake";
     setSubmittingAssetId(asset.assetAddress);
     setSubmittingAction(action);
+    setActionErrorNotice(null);
+    setNotice(null);
     setAssetStateById((current) => ({
       ...current,
       [asset.assetAddress]: {
@@ -577,7 +610,7 @@ export function StakeModule(): ReactElement {
       const prepared = await parseResponse<PreparedStakePayload>(prepareResponse);
 
       if (!prepareResponse.ok || !prepared.data) {
-        throw new Error(prepared.error?.message ?? "Could not prepare stake action.");
+        throw createStakeActionClientError(prepared, "Could not prepare stake action.");
       }
 
       const unsignedTransaction = deserializeLegacyVersionedTransaction(fromBase64(prepared.data.transactionBase64));
@@ -595,7 +628,7 @@ export function StakeModule(): ReactElement {
       const submitted = await parseResponse<SubmittedStakePayload>(submitResponse);
 
       if (!submitResponse.ok || !submitted.data) {
-        throw new Error(submitted.error?.message ?? "Could not submit stake action.");
+        throw createStakeActionClientError(submitted, "Could not submit stake action.");
       }
 
       setAssetStateById((current) => ({
@@ -626,6 +659,23 @@ export function StakeModule(): ReactElement {
         );
       });
     } catch (error) {
+      if (isRecoverableBlockhashError(error)) {
+        setAssetStateById((current) => {
+          const next = { ...current };
+          delete next[asset.assetAddress];
+          return next;
+        });
+        setActionErrorNotice(
+          t({
+            en: "The signing window expired before Solana accepted the transaction. Try again so your wallet can sign a fresh transaction.",
+            es: "La ventana de firma expiro antes de que Solana aceptara la transaccion. Intenta de nuevo para que tu wallet firme una transaccion fresca.",
+            pt: "A janela de assinatura expirou antes de Solana aceitar a transacao. Tente novamente para a wallet assinar uma transacao nova."
+          })
+        );
+        setSelectedAsset(null);
+        return;
+      }
+
       const errorMessage = isWalletUserRejectedError(error)
         ? t({
             en: "Signature request canceled in wallet.",
@@ -703,6 +753,15 @@ export function StakeModule(): ReactElement {
             {t({ en: "Action submitted", es: "Accion enviada", pt: "Acao enviada" })}
           </p>
           <p className="text-sm text-emerald-100">{notice}</p>
+        </Card>
+      ) : null}
+
+      {actionErrorNotice ? (
+        <Card className="space-y-1 border-amber-400/30 bg-amber-500/5">
+          <p className="text-sm font-semibold text-amber-200">
+            {t({ en: "Action needs retry", es: "La accion necesita reintento", pt: "A acao precisa de nova tentativa" })}
+          </p>
+          <p className="text-sm text-amber-100">{actionErrorNotice}</p>
         </Card>
       ) : null}
 

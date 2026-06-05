@@ -44,6 +44,14 @@ function createJsonResponse(payload: unknown): Response {
   } as Response;
 }
 
+function createJsonErrorResponse(payload: unknown): Response {
+  return {
+    ok: false,
+    status: 409,
+    json: async () => payload
+  } as Response;
+}
+
 function renderModule(): RenderHandle {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -270,6 +278,94 @@ describe("components/dashboard/stake-module", () => {
     expect(container.textContent).toContain("Ready to unstake");
     expect(container.textContent).toContain("Unstake");
     expect(container.textContent).not.toContain("Syncing profile...");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("keeps unstake available when the signed transaction blockhash expires", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+
+      if (url.includes("/api/protected/stake/assets")) {
+        return createJsonResponse({
+          ok: true,
+          data: {
+            walletPublicKey: "Wallet11111111111111111111111111111111111",
+            items: [
+              {
+                assetAddress: "Asset111",
+                propertyId: "property-1",
+                propertyTitle: "Torre Magnolia Medellin",
+                collectionAddress: "Collection111",
+                candyMachineAddress: "Candy111",
+                displayName: "Fraction #1",
+                imageUrl: null,
+                visibleState: "ready_to_unstake",
+                action: "Unstake",
+                isFrozen: true,
+                syncPending: false
+              }
+            ]
+          }
+        });
+      }
+
+      if (url.includes("/api/protected/stake/prepare")) {
+        return createJsonResponse({
+          ok: true,
+          data: {
+            attemptId: "attempt-1",
+            idempotencyKey: "idempotency-1",
+            transactionBase64: "AA=="
+          }
+        });
+      }
+
+      if (url.includes("/api/protected/stake/submit")) {
+        return createJsonErrorResponse({
+          error: {
+            code: "BLOCKHASH_EXPIRED",
+            message: "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature.",
+            recoverable: true
+          }
+        });
+      }
+
+      return createJsonResponse({ ok: true, data: {} });
+    }));
+
+    const { container, root } = renderModule();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    act(() => {
+      clickButton(container, "Unstake");
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      clickButton(container, "Confirm Unstake");
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain("Action needs retry");
+    expect(container.textContent).toContain("signing window expired");
+    expect(container.textContent).toContain("Ready to unstake");
+    expect(container.textContent).toContain("Unstake");
+    expect(container.textContent).not.toContain("No action available");
 
     act(() => {
       root.unmount();

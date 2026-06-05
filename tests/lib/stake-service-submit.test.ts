@@ -137,4 +137,28 @@ describe("submitStakeAction", () => {
       status: "submitted"
     });
   });
+
+  it("maps expired blockhash submit failures to a recoverable stake error", async () => {
+    compatMocks.sendLegacyVersionedTransaction.mockRejectedValueOnce(
+      new Error("Simulation failed. Message: Transaction simulation failed: Blockhash not found. Logs: []")
+    );
+
+    await expect(submitStakeAction({
+      walletPublicKey: "Wallet11111111111111111111111111111111111",
+      attemptId: "attempt-1",
+      idempotencyKey: "idem-1",
+      signedTransactionBase64: "AQ=="
+    })).rejects.toMatchObject({
+      code: "BLOCKHASH_EXPIRED",
+      status: 409,
+      recoverable: true,
+      message: "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature."
+    });
+
+    expect(repositoryMocks.markStakeActionAttemptFailed).toHaveBeenCalledWith({
+      attemptId: "attempt-1",
+      errorMessage: "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature."
+    });
+    expect(repositoryMocks.markStakeActionAttemptSubmitted).not.toHaveBeenCalled();
+  });
 });

@@ -75,7 +75,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           error: {
             code: error.code,
-            message: error.message
+            message: error.message,
+            recoverable: error.recoverable
           }
         },
         { status: error.status }
@@ -93,4 +94,3 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 }
-

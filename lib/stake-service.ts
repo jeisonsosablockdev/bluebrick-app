@@ -73,12 +73,14 @@ export type SubmittedStakeAction = {
 export class StakeFlowError extends Error {
   readonly code: string;
   readonly status: number;
+  readonly recoverable: boolean;
 
-  constructor(code: string, message: string, status: number) {
+  constructor(code: string, message: string, status: number, options?: { recoverable?: boolean }) {
     super(message);
     this.name = "StakeFlowError";
     this.code = code;
     this.status = status;
+    this.recoverable = options?.recoverable ?? false;
   }
 }
 
@@ -276,6 +278,15 @@ function reconcileSubmittedStakeActionInBackground(txSignature: string): void {
       errorMessage: error instanceof Error ? error.message : "Unknown reconciliation error"
     }));
   });
+}
+
+function isBlockhashExpiredRpcError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes("blockhash not found") || message.includes("block height exceeded");
 }
 
 function shouldRetryStakeAttemptReconciliation(attempt: StakeActionAttemptRecord): boolean {
@@ -637,11 +648,20 @@ export async function submitStakeAction(input: {
       status: "submitted"
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not submit stake transaction.";
+    const blockhashExpired = isBlockhashExpiredRpcError(error);
+    const message = blockhashExpired
+      ? "Transaction blockhash expired before submission. Please try again and approve a fresh wallet signature."
+      : error instanceof Error
+        ? error.message
+        : "Could not submit stake transaction.";
     await markStakeActionAttemptFailed({
       attemptId,
       errorMessage: message
     });
+    if (blockhashExpired) {
+      throw new StakeFlowError("BLOCKHASH_EXPIRED", message, 409, { recoverable: true });
+    }
+
     throw new StakeFlowError("TRANSACTION_FAILED", message, 500);
   }
 }
