@@ -2,6 +2,17 @@
 
 Last Updated: 2026-06-05
 
+## BRI-6 Distribution Preparation Admin Boundary
+- New admin distribution preparation routes:
+  - `GET /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs/[runId]/finalize`
+- These routes do not introduce a new auth cookie, browser token, role, or wallet authority source.
+- Authority is resolved server-side through `getRequestRole`; the caller must be authenticated as `admin`.
+- Request payloads define distribution scope and treasury amount, but they are not trusted as identity or eligibility authority.
+- Eligibility is derived server-side from validated `user_profile_stake_events` plus persisted profile compliance status.
+- Finalization records admin actor evidence and does not execute an on-chain payment or claim.
+
 ## BRI-170 Marketplace Owner-Freeze Mint Boundary
 - Marketplace mint now requires the existing authenticated SIWS wallet session before `prepare` and `submit`; no new auth cookie, token, route role, or browser authority source was introduced.
 - `/api/purchase/prepare` still derives buyer authority from the server-resolved wallet session and prepares a transaction that the same buyer wallet must sign.

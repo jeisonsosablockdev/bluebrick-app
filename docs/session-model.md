@@ -2,6 +2,17 @@
 
 Last Updated: 2026-06-05
 
+## BRI-6 Distribution Preparation Session Boundary
+- Distribution preparation reuses the existing admin SIWS session model.
+- New admin routes require `getRequestRole(request)` to resolve an authenticated `admin` wallet:
+  - `GET /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs/[runId]/finalize`
+- No new session cookie, nonce, browser token, refresh path, or account-only authority is introduced.
+- The admin session identifies the actor who creates/finalizes a preparation run; it does not determine wallet eligibility for payouts.
+- Wallet eligibility remains data-derived from validated stake history and `user_profiles.compliance_status`.
+- Prepared distribution rows are server-owned records and never become a browser session capability.
+
 ## BRI-170 Marketplace Mint Session Boundary
 - Marketplace mint continues to use the existing SIWS wallet session; account-only/federated-only authority is not sufficient for purchase prepare or submit.
 - The browser wallet adapter provides signer availability only. Server authority remains the `siws_session` wallet resolved by `getRequestRole`/purchase routes.
