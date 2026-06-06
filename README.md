@@ -110,9 +110,10 @@ Expected behavior:
 Important for this project (Devnet-only policy):
 
 - Helius MCP defaults to `mainnet-beta`.
-- Before Helius MCP usage, set:
-  - `export HELIUS_NETWORK=devnet`
-  - `export HELIUS_API_KEY=YOUR_API_KEY`
+- Project MCP config loads `.env.local` before starting `helius-mcp@latest`, so local usage should inherit:
+  - `HELIUS_NETWORK=devnet`
+  - `HELIUS_API_KEY=YOUR_API_KEY`
+- If you launch Helius MCP outside this repo config, export those variables manually first.
 
 ## Nix Dev Environment
 

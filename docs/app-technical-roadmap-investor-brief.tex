@@ -1,0 +1,3326 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  10pt,
+  letterpaper,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=0.78in,top=0.82in,bottom=0.9in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{fontspec}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{pagecolor}
+\usepackage{graphicx}
+\usepackage{needspace}
+
+\definecolor{BridsInk}{HTML}{0E1726}
+\definecolor{BridsSlate}{HTML}{334155}
+\definecolor{BridsMuted}{HTML}{64748B}
+\definecolor{BridsLine}{HTML}{D6DEE8}
+\definecolor{BridsSoft}{HTML}{F5F8FB}
+\definecolor{BridsBlue}{HTML}{00A8F5}
+\definecolor{BridsViolet}{HTML}{8B5CF6}
+\definecolor{BridsAccent}{HTML}{14B8A6}
+
+\IfFontExistsTF{Avenir Next}{\setmainfont{Avenir Next}}{\IfFontExistsTF{Helvetica Neue}{\setmainfont{Helvetica Neue}}{}}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}[Scale=0.82]}{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\setlength{\headheight}{15pt}
+\setlength{\emergencystretch}{4em}
+\renewcommand{\arraystretch}{1.22}
+\setlength{\tabcolsep}{5.5pt}
+
+\newcommand{\bridsrule}{\noindent{\color{BridsBlue}\rule{0.18\linewidth}{1.8pt}}{\color{BridsViolet}\rule{0.82\linewidth}{1.8pt}}}
+\newcommand{\bridskicker}[1]{{\small\bfseries\color{BridsBlue}\MakeUppercase{#1}}}
+
+\titleformat{\section}
+  {\Needspace{8\baselineskip}\Large\bfseries\color{BridsInk}}
+  {\thesection}{0.7em}{}
+  [\vspace{-2pt}{\color{BridsLine}\titlerule}]
+\titleformat{\subsection}
+  {\Needspace{5\baselineskip}\large\bfseries\color{BridsInk}}
+  {\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}
+  {\Needspace{4\baselineskip}\normalsize\bfseries\color{BridsSlate}}
+  {\thesubsubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{18pt plus 2pt minus 1pt}{8pt}
+\titlespacing*{\subsection}{0pt}{13pt plus 2pt minus 1pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{10pt plus 1pt minus 1pt}{2pt}
+
+\setlist[itemize]{leftmargin=1.25em,itemsep=2pt,topsep=3pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.45em,itemsep=2pt,topsep=3pt,parsep=0pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{BridsMuted}BRIDS Investor Brief}
+\rhead{\small\color{BridsMuted}Technical Roadmap}
+\cfoot{\small\color{BridsMuted}\thepage\ of \pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{BridsLine}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+\AtBeginEnvironment{longtable}{\small}
+
+\let\oldtexttt\texttt
+\renewcommand{\texttt}[1]{\oldtexttt{\small #1}}
+
+\renewcommand{\maketitle}{}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Roadmap Tecnico e Investor Brief de BRIDS},
+  pdfauthor={BRIDS},
+  colorlinks=true,
+  linkcolor={BridsBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={BridsBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Roadmap Tecnico e Investor Brief de BRIDS}
+\author{BRIDS}
+\date{2026-06-05}
+
+\begin{document}
+\maketitle
+
+\begin{titlepage}
+\thispagestyle{empty}
+\pagecolor{BridsInk}
+\color{white}
+\vspace*{0.35in}
+
+{\fontsize{24}{28}\selectfont\bfseries BRIDS\par}
+{\color{BridsBlue}\rule{0.42in}{2pt}}{\color{BridsViolet}\rule{0.42in}{2pt}}
+
+\vspace{0.65in}
+{\bridskicker{Investor / Partner Brief}\par}
+\vspace{0.16in}
+{\fontsize{30}{34}\selectfont\bfseries Roadmap Tecnico\\e Investor Brief\par}
+\vspace{0.08in}
+{\fontsize{16}{19}\selectfont BRIDS App Technical Roadmap and Investor Brief\par}
+
+\vspace{0.18in}
+{\color{BridsBlue}\rule{0.22\linewidth}{2.2pt}}{\color{BridsViolet}\rule{0.46\linewidth}{2.2pt}}
+
+\vfill
+\begin{minipage}{0.78\linewidth}
+{\fontsize{12}{16}\selectfont
+BRIDS is a Solana-first real estate investment marketplace with active product surfaces across marketplace discovery, wallet/federated authentication, protected investor dashboards, admin operations, checkout, purchase minting, compliance, staking, notifications, and observability.
+\par}
+\end{minipage}
+
+\vfill
+\begin{tabular}{@{}p{1.65in}p{4.4in}@{}}
+\textcolor{BridsMuted}{Snapshot date} & 2026-06-05 \\
+\textcolor{BridsMuted}{Audience} & Investors, strategic partners, founders, product, engineering, and operations \\
+\textcolor{BridsMuted}{Document type} & Technical and product-readiness brief. Not legal, tax, regulatory, investment, or compliance advice. \\
+\end{tabular}
+
+\vspace*{0.3in}
+\end{titlepage}
+\nopagecolor
+\color{BridsInk}
+\clearpage
+
+{
+\hypersetup{linkcolor=BridsInk}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{Español}\label{espauxf1ol}
+
+\subsection{Proposito}\label{proposito}
+
+Este documento resume que tiene hoy la app de BRIDS, que esta
+parcialmente construido y que deberia construirse hacia adelante. Esta
+escrito para dos audiencias:
+
+\begin{itemize}
+\tightlist
+\item
+  Inversionistas y aliados estrategicos que necesitan entender madurez
+  tecnica, readiness de producto y ruta de ejecucion.
+\item
+  Equipos internos de producto, ingenieria y operaciones que necesitan
+  un roadmap compartido para las siguientes fases.
+\end{itemize}
+
+Este documento no es una opinion legal, tributaria, regulatoria ni de
+inversion. Es un brief tecnico y de readiness de producto basado en el
+estado del repositorio y la documentacion existente.
+
+\subsection{Resumen Ejecutivo}\label{resumen-ejecutivo}
+
+BRIDS es actualmente una aplicacion fullstack de marketplace
+inmobiliario Solana-first construida con Next.js. La superficie activa
+incluye sitio publico, marketplace, paginas de detalle de propiedades,
+autenticacion con wallet y federada, dashboards protegidos para
+inversionistas, operaciones administrativas, gestion de
+colecciones/contenido, checkout, purchase minting, compliance,
+referidos, staking/unstaking, notificaciones web push, infraestructura
+SEO/AI-readable y automatizacion de gobernanza.
+
+\subsection{Tesis de Producto}\label{tesis-de-producto}
+
+BRIDS esta construyendo una plataforma de inversion inmobiliaria
+regulada y wallet-aware, donde el inventario tokenizado puede ser
+descubierto, comprado, administrado y operado despues mediante un
+lifecycle transparente on-chain/off-chain.
+
+El codigo actual soporta cuatro narrativas principales para
+inversionistas:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Descubrir oportunidades inmobiliarias tokenizadas mediante marketplace
+  y detalle de propiedad.
+\item
+  Autenticarse con SIWS wallet-first o con una ruta federada de menor
+  friccion que luego puede vincular una wallet.
+\item
+  Ejecutar compras crypto ya configuradas para recepcion en USDC, y
+  sumar compra con tarjeta credito/debito mediante Sphere ramp bajo un
+  modelo controlado de orden.
+\item
+  Operar holdings desde dashboards protegidos, compliance gates,
+  referidos, staking/unstaking, rentas/portfolio y notificaciones.
+\end{enumerate}
+
+La direccion tecnica es convertir esta base en una plataforma
+production-ready endureciendo identidad, compliance, pagos, autoridad
+on-chain, observabilidad y performance del marketplace.
+
+\subsection{Arquitectura Actual}\label{arquitectura-actual}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Capa
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Implementacion actual
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Frontend & Next.js App Router, React 19, Tailwind, Motion 12,
+Mapbox/React Map GL, cobertura responsive E2E. \\
+Backend & Route handlers de Next.js, servicios server-only en
+\texttt{lib/}, repositorios PostgreSQL, rutas idempotentes de
+compra/checkout. \\
+Blockchain & Politica devnet Solana, Metaplex Core, Core Candy Machine,
+Umi, helpers de compatibilidad Solana Kit, owner-freeze/stake flows. \\
+Auth & Modelo hibrido WorkOS + SIWS, wallet linking, account repository,
+derivacion de rol admin, rutas protegidas. \\
+Datos & Migraciones SQL para marketplace entries, checkout, compliance,
+referidos, notificaciones, staking y sesiones de upload/edit. \\
+Admin Ops & Admin shell con assets, collections, compliance, dashboards,
+notifications, treasury, sales, monitoring y minting. \\
+Calidad & \texttt{npm\ run\ validate}, Vitest, Playwright, Synpress,
+docs governance, checks de routes/content/schema/SEO/operability. \\
+\end{longtable}
+}
+
+\subsection{Que Esta Hecho}\label{que-esta-hecho}
+
+\subsubsection{Sitio Publico y
+Marketplace}\label{sitio-publico-y-marketplace}
+
+Estado: implementado, con follow-ups de performance y bugs de mapa.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Landing y paginas institucionales publicas.
+\item
+  Marketplace con rutas de lista, mapa y detalle.
+\item
+  Read model de marketplace respaldado por registros persistidos en DB
+  con fallback de snapshot.
+\item
+  Mapa de marketplace con Mapbox/React Map GL y fallback list-only si la
+  configuracion del mapa no esta disponible.
+\item
+  Detalle de propiedad con media, resumen de inversion, economia,
+  fees/return, documentos/blockchain, gobernanza, informacion de
+  propiedad y preview de Google Maps.
+\item
+  SEO, structured data, feeds, endpoints AI-readable, \texttt{llms.txt},
+  \texttt{ai.txt}, rutas de knowledge y serializers de contenido.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Falta implementar la animacion inicial de entrada con Motion 12 para
+  reforzar la primera impresion de la app, cuidando performance,
+  accesibilidad y preferencias de movimiento reducido.
+\item
+  La performance del mapa sigue siendo una frontera conocida,
+  especialmente JavaScript/LCP/TBT en mobile.
+\item
+  Los bugs conocidos del mapa deben corregirse antes de investor demo y
+  private beta readiness.
+\item
+  Siguen pendientes trabajos de mapa en cola P2: lazy Mapbox boundary,
+  Web Vitals recheck, validacion de coordenadas y degraded-state polish.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/marketplace/page.tsx}
+\item
+  \texttt{app/marketplace/{[}id{]}/page.tsx}
+\item
+  \texttt{components/marketplace/*}
+\item
+  \texttt{lib/property-marketplace-server.ts}
+\item
+  \texttt{docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md}
+\end{itemize}
+
+\subsubsection{Autenticacion y Modelo de
+Cuenta}\label{autenticacion-y-modelo-de-cuenta}
+
+Estado: foundation implementada, requiere hardening de storage
+productivo.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Autenticacion wallet-first con SIWS.
+\item
+  Foundation de login federado con WorkOS.
+\item
+  Flujo explicito de wallet linking.
+\item
+  Account repository server-side.
+\item
+  Modelo de request authority que diferencia acceso account-only de
+  autoridad financiera/admin wallet-authenticated.
+\item
+  Proteccion de rutas admin mediante roles derivados de wallet.
+\item
+  Captura de referral intent durante auth.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  El almacenamiento de sesion documentado es process-local/in-memory y
+  debe moverse a un backend persistente compartido antes de escalar
+  horizontalmente en produccion.
+\item
+  Las politicas de consolidacion/recuperacion de cuentas siguen siendo
+  flujos futuros controlados; no hay merges automaticos silenciosos.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/auth/*}
+\item
+  \texttt{lib/auth.ts}
+\item
+  \texttt{lib/auth-store.ts}
+\item
+  \texttt{lib/auth-session.ts}
+\item
+  \texttt{lib/accounts/repository.ts}
+\item
+  \texttt{docs/auth-flow.md}
+\item
+  \texttt{docs/session-model.md}
+\item
+  \texttt{docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md}
+\end{itemize}
+
+\subsubsection{Checkout, Ordenes y
+Pagos}\label{checkout-ordenes-y-pagos}
+
+Estado: parcialmente implementado.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  APIs de carrito y orden.
+\item
+  Modelo de datos de orden y payment attempt.
+\item
+  Purchase flow crypto ya implementado y configurado para que BRIDS
+  reciba USDC.
+\item
+  Integracion con reserva/consumo de onboarding reward.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Falta implementar de punta a punta la funcion de compra con tarjeta
+  credito/debito mediante Sphere ramp.
+\item
+  Despues de implementar Sphere ramp, se debe integrar la experiencia
+  para que compra con tarjeta y compra crypto se comporten como un flujo
+  coherente.
+\item
+  El contrato final de Sphere ramp, webhook model, settlement mapping y
+  soporte operativo para compras con tarjeta siguen pendientes.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/checkout/page.tsx}
+\item
+  \texttt{app/api/checkout/*}
+\item
+  \texttt{lib/checkout-service.ts}
+\item
+  \texttt{lib/checkout-repository.ts}
+\item
+  \texttt{db/migrations/018\_checkout\_dual\_payment.sql}
+\end{itemize}
+
+\subsubsection{Purchase Minting}\label{purchase-minting}
+
+Estado: purchase crypto implementado y configurado para recepcion USDC,
+con hardening productivo pendiente.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  APIs de quote, challenge, prepare y submit.
+\item
+  Emision y consumo de anti-bot challenge.
+\item
+  Rate limiting e idempotency storage.
+\item
+  Validacion de Candy Machine guard.
+\item
+  Soporte de third-party signer.
+\item
+  Modelo de moneda de pago SOL/USDC.
+\item
+  Sistema configurado para que BRIDS reciba USDC.
+\item
+  Confirmacion de transaccion enviada.
+\item
+  Verificacion de asset post-submit y soporte de reconciliacion.
+\item
+  Guard de compliance restriction en rutas de purchase
+  challenge/prepare/submit.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Jupiter queda como extension propuesta para ampliar crypto input, pero
+  el flujo base crypto y la recepcion USDC ya existen.
+\item
+  El lanzamiento productivo requiere politica final de treasury/payment
+  destination, plan de migracion devnet-to-production y evidencia live
+  de pagos/assets.
+\item
+  La gobernanza del repo espera aceptacion blockchain/NFT en devnet
+  salvo que una politica productiva sea aprobada explicitamente.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/purchase/*}
+\item
+  \texttt{lib/purchase-service.ts}
+\item
+  \texttt{lib/purchase-anti-bot.ts}
+\item
+  \texttt{lib/purchase-attempts-repository.ts}
+\item
+  \texttt{lib/purchase-webhook-reconciliation.ts}
+\item
+  \texttt{docs/purchase-tracing.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\end{itemize}
+
+\subsubsection{Admin Assets y
+Collections}\label{admin-assets-y-collections}
+
+Estado: foundation implementada con mejoras continuas de workflow.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Formulario admin de creacion de asset.
+\item
+  Upload workflow con signed URLs, client upload, finalize, edit
+  sessions, orphan reconciliation, CDN purge y soporte de PDF brief.
+\item
+  Import jobs e import preview.
+\item
+  Lista/detalle de admin collections, superficies de edicion, documents,
+  gallery, property information, location maps y health workspace.
+\item
+  Creacion de marketplace entry desde flujo admin.
+\item
+  Collection health read models y soporte para manual review.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Algunas pantallas admin requieren mejoras continuas de usabilidad,
+  consistencia operativa y preparacion para uso diario por el equipo
+  interno.
+\item
+  Antes de un lanzamiento externo se deben escribir playbooks no
+  tecnicos y procedimientos productivos de operacion.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/assets/new/page.tsx}
+\item
+  \texttt{app/admin/collections/*}
+\item
+  \texttt{app/api/admin/assets/*}
+\item
+  \texttt{app/api/admin/collections/*}
+\item
+  \texttt{components/admin/*}
+\item
+  \texttt{lib/admin/*}
+\item
+  \texttt{db/migrations/002\_asset\_upload\_contracts.sql}
+\item
+  \texttt{db/migrations/003\_asset\_import\_jobs.sql}
+\item
+  \texttt{db/migrations/020\_asset\_upload\_edit\_sessions.sql}
+\end{itemize}
+
+\subsubsection{Admin Dashboard y
+Operaciones}\label{admin-dashboard-y-operaciones}
+
+Estado: superficie admin implementada, requiere modulos operativos
+criticos.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Admin shell con navegacion hacia dashboard, assets, collections,
+  compliance, notifications, treasury, sales, monitoring y minting.
+\item
+  Paneles base para resumen ejecutivo, ventas, treasury, distributions,
+  notifications y monitoring.
+\item
+  Rutas admin protegidas por rol server-side.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Falta implementar el modulo de tesoreria usando Squads para que el
+  equipo pueda ver balances, movimientos, aprobaciones y evidencia
+  operacional desde el admin.
+\item
+  Falta implementar el modulo de distribucion que integra Squads con el
+  modulo freeze/unfreeze, para conectar elegibilidad, tesoreria,
+  distribuciones y estado de claims.
+\item
+  Falta mejorar el modulo de Resumen del dashboard admin para mostrar
+  KPIs accionables: funnel de inversionistas, conversion de KYC, ventas,
+  fondos recibidos, estado de tesoreria, distribuciones pendientes,
+  claims, compliance queue, salud de colecciones y alertas operativas.
+\item
+  El modulo de notificaciones debe integrarse con CRM para campanas,
+  seguimiento de posibles clientes, segmentacion, estado de contacto y
+  trazabilidad de outreach.
+\item
+  El modulo de cumplimiento debe integrar KYC, Stripe Identity,
+  persistencia de datos de usuarios en la base propia y permisos RBAC de
+  compliance.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/dashboard/page.tsx}
+\item
+  \texttt{app/admin/treasury/page.tsx}
+\item
+  \texttt{app/admin/distributions/page.tsx}
+\item
+  \texttt{app/admin/notifications/page.tsx}
+\item
+  \texttt{app/admin/monitoring/page.tsx}
+\item
+  \texttt{components/admin/executive-dashboard.tsx}
+\item
+  \texttt{components/admin/treasury-console.tsx}
+\item
+  \texttt{components/admin/distributions-console.tsx}
+\item
+  \texttt{components/admin/admin-notification-campaign-console.tsx}
+\end{itemize}
+
+\subsubsection{Metaplex Core, Candy Machine y NFT
+Operations}\label{metaplex-core-candy-machine-y-nft-operations}
+
+Estado: implementado en devnet con backlog de authority lifecycle
+hardening.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Minting de colecciones y assets Metaplex Core.
+\item
+  Flujos Core Candy Machine deploy/submit/status/metadata/mint
+  prepare/snapshot finalize.
+\item
+  Payload Economic AppData para campos de revenue share/yield.
+\item
+  Backend de authority lifecycle para \texttt{transfer\_delegate} y
+  \texttt{appdata\_authority}.
+\item
+  Authority registry y audit events.
+\item
+  Evidencia devnet para operaciones de collection, asset, AppData y
+  authority.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Authority lifecycle tiene endpoints backend, pero falta UI
+  administrativa operable.
+\item
+  Endpoints de lectura de registry/audit estan propuestos pero no
+  implementados.
+\item
+  La validacion de evidencia Squads hoy valida estructura/evidencia
+  declarativa, no prueba completa on-chain de proposal execution.
+\item
+  Falta backfill de colecciones legacy al authority registry.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/admin/core-candy-machine/*}
+\item
+  \texttt{app/api/admin/metaplex-core/*}
+\item
+  \texttt{lib/core-candy-machine-admin.ts}
+\item
+  \texttt{lib/core-authority-lifecycle.ts}
+\item
+  \texttt{lib/metaplex-core-admin.ts}
+\item
+  \texttt{docs/nft-spec.md}
+\item
+  \texttt{docs/authority-model.md}
+\item
+  \texttt{docs/state-machine.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\item
+  \texttt{docs/rotation-spec.md}
+\end{itemize}
+
+\subsubsection{Compliance, KYC, AML y
+Suspension}\label{compliance-kyc-aml-y-suspension}
+
+Estado: modelo operativo implementado, requiere hardening de
+provider/live policy.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Proyeccion de compliance status: pending KYC, pending AML, pending
+  review, fully verified, restricted AML, suspended.
+\item
+  Queue admin de compliance cases.
+\item
+  KYC decision, AML decision, suspend/unsuspend y notes.
+\item
+  Modelo de audit event para mutaciones admin de compliance.
+\item
+  Enriquecimiento AML mediante servicio orientado a Helius.
+\item
+  Guardrails financieros que bloquean usuarios restricted/suspended en
+  rutas de compra.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  La integracion live de KYC/AML provider y la politica operacional de
+  compliance deben finalizarse antes de produccion.
+\item
+  Falta un modulo que recupere datos desde Stripe Identity y los guarde
+  de manera persistente en la base de datos propia de BRIDS, bajo una
+  politica aprobada de minimizacion, seguridad y retencion de datos.
+\item
+  Falta implementar una vista admin para que el equipo autorizado pueda
+  consultar los datos KYC de clientes y su estado de revision.
+\item
+  El RBAC debe extenderse con un rol especializado de compliance
+  reviewer/compliance agent, separado del rol admin general, para operar
+  revisiones KYC/AML con permisos acotados.
+\item
+  SLAs de manual review, ownership de escalamiento y data retention
+  deben documentarse para operaciones e inversionistas.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/compliance/page.tsx}
+\item
+  \texttt{app/api/admin/compliance/*}
+\item
+  \texttt{app/api/internal/compliance/aml/screen/route.ts}
+\item
+  \texttt{lib/compliance/*}
+\item
+  \texttt{db/migrations/012\_profile\_kyc\_compliance.sql}
+\item
+  \texttt{db/migrations/013\_aml\_screening\_enrichment.sql}
+\item
+  \texttt{db/migrations/014\_compliance\_notes.sql}
+\item
+  \texttt{docs/architecture.md}
+\end{itemize}
+
+\subsubsection{Dashboard Protegido para
+Inversionistas}\label{dashboard-protegido-para-inversionistas}
+
+Estado: superficie implementada, algunos modulos requieren integracion
+con datos financieros reales.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Protected layout y dashboard.
+\item
+  Modulos de portfolio, rentas, referrals, stake, profile, history y
+  account support.
+\item
+  Profile capture, KYC module, onboarding reward reminders y guided
+  tour.
+\item
+  Referral landing y dashboard services.
+\item
+  Ruta de web push enrollment ligada a wallet.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  El resumen del user dashboard debe alimentarse con datos reales de los
+  modulos de portfolio, compras, rentas/claims, compliance, staking y
+  notificaciones.
+\item
+  Mi Portafolio debe alimentarse con datos reales desde la base de datos
+  y reconciliacion on-chain, no con snapshots o placeholders.
+\item
+  Rentas / Claim debe implementarse para que el usuario pueda cobrar
+  desde alli, solicitar transferencias, ver estados de
+  claim/distribucion y dar seguimiento con datos persistentes desde la
+  base de datos propia.
+\item
+  Historial debe mostrar operaciones reales del usuario: compras,
+  staking/unstaking, claims, transferencias, compliance events
+  relevantes y transacciones de wallet reconciliadas, alimentandose de
+  los demas modulos y de datos persistentes en la base de datos.
+\item
+  Statements, documentos tributarios, historial de distribucion y
+  reportes descargables siguen como trabajo futuro salvo que vivan fuera
+  de este repo.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/protected/*}
+\item
+  \texttt{components/dashboard/*}
+\item
+  \texttt{lib/referrals/*}
+\item
+  \texttt{lib/onboarding-reward-service.ts}
+\item
+  \texttt{db/migrations/023\_referral\_wallet\_first\_schema.sql}
+\item
+  \texttt{db/migrations/024\_onboarding\_profile\_completion\_rewards.sql}
+\end{itemize}
+
+\subsubsection{Staking y Unstaking}\label{staking-y-unstaking}
+
+Estado: flujo devnet-oriented owner-freeze implementado.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Pagina protegida de stake.
+\item
+  Descubrimiento de inventario via DAS para assets propios.
+\item
+  Flujo stake/unstake prepare y submit.
+\item
+  Construccion de transacciones freeze/thaw.
+\item
+  Persistencia de attempts y reconciliacion.
+\item
+  Cobertura E2E responsive para superficie protected stake.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Falta implementar el servicio de reconciliacion de eventos
+  stake/unstake y preparacion de distribuciones: validacion por RPC
+  canonico, Helius como observador/indexador, proyeccion interna de
+  eventos validados, lectura de KYC/perfil para elegibilidad y lectura
+  de tesoreria/Squads o snapshot financiero del periodo.
+\item
+  Falta implementar el pipeline por periodo para calcular tiempo
+  elegible, versionar politica de distribucion, manejar estados
+  \texttt{sync\_pending}/\texttt{reconcile\_pending}, generar archivo de
+  salida para claim o ejecucion posterior, e imponer
+  idempotencia/reintentos/reconciliacion obligatoria.
+\item
+  Falta implementar el microservicio de distribucion y claim lifecycle:
+  estados \texttt{pending}, \texttt{claimed}, \texttt{failed},
+  \texttt{disputed}, API para UI/backoffice, reconciliacion de claims
+  con evidencia de transaccion y reprocesamiento/recalculo por periodo.
+\item
+  Falta implementar la arquitectura de trazabilidad/auditoria: snapshots
+  de tesoreria, estados NFT, corridas de distribucion, items de
+  distribucion y audit logs consultables para UI y auditoria externa.
+\item
+  La semantica productiva debe definirse claramente: que significa
+  staking financieramente, cuando acumula rewards, como se reclama, y
+  como interactua con compliance y transferencia de propiedad.
+\item
+  Copy final para inversionistas, estados de claim/distribucion y
+  encuadre legal/regulatorio deben cerrarse antes del launch.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/protected/stake/page.tsx}
+\item
+  \texttt{app/api/protected/profile/stake/*}
+\item
+  \texttt{components/dashboard/stake-module.tsx}
+\item
+  \texttt{lib/stake-service.ts}
+\item
+  \texttt{db/migrations/031\_stake\_profile\_persistence.sql}
+\item
+  \texttt{docs/STAKE\_AUDIT.md}
+\end{itemize}
+
+\subsubsection{Notificaciones y PWA}\label{notificaciones-y-pwa}
+
+Estado: foundation implementada con rollout gates.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Web push subscriptions.
+\item
+  Transactional delivery jobs.
+\item
+  APIs internas de enqueue/process.
+\item
+  Preview/send de admin notification campaigns.
+\item
+  Notification health checks.
+\item
+  PWA capability UI e installability shell.
+\item
+  Contrato de suscripcion wallet-bound.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  La entrega productiva de push requiere configuracion final VAPID/env,
+  audience policy, rate limits y monitoreo operativo.
+\item
+  Las admin campaigns deben seguir protegidas por preview hash y
+  blocked-reason checks.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/notifications/*}
+\item
+  \texttt{app/api/internal/notifications/*}
+\item
+  \texttt{app/api/admin/notifications/*}
+\item
+  \texttt{components/admin/admin-notification-campaign-console.tsx}
+\item
+  \texttt{lib/notifications/*}
+\item
+  \texttt{db/migrations/027\_web\_push\_subscriptions.sql}
+\item
+  \texttt{db/migrations/028\_web\_push\_delivery\_jobs.sql}
+\item
+  \texttt{db/migrations/029\_admin\_push\_campaigns.sql}
+\end{itemize}
+
+\subsubsection{Observabilidad, Gobernanza y
+Calidad}\label{observabilidad-gobernanza-y-calidad}
+
+Estado: controles internos fuertes implementados.
+
+Capacidades implementadas:
+
+\begin{itemize}
+\tightlist
+\item
+  Health endpoint y rutas admin de monitoring.
+\item
+  Operability logging store y analytics event route.
+\item
+  Tests de security headers.
+\item
+  Validacion de docs governance.
+\item
+  PR policy y required docs checks.
+\item
+  Scripts RFC y Linear planning.
+\item
+  Cobertura Playwright/Synpress para browser y wallet-critical flows.
+\item
+  Gate superior \texttt{npm\ run\ validate}.
+\end{itemize}
+
+Limitaciones actuales:
+
+\begin{itemize}
+\tightlist
+\item
+  Production readiness para inversionistas debe incluir uptime targets,
+  alerting ownership, incident response y evidencia de backup/restore.
+\item
+  La validacion local debe complementarse con smoke checks especificos
+  de deployment para QA/RC/prod.
+\end{itemize}
+
+Evidencia principal:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/health/route.ts}
+\item
+  \texttt{app/api/admin/monitoring/*}
+\item
+  \texttt{lib/observability/*}
+\item
+  \texttt{scripts/ci/*}
+\item
+  \texttt{scripts/rfc-new.js}
+\item
+  \texttt{scripts/linear-plan.js}
+\item
+  \texttt{docs/governance/*}
+\item
+  \texttt{tests/*}
+\item
+  \texttt{e2e/*}
+\end{itemize}
+
+\subsection{Matriz de Madurez}\label{matriz-de-madurez}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dominio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Madurez
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Lectura para inversionistas
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Siguiente paso principal
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Marketplace discovery & Construido & Existe una superficie real de
+producto. & Animacion inicial con Motion, bugs de mapa, performance
+mobile y lazy Mapbox boundary. \\
+Detalle de propiedad & Construido & Los assets pueden presentarse con
+inversion, documentos y gobernanza. & Completar datos finales y copy de
+compliance. \\
+Wallet auth & Construido & Existe un modelo fuerte de autoridad wallet.
+& Persistent production session store. \\
+Federated auth & Foundation construida & Existe ruta de onboarding de
+menor friccion. & Completar operaciones WorkOS productivas y recovery
+flows. \\
+Checkout & Parcial & Existe modelo de orden; falta Sphere ramp para
+tarjeta. & Implementar Sphere ramp completo y unificar tarjeta +
+crypto. \\
+Crypto purchase mint & Construido & Flujo crypto implementado y
+configurado para recibir USDC. & Hardening productivo, treasury policy,
+evidencia final y Jupiter opcional. \\
+Admin asset ops & Construido & El equipo interno puede administrar
+inventario y metadata. & Playbooks operativos y hardening productivo. \\
+Admin dashboard & Parcial & Existe shell admin; faltan modulos
+operativos clave. & Tesoreria Squads, distribuciones freeze/unfreeze,
+notificaciones CRM y KPIs accionables. \\
+NFT/admin minting & Construido en devnet & Existe lifecycle Core asset.
+& Authority UI y endpoints de lectura. \\
+Compliance & Foundation construida & Los compliance gates estan
+codificados en rutas de transaccion. & Persistencia Stripe Identity,
+vista admin KYC y rol RBAC de compliance. \\
+Investor dashboard & Superficie construida & Existe UX de cuenta y
+holdings. & Resumen, portafolio, rentas/claim e historial con datos
+reales. \\
+Staking & Base construida en devnet & Existe asset action path; faltan
+distribuciones y auditoria. & Reconciliacion on-chain, claim state,
+distribuciones y trazabilidad. \\
+Notifications & Foundation construida & Existe infraestructura de
+re-engagement. & Integracion CRM para campanas y seguimiento de
+leads. \\
+Observability/QA & Foundation fuerte & Hay disciplina de ingenieria
+visible. & SLOs productivos, alerting y deployment smoke gates. \\
+\end{longtable}
+}
+
+\subsection{Brechas Tecnicas Clave}\label{brechas-tecnicas-clave}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Persistent session storage
+\end{enumerate}
+
+Mover auth/session state desde memoria local del proceso hacia un store
+productivo compartido. Esto es requerido para deployments
+multi-instancia, restarts y comportamiento de auth predecible.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Checkout y payment hardening
+\end{enumerate}
+
+Implementar de punta a punta las compras con tarjeta credito/debito
+mediante Sphere ramp, definir contrato final de webhook/settlement y
+unificar el flujo de tarjeta con el purchase crypto ya implementado.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Treasury y politica de pago productiva
+\end{enumerate}
+
+Validar USDC settlement productivo, definir payment destinations,
+treasury ownership, configuracion por ambiente y evidencia de auditoria
+antes de mover valor live. Jupiter queda como extension para broader
+crypto input.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Compliance operations
+\end{enumerate}
+
+Implementar persistencia propia de datos recuperados desde Stripe
+Identity, vista admin de datos KYC por cliente, rol RBAC especializado
+para compliance reviewer/compliance agent, manual review workflow, data
+retention, support escalation y comportamiento para usuarios
+restringidos.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Authority lifecycle operations
+\end{enumerate}
+
+Construir UI admin para rotate/revoke/emergency rotate, implementar
+endpoints de registry/audit, backfill de legacy collections y fortalecer
+validacion Squads/on-chain evidence.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Dashboard admin, tesoreria, distribuciones y CRM
+\end{enumerate}
+
+Implementar tesoreria con Squads, distribuciones integradas con
+freeze/unfreeze, notificaciones conectadas a CRM para
+campanas/seguimiento de leads, y un resumen admin con KPIs accionables
+para operacion diaria.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Animacion inicial, performance y bugs del mapa
+\end{enumerate}
+
+Implementar la animacion inicial con Motion 12, corregir bugs conocidos
+del mapa y diferir/lazy-load Mapbox en mobile preservando list-first
+usability, accesibilidad y calidad visual investor-grade.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  User dashboard con datos reales y reporting para inversionistas
+\end{enumerate}
+
+Conectar resumen, mi portafolio, rentas/claim, historial, downloadable
+statements y seguimiento de transferencias al ledger productivo final,
+reconciliacion de wallet/transacciones y fuentes persistentes de la base
+de datos.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{8}
+\tightlist
+\item
+  Staking distributions and audit trail
+\end{enumerate}
+
+Implementar el stack pendiente de staking/distribuciones: reconciliacion
+canonica de eventos stake/unstake, pipeline por periodo, elegibilidad
+KYC, lectura de tesoreria/Squads, distribution runs, claim lifecycle,
+APIs UI/backoffice y audit logs.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  Production observability
+\end{enumerate}
+
+Definir SLOs, deployment smoke checks, alerting ownership, incident
+response, backup/restore drills y release promotion evidence.
+
+\subsection{Roadmap Propuesto}\label{roadmap-propuesto}
+
+\subsubsection{Fase 0: Investor Demo
+Readiness}\label{fase-0-investor-demo-readiness}
+
+Target: 2 a 4 semanas.
+
+Objetivo: hacer que la app actual sea demostrable con alta confianza y
+una historia clara de que existe hoy.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  Estabilizar demo environment desde \texttt{develop} o QA deployment.
+\item
+  Preparar inventario semilla de marketplace con datos completos de
+  detalle de propiedad.
+\item
+  Implementar la animacion inicial con Motion 12 para la entrada de la
+  app.
+\item
+  Corregir bugs conocidos del mapa que afecten la demo.
+\item
+  Verificar happy paths de wallet login, marketplace, checkout preview,
+  purchase quote, admin collections, compliance queue y protected
+  dashboard.
+\item
+  Producir demo script e investor FAQ desde este documento.
+\item
+  Ejecutar \texttt{npm\ run\ validate} y evidencia Playwright critica
+  para la rama demo.
+\item
+  Capturar screenshots/video para pitch deck.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  La demo puede ejecutarse end-to-end sin intervencion local de
+  ingenieria.
+\item
+  Los gaps conocidos estan etiquetados claramente como roadmap.
+\end{itemize}
+
+\subsubsection{Fase 1: Production
+Foundation}\label{fase-1-production-foundation}
+
+Target: 4 a 8 semanas.
+
+Objetivo: cerrar los gaps que bloquean una private beta controlada.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  Persistent session backend para SIWS/WorkOS/session composition.
+\item
+  Implementar Sphere ramp completo para compras credito/debito y
+  confirmar webhook/idempotency behavior en deployment.
+\item
+  Integrar el purchase crypto existente y la compra con tarjeta en una
+  experiencia coherente de checkout/purchase.
+\item
+  Mantener Jupiter como extension propuesta para convertir crypto assets
+  adicionales hacia USDC settlement.
+\item
+  Compliance provider/live configuration, modulo de persistencia Stripe
+  Identity, vista admin KYC y rol RBAC de compliance reviewer/compliance
+  agent.
+\item
+  Admin dashboard operativo: tesoreria Squads, KPIs accionables,
+  notificaciones CRM y preparacion de distribuciones integradas con
+  freeze/unfreeze.
+\item
+  User dashboard con resumen, portafolio, rentas/claim e historial
+  alimentados por datos reales persistidos.
+\item
+  Production observability baseline: health checks, deployment smoke
+  checks, alerting, incident owner, backup/restore plan.
+\item
+  Animacion inicial con Motion 12, marketplace mobile performance pass y
+  Mapbox lazy boundary.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  Private beta puede soportar usuarios reales en ambiente controlado con
+  auth y payment configuration productivas.
+\end{itemize}
+
+\subsubsection{Fase 2: Regulated Transaction
+Readiness}\label{fase-2-regulated-transaction-readiness}
+
+Target: 8 a 12 semanas.
+
+Objetivo: preparar la app para operaciones financieras/on-chain live
+sujeto a aprobacion legal y compliance.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  Politica final de treasury y payment destinations.
+\item
+  Integracion coherente entre compra crypto existente y compra con
+  tarjeta via Sphere ramp.
+\item
+  Integracion Jupiter opcional para broad crypto input sobre la base
+  USDC existente.
+\item
+  Plan de aceptacion on-chain live o pre-live con signatures especificas
+  por ambiente y fetched account state.
+\item
+  UI de admin authority lifecycle y endpoints de lectura.
+\item
+  Backfill de legacy authority registry.
+\item
+  Compliance financial gates en todas las rutas que mueven valor.
+\item
+  Ledger/distribution source of truth para portfolio, rentas, history y
+  statements.
+\item
+  Reconciliacion canonica de stake/unstake, preparation service de
+  distribuciones, microservicio de distribucion, claim lifecycle y
+  trazabilidad/auditoria para staking.
+\item
+  Tesoreria Squads, modulo de distribuciones integrado con
+  freeze/unfreeze, solicitudes de transferencia, seguimiento de claims y
+  datos persistentes para admin/user dashboards.
+\item
+  Security review de wallet linking, admin routes, payment webhooks,
+  signer flows y authority rotation.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  La plataforma tiene controles auditables para identidad, compliance,
+  treasury, admin authority y transaction execution.
+\end{itemize}
+
+\subsubsection{Fase 3: Growth and Scale}\label{fase-3-growth-and-scale}
+
+Target: 3 a 6 meses despues de private beta foundation.
+
+Objetivo: expandir inventario, mejorar conversion y soportar operaciones
+repetibles de inversionistas.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  Workflows multi-property con batch operations y review queues mas
+  fuertes.
+\item
+  Notificaciones integradas con CRM para campanas, seguimiento de
+  posibles clientes, transaction state, compliance status, distributions
+  y nuevas ofertas.
+\item
+  Optimizacion de referidos y onboarding rewards.
+\item
+  Admin analytics para funnel, sales, compliance y collection health.
+\item
+  KPIs accionables de tesoreria, claims, CRM, conversion de KYC, ventas
+  y health operacional.
+\item
+  Expansion SEO/content del marketplace publico.
+\item
+  Paquete de reporting institucional y data room exports.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  BRIDS puede presentar vision de producto, metricas operativas
+  repetibles y growth loops controlados.
+\end{itemize}
+
+\subsection{Traduccion a Pitch Deck}\label{traduccion-a-pitch-deck}
+
+Este documento puede convertirse en un pitch deck con esta estructura:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Vision
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Marketplace de inversion inmobiliaria tokenizada con ownership
+    wallet-aware y transparencia operacional.
+  \end{itemize}
+\item
+  Producto Hoy
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Marketplace, detalle de propiedad, dashboard protegido, admin
+    operations, checkout, compliance, staking, notifications.
+  \end{itemize}
+\item
+  Moat Tecnico
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Hybrid auth, Solana/Metaplex Core integration, admin minting,
+    compliance gates, governance automation, test coverage.
+  \end{itemize}
+\item
+  Arquitectura de Plataforma
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Next.js app, server domain layer, PostgreSQL, Solana devnet/on-chain
+    services, WorkOS/SIWS, Sphere ramp, Jupiter, observability.
+  \end{itemize}
+\item
+  Readiness Actual
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Marketplace, admin operations, auth, checkout, compliance, NFT,
+    staking, notifications y observability ya estan representados en la
+    app.
+  \end{itemize}
+\item
+  Risk Controls
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Compliance statuses, purchase restrictions, idempotency, admin RBAC,
+    authority registry/audit, docs governance.
+  \end{itemize}
+\item
+  Roadmap
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Demo readiness, production foundation, regulated transaction
+    readiness, growth and scale.
+  \end{itemize}
+\item
+  Uso de Fondos
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Production hardening, compliance integration, payment/on-chain
+    readiness, security review, marketplace performance, operations
+    tooling.
+  \end{itemize}
+\item
+  Near-Term Milestones
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Private beta, controlled transaction readiness, admin authority
+    operations, investor ledger/distribution reporting.
+  \end{itemize}
+\item
+  Ask
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  Financiar el paso de working platform a marketplace de inversion
+  compliant y production-grade.
+\end{itemize}
+
+\subsection{Claims Recomendados para
+Inversionistas}\label{claims-recomendados-para-inversionistas}
+
+Usar estos claims porque estan soportados por el repositorio:
+
+\begin{itemize}
+\tightlist
+\item
+  BRIDS tiene una app fullstack funcional con marketplace, admin, auth,
+  checkout, compliance, NFT, staking, notifications y observability.
+\item
+  El roadmap de pagos esta enfocado en implementar Sphere ramp completo
+  para tarjeta y unificarlo con el purchase crypto ya configurado para
+  USDC.
+\item
+  La plataforma tiene implementacion Solana/Metaplex Core con evidencia
+  devnet.
+\item
+  El roadmap de compliance incluye persistencia propia de Stripe
+  Identity, vista admin KYC y rol RBAC especializado para revisores.
+\item
+  El roadmap operativo incluye tesoreria Squads, distribuciones
+  integradas con freeze/unfreeze, CRM para notificaciones/campanas y
+  dashboards alimentados por datos reales.
+\item
+  El proceso de ingenieria incluye automated validation, docs
+  governance, unit tests, route tests, Playwright y Synpress.
+\item
+  El trabajo pendiente se enfoca en production hardening,
+  compliance/payment readiness, controles operativos y escala.
+\end{itemize}
+
+Evitar estos claims hasta completar los items correspondientes:
+
+\begin{itemize}
+\tightlist
+\item
+  No afirmar mainnet production readiness.
+\item
+  No afirmar operaciones reguladas live completamente habilitadas.
+\item
+  No afirmar paridad completa tarjeta/crypto checkout hasta implementar
+  Sphere ramp y la integracion unificada.
+\item
+  No afirmar sesiones production-grade hasta implementar shared session
+  backend.
+\item
+  No afirmar operaciones completas de compliance hasta implementar
+  persistencia Stripe Identity, vista admin KYC y rol RBAC
+  especializado.
+\item
+  No afirmar lifecycle completo de staking/distribuciones hasta
+  implementar reconciliacion canonica, pipeline por periodo, servicio de
+  distribucion, claim lifecycle y trazabilidad/auditoria.
+\item
+  No afirmar dashboards operativos completos hasta conectar admin/user
+  dashboards a tesoreria Squads, distribuciones, claims, CRM,
+  reconciliacion y datos persistentes reales.
+\item
+  No afirmar treasury, distributions, tax o investor statement
+  infrastructure finalizados hasta completar ledger/reporting source of
+  truth.
+\end{itemize}
+
+\subsection{Indice de Evidencia}\label{indice-de-evidencia}
+
+Repositorio y gobernanza:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{README.md}
+\item
+  \texttt{package.json}
+\item
+  \texttt{docs/governance/documentation-policy.md}
+\item
+  \texttt{docs/governance/git-monorepo-policy.md}
+\item
+  \texttt{docs/governance/security-quality-policy.md}
+\item
+  \texttt{scripts/ci/check-required-docs.sh}
+\end{itemize}
+
+Arquitectura y seguridad:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{docs/architecture.md}
+\item
+  \texttt{docs/auth-flow.md}
+\item
+  \texttt{docs/session-model.md}
+\item
+  \texttt{docs/authority-model.md}
+\item
+  \texttt{docs/state-machine.md}
+\item
+  \texttt{docs/threat-model.md}
+\item
+  \texttt{docs/rbac.md}
+\end{itemize}
+
+Blockchain/NFT:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{docs/nft-spec.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\item
+  \texttt{docs/rotation-spec.md}
+\item
+  \texttt{lib/core-candy-machine-admin.ts}
+\item
+  \texttt{lib/core-authority-lifecycle.ts}
+\item
+  \texttt{lib/purchase-service.ts}
+\item
+  \texttt{lib/stake-service.ts}
+\end{itemize}
+
+Marketplace y admin:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/marketplace/*}
+\item
+  \texttt{components/marketplace/*}
+\item
+  \texttt{lib/property-marketplace-server.ts}
+\item
+  \texttt{app/admin/*}
+\item
+  \texttt{components/admin/*}
+\item
+  \texttt{lib/admin/*}
+\end{itemize}
+
+Checkout, compliance, notifications:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/checkout/*}
+\item
+  \texttt{lib/checkout-service.ts}
+\item
+  \texttt{app/api/admin/compliance/*}
+\item
+  \texttt{lib/compliance/*}
+\item
+  \texttt{app/api/admin/notifications/*}
+\item
+  \texttt{lib/notifications/*}
+\end{itemize}
+
+Testing:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{tests/*}
+\item
+  \texttt{e2e/*}
+\item
+  \texttt{npm\ run\ validate}
+\end{itemize}
+
+\subsection{Acciones Inmediatas}\label{acciones-inmediatas}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Revisar este documento con founders/product y suavizar cualquier claim
+  de negocio que lo requiera.
+\item
+  Convertir la seccion de pitch deck en outline de deck con screenshots
+  de la app.
+\item
+  Crear tickets de Fase 0 para demo readiness, bugs de mapa y evidence
+  capture.
+\item
+  Crear tickets de Fase 1 para persistent sessions, implementacion
+  completa de Sphere ramp, integracion tarjeta + crypto, persistencia
+  Stripe Identity, vista admin KYC, rol RBAC de compliance y marketplace
+  performance.
+\item
+  Crear tickets de admin dashboard para tesoreria Squads, distribuciones
+  freeze/unfreeze, KPIs accionables, notificaciones CRM y modulo de
+  cumplimiento KYC.
+\item
+  Crear tickets de user dashboard para resumen real, mi portafolio real,
+  rentas/claim, solicitud de transferencias e historial reconciliado con
+  wallet/modulos/base de datos.
+\item
+  Crear tickets de staking/distribuciones para reconciliacion canonica
+  de eventos, pipeline por periodo, elegibilidad KYC, tesoreria/Squads,
+  servicio de distribucion, claim lifecycle, APIs UI/backoffice y
+  trazabilidad/auditoria.
+\item
+  Mantener este documento actualizado despues de cada milestone para
+  evitar drift entre materiales de inversionistas e ingenieria.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{English}\label{english}
+
+\subsection{Purpose}\label{purpose}
+
+This document summarizes what the BRIDS app already has, what is
+partially built, and what should be built next. It is written for two
+audiences:
+
+\begin{itemize}
+\tightlist
+\item
+  Investors and strategic partners who need to understand technical
+  maturity, product readiness, and execution path.
+\item
+  Internal product, engineering, and operations teams that need one
+  shared roadmap for the next delivery phases.
+\end{itemize}
+
+This is not a legal, tax, investment, or regulatory opinion. It is a
+technical and product-readiness brief based on the repository state and
+existing project documentation.
+
+\subsection{Executive Summary}\label{executive-summary}
+
+BRIDS is currently a Solana-first real estate investment marketplace
+implemented as a Next.js fullstack application. The active product
+surface includes a public website, marketplace, property detail pages,
+wallet and federated authentication, protected investor dashboards,
+admin operations, collection/content management, checkout, purchase
+minting, compliance review, referrals, staking/unstaking, web push
+notifications, SEO/AI-readable content infrastructure, and governance
+automation.
+
+\subsection{Product Thesis}\label{product-thesis}
+
+BRIDS is building a regulated, wallet-aware real estate investment
+platform where tokenized property inventory can be discovered,
+purchased, administered, and later operated through a transparent
+on-chain/off-chain lifecycle.
+
+The current codebase supports four core investor-facing narratives:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Discover tokenized real estate opportunities through a marketplace and
+  property detail experience.
+\item
+  Authenticate through either wallet-first SIWS or a lower-friction
+  federated path that can later link to a wallet.
+\item
+  Execute crypto purchases already configured for USDC receipt, and add
+  credit/debit card purchases through Sphere ramp under a controlled
+  order model.
+\item
+  Operate holdings through protected dashboards, compliance gates,
+  referrals, staking/unstaking, rent/portfolio modules, and
+  notifications.
+\end{enumerate}
+
+The technical direction is to turn this into a production-ready
+investment platform by hardening identity, compliance, payments,
+on-chain authority, observability, and marketplace performance.
+
+\subsection{Current Architecture}\label{current-architecture}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Layer
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Current implementation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Frontend & Next.js App Router, React 19, Tailwind, Motion 12,
+Mapbox/React Map GL, responsive E2E coverage. \\
+Backend & Next.js route handlers, server-only domain services in
+\texttt{lib/}, PostgreSQL repositories, idempotent purchase/checkout
+paths. \\
+Blockchain & Solana devnet policy, Metaplex Core, Core Candy Machine,
+Umi, Solana Kit compatibility helpers, owner-freeze/stake flows. \\
+Auth & Hybrid WorkOS + SIWS model, wallet linking, account repository,
+admin role derivation, protected routes. \\
+Data & SQL migrations for marketplace entries, checkout, compliance,
+referrals, notifications, staking, and upload/edit sessions. \\
+Admin Ops & Admin shell with assets, collections, compliance,
+dashboards, notifications, treasury, sales, monitoring, minting. \\
+Quality & \texttt{npm\ run\ validate}, Vitest, Playwright, Synpress,
+docs governance, route/content/schema/SEO/operability checks. \\
+\end{longtable}
+}
+
+\subsection{What Is Done}\label{what-is-done}
+
+\subsubsection{Public Site and
+Marketplace}\label{public-site-and-marketplace}
+
+Status: implemented, with performance follow-ups and map bugs to fix.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Public landing and institutional pages.
+\item
+  Marketplace list, map, and detail routes.
+\item
+  Marketplace data read model backed by persisted DB entries with
+  snapshot fallback.
+\item
+  Marketplace map surface using Mapbox/React Map GL with list-only
+  fallback when map configuration is unavailable.
+\item
+  Property detail sections for media, investment summary, economics,
+  fees/return, documents/blockchain, governance, property information,
+  and Google Maps preview.
+\item
+  SEO, structured data, feeds, AI-readable endpoints, \texttt{llms.txt},
+  \texttt{ai.txt}, knowledge routes, and content serializers.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  The initial entry animation with Motion 12 still needs to be
+  implemented to strengthen the app's first impression while preserving
+  performance, accessibility, and reduced-motion preferences.
+\item
+  Marketplace map performance is a known boundary, especially mobile
+  JavaScript/LCP/TBT.
+\item
+  Known map bugs must be fixed before investor demo and private beta
+  readiness.
+\item
+  Some map-related work remains in the P2 queue: lazy Mapbox boundary,
+  Web Vitals recheck, coordinate validation, and degraded-state polish.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/marketplace/page.tsx}
+\item
+  \texttt{app/marketplace/{[}id{]}/page.tsx}
+\item
+  \texttt{components/marketplace/*}
+\item
+  \texttt{lib/property-marketplace-server.ts}
+\item
+  \texttt{docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md}
+\end{itemize}
+
+\subsubsection{Authentication and Account
+Model}\label{authentication-and-account-model}
+
+Status: implemented foundation, production storage hardening required.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Wallet-first SIWS authentication.
+\item
+  WorkOS federated login foundation.
+\item
+  Explicit wallet linking flow.
+\item
+  Server-side account repository.
+\item
+  Request authority model that distinguishes low-authority account
+  access from wallet-authenticated financial/admin authority.
+\item
+  Admin route protection through wallet-derived role checks.
+\item
+  Referral intent capture during auth.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Session storage is process-local/in-memory in current documentation
+  and must move to a shared persistent backend before horizontal
+  production scaling.
+\item
+  Account consolidation/recovery policies remain future controlled
+  flows, not silent automatic merges.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/auth/*}
+\item
+  \texttt{lib/auth.ts}
+\item
+  \texttt{lib/auth-store.ts}
+\item
+  \texttt{lib/auth-session.ts}
+\item
+  \texttt{lib/accounts/repository.ts}
+\item
+  \texttt{docs/auth-flow.md}
+\item
+  \texttt{docs/session-model.md}
+\item
+  \texttt{docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md}
+\end{itemize}
+
+\subsubsection{Checkout, Orders, and
+Payments}\label{checkout-orders-and-payments}
+
+Status: partially implemented.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Checkout cart and order APIs.
+\item
+  Order and payment attempt data model.
+\item
+  Crypto purchase flow already implemented and configured so BRIDS
+  receives USDC.
+\item
+  Onboarding reward reservation/consumption integration.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  The end-to-end credit/debit card purchase function through Sphere ramp
+  still needs to be implemented.
+\item
+  After Sphere ramp is implemented, card purchase and crypto purchase
+  must be integrated into one coherent purchase/checkout experience.
+\item
+  The final Sphere ramp contract, webhook model, settlement mapping, and
+  operational support flow for card purchases remain pending.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/checkout/page.tsx}
+\item
+  \texttt{app/api/checkout/*}
+\item
+  \texttt{lib/checkout-service.ts}
+\item
+  \texttt{lib/checkout-repository.ts}
+\item
+  \texttt{db/migrations/018\_checkout\_dual\_payment.sql}
+\end{itemize}
+
+\subsubsection{Purchase Minting}\label{purchase-minting-1}
+
+Status: crypto purchase implemented and configured for USDC receipt,
+production hardening pending.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Quote, challenge, prepare, and submit APIs.
+\item
+  Anti-bot challenge issuance and consumption.
+\item
+  Rate limiting/idempotency storage.
+\item
+  Candy Machine guard validation.
+\item
+  Third-party signer support.
+\item
+  SOL/USDC payment currency model.
+\item
+  System configured so BRIDS receives USDC.
+\item
+  Submitted transaction confirmation.
+\item
+  Post-submit asset verification and reconciliation support.
+\item
+  Compliance restriction guard in purchase challenge/prepare/submit
+  routes.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Jupiter remains a proposed extension for broader crypto input, but the
+  base crypto purchase flow and USDC receipt already exist.
+\item
+  Production launch requires final treasury/payment destination policy,
+  devnet-to-production migration plan, and live payment/asset evidence.
+\item
+  The repository governance currently expects blockchain/NFT acceptance
+  on devnet only unless production policy is explicitly approved.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/purchase/*}
+\item
+  \texttt{lib/purchase-service.ts}
+\item
+  \texttt{lib/purchase-anti-bot.ts}
+\item
+  \texttt{lib/purchase-attempts-repository.ts}
+\item
+  \texttt{lib/purchase-webhook-reconciliation.ts}
+\item
+  \texttt{docs/purchase-tracing.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\end{itemize}
+
+\subsubsection{Admin Asset and Collection
+Operations}\label{admin-asset-and-collection-operations}
+
+Status: implemented foundation with ongoing workflow improvements.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Admin asset creation form.
+\item
+  Asset upload workflow with signed URLs, client upload, finalize, edit
+  sessions, orphan reconciliation, CDN purge, and PDF brief support.
+\item
+  Import jobs and import preview.
+\item
+  Admin collections list, detail, editing surfaces, documents, gallery,
+  property information, location maps, and health workspace.
+\item
+  Marketplace entry creation from admin flow.
+\item
+  Collection health read models and manual review support.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Some admin screens still need ongoing usability, operational
+  consistency, and internal team readiness improvements.
+\item
+  Full non-technical admin playbooks and production operating procedures
+  should be written before external launch.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/assets/new/page.tsx}
+\item
+  \texttt{app/admin/collections/*}
+\item
+  \texttt{app/api/admin/assets/*}
+\item
+  \texttt{app/api/admin/collections/*}
+\item
+  \texttt{components/admin/*}
+\item
+  \texttt{lib/admin/*}
+\item
+  \texttt{db/migrations/002\_asset\_upload\_contracts.sql}
+\item
+  \texttt{db/migrations/003\_asset\_import\_jobs.sql}
+\item
+  \texttt{db/migrations/020\_asset\_upload\_edit\_sessions.sql}
+\end{itemize}
+
+\subsubsection{Admin Dashboard and
+Operations}\label{admin-dashboard-and-operations}
+
+Status: admin surface implemented, critical operating modules still
+required.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Admin shell with navigation to dashboard, assets, collections,
+  compliance, notifications, treasury, sales, monitoring, and minting.
+\item
+  Base panels for executive summary, sales, treasury, distributions,
+  notifications, and monitoring.
+\item
+  Admin routes protected by server-side role enforcement.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  The treasury module using Squads still needs to be implemented so the
+  team can see balances, movements, approvals, and operating evidence
+  from admin.
+\item
+  The distribution module still needs to be implemented to integrate
+  Squads with the freeze/unfreeze module, connecting eligibility,
+  treasury, distributions, and claim state.
+\item
+  The admin summary module needs stronger actionable KPIs: investor
+  funnel, KYC conversion, sales, funds received, treasury state, pending
+  distributions, claims, compliance queue, collection health, and
+  operational alerts.
+\item
+  The notifications module must integrate with CRM for campaigns, lead
+  follow-up, segmentation, contact status, and outreach traceability.
+\item
+  The compliance module must integrate KYC, Stripe Identity, first-party
+  user data persistence, and compliance-specific RBAC permissions.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/dashboard/page.tsx}
+\item
+  \texttt{app/admin/treasury/page.tsx}
+\item
+  \texttt{app/admin/distributions/page.tsx}
+\item
+  \texttt{app/admin/notifications/page.tsx}
+\item
+  \texttt{app/admin/monitoring/page.tsx}
+\item
+  \texttt{components/admin/executive-dashboard.tsx}
+\item
+  \texttt{components/admin/treasury-console.tsx}
+\item
+  \texttt{components/admin/distributions-console.tsx}
+\item
+  \texttt{components/admin/admin-notification-campaign-console.tsx}
+\end{itemize}
+
+\subsubsection{Metaplex Core, Candy Machine, and NFT
+Operations}\label{metaplex-core-candy-machine-and-nft-operations}
+
+Status: implemented on devnet with authority lifecycle hardening
+backlog.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Metaplex Core collection and asset minting.
+\item
+  Core Candy Machine deploy/submit/status/metadata/mint prepare/snapshot
+  finalize flows.
+\item
+  Economic AppData plugin payload for revenue share/yield fields.
+\item
+  Authority lifecycle backend for \texttt{transfer\_delegate} and
+  \texttt{appdata\_authority}.
+\item
+  Authority registry and audit events.
+\item
+  Devnet evidence for collection, asset, AppData, and authority
+  operations.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Authority lifecycle has backend endpoints, but operational admin UI is
+  pending.
+\item
+  Registry/audit read endpoints are proposed but not implemented.
+\item
+  Squads evidence validation currently validates declared
+  structure/evidence, not full on-chain proposal execution proof.
+\item
+  Legacy collection backfill into authority registry is pending.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/admin/core-candy-machine/*}
+\item
+  \texttt{app/api/admin/metaplex-core/*}
+\item
+  \texttt{lib/core-candy-machine-admin.ts}
+\item
+  \texttt{lib/core-authority-lifecycle.ts}
+\item
+  \texttt{lib/metaplex-core-admin.ts}
+\item
+  \texttt{docs/nft-spec.md}
+\item
+  \texttt{docs/authority-model.md}
+\item
+  \texttt{docs/state-machine.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\item
+  \texttt{docs/rotation-spec.md}
+\end{itemize}
+
+\subsubsection{Compliance, KYC, AML, and
+Suspension}\label{compliance-kyc-aml-and-suspension}
+
+Status: implemented operational review model, provider/live policy
+hardening pending.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Compliance status projection: pending KYC, pending AML, pending
+  review, fully verified, restricted AML, suspended.
+\item
+  Admin compliance case queue.
+\item
+  KYC decision, AML decision, suspend/unsuspend, notes.
+\item
+  Audit event model for admin compliance mutations.
+\item
+  AML screening enrichment through Helius-oriented service.
+\item
+  Financial guardrails block restricted/suspended users from purchase
+  routes.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Live KYC/AML provider integration and compliance operating policy
+  should be finalized before production.
+\item
+  A module is still needed to retrieve data from Stripe Identity and
+  persist it in BRIDS' own database under an approved data minimization,
+  security, and retention policy.
+\item
+  An admin view is still needed so the authorized team can review
+  customer KYC data and review status.
+\item
+  RBAC must be extended with a specialized compliance
+  reviewer/compliance agent role, separate from the general admin role,
+  to operate KYC/AML reviews with scoped permissions.
+\item
+  Manual review SLAs, escalation ownership, and data retention policy
+  should be documented for operations and investors.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/admin/compliance/page.tsx}
+\item
+  \texttt{app/api/admin/compliance/*}
+\item
+  \texttt{app/api/internal/compliance/aml/screen/route.ts}
+\item
+  \texttt{lib/compliance/*}
+\item
+  \texttt{db/migrations/012\_profile\_kyc\_compliance.sql}
+\item
+  \texttt{db/migrations/013\_aml\_screening\_enrichment.sql}
+\item
+  \texttt{db/migrations/014\_compliance\_notes.sql}
+\item
+  \texttt{docs/architecture.md}
+\end{itemize}
+
+\subsubsection{Protected Investor
+Dashboard}\label{protected-investor-dashboard}
+
+Status: implemented surface, some modules likely require real financial
+data integration.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Protected layout and dashboard.
+\item
+  Portfolio, rentas, referrals, stake, profile, history, and account
+  support modules.
+\item
+  Profile capture, KYC module, onboarding reward reminders, and guided
+  tour.
+\item
+  Referral landing and dashboard services.
+\item
+  Wallet-bound web push enrollment path.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  The user dashboard summary should be fed by real data from portfolio,
+  purchases, rentas/claims, compliance, staking, and notifications
+  modules.
+\item
+  My Portfolio must be fed by real data from the database and on-chain
+  reconciliation, not snapshots or placeholders.
+\item
+  Rentas / Claim must be implemented so users can claim from there,
+  request transfers, see claim/distribution states, and track progress
+  using persistent data from BRIDS' own database.
+\item
+  History must show the user's real operations: purchases,
+  staking/unstaking, claims, transfers, relevant compliance events, and
+  reconciled wallet transactions, fed by the other modules and
+  persistent database records.
+\item
+  Investor statements, tax documents, distribution history, and
+  downloadable reporting remain future product work unless already
+  handled outside this repo.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/protected/*}
+\item
+  \texttt{components/dashboard/*}
+\item
+  \texttt{lib/referrals/*}
+\item
+  \texttt{lib/onboarding-reward-service.ts}
+\item
+  \texttt{db/migrations/023\_referral\_wallet\_first\_schema.sql}
+\item
+  \texttt{db/migrations/024\_onboarding\_profile\_completion\_rewards.sql}
+\end{itemize}
+
+\subsubsection{Staking and Unstaking}\label{staking-and-unstaking}
+
+Status: implemented devnet-oriented owner-freeze action flow.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Protected stake page.
+\item
+  DAS inventory discovery for owned assets.
+\item
+  Stake/unstake prepare and submit flow.
+\item
+  Owner freeze/thaw transaction construction.
+\item
+  Attempt persistence and reconciliation.
+\item
+  Responsive E2E coverage for protected stake surface.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  The stake/unstake event reconciliation and distribution preparation
+  service still needs to be implemented: canonical RPC validation,
+  Helius as observer/indexer, internal projection of validated events,
+  KYC/profile eligibility reads, and treasury/Squads or period financial
+  snapshot reads.
+\item
+  The period pipeline still needs to be implemented to calculate
+  eligible time, version distribution policy, handle
+  \texttt{sync\_pending}/\texttt{reconcile\_pending} states, generate
+  the output file for claim or later execution, and enforce
+  idempotency/retries/mandatory reconciliation.
+\item
+  The distribution microservice and claim lifecycle still need to be
+  implemented: \texttt{pending}, \texttt{claimed}, \texttt{failed},
+  \texttt{disputed} states, UI/backoffice APIs, claim reconciliation
+  with transaction evidence, and period reprocessing/recalculation.
+\item
+  Traceability/audit architecture still needs to be implemented:
+  treasury snapshots, NFT states, distribution runs, distribution items,
+  and audit logs queryable by UI and external audit.
+\item
+  Production semantics must be clearly defined: what staking means
+  financially, when rewards accrue, how they are claimed, and how
+  staking interacts with compliance and ownership transfer.
+\item
+  Final investor-facing copy, claim/distribution states, and
+  legal/regulatory framing should be locked before launch.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/protected/stake/page.tsx}
+\item
+  \texttt{app/api/protected/profile/stake/*}
+\item
+  \texttt{components/dashboard/stake-module.tsx}
+\item
+  \texttt{lib/stake-service.ts}
+\item
+  \texttt{db/migrations/031\_stake\_profile\_persistence.sql}
+\item
+  \texttt{docs/STAKE\_AUDIT.md}
+\end{itemize}
+
+\subsubsection{Notifications and PWA}\label{notifications-and-pwa}
+
+Status: implemented foundation with rollout gates.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Web push subscriptions.
+\item
+  Transactional delivery jobs.
+\item
+  Internal enqueue/process APIs.
+\item
+  Admin notification campaign preview/send.
+\item
+  Notification health checks.
+\item
+  PWA capability UI and installability shell.
+\item
+  Wallet-bound subscription contract.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Production push delivery requires final VAPID/env configuration,
+  audience policy, rate limits, and operational monitoring.
+\item
+  Admin campaigns should remain guarded by preview hash and
+  blocked-reason checks.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/notifications/*}
+\item
+  \texttt{app/api/internal/notifications/*}
+\item
+  \texttt{app/api/admin/notifications/*}
+\item
+  \texttt{components/admin/admin-notification-campaign-console.tsx}
+\item
+  \texttt{lib/notifications/*}
+\item
+  \texttt{db/migrations/027\_web\_push\_subscriptions.sql}
+\item
+  \texttt{db/migrations/028\_web\_push\_delivery\_jobs.sql}
+\item
+  \texttt{db/migrations/029\_admin\_push\_campaigns.sql}
+\end{itemize}
+
+\subsubsection{Observability, Governance, and
+Quality}\label{observability-governance-and-quality}
+
+Status: implemented strong internal controls.
+
+Implemented capabilities:
+
+\begin{itemize}
+\tightlist
+\item
+  Health endpoint and admin monitoring routes.
+\item
+  Operability logging store and analytics event route.
+\item
+  Security headers tests.
+\item
+  Docs governance validation.
+\item
+  PR policy and required docs checks.
+\item
+  RFC and Linear planning scripts.
+\item
+  Playwright/Synpress coverage for browser and wallet-critical flows.
+\item
+  Top-level \texttt{npm\ run\ validate} gate.
+\end{itemize}
+
+Current limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  Investor-facing production readiness should include uptime targets,
+  alerting ownership, incident response, and data backup/restore
+  evidence.
+\item
+  Current local validation should be complemented by deployment-specific
+  smoke checks for QA/RC/prod.
+\end{itemize}
+
+Primary evidence:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/health/route.ts}
+\item
+  \texttt{app/api/admin/monitoring/*}
+\item
+  \texttt{lib/observability/*}
+\item
+  \texttt{scripts/ci/*}
+\item
+  \texttt{scripts/rfc-new.js}
+\item
+  \texttt{scripts/linear-plan.js}
+\item
+  \texttt{docs/governance/*}
+\item
+  \texttt{tests/*}
+\item
+  \texttt{e2e/*}
+\end{itemize}
+
+\subsection{Maturity Matrix}\label{maturity-matrix}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Domain
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Maturity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Investor-facing interpretation
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Main next step
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Marketplace discovery & Built & Real product surface exists. & Motion
+entry animation, map bugs, mobile performance, and lazy Mapbox
+boundary. \\
+Property detail & Built & Assets can be presented with investment, docs,
+and governance context. & Final data completeness and compliance
+copy. \\
+Wallet auth & Built & Strong wallet authority model exists. & Persistent
+production session store. \\
+Federated auth & Foundation built & Lower-friction onboarding path
+exists. & Complete production WorkOS operations and recovery flows. \\
+Checkout & Partial & Order model exists; card purchases need Sphere
+ramp. & Implement full Sphere ramp and unify card + crypto. \\
+Crypto purchase mint & Built & Crypto flow is implemented and configured
+to receive USDC. & Production hardening, treasury policy, final
+evidence, and optional Jupiter. \\
+Admin asset ops & Built & Internal team can manage inventory and
+metadata. & Operating playbooks and production hardening. \\
+Admin dashboard & Partial & Admin shell exists; key operating modules
+are still pending. & Squads treasury, freeze/unfreeze distributions, CRM
+notifications, and actionable KPIs. \\
+NFT/admin minting & Built on devnet & Core asset lifecycle exists. &
+Authority UI and read endpoints. \\
+Compliance & Foundation built & Compliance gates are encoded into
+transaction paths. & Stripe Identity persistence, admin KYC view, and
+compliance RBAC role. \\
+Investor dashboard & Surface built & User account and holdings UX
+exists. & Real-data summary, portfolio, rentas/claim, and history. \\
+Staking & Base built on devnet & Asset action path exists; distributions
+and audit are pending. & On-chain reconciliation, claim state,
+distributions, and traceability. \\
+Notifications & Foundation built & Re-engagement infrastructure exists.
+& CRM integration for campaigns and lead follow-up. \\
+Observability/QA & Strong internal foundation & Engineering discipline
+is visible. & Production SLOs, alerting, deployment smoke gates. \\
+\end{longtable}
+}
+
+\subsection{Key Technical Gaps}\label{key-technical-gaps}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Persistent session storage
+\end{enumerate}
+
+Move auth/session state away from process-local memory into a shared
+production store. This is required for multi-instance deployments,
+restarts, and predictable auth behavior.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Checkout and payment hardening
+\end{enumerate}
+
+Implement end-to-end credit/debit card purchases through Sphere ramp,
+define the final webhook/settlement contract, and unify the card flow
+with the already implemented crypto purchase flow.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Production treasury and payment policy
+\end{enumerate}
+
+Validate production USDC settlement, define payment destinations,
+treasury ownership, environment-specific config, and audit evidence
+before live value movement. Jupiter remains an extension for broader
+crypto input.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Compliance operations
+\end{enumerate}
+
+Implement first-party persistence for data retrieved from Stripe
+Identity, an admin customer KYC data view, a specialized RBAC role for
+compliance reviewer/compliance agent, manual review workflow, data
+retention, support escalation, and restricted-user behavior.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Authority lifecycle operations
+\end{enumerate}
+
+Build admin UI for authority rotate/revoke/emergency rotate, implement
+registry/audit read endpoints, backfill legacy collections, and
+strengthen Squads/on-chain evidence validation.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Admin dashboard, treasury, distributions, and CRM
+\end{enumerate}
+
+Implement Squads treasury, distributions integrated with
+freeze/unfreeze, CRM-connected notifications for campaigns/lead
+follow-up, and an admin summary with actionable KPIs for daily
+operations.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Marketplace entry animation, performance, and map bugs
+\end{enumerate}
+
+Implement the initial Motion 12 entry animation, fix known map bugs, and
+defer/lazy-load heavy Mapbox work on mobile while preserving list-first
+usability, accessibility, and investor-grade visual quality.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  User dashboard real data and investor financial reporting
+\end{enumerate}
+
+Connect summary, my portfolio, rentas/claim, history, downloadable
+statements, and transfer tracking to the final production ledger,
+wallet/transaction reconciliation, and persistent database sources.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{8}
+\tightlist
+\item
+  Staking distributions and audit trail
+\end{enumerate}
+
+Implement the pending staking/distribution stack: canonical
+stake/unstake event reconciliation, period pipeline, KYC eligibility,
+treasury/Squads reads, distribution runs, claim lifecycle, UI/backoffice
+APIs, and audit logs.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  Production observability
+\end{enumerate}
+
+Define SLOs, deployment smoke checks, alerting ownership, incident
+response, backup/restore drills, and release promotion evidence.
+
+\subsection{Proposed Roadmap}\label{proposed-roadmap}
+
+\subsubsection{Phase 0: Investor Demo
+Readiness}\label{phase-0-investor-demo-readiness}
+
+Target: 2 to 4 weeks.
+
+Goal: make the current app demoable with high confidence and a clear
+story about what is real today.
+
+Deliverables:
+
+\begin{itemize}
+\tightlist
+\item
+  Stabilize demo environment from \texttt{develop} or QA deployment.
+\item
+  Prepare seeded marketplace inventory with complete property detail
+  data.
+\item
+  Implement the initial Motion 12 entry animation for the app entry
+  experience.
+\item
+  Fix known map bugs that affect the demo.
+\item
+  Verify wallet login, marketplace, checkout preview, purchase quote,
+  admin collections, compliance queue, and protected dashboard happy
+  paths.
+\item
+  Produce a demo script and investor FAQ from this document.
+\item
+  Run \texttt{npm\ run\ validate} and critical Playwright evidence for
+  the demo branch.
+\item
+  Capture screenshots/video for pitch deck.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  Demo can be run end-to-end without local engineering intervention.
+\item
+  Known gaps are clearly labeled as roadmap.
+\end{itemize}
+
+\subsubsection{Phase 1: Production
+Foundation}\label{phase-1-production-foundation}
+
+Target: 4 to 8 weeks.
+
+Goal: close the gaps that block a controlled private beta.
+
+Deliverables:
+
+\begin{itemize}
+\tightlist
+\item
+  Persistent session backend for SIWS/WorkOS/session composition.
+\item
+  Implement the full Sphere ramp flow for credit/debit card purchases
+  and confirm webhook/idempotency behavior in deployed environment.
+\item
+  Integrate the existing crypto purchase flow and the card purchase flow
+  into one coherent checkout/purchase experience.
+\item
+  Keep Jupiter as a proposed extension for converting additional crypto
+  assets into USDC settlement.
+\item
+  Compliance provider/live configuration, Stripe Identity persistence
+  module, admin KYC view, and compliance reviewer/compliance agent RBAC
+  role.
+\item
+  Operating admin dashboard: Squads treasury, actionable KPIs, CRM
+  notifications, and distribution preparation integrated with
+  freeze/unfreeze.
+\item
+  User dashboard with summary, portfolio, rentas/claim, and history fed
+  by real persistent data.
+\item
+  Production observability baseline: health checks, deployment smoke
+  checks, alerting, incident owner, backup/restore plan.
+\item
+  Initial Motion 12 entry animation, marketplace mobile performance
+  pass, and Mapbox lazy boundary.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  Private beta can support real users in a controlled environment with
+  production-grade auth and payment configuration.
+\end{itemize}
+
+\subsubsection{Phase 2: Regulated Transaction
+Readiness}\label{phase-2-regulated-transaction-readiness}
+
+Target: 8 to 12 weeks.
+
+Goal: prepare the app for live financial/on-chain operations subject to
+legal and compliance approval.
+
+Deliverables:
+
+\begin{itemize}
+\tightlist
+\item
+  Final treasury and payment destination policy.
+\item
+  Coherent integration between the existing crypto purchase flow and
+  card purchases through Sphere ramp.
+\item
+  Optional Jupiter integration for broad crypto input on top of the
+  existing USDC receipt path.
+\item
+  Live or pre-live on-chain acceptance plan with environment-specific
+  signatures and fetched account state.
+\item
+  Admin authority lifecycle UI and read endpoints.
+\item
+  Legacy authority registry backfill.
+\item
+  Compliance financial gates across all value-moving routes.
+\item
+  Investor ledger/distribution source of truth for portfolio, rentas,
+  history, and statements.
+\item
+  Canonical stake/unstake reconciliation, distribution preparation
+  service, distribution microservice, claim lifecycle, and
+  traceability/audit for staking.
+\item
+  Squads treasury, distribution module integrated with freeze/unfreeze,
+  transfer requests, claim tracking, and persistent data for admin/user
+  dashboards.
+\item
+  Security review for wallet linking, admin routes, payment webhooks,
+  signer flows, and authority rotation.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  The platform has auditable controls for identity, compliance,
+  treasury, admin authority, and transaction execution.
+\end{itemize}
+
+\subsubsection{Phase 3: Growth and
+Scale}\label{phase-3-growth-and-scale}
+
+Target: 3 to 6 months after private beta foundation.
+
+Goal: expand inventory, improve conversion, and support repeat investor
+operations.
+
+Deliverables:
+
+\begin{itemize}
+\tightlist
+\item
+  Multi-property inventory workflows with stronger batch operations and
+  review queues.
+\item
+  CRM-integrated notifications for campaigns, lead follow-up,
+  transaction state, compliance status, distributions, and new
+  offerings.
+\item
+  Referral and onboarding reward optimization.
+\item
+  Admin analytics for funnel, sales, compliance, and collection health.
+\item
+  Actionable KPIs for treasury, claims, CRM, KYC conversion, sales, and
+  operational health.
+\item
+  Public marketplace SEO/content expansion.
+\item
+  Institutional reporting package and data room exports.
+\end{itemize}
+
+Exit criteria:
+
+\begin{itemize}
+\tightlist
+\item
+  BRIDS can present the product vision, repeatable operating metrics,
+  and controlled growth loops.
+\end{itemize}
+
+\subsection{Pitch Deck Translation}\label{pitch-deck-translation}
+
+This document can be converted into a pitch deck with the following
+slide structure:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Vision
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Tokenized real estate investment marketplace with wallet-aware
+    ownership and operational transparency.
+  \end{itemize}
+\item
+  Product Today
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Marketplace, property detail, protected dashboard, admin operations,
+    checkout, compliance, staking, notifications.
+  \end{itemize}
+\item
+  Technical Moat
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Hybrid auth, Solana/Metaplex Core integration, admin minting,
+    compliance gates, governance automation, test coverage.
+  \end{itemize}
+\item
+  Platform Architecture
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Next.js app, server domain layer, PostgreSQL, Solana devnet/on-chain
+    services, WorkOS/SIWS, Sphere ramp, Jupiter, observability.
+  \end{itemize}
+\item
+  Current Readiness
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Marketplace, admin operations, auth, checkout, compliance, NFT,
+    staking, notification, and observability modules are already
+    represented in the app.
+  \end{itemize}
+\item
+  Risk Controls
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Compliance statuses, purchase restrictions, idempotency, admin RBAC,
+    authority registry/audit, docs governance.
+  \end{itemize}
+\item
+  Roadmap
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Demo readiness, production foundation, regulated transaction
+    readiness, growth and scale.
+  \end{itemize}
+\item
+  Use of Funds
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Production hardening, compliance integration, payment/on-chain
+    readiness, security review, marketplace performance, operations
+    tooling.
+  \end{itemize}
+\item
+  Near-Term Milestones
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Private beta, controlled transaction readiness, admin authority
+    operations, investor ledger/distribution reporting.
+  \end{itemize}
+\item
+  Ask
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  Fund the path from working platform to compliant, production-grade
+  investment marketplace.
+\end{itemize}
+
+\subsection{Recommended Investor
+Claims}\label{recommended-investor-claims}
+
+Use these claims because they are supported by the repository:
+
+\begin{itemize}
+\tightlist
+\item
+  BRIDS has a working fullstack app with marketplace, admin, auth,
+  checkout, compliance, NFT, staking, notification, and observability
+  modules.
+\item
+  The payment roadmap is focused on implementing full Sphere ramp card
+  purchases and unifying them with the crypto purchase flow already
+  configured for USDC.
+\item
+  The platform has a Solana/Metaplex Core implementation with devnet
+  evidence.
+\item
+  The compliance roadmap includes first-party Stripe Identity
+  persistence, an admin KYC view, and a specialized RBAC role for
+  reviewers.
+\item
+  The operating roadmap includes Squads treasury, distributions
+  integrated with freeze/unfreeze, CRM for notifications/campaigns, and
+  dashboards fed by real data.
+\item
+  The engineering process includes automated validation, docs
+  governance, unit tests, route tests, Playwright, and Synpress.
+\item
+  The remaining work is focused on production hardening,
+  compliance/payment readiness, operational controls, and scale.
+\end{itemize}
+
+Avoid these claims until the corresponding roadmap items are complete:
+
+\begin{itemize}
+\tightlist
+\item
+  Do not claim mainnet production readiness.
+\item
+  Do not claim fully live regulated investment operations.
+\item
+  Do not claim completed card/crypto checkout parity until Sphere ramp
+  and the unified integration are implemented.
+\item
+  Do not claim production-grade persistent sessions until the shared
+  session backend is implemented.
+\item
+  Do not claim complete compliance operations until Stripe Identity
+  persistence, the admin KYC view, and specialized RBAC role are
+  implemented.
+\item
+  Do not claim the complete staking/distribution lifecycle until
+  canonical reconciliation, period pipeline, distribution service, claim
+  lifecycle, and traceability/audit are implemented.
+\item
+  Do not claim complete operating dashboards until admin/user dashboards
+  are connected to Squads treasury, distributions, claims, CRM,
+  reconciliation, and real persistent data.
+\item
+  Do not claim finalized treasury, distribution, tax, or investor
+  statement infrastructure until the ledger/reporting source of truth is
+  complete.
+\end{itemize}
+
+\subsection{Evidence Index}\label{evidence-index}
+
+Repository and governance:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{README.md}
+\item
+  \texttt{package.json}
+\item
+  \texttt{docs/governance/documentation-policy.md}
+\item
+  \texttt{docs/governance/git-monorepo-policy.md}
+\item
+  \texttt{docs/governance/security-quality-policy.md}
+\item
+  \texttt{scripts/ci/check-required-docs.sh}
+\end{itemize}
+
+Architecture and security:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{docs/architecture.md}
+\item
+  \texttt{docs/auth-flow.md}
+\item
+  \texttt{docs/session-model.md}
+\item
+  \texttt{docs/authority-model.md}
+\item
+  \texttt{docs/state-machine.md}
+\item
+  \texttt{docs/threat-model.md}
+\item
+  \texttt{docs/rbac.md}
+\end{itemize}
+
+Blockchain/NFT:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{docs/nft-spec.md}
+\item
+  \texttt{docs/devnet-proof.md}
+\item
+  \texttt{docs/rotation-spec.md}
+\item
+  \texttt{lib/core-candy-machine-admin.ts}
+\item
+  \texttt{lib/core-authority-lifecycle.ts}
+\item
+  \texttt{lib/purchase-service.ts}
+\item
+  \texttt{lib/stake-service.ts}
+\end{itemize}
+
+Marketplace and admin:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/marketplace/*}
+\item
+  \texttt{components/marketplace/*}
+\item
+  \texttt{lib/property-marketplace-server.ts}
+\item
+  \texttt{app/admin/*}
+\item
+  \texttt{components/admin/*}
+\item
+  \texttt{lib/admin/*}
+\end{itemize}
+
+Checkout, compliance, notifications:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{app/api/checkout/*}
+\item
+  \texttt{lib/checkout-service.ts}
+\item
+  \texttt{app/api/admin/compliance/*}
+\item
+  \texttt{lib/compliance/*}
+\item
+  \texttt{app/api/admin/notifications/*}
+\item
+  \texttt{lib/notifications/*}
+\end{itemize}
+
+Testing:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{tests/*}
+\item
+  \texttt{e2e/*}
+\item
+  \texttt{npm\ run\ validate}
+\end{itemize}
+
+\subsection{Immediate Next Actions}\label{immediate-next-actions}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Review this document with founders/product and soften any business
+  claims that need it.
+\item
+  Turn the pitch deck translation section into a deck outline with
+  screenshots from the live app.
+\item
+  Create Phase 0 execution tickets for demo readiness, map bugs, and
+  evidence capture.
+\item
+  Create Phase 1 engineering tickets for persistent sessions, full
+  Sphere ramp implementation, card + crypto integration, Stripe Identity
+  persistence, admin KYC view, compliance RBAC role, and marketplace
+  performance.
+\item
+  Create admin dashboard tickets for Squads treasury, freeze/unfreeze
+  distributions, actionable KPIs, CRM notifications, and KYC compliance
+  module work.
+\item
+  Create user dashboard tickets for real summary, real portfolio,
+  rentas/claim, transfer requests, and history reconciled with
+  wallet/modules/database records.
+\item
+  Create staking/distribution tickets for canonical event
+  reconciliation, period pipeline, KYC eligibility, treasury/Squads
+  reads, distribution service, claim lifecycle, UI/backoffice APIs, and
+  traceability/audit.
+\item
+  Keep this document updated after each roadmap milestone so investor
+  materials and engineering reality do not drift.
+\end{enumerate}
+
+\end{document}
