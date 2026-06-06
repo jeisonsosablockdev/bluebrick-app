@@ -1,6 +1,16 @@
 # Session Model
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-06
+
+## BRI-171 Investor Overview Session Boundary
+- Investor Overview uses the existing protected account/session model and does not create a new session layer.
+- `GET /api/protected/overview` resolves session state with `resolveAppAuthContext`.
+- Account authentication is required to read the route.
+- Wallet-bound investor metrics require a server-resolved `walletPublicKey`; client query/body wallet values are not session authority.
+- Account-only/federated sessions may render the protected shell, but the Overview returns `wallet_required` for investment metrics until a wallet session/link is available.
+- Session conflict remains fail-closed for investment data: the Overview must not silently choose one wallet when WorkOS and SIWS resolve to different account ownership.
+- The Overview DTO is derived data. It does not become a browser session capability, payout entitlement, claim credential, or wallet authority substitute.
+- No cookie names, TTLs, nonce behavior, SIWS verification flow, WorkOS session behavior, or role derivation changed in BRI-171.
 
 ## BRI-6 Distribution Preparation Session Boundary
 - Distribution preparation reuses the existing admin SIWS session model.

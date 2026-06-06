@@ -6,6 +6,7 @@ import {
   createDistributionDraft,
   finalizeDistributionRun,
   getDistributionRunById,
+  listDistributionItemsByWallet,
   listDistributionAuditEvents,
   replaceDistributionItems
 } from "@/lib/distributions/distribution-repository";
@@ -144,5 +145,56 @@ describe("lib/distributions/distribution-repository (in-memory)", () => {
 
     expect(events).toHaveLength(2);
     expect(events.map((event) => event.eventName)).toEqual(["draft_created", "draft_reviewed"]);
+  });
+
+  it("lists finalized distribution items scoped to one wallet for investor overview reads", async () => {
+    const run = await createDistributionDraft({
+      periodKey: "2026-05",
+      collectionAddress: "Collection555",
+      propertyId: "property-5",
+      periodStartAt: "2026-05-01T05:00:00.000Z",
+      periodEndAt: "2026-06-01T04:59:59.999Z",
+      policyVersion: "v1",
+      tokenMint: "USDC111",
+      totalAmountMinor: 1_000_000n,
+      createdByActorId: "admin-1"
+    });
+
+    await replaceDistributionItems({
+      runId: run.id,
+      outputChecksum: "sha256:wallet-items",
+      items: [
+        {
+          walletPublicKey: "Wallet111",
+          assetAddress: "Asset111",
+          frozenSeconds: 3_600n,
+          amountMinor: 700_000n,
+          roundingRemainderRank: 0,
+          itemPayload: { source: "overview" }
+        },
+        {
+          walletPublicKey: "Wallet222",
+          assetAddress: "Asset222",
+          frozenSeconds: 1_800n,
+          amountMinor: 300_000n,
+          roundingRemainderRank: 1,
+          itemPayload: { source: "overview" }
+        }
+      ]
+    });
+
+    await finalizeDistributionRun({
+      runId: run.id,
+      outputChecksum: "sha256:wallet-items",
+      finalizedByActorId: "admin-1"
+    });
+
+    const walletItems = await listDistributionItemsByWallet("Wallet111");
+
+    expect(walletItems).toHaveLength(1);
+    expect(walletItems[0]?.walletPublicKey).toBe("Wallet111");
+    expect(walletItems[0]?.amountMinor).toBe(700_000n);
+    expect(walletItems[0]?.run.status).toBe("finalized");
+    expect(walletItems[0]?.run.collectionAddress).toBe("Collection555");
   });
 });

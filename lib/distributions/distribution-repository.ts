@@ -42,6 +42,10 @@ export type DistributionItemRecord = {
   createdAt: string;
 };
 
+export type DistributionItemWithRunRecord = DistributionItemRecord & {
+  run: DistributionRunRecord;
+};
+
 export type DistributionAuditEventRecord = {
   id: string;
   runId: string;
@@ -141,6 +145,39 @@ type DistributionAuditEventRow = {
   actor_id: string;
   event_payload: unknown;
   created_at: string | Date;
+};
+
+type DistributionItemWithRunRow = {
+  item_id: string;
+  item_run_id: string;
+  item_wallet_public_key: string;
+  item_asset_address: string | null;
+  item_frozen_seconds: string | number | bigint;
+  item_amount_minor: string | number | bigint;
+  item_rounding_remainder_rank: number | null;
+  item_exclusion_reason: string | null;
+  item_payload: unknown;
+  item_created_at: string | Date;
+  run_id: string;
+  run_period_key: string;
+  run_collection_address: string;
+  run_property_id: string;
+  run_period_start_at: string | Date;
+  run_period_end_at: string | Date;
+  run_period_timezone: string;
+  run_policy_version: string;
+  run_token_mint: string;
+  run_total_amount_minor: string | number | bigint;
+  run_status: DistributionRunStatus;
+  run_blocked_reason: string | null;
+  run_output_checksum: string | null;
+  run_item_count: number;
+  run_total_wallets: number;
+  run_created_by_actor_id: string;
+  run_finalized_by_actor_id: string | null;
+  run_finalized_at: string | Date | null;
+  run_created_at: string | Date;
+  run_updated_at: string | Date;
 };
 
 const runColumns = `
@@ -319,6 +356,45 @@ function mapAuditRow(row: DistributionAuditEventRow): DistributionAuditEventReco
     actorId: row.actor_id,
     eventPayload: readJsonObject(row.event_payload),
     createdAt: toIso(row.created_at) ?? new Date().toISOString()
+  };
+}
+
+function mapItemWithRunRow(row: DistributionItemWithRunRow): DistributionItemWithRunRecord {
+  return {
+    ...mapItemRow({
+      id: row.item_id,
+      run_id: row.item_run_id,
+      wallet_public_key: row.item_wallet_public_key,
+      asset_address: row.item_asset_address,
+      frozen_seconds: row.item_frozen_seconds,
+      amount_minor: row.item_amount_minor,
+      rounding_remainder_rank: row.item_rounding_remainder_rank,
+      exclusion_reason: row.item_exclusion_reason,
+      item_payload: row.item_payload,
+      created_at: row.item_created_at
+    }),
+    run: mapRunRow({
+      id: row.run_id,
+      period_key: row.run_period_key,
+      collection_address: row.run_collection_address,
+      property_id: row.run_property_id,
+      period_start_at: row.run_period_start_at,
+      period_end_at: row.run_period_end_at,
+      period_timezone: row.run_period_timezone,
+      policy_version: row.run_policy_version,
+      token_mint: row.run_token_mint,
+      total_amount_minor: row.run_total_amount_minor,
+      status: row.run_status,
+      blocked_reason: row.run_blocked_reason,
+      output_checksum: row.run_output_checksum,
+      item_count: row.run_item_count,
+      total_wallets: row.run_total_wallets,
+      created_by_actor_id: row.run_created_by_actor_id,
+      finalized_by_actor_id: row.run_finalized_by_actor_id,
+      finalized_at: row.run_finalized_at,
+      created_at: row.run_created_at,
+      updated_at: row.run_updated_at
+    })
   };
 }
 
@@ -556,6 +632,77 @@ export async function replaceDistributionItems(input: ReplaceDistributionItemsIn
       await client.query("ROLLBACK");
       throw error;
     }
+  });
+}
+
+export async function listDistributionItemsByWallet(walletPublicKey: string): Promise<DistributionItemWithRunRecord[]> {
+  const wallet = assertNonEmpty(walletPublicKey, "walletPublicKey");
+
+  if (!isDatabaseConfigured()) {
+    const records: DistributionItemWithRunRecord[] = [];
+
+    for (const [runId, items] of inMemoryItemsByRunId.entries()) {
+      const run = inMemoryRunsById.get(runId);
+      if (!run) {
+        continue;
+      }
+
+      for (const item of items) {
+        if (item.walletPublicKey === wallet) {
+          records.push({ ...item, run: { ...run } });
+        }
+      }
+    }
+
+    return records.sort((left, right) => (
+      right.run.periodEndAt.localeCompare(left.run.periodEndAt)
+      || right.createdAt.localeCompare(left.createdAt)
+      || right.id.localeCompare(left.id)
+    ));
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<DistributionItemWithRunRow>(
+      `SELECT
+         i.id AS item_id,
+         i.run_id AS item_run_id,
+         i.wallet_public_key AS item_wallet_public_key,
+         i.asset_address AS item_asset_address,
+         i.frozen_seconds AS item_frozen_seconds,
+         i.amount_minor AS item_amount_minor,
+         i.rounding_remainder_rank AS item_rounding_remainder_rank,
+         i.exclusion_reason AS item_exclusion_reason,
+         i.item_payload,
+         i.created_at AS item_created_at,
+         r.id AS run_id,
+         r.period_key AS run_period_key,
+         r.collection_address AS run_collection_address,
+         r.property_id AS run_property_id,
+         r.period_start_at AS run_period_start_at,
+         r.period_end_at AS run_period_end_at,
+         r.period_timezone AS run_period_timezone,
+         r.policy_version AS run_policy_version,
+         r.token_mint AS run_token_mint,
+         r.total_amount_minor AS run_total_amount_minor,
+         r.status AS run_status,
+         r.blocked_reason AS run_blocked_reason,
+         r.output_checksum AS run_output_checksum,
+         r.item_count AS run_item_count,
+         r.total_wallets AS run_total_wallets,
+         r.created_by_actor_id AS run_created_by_actor_id,
+         r.finalized_by_actor_id AS run_finalized_by_actor_id,
+         r.finalized_at AS run_finalized_at,
+         r.created_at AS run_created_at,
+         r.updated_at AS run_updated_at
+       FROM distribution_items i
+       INNER JOIN distribution_runs r ON r.id = i.run_id
+       WHERE i.wallet_public_key = $1
+       ORDER BY r.period_end_at DESC, i.created_at DESC, i.id DESC
+       LIMIT 100`,
+      [wallet]
+    );
+
+    return result.rows.map((row) => mapItemWithRunRow(row));
   });
 }
 

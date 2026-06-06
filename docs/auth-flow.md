@@ -1,6 +1,17 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-06
+
+## BRI-171 Investor Overview Protected Read Boundary
+- The Investor Dashboard Overview now reads real user data through `GET /api/protected/overview`.
+- This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.
+- Authority is resolved server-side through `resolveAppAuthContext`.
+- The route rejects unauthenticated account sessions before any investor data is queried.
+- The route derives `walletPublicKey` from the server-side auth context and ignores client-provided wallet identifiers.
+- Federated/account-only sessions without a wallet return a `wallet_required` Overview state instead of cross-wallet metrics.
+- If the hybrid WorkOS/SIWS context is conflicted, investor data is not queried as another wallet.
+- The browser receives a presentation DTO only; it does not decide holdings, eligibility, investment amount, stake state, or distribution totals.
+- Overview data is composed from existing trusted sources: profile/compliance DB, confirmed purchase attempts, server-side BRIDS wallet inventory, BRI-5/BRI-170 stake history, and BRI-6 distribution preparation when available.
 
 ## BRI-6 Distribution Preparation Admin Boundary
 - New admin distribution preparation routes:
