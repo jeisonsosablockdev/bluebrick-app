@@ -177,6 +177,14 @@ function formatInteger(value: string | number): string {
   }).format(parsed);
 }
 
+function formatOptionalStatus(value: string | null, t: TranslateFn): string {
+  if (!value) {
+    return t({ en: "Not available yet", es: "No disponible todavia", pt: "Ainda nao disponivel" });
+  }
+
+  return value.replace(/_/g, " ");
+}
+
 function formatStateLabel(state: StakeVisibleState, t: TranslateFn): string {
   if (state === "ready_to_stake") {
     return t({ en: "Ready to stake", es: "Listo para stake", pt: "Pronto para stake" });
@@ -194,6 +202,8 @@ function formatStateLabel(state: StakeVisibleState, t: TranslateFn): string {
 }
 
 function buildMetrics(overview: InvestorOverview, t: TranslateFn): DashboardMetric[] {
+  const hasPreparedDistributionRun = Boolean(overview.summary.preparedDistributionCurrency);
+
   return [
     {
       label: t({ en: "Historical invested", es: "Invertido historico", pt: "Investido historico" }),
@@ -207,8 +217,12 @@ function buildMetrics(overview: InvestorOverview, t: TranslateFn): DashboardMetr
     },
     {
       label: t({ en: "Prepared distributions", es: "Distribuciones preparadas", pt: "Distribuicoes preparadas" }),
-      value: formatInteger(overview.summary.preparedDistributionMinor),
-      detail: overview.summary.preparedDistributionCurrency ?? t({ en: "No finalized run", es: "Sin corrida finalizada", pt: "Sem rodada finalizada" })
+      value: hasPreparedDistributionRun ? formatInteger(overview.summary.preparedDistributionMinor) : t({ en: "Not available yet", es: "No disponible todavia", pt: "Ainda nao disponivel" }),
+      detail: overview.summary.preparedDistributionCurrency ?? t({
+        en: "No prepared distribution run yet",
+        es: "Aun no hay corrida de distribucion preparada",
+        pt: "Ainda nao ha rodada de distribuicao preparada"
+      })
     },
     {
       label: t({ en: "Operational status", es: "Estado operativo", pt: "Estado operacional" }),
@@ -296,7 +310,11 @@ function RecentActivity({ overview, t }: { overview: InvestorOverview; t: Transl
       </h2>
       {overview.recentActivity.length === 0 ? (
         <p className="text-sm text-white/70">
-          {t({ en: "No recent stake activity persisted for this wallet.", es: "No hay actividad reciente de stake persistida para esta wallet.", pt: "Nao ha atividade recente de stake persistida para esta wallet." })}
+          {t({
+            en: "No stake or unstake events recorded for this wallet yet.",
+            es: "Aun no hay eventos de stake o unstake registrados para esta wallet.",
+            pt: "Ainda nao ha eventos de stake ou unstake registrados para esta wallet."
+          })}
         </p>
       ) : (
         <ul className="space-y-2">
@@ -387,7 +405,7 @@ export function OverviewModule(): ReactElement {
               {t({ en: "Profile and compliance", es: "Perfil y compliance", pt: "Perfil e compliance" })}
             </h2>
             <p className="text-sm text-white/75">
-              KYC: {overview.profile.kycStatus ?? "unknown"} · Compliance: {overview.profile.complianceStatus ?? "unknown"}
+              KYC: {formatOptionalStatus(overview.profile.kycStatus, t)} · Compliance: {formatOptionalStatus(overview.profile.complianceStatus, t)}
             </p>
           </Card>
           <HoldingsPreview overview={overview} t={t} />

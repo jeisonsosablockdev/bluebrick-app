@@ -196,4 +196,40 @@ describe("components/dashboard/overview-module", () => {
       root.unmount();
     });
   });
+
+  it("renders absent profile and distribution data as explicit states instead of placeholders", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => createOverviewResponse({
+      profile: {
+        kycStatus: null,
+        complianceStatus: null,
+        profileCompletedAt: null
+      },
+      summary: {
+        historicalInvestedMinor: "0",
+        historicalInvestedCurrency: "LAMPORTS",
+        currentlyOwnedFractions: 1,
+        readyToStakeCount: 1,
+        readyToUnstakeCount: 0,
+        syncPendingCount: 0,
+        unsupportedCount: 0,
+        preparedDistributionMinor: "0",
+        preparedDistributionCurrency: null
+      },
+      recentActivity: []
+    })));
+
+    const { container, root } = renderModule();
+
+    await flush();
+
+    expect(container.textContent).toContain("Not available yet");
+    expect(container.textContent).toContain("No prepared distribution run yet");
+    expect(container.textContent).toContain("No stake or unstake events recorded for this wallet yet.");
+    expect(container.textContent).not.toContain("unknown");
+    expect(container.textContent).not.toContain("No finalized run");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });
