@@ -13,7 +13,7 @@ describe("PR governance contracts", () => {
     );
 
     expect(source).toContain("artifact pair");
-    expect(source).toContain("spec slice");
+    expect(source).toContain("multi-SPEC");
   });
 
   it("validates the PR head branch instead of the synthetic merge commit when available", () => {
@@ -27,14 +27,14 @@ describe("PR governance contracts", () => {
     expect(source).toContain("\"${MERGE_BASE}..${HEAD_REVISION}\"");
   });
 
-  it("keeps docs governance aware of Linear initiative branches", () => {
+  it("keeps docs governance aware of parent work branches and SPEC branches", () => {
     const source = readFileSync(
       path.join(repoRoot, "scripts", "ci", "check-required-docs.sh"),
       "utf8"
     );
 
-    expect(source).toContain("requires_initiative_artifact_pair");
-    expect(source).toContain("Linear initiative branch detected");
+    expect(source).toContain("resolve_spec_parent_work_branch");
+    expect(source).toContain("Create SPEC branches with ./scripts/git-start.sh.");
   });
 
   it("keeps PR open flow aligned with local preflight and labels", () => {
@@ -45,5 +45,15 @@ describe("PR governance contracts", () => {
 
     expect(source).toContain("governance-only");
     expect(source).toContain("LABEL_ARGS");
+    expect(source).toContain("linear:issue-review");
+  });
+
+  it("keeps PR readiness aligned with Linear review status automation", () => {
+    const source = readFileSync(
+      path.join(repoRoot, "scripts", "ci", "pr-ready.sh"),
+      "utf8"
+    );
+
+    expect(source).toContain("linear:issue-review");
   });
 });

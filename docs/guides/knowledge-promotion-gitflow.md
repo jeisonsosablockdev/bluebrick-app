@@ -25,8 +25,8 @@ npm run validate:knowledge
 
 ## Gitflow Integration
 Use this loop on shared workflow work:
-1. Implement the shared fix or improvement on a feature/fix branch.
-2. Update the required `docs/features/*.md` note.
+1. Implement the shared fix or improvement on the issue-type-driven parent work branch.
+2. Update the required documentation note track (`docs/features/*.md` or `docs/fixes/*.md` as appropriate).
 3. If the branch discovered a reusable workflow or anti-pattern, add or update one inbox item under `docs/knowledge/inbox/*`.
 4. Run `npm run knowledge:index` so the repo-level index stays current.
 5. Optionally run `npm run knowledge:scan -- --base develop` to generate a branch report.

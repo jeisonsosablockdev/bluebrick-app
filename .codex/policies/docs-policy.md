@@ -14,8 +14,8 @@
 - RFC structure, status values, and traceability must follow the documentation policy, templates, and enforcement scripts.
 - Non-trivial work requires an artifact before implementation.
 - New features and fixes use a dual artifact pair.
-- Multi-slice work requires the spec slice before delivery slices.
-- When RFC applies in the spec-slice model, RFC creation or update belongs to that spec slice.
+- Multi-SPEC work requires the first SPEC before delivery SPECs.
+- When RFC applies in the SPEC model, RFC creation or update belongs to that first SPEC.
 - Any docs validation failure blocks completion.
 
 ## Required Evidence

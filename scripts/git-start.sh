@@ -6,28 +6,29 @@ usage() {
 Uso:
   ./scripts/git-start.sh <scope> <name>
   ./scripts/git-start.sh <type> <scope> <name> [options]
+  ./scripts/git-start.sh SPEC <name> [options]
 
 Ejemplos:
   ./scripts/git-start.sh app initial-ui
-  ./scripts/git-start.sh fix shared proxy-convention
-  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
-  ./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug spec
+  ./scripts/git-start.sh feature shared fix-ui-elements --mode parent --owner czambrano --issue BRI-38
+  ./scripts/git-start.sh bugfix shared login-redirect-fix --mode parent --owner czambrano --issue BRI-171
+  ./scripts/git-start.sh epic shared admin-collections-console --mode parent --owner czambrano --issue EPIC-011
+  ./scripts/git-start.sh SPEC hero-copy-tightening --mode spec --owner czambrano --issue BRI-38 --base feature/czambrano-BRI-38-fix-ui-elements
 
 Options:
-  --mode <single|initiative|slice>
+  --mode <single|parent|spec>
+  --owner <handle>
   --issue <BRI-149>
-  --slice-id <S01>
-  --slice-slug <slug>
   --base <branch>
 USAGE
 }
 
 is_branch_type() {
-  [[ "${1:-}" =~ ^(feature|fix|security|nft|refactor)$ ]]
+  [[ "${1:-}" =~ ^(feature|bugfix|fix|hotfix|epic|security|nft|refactor)$ ]]
 }
 
-is_branch_scope() {
-  [[ "${1:-}" =~ ^(app|program|shared)$ ]]
+is_spec_type() {
+  [[ "${1:-}" == "SPEC" ]]
 }
 
 is_legacy_feature_scope() {
@@ -46,17 +47,17 @@ normalize_issue_key() {
   value="$(printf '%s' "${raw}" | tr '[:lower:]' '[:upper:]')"
 
   if [[ -z "${value}" ]]; then
-    echo "❌ --issue es obligatorio para ramas initiative/slice."
+    echo "❌ --issue es obligatorio para ramas parent/SPEC."
     exit 1
   fi
 
   if [[ "${value}" =~ ^[0-9]+$ ]]; then
-    printf 'bri-%s' "${value}"
+    printf 'BRI-%s' "${value}"
     return 0
   fi
 
   if [[ "${value}" =~ ^[A-Z]+-[0-9]+$ ]]; then
-    printf '%s' "${value}" | tr '[:upper:]' '[:lower:]'
+    printf '%s' "${value}"
     return 0
   fi
 
@@ -92,8 +93,7 @@ SCOPE=""
 NAME=""
 MODE="single"
 ISSUE_KEY=""
-SLICE_ID=""
-SLICE_SLUG=""
+OWNER=""
 BASE_BRANCH=""
 
 POSITIONAL=()
@@ -108,12 +108,8 @@ while [[ $# -gt 0 ]]; do
       ISSUE_KEY="$2"
       shift 2
       ;;
-    --slice-id)
-      SLICE_ID="$2"
-      shift 2
-      ;;
-    --slice-slug)
-      SLICE_SLUG="$2"
+    --owner)
+      OWNER="$2"
       shift 2
       ;;
     --base)
@@ -136,7 +132,15 @@ if [[ "${#POSITIONAL[@]}" -lt 2 ]]; then
   exit 1
 fi
 
-if [[ "${#POSITIONAL[@]}" -ge 3 ]] && is_branch_type "${POSITIONAL[0]}" && is_branch_scope "${POSITIONAL[1]}"; then
+if is_spec_type "${POSITIONAL[0]}"; then
+  if [[ "${#POSITIONAL[@]}" -ne 2 ]]; then
+    echo "❌ SPEC solo acepta <name> como argumento posicional."
+    usage
+    exit 1
+  fi
+  TYPE="SPEC"
+  NAME="${POSITIONAL[1]}"
+elif [[ "${#POSITIONAL[@]}" -ge 3 ]] && is_branch_type "${POSITIONAL[0]}" && is_legacy_feature_scope "${POSITIONAL[1]}"; then
   TYPE="${POSITIONAL[0]}"
   SCOPE="${POSITIONAL[1]}"
   NAME="${POSITIONAL[2]}"
@@ -150,12 +154,12 @@ else
   exit 1
 fi
 
-if ! is_branch_type "${TYPE}"; then
+if [[ "${TYPE}" != "SPEC" ]] && ! is_branch_type "${TYPE}"; then
   echo "❌ Tipo inválido: ${TYPE}"
   exit 1
 fi
 
-if ! is_branch_scope "${SCOPE}"; then
+if [[ -n "${SCOPE}" ]] && ! is_legacy_feature_scope "${SCOPE}"; then
   echo "❌ Scope inválido: ${SCOPE}"
   exit 1
 fi
@@ -166,12 +170,31 @@ if [[ "${TYPE}" == "nft" && "${SCOPE}" != "program" ]]; then
 fi
 
 if [[ "${MODE}" == "integration" ]]; then
-  echo "⚠️  --mode integration es legacy; usa --mode initiative."
-  MODE="initiative"
+  echo "⚠️  --mode integration es legacy; usa --mode parent."
+  MODE="parent"
 fi
 
-if [[ ! "${MODE}" =~ ^(single|initiative|slice)$ ]]; then
-  echo "❌ --mode inválido: ${MODE}. Usa single, initiative o slice."
+if [[ "${MODE}" == "initiative" ]]; then
+  echo "⚠️  --mode initiative es legacy; usa --mode parent."
+  MODE="parent"
+fi
+
+if [[ "${MODE}" == "slice" ]]; then
+  echo "⚠️  --mode slice es legacy; usa --mode spec."
+  MODE="spec"
+fi
+
+if [[ "${TYPE}" == "SPEC" && "${MODE}" == "single" ]]; then
+  MODE="spec"
+fi
+
+if [[ "${TYPE}" == "SPEC" && "${MODE}" != "spec" ]]; then
+  echo "❌ El tipo SPEC solo permite --mode spec."
+  exit 1
+fi
+
+if [[ ! "${MODE}" =~ ^(single|parent|spec)$ ]]; then
+  echo "❌ --mode inválido: ${MODE}. Usa single, parent o spec."
   exit 1
 fi
 
@@ -181,51 +204,54 @@ if [[ -z "${NAME_SLUG}" ]]; then
   exit 1
 fi
 
-BRANCH_PREFIX="${TYPE}/${SCOPE}-${NAME_SLUG}"
-
 if [[ "${MODE}" == "single" ]]; then
-  BRANCH="${BRANCH_PREFIX}"
+  BRANCH="${TYPE}/${SCOPE}-${NAME_SLUG}"
   BASE_BRANCH="${BASE_BRANCH:-develop}"
-elif [[ "${MODE}" == "initiative" ]]; then
+elif [[ "${MODE}" == "parent" ]]; then
   NORMALIZED_ISSUE="$(normalize_issue_key "${ISSUE_KEY}")"
-  BRANCH="initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
+  NORMALIZED_OWNER="$(slugify "${OWNER}")"
+  if [[ -z "${NORMALIZED_OWNER}" ]]; then
+    echo "❌ --owner es obligatorio para ramas parent."
+    exit 1
+  fi
+  BRANCH="${TYPE}/${NORMALIZED_OWNER}-${NORMALIZED_ISSUE}-${NAME_SLUG}"
   BASE_BRANCH="${BASE_BRANCH:-develop}"
 else
   NORMALIZED_ISSUE="$(normalize_issue_key "${ISSUE_KEY}")"
-  if [[ -z "${SLICE_ID}" || -z "${SLICE_SLUG}" ]]; then
-    echo "❌ --slice-id y --slice-slug son obligatorios para --mode slice."
+  NORMALIZED_OWNER="$(slugify "${OWNER}")"
+  if [[ -z "${NORMALIZED_OWNER}" ]]; then
+    echo "❌ --owner es obligatorio para ramas SPEC."
     exit 1
   fi
 
-  NORMALIZED_SLICE_ID="$(printf '%s' "${SLICE_ID}" | tr '[:upper:]' '[:lower:]')"
-  if [[ ! "${NORMALIZED_SLICE_ID}" =~ ^s[0-9]{2}$ ]]; then
-    echo "❌ --slice-id debe usar formato S01."
+  if [[ -z "${BASE_BRANCH}" ]]; then
+    echo "❌ --base es obligatorio para ramas SPEC."
     exit 1
   fi
 
-  NORMALIZED_SLICE_SLUG="$(slugify "${SLICE_SLUG}")"
-  if [[ -z "${NORMALIZED_SLICE_SLUG}" ]]; then
-    echo "❌ --slice-slug no puede quedar vacío después de normalizar."
-    exit 1
-  fi
-
-  BRANCH="${BRANCH_PREFIX}-${NORMALIZED_ISSUE}-${NORMALIZED_SLICE_ID}-${NORMALIZED_SLICE_SLUG}"
-  BASE_BRANCH="${BASE_BRANCH:-initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}}"
+  BRANCH="SPEC/${NORMALIZED_OWNER}-${NORMALIZED_ISSUE}-${NAME_SLUG}"
 fi
 
 git status --porcelain >/dev/null
 ensure_base_branch_available "${BASE_BRANCH}"
 
 git checkout -b "${BRANCH}"
+if [[ "${MODE}" == "parent" || "${MODE}" == "spec" ]]; then
+  git config "branch.${BRANCH}.linearIssueKey" "${NORMALIZED_ISSUE}"
+  git config "branch.${BRANCH}.linearIssueType" "${TYPE}"
+fi
+if [[ "${MODE}" == "spec" ]]; then
+  git config "branch.${BRANCH}.parentWorkBranch" "${BASE_BRANCH}"
+fi
 echo "✅ Rama creada: ${BRANCH}"
 echo "🌿 Base branch: ${BASE_BRANCH}"
 
-if [[ "${MODE}" == "slice" ]]; then
-  echo "🧩 Slice branch detectada. Siguiente PR objetivo: initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
-  echo "📝 Recuerda: el spec slice debe ser S01 antes de abrir delivery slices."
-elif [[ "${MODE}" == "initiative" ]]; then
-  echo "🧭 Linear initiative branch detectada. Siguiente PR final objetivo: develop"
-  echo "📝 Para trabajo multi-slice, crea primero el spec slice antes de abrir delivery slices."
+if [[ "${MODE}" == "spec" ]]; then
+  echo "🧩 SPEC branch detectada. Siguiente PR objetivo: ${BASE_BRANCH}"
+  echo "📝 Recuerda: la primera SPEC debe ser la de planificación y las siguientes salen una por una."
+elif [[ "${MODE}" == "parent" ]]; then
+  echo "🧭 Parent work branch detectada. Siguiente PR final objetivo: develop"
+  echo "📝 Para trabajo multi-SPEC, crea primero la SPEC de planificación antes de abrir las demás."
 fi
 
 echo "🧪 Gate inicial obligatorio:"
@@ -233,10 +259,19 @@ echo "   1) Crea o actualiza el artefacto que gobierna el trabajo antes de imple
 if [[ "${TYPE}" == "fix" ]]; then
   echo "      - docs/fixes/fix-<slug>.md"
   echo "      - docs/fixes/fix-<slug>-implementation.md"
-elif [[ "${TYPE}" == "feature" ]]; then
+elif [[ "${TYPE}" == "feature" || "${TYPE}" == "security" || "${TYPE}" == "nft" || "${TYPE}" == "refactor" ]]; then
   echo "      - docs/features/feature-<slug>.md"
   echo "      - docs/features/feature-<slug>-implementation.md"
 fi
-echo "   2) Para trabajo multi-slice, resuelve el spec slice antes de delivery slices."
+
+if [[ "${MODE}" == "parent" || "${MODE}" == "spec" ]]; then
+  echo "🔄 Sincronizando Linear a 'In Progress' para ${NORMALIZED_ISSUE}."
+  npm run linear:issue-start -- --issue "${NORMALIZED_ISSUE}"
+fi
+if [[ "${MODE}" == "spec" ]]; then
+  echo "   2) Para trabajo multi-SPEC, resuelve la SPEC de planificación antes de delivery SPECs."
+else
+  echo "   2) Para trabajo multi-SPEC, separa cada SPEC y no las crees todas de una vez."
+fi
 echo "   3) Define o actualiza tests unitarios de la historia primero (fase RED)."
 echo "   4) Implementa codigo solo despues de tener esos tests definidos."

@@ -11,6 +11,10 @@
     "mapboxDevKit": {
       "command": "npx",
       "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+    },
+    "linear": {
+      "command": "npx",
+      "args": ["tsx", "./scripts/linear-mcp-server.ts"]
     }
   }
 }

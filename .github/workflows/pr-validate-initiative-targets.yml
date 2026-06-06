@@ -1,14 +1,13 @@
-name: PR Validation (Linear Initiative Targets)
+name: PR Validation (Parent Work Branch Targets)
 
 on:
   pull_request:
     branches:
-      - initiative/**
-      - feature/**-integration
-      - fix/**-integration
-      - security/**-integration
-      - nft/**-integration
-      - refactor/**-integration
+      - feature/**
+      - fix/**
+      - security/**
+      - nft/**
+      - refactor/**
     types:
       - opened
       - synchronize
@@ -16,7 +15,7 @@ on:
       - ready_for_review
 
 concurrency:
-  group: pr-initiative-targets-${{ github.event.pull_request.number }}
+  group: pr-parent-work-targets-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 permissions:

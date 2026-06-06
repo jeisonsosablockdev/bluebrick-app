@@ -6,13 +6,16 @@ import { describe, expect, it } from "vitest";
 const repoRoot = process.cwd();
 
 describe("agent orchestration contracts", () => {
-  it("keeps AGENTS.md aligned with artifact-first and spec-slice-first", () => {
+  it("keeps AGENTS.md aligned with artifact-first and SPEC-first", () => {
     const source = readFileSync(path.join(repoRoot, "AGENTS.md"), "utf8");
 
     expect(source).toContain("docs/features/feature-<slug>.md");
     expect(source).toContain("docs/fixes/fix-<slug>.md");
-    expect(source).toContain("spec slice");
+    expect(source).toContain("first SPEC");
     expect(source).toContain("npm run task:init");
+    expect(source).toContain("In Progress");
+    expect(source).toContain("In Review");
+    expect(source).toContain("Done");
   });
 
   it("requires planner and docs agents to use artifact-first preconditions", () => {
@@ -20,7 +23,7 @@ describe("agent orchestration contracts", () => {
     const docs = readFileSync(path.join(repoRoot, ".codex", "agents", "docs.toml"), "utf8");
 
     expect(planner).toContain("parent Linear issue");
-    expect(planner).toContain("spec slice");
+    expect(planner).toContain("first SPEC");
     expect(planner).toContain("Socratic clarification pass");
     expect(docs).toContain("problem artifact");
     expect(docs).toContain("solution artifact");
@@ -38,7 +41,7 @@ describe("agent orchestration contracts", () => {
     );
 
     expect(docsPolicy).toContain("dual artifact");
-    expect(docsPolicy).toContain("spec slice");
+    expect(docsPolicy).toContain("SPEC model");
     expect(testingPolicy).toContain("test-plan-first");
   });
 });

@@ -38,7 +38,7 @@ For motion-driven UX/UI work:
 	3.	Use motion to communicate refresh, navigation, expansion, activation, theme shift, login, loading progression, and property opening.
 	4.	Preserve current Core Web Vitals, especially on landing and other public entry surfaces.
 	5.	Respect `prefers-reduced-motion`.
-	6.	When a slice needs AI-assisted UI/tooling guidance, follow the OpenAI Developers docs-first workflow before implementation closes.
+	6.	When a SPEC needs AI-assisted UI/tooling guidance, follow the OpenAI Developers docs-first workflow before implementation closes.
 
 If motion makes the interface feel heavier or slower instead of clearer or more directional → task incomplete.
 

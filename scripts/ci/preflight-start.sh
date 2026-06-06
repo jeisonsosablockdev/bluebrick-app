@@ -125,11 +125,19 @@ branch_artifact_guidance() {
   local branch_name="$1"
 
   case "${branch_name}" in
-    feature/*|security/*|nft/*|refactor/*)
-      echo "- This branch family expects /docs/features/*.md updates when qualifying product code changes."
+    feature/*|security/*|nft/*|refactor/*|epic/*)
+      echo "- Parent work branch detected: keep /docs/features/*.md aligned with the parent issue and update it incrementally across SPECs."
       ;;
-    fix/*)
-      echo "- This branch family expects /docs/fixes/fix-<slug>.md and /docs/fixes/fix-<slug>-implementation.md for qualifying work."
+    fix/*|bugfix/*|hotfix/*)
+      echo "- Parent work branch detected: keep /docs/fixes/fix-<slug>.md and /docs/fixes/fix-<slug>-implementation.md aligned with the parent issue and update it incrementally across SPECs."
+      ;;
+    SPEC/*)
+      parent_work_branch="$(git config --get "branch.${branch_name}.parentWorkBranch" || true)"
+      if [[ -n "${parent_work_branch}" ]]; then
+        echo "- SPEC branch detected: PR target should be the parent work branch '${parent_work_branch}'."
+      else
+        echo "- SPEC branch detected: record the parent work branch in git config before opening the PR."
+      fi
       ;;
     develop)
       echo "- Fresh task brief detected: use ./scripts/task-init.sh to run the Socratic clarification pass and then create the right branch."
@@ -137,13 +145,13 @@ branch_artifact_guidance() {
   esac
 
   if [[ "${branch_name}" =~ ^initiative/ ]]; then
-    echo "- Linear initiative branch detected: spec slice should close before delivery slices."
+    echo "- Legacy initiative branch detected: migrate to the parent work branch plus SPEC model for new work."
   elif [[ "${branch_name}" =~ -integration$ ]]; then
-    echo "- Legacy integration branch detected: prefer initiative/* for new multi-slice work."
+    echo "- Legacy integration branch detected: prefer the parent work branch plus SPEC model for new multi-SPEC work."
   fi
 
-  if [[ "${branch_name}" =~ -s[0-9]{2}- ]]; then
-    echo "- Slice branch detected: PR target should be the Linear initiative branch, not develop."
+  if [[ "${branch_name}" =~ ^(feature|bugfix|fix|hotfix|epic|security|nft|refactor)/[a-z0-9-]+-[A-Z]+-[0-9]+-[a-z0-9-]+$ ]]; then
+    echo "- Parent work branch detected: PR target should be develop."
   fi
 }
 
@@ -287,7 +295,7 @@ append_action() {
 }
 
 if [[ "${TRACKED_COUNT}" != "0" || "${UNTRACKED_COUNT}" != "0" ]]; then
-  append_action "Finish, stash, or document the current worktree changes before switching branches or starting a new slice."
+  append_action "Finish, stash, or document the current worktree changes before switching branches or starting a new SPEC."
 fi
 
 if [[ "${BASE_LOCAL}" == "1" && "${BASE_REMOTE}" == "1" ]]; then
@@ -326,7 +334,7 @@ elif [[ ! -f package-lock.json && -f package.json ]]; then
 fi
 
 case "${CURRENT_BRANCH}" in
-  feature/*|fix/*|security/*|nft/*|refactor/*)
+  feature/*|bugfix/*|fix/*|hotfix/*|epic/*|security/*|nft/*|refactor/*)
     append_action "Review AGENTS.md before implementation: non-trivial work in this branch family needs the governing artifact pair before coding."
     ;;
 esac

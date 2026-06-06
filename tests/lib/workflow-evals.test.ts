@@ -40,12 +40,20 @@ describe("workflow evals", () => {
   it("keeps git helpers aligned with atomicity instead of convenience staging", () => {
     const gitSave = read("scripts/git-save.sh");
     const gitPush = read("scripts/git-push.sh");
+    const gitStart = read("scripts/git-start.sh");
+    const prOpen = read("scripts/ci/pr-open.sh");
+    const prReady = read("scripts/ci/pr-ready.sh");
+    const protectedPush = read(".github/workflows/protected-branch-push-provenance.yml");
 
     expect(gitSave).not.toContain("git add .");
     expect(gitSave).toContain("No hay cambios staged");
     expect(gitSave).toContain("No se permiten commits directos");
     expect(gitPush).toContain("No se permite push directo");
-    expect(gitPush).toContain("initiative/${BASH_REMATCH[2]}-${BASH_REMATCH[1]}");
+    expect(gitPush).toContain("parent work branch configurada");
+    expect(gitStart).toContain("linear:issue-start");
+    expect(prReady).toContain("linear:issue-review");
+    expect(prOpen).toContain("linear:issue-review");
+    expect(protectedPush).toContain("linear:issue-done");
   });
 
   it("keeps responsive/browser QA fail-closed on ambiguous evidence", () => {

@@ -76,7 +76,7 @@ if [[ -z "${CURRENT_BRANCH}" ]]; then
 fi
 
 if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then
-  echo "❌ You are on '${BASE_REF}'. Create a feature/fix branch first."
+  echo "❌ You are on '${BASE_REF}'. Create a parent work branch first."
   exit 1
 fi
 
@@ -157,7 +157,11 @@ echo "- Add exactly one type label (type:*)"
 echo "- Add exactly one risk label (risk:*)"
 echo "- Fill PR template sections: Issue, RFC, Riesgos, Rollback Plan, Prueba Devnet"
 echo "- If branch touches qualifying product code, update the required artifact pair for that branch family"
-echo "- For multi-slice work, confirm the spec slice closed before delivery slices"
+echo "- For multi-SPEC work, confirm the previous SPEC merged into the parent work branch before opening the next SPEC"
 
 echo
 echo "🎉 PR preflight passed. Safe to open PR against ${BASE_REF}."
+
+echo
+echo "6) Syncing Linear review status..."
+npm run linear:issue-review

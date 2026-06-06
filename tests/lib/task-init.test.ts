@@ -127,7 +127,7 @@ afterEach(async () => {
 });
 
 describe("task:init", () => {
-  it("asks for a Socratic breakdown before creating an initiative branch", async () => {
+  it("asks for a Socratic breakdown before creating a parent work branch", async () => {
     const repoDir = await createBootstrapRepo();
     const scriptPath = path.join(repoDir, "scripts", "task-init.sh");
     const input = [
@@ -136,8 +136,9 @@ describe("task:init", () => {
       "feature",
       "shared",
       "task-bootstrap",
-      "initiative",
+      "parent",
       "BRI-149",
+      "czambrano",
       "y"
     ].join("\n") + "\n";
 
@@ -148,9 +149,9 @@ describe("task:init", () => {
     expect(output).toContain("Breakdown");
     expect(output).toContain("Socratic pass complete.");
     expect(output).toContain("Canonical docs: docs/features/feature-task-bootstrap.md");
-    expect(output).toContain("Multi-slice reminder");
+    expect(output).toContain("Multi-SPEC reminder");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
-      "initiative/bri-149-task-bootstrap"
+      "feature/czambrano-BRI-149-task-bootstrap"
     );
   });
 });
