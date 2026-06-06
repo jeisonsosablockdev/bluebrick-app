@@ -142,21 +142,15 @@ type RunState = {
   signatures: RunSignatureEntry[];
 };
 
-type SnapshotFinalizeInput = {
-  quantity: number;
-  candyMachineAddress: string;
-  collectionAddress: string;
-  signatures: RunSignatureEntry[];
-  formState: PanelFormState;
-  draftId: string;
-  formSnapshot: Record<string, unknown>;
-};
-
-type SnapshotRecoveryContext = SnapshotFinalizeInput & {
-  deployId: string;
-};
-
-type SnapshotRecheckMode = "manual" | "auto";
+type SnapshotVerificationPhase =
+  | "idle"
+  | "confirming-transactions"
+  | "reading-candy-machine"
+  | "finalizing-snapshot"
+  | "preparing-create-asset"
+  | "verified"
+  | "stalled"
+  | "failed";
 
 export function isDeploySignatureConfirmedForCreateAsset(status: unknown): boolean {
   if (!status || typeof status !== "object") {
@@ -191,7 +185,22 @@ const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg",
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
 const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
 const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
-const SNAPSHOT_AUTO_RECHECK_DELAY_MS = 15_000;
+const SNAPSHOT_VERIFICATION_PHASES: Array<{
+  phase: SnapshotVerificationPhase;
+  label: string;
+}> = [
+  { phase: "confirming-transactions", label: "Confirming deploy transactions" },
+  { phase: "reading-candy-machine", label: "Reading Candy Machine state" },
+  { phase: "finalizing-snapshot", label: "Finalizing mint snapshot" },
+  { phase: "preparing-create-asset", label: "Preparing Create Asset gate" }
+];
+
+const SNAPSHOT_PENDING_PHASES = new Set<SnapshotVerificationPhase>([
+  "confirming-transactions",
+  "reading-candy-machine",
+  "finalizing-snapshot",
+  "preparing-create-asset"
+]);
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -370,13 +379,13 @@ export function CoreCandyMachinePanel({
     collectionAddress: null,
     signatures: []
   });
-  const [busyAction, setBusyAction] = useState<"deploy" | null>(null);
+  const [busyAction, setBusyAction] = useState<"deploy" | "snapshot-retry" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGeneratingUri, setIsGeneratingUri] = useState(false);
   const [isFinalizingSnapshot, setIsFinalizingSnapshot] = useState(false);
   const [snapshotResult, setSnapshotResult] = useState<SnapshotFinalizeResponse | null>(null);
-  const [snapshotRecoveryContext, setSnapshotRecoveryContext] = useState<SnapshotRecoveryContext | null>(null);
-  const [snapshotAutoRecheckArmed, setSnapshotAutoRecheckArmed] = useState(false);
+  const [snapshotVerificationPhase, setSnapshotVerificationPhase] = useState<SnapshotVerificationPhase>("idle");
+  const [pendingDeployCompletion, setPendingDeployCompletion] = useState<DeployCompletedPayload | null>(null);
 
   const requestGeneratedMetadataUris = useCallback(async (): Promise<GeneratedMetadataUris> => {
     if (!prefill?.imageUrl) {
@@ -488,6 +497,14 @@ export function CoreCandyMachinePanel({
   }, [form.assetUri, form.collectionUri, prefill?.imageUrl, generateMetadataUris]);
 
   const canRun = connected && Boolean(publicKey) && Boolean(signTransaction);
+  const isSnapshotVerificationPending = SNAPSHOT_PENDING_PHASES.has(snapshotVerificationPhase);
+  const canRetrySnapshot = Boolean(
+    pendingDeployCompletion
+    && snapshotVerificationPhase === "stalled"
+    && snapshotResult?.canCreateAsset !== true
+    && busyAction === null
+    && !isFinalizingSnapshot
+  );
   const quantity = parsePositiveInt(form.quantity);
   const canGenerateMetadataFromPrefill = Boolean(prefill?.imageUrl) && (
     !looksLikeMetadataJsonUri(form.collectionUri)
@@ -648,6 +665,7 @@ export function CoreCandyMachinePanel({
 
   const finalizeSnapshot = useCallback(async (input: SnapshotFinalizeInput): Promise<SnapshotFinalizeResponse | null> => {
     setIsFinalizingSnapshot(true);
+    setSnapshotVerificationPhase("finalizing-snapshot");
 
     try {
       const currentQuantity = input.quantity;
@@ -679,12 +697,14 @@ export function CoreCandyMachinePanel({
         throw new Error(readErrorMessage(payload, "Could not finalize mint snapshot."));
       }
 
+      setSnapshotVerificationPhase(payload.canCreateAsset ? "preparing-create-asset" : "stalled");
       setSnapshotResult(payload);
       onSnapshotFinalized?.(payload);
       return payload;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not finalize mint snapshot.";
       setErrorMessage(message);
+      setSnapshotVerificationPhase("failed");
       return null;
     } finally {
       setIsFinalizingSnapshot(false);
@@ -776,6 +796,66 @@ export function CoreCandyMachinePanel({
     snapshotRecoveryContext
   ]);
 
+  function completeDeployFromSnapshot(
+    finalizedSnapshot: SnapshotFinalizeResponse | null,
+    deployPayload: DeployCompletedPayload
+  ): boolean {
+    if (!finalizedSnapshot) {
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy confirmed, but mint snapshot is not ready."
+      }));
+      return false;
+    }
+
+    if (!finalizedSnapshot.canCreateAsset) {
+      const message = finalizedSnapshot.verificationError?.message
+        ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy confirmed, but mint snapshot is not ready."
+      }));
+      setSnapshotVerificationPhase("stalled");
+      setErrorMessage(message);
+      return false;
+    }
+
+    setSnapshotVerificationPhase("verified");
+    setRunState((current) => ({
+      ...current,
+      status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
+    }));
+
+    onDeployCompleted?.(deployPayload);
+    return true;
+  }
+
+  async function retrySnapshotFinalization(): Promise<void> {
+    if (!pendingDeployCompletion) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setBusyAction("snapshot-retry");
+    setRunState((current) => ({
+      ...current,
+      status: "Retrying mint snapshot verification..."
+    }));
+
+    try {
+      const finalizedSnapshot = await finalizeSnapshot(
+        pendingDeployCompletion.quantity,
+        pendingDeployCompletion.candyMachineAddress,
+        pendingDeployCompletion.collectionAddress,
+        pendingDeployCompletion.signatures
+      );
+
+      completeDeployFromSnapshot(finalizedSnapshot, pendingDeployCompletion);
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
   async function runDeployFlow(): Promise<void> {
     if (!canRun || !publicKey || !signTransaction) {
       setErrorMessage("Connect Phantom and keep wallet unlocked.");
@@ -832,8 +912,8 @@ export function CoreCandyMachinePanel({
 
     setErrorMessage(null);
     setSnapshotResult(null);
-    setSnapshotRecoveryContext(null);
-    setSnapshotAutoRecheckArmed(false);
+    setSnapshotVerificationPhase("idle");
+    setPendingDeployCompletion(null);
     setBusyAction("deploy");
     setRunState((current) => ({
       ...current,
@@ -908,6 +988,13 @@ export function CoreCandyMachinePanel({
         label: prepared.transactions[index]?.label ?? submitted.kind,
         expectedAddress: submitted.expectedAddress
       }));
+      const deployPayload: DeployCompletedPayload = {
+        candyMachineAddress: prepared.candyMachineAddress,
+        collectionAddress: prepared.collectionAddress,
+        quantity,
+        signatures: [...collectedSignatures]
+      };
+      setPendingDeployCompletion(deployPayload);
 
       setRunState((current) => ({
         ...current,
@@ -915,6 +1002,7 @@ export function CoreCandyMachinePanel({
         signatures: [...collectedSignatures],
         status: "Waiting for network confirmation via webhook..."
       }));
+      setSnapshotVerificationPhase("confirming-transactions");
 
       const deploySignatureStatuses = await waitForDeploySignatureStatuses(
         collectedSignatures.map((entry) => entry.signature)
@@ -934,6 +1022,7 @@ export function CoreCandyMachinePanel({
           ...current,
           status: "Deploy failed"
         }));
+        setSnapshotVerificationPhase("failed");
         return;
       }
 
@@ -944,66 +1033,26 @@ export function CoreCandyMachinePanel({
       setRunState((current) => ({
         ...current,
         status: allConfirmed
-          ? "Deploy confirmed. Finalizing mint snapshot..."
+          ? "Deploy confirmed. Verifying the mint snapshot. Please wait; do not redeploy."
           : "Deploy submitted (pending background confirmation). Snapshot not finalized yet."
       }));
 
       if (!allConfirmed) {
+        setSnapshotVerificationPhase("stalled");
         return;
       }
 
-      const snapshotFinalizeInput: SnapshotFinalizeInput = {
-        quantity,
-        candyMachineAddress: prepared.candyMachineAddress,
-        collectionAddress: prepared.collectionAddress,
-        signatures: collectedSignatures,
-        formState: deployFormState,
-        draftId: snapshotContext?.draftId?.trim() || `core-cm-${Date.now()}`,
-        formSnapshot: snapshotContext?.formSnapshot ?? {
-          internalCode: prefill?.internalCode ?? "",
-          collectionName: deployFormState.collectionName,
-          assetNamePrefix: deployFormState.assetNamePrefix,
-          quantity
-        }
-      };
-      const finalizedSnapshot = await finalizeSnapshot(snapshotFinalizeInput);
+      setSnapshotVerificationPhase("reading-candy-machine");
+      const finalizedSnapshot = await finalizeSnapshot(
+        deployPayload.quantity,
+        deployPayload.candyMachineAddress,
+        deployPayload.collectionAddress,
+        deployPayload.signatures
+      );
 
-      logClientDeployTrace("snapshot_finalize_response", {
-        deployId: prepared.deployId,
-        canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
-        verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
-        snapshotId: finalizedSnapshot?.snapshotId ?? null
-      });
-
-      if (!finalizedSnapshot?.canCreateAsset) {
-        const message = finalizedSnapshot?.verificationError?.message
-          ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
-        setSnapshotRecoveryContext({
-          deployId: prepared.deployId,
-          ...snapshotFinalizeInput
-        });
-        setSnapshotAutoRecheckArmed(true);
-        setRunState((current) => ({
-          ...current,
-          status: "Deploy confirmed. Waiting 15 seconds before snapshot re-check."
-        }));
-        setErrorMessage(message);
+      if (!completeDeployFromSnapshot(finalizedSnapshot, deployPayload)) {
         return;
       }
-
-      setSnapshotRecoveryContext(null);
-      setSnapshotAutoRecheckArmed(false);
-      setRunState((current) => ({
-        ...current,
-        status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
-      }));
-
-      onDeployCompleted?.({
-        candyMachineAddress: prepared.candyMachineAddress,
-        collectionAddress: prepared.collectionAddress,
-        quantity,
-        signatures: [...collectedSignatures]
-      });
     } catch (error) {
       logClientDeployTrace("flow_error", {
         message: error instanceof Error ? error.message : "Deploy failed unexpectedly."
@@ -1013,6 +1062,7 @@ export function CoreCandyMachinePanel({
         ...current,
         status: "Deploy failed"
       }));
+      setSnapshotVerificationPhase("failed");
     } finally {
       setBusyAction(null);
     }
@@ -1152,30 +1202,67 @@ export function CoreCandyMachinePanel({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button className="min-h-11" onClick={() => void runDeployFlow()} disabled={!canRun || busyAction !== null || isFinalizingSnapshot}>
+        <Button className="min-h-11" onClick={() => void runDeployFlow()} disabled={!canRun || busyAction !== null || isFinalizingSnapshot || isSnapshotVerificationPending || canRetrySnapshot}>
           {busyAction === "deploy" ? "Deploying..." : "Deploy"}
         </Button>
-        {snapshotRecoveryContext && !snapshotResult?.canCreateAsset && !snapshotAutoRecheckArmed && !isFinalizingSnapshot ? (
-          <Button
-            className="min-h-11"
-            onClick={() => void recheckSnapshot()}
-            disabled={busyAction !== null || isFinalizingSnapshot}
-            type="button"
-          >
-            {isFinalizingSnapshot ? "Checking snapshot..." : "Re-check snapshot"}
+        {canRetrySnapshot ? (
+          <Button className="min-h-11" onClick={() => void retrySnapshotFinalization()} variant="outline">
+            Retry snapshot
+          </Button>
+        ) : null}
+        {busyAction === "snapshot-retry" ? (
+          <Button className="min-h-11" disabled variant="outline">
+            Retrying snapshot...
           </Button>
         ) : null}
       </div>
 
-      {snapshotRecoveryContext && snapshotAutoRecheckArmed ? (
-        <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
-          Snapshot re-check will run automatically in about 15 seconds. Create Asset remains blocked while the server verifies on-chain state.
-        </p>
+      {snapshotVerificationPhase !== "idle" ? (
+        <div
+          className={`rounded-xl border px-3 py-3 text-xs ${
+            snapshotVerificationPhase === "verified"
+              ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+              : snapshotVerificationPhase === "failed"
+                ? "border-rose-400/40 bg-rose-500/10 text-rose-100"
+                : "border-cyan-400/40 bg-cyan-500/10 text-cyan-100"
+          }`}
+        >
+          {isSnapshotVerificationPending ? (
+            <p className="font-semibold text-white">Deploy confirmed. Verifying the mint snapshot. Please wait; do not redeploy.</p>
+          ) : snapshotVerificationPhase === "verified" ? (
+            <p className="font-semibold text-white">Snapshot verified. Create Asset is ready.</p>
+          ) : snapshotVerificationPhase === "stalled" ? (
+            <p className="font-semibold text-white">Deploy exists on-chain, but snapshot verification needs another check.</p>
+          ) : (
+            <p className="font-semibold text-white">Snapshot verification did not complete.</p>
+          )}
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {SNAPSHOT_VERIFICATION_PHASES.map((item) => {
+              const isActive = snapshotVerificationPhase === item.phase;
+              const isComplete = snapshotVerificationPhase === "verified";
+
+              return (
+                <div key={item.phase} className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/30 px-3 py-2">
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      isComplete
+                        ? "bg-emerald-300"
+                        : isActive
+                          ? "animate-pulse bg-cyan-200"
+                          : "bg-white/25"
+                    }`}
+                  />
+                  <span>{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : null}
 
       {isFinalizingSnapshot ? (
         <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
-          Verifying minted assets on-chain and persisting mint snapshot...
+          Verifying deploy state on-chain and persisting mint snapshot...
         </p>
       ) : null}
 

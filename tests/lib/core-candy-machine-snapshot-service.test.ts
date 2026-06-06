@@ -225,6 +225,7 @@ describe("lib/core-candy-machine-snapshot-service", () => {
   });
 
   it("blocks deploy snapshot when a deploy proof is only processed, not confirmed", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_PROOF_MAX_ATTEMPTS", "1");
     mockCandyMachineState(3);
     mocks.getSignatureStatusWithKitRpc.mockResolvedValue({
       confirmationStatus: "processed",
@@ -235,11 +236,91 @@ describe("lib/core-candy-machine-snapshot-service", () => {
     const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
 
     expect(result.canCreateAsset).toBe(false);
+    expect(result.verificationStatus).toBe("failed");
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "DEPLOY_SIGNATURES_NOT_CONFIRMED",
+      details: expect.objectContaining({
+        proofReadAttempts: 1,
+        pendingProofs: 3
+      })
+    }));
     expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
       status: "partial",
       confirmedItems: 0,
-      lastError: "Mint proof status is not completed."
+      lastError: "Deploy signatures are not fully confirmed yet."
     }));
+  });
+
+  it("waits for deploy proof status propagation before blocking Create Asset", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_PROOF_MAX_ATTEMPTS", "2");
+    vi.stubEnv("CORE_CM_SNAPSHOT_PROOF_RETRY_MS", "0");
+    mockCandyMachineState(3);
+
+    const attemptsBySignature = new Map<string, number>();
+    mocks.getSignatureStatusWithKitRpc.mockImplementation(async (_rpc, signature: string) => {
+      const attempts = (attemptsBySignature.get(signature) ?? 0) + 1;
+      attemptsBySignature.set(signature, attempts);
+
+      if (signature === "sig-config-lines" && attempts === 1) {
+        return {
+          confirmationStatus: "processed",
+          err: null,
+          slot: 10
+        };
+      }
+
+      return {
+        confirmationStatus: "confirmed",
+        err: null,
+        slot: 11
+      };
+    });
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(true);
+    expect(result.verificationStatus).toBe("verified");
+    expect(result.verificationError).toBeNull();
+    expect(attemptsBySignature.get("sig-config-lines")).toBe(2);
+    expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
+      status: "completed",
+      confirmedItems: 3,
+      lastError: null
+    }));
+  });
+
+  it("fails deploy snapshot immediately when a deploy proof failed on-chain", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_PROOF_MAX_ATTEMPTS", "3");
+    vi.stubEnv("CORE_CM_SNAPSHOT_PROOF_RETRY_MS", "0");
+    mockCandyMachineState(3);
+    mocks.getSignatureStatusWithKitRpc.mockImplementation(async (_rpc, signature: string) => {
+      if (signature === "sig-config-lines") {
+        return {
+          confirmationStatus: "finalized",
+          err: { InstructionError: [0, "Custom"] },
+          slot: 12
+        };
+      }
+
+      return {
+        confirmationStatus: "confirmed",
+        err: null,
+        slot: 11
+      };
+    });
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(false);
+    expect(result.verificationStatus).toBe("failed");
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "DEPLOY_SIGNATURE_FAILED",
+      details: expect.objectContaining({
+        failedProofs: 1,
+        proofReadAttempts: 1
+      })
+    }));
+    expect(mocks.getSignatureStatusWithKitRpc).toHaveBeenCalledTimes(3);
   });
 
   it("waits for Candy Machine account state propagation before failing loaded config lines", async () => {
