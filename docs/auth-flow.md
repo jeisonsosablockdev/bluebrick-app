@@ -2,6 +2,18 @@
 
 Last Updated: 2026-06-06
 
+## BRI-174 Investor Portfolio Protected Read Boundary
+- The Investor Dashboard Portfolio now reads real collection-level holdings through `GET /api/protected/portfolio`.
+- This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.
+- Authority is resolved server-side through `resolveAppAuthContext`.
+- The route rejects unauthenticated account sessions before portfolio data is queried.
+- The route derives `walletPublicKey` from the server-side auth context and ignores client-provided wallet identifiers.
+- Federated/account-only sessions without a wallet return a `wallet_required` Portfolio state instead of cross-wallet holdings.
+- If the hybrid WorkOS/SIWS context is conflicted, portfolio data is not queried as another wallet.
+- The browser receives a presentation DTO grouped by collection; it does not decide current ownership, project percentage, purchase price, or estimated yield.
+- Portfolio data is composed from existing trusted sources: server-side BRIDS wallet inventory, persisted marketplace entries, and existing purchase context when future currency-safe enrichment is available.
+- Purchase price in BRI-174 v1 is the marketplace/listing USD price from the admin form multiplied by current owned quantity; `preparedPriceLamports` and `quotedPriceLamports` are not presented as USD.
+
 ## BRI-171 Investor Overview Protected Read Boundary
 - The Investor Dashboard Overview now reads real user data through `GET /api/protected/overview`.
 - This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.

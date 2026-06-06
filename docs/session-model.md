@@ -2,6 +2,16 @@
 
 Last Updated: 2026-06-06
 
+## BRI-174 Investor Portfolio Session Boundary
+- Investor Portfolio uses the existing protected account/session model and does not create a new session layer.
+- `GET /api/protected/portfolio` resolves session state with `resolveAppAuthContext`.
+- Account authentication is required to read the route.
+- Wallet-bound portfolio holdings require a server-resolved `walletPublicKey`; client query/body wallet values are not session authority.
+- Account-only/federated sessions may render the protected shell, but the Portfolio returns `wallet_required` until a wallet session/link is available.
+- Session conflict remains fail-closed for portfolio data: the Portfolio must not silently choose one wallet when WorkOS and SIWS resolve to different account ownership.
+- The Portfolio DTO is derived presentation data grouped by collection. It does not become a browser session capability, ownership credential, payout entitlement, or wallet authority substitute.
+- No cookie names, TTLs, nonce behavior, SIWS verification flow, WorkOS session behavior, or role derivation changed in BRI-174.
+
 ## BRI-171 Investor Overview Session Boundary
 - Investor Overview uses the existing protected account/session model and does not create a new session layer.
 - `GET /api/protected/overview` resolves session state with `resolveAppAuthContext`.
