@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-06
 
 ## BRI-170 Marketplace Owner-Freeze Mint Contract
 - `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
@@ -69,6 +69,18 @@ Last Updated: 2026-06-05
 - The `?` hint affordance remains a presentation-only helper and does not affect minting, metadata, or on-chain NFT state.
 - The updated initial asset type labels and step 1 quick import drag/drop and file acceptance are admin UX changes only; they do not modify mint authority, collection validation, or royalty logic.
 - The production PDF Quick Import worker/tracing hotfix changes only server-side brief text extraction and Vercel function packaging for `pdfjs-dist`. It does not alter NFT metadata generation, Pinata metadata pinning, mint authority, collection validation, royalties, or purchase execution.
+
+## Admin Assets Snapshot Finalization Recovery
+- `/admin/assets/new` may retry snapshot proof-status reads after deploy, but the retry is bounded and does not relax the snapshot gate.
+- `confirmed` and `finalized` RPC signature states are the only proof states that can complete deploy snapshot verification.
+- `processed`, `submitted`, missing status, webhook-only evidence, and signature errors keep `Create Asset` blocked.
+- A failed deploy signature is a definitive blocker; it must not be hidden by later Candy Machine state reads.
+- `Retry snapshot` is snapshot-only recovery:
+  - it reuses the existing Candy Machine, collection, quantity, and deploy signatures
+  - it calls only the snapshot finalization path
+  - it must not prepare, sign, submit, or recreate deploy transactions
+- `Create Asset` remains enabled only after `canCreateAsset=true` with a verified non-null `snapshotId`.
+- The post-deploy admin UI must make verification progress explicit so operators wait for snapshot finalization instead of redeploying an already-created Candy Machine.
 
 ## Codex Orchestration Baseline Compatibility
 - No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.
