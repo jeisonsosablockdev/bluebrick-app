@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <WalletRuntimeProvider>
+    <WalletRuntimeProvider autoConnectPathnames={["/admin/assets/new"]}>
       <AdminShell
         authenticatedPublicKey={pubkey}
         walletLabel={`${localize(locale, { en: "Admin", es: "Admin", pt: "Admin" })} ${truncatePublicKey(pubkey)}`}

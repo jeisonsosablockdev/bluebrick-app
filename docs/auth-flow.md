@@ -59,6 +59,8 @@ Last Updated: 2026-06-06
   - connected wallet adapter without SIWS shows a connected-wallet pending sign-in action instead of the anonymous chooser
   - active SIWS wallet session with a connected adapter shows neutral wallet-session status plus secondary actions, not a colorful `Signed in` primary button
 - `Sign out & disconnect wallet` now asks the wallet adapter to disconnect when the adapter is connected or when it still exposes a public key during reconnect/autoConnect recovery, then clears the BRIDS SIWS session through `POST /api/auth/logout`.
+- Phantom wallet-adapter `autoConnect` is scoped to `/admin/assets/new` only so admin deploy/mint can recover a signer without making public login surfaces feel wallet-mandatory.
+- Public and account-entry routes may detect Phantom, but they do not select or connect it until the user explicitly chooses the Wallet entry.
 - This is a presentation and accessibility containment change only:
   - no cookie, token, nonce, role, redirect, or auth route changes were introduced
   - `GET /api/auth/me` remains the browser's canonical auth introspection surface
@@ -150,6 +152,7 @@ Last Updated: 2026-06-06
   - `app/providers.tsx` keeps only locale state
   - Solana wallet providers moved into `components/wallet/wallet-runtime-provider.tsx`
   - public pages mount wallet runtime only where the wallet CTA/modal is actually present
+  - wallet-adapter `autoConnect` defaults off and is opt-in only for the `/admin/assets/new` mint/deploy surface
 - Public wallet entry now defaults to anonymous bootstrap:
   - `WalletModal` accepts `ANONYMOUS_AUTH_STATE` when no server auth snapshot is provided
   - browser-side auth introspection still resolves through `GET /api/auth/me`

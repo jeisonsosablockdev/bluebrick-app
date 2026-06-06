@@ -7,6 +7,7 @@
 - Clean-code extraction implemented in S15.
 - Reviewer clean-code follow-up implemented in S16.
 - Multi-slice fix plan remains active for follow-up hardening.
+- Follow-up S31-S36 implemented locally for Phantom `autoConnect` route scoping.
 - Linear issue key: `BRI-167`.
 
 ## Problem
@@ -46,6 +47,7 @@ Login is a browser-critical auth entry point. The current behavior makes users u
   - reconnect calls the wallet adapter `connect` path without rerunning SIWS
   - reconnect validates the recovered public key against the active session public key
 - That BRI-165 behavior solved the admin case where SIWS remained valid but the live signer disappeared. It also makes the inverse public case more visible: Phantom can reconnect or remain connected while the SIWS/auth state is anonymous, expired, or still refreshing.
+- S31-S36 scopes that recovery behavior to `/admin/assets/new` only. Public/login surfaces detect Phantom without selecting or reconnecting it until the user explicitly chooses Wallet.
 - The UI currently mixes these states inside one panel:
   - wallet adapter connected
   - wallet SIWS session active
@@ -219,4 +221,8 @@ New delivery slices must keep the existing BRI-167 auth boundary intact and land
 - Does the reported "logged in" state mean the user sees `Connected: <wallet>`, or does `/api/auth/me` return `walletAuthenticated: true` while the modal still shows anonymous entry actions?
 - When sign out appears to fail, does `/api/auth/logout` return non-OK, does Phantom refuse `disconnect()`, or does local UI state refresh back to a connected adapter after logout?
 - Should a connected-but-not-SIWS-authenticated wallet still offer `Mail`, or should the modal switch to a wallet-pending state with a smaller link to use email instead?
-- Should BRI-167 keep BRI-165 `autoConnect` intact and only fix the public modal state matrix, or should `autoConnect` become scoped to admin/protected wallet-signing surfaces?
+- Resolved in follow-up S31: `autoConnect` should become scoped strictly to `/admin/assets/new`, the BRI-165 mint/deploy signer recovery surface.
+
+## Follow-Up Artifact
+- `docs/fixes/fix-bri-167-phantom-autoconnect-scope.md`
+- `docs/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md`

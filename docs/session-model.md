@@ -60,6 +60,7 @@ Last Updated: 2026-06-06
   - WorkOS/account authority still comes from the federated session layer
   - wallet authority still comes from `siws_session`
   - wallet-adapter connection and `autoConnect` remain browser signer availability, not login authority
+- Phantom `autoConnect` is now scoped to `/admin/assets/new`, where admin mint/deploy needs signer recovery. Public login surfaces do not auto-select or auto-connect Phantom before explicit Wallet intent.
 - The S02 viewport slice intentionally does not change `/api/auth/me`, `/api/auth/logout`, `/sign-out`, SIWS cookies, or WorkOS cookies.
 
 ## BRI-165 Admin Upload Edit Session Model

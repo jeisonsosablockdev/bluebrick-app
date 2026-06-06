@@ -22,6 +22,7 @@
 - S21 private-route logout redirect is implemented after admin dashboard regression review.
 - S22 Clean Code remediation plan is documented from the post-S21 audit.
 - S23-S30 are planned as TDD-first clean-code remediation slices.
+- S31-S36 implement the Phantom `autoConnect` route-scope follow-up.
 - Linear issue key: `BRI-167`.
 
 ## Objective
@@ -105,6 +106,13 @@ Initiative branch:
 | S28 | implemented | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S29 | implemented | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S30 | implemented | `fix/app-login-modal-issue-bri-167-s30-wallet-modal-orchestration-cleanup` | Compose extracted helpers and reduce `WalletModal` orchestration density | `WalletModal`, extracted helper imports, component regressions | RED characterization gap if needed, implementation, full targeted wallet modal suite, typecheck, docs governance, clean-code pass | local slice |
+| S31 | implemented | `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec` | Define Phantom autoConnect route scoping as a BRI-167 bugfix | `docs/fixes/fix-bri-167-phantom-autoconnect-scope.md`, `docs/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md` | docs governance, Linear BRI-167 trace | local slice |
+| S32 | implemented | `fix/app-login-modal-issue-bri-167-s32-runtime-autoconnect-scope` | Make wallet runtime autoConnect default-off and opt-in only on `/admin/assets/new` | `WalletRuntimeProvider`, admin asset route/layout composition | provider tests, route composition assertions | local slice |
+| S33 | implemented | `fix/app-login-modal-issue-bri-167-s33-wallet-selection-intent` | Remove mount-time Phantom selection from public login surfaces and keep explicit wallet action working | `WalletModal`, modal tests | no-selection-on-mount test, explicit connect test | local slice |
+| S34 | implemented | `fix/app-login-modal-issue-bri-167-s34-admin-reconnect-regression` | Preserve BRI-165 admin reconnect behavior and mismatch guard | admin asset wallet reconnect path | admin reconnect regression, targeted modal tests | local slice |
+| S35 | implemented | `fix/app-login-modal-issue-bri-167-s35-cross-context-loop-qa` | Verify focus/visibility/storage revalidation does not trigger public wallet reconnect loops | auth sync/focus behavior | default-off runtime and no mount-selection regression tests | local slice |
+| S36 | active | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Close docs, QA, and clean-code evidence for Phantom autoConnect route scope | docs, validation evidence, final review | docs governance, Playwright/Synpress, `npm run validate` | in progress |
+| S36 | planned | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Update auth/session docs and close QA/reviewer gates | docs and final validation | Playwright, Synpress as applicable, `npm run validate`, clean-code pass | pending |
 
 ## Order Of Execution
 1. Complete S01 and get explicit approval for the slice map.
@@ -118,6 +126,7 @@ Initiative branch:
 9. Run S21 after admin dashboard regression review: private-route logout must leave the private route before the route refresh can render forbidden state.
 10. Run S22 as a documentation-only planning slice for the post-S21 Clean Code audit.
 11. Run S23-S30 in order. Each slice starts with a failing or missing targeted test, lands the smallest implementation needed to pass, and then updates this artifact with evidence.
+12. Run S31-S36 as the Phantom autoConnect route-scope follow-up. Each delivery slice owns one responsibility so public wallet consent and admin signer recovery can be reviewed independently.
 
 ## Post-Reviewer Hardening Plan
 ### S12 - P1 Logout Refresh Hardening

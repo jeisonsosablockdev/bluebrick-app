@@ -779,12 +779,6 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   }, [isOpen]);
 
   useEffect(() => {
-    if (!wallet) {
-      select(PhantomWalletName);
-    }
-  }, [wallet, select]);
-
-  useEffect(() => {
     if (!isOpen) {
       return;
     }
@@ -895,12 +889,26 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
       if (initialSigningPreparation.status === "needs_connection") {
         setPhase("connecting");
 
+        const selectedOrPhantomAdapter = wallet?.adapter.name === PhantomWalletName
+          ? wallet.adapter
+          : phantomWallet?.adapter;
+
+        if (!selectedOrPhantomAdapter) {
+          throw new Error("Phantom wallet was not found in this browser.");
+        }
+
         if (!wallet || wallet.adapter.name !== PhantomWalletName) {
           select(PhantomWalletName);
           await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
         }
 
-        await connect();
+        if (wallet?.adapter.name === PhantomWalletName) {
+          await connect();
+        } else if ("connect" in selectedOrPhantomAdapter && typeof selectedOrPhantomAdapter.connect === "function") {
+          await selectedOrPhantomAdapter.connect();
+        } else {
+          await connect();
+        }
         activePublicKey = await waitForWalletPublicKey();
       }
 
