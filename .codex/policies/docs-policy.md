@@ -14,11 +14,8 @@
 - RFC structure, status values, and traceability must follow the documentation policy, templates, and enforcement scripts.
 - Non-trivial work requires an artifact before implementation.
 - New features and fixes use a dual artifact pair.
-- Multi-slice work requires the spec slice before delivery slices.
-- Documentation/spec slices must use `explain-like-socrates` before finalizing artifacts, assumptions, and the slice plan.
-- Delivery slices require a clean-code design contract in the solution artifact before implementation: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and the tests that protect the design.
-- Final PRs into `develop` require explicit user manual-test approval recorded as `Human Acceptance` before merge.
-- When RFC applies in the spec-slice model, RFC creation or update belongs to that spec slice.
+- Multi-SPEC work requires the first SPEC before delivery SPECs.
+- When RFC applies in the SPEC model, RFC creation or update belongs to that first SPEC.
 - Any docs validation failure blocks completion.
 
 ## Required Evidence

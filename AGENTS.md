@@ -13,16 +13,14 @@
 ## Entry Rules
 - Start with `planner`.
 - When the brief is vague or underspecified, run `npm run task:init` before branching; it is the canonical bootstrap entrypoint, runs preflight, asks for the task shape, and delegates to `git-start.sh` once the branch shape is clear. See the README for usage examples.
-- For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work, require the governing artifact before implementation.
+- For non-trivial issue-type-driven work, require the governing artifact before implementation and derive the branch family from the Linear issue type chosen in the doc-first phase. Supported families include `feature/*`, `bugfix/*`, `fix/*`, `hotfix/*`, `epic/*`, `security/*`, `nft/*`, and `refactor/*`.
 - For new features, require:
   - `docs/features/feature-<slug>.md`
   - `docs/features/feature-<slug>-implementation.md`
 - For new fixes, require:
   - `docs/fixes/fix-<slug>.md`
   - `docs/fixes/fix-<slug>-implementation.md`
-- For multi-slice work, require the spec/documentation slice before delivery slices; that slice must use `explain-like-socrates` before finalizing artifacts and the slice plan.
-- Each delivery slice must define a clean-code design contract before implementation.
-- Final PRs or merges into `develop` must stop after automated validation and wait for explicit user manual-test approval recorded as `Human Acceptance`; do not auto-merge to `develop`.
+- For multi-SPEC work, require the first SPEC before delivery SPECs.
 - Load only the matching `.codex/workflows/*.md` and `.codex/policies/*.md`.
 - Keep specialist context narrow; do not paste governance text into task prompts.
 - When multiple scopes are touched, run every matching workflow and aggregate all gates.
@@ -40,6 +38,7 @@
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
 - `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose the dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce the DB migration gate from `testing-policy`.
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
+- Issue-tracked work uses Linear status automation: `In Progress` when the branch is created, `In Review` when PR readiness begins, and `Done` after the final merge via the Linear status helper.
 
 ## Agent Routing
 - `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.

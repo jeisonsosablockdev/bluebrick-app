@@ -87,18 +87,17 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 - Never rely on "it compiles" as the only proof for a behavior-preserving refactor.
 
 ## Branching Contract
-- Multi-slice refactors use the Linear initiative branch as the integration branch: `initiative/bri-<id>-<name>`.
-- The Linear initiative branch starts from latest `develop` and must match the parent Linear issue `git branch name` field.
-- Slice branches start from the Linear initiative branch, not directly from `develop`.
-- Spec/documentation slice: `refactor/<scope>-<slug>-bri-<id>-s01-spec`.
-- Delivery slices: `refactor/<scope>-<slug>-bri-<id>-sNN-<one-change-name>`.
-- Final audit slice: `refactor/<scope>-<slug>-bri-<id>-sNN-clean-code-audit`.
+- Multi-SPEC refactors use the parent work branch as the integration branch: `refactor/<developer>-<issue>-<slug>`.
+- The parent work branch starts from latest `develop` and must match the parent Linear issue `git branch name` field.
+- SPEC branches start from the parent work branch, not directly from `develop`.
+- First SPEC: `SPEC/<developer>-<issue>-<spec-slug>`.
+- Delivery SPECs: `SPEC/<developer>-<issue>-<spec-slug>`.
+- Final audit SPEC: `SPEC/<developer>-<issue>-clean-code-audit`.
 - Commit messages should identify the preserved behavior or extracted boundary, not just say "cleanup".
 
 ## Blocking Gates
 - No non-trivial refactor proceeds without the required artifact.
-- No multi-slice refactor proceeds without a spec slice.
-- No delivery slice proceeds from planning to implementation without a clean-code design contract in the artifact.
+- No multi-SPEC refactor proceeds without a first SPEC.
 - No slice can merge if it changes behavior outside its stated invariant without artifact approval.
 - No slice can merge with failing targeted tests.
 - No final closeout without `npm run validate`.
