@@ -83,13 +83,12 @@ async function loadSyncPages() {
   ]);
 
   return {
-    alwaysVisiblePages: [stake.default],
+    alwaysVisiblePages: [stake.default, distributions.default],
     releaseControlledPages: [
       portfolio.default,
       rentas.default,
       historial.default,
-      treasury.default,
-      distributions.default
+      treasury.default
     ]
   };
 }

@@ -60,6 +60,7 @@ describe("lib/release-module-visibility", () => {
     expect(isProtectedReleaseControlledRoute("/protected/portfolio")).toBe(true);
     expect(isProtectedReleaseControlledRoute("/protected")).toBe(false);
     expect(isAdminReleaseControlledRoute("/admin/settings")).toBe(true);
+    expect(isAdminReleaseControlledRoute("/admin/distributions")).toBe(false);
     expect(isAdminReleaseControlledRoute("/admin/dashboard")).toBe(false);
   });
 
@@ -70,6 +71,7 @@ describe("lib/release-module-visibility", () => {
     expect(isReleaseControlledRouteVisible("/protected")).toBe(true);
     expect(isReleaseControlledRouteVisible("/protected/stake")).toBe(true);
     expect(isReleaseControlledRouteVisible("/admin/dashboard")).toBe(true);
+    expect(isReleaseControlledRouteVisible("/admin/distributions")).toBe(true);
     expect(isReleaseControlledRouteVisible("/protected/historial")).toBe(false);
     expect(isReleaseControlledRouteVisible("/admin/treasury")).toBe(false);
   });

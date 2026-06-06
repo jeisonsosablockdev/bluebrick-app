@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
@@ -47,7 +46,7 @@ describe("GET /api/protected/portfolio", () => {
       sessionConflict: false
     });
 
-    const response = await GET(new NextRequest("https://example.com/api/protected/portfolio"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(401);
@@ -56,7 +55,7 @@ describe("GET /api/protected/portfolio", () => {
   });
 
   it("uses the server-side wallet and ignores wallet query params", async () => {
-    const response = await GET(new NextRequest("https://example.com/api/protected/portfolio?walletPublicKey=AttackerWallet"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(200);
@@ -84,7 +83,7 @@ describe("GET /api/protected/portfolio", () => {
       }
     });
 
-    const response = await GET(new NextRequest("https://example.com/api/protected/portfolio"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(200);
@@ -99,7 +98,7 @@ describe("GET /api/protected/portfolio", () => {
   it("returns a stable route error when the read model fails", async () => {
     routeMocks.getInvestorPortfolio.mockRejectedValueOnce(new Error("database unavailable"));
 
-    const response = await GET(new NextRequest("https://example.com/api/protected/portfolio"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(500);

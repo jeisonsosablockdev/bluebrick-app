@@ -9,7 +9,6 @@ const PROTECTED_RELEASE_CONTROLLED_ROUTES = new Set([
 const ADMIN_RELEASE_CONTROLLED_ROUTES = new Set([
   "/admin/mint",
   "/admin/treasury",
-  "/admin/distributions",
   "/admin/settings"
 ]);
 

@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const routeMocks = vi.hoisted(() => ({
@@ -45,7 +44,7 @@ describe("GET /api/protected/overview", () => {
       sessionConflict: false
     });
 
-    const response = await GET(new NextRequest("https://example.com/api/protected/overview"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(401);
@@ -54,7 +53,7 @@ describe("GET /api/protected/overview", () => {
   });
 
   it("uses the server-side wallet from auth context and ignores wallet query params", async () => {
-    const response = await GET(new NextRequest("https://example.com/api/protected/overview?walletPublicKey=AttackerWallet"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(200);
@@ -81,7 +80,7 @@ describe("GET /api/protected/overview", () => {
       }
     });
 
-    const response = await GET(new NextRequest("https://example.com/api/protected/overview"));
+    const response = await GET();
     const payload = await response.json();
 
     expect(response.status).toBe(200);
