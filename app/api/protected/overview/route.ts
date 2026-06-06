@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { resolveAppAuthContext } from "@/lib/app-auth";
 import { getInvestorOverview } from "@/lib/investor-overview-service";
@@ -15,7 +15,7 @@ function unauthorizedResponse(): NextResponse {
   );
 }
 
-export async function GET(_request?: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   const auth = await resolveAppAuthContext();
 
   if (!auth.accountAuthenticated) {
