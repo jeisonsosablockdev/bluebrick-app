@@ -211,6 +211,8 @@ describe("lib/core-candy-machine-snapshot-service", () => {
   });
 
   it("blocks deploy snapshot when config lines are not fully loaded", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_MAX_WAIT_MS", "1");
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_RETRY_MS", "1");
     vi.stubEnv("CORE_CM_SNAPSHOT_STATE_MAX_ATTEMPTS", "1");
     mockCandyMachineState(2);
 
@@ -225,6 +227,8 @@ describe("lib/core-candy-machine-snapshot-service", () => {
   });
 
   it("blocks deploy snapshot when a deploy proof is only processed, not confirmed", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_MAX_WAIT_MS", "1");
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_RETRY_MS", "1");
     mockCandyMachineState(3);
     mocks.getSignatureStatusWithKitRpc.mockResolvedValue({
       confirmationStatus: "processed",
@@ -238,8 +242,77 @@ describe("lib/core-candy-machine-snapshot-service", () => {
     expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
       status: "partial",
       confirmedItems: 0,
-      lastError: "Mint proof status is not completed."
+      lastError: "Deploy transaction signatures are not fully confirmed by RPC."
     }));
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "SIGNATURES_NOT_CONFIRMED"
+    }));
+  });
+
+  it("retries snapshot finalization when deploy proof status appears late", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_MAX_WAIT_MS", "50");
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_RETRY_MS", "1");
+    mockCandyMachineState(3);
+
+    let statusRead = 0;
+    mocks.getSignatureStatusWithKitRpc.mockImplementation(async () => {
+      const attempt = Math.floor(statusRead / 3);
+      statusRead += 1;
+
+      if (attempt === 0) {
+        return null;
+      }
+
+      return {
+        confirmationStatus: "confirmed",
+        err: null,
+        slot: 10
+      };
+    });
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(true);
+    expect(result.verificationStatus).toBe("verified");
+    expect(mocks.getSignatureStatusWithKitRpc).toHaveBeenCalledTimes(6);
+  });
+
+  it("retries snapshot finalization after a transient Candy Machine RPC read error", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_MAX_WAIT_MS", "50");
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_RETRY_MS", "1");
+    mocks.fetchCandyMachine
+      .mockRejectedValueOnce(new Error("HTTP error (429): Too Many Requests"))
+      .mockResolvedValue(buildCandyMachineState({
+        itemsLoaded: 3
+      }));
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(true);
+    expect(result.verificationStatus).toBe("verified");
+    expect(mocks.fetchCandyMachine).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails deploy snapshot immediately when a deploy proof has a transaction error", async () => {
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_MAX_WAIT_MS", "50");
+    vi.stubEnv("CORE_CM_SNAPSHOT_FINALIZE_RETRY_MS", "10");
+    mockCandyMachineState(3);
+    mocks.getSignatureStatusWithKitRpc.mockResolvedValue({
+      confirmationStatus: "confirmed",
+      err: {
+        InstructionError: [0, "Custom"]
+      },
+      slot: 10
+    });
+
+    const result = await finalizeCoreCandyMachineSnapshot(VALID_ACTOR, buildFinalizePayload());
+
+    expect(result.canCreateAsset).toBe(false);
+    expect(result.verificationStatus).toBe("failed");
+    expect(result.verificationError).toEqual(expect.objectContaining({
+      code: "SIGNATURES_FAILED"
+    }));
+    expect(mocks.getSignatureStatusWithKitRpc).toHaveBeenCalledTimes(3);
   });
 
   it("waits for Candy Machine account state propagation before failing loaded config lines", async () => {
