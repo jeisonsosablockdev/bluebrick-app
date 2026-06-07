@@ -13,7 +13,7 @@ This is not currently a transaction-construction, wallet-signing, RPC-submit, Ca
 - Base branch: `develop`
 - Base merge commit: `bdb8ba3`
 - Current deploy diagnostics PR: `#294`
-- Current module snapshot: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-current-system-branch.md`
+- Current module snapshot: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Known Symptoms Under Investigation
 
@@ -131,21 +131,25 @@ This preserves the security model because the client only asks the server to ver
    - Define the only allowed fix boundary: snapshot/handoff.
 
 2. Snapshot recovery UI
+   - Status: implemented.
    - Preserve the successful deploy payload and signatures after snapshot failure.
    - Show a snapshot-only recovery state.
    - Add `Re-check snapshot` without triggering deploy, signing, submit, or config-line load.
 
 3. Server verification reuse
+   - Status: implemented without server changes.
    - Reuse the existing snapshot finalize route if it is already idempotent.
    - Add only minimal response/error traceability if tests prove it is needed.
    - Keep all verification server-side.
 
 4. Tests
+   - Status: completed.
    - Add coverage that snapshot recovery calls `/snapshot/finalize` again with the same Candy Machine.
    - Add coverage that retry does not call `/deploy/prepare` or `/submit`.
    - Add coverage that Create Asset remains disabled until `canCreateAsset: true`.
 
 5. Validation and acceptance
+   - Status: automated validation passed; Human Acceptance pending.
    - Run targeted component/API tests.
    - Run `npm run validate`.
    - Update this iteration with final PR and Human Acceptance.

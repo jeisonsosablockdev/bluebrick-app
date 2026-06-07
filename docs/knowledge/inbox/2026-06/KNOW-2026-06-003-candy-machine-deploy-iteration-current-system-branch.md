@@ -6,7 +6,7 @@ promotion_target: guide
 scope: admin-assets-new-core-candy-machine
 owner: codex
 created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T21:35:00.000Z
+updated_at: 2026-06-07T21:44:00.000Z
 source_issue: n/a
 source_feature: admin-assets-new
 enforcement_candidate: no
@@ -205,19 +205,60 @@ This path is safe because it asks the server to verify again. It does not let th
    - Confirmed what is working and what must not be touched.
 
 2. Snapshot recovery state
+   - Current status: done.
    - Touch: `components/admin/core-candy-machine-panel.tsx`.
    - Add state for a failed-but-recoverable snapshot after confirmed deploy.
    - Preserve the exact deploy context needed to re-run snapshot finalization.
 
 3. Re-check snapshot action
+   - Current status: done.
    - Touch: `components/admin/core-candy-machine-panel.tsx`.
    - Call the existing snapshot finalize route.
    - Do not call prepare, sign, submit, or config-line load.
 
 4. Verification and tests
+   - Current status: done.
    - Add tests that `Re-check snapshot` enables Create Asset only after `canCreateAsset: true`.
    - Add tests that re-check does not trigger deploy or wallet signing.
    - Run targeted tests and `npm run validate`.
+
+## Implementation Notes - Snapshot Re-check
+
+Date: 2026-06-07
+
+Implemented a snapshot-only recovery path in `components/admin/core-candy-machine-panel.tsx`.
+
+Behavior:
+
+- When deploy transactions are confirmed but `/snapshot/finalize` returns `canCreateAsset: false`, the UI keeps a `snapshotRecoveryContext`.
+- The saved context includes:
+  - deploy id,
+  - Candy Machine address,
+  - collection address,
+  - quantity,
+  - deploy signatures,
+  - form state used by that deploy,
+  - snapshot context.
+- The UI shows `Re-check snapshot`.
+- Clicking `Re-check snapshot` calls `/api/admin/core-candy-machine/snapshot/finalize` again with the same deploy/snapshot payload.
+- If the server returns `canCreateAsset: true`, the existing `onDeployCompleted` gate opens.
+
+Security guardrails:
+
+- The client never sets `canCreateAsset` locally.
+- The retry does not call `/deploy/prepare`.
+- The retry does not call `/submit`.
+- The retry does not ask Phantom to sign.
+- The retry does not create a new collection.
+- The retry does not create a new Candy Machine.
+- The retry does not reload config lines.
+- The server remains responsible for verifying signatures, collection, quantity, and on-chain Candy Machine readiness.
+
+Regression coverage:
+
+- Added component coverage that a blocked snapshot exposes `Re-check snapshot`.
+- Added component coverage that a second snapshot verification can open Create Asset.
+- Added component coverage that the re-check path keeps deploy prepare/submit call counts at one.
 
 ## Implementation Snapshot
 
@@ -437,17 +478,33 @@ Client-provided correlation ids must not authorize, verify, or unblock Create As
 ## What Changed In This Iteration
 
 - Created this branch-level current-system snapshot.
-- No deploy behavior has been changed yet in this branch.
+- Added a snapshot-only `Re-check snapshot` recovery path after confirmed deploy and blocked snapshot finalization.
+- Preserved the confirmed deploy evidence in UI state: deploy id, Candy Machine, collection, quantity, signatures, resolved `draftId`, resolved `formSnapshot`, and deploy form values.
+- Re-check calls only `/api/admin/core-candy-machine/snapshot/finalize`.
+- Re-check does not prepare transactions, ask Phantom to sign, submit transactions, create collection/Candy Machine accounts, or reload config lines.
+- Create Asset remains blocked until the server returns `canCreateAsset=true`.
+- No server route or Metaplex transaction assembly changes were needed.
 
 ## What Did Not Work
 
-No new attempt has been made in this branch yet.
+- The first automated validation run failed the NFT documentation gate because Candy Machine UI changes require `docs/nft-spec.md`.
+- Resolved by documenting the snapshot re-check policy in `docs/nft-spec.md` without changing authority or Create Asset gate semantics.
 
 Carryover lessons:
 
 - Longer snapshot waits did not solve failures that occur before snapshot finalization.
 - Config-line recovery cannot work if the Candy Machine account was never created.
 - Client-triggered recovery must still rely on server-side RPC proof before unblocking Create Asset.
+
+## Automated Validation
+
+Date: 2026-06-07
+
+- `npx vitest run tests/components/core-candy-machine-panel-snapshot-gate.test.ts`: passed, 5 tests.
+- `npx vitest run tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts tests/api/admin-core-candy-machine-snapshot-finalize-route.test.ts`: passed, 14 tests.
+- `npm run validate:knowledge`: passed after renaming this iteration file to include `candy-machine-deploy-iteration`.
+- `npm run validate`: passed.
+- Clean-code pass: completed; no blocking findings. One issue was fixed during review by storing resolved `draftId` and `formSnapshot` in the recovery context instead of deriving them again during re-check.
 
 ## Manual Test Record
 
