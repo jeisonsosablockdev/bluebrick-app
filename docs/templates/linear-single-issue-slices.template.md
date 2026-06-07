@@ -39,6 +39,9 @@
 # SPEC DEVELOPMENT HISTORY
 {{SPEC_HISTORY_ITEMS}}
 
+# SPEC HISTORY
+{{SPEC_HISTORY_ITEMS}}
+
 # Slice Plan
 | Slice | Status | Branch | Objective | Scope técnico | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |

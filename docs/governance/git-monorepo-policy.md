@@ -141,6 +141,14 @@ Example:
 
 SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
 
+BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
+
+SPEC/<developer>-bri<id>-specNN-<spec-slug>
+
+Example:
+
+SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
+
 Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
@@ -170,6 +178,32 @@ SPEC/<developer>-<issue>-<spec-slug>
 	5.	Merge reviewed SPECs into the parent work branch.
 	6.	Open the final parent work branch PR from the parent work branch into `develop`.
 	7.	Delete the temporary parent work branch after the final merge.
+
+⸻
+
+🔀 BRIDS SPEC MERGE FLOW (MANDATORY WHEN USING SPEC/* BRANCHES)
+
+VERSION ESPAÑOL
+
+	1.	Confirmar que el desarrollador responsable y el SPEC destino están definidos.
+	2.	Actualizar `SPEC HISTORY` en el documento del Feature, el documento del SPEC y el documento de implementación.
+	3.	Sincronizar el cuerpo del issue de Linear como fuente principal.
+	4.	Ejecutar validaciones razonables según el alcance tocado.
+	5.	Revisar `git status` y separar cambios ajenos al SPEC.
+	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue.
+	7.	Dejar la rama `Feature` lista para continuar con el siguiente SPEC.
+	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature`.
+
+ENGLISH VERSION
+
+	1.	Confirm that the responsible developer and target SPEC are defined.
+	2.	Update `SPEC HISTORY` in the Feature document, SPEC document, and implementation document.
+	3.	Sync the Linear issue body as the primary source.
+	4.	Run reasonable validations for the touched scope.
+	5.	Review `git status` and separate changes unrelated to the SPEC.
+	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch.
+	7.	Leave the `Feature` branch ready for the next SPEC.
+	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure.
 
 ⸻
 
