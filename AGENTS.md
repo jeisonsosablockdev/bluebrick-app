@@ -20,12 +20,14 @@
 - For new fixes, require:
   - `docs/fixes/fix-<slug>.md`
   - `docs/fixes/fix-<slug>-implementation.md`
-- For multi-slice work, require the spec slice before delivery slices.
+- For multi-slice work, require the spec slice before delivery slices; each delivery slice must define a clean-code design contract before implementation.
 - Load only the matching `.codex/workflows/*.md` and `.codex/policies/*.md`.
 - Keep specialist context narrow; do not paste governance text into task prompts.
 - When multiple scopes are touched, run every matching workflow and aggregate all gates.
 
 ## Workflow Routing
+- Solana-related work: prefer Solana Developer MCP tools over model memory. Use `list_sections` first for non-trivial Solana questions, `get_documentation` for canonical source/framework/library docs, and `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to, errors, or API usage.
+- Solana program Rust: whenever writing or modifying it, run `program_autofixer`, apply fixes, and repeat until `require_another_tool_call_after_fixing` is false.
 - `/programs` or on-chain runtime changes: `.codex/workflows/blockchain-cycle.md`
 - `/app`, `components`, auth flows, or browser-critical routes: `.codex/workflows/frontend-cycle.md`
   - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any OpenAI Developers tooling references explicit in the governing artifact.

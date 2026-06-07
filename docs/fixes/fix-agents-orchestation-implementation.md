@@ -1,6 +1,6 @@
 # Fix: Agents Orchestation Implementation
 
-Last Updated: 2026-05-18 UTC
+Last Updated: 2026-06-07 UTC
 Status: planned
 Owner: shared workflow
 Artifact Type: solution
@@ -286,6 +286,21 @@ Cuando sea posible, el workflow debe tener ejemplos de:
 
 Esto reduce muchísimo el riesgo de interpretación literalista.
 
+### 6. Clean-Code Design Contract Per Delivery Slice
+
+Cada delivery slice debe definir su contrato clean-code antes de abrir implementación.
+
+Ese contrato debe declarar:
+
+- una sola responsabilidad dominante
+- boundary o extracción esperada
+- nombres que deben mejorar o mantenerse claros
+- riesgo de coupling o duplicación
+- política de dead code
+- tests que protegen el diseño
+
+Esto mueve clean code al diseño del slice. `reviewer` sigue siendo gate final, pero no es el primer lugar donde se descubre si el slice fue mal diseñado.
+
 ## Solution Split
 
 La implementación se divide en dos partes para reducir riesgo y evitar un refactor demasiado ancho en una sola iteración.
@@ -307,6 +322,7 @@ Incluye:
 - RFC owned by documentation slice
 - sincronía artefacto -> Linear
 - handoffs estructurados mínimos entre agentes clave
+- contrato clean-code por delivery slice antes de implementación
 - clarificación obligatoria cuando falte contexto material
 - política explícita para excepciones triviales
 - controles para preservar la intención del workflow
@@ -372,7 +388,7 @@ Reglas del slice plan:
 | `s02` | `fix/shared-agents-orchestation-enforcement-bri-157-s02-linear-branch-enforcement` | Endurecer Linear-first y mother branch canónica | Generación/validación de branch desde issue madre y `git branch name` | `scripts/linear-plan-core.js`, `scripts/git-start.sh`, `docs/guides/linear-single-issue-slice-planning.md`, `docs/templates/linear-single-issue-slices.template.md` | Tests para branch naming, branch generation y required parent issue metadata | Generación de plan y branch helpers reflejan el modelo canónico y tests pasan |
 | `s03` | `fix/shared-agents-orchestation-enforcement-bri-157-s03-artifact-enforcement` | Hacer obligatorio el artefacto correcto por family branch | Enforce de dual artifact en `docs/features/*.md` y `docs/fixes/*.md` | `scripts/ci/check-required-docs.sh`, `docs/governance/documentation-policy.md`, `.codex/policies/docs-policy.md` | Tests para PR con cambio calificado sin docs, con solo un artifact, y con pair válido | El repo bloquea missing artifact y acepta el artifact pair correcto por tipo de iniciativa |
 | `s04` | `fix/shared-agents-orchestation-enforcement-bri-157-s04-rfc-ownership` | Anclar RFC al documentation slice cuando aplique | Templates, guías y ownership operacional del RFC | `docs/rfcs/templates/EPIC-README.template.md`, `docs/rfcs/templates/STORY.template.md`, `docs/governance/documentation-policy.md`, `.codex/agents/docs.toml`, `.codex/agents/planner.toml` | Tests o validaciones de template/section presence y sync rules cuando RFC aplica | El RFC queda explícitamente owned by documentation slice y la policy no deja ambigüedad |
-| `s05` | `fix/shared-agents-orchestation-enforcement-bri-157-s05-agent-handoff-contracts` | Volver estructurados los handoffs mínimos entre agentes | Contracts para `planner`, `docs`, `qa`, `reviewer`, triggers de clarificación y excepciones de trabajo trivial | `AGENTS.md`, `.codex/agents/*.toml`, `.codex/workflows/*.md`, `.codex/policies/*.md` | Tests de fixtures o validaciones de contract presence/required fields | Los agentes dejan de depender de contexto libre para gates críticos, preguntan cuando falta contexto material y el repo define excepciones explícitas |
+| `s05` | `fix/shared-agents-orchestation-enforcement-bri-157-s05-agent-handoff-contracts` | Volver estructurados los handoffs mínimos entre agentes | Contracts para `planner`, `docs`, `qa`, `reviewer`, triggers de clarificación, excepciones de trabajo trivial y clean-code design contract por delivery slice | `AGENTS.md`, `.codex/agents/*.toml`, `.codex/workflows/*.md`, `.codex/policies/*.md`, `docs/guides/codex-orchestration-architecture.md`, `tests/lib/workflow-evals.test.ts` | Tests de fixtures o validaciones de contract presence/required fields | Los agentes dejan de depender de contexto libre para gates críticos, preguntan cuando falta contexto material, diseñan slices con clean code desde el artifact y el repo define excepciones explícitas |
 
 ### Part B: Enforcement And Quality Gates
 
@@ -546,6 +562,7 @@ La solución debe demostrar:
 - PR scripts sin placeholder
 - responsive/browser-critical QA con artifact mínimo
 - handoffs críticos con contrato estructurado mínimo
+- clean-code design contract por delivery slice antes de implementación
 - excepciones triviales definidas y no ambiguas
 - pruebas del propio workflow para evitar governance por intuición
 - triggers de clarificación definidos para decisiones materiales faltantes
@@ -583,9 +600,26 @@ Deben bloquear si falta:
 - evidencia tests-first cuando aplique
 - evidencia browser-critical suficiente
 - handoff estructurado cuando el flujo lo requiera
+- clean-code design contract ausente en delivery slices
 - evidencia de que la excepción “trivial” realmente aplica cuando se use
 - clarificación registrada cuando faltaba una decisión material
 - resolución del `spirit check` cuando un cambio podía cumplir checklist pero no el outcome real
+
+## Execution Evidence: 2026-06-07
+
+Cambios ejecutados en esta slice de harness:
+
+- `.codex/agents/*.toml` quedó alineado a `preferred_model = "gpt-5.5"` para todos los agentes.
+- No se introdujo `.claude/commands` ni estructura Claude; el harness se mantiene Codex-first.
+- `AGENTS.md`, `planner`, `docs`, `docs-policy`, `refactor-cycle` y la guía de orquestación exigen `clean-code design contract` antes de implementar delivery slices.
+- `tests/lib/workflow-evals.test.ts` protege esa regla con una eval del workflow.
+- `npm run knowledge:drift` generó `docs/knowledge/reports/governance-drift-2026-06-07.md` con `Failing Checks: 0`.
+- `npm run knowledge:index` actualizó `docs/knowledge/README.md` para mantener el conocimiento incremental sincronizado.
+
+Validaciones ya ejecutadas:
+
+- `npm run validate:workflow`
+- `npm run validate:knowledge`
 
 ## Recommendation For Next.js Teams
 

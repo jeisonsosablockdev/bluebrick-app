@@ -15,6 +15,7 @@
 - Non-trivial work requires an artifact before implementation.
 - New features and fixes use a dual artifact pair.
 - Multi-slice work requires the spec slice before delivery slices.
+- Delivery slices require a clean-code design contract in the solution artifact before implementation: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and the tests that protect the design.
 - When RFC applies in the spec-slice model, RFC creation or update belongs to that spec slice.
 - Any docs validation failure blocks completion.
 

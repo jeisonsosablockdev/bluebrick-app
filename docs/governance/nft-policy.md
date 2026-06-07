@@ -12,6 +12,13 @@ When building NFTs on Solana:
 	9.	Confirm token account owner.
 	10.	Enforce royalty configuration integrity.
 
+Solana Developer MCP rule:
+	•	Prefer Solana Developer MCP tools over model memory for Solana and NFT-specific decisions.
+	•	Use `list_sections` first for non-trivial Solana, Metaplex, SPL Token, wallet, RPC, or NFT questions.
+	•	Use `get_documentation` for canonical docs from selected source ids such as `solana-docs`, `solana-kit-docs`, `anchor-docs`, `metaplex-docs`, SPL, wallet, or Helius sources.
+	•	Use `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to questions, errors, or API usage.
+	•	Whenever Solana program Rust is written or modified, run `program_autofixer`, apply fixes, and repeat until `require_another_tool_call_after_fixing` is false.
+
 Never:
 	•	Hardcode metadata
 	•	Skip PDA seed validation
@@ -38,8 +45,8 @@ Run @nft-cycle
 
 Mandatory Execution Order
 	1.	concise-planning
-	2.	solana-dev
-	3.	metaplex
+	2.	solana
+	3.	nft
 	4.	Design mint authority model
 	5.	Define PDA seeds explicitly
 	6.	test-driven-development
@@ -60,5 +67,5 @@ Strict Rules
 	•	No mocked mint
 	•	No fake supply
 	•	No unchecked authority
-	•	Use Solana skills only (`solana-dev`, `metaplex`) for NFT workflow in Codex
+	•	Use Solana/NFT specialists only (`solana`, `nft`) for NFT workflow in Codex
 	•	Do not use Ethereum/EVM-focused skills unless explicitly requested

@@ -61,17 +61,18 @@ docs/
 1. `planner` reads `AGENTS.md`, the touched paths, and only the workflow and policy files that match the task.
    - If the brief is vague, the bootstrap flow should run a Socratic clarification pass before choosing the branch shape so the task expands into a concrete problem, outcome, scope, and branch plan.
 2. `planner` activates one or more workflows based on scope: blockchain, frontend, NFT, mainnet hardening, responsive QA.
-3. `planner` delegates the smallest useful context to specialists, including changed paths, active workflow, required policies, evidence expectations, and open risks.
-4. Domain specialists implement or analyze within their lane:
+3. For multi-slice work, `planner` and `docs` require the spec slice to define a clean-code design contract for each delivery slice before implementation opens.
+4. `planner` delegates the smallest useful context to specialists, including changed paths, active workflow, required policies, evidence expectations, clean-code design contract, and open risks.
+5. Domain specialists implement or analyze within their lane:
    - `solana` for runtime and devnet proof
    - `frontend` for App Router and UI boundaries
    - `nft` for mint and metadata invariants
-5. Cross-cutting specialists join as needed:
+6. Cross-cutting specialists join as needed:
    - `security` for trust-boundary review
    - `docs` for canonical doc sync and traceability
    - `qa` for tests, E2E, responsive checks, and browser evidence
-6. `reviewer` runs as the final gate for clean code, governance alignment, duplication, naming, and missing evidence.
-7. `planner` aggregates the results and blocks completion unless every active workflow gate and DoD item is green.
+7. `reviewer` runs as the final gate for clean code, governance alignment, duplication, naming, and missing evidence.
+8. `planner` aggregates the results and blocks completion unless every active workflow gate and DoD item is green.
 
 ## Recommended Routing Examples
 

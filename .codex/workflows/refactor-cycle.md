@@ -51,7 +51,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 | Step | Owner | Goal | Gate |
 | --- | --- | --- | --- |
 | 1 | `planner` | Identify the refactor target, behavioral invariants, affected tests, required artifact, and branch shape | The work has a governing artifact and no implementation starts from an underspecified cleanup wish |
-| 2 | `docs` | Create or update the refactor artifact with the atomic slice map | The artifact lists each slice, branch, one-change scope, test-first plan, merge target, and rollback note |
+| 2 | `docs` | Create or update the refactor artifact with the atomic slice map | The artifact lists each slice, branch, one-change scope, clean-code design contract, test-first plan, merge target, and rollback note |
 | 3 | Domain specialist | Add or tighten tests for the one behavior protected by the slice | The slice has a RED or coverage-strengthening test before runtime code changes |
 | 4 | Domain specialist | Apply the smallest behavior-preserving refactor for that slice | The diff changes only the slice target and keeps public behavior stable |
 | 5 | `qa` | Run targeted tests for the slice plus any workflow-specific checks | Targeted validation passes and evidence is recorded in the artifact |
@@ -62,6 +62,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 ## Slice Model
 - Use one branch per slice.
 - Each slice owns exactly one extraction, one naming cleanup, one dependency inversion, one test-hardening move, or one dead-code removal.
+- Each delivery slice must define its clean-code design contract before implementation: single responsibility, intended boundary or extraction, names that must become clearer, coupling or duplication risk, dead-code policy, and tests that preserve the design.
 - Do not bundle unrelated files just because they are nearby.
 - If a refactor reveals another smell, document it as a new slice instead of expanding the current slice.
 - Merge each slice into the integration branch before starting the next implementation slice.
@@ -73,6 +74,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 - Current behavior: what must not change.
 - Invariants: user-visible behavior, API contracts, data contracts, security assumptions, and performance boundaries.
 - Slice map: one branch per change with runtime scope and test scope.
+- Clean-code design contract per delivery slice: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and design-protecting tests.
 - TDD plan: which tests go RED or which existing tests are tightened before code changes.
 - Validation plan: targeted tests, `npm run validate`, browser evidence, devnet proof, or DB validation as applicable.
 - Review plan: explicit clean-code/reviewer pass before each merge and final strict audit after the last slice.
@@ -96,6 +98,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 ## Blocking Gates
 - No non-trivial refactor proceeds without the required artifact.
 - No multi-slice refactor proceeds without a spec slice.
+- No delivery slice proceeds from planning to implementation without a clean-code design contract in the artifact.
 - No slice can merge if it changes behavior outside its stated invariant without artifact approval.
 - No slice can merge with failing targeted tests.
 - No final closeout without `npm run validate`.
@@ -114,7 +117,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 
 ## Handoffs
 - `planner -> docs`: refactor target, invariants, slice boundaries, Linear ID, and target integration branch.
-- `docs -> domain specialist`: exact slice scope, tests to add/tighten, and runtime files allowed.
+- `docs -> domain specialist`: exact slice scope, clean-code design contract, tests to add/tighten, and runtime files allowed.
 - `domain specialist -> qa`: changed files, preserved behavior, targeted test commands, and risk notes.
 - `qa -> reviewer`: validation output and any unresolved uncertainty.
 - `reviewer -> docs`: clean-code outcome, residual debt, and whether the slice can merge.

@@ -56,4 +56,20 @@ describe("workflow evals", () => {
     expect(responsiveQa).toContain("Route-state artifact index");
     expect(testingPolicy).toContain("ambiguous evidence is a blocking failure");
   });
+
+  it("requires clean-code design before delivery slices implement", () => {
+    const agents = read("AGENTS.md");
+    const planner = read(".codex/agents/planner.toml");
+    const docs = read(".codex/agents/docs.toml");
+    const docsPolicy = read(".codex/policies/docs-policy.md");
+    const refactorCycle = read(".codex/workflows/refactor-cycle.md");
+    const architectureGuide = read("docs/guides/codex-orchestration-architecture.md");
+
+    expect(agents).toContain("clean-code design contract");
+    expect(planner).toContain("require every delivery slice to define a clean-code design contract");
+    expect(docs).toContain("slice map to include a clean-code design contract");
+    expect(docsPolicy).toContain("Delivery slices require a clean-code design contract");
+    expect(refactorCycle).toContain("No delivery slice proceeds from planning to implementation without a clean-code design contract");
+    expect(architectureGuide).toContain("clean-code design contract for each delivery slice before implementation opens");
+  });
 });

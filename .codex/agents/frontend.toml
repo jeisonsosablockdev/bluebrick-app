@@ -1,7 +1,7 @@
 version = 1
 name = "frontend"
 description = "Next.js App Router and UI implementation specialist."
-preferred_model = "gpt-5.4"
+preferred_model = "gpt-5.5"
 reasoning_effort = "medium"
 parallel_safe = true
 

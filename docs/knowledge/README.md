@@ -21,7 +21,7 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-05-02T06:24:38.370Z
+Last Generated: 2026-06-07T04:09:13.116Z
 
 ## Snapshot
 
@@ -29,9 +29,9 @@ Last Generated: 2026-05-02T06:24:38.370Z
 | --- | ---: |
 | Observations | 1 |
 | Proposals | 0 |
-| Reports | 2 |
+| Reports | 3 |
 | Archived | 0 |
-| Observed status | 3 |
+| Observed status | 4 |
 | Triaged status | 0 |
 | Promoted status | 0 |
 | Archived status | 0 |
@@ -51,6 +51,7 @@ _No items yet._
 | ID | Status | Target | File | Source |
 | --- | --- | --- | --- | --- |
 | governance-drift-2026-05-02 | observed | none | [governance-drift-2026-05-02](docs/knowledge/reports/governance-drift-2026-05-02.md) | n/a |
+| governance-drift-2026-06-07 | observed | none | [governance-drift-2026-06-07](docs/knowledge/reports/governance-drift-2026-06-07.md) | n/a |
 | recent-changes-2026-05-02 | observed | none | [recent-changes-2026-05-02](docs/knowledge/reports/recent-changes-2026-05-02.md) | n/a |
 
 ## Archive
