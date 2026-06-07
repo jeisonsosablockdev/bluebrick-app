@@ -48,7 +48,7 @@ Primary target:
 - `components/admin/core-candy-machine-panel.tsx`
   - Preserve failed snapshot finalization context.
   - Add snapshot-only recovery UI.
-  - Re-run `/api/admin/core-candy-machine/snapshot/finalize` with the same deploy data.
+  - Automatically re-run `/api/admin/core-candy-machine/snapshot/finalize` after 15 seconds with the same deploy data.
 
 Possible secondary targets:
 
@@ -95,7 +95,8 @@ Branch memory:
    - Status: implemented.
    - Add a recoverable state after deploy confirmation and failed snapshot finalization.
    - Keep collection address, Candy Machine address, quantity, form snapshot, and signatures.
-   - Add a `Re-check snapshot` action.
+   - Run automatic snapshot re-check after 15 seconds.
+   - Keep `Re-check snapshot` as fallback if automatic recovery still reports blocked.
    - Ensure the action does not call deploy prepare, Phantom signing, submit, or config-line load.
 
 4. Server verification reuse
@@ -119,9 +120,10 @@ Date: 2026-06-07
 - Added a `snapshotRecoveryContext` to preserve the confirmed deploy context when snapshot finalization returns blocked.
 - Refactored snapshot finalization to accept an explicit immutable input instead of reading mutable form state at retry time.
 - Stored resolved `draftId` and `formSnapshot` in the recovery context so re-check reuses the same snapshot identity.
-- Added a `Re-check snapshot` UI action that calls only `/api/admin/core-candy-machine/snapshot/finalize`.
+- Added an automatic 15-second snapshot re-check that calls only `/api/admin/core-candy-machine/snapshot/finalize`.
+- Kept `Re-check snapshot` as a fallback if the automatic re-check does not verify the snapshot.
 - Kept `/deploy/prepare`, wallet signing, `/submit`, and config-line loading untouched.
-- Added regression coverage proving that the re-check path does not prepare or submit another deploy.
+- Added regression coverage proving that the automatic re-check path does not prepare or submit another deploy.
 
 ## Acceptance Gates
 

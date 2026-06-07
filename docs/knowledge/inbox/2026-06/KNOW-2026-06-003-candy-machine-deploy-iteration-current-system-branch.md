@@ -6,7 +6,7 @@ promotion_target: guide
 scope: admin-assets-new-core-candy-machine
 owner: codex
 created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T21:44:00.000Z
+updated_at: 2026-06-07T21:59:00.000Z
 source_issue: n/a
 source_feature: admin-assets-new
 enforcement_candidate: no
@@ -185,7 +185,7 @@ All on-chain conditions are true for this deploy now. Therefore the current fail
 
 Add a snapshot-only recovery path in the admin UI.
 
-When the deploy is confirmed but snapshot finalization returns `canCreateAsset: false`, the UI should keep the confirmed deploy context and show a recoverable state. The recovery action should call `/api/admin/core-candy-machine/snapshot/finalize` again with the same:
+When the deploy is confirmed but snapshot finalization returns `canCreateAsset: false`, the UI should keep the confirmed deploy context, show a recoverable waiting state, and automatically call `/api/admin/core-candy-machine/snapshot/finalize` again after 15 seconds with the same:
 
 - draft id,
 - form snapshot,
@@ -197,6 +197,8 @@ When the deploy is confirmed but snapshot finalization returns `canCreateAsset: 
 If the server now reads `itemsLoaded === quantity` and validates the rest of the snapshot invariants, it returns `canCreateAsset: true` and the existing Create Asset gate can open.
 
 This path is safe because it asks the server to verify again. It does not let the client assert verification.
+
+If the automatic re-check still returns blocked, the UI may expose a manual `Re-check snapshot` fallback for the same saved context.
 
 ## Slice Plan For This Branch
 
@@ -213,12 +215,13 @@ This path is safe because it asks the server to verify again. It does not let th
 3. Re-check snapshot action
    - Current status: done.
    - Touch: `components/admin/core-candy-machine-panel.tsx`.
-   - Call the existing snapshot finalize route.
+   - Call the existing snapshot finalize route automatically after 15 seconds.
+   - Keep the manual action only as a fallback after the automatic re-check has run.
    - Do not call prepare, sign, submit, or config-line load.
 
 4. Verification and tests
    - Current status: done.
-   - Add tests that `Re-check snapshot` enables Create Asset only after `canCreateAsset: true`.
+   - Add tests that automatic snapshot re-check enables Create Asset only after `canCreateAsset: true`.
    - Add tests that re-check does not trigger deploy or wallet signing.
    - Run targeted tests and `npm run validate`.
 
@@ -239,8 +242,8 @@ Behavior:
   - deploy signatures,
   - form state used by that deploy,
   - snapshot context.
-- The UI shows `Re-check snapshot`.
-- Clicking `Re-check snapshot` calls `/api/admin/core-candy-machine/snapshot/finalize` again with the same deploy/snapshot payload.
+- The UI waits 15 seconds and automatically calls `/api/admin/core-candy-machine/snapshot/finalize` again with the same deploy/snapshot payload.
+- If the automatic re-check still cannot verify the snapshot, the UI can show `Re-check snapshot` as a fallback.
 - If the server returns `canCreateAsset: true`, the existing `onDeployCompleted` gate opens.
 
 Security guardrails:
@@ -256,9 +259,9 @@ Security guardrails:
 
 Regression coverage:
 
-- Added component coverage that a blocked snapshot exposes `Re-check snapshot`.
+- Added component coverage that a blocked snapshot exposes an automatic 15-second re-check state.
 - Added component coverage that a second snapshot verification can open Create Asset.
-- Added component coverage that the re-check path keeps deploy prepare/submit call counts at one.
+- Added component coverage that the automatic re-check path keeps deploy prepare/submit call counts at one.
 
 ## Implementation Snapshot
 
@@ -479,9 +482,11 @@ Client-provided correlation ids must not authorize, verify, or unblock Create As
 
 - Created this branch-level current-system snapshot.
 - Added a snapshot-only `Re-check snapshot` recovery path after confirmed deploy and blocked snapshot finalization.
+- Changed the primary recovery behavior from manual click to automatic re-check after 15 seconds.
 - Preserved the confirmed deploy evidence in UI state: deploy id, Candy Machine, collection, quantity, signatures, resolved `draftId`, resolved `formSnapshot`, and deploy form values.
 - Re-check calls only `/api/admin/core-candy-machine/snapshot/finalize`.
 - Re-check does not prepare transactions, ask Phantom to sign, submit transactions, create collection/Candy Machine accounts, or reload config lines.
+- Manual `Re-check snapshot` remains only as fallback if the automatic re-check still returns blocked.
 - Create Asset remains blocked until the server returns `canCreateAsset=true`.
 - No server route or Metaplex transaction assembly changes were needed.
 
@@ -505,6 +510,13 @@ Date: 2026-06-07
 - `npm run validate:knowledge`: passed after renaming this iteration file to include `candy-machine-deploy-iteration`.
 - `npm run validate`: passed.
 - Clean-code pass: completed; no blocking findings. One issue was fixed during review by storing resolved `draftId` and `formSnapshot` in the recovery context instead of deriving them again during re-check.
+
+### 2026-06-07: Automatic Snapshot Re-check Update
+
+- `npx vitest run tests/components/core-candy-machine-panel-snapshot-gate.test.ts`: passed, 5 tests.
+- `npx vitest run tests/components/core-candy-machine-panel-snapshot-gate.test.ts tests/lib/core-candy-machine-snapshot-service.test.ts tests/api/admin-core-candy-machine-snapshot-finalize-route.test.ts`: passed, 14 tests.
+- `npm run validate`: passed.
+- Clean-code pass: completed; no blocking findings. The auto re-check stays snapshot-only and does not touch transaction assembly, signing, submit, config-line loading, or server gate semantics.
 
 ## Manual Test Record
 

@@ -88,7 +88,8 @@ Touch these only as needed:
 
 - `components/admin/core-candy-machine-panel.tsx`
   - Add a recoverable snapshot-only state after deploy is confirmed but snapshot finalization returns `canCreateAsset: false`.
-  - Add an explicit re-check/re-finalize action that reuses the same collection, Candy Machine, quantity, form snapshot, and deploy signatures.
+  - Automatically re-check/re-finalize after 15 seconds using the same collection, Candy Machine, quantity, form snapshot, and deploy signatures.
+  - Keep a manual `Re-check snapshot` fallback only if the automatic re-check still cannot verify the snapshot.
 - `app/api/admin/core-candy-machine/snapshot/finalize/route.ts`
   - Only if the existing route needs safer error shape or traceability for re-finalization.
 - `lib/core-candy-machine-snapshot-service.ts`
@@ -100,9 +101,9 @@ Touch these only as needed:
 
 Add a snapshot-only recovery path.
 
-When deploy transactions are confirmed but snapshot finalization fails with `canCreateAsset: false`, the UI should keep the deploy result in a recoverable state and show a clear action such as `Re-check snapshot`.
+When deploy transactions are confirmed but snapshot finalization fails with `canCreateAsset: false`, the UI should keep the deploy result in a recoverable state, wait 15 seconds, and automatically re-run snapshot finalization.
 
-That action should:
+That automatic recovery should:
 
 - not prepare new deploy transactions,
 - not ask Phantom to sign,
@@ -113,6 +114,7 @@ That action should:
 - POST the same snapshot finalize payload to `/api/admin/core-candy-machine/snapshot/finalize`,
 - rely on the server to re-read RPC and decide `canCreateAsset`,
 - enable Create Asset only if the server returns `canCreateAsset: true` and a snapshot id.
+- expose a manual `Re-check snapshot` fallback only after the automatic re-check has run and the server still reports a blocked snapshot.
 
 This preserves the security model because the client only asks the server to verify again; the client never decides that verification succeeded.
 
@@ -134,7 +136,8 @@ This preserves the security model because the client only asks the server to ver
    - Status: implemented.
    - Preserve the successful deploy payload and signatures after snapshot failure.
    - Show a snapshot-only recovery state.
-   - Add `Re-check snapshot` without triggering deploy, signing, submit, or config-line load.
+   - Automatically run snapshot re-check after 15 seconds without triggering deploy, signing, submit, or config-line load.
+   - Keep manual `Re-check snapshot` only as post-auto fallback.
 
 3. Server verification reuse
    - Status: implemented without server changes.
@@ -146,6 +149,7 @@ This preserves the security model because the client only asks the server to ver
    - Status: completed.
    - Add coverage that snapshot recovery calls `/snapshot/finalize` again with the same Candy Machine.
    - Add coverage that retry does not call `/deploy/prepare` or `/submit`.
+   - Add coverage that the default recovery happens automatically after 15 seconds.
    - Add coverage that Create Asset remains disabled until `canCreateAsset: true`.
 
 5. Validation and acceptance
