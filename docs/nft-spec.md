@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-06-06
+Last Updated: 2026-06-05
 
 ## BRI-170 Marketplace Owner-Freeze Mint Contract
 - `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
@@ -288,10 +288,6 @@ Last Updated: 2026-06-06
   - Fallback method: candy machine counters (`itemsLoaded/itemsAvailable`) marked as `degraded`.
   - `Create Asset` is enabled only when `verificationStatus=verified` and job status is `completed`.
   - `/admin/assets/new` must call `POST /api/admin/core-candy-machine/snapshot/finalize` after confirmed Core Candy Machine deploy transactions and before emitting deploy completion to the asset creation form.
-  - Snapshot finalization may wait up to `120_000ms` for recoverable RPC/on-chain propagation before failing closed.
-  - Recoverable snapshot states include transient RPC transport failures, RPC `429 Too Many Requests`, temporarily missing signature status, temporarily unavailable Candy Machine account reads, and `itemsLoaded < expectedQuantity` before the retry deadline.
-  - Definitive snapshot failures do not consume the full retry window: failed deploy signatures, collection mismatch, `itemsAvailable !== expectedQuantity`, and `itemsLoaded > expectedQuantity`.
-  - The retry only re-reads server-side RPC/on-chain state. It does not re-sign, re-submit, redeploy, trust client status, or use Helius webhook events as final authorization.
   - Deploy completion for marketplace handoff requires `canCreateAsset=true`; failed, degraded, or missing snapshot responses keep `Create Asset` blocked.
   - If deploy signatures are confirmed but the snapshot response is not ready, `/admin/assets/new` may run a snapshot-only re-check automatically after 15 seconds.
   - A manual `Re-check snapshot` fallback may be shown only after the automatic re-check still cannot verify the snapshot.
