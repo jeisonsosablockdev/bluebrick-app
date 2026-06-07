@@ -77,7 +77,7 @@ Admin operability logs:
 
 Branch memory:
 
-- `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-current-system-branch.md`
+- `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Slices
 
@@ -92,26 +92,41 @@ Branch memory:
    - Confirmed on 2026-06-07 that one real deploy has all seven signatures finalized and `itemsLoaded=200`.
 
 3. Snapshot-only recovery UI
+   - Status: implemented.
    - Add a recoverable state after deploy confirmation and failed snapshot finalization.
    - Keep collection address, Candy Machine address, quantity, form snapshot, and signatures.
    - Add a `Re-check snapshot` action.
    - Ensure the action does not call deploy prepare, Phantom signing, submit, or config-line load.
 
 4. Server verification reuse
+   - Status: implemented without route changes.
    - Reuse `/api/admin/core-candy-machine/snapshot/finalize`.
    - Keep verification based on confirmed proofs, collection match, quantity match, and `itemsLoaded === quantity`.
    - Return Create Asset enabled only from server `canCreateAsset: true`.
 
 5. Validation and gitflow
+   - Status: automated validation passed; Human Acceptance pending.
    - Add component coverage for recoverable snapshot state.
    - Add regression coverage that snapshot re-check does not redeploy.
    - Run targeted tests.
    - Run `npm run validate`.
    - Update the iteration with PR/final state before merge.
 
+## Implemented Changes
+
+Date: 2026-06-07
+
+- Added a `snapshotRecoveryContext` to preserve the confirmed deploy context when snapshot finalization returns blocked.
+- Refactored snapshot finalization to accept an explicit immutable input instead of reading mutable form state at retry time.
+- Stored resolved `draftId` and `formSnapshot` in the recovery context so re-check reuses the same snapshot identity.
+- Added a `Re-check snapshot` UI action that calls only `/api/admin/core-candy-machine/snapshot/finalize`.
+- Kept `/deploy/prepare`, wallet signing, `/submit`, and config-line loading untouched.
+- Added regression coverage proving that the re-check path does not prepare or submit another deploy.
+
 ## Acceptance Gates
 
-- `npm run validate:knowledge`
-- Targeted Candy Machine tests for changed behavior
-- `npm run validate`
-- Human Acceptance before merge to `develop`
+- `npm run validate:knowledge`: passed.
+- Targeted Candy Machine tests for changed behavior: passed.
+- `npm run validate`: passed.
+- Clean-code pass: completed with no unresolved blockers.
+- Human Acceptance before merge to `develop`: pending.
