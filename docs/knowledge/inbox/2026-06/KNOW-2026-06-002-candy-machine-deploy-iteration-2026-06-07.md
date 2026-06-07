@@ -26,9 +26,9 @@ It records the module state after restoring the deploy behavior to the PR `#286`
 - Branch: `codex/fix-admin-cm-deploy-detailed-logs`
 - Base branch: `develop` after PR `#293`
 - PR: `#294`
-- Final merged PR: pending
+- Final merged PR: `#294`
 - Related issue: no Linear issue assigned yet
-- Human acceptance: pending
+- Human acceptance: approved by user in Codex thread on 2026-06-07
 - Runtime target: devnet
 - Scope: observability for `/admin/assets/new` Core Candy Machine deploy
 
