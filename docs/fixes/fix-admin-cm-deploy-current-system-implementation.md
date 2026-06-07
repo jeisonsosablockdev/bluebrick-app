@@ -4,6 +4,8 @@
 
 Pending. This branch begins with observation and baseline capture before implementation.
 
+Current observed state: deploy is complete on-chain, but Create Asset remains blocked by snapshot/handoff state.
+
 ## Design Contract
 
 - Keep Create Asset gated by server-verified snapshot.
@@ -44,9 +46,10 @@ Branch memory:
 2. Evidence collection
    - Observe a real deploy attempt.
    - Record deploy id, signatures, addresses, final UI message, and first failing event.
+   - Confirmed on 2026-06-07 that one real deploy has all seven signatures finalized and `itemsLoaded=200`.
 
 3. Minimal fix
-   - Implement only after evidence identifies the failing boundary.
+   - Target the snapshot/handoff boundary now that evidence identifies deploy as complete.
    - Keep security constraints intact.
 
 4. Validation and gitflow

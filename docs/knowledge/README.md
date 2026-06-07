@@ -21,7 +21,7 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-06-07T05:49:42.156Z
+Last Generated: 2026-06-07T21:15:00.000Z
 
 ## Snapshot
 

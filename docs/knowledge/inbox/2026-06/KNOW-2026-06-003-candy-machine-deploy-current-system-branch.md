@@ -6,7 +6,7 @@ promotion_target: guide
 scope: admin-assets-new-core-candy-machine
 owner: codex
 created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T00:00:00.000Z
+updated_at: 2026-06-07T21:15:00.000Z
 source_issue: n/a
 source_feature: admin-assets-new
 enforcement_candidate: no
@@ -37,6 +37,113 @@ This iteration starts after PR `#294`, where detailed diagnostics were added but
 The current system prepares all deploy transactions on the server, asks Phantom to sign them, submits signed transactions to the backend, sends each transaction through the configured Solana RPC, confirms required signatures, finalizes a server-side snapshot, and enables Create Asset only when `canCreateAsset: true`.
 
 The current baseline includes detailed logs from PR `#294`, but it does not include retry, config-line recovery, pending deployment records, or relaxed snapshot gating.
+
+## Observed State: 2026-06-07
+
+This observation was made after a real devnet deploy attempt that ended in the UI with:
+
+```text
+Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.
+```
+
+The UI also reported:
+
+```text
+Deploy confirmed, but mint snapshot is not ready.
+```
+
+### On-Chain Accounts
+
+Collection:
+
+- Address: `57U9nhAghgjmcChZhCqoCRbuNnX6AwgrRAkXE9RAXMdn`
+- Exists on devnet: yes
+- Owner program: `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d`
+- Metaplex Core decode: successful
+- Name: `117 Fix Flip Brandon 117 Test 2`
+- URI: `ipfs://QmceoYpmSrCTSNmjGR45yM7XT3SvrJe51HZm6qdHvNnKqM`
+- Update authority: `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
+- `numMinted`: `0`
+- `currentSize`: `0`
+
+Core Candy Machine:
+
+- Address: `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b`
+- Exists on devnet: yes
+- Owner program: `CMACYFENjoBMHzapRXyo1JZkVS6EtaDDzkjMrmQLvr4J`
+- Metaplex Core Candy Machine decode: successful
+- `collectionMint`: `57U9nhAghgjmcChZhCqoCRbuNnX6AwgrRAkXE9RAXMdn`
+- `authority`: `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
+- `mintAuthority`: `86mMViNda476Wi1RjPUMuG68WjVeMfD2YXbPxv7XsEUz`
+- `itemsAvailable`: `200`
+- `itemsLoaded`: `200`
+- `itemsRedeemed`: `0`
+- Candy Guard: present
+- Candy Guard address: `86mMViNda476Wi1RjPUMuG68WjVeMfD2YXbPxv7XsEUz`
+- Config line settings: present
+
+Config line settings:
+
+```json
+{
+  "prefixName": "Fix Flip Brandon 117 #",
+  "nameLength": 3,
+  "prefixUri": "ipfs://QmVjShNQL4R6WvVVVM72cULUxpNcuMJj3CCMxw5oRpSnBN",
+  "uriLength": 0,
+  "isSequential": true
+}
+```
+
+### Confirmed Signatures
+
+All deploy signatures below are finalized on devnet with no transaction error:
+
+| Step | Signature | Expected account |
+| --- | --- | --- |
+| Create Core Collection | `4aoPEoU2Rzt63nGrRpwXYUm78ZVh6SWCnbnpjXtN7RWzk6iRnGj7tvjbJQq6e6sh6W2JMGV51GNGrmCS86tD2ipT` | `57U9nhAghgjmcChZhCqoCRbuNnX6AwgrRAkXE9RAXMdn` |
+| Create Core Candy Machine + Guard | `3jJVELF54DW3aMQMRnszXXXofzV2N6hUhg5t5ZNd2sqBWDgQhrQwfbkHc97hwuzouDZM863dJj6DHggjDqG7jDv2` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+| Load config lines 1-48 | `3khUD16MW9m6kxMZNDWY2UTuaGLzys21zWspCsKAa9yuqktcLgrt2T2hkVedf6HaWxmvHafv71WhoLeHviLQrajm` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+| Load config lines 49-96 | `4rfEnxbY13gc7GUPnuq2gMp13HUaDwfe7hkGbbBAjRuFANWaxd79Br8cV8SHM6aD7Y8QskUzpNp2TGJfrNyGuf4x` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+| Load config lines 97-144 | `wBkv71uuQKMXySGP8VNX6AeQZDhTgoVnRnnQT8LE4gn3AwGjAByf7AQ9ViaRyDqwWusQCLkfz52aj3MB6GBw12R` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+| Load config lines 145-192 | `3pschgwq8RgwWW2kKzyyzqudGXLoTCZAxn3vYnKuzAJWs8yiadmFc3ruS6ALmGjLMhw1hBuWC4ASsg8tdNkemwcz` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+| Load config lines 193-200 | `21KW2EfwgqWhjg1VZhbZX9T3uTWLsNpJQjw1qkjXDDyEqEJmKDZREo5JmVa3G6FAAgG8SyPuMofrmeHQCvXLAMU9` | `HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b` |
+
+### What Is Working
+
+- Phantom signing produced valid transactions.
+- The backend submitted all deploy transactions.
+- RPC accepted and finalized all seven deploy signatures.
+- The Core Collection exists and decodes successfully.
+- The Core Candy Machine exists and decodes successfully.
+- The Candy Guard exists.
+- Config-line loading completed on-chain: `itemsLoaded` is `200` for expected quantity `200`.
+- The on-chain Candy Machine points to the expected collection.
+
+### What Is Not Working
+
+- The app still reports the mint snapshot as not verified.
+- Create Asset remains blocked even though the on-chain state now satisfies the current snapshot readiness rule.
+- The current UI does not appear to recover from a snapshot finalization false negative after the Candy Machine state becomes readable.
+- Server operability logs could not be inspected from shell because `/api/admin/monitoring/logs?limit=200` requires an admin `siws_session` cookie.
+- Server stdout for the running `next-server` process was not attached to this Codex thread, so runtime console logs could not be read directly.
+
+### Current Diagnosis
+
+The deploy itself is not the failing subsystem for this observed attempt. The failing subsystem is the post-deploy snapshot/handoff path.
+
+Given the current code in `lib/core-candy-machine-snapshot-service.ts`, a snapshot should be eligible for `canCreateAsset: true` when:
+
+- deploy proofs resolve to completed,
+- collection address matches the Candy Machine `collectionMint`,
+- `itemsAvailable` equals requested quantity,
+- `itemsLoaded` equals requested quantity.
+
+All on-chain conditions are true for this deploy now. Therefore the current failure is most likely one of:
+
+- snapshot finalization ran before RPC exposed `itemsLoaded=200` and the app did not provide a safe retry/re-finalize path,
+- the snapshot finalization request used incomplete or stale payload data,
+- the finalized failed snapshot state persisted and the UI did not re-run or replace it after on-chain state became ready,
+- the UI message is reflecting an earlier failure even though the current on-chain state is now valid.
 
 ## Implementation Snapshot
 
@@ -270,7 +377,23 @@ Carryover lessons:
 
 ## Manual Test Record
 
-No manual deploy test has been recorded for this branch yet.
+### 2026-06-07: Deploy Confirmed, Snapshot Blocked
+
+```text
+Date: 2026-06-07
+Wallet: 3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd
+Quantity: 200
+RPC host: api.devnet.solana.com
+Deploy id: not available from shell evidence
+Collection: 57U9nhAghgjmcChZhCqoCRbuNnX6AwgrRAkXE9RAXMdn
+Candy Machine: HftFBr7NZwH5iitTgBdh5iejEHqwe2T4PXAzhUGmZY4b
+Signatures: 7 deploy signatures, all finalized with no err
+Final UI message: Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.
+Last successful log event: not available from shell; admin/browser logs require session or attached server stdout
+First failing log event: not available from shell
+Conclusion: deploy and config lines are complete on-chain; failure is snapshot/handoff false negative or stale failed snapshot state
+Next action: add or use a server-verified snapshot re-finalize path that re-reads the same Candy Machine and enables Create Asset only after server-side RPC proof
+```
 
 ```text
 Date:
