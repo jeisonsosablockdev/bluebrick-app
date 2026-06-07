@@ -21,7 +21,7 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-06-11T00:00:00.000Z
+Last Generated: 2026-06-07T04:09:13.116Z
 
 ## Snapshot
 
@@ -31,7 +31,7 @@ Last Generated: 2026-06-11T00:00:00.000Z
 | Proposals | 0 |
 | Reports | 3 |
 | Archived | 0 |
-| Observed status | 9 |
+| Observed status | 4 |
 | Triaged status | 0 |
 | Promoted status | 0 |
 | Archived status | 0 |

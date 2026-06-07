@@ -1,6 +1,6 @@
 # Governance Drift Report
 
-Generated: 2026-06-07T05:49:42.156Z
+Generated: 2026-06-07T04:09:13.116Z
 
 | Check | Result | Details |
 | --- | --- | --- |
@@ -11,7 +11,5 @@ Generated: 2026-06-07T05:49:42.156Z
 | RFC status values match across policy, template, and checker | pass | policy=[approved, draft, implemented, in-review, rejected] template=[approved, draft, implemented, in-review, rejected] checker=[approved, draft, implemented, in-review, rejected] |
 | Shared branch names are documented in monorepo policy | pass | Shared feature/fix branch naming must stay visible in the branch naming convention. |
 | Gitflow guide still points to PR policy SSOT | pass | The gitflow usage guide should continue pointing to the PR policy SSOT. |
-| Documentation slices require explain-like-socrates | pass | The spec/documentation slice must keep the required Socratic skill visible across routing, docs agent, and governance. |
-| Develop merge remains gated by Human Acceptance | pass | Final PRs to develop should remain blocked until user manual-test approval is recorded. |
 
 Failing Checks: 0
