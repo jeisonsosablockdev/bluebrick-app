@@ -93,13 +93,15 @@ Rules
 	•	Completion gate
 	6.	Each slice must have one dominant responsibility and one proposed branch.
 	7.	The first slice in multi-slice work is the spec slice.
-	8.	Delivery slices open only after the spec slice stabilizes the artifact, slice map, and test-plan-first contract.
-	9.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+	8.	The spec slice is also the documentation slice and MUST use `explain-like-socrates` before finalizing the artifact, slice map, assumptions, and test-plan-first contract.
+	9.	Delivery slices open only after the spec slice stabilizes the artifact, slice map, and test-plan-first contract.
+	10.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
 
 Artifact-first and spec-slice rule:
 	•	Non-trivial feature/fix/security/nft/refactor work starts with an artifact before implementation.
 	•	Features and fixes use a problem artifact plus a solution artifact.
 	•	If the solution artifact is not decision-complete, code implementation remains blocked.
+	•	The documentation/spec slice must record that `explain-like-socrates` was used before delivery slices open.
 
 ⸻
 
@@ -152,11 +154,39 @@ feature/shared-knowledge-promotion-bri-143-s01-governance-policy
 
 	1.	Create the Linear initiative branch from latest `develop`.
 	2.	Create the spec slice first from the Linear initiative branch.
-	3.	Create each delivery slice from the Linear initiative branch after the spec slice closes the planning contract.
-	4.	Open slice PRs into the Linear initiative branch.
-	5.	Merge reviewed slices into the Linear initiative branch.
-	6.	Open the final initiative PR from the Linear initiative branch into `develop`.
-	7.	Delete the temporary Linear initiative branch after the final merge.
+	3.	In the spec/documentation slice, use `explain-like-socrates` to explain the proposed work and let the user redirect scope before delivery slices open.
+	4.	Create each delivery slice from the Linear initiative branch after the spec slice closes the planning contract.
+	5.	Open slice PRs into the Linear initiative branch.
+	6.	Merge reviewed slices into the Linear initiative branch.
+	7.	Open the final initiative PR from the Linear initiative branch into `develop`.
+	8.	Stop before merging the final PR to `develop` until the user manually tests and explicitly approves Human Acceptance.
+	9.	Delete the temporary Linear initiative branch after the final merge.
+
+⸻
+
+🧍 HUMAN ACCEPTANCE GATE BEFORE DEVELOP (MANDATORY)
+
+Applies to every final PR or merge path targeting `develop`.
+
+Rules
+	1.	Automated validation is necessary but not sufficient for the final merge to `develop`.
+	2.	After implementation slices, local validation, CI, and final reviewer pass, the agent MUST stop and wait for explicit user manual-test approval.
+	3.	The PR body must include `Human Acceptance`.
+	4.	The governance check only passes when the Human Acceptance section records `Status: approved`.
+	5.	If Human Acceptance is pending, missing, or ambiguous, merge to `develop` is blocked.
+	6.	Approval evidence must include who approved, when, what was manually tested, and any accepted residual risk.
+	7.	The agent must not enable auto-merge or perform the final merge to `develop` before this approval.
+	8.	Linear records traceability and status sync; Linear is not a technical merge destination.
+
+Traceability record must include:
+	•	Parent Linear issue
+	•	Linear initiative branch
+	•	Documentation/spec slice branch
+	•	Delivery slice branches and PRs
+	•	Validation evidence
+	•	Manual test evidence
+	•	Human Acceptance approval
+	•	Final merge commit or squash commit
 
 ⸻
 
@@ -209,6 +239,7 @@ PR must include:
 	•	RFC reference (if applicable)
 	•	Risk analysis section
 	•	Rollback plan section
+	•	Human Acceptance section; final PRs into `develop` require `Status: approved`
 	•	Feature note path under `/docs/features/*.md` for small/iterative feature/fix/refactor/nft product changes
 	•	For slice PRs, the slice id and parent Linear initiative branch reference
 
@@ -237,7 +268,7 @@ Every PR targeting `develop` must pass:
 	•	one `scope:*`
 	•	one `type:*`
 	•	one `risk:*`
-	5.	PR body policy check (Issue, RFC, Risks, Rollback Plan, Devnet Proof)
+	5.	PR body policy check (Issue, RFC, Risks, Rollback Plan, Devnet Proof, Human Acceptance)
 	6.	PR size policy:
 	•	Target <= 400 added lines
 	•	If larger, split into sequential PRs and use feature flags

@@ -22,9 +22,11 @@ describe("agent orchestration contracts", () => {
     expect(planner).toContain("parent Linear issue");
     expect(planner).toContain("spec slice");
     expect(planner).toContain("Socratic clarification pass");
+    expect(planner).toContain("Human Acceptance");
     expect(docs).toContain("problem artifact");
     expect(docs).toContain("solution artifact");
     expect(docs).toContain("Socratic breakdown");
+    expect(docs).toContain("explain-like-socrates");
   });
 
   it("requires docs and testing policies to mention clarification and tests-first contracts", () => {
@@ -39,6 +41,8 @@ describe("agent orchestration contracts", () => {
 
     expect(docsPolicy).toContain("dual artifact");
     expect(docsPolicy).toContain("spec slice");
+    expect(docsPolicy).toContain("explain-like-socrates");
+    expect(docsPolicy).toContain("Human Acceptance");
     expect(testingPolicy).toContain("test-plan-first");
   });
 });

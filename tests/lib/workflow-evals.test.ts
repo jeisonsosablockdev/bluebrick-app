@@ -35,6 +35,7 @@ describe("workflow evals", () => {
     expect(planner).toContain("Socratic clarification pass");
     expect(docs).toContain("pause and ask instead of improvising");
     expect(docs).toContain("Socratic breakdown");
+    expect(docs).toContain("explain-like-socrates");
   });
 
   it("keeps git helpers aligned with atomicity instead of convenience staging", () => {
@@ -71,5 +72,38 @@ describe("workflow evals", () => {
     expect(docsPolicy).toContain("Delivery slices require a clean-code design contract");
     expect(refactorCycle).toContain("No delivery slice proceeds from planning to implementation without a clean-code design contract");
     expect(architectureGuide).toContain("clean-code design contract for each delivery slice before implementation opens");
+  });
+
+  it("requires the documentation slice to use explain-like-socrates before delivery slices", () => {
+    const agents = read("AGENTS.md");
+    const planner = read(".codex/agents/planner.toml");
+    const docs = read(".codex/agents/docs.toml");
+    const docsPolicy = read(".codex/policies/docs-policy.md");
+    const documentationPolicy = read("docs/governance/documentation-policy.md");
+    const gitPolicy = read("docs/governance/git-monorepo-policy.md");
+
+    expect(agents).toContain("explain-like-socrates");
+    expect(planner).toContain("explain-like-socrates");
+    expect(docs).toContain("explain-like-socrates");
+    expect(docsPolicy).toContain("explain-like-socrates");
+    expect(documentationPolicy).toContain("explain-like-socrates");
+    expect(gitPolicy).toContain("explain-like-socrates");
+  });
+
+  it("blocks final develop merges until Human Acceptance is approved", () => {
+    const agents = read("AGENTS.md");
+    const planner = read(".codex/agents/planner.toml");
+    const reviewer = read(".codex/agents/reviewer.toml");
+    const gitPolicy = read("docs/governance/git-monorepo-policy.md");
+    const workflow = read(".github/workflows/pr-governance-develop.yml");
+    const prTemplate = read(".github/pull_request_template.md");
+
+    expect(agents).toContain("Human Acceptance");
+    expect(planner).toContain("Human Acceptance");
+    expect(reviewer).toContain("Human Acceptance");
+    expect(gitPolicy).toContain("HUMAN ACCEPTANCE GATE BEFORE DEVELOP");
+    expect(gitPolicy).toContain("Status: approved");
+    expect(workflow).toContain("humanAcceptanceApproved");
+    expect(prTemplate).toContain("## Human Acceptance");
   });
 });

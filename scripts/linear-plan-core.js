@@ -417,6 +417,8 @@ async function createLinearPlan(options) {
         "- [ ] All slice branches merged into the Linear initiative branch",
         "- [ ] `npm run validate`",
         "- [ ] Required docs updated for the touched scope",
+        "- [ ] Spec/documentation slice used `explain-like-socrates` before delivery slices opened",
+        "- [ ] Human Acceptance approved by the user after manual testing before final merge to `develop`",
         "- [ ] Parent issue links the merged PRs and final commit path",
         "- [ ] Final PR opened from the Linear initiative branch into `develop`"
       ].join("\n")

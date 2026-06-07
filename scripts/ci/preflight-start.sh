@@ -132,7 +132,7 @@ branch_artifact_guidance() {
       echo "- This branch family expects /docs/fixes/fix-<slug>.md and /docs/fixes/fix-<slug>-implementation.md for qualifying work."
       ;;
     develop)
-      echo "- Fresh task brief detected: use ./scripts/task-init.sh to run the Socratic clarification pass and then create the right branch."
+      echo "- Fresh task brief detected: use ./scripts/task-init.sh to run the explain-like-socrates clarification pass and then create the right branch."
       ;;
   esac
 
@@ -388,7 +388,7 @@ fi
 if [[ "${CURRENT_BRANCH}" == "develop" && "${BOOTSTRAP_MODE}" != "1" ]]; then
   echo
   echo "❌ Bootstrap guard: this looks like a new task start on develop."
-  echo "- Use ./scripts/task-init.sh to run the Socratic clarification pass and create the right branch."
+  echo "- Use ./scripts/task-init.sh to run the explain-like-socrates clarification pass and create the right branch."
   echo "- If you only need a repo preflight during task bootstrap, task-init passes --bootstrap internally."
   exit 1
 fi

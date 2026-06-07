@@ -21,6 +21,7 @@
 # Spec Slice
 - Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`
 - Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`
+- Socratic documentation gate: use `explain-like-socrates` before finalizing artifacts, assumptions, and delivery slices.
 
 # Slice Plan
 | Slice | Status | Branch | Objective | Scope tecnico | Validation | PR |

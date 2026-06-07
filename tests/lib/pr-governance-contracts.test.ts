@@ -14,6 +14,7 @@ describe("PR governance contracts", () => {
 
     expect(source).toContain("artifact pair");
     expect(source).toContain("spec slice");
+    expect(source).toContain("Human Acceptance");
   });
 
   it("validates the PR head branch instead of the synthetic merge commit when available", () => {
@@ -45,5 +46,33 @@ describe("PR governance contracts", () => {
 
     expect(source).toContain("governance-only");
     expect(source).toContain("LABEL_ARGS");
+    expect(source).toContain("Human Acceptance");
+  });
+
+  it("keeps develop PR policy gated by human acceptance approval", () => {
+    const policy = JSON.parse(
+      readFileSync(
+        path.join(repoRoot, "docs", "governance", "pr-policy-source-of-truth.json"),
+        "utf8"
+      )
+    ) as {
+      requiredPrSections: string[];
+      patterns: { humanAcceptanceApproved: string };
+    };
+    const template = readFileSync(
+      path.join(repoRoot, ".github", "pull_request_template.md"),
+      "utf8"
+    );
+    const workflow = readFileSync(
+      path.join(repoRoot, ".github", "workflows", "pr-governance-develop.yml"),
+      "utf8"
+    );
+
+    expect(policy.requiredPrSections).toContain("human acceptance");
+    expect(policy.patterns.humanAcceptanceApproved).toContain("status");
+    expect(template).toContain("## Human Acceptance");
+    expect(template).toContain("Status: pending");
+    expect(workflow).toContain("humanAcceptanceApprovedRegex");
+    expect(workflow).toContain("Status: approved");
   });
 });

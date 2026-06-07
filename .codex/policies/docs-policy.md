@@ -15,11 +15,15 @@
 - Non-trivial work requires an artifact before implementation.
 - New features and fixes use a dual artifact pair.
 - Multi-slice work requires the spec slice before delivery slices.
+- Documentation/spec slices must use `explain-like-socrates` before finalizing artifacts, assumptions, and the slice plan.
 - Delivery slices require a clean-code design contract in the solution artifact before implementation: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and the tests that protect the design.
+- Final PRs into `develop` require explicit user manual-test approval recorded as `Human Acceptance` before merge.
 - When RFC applies in the spec-slice model, RFC creation or update belongs to that spec slice.
 - Any docs validation failure blocks completion.
 
 ## Required Evidence
 - Updated canonical docs paths
 - Feature-note or RFC traceability paths when required
+- Socratic planning evidence for documentation/spec slices
+- Human Acceptance evidence for final `develop` merge
 - Output from `scripts/ci/check-required-docs.sh` or `npm run validate`

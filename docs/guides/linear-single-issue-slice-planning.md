@@ -31,7 +31,8 @@ Before implementation starts, the initiative must also have:
 - a parent Linear issue
 - a governing local artifact
 - for features and fixes, a problem artifact plus a solution artifact
-- a spec slice as the first slice when the work is multi-slice
+- a spec/documentation slice as the first slice when the work is multi-slice
+- an `explain-like-socrates` conversation in that documentation slice before delivery slices open
 
 ## When To Use Real Subissues
 
@@ -66,9 +67,10 @@ Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skel
 - The Linear initiative branch starts from latest `develop`.
 - The Linear initiative branch name must match the parent issue `git branch name` field.
 - Slice branches start from the Linear initiative branch, not from `develop`.
-- The first slice is the spec slice.
+- The first slice is the spec/documentation slice and must use `explain-like-socrates`.
 - Slice PRs target the Linear initiative branch.
 - The final initiative PR targets `develop`.
+- The final initiative PR pauses before merge until the user manually tests and approves Human Acceptance.
 - Slice ids must be zero-padded: `s01`, `s02`, `s03`.
 - Use the lowercase Linear key in the branch name, for example `bri-149`.
 
@@ -89,6 +91,8 @@ For fixes:
 - `docs/fixes/fix-<slug>-implementation.md`
 
 The solution artifact should be decision-complete before delivery slices open.
+
+The solution artifact should also record the Socratic documentation result, the clean-code design contract per delivery slice, and the Human Acceptance gate for the final `develop` merge.
 
 ## Generator
 
@@ -114,6 +118,7 @@ It should:
 - produce the Linear-ready Markdown body
 - propose the Linear initiative branch and every slice branch
 - map the primary validation target for each slice
+- keep final merge to `develop` blocked until Human Acceptance is explicitly approved
 
 The full worked example belongs to the skill references, not this repo guide.
 

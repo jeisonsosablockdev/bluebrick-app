@@ -186,7 +186,7 @@ Promotion order:
 
 Use `npm run task:init` to start a new task the canonical way.
 
-- If the brief is vague or you want the Socratic clarification pass, run:
+- If the brief is vague or you want the Socratic clarification pass with `explain-like-socrates`, run:
   - `npm run task:init -- --ask`
 - If you already know the branch shape, pass the `git-start.sh` arguments through:
   - `npm run task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`

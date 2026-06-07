@@ -20,7 +20,9 @@
 - For new fixes, require:
   - `docs/fixes/fix-<slug>.md`
   - `docs/fixes/fix-<slug>-implementation.md`
-- For multi-slice work, require the spec slice before delivery slices; each delivery slice must define a clean-code design contract before implementation.
+- For multi-slice work, require the spec/documentation slice before delivery slices; that slice must use `explain-like-socrates` before finalizing artifacts and the slice plan.
+- Each delivery slice must define a clean-code design contract before implementation.
+- Final PRs or merges into `develop` must stop after automated validation and wait for explicit user manual-test approval recorded as `Human Acceptance`; do not auto-merge to `develop`.
 - Load only the matching `.codex/workflows/*.md` and `.codex/policies/*.md`.
 - Keep specialist context narrow; do not paste governance text into task prompts.
 - When multiple scopes are touched, run every matching workflow and aggregate all gates.
@@ -39,12 +41,12 @@
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
 
 ## Agent Routing
-- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
+- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
-- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes.
+- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes, and mandatory `explain-like-socrates` planning for documentation/spec slices.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
 
@@ -60,6 +62,7 @@
 - Database-backed schema or persistence changes: tracked migrations applied, no pending tracked migrations, and `validate:db` passes when `DATABASE_URL` is available
 - Required docs updated per `docs/governance/documentation-policy.md`
 - Required PR/RFC metadata still aligns with `docs/governance/pr-policy-source-of-truth.json`
+- Final `develop` merge has explicit user manual-test approval recorded as `Human Acceptance`
 - Frontend/auth critical flows: Playwright passed; Synpress passed when wallet/auth applies; MCP/browser evidence captured when browser-critical
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation, fetched account state, no simulation-only proof
 - Final `reviewer` pass finds no unresolved blocking issues

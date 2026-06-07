@@ -32,6 +32,7 @@ Notes:
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
 - Default local validation mode for pr:open is governance-only; CI still runs full validate after PR creation.
 - Use the branch-family artifact pair and spec-slice-first model already defined in repo governance before opening delivery PRs.
+- Final PRs targeting develop must include Human Acceptance and remain unmerged until user manual-test approval is explicit (`Status: approved`).
 USAGE
 }
 

@@ -222,10 +222,10 @@ echo "🌿 Base branch: ${BASE_BRANCH}"
 
 if [[ "${MODE}" == "slice" ]]; then
   echo "🧩 Slice branch detectada. Siguiente PR objetivo: initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
-  echo "📝 Recuerda: el spec slice debe ser S01 antes de abrir delivery slices."
+  echo "📝 Recuerda: el spec slice / documentation slice debe ser S01, debe usar explain-like-socrates y debe cerrar antes de abrir delivery slices."
 elif [[ "${MODE}" == "initiative" ]]; then
   echo "🧭 Linear initiative branch detectada. Siguiente PR final objetivo: develop"
-  echo "📝 Para trabajo multi-slice, crea primero el spec slice antes de abrir delivery slices."
+  echo "📝 Para trabajo multi-slice, crea primero el spec slice / documentation slice, usa explain-like-socrates y luego abre delivery slices."
 fi
 
 echo "🧪 Gate inicial obligatorio:"
@@ -237,6 +237,7 @@ elif [[ "${TYPE}" == "feature" ]]; then
   echo "      - docs/features/feature-<slug>.md"
   echo "      - docs/features/feature-<slug>-implementation.md"
 fi
-echo "   2) Para trabajo multi-slice, resuelve el spec slice antes de delivery slices."
+echo "   2) Para trabajo multi-slice, resuelve el spec slice / documentation slice con explain-like-socrates antes de delivery slices."
 echo "   3) Define o actualiza tests unitarios de la historia primero (fase RED)."
 echo "   4) Implementa codigo solo despues de tener esos tests definidos."
+echo "   5) Antes de merge final a develop, espera Human Acceptance despues de pruebas manuales del usuario."

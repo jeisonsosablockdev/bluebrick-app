@@ -81,7 +81,7 @@ print_hint() {
 
   echo
   echo "Breakdown"
-  echo "- Socratic pass complete."
+  echo "- Socratic pass complete. Skill: explain-like-socrates."
   echo "- Problem: ${TASK_SUMMARY:-n/a}"
   echo "- Outcome: ${TASK_OUTCOME:-n/a}"
   if [[ "${BRANCH_MODE}" == "initiative" ]]; then
@@ -102,7 +102,7 @@ print_hint() {
   esac
 
   if [[ "${BRANCH_MODE}" == "initiative" || "${BRANCH_MODE}" == "slice" ]]; then
-    echo "- Multi-slice reminder: create the spec slice before delivery slices."
+    echo "- Multi-slice reminder: create the spec/documentation slice before delivery slices and use explain-like-socrates there."
   fi
 }
 
@@ -263,5 +263,6 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
   echo "Next steps"
   echo "- If this is a fix, create docs/fixes/fix-<slug>.md and docs/fixes/fix-<slug>-implementation.md."
   echo "- If this is feature/security/nft/refactor work, keep docs/features/feature-<slug>.md aligned with the branch."
-  echo "- If the work is multi-slice, start with the spec slice before delivery slices."
+  echo "- If the work is multi-slice, start with the spec/documentation slice, use explain-like-socrates, and only then open delivery slices."
+  echo "- Before merging final work to develop, wait for explicit user manual-test approval recorded as Human Acceptance."
 fi

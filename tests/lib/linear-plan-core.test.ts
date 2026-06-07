@@ -127,6 +127,8 @@ describe("scripts/linear-plan-core", () => {
     expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
     expect(result.body).toContain("1. S01 - Formalize governance policy");
     expect(result.body).toContain("# Spec Slice");
+    expect(result.body).toContain("Spec/documentation slice used `explain-like-socrates`");
+    expect(result.body).toContain("Human Acceptance approved by the user after manual testing");
     expect(result.commandSummary).toContain("git checkout -b initiative/bri-149-single-issue-slice-planning");
     expect(result.commandSummary).toContain("git checkout -b feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
 

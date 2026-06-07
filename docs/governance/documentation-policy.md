@@ -108,10 +108,13 @@ Decision-complete rule:
 Spec slice rule:
 	•	For multi-slice initiatives, the spec slice is mandatory and comes before delivery slices.
 	•	The spec slice owns the artifact pair, the atomic slice map, the test-plan-first contract, and RFC creation or update when RFC applies.
+	•	The spec slice is the documentation slice and must use `explain-like-socrates` before finalizing the artifact pair, assumptions, slice map, and test-plan-first contract.
+	•	Delivery slices remain blocked until the Socratic planning result is reflected in the solution artifact.
 
 Linear sync rule:
 	•	Linear is updated from the artifact.
 	•	The artifact is not reverse-generated from comments or memory.
+	•	Linear records branch and acceptance traceability; it is not a technical merge destination.
 
 ⸻
 
