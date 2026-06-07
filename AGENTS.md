@@ -41,7 +41,6 @@
 
 ## Agent Routing
 - `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
-- `reasoning`: S07 self-discover reasoning for RFCs, feature planning, architecture design, complex debugging, security threat modeling; implements SELECT→ADAPT→IMPLEMENT→SOLVE pipeline; generates governing artifacts for downstream workflows.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
