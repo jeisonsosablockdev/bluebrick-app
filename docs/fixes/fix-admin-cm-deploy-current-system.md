@@ -12,6 +12,7 @@ This is not currently a transaction-construction, wallet-signing, RPC-submit, Ca
 
 - Base branch: `develop`
 - Base merge commit: `bdb8ba3`
+- Linear issue: `BRI-176`
 - Current deploy diagnostics PR: `#294`
 - Current module snapshot: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
@@ -153,7 +154,7 @@ This preserves the security model because the client only asks the server to ver
    - Add coverage that Create Asset remains disabled until `canCreateAsset: true`.
 
 5. Validation and acceptance
-   - Status: automated validation passed; Human Acceptance pending.
+   - Status: automated validation passed; Human Acceptance approved on 2026-06-07.
    - Run targeted component/API tests.
    - Run `npm run validate`.
    - Update this iteration with final PR and Human Acceptance.

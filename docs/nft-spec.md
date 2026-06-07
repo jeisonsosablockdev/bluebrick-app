@@ -275,6 +275,7 @@ Logs must not include full serialized transaction payloads, private keys, cookie
   - Full idempotency constraints (`job/batch/item/signature/webhook`) are handled in H1/H3.
 
 ## Mint Snapshot Persistence + Create Asset Gate (STORY-002-06)
+- BRI-176 adds the `/admin/assets/new` snapshot-only auto re-check path for confirmed Candy Machine deploys whose first snapshot finalization is not ready.
 - Final snapshot endpoint:
   - `POST /api/admin/core-candy-machine/snapshot/finalize`
 - Persisted datasets:

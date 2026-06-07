@@ -7,7 +7,7 @@ scope: admin-assets-new-core-candy-machine
 owner: codex
 created_at: 2026-06-07T00:00:00.000Z
 updated_at: 2026-06-07T21:59:00.000Z
-source_issue: n/a
+source_issue: BRI-176
 source_feature: admin-assets-new
 enforcement_candidate: no
 ---
@@ -19,6 +19,7 @@ enforcement_candidate: no
 Capture the current `/admin/assets/new` Core Candy Machine deploy system before implementing the next fix.
 
 This iteration starts after PR `#294`, where detailed diagnostics were added but deploy semantics were intentionally left unchanged.
+This iteration is tracked in Linear as `BRI-176`.
 
 ## Iteration Metadata
 
@@ -27,8 +28,8 @@ This iteration starts after PR `#294`, where detailed diagnostics were added but
 - Base branch: `develop` after PR `#294`
 - PR: `#295`
 - Final merged PR: pending
-- Related issue: no Linear issue assigned yet
-- Human acceptance: pending
+- Related issue: `BRI-176`
+- Human acceptance: approved on 2026-06-07 after user confirmed the recovery behavior worked and requested merge
 - Runtime target: devnet
 - Scope: diagnose and fix the current Core Candy Machine deploy lifecycle
 

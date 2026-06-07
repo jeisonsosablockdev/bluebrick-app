@@ -59,6 +59,11 @@ Possible secondary targets:
 
 ## Current Observability
 
+Linear:
+
+- Issue: `BRI-176`
+- PR: `#295`
+
 Server logs:
 
 - `lib/core-candy-machine-admin.ts`
@@ -106,7 +111,7 @@ Branch memory:
    - Return Create Asset enabled only from server `canCreateAsset: true`.
 
 5. Validation and gitflow
-   - Status: automated validation passed; Human Acceptance pending.
+   - Status: automated validation passed; Human Acceptance approved on 2026-06-07.
    - Add component coverage for recoverable snapshot state.
    - Add regression coverage that snapshot re-check does not redeploy.
    - Run targeted tests.
@@ -131,4 +136,4 @@ Date: 2026-06-07
 - Targeted Candy Machine tests for changed behavior: passed.
 - `npm run validate`: passed.
 - Clean-code pass: completed with no unresolved blockers.
-- Human Acceptance before merge to `develop`: pending.
+- Human Acceptance before merge to `develop`: approved on 2026-06-07.
