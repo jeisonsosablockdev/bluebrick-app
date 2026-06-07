@@ -1,6 +1,6 @@
 # NFT Spec
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-07
 
 ## Admin Candy Machine Deploy Logging Contract
 
@@ -275,6 +275,7 @@ Logs must not include full serialized transaction payloads, private keys, cookie
   - Full idempotency constraints (`job/batch/item/signature/webhook`) are handled in H1/H3.
 
 ## Mint Snapshot Persistence + Create Asset Gate (STORY-002-06)
+- BRI-176 adds the `/admin/assets/new` snapshot-only auto re-check path for confirmed Candy Machine deploys whose first snapshot finalization is not ready.
 - Final snapshot endpoint:
   - `POST /api/admin/core-candy-machine/snapshot/finalize`
 - Persisted datasets:
@@ -294,6 +295,11 @@ Logs must not include full serialized transaction payloads, private keys, cookie
   - `Create Asset` is enabled only when `verificationStatus=verified` and job status is `completed`.
   - `/admin/assets/new` must call `POST /api/admin/core-candy-machine/snapshot/finalize` after confirmed Core Candy Machine deploy transactions and before emitting deploy completion to the asset creation form.
   - Deploy completion for marketplace handoff requires `canCreateAsset=true`; failed, degraded, or missing snapshot responses keep `Create Asset` blocked.
+  - If deploy signatures are confirmed but the snapshot response is not ready, `/admin/assets/new` may run a snapshot-only re-check automatically after 15 seconds.
+  - A manual `Re-check snapshot` fallback may be shown only after the automatic re-check still cannot verify the snapshot.
+  - Snapshot re-check must reuse the same deploy evidence: draft/form snapshot, quantity, collection address, Candy Machine address, and deploy signatures.
+  - Snapshot re-check must not call deploy prepare, wallet signing, deploy submit, collection creation, Candy Machine creation, or config-line loading.
+  - Snapshot re-check does not grant client-side authority; Create Asset remains blocked until the server returns `canCreateAsset=true` from RPC-backed verification.
 - Business safety:
   - `partial` mint state is treated as non-eligible for `Create Asset`.
   - Marketplace handoff remains `ready` only for fully verified snapshots.
