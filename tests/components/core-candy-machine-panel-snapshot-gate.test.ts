@@ -341,16 +341,14 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
     }));
     expect(onDeployCompleted).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Mint proof status is not completed.");
-    expect(Array.from(container.querySelectorAll("button")).some((button) =>
-      button.textContent?.includes("Re-check snapshot")
-    )).toBe(true);
+    expect(container.textContent).toContain("Snapshot re-check will run automatically in about 15 seconds.");
 
     act(() => {
       root.unmount();
     });
   });
 
-  it("re-checks a blocked snapshot without preparing or submitting another deploy", async () => {
+  it("automatically re-checks a blocked snapshot without preparing or submitting another deploy", async () => {
     const onSnapshotFinalized = vi.fn();
     const onDeployCompleted = vi.fn();
     const fetchCalls: string[] = [];
@@ -463,15 +461,13 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
     expect(onDeployCompleted).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Create Asset gate: blocked");
     expect(container.textContent).toContain("Candy Machine config lines are not visible yet.");
-
-    const recheckButton = Array.from(container.querySelectorAll("button")).find((button) =>
+    expect(container.textContent).toContain("Snapshot re-check will run automatically in about 15 seconds.");
+    expect(Array.from(container.querySelectorAll("button")).some((button) =>
       button.textContent?.includes("Re-check snapshot")
-    );
-
-    expect(recheckButton).toBeDefined();
+    )).toBe(false);
 
     await act(async () => {
-      recheckButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await vi.advanceTimersByTimeAsync(15000);
       await flushAsync();
     });
 

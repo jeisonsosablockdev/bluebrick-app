@@ -156,6 +156,8 @@ type SnapshotRecoveryContext = SnapshotFinalizeInput & {
   deployId: string;
 };
 
+type SnapshotRecheckMode = "manual" | "auto";
+
 export function isDeploySignatureConfirmedForCreateAsset(status: unknown): boolean {
   if (!status || typeof status !== "object") {
     return false;
@@ -189,6 +191,7 @@ const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg",
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
 const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
 const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
+const SNAPSHOT_AUTO_RECHECK_DELAY_MS = 15_000;
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -373,6 +376,7 @@ export function CoreCandyMachinePanel({
   const [isFinalizingSnapshot, setIsFinalizingSnapshot] = useState(false);
   const [snapshotResult, setSnapshotResult] = useState<SnapshotFinalizeResponse | null>(null);
   const [snapshotRecoveryContext, setSnapshotRecoveryContext] = useState<SnapshotRecoveryContext | null>(null);
+  const [snapshotAutoRecheckArmed, setSnapshotAutoRecheckArmed] = useState(false);
 
   const requestGeneratedMetadataUris = useCallback(async (): Promise<GeneratedMetadataUris> => {
     if (!prefill?.imageUrl) {
@@ -642,7 +646,7 @@ export function CoreCandyMachinePanel({
     return signedTransactionsBase64;
   }
 
-  async function finalizeSnapshot(input: SnapshotFinalizeInput): Promise<SnapshotFinalizeResponse | null> {
+  const finalizeSnapshot = useCallback(async (input: SnapshotFinalizeInput): Promise<SnapshotFinalizeResponse | null> => {
     setIsFinalizingSnapshot(true);
 
     try {
@@ -685,23 +689,27 @@ export function CoreCandyMachinePanel({
     } finally {
       setIsFinalizingSnapshot(false);
     }
-  }
+  }, [onSnapshotFinalized]);
 
-  async function recheckSnapshot(): Promise<void> {
+  const recheckSnapshot = useCallback(async (mode: SnapshotRecheckMode = "manual"): Promise<void> => {
     if (!snapshotRecoveryContext) {
       setErrorMessage("No confirmed Candy Machine deploy is available for snapshot re-check.");
       return;
     }
 
     setErrorMessage(null);
+    setSnapshotAutoRecheckArmed(false);
     setRunState((current) => ({
       ...current,
-      status: "Re-checking mint snapshot..."
+      status: mode === "auto"
+        ? "Automatically re-checking mint snapshot..."
+        : "Re-checking mint snapshot..."
     }));
     logClientDeployTrace("snapshot_recheck_request", {
       deployId: snapshotRecoveryContext.deployId,
       candyMachineAddress: snapshotRecoveryContext.candyMachineAddress,
       collectionAddress: snapshotRecoveryContext.collectionAddress,
+      mode,
       signatures: snapshotRecoveryContext.signatures.length
     });
 
@@ -711,6 +719,7 @@ export function CoreCandyMachinePanel({
       deployId: snapshotRecoveryContext.deployId,
       canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
       verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
+      mode,
       snapshotId: finalizedSnapshot?.snapshotId ?? null
     });
 
@@ -744,7 +753,28 @@ export function CoreCandyMachinePanel({
       quantity: snapshotRecoveryContext.quantity,
       signatures: [...snapshotRecoveryContext.signatures]
     });
-  }
+  }, [finalizeSnapshot, onDeployCompleted, snapshotRecoveryContext]);
+
+  useEffect(() => {
+    if (!snapshotRecoveryContext || !snapshotAutoRecheckArmed || busyAction !== null || isFinalizingSnapshot) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSnapshotAutoRecheckArmed(false);
+      void recheckSnapshot("auto");
+    }, SNAPSHOT_AUTO_RECHECK_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    busyAction,
+    isFinalizingSnapshot,
+    recheckSnapshot,
+    snapshotAutoRecheckArmed,
+    snapshotRecoveryContext
+  ]);
 
   async function runDeployFlow(): Promise<void> {
     if (!canRun || !publicKey || !signTransaction) {
@@ -803,6 +833,7 @@ export function CoreCandyMachinePanel({
     setErrorMessage(null);
     setSnapshotResult(null);
     setSnapshotRecoveryContext(null);
+    setSnapshotAutoRecheckArmed(false);
     setBusyAction("deploy");
     setRunState((current) => ({
       ...current,
@@ -951,15 +982,17 @@ export function CoreCandyMachinePanel({
           deployId: prepared.deployId,
           ...snapshotFinalizeInput
         });
+        setSnapshotAutoRecheckArmed(true);
         setRunState((current) => ({
           ...current,
-          status: "Deploy confirmed, but mint snapshot is not ready."
+          status: "Deploy confirmed. Waiting 15 seconds before snapshot re-check."
         }));
         setErrorMessage(message);
         return;
       }
 
       setSnapshotRecoveryContext(null);
+      setSnapshotAutoRecheckArmed(false);
       setRunState((current) => ({
         ...current,
         status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
@@ -1122,7 +1155,7 @@ export function CoreCandyMachinePanel({
         <Button className="min-h-11" onClick={() => void runDeployFlow()} disabled={!canRun || busyAction !== null || isFinalizingSnapshot}>
           {busyAction === "deploy" ? "Deploying..." : "Deploy"}
         </Button>
-        {snapshotRecoveryContext && !snapshotResult?.canCreateAsset ? (
+        {snapshotRecoveryContext && !snapshotResult?.canCreateAsset && !snapshotAutoRecheckArmed && !isFinalizingSnapshot ? (
           <Button
             className="min-h-11"
             onClick={() => void recheckSnapshot()}
@@ -1133,6 +1166,12 @@ export function CoreCandyMachinePanel({
           </Button>
         ) : null}
       </div>
+
+      {snapshotRecoveryContext && snapshotAutoRecheckArmed ? (
+        <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+          Snapshot re-check will run automatically in about 15 seconds. Create Asset remains blocked while the server verifies on-chain state.
+        </p>
+      ) : null}
 
       {isFinalizingSnapshot ? (
         <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
