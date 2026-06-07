@@ -6,7 +6,7 @@ promotion_target: guide
 scope: admin-assets-new-core-candy-machine
 owner: codex
 created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T21:15:00.000Z
+updated_at: 2026-06-07T21:35:00.000Z
 source_issue: n/a
 source_feature: admin-assets-new
 enforcement_candidate: no
@@ -127,6 +127,42 @@ All deploy signatures below are finalized on devnet with no transaction error:
 - Server operability logs could not be inspected from shell because `/api/admin/monitoring/logs?limit=200` requires an admin `siws_session` cookie.
 - Server stdout for the running `next-server` process was not attached to this Codex thread, so runtime console logs could not be read directly.
 
+### Protected Working Modules
+
+Do not change these in the next implementation slice unless new evidence proves they are failing:
+
+- Deploy prepare: `app/api/admin/core-candy-machine/deploy/prepare/route.ts`
+- Transaction assembly: `prepareCoreCandyMachineDeploy`
+- Phantom signing mode: current `signAllTransactions` flow
+- Submit route: `app/api/admin/core-candy-machine/submit/route.ts`
+- RPC send and confirmation helpers: `sendRawTransactionWithRetry`, `waitForConfirmedSignature`
+- Config-line chunking and load transaction construction
+- Metaplex Core Collection creation
+- Core Candy Machine + Guard creation
+- Metaplex Core plugin assembly
+- Create Asset security gate semantics
+
+Reason: the observed devnet deploy proves these modules can produce finalized transactions and the expected on-chain state.
+
+### Target Area For Fix
+
+The fix should target only snapshot/handoff recovery:
+
+- UI state after snapshot finalization returns `canCreateAsset: false`
+- re-running server-side snapshot finalization for the same deploy
+- keeping Create Asset disabled until server verification succeeds
+
+The fix must not:
+
+- prepare new deploy transactions,
+- ask Phantom to sign again,
+- submit new deploy transactions,
+- create another collection,
+- create another Candy Machine,
+- reload config lines,
+- set `snapshotId` manually,
+- enable Create Asset from client state.
+
 ### Current Diagnosis
 
 The deploy itself is not the failing subsystem for this observed attempt. The failing subsystem is the post-deploy snapshot/handoff path.
@@ -144,6 +180,44 @@ All on-chain conditions are true for this deploy now. Therefore the current fail
 - the snapshot finalization request used incomplete or stale payload data,
 - the finalized failed snapshot state persisted and the UI did not re-run or replace it after on-chain state became ready,
 - the UI message is reflecting an earlier failure even though the current on-chain state is now valid.
+
+## Proposed Fix For This Branch
+
+Add a snapshot-only recovery path in the admin UI.
+
+When the deploy is confirmed but snapshot finalization returns `canCreateAsset: false`, the UI should keep the confirmed deploy context and show a recoverable state. The recovery action should call `/api/admin/core-candy-machine/snapshot/finalize` again with the same:
+
+- draft id,
+- form snapshot,
+- quantity,
+- collection address,
+- Candy Machine address,
+- deploy signatures.
+
+If the server now reads `itemsLoaded === quantity` and validates the rest of the snapshot invariants, it returns `canCreateAsset: true` and the existing Create Asset gate can open.
+
+This path is safe because it asks the server to verify again. It does not let the client assert verification.
+
+## Slice Plan For This Branch
+
+1. Documentation guardrails
+   - Current status: done.
+   - Confirmed what is working and what must not be touched.
+
+2. Snapshot recovery state
+   - Touch: `components/admin/core-candy-machine-panel.tsx`.
+   - Add state for a failed-but-recoverable snapshot after confirmed deploy.
+   - Preserve the exact deploy context needed to re-run snapshot finalization.
+
+3. Re-check snapshot action
+   - Touch: `components/admin/core-candy-machine-panel.tsx`.
+   - Call the existing snapshot finalize route.
+   - Do not call prepare, sign, submit, or config-line load.
+
+4. Verification and tests
+   - Add tests that `Re-check snapshot` enables Create Asset only after `canCreateAsset: true`.
+   - Add tests that re-check does not trigger deploy or wallet signing.
+   - Run targeted tests and `npm run validate`.
 
 ## Implementation Snapshot
 

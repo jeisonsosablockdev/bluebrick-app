@@ -2,9 +2,11 @@
 
 ## Problem
 
-The `/admin/assets/new` Core Candy Machine deploy flow still needs a functional fix after PR `#294` added diagnostics.
+The current failure is a post-deploy snapshot false negative in `/admin/assets/new`.
 
-This branch starts from the current `develop` state and must first observe the system with the new deploy logs before changing transaction, retry, recovery, or snapshot semantics.
+The deploy completed on-chain, but the app did not enable Create Asset because the mint snapshot stayed in a failed/not-ready UI state.
+
+This is not currently a transaction-construction, wallet-signing, RPC-submit, Candy Machine creation, or config-line loading failure.
 
 ## Current Baseline
 
@@ -43,6 +45,77 @@ The smallest safe fix should focus on allowing the server to re-finalize or reco
 - deploy signatures are confirmed,
 - Create Asset remains server-gated.
 
+## Failure Boundary
+
+Working boundary:
+
+```text
+prepare deploy -> Phantom sign -> submit txs -> RPC finalized -> Candy Machine itemsLoaded=quantity
+```
+
+Broken boundary:
+
+```text
+snapshot/finalize false negative -> UI remains blocked -> no safe re-finalize affordance
+```
+
+The fix should operate only after deploy has already confirmed. It should not create a new collection, create a new Candy Machine, reload config lines, or ask Phantom for signatures.
+
+## Protected Modules
+
+Do not touch these unless new evidence proves they are failing:
+
+- `prepareCoreCandyMachineDeploy` in `lib/core-candy-machine-admin.ts`
+  - Reason: current evidence proves transaction assembly produced a valid Core Collection, Core Candy Machine, Guard, and config-line sequence.
+- `submitCoreCandyMachineSignedTransactions`, `sendRawTransactionWithRetry`, and `waitForConfirmedSignature` in `lib/core-candy-machine-admin.ts`
+  - Reason: all seven deploy signatures finalized without error for the observed attempt.
+- `app/api/admin/core-candy-machine/deploy/prepare/route.ts`
+  - Reason: prepare returned addresses and transactions that succeeded on-chain.
+- `app/api/admin/core-candy-machine/submit/route.ts`
+  - Reason: submit accepted signed transactions and the transactions landed.
+- Config-line chunking logic
+  - Reason: `itemsLoaded=200` for expected quantity `200`.
+- Metaplex Core plugin assembly and guard creation
+  - Reason: Core Collection, Core Candy Machine, and Candy Guard all exist and decode.
+- Create Asset server gate
+  - Reason: the gate is the security boundary and must remain blocked until server snapshot verification returns `canCreateAsset: true`.
+- Snapshot verification invariants
+  - Reason: the fix must not bypass collection match, quantity match, signature proof confirmation, or `itemsLoaded === quantity`.
+
+## Allowed Touch Scope
+
+Touch these only as needed:
+
+- `components/admin/core-candy-machine-panel.tsx`
+  - Add a recoverable snapshot-only state after deploy is confirmed but snapshot finalization returns `canCreateAsset: false`.
+  - Add an explicit re-check/re-finalize action that reuses the same collection, Candy Machine, quantity, form snapshot, and deploy signatures.
+- `app/api/admin/core-candy-machine/snapshot/finalize/route.ts`
+  - Only if the existing route needs safer error shape or traceability for re-finalization.
+- `lib/core-candy-machine-snapshot-service.ts`
+  - Only if tests prove the current service cannot idempotently re-finalize a now-ready Candy Machine.
+- Tests around the snapshot gate and re-finalize UI.
+- This branch iteration document.
+
+## Proposed Fix
+
+Add a snapshot-only recovery path.
+
+When deploy transactions are confirmed but snapshot finalization fails with `canCreateAsset: false`, the UI should keep the deploy result in a recoverable state and show a clear action such as `Re-check snapshot`.
+
+That action should:
+
+- not prepare new deploy transactions,
+- not ask Phantom to sign,
+- not submit transactions,
+- not create a new collection,
+- not create a new Candy Machine,
+- not reload config lines,
+- POST the same snapshot finalize payload to `/api/admin/core-candy-machine/snapshot/finalize`,
+- rely on the server to re-read RPC and decide `canCreateAsset`,
+- enable Create Asset only if the server returns `canCreateAsset: true` and a snapshot id.
+
+This preserves the security model because the client only asks the server to verify again; the client never decides that verification succeeded.
+
 ## Security Requirements
 
 - Do not let client state decide that Create Asset is verified.
@@ -50,17 +123,36 @@ The smallest safe fix should focus on allowing the server to re-finalize or reco
 - Use public signatures, public addresses, transaction kind/index, RPC host, blockhash metadata, and sanitized error summaries only.
 - Any recovery path must prove on-chain account state from RPC before deciding the next action.
 
-## Initial Plan
+## Slice Plan
 
-1. Capture the current deploy flow and log surfaces.
-2. Run or observe a deploy attempt with the new `core_candy_machine.deploy.*` events.
-3. Identify why the app did not enable Create Asset even after `itemsLoaded=200`.
-4. Propose the smallest safe fix in the snapshot/handoff path.
+1. Documentation and guardrails
+   - Record the observed on-chain state.
+   - Mark deploy/submit/config-line modules as protected.
+   - Define the only allowed fix boundary: snapshot/handoff.
+
+2. Snapshot recovery UI
+   - Preserve the successful deploy payload and signatures after snapshot failure.
+   - Show a snapshot-only recovery state.
+   - Add `Re-check snapshot` without triggering deploy, signing, submit, or config-line load.
+
+3. Server verification reuse
+   - Reuse the existing snapshot finalize route if it is already idempotent.
+   - Add only minimal response/error traceability if tests prove it is needed.
+   - Keep all verification server-side.
+
+4. Tests
+   - Add coverage that snapshot recovery calls `/snapshot/finalize` again with the same Candy Machine.
+   - Add coverage that retry does not call `/deploy/prepare` or `/submit`.
+   - Add coverage that Create Asset remains disabled until `canCreateAsset: true`.
+
+5. Validation and acceptance
+   - Run targeted component/API tests.
+   - Run `npm run validate`.
+   - Update this iteration with final PR and Human Acceptance.
 
 ## Open Questions
 
-- Which `deployId` appears during the next failed attempt?
 - Did snapshot finalization run too early and persist a failed snapshot?
 - Did the finalize request send stale or incomplete payload data?
-- Does the UI have a safe path to re-run server-side snapshot finalization for the same Candy Machine?
-- Should the UI show a recoverable snapshot-only state when deploy is fully confirmed on-chain?
+- Can the current snapshot finalize service already re-finalize successfully if called again with the same payload after `itemsLoaded=200`?
+- Does the UI currently discard enough state after snapshot failure that it cannot retry finalize without another deploy?
