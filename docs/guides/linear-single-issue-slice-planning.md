@@ -69,9 +69,11 @@ Product and SPEC documentation must be bilingual from now on:
 
 The Spanish version must come first and must use correct tildes, punctuation, and Spanish orthography. Linear remains the primary source, and the local `.md` artifacts must mirror the issue body.
 
-Every completed SPEC must add a `SPEC HISTORY` block in the parent Feature documentation and the SPEC documentation. This history records stable outcomes, reusable decisions, and implementation patterns that were validated during the SPEC.
+SPEC definitions must use a numbered-list format for readability: `1. **SPEC01 - <title>**`, `2. **SPEC02 - <title>**`, `3. **SPEC03 - <title>**`, and so on. Branch, objective, scope, and criteria must be indented under each numbered SPEC item. Leave two normal line breaks between SPEC items so Linear renders visual spacing. The numeric prefix is a documentation ordering aid and does not override the stability-first execution rule.
 
-For BRIDS SPEC branches, the internal completion protocol is called `SPEC MERGE`. Before merging a `SPEC/*` branch back into the main `Feature` branch, the developer must update `SPEC HISTORY`, sync Linear, run scope-appropriate validation, review the worktree, and then merge into the `Feature` branch. No PR is required for this internal SPEC-to-Feature merge; the PR belongs to the final Feature branch integration.
+Every completed SPEC must add to `SPEC DEVELOPMENT HISTORY` at the end of the parent Feature documentation and the SPEC documentation. This history records stable outcomes, reusable decisions, and implementation patterns that were validated during the SPEC. In the main issue body, it lives after `VERSION ESPAÑOL` and `ENGLISH VERSION`.
+
+For BRIDS SPEC branches, the internal completion protocol is called `SPEC MERGE`. Before merging a `SPEC/*` branch back into the main `Feature` branch, the developer must update `SPEC DEVELOPMENT HISTORY`, sync Linear, run scope-appropriate validation, review the worktree, and then merge into the `Feature` branch. No PR is required for this internal SPEC-to-Feature merge; the PR belongs to the final Feature branch integration.
 
 Use `docs/templates/linear-single-issue-slices.template.md` as the Markdown skeleton.
 
@@ -101,7 +103,7 @@ SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
 
 In that model, the main `Feature` branch acts as the integration branch for the issue, and each `SPEC` branch starts from it and targets it back for review. `SPEC01`, `SPEC02`, and later numbers organize scope but do not force delivery order when stability, technical dependencies, or integration risk require a different sequence.
 
-Before each `SPEC` branch returns to the main `Feature` branch, run `SPEC MERGE`: document `SPEC HISTORY`, sync Linear as the source of truth, validate the touched scope, inspect `git status`, and merge at the responsible developer's discretion without an intermediate PR.
+Before each `SPEC` branch returns to the main `Feature` branch, run `SPEC MERGE`: document `SPEC DEVELOPMENT HISTORY`, sync Linear as the source of truth, validate the touched scope, inspect `git status`, and merge at the responsible developer's discretion without an intermediate PR.
 
 See `docs/governance/git-monorepo-policy.md` for the canonical naming rules.
 

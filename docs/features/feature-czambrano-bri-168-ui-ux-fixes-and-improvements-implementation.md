@@ -27,97 +27,108 @@ Montar estas reglas en los documentos principales de políticas y workflow del p
 6. Evitar comentarios sueltos para SPECS.
 7. Sincronizar los `.md` locales con el cuerpo del issue.
 8. Usar ramas SPEC con formato `SPEC/<developer>-bri<issue>-specNN-<slug>` cuando una rama `Feature` se divida en múltiples SPECS.
-9. Documentar `SPEC HISTORY` al final de cada SPEC con resultados estables, decisiones reutilizables y aprendizajes validados.
+9. Documentar `SPEC DEVELOPMENT HISTORY` al final del issue con resultados estables, decisiones reutilizables y aprendizajes validados por SPEC.
 10. Ejecutar `SPEC MERGE` como protocolo de cierre interno de cada SPEC antes de integrar hacia la rama `Feature`, sin PR intermedio.
 
 ### SPECS de implementación
 
-#### SPEC01 - Landing Dark Hero Look And Feel
-- Rama SPEC: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`
-- Objetivo: mejorar el Hero dark mode con fondo azul oscuro, blur gaussiano, glow azul/morado y paneles internos sin borde blanco.
-- ALCANCE INICIAL PROPUESTO:
-  - `components/sections/hero.tsx`
-  - `app/globals.css`
-  - Fondo dark mode del Hero.
-  - Paneles internos del Hero sin borde blanco.
-  - CTA secundario sin borde blanco visible.
-  - Menú desplegable del Hero si corresponde al mismo flujo técnico.
-- Validación inicial:
-  - `npm run lint`
-  - evidencia visual en `http://localhost:3000`
+1. **SPEC01 - Landing Dark Hero Look And Feel**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`
+   - Objetivo: mejorar el Hero dark mode con fondo azul oscuro, blur gaussiano, glow azul/morado y paneles internos sin borde blanco.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - `components/sections/hero.tsx`
+     - `app/globals.css`
+     - Fondo dark mode del Hero.
+     - Paneles internos del Hero sin borde blanco.
+     - CTA secundario sin borde blanco visible.
+     - Menú desplegable del Hero si corresponde al mismo flujo técnico.
+   - **Validación inicial:**
+     - `npm run lint`
+     - evidencia visual en `http://localhost:3000`
 
-#### SPEC02 - Investment Category Iconography
-- Rama SPEC: `SPEC/czambrano-bri168-spec02-investment-category-iconography`
-- Objetivo: crear íconos propios para categorías de inversión y reemplazar iconografía genérica.
-- ALCANCE INICIAL PROPUESTO:
-  - Auditar superficies públicas con categorías de inversión.
-  - Identificar íconos genéricos actuales.
-  - Diseñar o implementar set inicial de íconos BRIDS.
-  - Validar tamaños, pesos visuales, contraste y estados.
-- Validación inicial:
-  - revisión visual dark/light mode
-  - QA responsive de superficies tocadas
 
-#### SPEC03 - Dark Mode Modules Depth
-- Rama SPEC: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`
-- Objetivo: remover bordes blancos de módulos informativos e introducir profundidad visual limpia.
-- ALCANCE INICIAL PROPUESTO:
-  - Auditar cards y módulos del landing.
-  - Remover contornos blancos innecesarios.
-  - Aplicar sombras suaves, gradientes y glass oscuro.
-  - Validar contraste y accesibilidad.
-- Validación inicial:
-  - revisión visual dark/light mode
-  - `npm run lint`
 
-#### SPEC04 - Hero Dropdown Visual System
-- Rama SPEC: `SPEC/czambrano-bri168-spec04-hero-dropdown-visual-system`
-- Objetivo: extender el tratamiento visual del Hero al menú desplegable.
-- ALCANCE INICIAL PROPUESTO:
-  - Identificar componente exacto del dropdown.
-  - Aplicar matiz azul/morado, blur, sombras y profundidad.
-  - Revisar estados hover, active, focus y selected.
-  - Validar accesibilidad por teclado.
-- Validación inicial:
-  - QA interactivo del dropdown
-  - revisión responsive
+2. **SPEC02 - Investment Category Iconography**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec02-investment-category-iconography`
+   - Objetivo: crear íconos propios para categorías de inversión y reemplazar iconografía genérica.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Auditar superficies públicas con categorías de inversión.
+     - Identificar íconos genéricos actuales.
+     - Diseñar o implementar set inicial de íconos BRIDS.
+     - Validar tamaños, pesos visuales, contraste y estados.
+   - **Validación inicial:**
+     - revisión visual dark/light mode
+     - QA responsive de superficies tocadas
 
-#### SPEC05 - Landing Header Full Width Visual
-- Rama SPEC: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
-- Objetivo: rediseñar el header/first viewport con uso total del ancho horizontal y dirección visual urbana/tokenización.
-- ALCANCE INICIAL PROPUESTO:
-  - Auditar estructura actual del header.
-  - Proponer composición full-width.
-  - Definir imagen o dirección visual de ciudad, tokenización y fraccionamiento.
-  - Definir jerarquía de texto grande.
-- Validación inicial:
-  - revisión visual desktop/mobile
-  - validación de performance del primer viewport
 
-#### SPEC06 - Scroll Motion Experience
-- Rama SPEC: `SPEC/czambrano-bri168-spec06-scroll-motion-experience`
-- Objetivo: explorar animación progresiva por scroll usando Motion, Open Design o motor AI actual.
-- ALCANCE INICIAL PROPUESTO:
-  - Evaluar motor de animación.
-  - Definir elementos candidatos para animación por scroll.
-  - Prototipar animación mínima.
-  - Incluir fallback para `prefers-reduced-motion`.
-- Validación inicial:
-  - prueba de performance
-  - validación de accesibilidad de movimiento
 
-#### SPEC07 - Marketplace Pins Secondary Scope
-- Rama SPEC: `SPEC/czambrano-bri168-spec07-marketplace-pins-secondary`
-- Objetivo: retomar mejoras de pins como alcance secundario de `BRI-168`.
-- ALCANCE INICIAL PROPUESTO:
-  - Revisar visibilidad y jerarquía de pins.
-  - Revisar estados selected, hover, focus y active.
-  - Validar sincronización map/list/detail.
-  - Ejecutar QA responsive de Marketplace.
-- Validación inicial:
-  - QA map/list/detail
-  - QA responsive Marketplace
+3. **SPEC03 - Dark Mode Modules Depth**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`
+   - Objetivo: remover bordes blancos de módulos informativos e introducir profundidad visual limpia.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Auditar cards y módulos del landing.
+     - Remover contornos blancos innecesarios.
+     - Aplicar sombras suaves, gradientes y glass oscuro.
+     - Validar contraste y accesibilidad.
+   - **Validación inicial:**
+     - revisión visual dark/light mode
+     - `npm run lint`
 
+
+
+4. **SPEC04 - Hero Dropdown Visual System**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec04-hero-dropdown-visual-system`
+   - Objetivo: extender el tratamiento visual del Hero al menú desplegable.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Identificar componente exacto del dropdown.
+     - Aplicar matiz azul/morado, blur, sombras y profundidad.
+     - Revisar estados hover, active, focus y selected.
+     - Validar accesibilidad por teclado.
+   - **Validación inicial:**
+     - QA interactivo del dropdown
+     - revisión responsive
+
+
+
+5. **SPEC05 - Landing Header Full Width Visual**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Objetivo: rediseñar el header/first viewport con uso total del ancho horizontal y dirección visual urbana/tokenización.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Auditar estructura actual del header.
+     - Proponer composición full-width.
+     - Definir imagen o dirección visual de ciudad, tokenización y fraccionamiento.
+     - Definir jerarquía de texto grande.
+   - **Validación inicial:**
+     - revisión visual desktop/mobile
+     - validación de performance del primer viewport
+
+
+
+6. **SPEC06 - Scroll Motion Experience**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec06-scroll-motion-experience`
+   - Objetivo: explorar animación progresiva por scroll usando Motion, Open Design o motor AI actual.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Evaluar motor de animación.
+     - Definir elementos candidatos para animación por scroll.
+     - Prototipar animación mínima.
+     - Incluir fallback para `prefers-reduced-motion`.
+   - **Validación inicial:**
+     - prueba de performance
+     - validación de accesibilidad de movimiento
+
+
+
+7. **SPEC07 - Marketplace Pins Secondary Scope**
+   - Rama SPEC: `SPEC/czambrano-bri168-spec07-marketplace-pins-secondary`
+   - Objetivo: retomar mejoras de pins como alcance secundario de `BRI-168`.
+   - **ALCANCE INICIAL PROPUESTO:**
+     - Revisar visibilidad y jerarquía de pins.
+     - Revisar estados selected, hover, focus y active.
+     - Validar sincronización map/list/detail.
+     - Ejecutar QA responsive de Marketplace.
+   - **Validación inicial:**
+     - QA map/list/detail
+     - QA responsive Marketplace
 ### Gates
 - Linear actualizado como fuente principal.
 - `.md` locales congruentes.
@@ -156,97 +167,108 @@ Install these rules into the primary BRIDS policy and workflow documents:
 6. Avoid loose comments for SPECS.
 7. Sync local `.md` files with the issue body.
 8. Use SPEC branches with the format `SPEC/<developer>-bri<issue>-specNN-<slug>` when a `Feature` branch is divided into multiple SPECS.
-9. Document `SPEC HISTORY` at the end of each SPEC with stable outcomes, reusable decisions, and validated learnings.
+9. Document `SPEC DEVELOPMENT HISTORY` at the end of the issue with stable outcomes, reusable decisions, and validated learnings by SPEC.
 10. Run `SPEC MERGE` as the internal closing protocol for each SPEC before integrating into the `Feature` branch, without an intermediate PR.
 
 ### Implementation SPECS
 
-#### SPEC01 - Landing Dark Hero Look And Feel
-- SPEC branch: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`
-- Objective: improve the dark mode Hero with a dark blue background, gaussian blur, blue/purple glow, and borderless internal panels.
-- PROPOSED INITIAL SCOPE:
-  - `components/sections/hero.tsx`
-  - `app/globals.css`
-  - Hero dark mode background.
-  - Borderless Hero internal panels.
-  - Secondary CTA without visible white border.
-  - Hero dropdown if it belongs to the same technical flow.
-- Initial validation:
-  - `npm run lint`
-  - visual evidence at `http://localhost:3000`
+1. **SPEC01 - Landing Dark Hero Look And Feel**
+   - SPEC branch: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`
+   - Objective: improve the dark mode Hero with a dark blue background, gaussian blur, blue/purple glow, and borderless internal panels.
+   - **PROPOSED INITIAL SCOPE:**
+     - `components/sections/hero.tsx`
+     - `app/globals.css`
+     - Hero dark mode background.
+     - Borderless Hero internal panels.
+     - Secondary CTA without visible white border.
+     - Hero dropdown if it belongs to the same technical flow.
+   - **Initial validation:**
+     - `npm run lint`
+     - visual evidence at `http://localhost:3000`
 
-#### SPEC02 - Investment Category Iconography
-- SPEC branch: `SPEC/czambrano-bri168-spec02-investment-category-iconography`
-- Objective: create custom investment category icons and replace generic iconography.
-- PROPOSED INITIAL SCOPE:
-  - Audit public surfaces with investment categories.
-  - Identify current generic icons.
-  - Design or implement an initial BRIDS icon set.
-  - Validate sizes, visual weights, contrast, and states.
-- Initial validation:
-  - dark/light mode visual review
-  - responsive QA for touched surfaces
 
-#### SPEC03 - Dark Mode Modules Depth
-- SPEC branch: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`
-- Objective: remove white borders from informational modules and introduce clean visual depth.
-- PROPOSED INITIAL SCOPE:
-  - Audit landing cards and modules.
-  - Remove unnecessary white outlines.
-  - Apply soft shadows, gradients, and dark glass.
-  - Validate contrast and accessibility.
-- Initial validation:
-  - dark/light mode visual review
-  - `npm run lint`
 
-#### SPEC04 - Hero Dropdown Visual System
-- SPEC branch: `SPEC/czambrano-bri168-spec04-hero-dropdown-visual-system`
-- Objective: extend the Hero visual treatment to the dropdown menu.
-- PROPOSED INITIAL SCOPE:
-  - Identify the exact dropdown component.
-  - Apply blue/purple mood, blur, shadows, and depth.
-  - Review hover, active, focus, and selected states.
-  - Validate keyboard accessibility.
-- Initial validation:
-  - dropdown interaction QA
-  - responsive review
+2. **SPEC02 - Investment Category Iconography**
+   - SPEC branch: `SPEC/czambrano-bri168-spec02-investment-category-iconography`
+   - Objective: create custom investment category icons and replace generic iconography.
+   - **PROPOSED INITIAL SCOPE:**
+     - Audit public surfaces with investment categories.
+     - Identify current generic icons.
+     - Design or implement an initial BRIDS icon set.
+     - Validate sizes, visual weights, contrast, and states.
+   - **Initial validation:**
+     - dark/light mode visual review
+     - responsive QA for touched surfaces
 
-#### SPEC05 - Landing Header Full Width Visual
-- SPEC branch: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
-- Objective: redesign the header/first viewport with full horizontal usage and city/tokenization visual direction.
-- PROPOSED INITIAL SCOPE:
-  - Audit the current header structure.
-  - Propose a full-width composition.
-  - Define city, tokenization, and fractionalization imagery or visual direction.
-  - Define large-text hierarchy.
-- Initial validation:
-  - desktop/mobile visual review
-  - first viewport performance validation
 
-#### SPEC06 - Scroll Motion Experience
-- SPEC branch: `SPEC/czambrano-bri168-spec06-scroll-motion-experience`
-- Objective: explore progressive scroll animation using Motion, Open Design, or a current AI engine.
-- PROPOSED INITIAL SCOPE:
-  - Evaluate animation engine.
-  - Define candidate elements for scroll animation.
-  - Prototype a minimal animation.
-  - Include fallback for `prefers-reduced-motion`.
-- Initial validation:
-  - performance test
-  - motion accessibility validation
 
-#### SPEC07 - Marketplace Pins Secondary Scope
-- SPEC branch: `SPEC/czambrano-bri168-spec07-marketplace-pins-secondary`
-- Objective: resume pin improvements as secondary scope for `BRI-168`.
-- PROPOSED INITIAL SCOPE:
-  - Review pin visibility and hierarchy.
-  - Review selected, hover, focus, and active states.
-  - Validate map/list/detail synchronization.
-  - Run Marketplace responsive QA.
-- Initial validation:
-  - map/list/detail QA
-  - Marketplace responsive QA
+3. **SPEC03 - Dark Mode Modules Depth**
+   - SPEC branch: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`
+   - Objective: remove white borders from informational modules and introduce clean visual depth.
+   - **PROPOSED INITIAL SCOPE:**
+     - Audit landing cards and modules.
+     - Remove unnecessary white outlines.
+     - Apply soft shadows, gradients, and dark glass.
+     - Validate contrast and accessibility.
+   - **Initial validation:**
+     - dark/light mode visual review
+     - `npm run lint`
 
+
+
+4. **SPEC04 - Hero Dropdown Visual System**
+   - SPEC branch: `SPEC/czambrano-bri168-spec04-hero-dropdown-visual-system`
+   - Objective: extend the Hero visual treatment to the dropdown menu.
+   - **PROPOSED INITIAL SCOPE:**
+     - Identify the exact dropdown component.
+     - Apply blue/purple mood, blur, shadows, and depth.
+     - Review hover, active, focus, and selected states.
+     - Validate keyboard accessibility.
+   - **Initial validation:**
+     - dropdown interaction QA
+     - responsive review
+
+
+
+5. **SPEC05 - Landing Header Full Width Visual**
+   - SPEC branch: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Objective: redesign the header/first viewport with full horizontal usage and city/tokenization visual direction.
+   - **PROPOSED INITIAL SCOPE:**
+     - Audit the current header structure.
+     - Propose a full-width composition.
+     - Define city, tokenization, and fractionalization imagery or visual direction.
+     - Define large-text hierarchy.
+   - **Initial validation:**
+     - desktop/mobile visual review
+     - first viewport performance validation
+
+
+
+6. **SPEC06 - Scroll Motion Experience**
+   - SPEC branch: `SPEC/czambrano-bri168-spec06-scroll-motion-experience`
+   - Objective: explore progressive scroll animation using Motion, Open Design, or a current AI engine.
+   - **PROPOSED INITIAL SCOPE:**
+     - Evaluate animation engine.
+     - Define candidate elements for scroll animation.
+     - Prototype a minimal animation.
+     - Include fallback for `prefers-reduced-motion`.
+   - **Initial validation:**
+     - performance test
+     - motion accessibility validation
+
+
+
+7. **SPEC07 - Marketplace Pins Secondary Scope**
+   - SPEC branch: `SPEC/czambrano-bri168-spec07-marketplace-pins-secondary`
+   - Objective: resume pin improvements as secondary scope for `BRI-168`.
+   - **PROPOSED INITIAL SCOPE:**
+     - Review pin visibility and hierarchy.
+     - Review selected, hover, focus, and active states.
+     - Validate map/list/detail synchronization.
+     - Run Marketplace responsive QA.
+   - **Initial validation:**
+     - map/list/detail QA
+     - Marketplace responsive QA
 ### Gates
 - Linear updated as primary source.
 - Local `.md` files are consistent.

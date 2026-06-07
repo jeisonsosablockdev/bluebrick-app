@@ -21,9 +21,9 @@
 # Spec Slice
 - Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`
 - Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`
-- Socratic documentation gate: use `explain-like-socrates` before finalizing artifacts, assumptions, and delivery slices.
+- SPEC definitions must use numbered-list indentation: `1. **SPEC01 - <title>**`, followed by indented bullets for branch, objective, scope, and criteria. Leave two normal line breaks before the next SPEC item.
 
-# SPEC HISTORY
+# SPEC DEVELOPMENT HISTORY
 {{SPEC_HISTORY_ITEMS}}
 
 # Slice Plan

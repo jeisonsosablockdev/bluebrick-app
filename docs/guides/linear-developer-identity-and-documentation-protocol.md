@@ -30,20 +30,23 @@ Este protocolo define una política transversal de desarrollo para que la docume
 - Ejemplo: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`.
 - La numeración `SPEC01`, `SPEC02` y siguientes organiza el scope, pero no impone prioridad obligatoria de ejecución. La estabilidad, las dependencias técnicas y el riesgo de integración pueden cambiar el orden de desarrollo.
 - Cada SPEC debe incluir un `Alcance inicial propuesto` para que el desarrollador valide, ajuste o corrija el alcance antes de implementar.
+- Cada definición de SPEC debe escribirse como lista numerada con título en negrita e indentación interna: `1. **SPEC01 - Nombre del SPEC**`, seguido por bullets indentados para rama, objetivo, alcance y criterios. Entre un SPEC y el siguiente deben dejarse dos saltos de línea normales para crear separación visual antes del siguiente número. No se debe usar heading plano para el título del SPEC dentro del listado principal.
 
 ### Regla de SPEC HISTORY
-- Al finalizar un SPEC, se debe documentar un bloque `SPEC HISTORY` dentro del marco del Feature y del SPEC desarrollado.
+- Al finalizar un SPEC, se debe documentar el historial dentro del marco del Feature y del SPEC desarrollado.
 - `SPEC HISTORY` registra lo que salió bien, las decisiones visuales o técnicas que quedaron estables, los patrones reutilizables y la forma en que se llegó a un componente o desarrollo confiable.
 - El historial debe distinguir evidencia de validación de aprendizaje estable: no reemplaza criterios de aceptación, pero captura qué patrones deben repetirse en futuros SPECS.
 - Cuando el usuario o desarrollador confirme que un ajuste quedó perfecto o estable, ese resultado debe promoverse al `SPEC HISTORY`.
+- En el cuerpo principal del issue de Linear, este historial debe vivir al final de todo el issue bajo el título `SPEC DEVELOPMENT HISTORY`, después de `VERSION ESPAÑOL` y `ENGLISH VERSION`.
+- `SPEC DEVELOPMENT HISTORY` se organiza por SPEC, puede iniciar solo en español cuando el equipo esté cerrando aprendizajes operativos rápidos y debe crecer de forma acumulativa con cada SPEC.
 - El bloque debe existir en Linear como fuente principal y en los `.md` locales como registro Git congruente.
-- La documentación de `SPEC HISTORY` debe mantener la regla bilingüe: `VERSION ESPAÑOL` primero y `ENGLISH VERSION` después.
+- Los grandes títulos del issue deben separarse visualmente con divisores para `VERSION ESPAÑOL`, `ENGLISH VERSION` y `SPEC DEVELOPMENT HISTORY`.
 
 ### Protocolo SPEC MERGE
 - `SPEC MERGE` es el protocolo de finalización de un SPEC antes de integrar su rama `SPEC` a la rama `Feature`.
 - Antes de ejecutar `SPEC MERGE`, el agente debe confirmar que el desarrollo del SPEC está terminado y que el desarrollador responsable está confirmado.
 - El protocolo debe ejecutar, como mínimo:
-  - actualizar `SPEC HISTORY` en el Feature, en el SPEC local y en el documento de implementación correspondiente
+  - actualizar `SPEC DEVELOPMENT HISTORY` en el Feature, en el SPEC local y en el documento de implementación correspondiente
   - sincronizar el cuerpo del issue de Linear con la documentación local final
   - ejecutar validaciones razonables para el alcance tocado
   - revisar `git status` y separar cambios ajenos al SPEC
@@ -74,7 +77,7 @@ Este protocolo define una política transversal de desarrollo para que la docume
 - [ ] Revisar tildes y puntuación en la versión en español.
 - [ ] Actualizar el cuerpo del issue como fuente principal.
 - [ ] Actualizar los `.md` locales para que coincidan con Linear.
-- [ ] Al cerrar un SPEC, actualizar `SPEC HISTORY` antes de ejecutar `SPEC MERGE`.
+- [ ] Al cerrar un SPEC, actualizar `SPEC DEVELOPMENT HISTORY` antes de ejecutar `SPEC MERGE`.
 - [ ] Evitar comentarios sueltos salvo que el usuario los pida explícitamente.
 
 ## ENGLISH VERSION
@@ -107,20 +110,23 @@ This protocol defines a cross-project development policy so Linear documentation
 - Example: `SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel`.
 - The `SPEC01`, `SPEC02`, and later numbering organizes scope, but it does not impose mandatory execution priority. Stability, technical dependencies, and integration risk may change development order.
 - Each SPEC must include a `Proposed Initial Scope` so the developer can validate, adjust, or correct the scope before implementation.
+- Each SPEC definition must be written as a numbered list with a bold title and internal indentation: `1. **SPEC01 - SPEC Name**`, followed by indented bullets for branch, objective, scope, and criteria. Leave two normal line breaks between one SPEC and the next to create visual spacing before the next number. Do not use a flat heading for the SPEC title inside the main list.
 
 ### SPEC HISTORY Rule
-- At the end of each SPEC, a `SPEC HISTORY` block must be documented inside the Feature and the SPEC being developed.
+- At the end of each SPEC, history must be documented inside the Feature and the SPEC being developed.
 - `SPEC HISTORY` records what worked well, which visual or technical decisions became stable, reusable patterns, and how the work reached a reliable component or development state.
 - The history must distinguish validation evidence from stable learning: it does not replace acceptance criteria, but it captures which patterns should be repeated in future SPECS.
 - When the user or developer confirms that an adjustment is perfect or stable, that result must be promoted into `SPEC HISTORY`.
+- In the main Linear issue body, this history must live at the very end of the issue under `SPEC DEVELOPMENT HISTORY`, after `VERSION ESPAÑOL` and `ENGLISH VERSION`.
+- `SPEC DEVELOPMENT HISTORY` is organized by SPEC, may start Spanish-only when the team is closing fast operational learnings, and must grow cumulatively with each SPEC.
 - The block must live in Linear as the primary source and in local `.md` files as the congruent Git record.
-- `SPEC HISTORY` documentation must keep the bilingual rule: `VERSION ESPAÑOL` first and `ENGLISH VERSION` second.
+- Major issue titles must be visually separated with dividers for `VERSION ESPAÑOL`, `ENGLISH VERSION`, and `SPEC DEVELOPMENT HISTORY`.
 
 ### SPEC MERGE Protocol
 - `SPEC MERGE` is the end-of-SPEC protocol before integrating a `SPEC` branch into the `Feature` branch.
 - Before running `SPEC MERGE`, the agent must confirm that SPEC development is finished and that the responsible developer is confirmed.
 - The protocol must execute, at minimum:
-  - update `SPEC HISTORY` in the Feature, local SPEC, and corresponding implementation document
+  - update `SPEC DEVELOPMENT HISTORY` in the Feature, local SPEC, and corresponding implementation document
   - sync the Linear issue body with the final local documentation
   - run reasonable validations for the touched scope
   - review `git status` and separate changes unrelated to the SPEC
@@ -151,5 +157,5 @@ This protocol defines a cross-project development policy so Linear documentation
 - [ ] Review accents and punctuation in the Spanish version.
 - [ ] Update the issue body as the primary source.
 - [ ] Update local `.md` files to match Linear.
-- [ ] When closing a SPEC, update `SPEC HISTORY` before running `SPEC MERGE`.
+- [ ] When closing a SPEC, update `SPEC DEVELOPMENT HISTORY` before running `SPEC MERGE`.
 - [ ] Avoid loose comments unless the user explicitly asks for them.
