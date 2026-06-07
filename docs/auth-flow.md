@@ -867,3 +867,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/health/collections` now uses the same compact review-queue language as the main collections console.
 - The health surface still renders only rows returned by `loadAdminCollectionsHealthPageState()` and keeps ready collections separated from review-required rows.
 - No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, snapshot validation, ownership enforcement, document upload authority, or blockchain mutation authority changed in this slice.
+
+## Admin Candy Machine Deploy Detailed Logs
+- `/api/admin/core-candy-machine/submit` now accepts an optional `deployId` solely to correlate deploy preparation, wallet signing, backend submit, RPC confirmation, and snapshot-facing logs.
+- The route still derives the authenticated admin wallet from the existing SIWS session through `getRequestRole`; the client-provided `deployId` is never used for authorization, payer validation, snapshot verification, or Create Asset gating.
+- No SIWS challenge, signature verification, cookie strategy, nonce lifecycle, admin role derivation, or browser-owned permission model changed in this slice.
