@@ -103,8 +103,6 @@ export type DeployCompletedPayload = {
   signatures: RunSignatureEntry[];
 };
 
-type SnapshotRetryPayload = DeployCompletedPayload;
-
 type CoreCandyMachinePanelProps = {
   prefill?: {
     collectionName?: string;
@@ -177,12 +175,6 @@ const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg",
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
 const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
 const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
-const SNAPSHOT_FINALIZE_WAIT_PHASES = [
-  "Confirming deploy transactions",
-  "Reading Candy Machine state",
-  "Finalizing mint snapshot",
-  "Preparing Create Asset gate"
-];
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -224,54 +216,6 @@ function readErrorMessage(payload: ErrorResponse | null, fallback: string): stri
 
 function wait(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
-
-function SnapshotFinalizeWaitScreen({ payload }: { payload: SnapshotRetryPayload | null }) {
-  return (
-    <div
-      aria-live="assertive"
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/75 px-4 py-6 backdrop-blur-md"
-      role="status"
-    >
-      <div className="w-full max-w-md rounded-lg border border-cyan-300/30 bg-slate-950/95 p-5 text-center shadow-[0_28px_90px_rgba(8,47,73,0.5)]">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-cyan-300/35 bg-cyan-300/10">
-          <span
-            aria-hidden="true"
-            className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-200 border-t-transparent"
-          />
-        </div>
-        <p className="mt-5 text-xs font-semibold uppercase text-cyan-200">
-          Snapshot verification
-        </p>
-        <h2 className="mt-2 text-xl font-semibold text-white">
-          Verifying deploy on-chain
-        </h2>
-        <p className="mt-3 text-sm text-white/72">
-          This can take up to 2 minutes while RPC catches up.
-        </p>
-        <p className="mt-2 text-sm text-amber-100">
-          Do not redeploy. Create Asset will unlock only after the snapshot is verified.
-        </p>
-
-        <div className="mt-5 space-y-2 text-left">
-          {SNAPSHOT_FINALIZE_WAIT_PHASES.map((phase) => (
-            <div key={phase} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/80">
-              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-cyan-200" />
-              <span>{phase}</span>
-            </div>
-          ))}
-        </div>
-
-        {payload ? (
-          <div className="mt-4 rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-left text-xs text-white/65">
-            <p>Collection: {truncate(payload.collectionAddress)}</p>
-            <p>Candy Machine: {truncate(payload.candyMachineAddress)}</p>
-            <p>Quantity: {payload.quantity}</p>
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
 }
 
 async function fetchDeploySignatureStatuses(signatures: string[]): Promise<Record<string, unknown>> {
@@ -401,12 +345,11 @@ export function CoreCandyMachinePanel({
     collectionAddress: null,
     signatures: []
   });
-  const [busyAction, setBusyAction] = useState<"deploy" | "snapshot-retry" | null>(null);
+  const [busyAction, setBusyAction] = useState<"deploy" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGeneratingUri, setIsGeneratingUri] = useState(false);
   const [isFinalizingSnapshot, setIsFinalizingSnapshot] = useState(false);
   const [snapshotResult, setSnapshotResult] = useState<SnapshotFinalizeResponse | null>(null);
-  const [snapshotRetryPayload, setSnapshotRetryPayload] = useState<SnapshotRetryPayload | null>(null);
 
   const requestGeneratedMetadataUris = useCallback(async (): Promise<GeneratedMetadataUris> => {
     if (!prefill?.imageUrl) {
@@ -685,53 +628,6 @@ export function CoreCandyMachinePanel({
     }
   }
 
-  function completeDeployAfterSnapshot(payload: DeployCompletedPayload): void {
-    setSnapshotRetryPayload(null);
-    setRunState((current) => ({
-      ...current,
-      status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
-    }));
-
-    onDeployCompleted?.(payload);
-  }
-
-  async function retrySnapshotVerification(): Promise<void> {
-    if (!snapshotRetryPayload || isFinalizingSnapshot) {
-      return;
-    }
-
-    setBusyAction("snapshot-retry");
-    setErrorMessage(null);
-    setRunState((current) => ({
-      ...current,
-      status: "Retrying snapshot verification..."
-    }));
-
-    try {
-      const finalizedSnapshot = await finalizeSnapshot(
-        snapshotRetryPayload.quantity,
-        snapshotRetryPayload.candyMachineAddress,
-        snapshotRetryPayload.collectionAddress,
-        snapshotRetryPayload.signatures
-      );
-
-      if (!finalizedSnapshot?.canCreateAsset) {
-        const message = finalizedSnapshot?.verificationError?.message
-          ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
-        setRunState((current) => ({
-          ...current,
-          status: "Deploy confirmed, but mint snapshot is not ready."
-        }));
-        setErrorMessage(message);
-        return;
-      }
-
-      completeDeployAfterSnapshot(snapshotRetryPayload);
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
   async function runDeployFlow(): Promise<void> {
     if (!canRun || !publicKey || !signTransaction) {
       setErrorMessage("Connect Phantom and keep wallet unlocked.");
@@ -788,7 +684,6 @@ export function CoreCandyMachinePanel({
 
     setErrorMessage(null);
     setSnapshotResult(null);
-    setSnapshotRetryPayload(null);
     setBusyAction("deploy");
     setRunState((current) => ({
       ...current,
@@ -877,14 +772,6 @@ export function CoreCandyMachinePanel({
         return;
       }
 
-      const deployPayload: DeployCompletedPayload = {
-        candyMachineAddress: prepared.candyMachineAddress,
-        collectionAddress: prepared.collectionAddress,
-        quantity,
-        signatures: [...collectedSignatures]
-      };
-      setSnapshotRetryPayload(deployPayload);
-
       const finalizedSnapshot = await finalizeSnapshot(
         quantity,
         prepared.candyMachineAddress,
@@ -903,7 +790,17 @@ export function CoreCandyMachinePanel({
         return;
       }
 
-      completeDeployAfterSnapshot(deployPayload);
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
+      }));
+
+      onDeployCompleted?.({
+        candyMachineAddress: prepared.candyMachineAddress,
+        collectionAddress: prepared.collectionAddress,
+        quantity,
+        signatures: [...collectedSignatures]
+      });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Deploy failed unexpectedly.");
       setRunState((current) => ({
@@ -920,7 +817,7 @@ export function CoreCandyMachinePanel({
     : "border-amber-400/40 bg-amber-500/10 text-amber-100";
 
   return (
-    <Card aria-busy={isFinalizingSnapshot} className="relative space-y-4">
+    <Card className="space-y-4">
       <div className="space-y-1">
         <h3 className="text-base font-semibold text-white">Core Candy Machine Mint</h3>
         <p className="text-xs text-white/70">
@@ -1052,20 +949,12 @@ export function CoreCandyMachinePanel({
         <Button className="min-h-11" onClick={() => void runDeployFlow()} disabled={!canRun || busyAction !== null || isFinalizingSnapshot}>
           {busyAction === "deploy" ? "Deploying..." : "Deploy"}
         </Button>
-        {snapshotRetryPayload && !snapshotResult?.canCreateAsset ? (
-          <Button
-            className="min-h-11"
-            disabled={busyAction !== null || isFinalizingSnapshot}
-            onClick={() => void retrySnapshotVerification()}
-            variant="outline"
-          >
-            {busyAction === "snapshot-retry" ? "Retrying snapshot verification..." : "Retry snapshot verification"}
-          </Button>
-        ) : null}
       </div>
 
       {isFinalizingSnapshot ? (
-        <SnapshotFinalizeWaitScreen payload={snapshotRetryPayload} />
+        <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+          Verifying minted assets on-chain and persisting mint snapshot...
+        </p>
       ) : null}
 
       {snapshotResult ? (

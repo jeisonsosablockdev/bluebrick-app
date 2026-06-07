@@ -28,25 +28,6 @@ type RenderHandle = {
   root: Root;
 };
 
-function createDeferred<T>(): {
-  promise: Promise<T>;
-  resolve: (value: T) => void;
-  reject: (reason?: unknown) => void;
-} {
-  let resolve!: (value: T) => void;
-  let reject!: (reason?: unknown) => void;
-  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
-    resolve = resolvePromise;
-    reject = rejectPromise;
-  });
-
-  return {
-    promise,
-    resolve,
-    reject
-  };
-}
-
 function renderNode(node: ReactNode): RenderHandle {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -266,110 +247,9 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
     });
   });
 
-  it("shows a blocking wait screen while snapshot finalization is pending", async () => {
-    const finalizeResponse = createDeferred<Response>();
-
-    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
-      if (url === "/api/admin/core-candy-machine/metadata") {
-        return new Response(JSON.stringify({
-          collectionUri: "https://cdn.example.test/collection.json",
-          assetUri: "https://cdn.example.test/asset.json"
-        }), { status: 200 });
-      }
-
-      if (url === "/api/admin/core-candy-machine/deploy/prepare") {
-        return new Response(JSON.stringify({
-          deployId: "deploy-1",
-          candyMachineAddress: "CandyMachine111111111111111111111111111111",
-          collectionAddress: "Collection11111111111111111111111111111111",
-          quantity: 1,
-          paymentMode: "USDC",
-          priceUsdcAtomic: 1000000,
-          priceLamports: null,
-          startDate: "2026-06-01T00:00:00.000Z",
-          transactions: []
-        }), { status: 200 });
-      }
-
-      if (url === "/api/admin/core-candy-machine/submit") {
-        return new Response(JSON.stringify({ transactions: [] }), { status: 200 });
-      }
-
-      if (url === "/api/admin/core-candy-machine/status") {
-        return new Response(JSON.stringify({ statuses: {} }), { status: 200 });
-      }
-
-      if (url === "/api/admin/core-candy-machine/snapshot/finalize") {
-        return finalizeResponse.promise;
-      }
-
-      return new Response(JSON.stringify({ error: "Unexpected request" }), { status: 500 });
-    }));
-
-    const { container, root } = renderNode(createElement(CoreCandyMachinePanel, {
-      prefill: {
-        collectionName: "Fix & Flip Lakeland",
-        assetNamePrefix: "Lakeland",
-        imageUrl: "https://blob.example.test/admin-assets/gallery/lakeland.png",
-        quantity: 1,
-        nftPriceUsd: 1
-      },
-      snapshotContext: {
-        draftId: "draft-lakeland",
-        formSnapshot: {
-          assetName: "Fix & Flip Lakeland"
-        }
-      }
-    }));
-
-    await act(async () => {
-      await flushAsync();
-    });
-
-    const deployButton = Array.from(container.querySelectorAll("button")).find((button) =>
-      button.textContent?.includes("Deploy")
-    );
-
-    await act(async () => {
-      deployButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      await flushAsync();
-      await vi.advanceTimersByTimeAsync(2100);
-      await flushAsync();
-    });
-
-    expect(container.textContent).toContain("Verifying deploy on-chain");
-    expect(container.textContent).toContain("This can take up to 2 minutes while RPC catches up.");
-    expect(container.textContent).toContain("Do not redeploy. Create Asset will unlock only after the snapshot is verified.");
-    expect(deployButton?.disabled).toBe(true);
-
-    await act(async () => {
-      finalizeResponse.resolve(new Response(JSON.stringify({
-        snapshotId: "snapshot-verified",
-        mintJobId: "mint-job-1",
-        verificationStatus: "verified",
-        verificationMethod: "candy_machine_items_loaded",
-        marketplaceHandoffStatus: "ready",
-        expectedQuantity: 1,
-        foundAssets: null,
-        canCreateAsset: true,
-        verificationError: null
-      }), { status: 200 }));
-      await flushAsync();
-    });
-
-    expect(container.textContent).not.toContain("Verifying deploy on-chain");
-
-    act(() => {
-      root.unmount();
-    });
-  });
-
   it("blocks Create Asset completion when snapshot verification is not ready", async () => {
     const onSnapshotFinalized = vi.fn();
     const onDeployCompleted = vi.fn();
-    let finalizeCalls = 0;
-    let deployPrepareCalls = 0;
-    let submitCalls = 0;
 
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url === "/api/admin/core-candy-machine/metadata") {
@@ -380,7 +260,6 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
       }
 
       if (url === "/api/admin/core-candy-machine/deploy/prepare") {
-        deployPrepareCalls += 1;
         return new Response(JSON.stringify({
           deployId: "deploy-1",
           candyMachineAddress: "CandyMachine111111111111111111111111111111",
@@ -395,7 +274,6 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
       }
 
       if (url === "/api/admin/core-candy-machine/submit") {
-        submitCalls += 1;
         return new Response(JSON.stringify({ transactions: [] }), { status: 200 });
       }
 
@@ -404,21 +282,6 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
       }
 
       if (url === "/api/admin/core-candy-machine/snapshot/finalize") {
-        finalizeCalls += 1;
-        if (finalizeCalls === 2) {
-          return new Response(JSON.stringify({
-            snapshotId: "snapshot-verified",
-            mintJobId: "mint-job-1",
-            verificationStatus: "verified",
-            verificationMethod: "candy_machine_items_loaded",
-            marketplaceHandoffStatus: "ready",
-            expectedQuantity: 1,
-            foundAssets: null,
-            canCreateAsset: true,
-            verificationError: null
-          }), { status: 200 });
-        }
-
         return new Response(JSON.stringify({
           snapshotId: "snapshot-degraded",
           mintJobId: "mint-job-1",
@@ -478,25 +341,6 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
     }));
     expect(onDeployCompleted).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Mint proof status is not completed.");
-    expect(container.textContent).toContain("Retry snapshot verification");
-
-    const retryButton = Array.from(container.querySelectorAll("button")).find((button) =>
-      button.textContent?.includes("Retry snapshot verification")
-    );
-
-    await act(async () => {
-      retryButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      await flushAsync();
-    });
-
-    expect(finalizeCalls).toBe(2);
-    expect(deployPrepareCalls).toBe(1);
-    expect(submitCalls).toBe(1);
-    expect(onDeployCompleted).toHaveBeenCalledWith(expect.objectContaining({
-      candyMachineAddress: "CandyMachine111111111111111111111111111111",
-      collectionAddress: "Collection11111111111111111111111111111111",
-      quantity: 1
-    }));
 
     act(() => {
       root.unmount();
