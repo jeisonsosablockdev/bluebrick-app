@@ -25,7 +25,7 @@ This iteration starts after PR `#294`, where detailed diagnostics were added but
 - Date: 2026-06-07
 - Branch: `codex/fix-admin-cm-deploy-current-system`
 - Base branch: `develop` after PR `#294`
-- PR: pending
+- PR: `#295`
 - Final merged PR: pending
 - Related issue: no Linear issue assigned yet
 - Human acceptance: pending
