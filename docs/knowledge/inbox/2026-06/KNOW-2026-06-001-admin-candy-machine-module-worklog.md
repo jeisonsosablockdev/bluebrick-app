@@ -44,7 +44,6 @@ When a proposed recovery or retry strategy fails, keep the note here. Do not era
 ## Iteration Registry
 
 - `2026-06-07`: `docs/knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md`
-- `2026-06-07 current-system branch`: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Module Snapshot: 2026-06-07
 

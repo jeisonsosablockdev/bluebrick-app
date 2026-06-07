@@ -822,12 +822,6 @@ export function CoreCandyMachinePanel({
     }));
 
     try {
-      const deployFormState: PanelFormState = {
-        ...form,
-        collectionUri,
-        assetUri
-      };
-
       logClientDeployTrace("prepare_request", {
         quantity,
         hasCollectionUri: Boolean(collectionUri),
@@ -937,6 +931,13 @@ export function CoreCandyMachinePanel({
         prepared.collectionAddress,
         collectedSignatures
       );
+
+      logClientDeployTrace("snapshot_finalize_response", {
+        deployId: prepared.deployId,
+        canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
+        verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
+        snapshotId: finalizedSnapshot?.snapshotId ?? null
+      });
 
       if (!finalizedSnapshot?.canCreateAsset) {
         const message = finalizedSnapshot?.verificationError?.message
