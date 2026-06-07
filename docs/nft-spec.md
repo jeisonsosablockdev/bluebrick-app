@@ -2,6 +2,12 @@
 
 Last Updated: 2026-06-05
 
+## Admin Candy Machine Deploy Logging Contract
+
+`/admin/assets/new` must emit structured deploy logs that explain the transaction lifecycle without changing the security gate. Logs may include `deployId`, public addresses, public transaction signatures, RPC host, blockhash lifetime, transaction kind, index, serialized byte length, signer count, instruction count, confirmation status, slot, elapsed milliseconds, and recoverable error code.
+
+Logs must not include full serialized transaction payloads, private keys, cookies, request bodies, wallet secrets, or authority decisions sourced only from the client. Client-provided `deployId` is only a correlation value for logs; snapshot verification and Create Asset gating remain server-owned and RPC-backed.
+
 ## BRI-170 Marketplace Owner-Freeze Mint Contract
 - `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
 - `/marketplace/[id]` is the canonical user mint surface for BRIDS NFT purchases.

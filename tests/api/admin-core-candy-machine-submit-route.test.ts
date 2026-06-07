@@ -143,4 +143,40 @@ describe("api/admin/core-candy-machine/submit", () => {
     expect(payload.code).toBe("CONFIRMATION_TIMEOUT");
     expect(payload.recoverable).toBe(true);
   });
+
+  it("forwards deployId for deploy trace correlation", async () => {
+    routeMocks.submitCoreCandyMachineSignedTransactions.mockResolvedValue([]);
+
+    const request = new NextRequest("https://example.com/api/admin/core-candy-machine/submit", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        deployId: "deploy-trace-1",
+        signedTransactions: [
+          {
+            kind: "create-collection",
+            serial: null,
+            expectedAddress: null,
+            transactionBase64: "AQID"
+          }
+        ]
+      })
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(routeMocks.submitCoreCandyMachineSignedTransactions).toHaveBeenCalledWith({
+      expectedPayerPublicKey: "11111111111111111111111111111111",
+      deployId: "deploy-trace-1",
+      signedTransactions: [
+        {
+          kind: "create-collection",
+          serial: null,
+          expectedAddress: null,
+          transactionBase64: "AQID"
+        }
+      ]
+    });
+  });
 });

@@ -192,6 +192,14 @@ function truncate(value: string): string {
   return `${value.slice(0, 8)}...${value.slice(-8)}`;
 }
 
+function logClientDeployTrace(event: string, context: Record<string, unknown> = {}): void {
+  console.info(JSON.stringify({
+    eventName: `core_candy_machine.deploy.client.${event}`,
+    emittedAt: new Date().toISOString(),
+    ...context
+  }));
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json().catch(() => null)) as T;
 }
@@ -506,6 +514,7 @@ export function CoreCandyMachinePanel({
     }
   }, [configuredNftPriceUsd, prefill?.solUsdRate]);
   async function submitSignedTransactionsBatch(
+    deployId: string,
     preparedTransactions: PreparedTransaction[],
     signedTransactionsBase64: string[]
   ): Promise<SubmitResponse["transactions"]> {
@@ -515,11 +524,17 @@ export function CoreCandyMachinePanel({
     }, SUBMIT_TX_TIMEOUT_MS);
 
     try {
+      logClientDeployTrace("submit_request", {
+        deployId,
+        total: preparedTransactions.length
+      });
+
       const response = await fetch("/api/admin/core-candy-machine/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
+          deployId,
           signedTransactions: preparedTransactions.map((transaction, index) => ({
             kind: transaction.kind,
             serial: transaction.serial,
@@ -534,12 +549,25 @@ export function CoreCandyMachinePanel({
         throw new Error(readErrorMessage(payload, "Could not submit deploy transactions."));
       }
 
+      logClientDeployTrace("submit_response", {
+        deployId,
+        total: payload.transactions.length
+      });
+
       return payload.transactions;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
+        logClientDeployTrace("submit_timeout", {
+          deployId,
+          total: preparedTransactions.length
+        });
         throw new Error("Timed out submitting deploy transactions. The backend did not respond in time.");
       }
 
+      logClientDeployTrace("submit_error", {
+        deployId,
+        message: error instanceof Error ? error.message : "Unknown submit error"
+      });
       throw error;
     } finally {
       clearTimeout(timeoutId);
@@ -547,14 +575,26 @@ export function CoreCandyMachinePanel({
   }
 
   async function signPreparedTransactions(
+    deployId: string,
     preparedTransactions: PreparedTransaction[],
     signSingle: NonNullable<ReturnType<typeof useWallet>["signTransaction"]>
   ): Promise<string[]> {
+    logClientDeployTrace("sign_start", {
+      deployId,
+      total: preparedTransactions.length,
+      mode: signAllTransactions ? "signAllTransactions" : "signTransaction"
+    });
+
     if (signAllTransactions) {
       const unsignedTransactions = preparedTransactions.map((transaction) =>
         deserializeLegacyVersionedTransaction(fromBase64(transaction.transactionBase64))
       );
       const signedTransactions = await signAllTransactions(unsignedTransactions);
+      logClientDeployTrace("sign_complete", {
+        deployId,
+        total: signedTransactions.length,
+        mode: "signAllTransactions"
+      });
       return signedTransactions.map((signedTransaction) => toBase64(serializeLegacyVersionedTransaction(signedTransaction)));
     }
 
@@ -568,7 +608,21 @@ export function CoreCandyMachinePanel({
         ...current,
         status: `Signing (${index + 1}/${preparedTransactions.length})`
       }));
+
+      logClientDeployTrace("sign_single_complete", {
+        deployId,
+        index: index + 1,
+        total: preparedTransactions.length,
+        kind: transaction.kind,
+        expectedAddress: transaction.expectedAddress
+      });
     }
+
+    logClientDeployTrace("sign_complete", {
+      deployId,
+      total: signedTransactionsBase64.length,
+      mode: "signTransaction"
+    });
 
     return signedTransactionsBase64;
   }
@@ -693,6 +747,12 @@ export function CoreCandyMachinePanel({
     }));
 
     try {
+      logClientDeployTrace("prepare_request", {
+        quantity,
+        hasCollectionUri: Boolean(collectionUri),
+        hasAssetUri: Boolean(assetUri)
+      });
+
       const prepareResponse = await fetch("/api/admin/core-candy-machine/deploy/prepare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -712,6 +772,13 @@ export function CoreCandyMachinePanel({
         throw new Error(readErrorMessage(prepared, "Could not prepare deploy transactions."));
       }
 
+      logClientDeployTrace("prepare_response", {
+        deployId: prepared.deployId,
+        candyMachineAddress: prepared.candyMachineAddress,
+        collectionAddress: prepared.collectionAddress,
+        total: prepared.transactions.length
+      });
+
       setRunState((current) => ({
         ...current,
         status: "Deploy prepared. Signing transactions...",
@@ -721,14 +788,18 @@ export function CoreCandyMachinePanel({
         signatures: []
       }));
 
-      const signedTransactionsBase64 = await signPreparedTransactions(prepared.transactions, signTransaction);
+      const signedTransactionsBase64 = await signPreparedTransactions(prepared.deployId, prepared.transactions, signTransaction);
 
       setRunState((current) => ({
         ...current,
         status: `Submitting ${prepared.transactions.length} transactions...`
       }));
 
-      const submittedTransactions = await submitSignedTransactionsBatch(prepared.transactions, signedTransactionsBase64);
+      const submittedTransactions = await submitSignedTransactionsBatch(
+        prepared.deployId,
+        prepared.transactions,
+        signedTransactionsBase64
+      );
       const collectedSignatures: RunSignatureEntry[] = submittedTransactions.map((submitted, index) => ({
         signature: submitted.signature,
         kind: submitted.kind,
@@ -747,6 +818,13 @@ export function CoreCandyMachinePanel({
         collectedSignatures.map((entry) => entry.signature)
       );
       const { allConfirmed, hasFailedSignature } = deploySignatureStatuses;
+
+      logClientDeployTrace("status_poll_complete", {
+        deployId: prepared.deployId,
+        allConfirmed,
+        hasFailedSignature,
+        attempts: deploySignatureStatuses.attempts
+      });
 
       if (hasFailedSignature) {
         setErrorMessage("One or more deploy transactions failed on-chain. Create Asset remains blocked.");
@@ -779,6 +857,13 @@ export function CoreCandyMachinePanel({
         collectedSignatures
       );
 
+      logClientDeployTrace("snapshot_finalize_response", {
+        deployId: prepared.deployId,
+        canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
+        verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
+        snapshotId: finalizedSnapshot?.snapshotId ?? null
+      });
+
       if (!finalizedSnapshot?.canCreateAsset) {
         const message = finalizedSnapshot?.verificationError?.message
           ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
@@ -802,6 +887,9 @@ export function CoreCandyMachinePanel({
         signatures: [...collectedSignatures]
       });
     } catch (error) {
+      logClientDeployTrace("flow_error", {
+        message: error instanceof Error ? error.message : "Deploy failed unexpectedly."
+      });
       setErrorMessage(error instanceof Error ? error.message : "Deploy failed unexpectedly.");
       setRunState((current) => ({
         ...current,

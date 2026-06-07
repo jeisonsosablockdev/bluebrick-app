@@ -27,11 +27,11 @@ Last Generated: 2026-06-07T05:49:42.156Z
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 1 |
+| Observations | 3 |
 | Proposals | 0 |
 | Reports | 3 |
 | Archived | 0 |
-| Observed status | 4 |
+| Observed status | 6 |
 | Triaged status | 0 |
 | Promoted status | 0 |
 | Archived status | 0 |
@@ -41,6 +41,8 @@ Last Generated: 2026-06-07T05:49:42.156Z
 | ID | Status | Target | File | Source |
 | --- | --- | --- | --- | --- |
 | KNOW-2026-05-001 | observed | guide | [Governance summaries must defer to canonical policy and enforcement](docs/knowledge/inbox/2026-05/KNOW-2026-05-001-governance-summary-defers-to-canonical-policy.md) | BRI-143 |
+| KNOW-2026-06-001 | observed | guide | [Admin Candy Machine module worklog](docs/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md) | n/a |
+| KNOW-2026-06-002 | observed | guide | [Candy Machine deploy iteration 2026-06-07](docs/knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md) | n/a |
 
 ## Promotion Proposals
 

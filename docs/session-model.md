@@ -814,3 +814,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-owned health read model
   - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
 - Responsive QA is evidence-only for the existing authenticated admin routes and does not change ownership, snapshot, editability, or document upload decisions.
+
+## Admin Candy Machine Deploy Detailed Logs Session Notes
+- Candy Machine deploy logging adds a server-generated `deployId` to correlate prepare and submit traces.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation before deploy prepare/submit
+  - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
+- The browser may echo `deployId` during submit for diagnostics, but the server still validates the signed transaction payer against the authenticated admin pubkey and keeps snapshot/Create Asset decisions server-owned.
