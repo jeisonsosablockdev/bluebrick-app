@@ -524,3 +524,49 @@ Integrate a cross-project rule into the primary BRIDS policy, documentation, and
 #### Criterio de estabilidad de este commit
 - Este commit se considera un punto seguro de retorno para Landing y Marketplace dentro de `SPEC03`.
 - El SPEC continúa abierto para refinamientos posteriores, pero los patrones aprobados en este checkpoint deben mantenerse como base visual y técnica.
+
+#### Cierre de desarrollo del SPEC
+- Fecha de cierre local: 2026-06-08.
+- Estado: desarrollo de `SPEC03 - Dark Mode Modules Depth` terminado en la rama `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
+- Desarrollador responsable: `czambrano`.
+- Superficies terminadas y aprobadas: BRIDS Landing, Marketplace, modal de detalle de propiedad y página de Transparencia.
+
+#### Resultado final estable
+- Landing conserva módulos sin bordes blancos, profundidad limpia y jerarquía visual premium en dark mode y light mode.
+- Marketplace conserva filtros, cards, pins, mapa, gráficas, modal de detalle, scrollbars, loading y transiciones con el sistema borderless/depth validado.
+- Transparencia adopta el mismo concepto visual: módulos sin borde blanco, fondos con profundidad, glows controlados, gradientes acordes a marca y header sticky con la misma UX del Landing.
+- El formulario de contacto de Transparencia queda como bloque gradiente azul/morado estilo BRIDS, con textfields adaptados a dark mode y light mode.
+- Light mode queda validado con superficies claras, textos navy/slate, acentos cyan/fuchsia/blue y botones gradiente claros.
+- Dark mode se conserva como referencia estable después de los ajustes de light mode.
+
+#### Patrones técnicos consolidados
+- `landing-depth-*` queda como patrón para módulos del Landing.
+- `marketplace-depth-*`, `marketplace-detail-*` y `marketplace-brand-pill` quedan como patrón para Marketplace, detalle y CTAs relacionados.
+- `transparency-depth-*` queda como patrón específico para la página de Transparencia, evitando contaminar componentes globales.
+- `contact-gradient-*` queda como patrón específico para formularios sobre bloques gradiente BRIDS.
+- Los overrides de `html[data-theme="light"]` deben ser scoped por superficie cuando el componente conserva un look oscuro o gradiente en light mode.
+- Para headers públicos sticky, el header debe vivir dentro del contenedor largo de la página; si queda en un wrapper corto, pierde la UX flotante al hacer scroll.
+
+#### Problemas encontrados y correcciones aprobadas
+- Problema: los bordes blancos y sombras rectangulares reducían la calidad visual de cards, pills y módulos. Corrección: reemplazo por profundidad interna, gradientes suaves, radios completos y sombras controladas.
+- Problema: algunos componentes correctos en dark mode perdían contraste en light mode. Corrección: overrides scoped para textos, fields, badges, chart labels, pins, cards y módulos.
+- Problema: el modal de detalle tenía scrollbar gris y superficies con bordes visibles. Corrección: scrollbar de marca, cards/insets borderless y controles adaptados a ambos temas.
+- Problema: el loading del modal no representaba progreso real y podía crecer/decrecer. Corrección: progreso determinate ascendente conectado a fases reales de carga y lectura del payload.
+- Problema: al navegar desde Landing a Marketplace podía quedar un overlay persistente. Corrección: limpieza de `clipPath` al terminar la transición.
+- Problema: Transparencia en light mode heredó demasiado del dark mode. Corrección: cards claras, fondo lavanda/azul claro, textos navy/slate y gradientes suaves.
+- Problema: el hover del módulo de cierre en Transparencia generaba una sombra gris incorrecta en light mode. Corrección: overlay de hover desactivado solo en light mode.
+- Problema: el formulario de Transparencia mantenía textfields oscuros en light mode. Corrección: fields claros, placeholders legibles y botón gradiente claro.
+
+#### Evidencia final de validación
+- `git diff --check`: aprobado.
+- `npm run lint`: aprobado.
+- `npm run validate`: bloqueado en `npm run typecheck` por errores externos en `.next/types/app/api/protected/overview/route.ts` y `.next/types/app/api/protected/portfolio/route.ts`; las rutas fuente no pertenecen al alcance de `SPEC03` ni fueron modificadas por este cierre.
+- Validación visual local con Playwright en `http://localhost:3000/`.
+- Validación visual local con Playwright en `http://localhost:3000/marketplace`.
+- Validación visual local con Playwright en `http://localhost:3000/transparencia`.
+- Capturas revisadas en dark mode y light mode para Landing, Marketplace, modal de detalle, Transparencia y formulario de contacto.
+
+#### Criterio de cierre
+- `SPEC03` queda terminado a nivel de desarrollo local.
+- El siguiente paso operativo es crear el commit de cierre del SPEC en la rama `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
+- Antes de integrar a la rama Feature, se debe ejecutar el protocolo `SPEC MERGE` con sincronización de Linear si el responsable lo confirma.

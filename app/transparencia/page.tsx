@@ -17,15 +17,13 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function TransparencyPage() {
   return (
-    <>
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 pb-0 md:pb-0">
-        <WalletRuntimeProvider>
-          <Suspense fallback={null}>
-            <WalletModal />
-          </Suspense>
-        </WalletRuntimeProvider>
-      </div>
+    <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      <WalletRuntimeProvider>
+        <Suspense fallback={null}>
+          <WalletModal />
+        </Suspense>
+      </WalletRuntimeProvider>
       <TransparencyContent />
-    </>
+    </main>
   );
 }

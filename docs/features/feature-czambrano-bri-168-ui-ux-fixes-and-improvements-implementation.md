@@ -315,3 +315,47 @@ Install these rules into the primary BRIDS policy and workflow documents:
 - Revisión visual local en `http://localhost:3000/`.
 - Revisión visual local en `http://localhost:3000/marketplace`.
 - Checkpoint listo para commit estable antes de continuar el alcance restante de `SPEC03`.
+
+#### Cierre de desarrollo local
+- Fecha de cierre local: 2026-06-08.
+- Desarrollador responsable: `czambrano`.
+- Rama SPEC: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
+- Estado: desarrollo de `SPEC03` terminado y listo para commit de cierre.
+
+#### Alcance implementado
+- BRIDS Landing: módulos y recuadros sin bordes blancos, profundidad visual limpia y compatibilidad dark/light.
+- Marketplace: filtros, botones, listing cards, pins, mapa, gráficas, indicadores, modal de detalle, scrollbar y loading con sistema borderless/depth.
+- Transparencia: módulos, timeline, CTA, bloques on-chain, footer visual y formulario adaptados al mismo concepto de profundidad y gradientes.
+- Header público: Transparencia hereda la misma UX sticky/flotante de Landing al mantener el header dentro del contenedor largo de la página.
+- Contact form: bloque gradiente azul/morado con campos, selects, checkbox y botón adaptados a dark mode y light mode.
+
+#### Implementación final consolidada
+- `app/globals.css` concentra las utilidades visuales específicas para `landing-depth-*`, `marketplace-depth-*`, `marketplace-detail-*`, `transparency-depth-*` y `contact-gradient-*`.
+- `components/sections/*` usa las clases de Landing sin alterar el componente global `Card`.
+- `components/marketplace/*` usa clases scoped para preservar comportamiento de datos, compra, mapa y detalle.
+- `app/transparencia/client.tsx` usa clases específicas de Transparencia y evita depender de estilos globales genéricos de glass/border.
+- `app/transparencia/page.tsx` alinea la estructura con Landing para preservar la experiencia sticky del header.
+- `components/sections/contact-form.tsx` adopta el patrón gradiente BRIDS y fields temáticos sin modificar formularios globales.
+- `lib/motion.ts` limpia `clipPath` al terminar transiciones para evitar overlays persistentes entre rutas.
+
+#### Decisiones reutilizables
+- No usar bordes blancos para separar módulos premium; usar profundidad por gradiente, blur, sombra suave y contraste con el fondo.
+- No aplicar hover glow agresivo a módulos grandes en light mode; si genera una sombra gris o selección visual falsa, debe apagarse por tema.
+- Separar dark mode y light mode con overrides scoped por superficie cuando una pieza visual necesita conservar identidad de marca.
+- Los botones de light mode deben usar gradiente cyan/blue/purple claro con texto blanco y sombra suave, no pills azul noche con texto oscuro.
+- Los textfields en light mode sobre paneles gradiente deben ser claros, con texto navy y placeholder slate.
+- Las animaciones o indicadores de progreso deben reflejar señales reales o fases claras; no deben reiniciarse ni retroceder visualmente.
+
+#### Validación final
+- `git diff --check`: aprobado.
+- `npm run lint`: aprobado.
+- `npm run validate`: bloqueado en `npm run typecheck` por errores externos en `.next/types/app/api/protected/overview/route.ts` y `.next/types/app/api/protected/portfolio/route.ts`; los archivos fuente de esas rutas no pertenecen al alcance de `SPEC03` ni fueron modificados por este cierre.
+- Capturas locales revisadas en dark mode y light mode para `http://localhost:3000/`.
+- Capturas locales revisadas en dark mode y light mode para `http://localhost:3000/marketplace`.
+- Capturas locales revisadas en dark mode y light mode para `http://localhost:3000/transparencia`.
+- Captura con hover validó que el módulo de cierre de Transparencia no muestra sombra gris incorrecta en light mode.
+
+#### Estado para SPEC MERGE
+- Este cierre termina el desarrollo local del SPEC.
+- El commit de cierre debe usar author y committer `czambrano`.
+- La integración hacia Feature queda pendiente de ejecutar `SPEC MERGE` y sincronizar Linear cuando el responsable lo confirme.
