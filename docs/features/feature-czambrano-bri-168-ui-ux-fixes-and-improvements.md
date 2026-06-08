@@ -480,3 +480,47 @@ Integrate a cross-project rule into the primary BRIDS policy, documentation, and
 - La evidencia de implementación y el historial estable se documentan al final del issue, después de `ENGLISH VERSION`, para no mezclar el scope principal con el registro de desarrollo.
 - `SPEC DEVELOPMENT HISTORY` se organiza por SPEC y puede iniciar solo en español cuando el equipo esté cerrando aprendizajes operativos rápidos.
 - Cada nuevo SPEC debe agregar su propia sección dentro de este historial antes de ejecutar `SPEC MERGE`.
+
+---
+
+### SPEC03 - Dark Mode Modules Depth
+
+#### Checkpoint estable: Landing y Marketplace
+- Fecha: 2026-06-08.
+- Desarrollador responsable: `czambrano`.
+- Rama SPEC: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
+- Estado: checkpoint estable antes de terminar el SPEC completo; este punto cubre BRIDS Landing y Marketplace como superficies aprobadas para volver en caso de regresión.
+
+#### Evidencia de implementación
+- `npm run lint`: aprobado.
+- Validación visual local en `http://localhost:3000/` para BRIDS Landing en dark mode y light mode.
+- Validación visual local en `http://localhost:3000/marketplace` para filtros, tarjetas, mapa, gráficas, modal de detalle, estados de carga y navegación entre Landing/Marketplace.
+- El progreso de carga del modal de detalle quedó como indicador determinate y ascendente, conectado a fases reales de apertura, fetch, lectura del payload, parsing y renderizado.
+- El bug de overlay al navegar desde Landing hacia Marketplace quedó corregido limpiando el `clipPath` al final de la transición.
+
+#### Resultado estable aprobado
+- Landing: los módulos principales eliminan bordes blancos visibles y usan superficies profundas con gradientes suaves, sombras controladas y separación limpia contra el background.
+- Landing: los módulos grandes como `Cómo Empezar` y footer conservan profundidad sin iluminación adicional en hover, evitando ruido visual.
+- Marketplace: filtros, botones secundarios, cards de propiedades, pins, mapa y módulos analíticos adoptan un lenguaje visual más premium y consistente con el pill BRIDS.
+- Marketplace light mode: labels, textfields, botones, badges `Funding`, porcentajes de mapa, ejes de gráficas y textos críticos recuperan contraste legible sin romper dark mode.
+- Modal de detalle: las secciones internas, botones, inputs de cantidad, alertas, media frame y scrollbar adoptan el sistema borderless/depth en dark mode y light mode.
+- Gráficas: el donut elimina bordes blancos entre segmentos y el funnel conserva tooltip sin mostrar el recuadro gris de selección.
+
+#### Camino técnico usado
+- Se centralizaron utilidades visuales en `app/globals.css` con clases `landing-depth-*`, `marketplace-depth-*`, `marketplace-brand-pill` y `marketplace-detail-*`.
+- Se prefirieron clases de alcance específico sobre cambios al componente global `Card`, reduciendo el riesgo de afectar módulos fuera de SPEC03.
+- Se agregaron overrides por tema mediante `html[data-theme="light"]` para corregir light mode sin degradar las decisiones ya aprobadas en dark mode.
+- Se alinearon componentes de `components/sections/*` y `components/marketplace/*` al mismo sistema visual, manteniendo cada ajuste dentro de Landing y Marketplace.
+- Se corrigieron Recharts/ECharts desde los componentes del dashboard de Marketplace, ajustando colores, strokes, cursor de hover y tooltips según el tema.
+- Se reemplazó la animación falsa/repetitiva del loading por progreso controlado en `MarketplaceGridClient`, con lectura progresiva del payload cuando el navegador expone `content-length`.
+
+#### Ajustes descartados o corregidos durante el camino
+- La iluminación global en hover para módulos grandes hacía que algunas superficies se sintieran demasiado activas; se conservó profundidad estática en esos módulos.
+- Las sombras rectangulares visibles en pills y botones degradaban la percepción de calidad; se reemplazaron por profundidad interna, radios completos y gradientes suaves.
+- El loading inicial crecía, retrocedía y volvía a crecer; ese patrón fue descartado porque comunicaba una carga falsa y poco confiable.
+- El progreso lineal puramente estimado llegaba cerca de 80% y se quedaba quieto; se corrigió para reflejar fases reales y mantenerse ascendente.
+- El overlay de navegación podía quedar montado sobre Marketplace después de salir del Landing; se corrigió limpiando la máscara al completar la transición.
+
+#### Criterio de estabilidad de este commit
+- Este commit se considera un punto seguro de retorno para Landing y Marketplace dentro de `SPEC03`.
+- El SPEC continúa abierto para refinamientos posteriores, pero los patrones aprobados en este checkpoint deben mantenerse como base visual y técnica.

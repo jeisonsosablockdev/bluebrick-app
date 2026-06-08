@@ -21,7 +21,7 @@ export function PropertyDetailExecutionGovernanceCards({
 
   return (
     <>
-      <Card className="space-y-3">
+      <Card className="marketplace-detail-card space-y-3">
         <H2 className="text-2xl text-white">{t({ en: "Execution and exit", es: "Ejecucion y salida", pt: "Execucao e saida" })}</H2>
         <div className="grid gap-2 text-sm text-slate-300">
           {project.stage ? <p>{t({ en: "Project stage", es: "Etapa del proyecto", pt: "Etapa do projeto" })}: {project.stage}</p> : null}
@@ -31,7 +31,7 @@ export function PropertyDetailExecutionGovernanceCards({
         </div>
       </Card>
 
-      <Card className="space-y-3">
+      <Card className="marketplace-detail-card space-y-3">
         <H2 className="text-2xl text-white">{t({ en: "Transparency and governance", es: "Transparencia y gobernanza", pt: "Transparencia e governanca" })}</H2>
         <p className="text-sm text-slate-300">
           {governance.riskNotes || investmentNotes}

@@ -26,11 +26,11 @@ export function FaqSection() {
 
       <div className="space-y-3">
         {faqs.map((faq) => (
-          <Card key={faq.question} className="bg-slate-950/50">
+          <Card key={faq.question} className="landing-depth-card">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-base font-semibold text-white">{faq.question}</h3>
               {faq.topic ? (
-                <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2.5 py-0.5 text-xs font-semibold text-cyan-200">
+                <span className="rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-xs font-semibold text-cyan-200 shadow-[inset_0_1px_12px_rgba(47,198,255,0.12)]">
                   {faq.topic}
                 </span>
               ) : null}

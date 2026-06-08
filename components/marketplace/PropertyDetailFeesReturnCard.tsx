@@ -18,7 +18,7 @@ export function PropertyDetailFeesReturnCard({ economics }: PropertyDetailFeesRe
   const { locale, t } = useI18n();
 
   return (
-    <Card className="space-y-3">
+    <Card className="marketplace-detail-card space-y-3">
       <H2 className="text-2xl text-white">{t({ en: "Fees and projected return", es: "Fees y retorno proyectado", pt: "Fees e retorno projetado" })}</H2>
       <div className="grid gap-2 text-sm text-slate-300">
         {shouldRenderMarketplaceDetailMetric(economics.structuringFeeUsd) ? <p>{t({ en: "Structuring fee", es: "Structuring Fee", pt: "Structuring Fee" })}: {formatMarketplaceDetailUsd(economics.structuringFeeUsd, locale)}</p> : null}

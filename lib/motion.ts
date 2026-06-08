@@ -75,7 +75,10 @@ export function createNavigationOriginMotionVariants(origin: { x: number; y: num
       scale: 1,
       clipPath: clipPathTarget,
       transformOrigin: `${origin.x}px ${origin.y}px`,
-      transition: MOTION_DEFAULT_TRANSITION
+      transition: MOTION_DEFAULT_TRANSITION,
+      transitionEnd: {
+        clipPath: "none"
+      }
     },
     exit: {
       opacity: 0,

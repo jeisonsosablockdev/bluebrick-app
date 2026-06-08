@@ -279,3 +279,39 @@ Install these rules into the primary BRIDS policy and workflow documents:
 - `SPEC HISTORY` updated before each `SPEC MERGE`.
 - Internal `SPEC/*` → `Feature` merge completed without an intermediate PR when the responsible developer confirms it.
 - `npm run validate` before closing the full block.
+
+---
+
+## SPEC DEVELOPMENT HISTORY
+
+---
+
+### SPEC03 - Dark Mode Modules Depth
+
+#### Checkpoint estable: Landing y Marketplace
+- Fecha: 2026-06-08.
+- Desarrollador responsable: `czambrano`.
+- Rama SPEC: `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
+- Estado: avance estable dentro de `SPEC03`; no cierra el SPEC, pero deja un punto seguro para volver antes de continuar con nuevos módulos.
+
+#### Implementación consolidada
+- BRIDS Landing usa utilidades `landing-depth-*` para reemplazar bordes blancos por profundidad visual con gradientes suaves, sombras limpias y contraste controlado.
+- Marketplace usa utilidades `marketplace-depth-*` y `marketplace-brand-pill` para filtros, botones, tarjetas, pins, mapa y módulos analíticos.
+- El modal de detalle usa utilidades `marketplace-detail-*` para panel, tarjetas internas, alertas, media frame, controles de cantidad, CTA y scrollbar.
+- Light mode quedó validado con overrides específicos para labels, textfields, botones, badges, porcentajes de mapa, ejes de gráficas y contenido de cards.
+- Las gráficas eliminan ruido visual: donut sin bordes blancos, funnel sin recuadro gris de selección y tooltips conservados.
+- El loading del modal cambia de animación repetitiva a progreso determinate ascendente con fases reales de carga y lectura progresiva del payload cuando está disponible.
+- La transición Landing → Marketplace limpia `clipPath` al completar la animación para evitar overlays persistentes.
+
+#### Aprendizajes técnicos aprobados
+- No modificar el componente global `Card` para este SPEC; usar clases de alcance específico reduce regresiones en superficies no auditadas.
+- Evitar hover glow en módulos grandes cuando el usuario aprueba una lectura más limpia y estática.
+- Mantener profundidad con gradientes, sombras internas y radios completos en vez de bordes blancos o sombras rectangulares.
+- Validar dark mode y light mode en cada ajuste visual, porque un patrón correcto en dark mode puede perder legibilidad sobre fondos claros.
+- Conectar indicadores de progreso a señales reales de carga siempre que sea posible; una barra que se reinicia o se detiene sin razón rompe la confianza de la interfaz.
+
+#### Validación
+- `npm run lint`: aprobado.
+- Revisión visual local en `http://localhost:3000/`.
+- Revisión visual local en `http://localhost:3000/marketplace`.
+- Checkpoint listo para commit estable antes de continuar el alcance restante de `SPEC03`.

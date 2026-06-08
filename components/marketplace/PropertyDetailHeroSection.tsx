@@ -27,7 +27,7 @@ export function PropertyDetailHeroSection({
 
   return (
     <motion.section
-      className="rounded-2xl border border-white/10 bg-panel p-5 md:p-6"
+      className="marketplace-detail-card rounded-2xl p-5 md:p-6"
       variants={motionVariants}
       initial="initial"
       animate="animate"
@@ -35,7 +35,7 @@ export function PropertyDetailHeroSection({
       layoutId={layoutId}
     >
       <div className="grid gap-6 md:grid-cols-2">
-        <Image src={property.image} alt={property.title} width={900} height={600} className={`w-full rounded-xl object-cover ${imageClassName}`} />
+        <Image src={property.image} alt={property.title} width={900} height={600} className={`marketplace-detail-media-frame w-full rounded-xl object-cover ${imageClassName}`} />
         <div className="space-y-4">
           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${listingStatusClasses(property.listingStatus)}`}>
             {listingStatusLabel(property.listingStatus, locale)}

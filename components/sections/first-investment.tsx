@@ -16,9 +16,9 @@ export function FirstInvestmentSection() {
   ];
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradientPrimary px-6 py-12 md:px-10 md:py-16">
-      <div className="pointer-events-none absolute -left-6 top-5 h-16 w-16 rounded-full border border-white/20" />
-      <div className="pointer-events-none absolute -right-8 bottom-12 h-16 w-16 rounded-full border border-white/20" />
+    <section className="relative overflow-hidden rounded-3xl bg-gradientPrimary px-6 py-12 shadow-[0_28px_90px_rgba(47,198,255,0.22)] md:px-10 md:py-16">
+      <div className="pointer-events-none absolute -left-6 top-5 h-16 w-16 rounded-full bg-white/10 blur-sm" />
+      <div className="pointer-events-none absolute -right-8 bottom-12 h-16 w-16 rounded-full bg-white/10 blur-sm" />
 
       <div className="text-center">
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-2xl text-white">↗</div>

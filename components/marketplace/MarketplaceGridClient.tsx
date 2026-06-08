@@ -22,11 +22,71 @@ type PropertyDetailResponse = {
   error?: string;
 };
 
+const DETAIL_LOADING_PROGRESS = {
+  started: 6,
+  requestSent: 18,
+  responseReceived: 35,
+  bodyParsed: 88,
+  complete: 100
+} as const;
+
+const DETAIL_LOADING_COMPLETE_PAUSE_MS = 140;
+
+function updateLoadingProgress(setProgress: (updater: (current: number) => number) => void, nextProgress: number): void {
+  setProgress((current) => Math.max(current, nextProgress));
+}
+
+async function readPropertyDetailPayload(response: Response, onProgress: (progress: number) => void): Promise<PropertyDetailResponse> {
+  const contentLengthHeader = response.headers.get("content-length");
+  const contentLength = contentLengthHeader ? Number(contentLengthHeader) : 0;
+
+  if (!response.body || !Number.isFinite(contentLength) || contentLength <= 0) {
+    onProgress(72);
+    return (await response.json()) as PropertyDetailResponse;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let receivedBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    if (value) {
+      chunks.push(value);
+      receivedBytes += value.byteLength;
+      const bodyProgress = 35 + Math.min(47, (receivedBytes / contentLength) * 47);
+      onProgress(bodyProgress);
+    }
+  }
+
+  const payloadBytes = new Uint8Array(receivedBytes);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    payloadBytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return JSON.parse(new TextDecoder().decode(payloadBytes)) as PropertyDetailResponse;
+}
+
+function waitForLoadingCompletion(): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, DETAIL_LOADING_COMPLETE_PAUSE_MS);
+  });
+}
+
 export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps) {
   const { t } = useI18n();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<PropertyDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +115,26 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
   }, [selectedId]);
 
   useEffect(() => {
+    if (!isLoading) {
+      return;
+    }
+
+    const progressTimer = window.setInterval(() => {
+      setLoadingProgress((current) => {
+        if (current >= 94) {
+          return current;
+        }
+
+        return Math.min(94, current + Math.max(0.35, (94 - current) * 0.055));
+      });
+    }, 180);
+
+    return () => {
+      window.clearInterval(progressTimer);
+    };
+  }, [isLoading]);
+
+  useEffect(() => {
     if (!selectedId) {
       return;
     }
@@ -63,16 +143,25 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
 
     async function loadDetail() {
       setIsLoading(true);
+      setLoadingProgress(DETAIL_LOADING_PROGRESS.started);
       setError(null);
       setDetail(null);
 
       try {
+        updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.requestSent);
+
         const response = await fetch(`/properties/${selectedId}`, {
           method: "GET",
           signal: controller.signal
         });
 
-        const payload = (await response.json()) as PropertyDetailResponse;
+        updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.responseReceived);
+
+        const payload = await readPropertyDetailPayload(response, (nextProgress) => {
+          updateLoadingProgress(setLoadingProgress, nextProgress);
+        });
+
+        updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.bodyParsed);
 
         if (!response.ok || !payload.data) {
           throw new Error(
@@ -83,6 +172,13 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
               pt: "Nao foi possivel carregar os detalhes."
             })
           );
+        }
+
+        updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.complete);
+        await waitForLoadingCompletion();
+
+        if (controller.signal.aborted) {
+          return;
         }
 
         setDetail(payload.data);
@@ -103,6 +199,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false);
+          setLoadingProgress(0);
         }
       }
     }
@@ -119,6 +216,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
     setDetail(null);
     setError(null);
     setIsLoading(false);
+    setLoadingProgress(0);
   }
 
   async function retryLoad(): Promise<void> {
@@ -129,12 +227,22 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
     setDetail(null);
     setError(null);
     setIsLoading(true);
+    setLoadingProgress(DETAIL_LOADING_PROGRESS.started);
 
     try {
+      updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.requestSent);
+
       const response = await fetch(`/properties/${selectedId}`, {
         method: "GET"
       });
-      const payload = (await response.json()) as PropertyDetailResponse;
+
+      updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.responseReceived);
+
+      const payload = await readPropertyDetailPayload(response, (nextProgress) => {
+        updateLoadingProgress(setLoadingProgress, nextProgress);
+      });
+
+      updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.bodyParsed);
 
       if (!response.ok || !payload.data) {
         throw new Error(
@@ -147,6 +255,8 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
         );
       }
 
+      updateLoadingProgress(setLoadingProgress, DETAIL_LOADING_PROGRESS.complete);
+      await waitForLoadingCompletion();
       setDetail(payload.data);
     } catch (fetchError) {
       setError(
@@ -160,6 +270,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
       );
     } finally {
       setIsLoading(false);
+      setLoadingProgress(0);
     }
   }
 
@@ -179,7 +290,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
         >
           <motion.div
             data-testid="marketplace-detail-modal-panel"
-            className="glass-modal-surface max-h-[calc(100dvh-3rem)] w-full max-w-5xl overflow-y-auto overscroll-contain rounded-2xl p-4 sm:max-h-[calc(100dvh-4rem)] sm:p-6"
+            className="marketplace-detail-modal-panel max-h-[calc(100dvh-3rem)] w-full max-w-5xl overflow-y-auto overscroll-contain rounded-2xl p-4 sm:max-h-[calc(100dvh-4rem)] sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-label={t({ en: "Property details", es: "Detalle de propiedad", pt: "Detalhes do imovel" })}
@@ -195,7 +306,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
               </p>
               <button
                 type="button"
-                className="min-h-11 rounded-md px-3 text-white/80 transition hover:bg-white/10"
+                className="marketplace-detail-close min-h-11 rounded-full px-4 text-sm font-semibold text-white/80 transition"
                 aria-label={t({ en: "Close modal", es: "Cerrar modal", pt: "Fechar modal" })}
                 onClick={closeModal}
               >
@@ -204,19 +315,25 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
             </div>
 
             {isLoading ? (
-              <Card className="space-y-4 border-white/10 bg-slate-900/70 p-4">
+              <Card className="marketplace-detail-inset space-y-4 p-4">
                 <div className="flex items-center gap-3">
                   <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" />
                   <p className="text-sm text-white/85">
                     {t({ en: "Opening property...", es: "Abriendo propiedad...", pt: "Abrindo propriedade..." })}
                   </p>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-2 overflow-hidden rounded-full bg-white/10"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(loadingProgress)}
+                >
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-300"
-                    initial={{ width: "18%" }}
-                    animate={{ width: ["28%", "74%", "92%"] }}
-                    transition={{ duration: 1.6, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+                    initial={false}
+                    animate={{ width: `${loadingProgress}%` }}
+                    transition={{ duration: 0.24, ease: "easeOut" }}
                   />
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -232,7 +349,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
             ) : null}
 
             {error ? (
-              <Card className="space-y-3 border-rose-400/30 bg-rose-500/10 p-4 text-rose-100">
+              <Card className="marketplace-detail-inset space-y-3 p-4 text-rose-100">
                 <p className="text-sm">{error}</p>
                 <div className="flex gap-2">
                   <Button className="min-h-11" onClick={() => void retryLoad()}>
@@ -240,7 +357,7 @@ export function MarketplaceGridClient({ properties }: MarketplaceGridClientProps
                   </Button>
                   <Link
                     href={`/marketplace/${selectedId}`}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-4 text-sm font-semibold text-white"
+                    className="marketplace-brand-pill inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white"
                   >
                     {t({ en: "Open full page", es: "Abrir pagina completa", pt: "Abrir pagina completa" })}
                   </Link>

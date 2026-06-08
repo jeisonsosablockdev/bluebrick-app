@@ -144,7 +144,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
         <section className="mt-6">
           {isDataDegraded ? (
-            <Card className="mb-4 border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+            <Card className="marketplace-depth-inset mb-4 p-4 text-sm text-amber-100">
               {localize(DEFAULT_LOCALE, {
                 en: "Marketplace data is temporarily using a fallback source. Listings remain available while we refresh the primary source.",
                 es: "Los datos del marketplace estan usando temporalmente una fuente de respaldo. Las propiedades siguen disponibles mientras actualizamos la fuente principal.",
@@ -154,7 +154,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
           ) : null}
 
           {properties.length === 0 ? (
-            <Card className="p-4 text-sm text-slate-300">
+            <Card className="marketplace-depth-inset p-4 text-sm text-slate-300">
               {localize(DEFAULT_LOCALE, {
                 en: "There are no properties matching the selected filters.",
                 es: "No hay propiedades para los filtros seleccionados.",
