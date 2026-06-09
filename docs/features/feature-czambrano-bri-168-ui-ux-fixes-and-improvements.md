@@ -158,6 +158,7 @@ Integrar en los documentos principales de políticas, documentación y workflow 
 
 5. **SPEC05 - Landing Header Full Width Visual**
    - Rama SPEC: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Estado: iniciado como siguiente SPEC activo desde la rama Feature.
    - Objetivo: evolucionar el header/first viewport del landing hacia una composición moderna, horizontal, minimalista e imponente.
 
    **ALCANCE INICIAL PROPUESTO**
@@ -376,6 +377,7 @@ Integrate a cross-project rule into the primary BRIDS policy, documentation, and
 
 5. **SPEC05 - Landing Header Full Width Visual**
    - SPEC branch: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Status: started as the next active SPEC from the Feature branch.
    - Objective: evolve the landing header/first viewport into a modern, horizontal, minimalist, and imposing composition.
 
    **PROPOSED INITIAL SCOPE**

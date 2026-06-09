@@ -92,6 +92,7 @@ Montar estas reglas en los documentos principales de políticas y workflow del p
 
 5. **SPEC05 - Landing Header Full Width Visual**
    - Rama SPEC: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Estado: iniciado como siguiente SPEC activo desde la rama Feature.
    - Objetivo: rediseñar el header/first viewport con uso total del ancho horizontal y dirección visual urbana/tokenización.
    - **ALCANCE INICIAL PROPUESTO:**
      - Auditar estructura actual del header.
@@ -232,6 +233,7 @@ Install these rules into the primary BRIDS policy and workflow documents:
 
 5. **SPEC05 - Landing Header Full Width Visual**
    - SPEC branch: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`
+   - Status: started as the next active SPEC from the Feature branch.
    - Objective: redesign the header/first viewport with full horizontal usage and city/tokenization visual direction.
    - **PROPOSED INITIAL SCOPE:**
      - Audit the current header structure.
