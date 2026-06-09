@@ -355,7 +355,10 @@ Install these rules into the primary BRIDS policy and workflow documents:
 - Capturas locales revisadas en dark mode y light mode para `http://localhost:3000/transparencia`.
 - Captura con hover validó que el módulo de cierre de Transparencia no muestra sombra gris incorrecta en light mode.
 
-#### Estado para SPEC MERGE
-- Este cierre termina el desarrollo local del SPEC.
-- El commit de cierre debe usar author y committer `czambrano`.
-- La integración hacia Feature queda pendiente de ejecutar `SPEC MERGE` y sincronizar Linear cuando el responsable lo confirme.
+#### Estado post SPEC MERGE
+- `SPEC03` queda terminado a nivel de desarrollo local y consolidado en la rama Feature.
+- Commit estable de checkpoint: `dbbb35d feat(app): checkpoint marketplace landing spec03`.
+- Commit de cierre del SPEC: `5d05107 feat(app): finish spec03 transparency depth`.
+- Merge a Feature completado: `aac3913 feat(app): merge spec03 dark mode modules depth`.
+- Author y committer usados para los commits del SPEC: `czambrano`.
+- Linear queda como fuente principal y este documento actúa como espejo local Git del historial de desarrollo.

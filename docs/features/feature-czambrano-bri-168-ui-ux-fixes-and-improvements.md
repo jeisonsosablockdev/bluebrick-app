@@ -567,6 +567,8 @@ Integrate a cross-project rule into the primary BRIDS policy, documentation, and
 - Capturas revisadas en dark mode y light mode para Landing, Marketplace, modal de detalle, Transparencia y formulario de contacto.
 
 #### Criterio de cierre
-- `SPEC03` queda terminado a nivel de desarrollo local.
-- El siguiente paso operativo es crear el commit de cierre del SPEC en la rama `SPEC/czambrano-bri168-spec03-dark-mode-modules-depth`.
-- Antes de integrar a la rama Feature, se debe ejecutar el protocolo `SPEC MERGE` con sincronización de Linear si el responsable lo confirma.
+- `SPEC03` queda terminado a nivel de desarrollo local y consolidado en la rama Feature.
+- Commit estable de checkpoint: `dbbb35d feat(app): checkpoint marketplace landing spec03`.
+- Commit de cierre del SPEC: `5d05107 feat(app): finish spec03 transparency depth`.
+- Merge a Feature completado: `aac3913 feat(app): merge spec03 dark mode modules depth`.
+- Linear queda como fuente principal y este bloque `SPEC DEVELOPMENT HISTORY` actúa como registro local Git congruente con el cuerpo del issue.
