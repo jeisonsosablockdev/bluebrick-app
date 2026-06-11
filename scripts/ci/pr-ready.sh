@@ -158,6 +158,7 @@ echo "- Add exactly one risk label (risk:*)"
 echo "- Fill PR template sections: Issue, RFC, Riesgos, Rollback Plan, Prueba Devnet, Human Acceptance"
 echo "- If branch touches qualifying product code, update the required artifact pair for that branch family"
 echo "- For multi-slice work, confirm the spec slice closed before delivery slices"
+echo "- Linear sync step: linear:issue-review must happen before the final ready-to-merge handoff"
 echo "- For final PRs into develop, leave Human Acceptance pending until the user manually tests; change it to Status: approved only after explicit approval"
 
 echo

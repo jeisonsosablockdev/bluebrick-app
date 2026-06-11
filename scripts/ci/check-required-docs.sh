@@ -114,6 +114,10 @@ touches_app=0
 touches_nft=0
 touches_product_code=0
 missing_any=0
+resolve_spec_parent_work_branch() {
+  local spec_branch="$1"
+  git config --get "branch.${spec_branch}.parentWorkBranch" 2>/dev/null || true
+}
 resolve_epic_dir() {
   local epic_id="$1"
   shopt -s nullglob
@@ -305,71 +309,39 @@ fi
 
 requires_feature_artifact_pair=0
 requires_fix_artifact_pair=0
-requires_initiative_artifact_pair=0
 if [[ "${touches_product_code}" -eq 1 ]]; then
+  branch_for_artifact_checks=""
   if [[ -n "${HEAD_BRANCH}" ]]; then
-    if [[ "${HEAD_BRANCH}" =~ ^(feature|security|nft|refactor)/ ]]; then
-      requires_feature_artifact_pair=1
-    fi
-    if [[ "${HEAD_BRANCH}" =~ ^fix/ ]]; then
-      requires_fix_artifact_pair=1
-    fi
-    if [[ "${HEAD_BRANCH}" =~ ^initiative/ ]]; then
-      requires_initiative_artifact_pair=1
-    fi
+    branch_for_artifact_checks="${HEAD_BRANCH}"
   else
     # Local fallback when branch name isn't provided by CI env vars.
     CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
-    if [[ "${CURRENT_BRANCH}" =~ ^(feature|security|nft|refactor)/ ]]; then
-      requires_feature_artifact_pair=1
-    fi
-    if [[ "${CURRENT_BRANCH}" =~ ^fix/ ]]; then
-      requires_fix_artifact_pair=1
-    fi
-    if [[ "${CURRENT_BRANCH}" =~ ^initiative/ ]]; then
-      requires_initiative_artifact_pair=1
-    fi
-  fi
-fi
-
-if [[ "${requires_initiative_artifact_pair}" -eq 1 ]]; then
-  echo "Linear initiative branch detected -> validating at least one feature or fix artifact pair."
-  feature_problem_artifacts="$(changed_files_match '^docs/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
-  feature_solution_artifacts="$(changed_files_match '^docs/features/feature-.*-implementation\.md$')"
-  fix_problem_artifacts="$(changed_files_match '^docs/fixes/fix-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
-  fix_solution_artifacts="$(changed_files_match '^docs/fixes/fix-.*-implementation\.md$')"
-  initiative_matching_pair=0
-
-  while IFS= read -r problem_artifact; do
-    [[ -z "${problem_artifact}" ]] && continue
-    problem_base="${problem_artifact%.md}"
-    expected_solution="${problem_base}-implementation.md"
-    if grep -Fx -q -- "${expected_solution}" <<<"${feature_solution_artifacts}"; then
-      initiative_matching_pair=1
-      break
-    fi
-  done <<<"${feature_problem_artifacts}"
-
-  if [[ "${initiative_matching_pair}" -eq 0 ]]; then
-    while IFS= read -r problem_artifact; do
-      [[ -z "${problem_artifact}" ]] && continue
-      problem_base="${problem_artifact%.md}"
-      expected_solution="${problem_base}-implementation.md"
-      if grep -Fx -q -- "${expected_solution}" <<<"${fix_solution_artifacts}"; then
-        initiative_matching_pair=1
-        break
-      fi
-    done <<<"${fix_problem_artifacts}"
+    branch_for_artifact_checks="${CURRENT_BRANCH}"
   fi
 
-  if [[ "${initiative_matching_pair}" -eq 0 ]]; then
-    echo "::error::Missing initiative artifact pair: update a matching docs/features/feature-<slug>.md pair or docs/fixes/fix-<slug>.md pair for this initiative PR."
-    missing_any=1
+  if [[ "${branch_for_artifact_checks}" =~ ^SPEC/ ]]; then
+    spec_parent_work_branch="$(resolve_spec_parent_work_branch "${branch_for_artifact_checks}")"
+    if [[ -n "${spec_parent_work_branch}" ]]; then
+      branch_for_artifact_checks="${spec_parent_work_branch}"
+    else
+      echo "::error::SPEC branch '${branch_for_artifact_checks}' is missing branch.<name>.parentWorkBranch config. Create SPEC branches with ./scripts/git-start.sh."
+      missing_any=1
+    fi
+  fi
+
+  if [[ "${branch_for_artifact_checks}" =~ ^(feature|security|nft|refactor|epic)/ ]]; then
+    requires_feature_artifact_pair=1
+  fi
+  if [[ "${branch_for_artifact_checks}" =~ ^(fix|bugfix|hotfix)/ ]]; then
+    requires_fix_artifact_pair=1
+  fi
+  if [[ "${branch_for_artifact_checks}" =~ ^initiative/ ]]; then
+    requires_feature_artifact_pair=1
   fi
 fi
 
 if [[ "${requires_feature_artifact_pair}" -eq 1 ]]; then
-  echo "Feature/security/nft/refactor scope detected -> validating feature artifacts under docs/features."
+  echo "Feature/security/nft/refactor/epic scope detected -> validating feature artifacts under docs/features."
   feature_problem_artifacts="$(changed_files_match '^docs/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
   feature_solution_artifacts="$(changed_files_match '^docs/features/feature-.*-implementation\.md$')"
 

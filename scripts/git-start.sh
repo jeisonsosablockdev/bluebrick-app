@@ -224,6 +224,7 @@ if [[ "${MODE}" == "slice" ]]; then
   echo "🧩 Slice branch detectada. Siguiente PR objetivo: initiative/${NORMALIZED_ISSUE}-${NAME_SLUG}"
   echo "📝 Recuerda: el spec slice / documentation slice debe ser S01, debe usar explain-like-socrates y debe cerrar antes de abrir delivery slices."
 elif [[ "${MODE}" == "initiative" ]]; then
+  echo "🔄 Linear helper: linear:issue-start"
   echo "🧭 Linear initiative branch detectada. Siguiente PR final objetivo: develop"
   echo "📝 Para trabajo multi-slice, crea primero el spec slice / documentation slice, usa explain-like-socrates y luego abre delivery slices."
 fi

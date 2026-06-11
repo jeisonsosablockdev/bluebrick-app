@@ -7,7 +7,17 @@ const TEMPLATE_RELATIVE_PATH = path.join(
   "linear-single-issue-slices.template.md"
 );
 
-const ALLOWED_TYPES = new Set(["feature", "fix", "security", "nft", "refactor"]);
+const ALLOWED_TYPES = new Set([
+  "feature",
+  "bugfix",
+  "fix",
+  "hotfix",
+  "epic",
+  "security",
+  "nft",
+  "refactor"
+]);
+const FIX_ARTIFACT_TYPES = new Set(["bugfix", "fix", "hotfix"]);
 const ALLOWED_SCOPES = new Set([
   "program",
   "app",
@@ -45,6 +55,16 @@ function normalizeIssueId(rawIssueId) {
   throw new Error("`--issue` must look like BRI-149 or 149.");
 }
 
+function normalizeDeveloperHandle(rawHandle) {
+  const value = slugify(rawHandle);
+
+  if (!value) {
+    throw new Error("A non-empty `--owner` value is required.");
+  }
+
+  return value;
+}
+
 function normalizeType(rawType) {
   const value = String(rawType ?? "").trim().toLowerCase();
 
@@ -79,34 +99,41 @@ function normalizeSliceId(rawSliceId) {
   return `S${value.padStart(2, "0")}`;
 }
 
-function buildInitiativeBranchName({ slug, issueId }) {
+function buildFeatureBranchName({ type, owner, slug, issueId }) {
+  const normalizedType = normalizeType(type);
+  const normalizedOwner = normalizeDeveloperHandle(owner);
   const parentSlug = slugify(slug);
-  const normalizedIssueId = normalizeIssueId(issueId).toLowerCase();
+  const normalizedIssueId = normalizeIssueId(issueId);
 
   if (!parentSlug) {
-    throw new Error("A non-empty slug is required to build Linear initiative branches.");
+    throw new Error("A non-empty slug is required to build parent work branches.");
   }
 
-  return `initiative/${normalizedIssueId}-${parentSlug}`;
+  return `${normalizedType}/${normalizedOwner}-${normalizedIssueId}-${parentSlug}`;
 }
 
-function buildSliceBranchName({ type, scope, slug, issueId, sliceId, sliceSlug }) {
-  const normalizedType = normalizeType(type);
-  const normalizedScope = normalizeScope(scope);
-  const parentSlug = slugify(slug);
-  const normalizedIssueId = normalizeIssueId(issueId).toLowerCase();
-  const normalizedSliceId = normalizeSliceId(sliceId).toLowerCase();
-  const normalizedSliceSlug = slugify(sliceSlug);
+function buildSpecBranchName({ owner, issueId, specSlug }) {
+  const normalizedOwner = normalizeDeveloperHandle(owner);
+  const normalizedIssueId = normalizeIssueId(issueId);
+  const normalizedSpecSlug = slugify(specSlug);
 
-  if (!parentSlug) {
-    throw new Error("A non-empty slug is required to build slice branches.");
+  if (!normalizedSpecSlug) {
+    throw new Error("A non-empty spec slug is required to build SPEC branches.");
   }
 
-  if (!normalizedSliceSlug) {
-    throw new Error("A non-empty slice slug is required to build slice branches.");
-  }
+  return `SPEC/${normalizedOwner}-${normalizedIssueId}-${normalizedSpecSlug}`;
+}
 
-  return `${normalizedType}/${normalizedScope}-${parentSlug}-${normalizedIssueId}-${normalizedSliceId}-${normalizedSliceSlug}`;
+function buildInitiativeBranchName(options) {
+  return buildFeatureBranchName(options);
+}
+
+function buildSliceBranchName({ owner, issueId, sliceSlug }) {
+  return buildSpecBranchName({
+    owner,
+    issueId,
+    specSlug: sliceSlug
+  });
 }
 
 function buildProblemArtifactPath({ type, slug }) {
@@ -117,7 +144,7 @@ function buildProblemArtifactPath({ type, slug }) {
     throw new Error("A non-empty slug is required to build artifact paths.");
   }
 
-  if (normalizedType === "fix") {
+  if (FIX_ARTIFACT_TYPES.has(normalizedType)) {
     return `docs/fixes/fix-${normalizedSlug}.md`;
   }
 
@@ -132,7 +159,7 @@ function buildSolutionArtifactPath({ type, slug }) {
     throw new Error("A non-empty slug is required to build artifact paths.");
   }
 
-  if (normalizedType === "fix") {
+  if (FIX_ARTIFACT_TYPES.has(normalizedType)) {
     return `docs/fixes/fix-${normalizedSlug}-implementation.md`;
   }
 
@@ -209,6 +236,8 @@ function parseArgs(argv) {
     goal: "",
     scopeItems: [],
     nonGoals: [],
+    acceptanceCriteria: [],
+    openQuestions: [],
     risks: [],
     slices: [],
     testPlanFirst: [],
@@ -236,8 +265,11 @@ function parseArgs(argv) {
       token === "--goal" ||
       token === "--scope-item" ||
       token === "--non-goal" ||
+      token === "--acceptance-criteria" ||
+      token === "--open-question" ||
       token === "--risk" ||
       token === "--slice" ||
+      token === "--spec" ||
       token === "--test-plan-first" ||
       token === "--owner" ||
       token === "--body-file"
@@ -254,8 +286,10 @@ function parseArgs(argv) {
       if (token === "--goal") args.goal = next;
       if (token === "--scope-item") args.scopeItems.push(next);
       if (token === "--non-goal") args.nonGoals.push(next);
+      if (token === "--acceptance-criteria") args.acceptanceCriteria.push(next);
+      if (token === "--open-question") args.openQuestions.push(next);
       if (token === "--risk") args.risks.push(next);
-      if (token === "--slice") args.slices.push(next);
+      if (token === "--slice" || token === "--spec") args.slices.push(next);
       if (token === "--test-plan-first") args.testPlanFirst.push(next);
       if (token === "--owner") args.owner = next;
       if (token === "--body-file") args.bodyFile = next;
@@ -276,7 +310,7 @@ async function readTemplate(rootDir) {
     await fs.access(templatePath);
   } catch {
     throw new Error(
-      `Linear slice plan template not found. Expected file: ${TEMPLATE_RELATIVE_PATH}`
+      `Linear SPEC plan template not found. Expected file: ${TEMPLATE_RELATIVE_PATH}`
     );
   }
 
@@ -286,16 +320,13 @@ async function readTemplate(rootDir) {
   };
 }
 
-function renderSliceRows({ slices, type, scope, slug, issueId }) {
+function renderSliceRows({ slices, issueId }) {
   return slices
     .map((slice) => {
-      const sliceBranch = buildSliceBranchName({
-        type,
-        scope,
-        slug,
+      const sliceBranch = buildSpecBranchName({
+        owner: slice.owner,
         issueId,
-        sliceId: slice.sliceId,
-        sliceSlug: slice.sliceSlug
+        specSlug: slice.sliceSlug
       });
 
       return `| ${normalizeSliceId(slice.sliceId)} | todo | \`${sliceBranch}\` | ${slice.objective} | ${slice.technicalScope} | ${slice.validation} | TBD |`;
@@ -303,20 +334,20 @@ function renderSliceRows({ slices, type, scope, slug, issueId }) {
     .join("\n");
 }
 
-function buildGitCommandSummary({ initiativeBranch, sliceBranches }) {
+function buildGitCommandSummary({ featureBranch, specBranches }) {
   const lines = [
-    "Linear initiative branch:",
+    "Parent work branch:",
     `  git checkout develop`,
     `  git pull --ff-only origin develop`,
-    `  git checkout -b ${initiativeBranch}`,
+    `  git checkout -b ${featureBranch}`,
     "",
-    "Slice branches:"
+    "SPEC branches:"
   ];
 
-  sliceBranches.forEach((slice) => {
-    lines.push(`  # ${slice.sliceId} - ${slice.objective}`);
-    lines.push(`  git checkout ${initiativeBranch}`);
-    lines.push(`  git checkout -b ${slice.branch}`);
+  specBranches.forEach((spec) => {
+    lines.push(`  # ${spec.sliceId} - ${spec.objective}`);
+    lines.push(`  git checkout ${featureBranch}`);
+    lines.push(`  git checkout -b ${spec.branch}`);
   });
 
   return lines.join("\n");
@@ -332,7 +363,7 @@ async function createLinearPlan(options) {
   const slug = slugify(options.slug || options.title);
   const title = String(options.title ?? "").trim();
   const goal = String(options.goal ?? "").trim();
-  const owner = String(options.owner ?? "unknown").trim() || "unknown";
+  const owner = normalizeDeveloperHandle(options.owner ?? "unknown");
 
   if (!slug) {
     throw new Error("`--slug` is required (example: --slug wallet-session-hardening).");
@@ -347,32 +378,31 @@ async function createLinearPlan(options) {
   }
 
   if (!Array.isArray(options.slices) || options.slices.length === 0) {
-    throw new Error("At least one `--slice` entry is required.");
+    throw new Error("At least one `--slice` or `--spec` entry is required.");
   }
 
-  const parsedSlices = options.slices.map(parseSliceDefinition);
-  const firstSlice = parsedSlices[0];
-  const initiativeBranch = buildInitiativeBranchName({
+  const parsedSpecs = options.slices.map(parseSliceDefinition);
+  const firstSpec = parsedSpecs[0];
+  const featureBranch = buildFeatureBranchName({
+    type,
+    owner,
     slug,
     issueId
   });
   const problemArtifact = buildProblemArtifactPath({ type, slug });
   const solutionArtifact = buildSolutionArtifactPath({ type, slug });
 
-  if (normalizeSliceId(firstSlice.sliceId) !== "S01") {
-    throw new Error("The first slice must be S01 so the spec slice owns the plan first.");
+  if (normalizeSliceId(firstSpec.sliceId) !== "S01") {
+    throw new Error("The first SPEC must be S01 so the planning SPEC owns the plan first.");
   }
 
-  const sliceBranches = parsedSlices.map((slice) => ({
+  const specBranches = parsedSpecs.map((slice) => ({
     sliceId: normalizeSliceId(slice.sliceId),
     objective: slice.objective,
-    branch: buildSliceBranchName({
-      type,
-      scope,
-      slug,
+    branch: buildSpecBranchName({
+      owner,
       issueId,
-      sliceId: slice.sliceId,
-      sliceSlug: slice.sliceSlug
+      specSlug: slice.sliceSlug
     })
   }));
 
@@ -380,27 +410,29 @@ async function createLinearPlan(options) {
     .replace("{{GOAL}}", goal)
     .replace("{{SCOPE_ITEMS}}", renderBulletList(options.scopeItems))
     .replace("{{NON_GOAL_ITEMS}}", renderBulletList(options.nonGoals))
+    .replace("{{ACCEPTANCE_CRITERIA_ITEMS}}", renderBulletList(options.acceptanceCriteria))
+    .replace("{{OPEN_QUESTIONS_ITEMS}}", renderBulletList(options.openQuestions, "- None"))
     .replace("{{ISSUE_ID}}", issueId)
     .replace("{{OWNER}}", owner)
     .replace("{{PROBLEM_ARTIFACT}}", problemArtifact)
     .replace("{{SOLUTION_ARTIFACT}}", solutionArtifact)
-    .replace("{{INITIATIVE_BRANCH}}", initiativeBranch)
-    .replace("{{DOCUMENTATION_SLICE_BRANCH}}", sliceBranches[0].branch)
-    .replace("{{DOCUMENTATION_SLICE_OBJECTIVE}}", firstSlice.objective)
+    .replace("{{FEATURE_BRANCH}}", featureBranch)
+    .replace("{{FIRST_SPEC_BRANCH}}", specBranches[0].branch)
+    .replace("{{SPEC_BRANCH_PATTERN}}", `SPEC/${owner}-${issueId}-<spec-slug>`)
     .replace(
-      "{{SLICE_ROWS}}",
+      "{{SPEC_ROWS}}",
       renderSliceRows({
-        slices: parsedSlices,
-        type,
-        scope,
-        slug,
+        slices: parsedSpecs.map((slice) => ({
+          ...slice,
+          owner
+        })),
         issueId
       })
     )
     .replace(
       "{{EXECUTION_ORDER}}",
       renderOrderedList(
-        parsedSlices.map((slice) => `${normalizeSliceId(slice.sliceId)} - ${slice.objective}`)
+        parsedSpecs.map((slice) => `${normalizeSliceId(slice.sliceId)} - ${slice.objective}`)
       )
     )
     .replace("{{RISK_ITEMS}}", renderBulletList(options.risks))
@@ -414,48 +446,51 @@ async function createLinearPlan(options) {
     .replace(
       "{{COMPLETION_GATE_ITEMS}}",
       [
-        "- [ ] All slice branches merged into the Linear initiative branch",
+        "- [ ] All SPEC branches merged into the parent work branch",
         "- [ ] `npm run validate`",
         "- [ ] Required docs updated for the touched scope",
         "- [ ] Spec/documentation slice used `explain-like-socrates` before delivery slices opened",
         "- [ ] Human Acceptance approved by the user after manual testing before final merge to `develop`",
         "- [ ] Parent issue links the merged PRs and final commit path",
-        "- [ ] Final PR opened from the Linear initiative branch into `develop`"
+        "- [ ] Final PR opened from the parent work branch into `develop`"
       ].join("\n")
     );
 
   return {
     body,
-    initiativeBranch,
+    featureBranch,
     issueId,
-    sliceBranches,
+    specBranches,
     commandSummary: buildGitCommandSummary({
-      initiativeBranch,
-      sliceBranches
+      featureBranch,
+      specBranches
     })
   };
 }
 
 function usage() {
   return [
-    "Generate a single-issue slice plan for Linear and print the branch map.",
+    "Generate a single-issue issue-type-driven parent work + SPEC plan for Linear and print the branch map.",
     "",
     "Usage:",
-    "  npm run linear:plan -- --issue BRI-149 --type feature --scope shared --slug my-feature --title \"My feature\" --goal \"...\" --slice \"S01|Objective|Scope|Validation\"",
+    "  npm run linear:plan -- --issue BRI-149 --type feature --owner czambrano --slug my-feature --title \"My feature\" --goal \"...\" --spec \"S01|Planning SPEC|Scope|Validation\"",
     "",
     "Options:",
     "  --issue <BRI-149>        Parent Linear issue identifier",
-    "  --type <feature|fix|security|nft|refactor>",
+    "  --type <feature|bugfix|fix|hotfix|epic|security|nft|refactor>",
     "  --scope <program|app|shared|docs|infra|security|nft>",
-    "  --slug <parent-slug>     Stable slug shared by the Linear initiative and slice branches",
+    "  --owner <handle>        Lowercase developer handle used in branch names",
+    "  --slug <parent-slug>     Stable slug shared by the parent work branch",
     "  --title <text>           Parent issue title",
     "  --goal <text>            Objective shown in the generated Markdown",
     "  --scope-item <text>      Repeatable scope bullet",
     "  --non-goal <text>        Repeatable non-goal bullet",
+    "  --acceptance-criteria <text> Repeatable acceptance-criteria bullet",
+    "  --open-question <text>   Repeatable open-question bullet",
     "  --risk <text>            Repeatable risk bullet",
-    "  --slice <text>           Repeatable. Use `S01|Objective|Scope tecnico|Validation` or `S01|slice-slug|Objective|Scope tecnico|Validation`",
+    "  --slice <text>           Repeatable. Use `S01|Objective|Scope tecnico|Validation` or `S01|spec-slug|Objective|Scope tecnico|Validation`",
+    "  --spec <text>            Alias of --slice for SPEC terminology",
     "  --test-plan-first <text> Repeatable tests-first bullet for the parent issue plan",
-    "  --owner <name>           Owner shown in the Markdown",
     "  --body-file <path>       Optional output path. If omitted, Markdown prints to stdout.",
     "  --help                   Show this help"
   ].join("\n");
@@ -474,9 +509,9 @@ async function runCli(argv) {
   if (args.bodyFile) {
     const bodyFilePath = path.resolve(args.bodyFile);
     await fs.writeFile(bodyFilePath, plan.body, "utf8");
-    console.log(`Linear slice plan written to ${bodyFilePath}`);
+    console.log(`Linear SPEC plan written to ${bodyFilePath}`);
     console.log(`Parent issue: ${plan.issueId}`);
-    console.log(`Linear initiative branch: ${plan.initiativeBranch}`);
+    console.log(`Parent work branch: ${plan.featureBranch}`);
     console.log("");
     console.log(plan.commandSummary);
     return;
@@ -487,11 +522,14 @@ async function runCli(argv) {
 
 module.exports = {
   buildInitiativeBranchName,
+  buildFeatureBranchName,
   buildProblemArtifactPath,
   buildSliceBranchName,
+  buildSpecBranchName,
   buildSolutionArtifactPath,
   createLinearPlan,
   normalizeIssueId,
+  normalizeDeveloperHandle,
   normalizeScope,
   normalizeSliceId,
   normalizeType,

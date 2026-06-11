@@ -115,6 +115,24 @@ Important for this project (Devnet-only policy):
   - `HELIUS_API_KEY=YOUR_API_KEY`
 - If you launch Helius MCP outside this repo config, export those variables manually first.
 
+## Linear MCP Bridge
+
+This repo also ships a local Linear MCP bridge tailored to BRIDS workflow automation:
+
+- Project scope: [`/.mcp.json`](./.mcp.json)
+- Cursor workspace scope: [`/.cursor/mcp.json`](./.cursor/mcp.json)
+- Local server: [`scripts/linear-mcp-server.ts`](./scripts/linear-mcp-server.ts)
+- Usage guide: [`docs/guides/linear-mcp-bridge.md`](./docs/guides/linear-mcp-bridge.md)
+
+Environment:
+
+- `LINEAR_API_KEY` is required.
+- Optional override: `LINEAR_GRAPHQL_ENDPOINT`
+
+Start it with:
+
+- `npm run mcp:linear`
+
 ## Nix Dev Environment
 
 This repository includes a reproducible Nix development shell:

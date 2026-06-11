@@ -17,6 +17,11 @@
     "purchase:trace": "node ./scripts/purchase-trace.js",
     "rfc:new": "node ./scripts/rfc-new.js",
     "linear:plan": "node ./scripts/linear-plan.js",
+    "linear:issue-status": "node ./scripts/linear-status.js",
+    "linear:issue-start": "node ./scripts/linear-status.js --state start",
+    "linear:issue-review": "node ./scripts/linear-status.js --state review",
+    "linear:issue-done": "node ./scripts/linear-status.js --state done",
+    "mcp:linear": "tsx ./scripts/linear-mcp-server.ts",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -61,6 +66,7 @@
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
     "@metaplex-foundation/umi-signer-wallet-adapters": "^1.5.1",
     "@metaplex-foundation/umi-web3js-adapters": "^1.5.1",
+    "@modelcontextprotocol/server": "^2.0.0-alpha.2",
     "@solana/kit": "^2.3.0",
     "@solana/wallet-adapter-phantom": "^0.9.28",
     "@solana/wallet-adapter-react": "^0.15.39",
@@ -85,7 +91,8 @@
     "tweetnacl": "^1.0.3",
     "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zod4": "npm:zod@^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

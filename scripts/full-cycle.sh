@@ -8,13 +8,13 @@ if [[ $# -lt 3 ]]; then
   echo "Ej:  ./scripts/full-cycle.sh program nft-mint \"add nft mint flow\" program,nft"
   echo "Ej:  ./scripts/full-cycle.sh refactor shared branch-alignment \"align git scripts\""
   echo "Scopes válidos para ramas tipadas: app | program | shared"
-  echo "Tipos válidos: feature | fix | security | nft | refactor"
+  echo "Tipos válidos: feature | bugfix | fix | hotfix | epic | security | nft | refactor"
   echo "Docs opcionales: program,app,nft"
   exit 1
 fi
 
 is_branch_type() {
-  [[ "${1:-}" =~ ^(feature|fix|security|nft|refactor)$ ]]
+  [[ "${1:-}" =~ ^(feature|bugfix|fix|hotfix|epic|security|nft|refactor)$ ]]
 }
 
 TYPE="feature"

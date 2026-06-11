@@ -123,8 +123,12 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
       name: "Shared branch names are documented in monorepo policy",
       passed:
         gitMonorepoPolicySource.includes("feature/shared-<name>") &&
-        gitMonorepoPolicySource.includes("fix/shared-<name>"),
-      details: "Shared feature/fix branch naming must stay visible in the branch naming convention."
+        gitMonorepoPolicySource.includes("fix/shared-<name>") &&
+        gitMonorepoPolicySource.includes("bugfix/<developer>-<issue>-<name>") &&
+        gitMonorepoPolicySource.includes("hotfix/<developer>-<issue>-<name>") &&
+        gitMonorepoPolicySource.includes("epic/<developer>-<issue>-<name>"),
+      details:
+        "Shared and issue-type-driven branch naming must stay visible in the branch naming convention."
     },
     {
       name: "Gitflow guide still points to PR policy SSOT",

@@ -11,27 +11,27 @@ const workflowPath = path.join(
 );
 const workflowSource = readFileSync(workflowPath, "utf8");
 
-describe("initiative-target PR workflow", () => {
-  it("listens to pull requests that target initiative branches", () => {
+describe("parent-work-target PR workflow", () => {
+  it("listens to pull requests that target parent work branches", () => {
     expect(workflowSource).toContain("pull_request:");
-    expect(workflowSource).toContain("initiative/**");
-    expect(workflowSource).toContain("feature/**-integration");
-    expect(workflowSource).toContain("fix/**-integration");
-    expect(workflowSource).toContain("security/**-integration");
-    expect(workflowSource).toContain("refactor/**-integration");
+    expect(workflowSource).toContain("feature/**");
+    expect(workflowSource).toContain("fix/**");
+    expect(workflowSource).toContain("security/**");
+    expect(workflowSource).toContain("nft/**");
+    expect(workflowSource).toContain("refactor/**");
     expect(workflowSource).toContain("ready_for_review");
   });
 
-  it("runs validate and docs gates for slice PRs", () => {
+  it("runs validate and docs gates for parent work branch PRs", () => {
     expect(workflowSource).toContain("name: Validate (lint + typecheck + docs governance)");
     expect(workflowSource).toContain("run: npm run validate");
     expect(workflowSource).toContain("name: Required Docs Sync Check");
     expect(workflowSource).toContain("run: bash ./scripts/ci/check-required-docs.sh");
   });
 
-  it("uses dedicated concurrency for initiative-target PRs", () => {
+  it("uses dedicated concurrency for parent work branch PRs", () => {
     expect(workflowSource).toContain("concurrency:");
-    expect(workflowSource).toContain("pr-initiative-targets-${{ github.event.pull_request.number }}");
+    expect(workflowSource).toContain("pr-parent-work-targets-${{ github.event.pull_request.number }}");
     expect(workflowSource).toContain("cancel-in-progress: true");
   });
 });
