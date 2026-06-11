@@ -5,12 +5,8 @@
       "url": "https://mcp.solana.com/mcp"
     },
     "helius": {
-      "command": "npx",
-      "args": ["helius-mcp@latest"]
-    },
-    "linear": {
-      "command": "npx",
-      "args": ["tsx", "./scripts/linear-mcp-server.ts"]
+      "command": "bash",
+      "args": ["-lc", "set -a; [ -f .env.local ] && . ./.env.local; set +a; exec npx helius-mcp@latest"]
     }
   }
 }

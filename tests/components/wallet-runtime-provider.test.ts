@@ -9,6 +9,14 @@ const walletProviderProps = vi.hoisted(() => ({
   latest: null as null | Record<string, unknown>
 }));
 
+const navigationMocks = vi.hoisted(() => ({
+  pathname: "/"
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => navigationMocks.pathname
+}));
+
 vi.mock("@solana/wallet-adapter-react", () => ({
   ConnectionProvider: ({ children }: { children: ReactNode }) => createElement("div", null, children),
   WalletProvider: ({ children, ...props }: { children: ReactNode } & Record<string, unknown>) => {
@@ -34,12 +42,64 @@ vi.mock("@/lib/solana", () => ({
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 
 describe("components/wallet/WalletRuntimeProvider", () => {
-  it("enables wallet adapter auto-connect so admin deploy can recover the signer after navigation", () => {
+  it("keeps wallet adapter auto-connect disabled by default", () => {
     const container = document.createElement("div");
     const root = createRoot(container);
 
     act(() => {
       root.render(createElement(WalletRuntimeProvider, null, createElement("span", null, "child")));
+    });
+
+    expect(walletProviderProps.latest?.autoConnect).toBe(false);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("enables wallet adapter auto-connect for an explicit runtime opt-in", () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(createElement(WalletRuntimeProvider, { autoConnect: true }, createElement("span", null, "child")));
+    });
+
+    expect(walletProviderProps.latest?.autoConnect).toBe(true);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("enables auto-connect only when the current pathname is opted in", () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+
+    navigationMocks.pathname = "/admin/dashboard";
+
+    act(() => {
+      root.render(
+        createElement(
+          WalletRuntimeProvider,
+          { autoConnectPathnames: ["/admin/assets/new"] },
+          createElement("span", null, "child")
+        )
+      );
+    });
+
+    expect(walletProviderProps.latest?.autoConnect).toBe(false);
+
+    navigationMocks.pathname = "/admin/assets/new";
+
+    act(() => {
+      root.render(
+        createElement(
+          WalletRuntimeProvider,
+          { autoConnectPathnames: ["/admin/assets/new"] },
+          createElement("span", null, "child")
+        )
+      );
     });
 
     expect(walletProviderProps.latest?.autoConnect).toBe(true);

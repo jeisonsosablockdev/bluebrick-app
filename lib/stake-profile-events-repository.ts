@@ -67,6 +67,12 @@ type UpsertStakeProfileEventInput = {
   validationError?: string | null;
 };
 
+type ListStakeProfileEventsForDistributionInput = {
+  collectionAddress: string;
+  propertyId: string;
+  periodEndAt: string;
+};
+
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
 }
@@ -243,3 +249,46 @@ export async function listStakeProfileEventsByWallet(walletPublicKey: string): P
   });
 }
 
+export async function listStakeProfileEventsForDistribution(
+  input: ListStakeProfileEventsForDistributionInput
+): Promise<StakeProfileEventRecord[]> {
+  const collectionAddress = assertNonEmpty(input.collectionAddress, "collectionAddress");
+  const propertyId = assertNonEmpty(input.propertyId, "propertyId");
+  const periodEndAt = assertNonEmpty(input.periodEndAt, "periodEndAt");
+
+  if (!isDatabaseConfigured()) {
+    return Array.from(inMemoryStakeProfileEvents.values())
+      .filter((event) => event.collectionAddress === collectionAddress && event.propertyId === propertyId)
+      .filter((event) => {
+        const eventTime = event.blockTime ?? event.observedAt;
+        return new Date(eventTime).getTime() <= new Date(periodEndAt).getTime();
+      })
+      .sort(compareDistributionEvents);
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<StakeProfileEventRow>(
+      `SELECT *
+       FROM user_profile_stake_events
+       WHERE collection_address = $1
+         AND property_id = $2
+         AND COALESCE(block_time, observed_at) <= $3
+       ORDER BY COALESCE(block_time, observed_at) ASC,
+                slot ASC NULLS LAST,
+                instruction_index ASC,
+                tx_signature ASC`,
+      [collectionAddress, propertyId, periodEndAt]
+    );
+
+    return result.rows.map((row) => mapRow(row));
+  });
+}
+
+function compareDistributionEvents(left: StakeProfileEventRecord, right: StakeProfileEventRecord): number {
+  return (
+    (new Date(left.blockTime ?? left.observedAt).getTime() - new Date(right.blockTime ?? right.observedAt).getTime()) ||
+    ((left.slot ?? Number.MAX_SAFE_INTEGER) - (right.slot ?? Number.MAX_SAFE_INTEGER)) ||
+    left.instructionIndex - right.instructionIndex ||
+    left.txSignature.localeCompare(right.txSignature)
+  );
+}

@@ -148,6 +148,11 @@ export type ListComplianceCasesResult = {
   nextCursor: string | null;
 };
 
+export type WalletComplianceStatusRecord = {
+  walletPublicKey: string;
+  complianceStatus: ComplianceStatus;
+};
+
 export type ComplianceCaseDetailForAdmin = ProfileBundle & {
   amlRiskScore: number | null;
   amlFlags: AmlFlag[];
@@ -546,6 +551,39 @@ function toBundle(row: ProfileBundleRow): ProfileBundle {
 
 export function isProfileDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+export async function listWalletComplianceStatuses(walletPublicKeys: string[]): Promise<WalletComplianceStatusRecord[]> {
+  const uniqueWallets = Array.from(new Set(walletPublicKeys.map((wallet) => wallet.trim()).filter(Boolean))).sort();
+
+  if (uniqueWallets.length === 0) {
+    return [];
+  }
+
+  if (!isProfileDatabaseConfigured()) {
+    return uniqueWallets.map((walletPublicKey) => ({
+      walletPublicKey,
+      complianceStatus: inMemoryProfiles.get(walletPublicKey)?.complianceStatus ?? "pending_kyc"
+    }));
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<{
+      wallet_public_key: string;
+      compliance_status: ComplianceStatus;
+    }>(
+      `SELECT wallet_public_key, compliance_status
+       FROM user_profiles
+       WHERE wallet_public_key = ANY($1::text[])`,
+      [uniqueWallets]
+    );
+    const statusByWallet = new Map(result.rows.map((row) => [row.wallet_public_key, row.compliance_status]));
+
+    return uniqueWallets.map((walletPublicKey) => ({
+      walletPublicKey,
+      complianceStatus: statusByWallet.get(walletPublicKey) ?? "pending_kyc"
+    }));
+  });
 }
 
 async function ensureProfileExistsWithClient(client: PoolClient, walletPublicKey: string): Promise<void> {

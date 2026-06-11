@@ -449,6 +449,8 @@ async function createLinearPlan(options) {
         "- [ ] All SPEC branches merged into the parent work branch",
         "- [ ] `npm run validate`",
         "- [ ] Required docs updated for the touched scope",
+        "- [ ] Spec/documentation slice used `explain-like-socrates` before delivery slices opened",
+        "- [ ] Human Acceptance approved by the user after manual testing before final merge to `develop`",
         "- [ ] Parent issue links the merged PRs and final commit path",
         "- [ ] Final PR opened from the parent work branch into `develop`"
       ].join("\n")

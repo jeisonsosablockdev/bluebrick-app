@@ -13,19 +13,23 @@
 ## Entry Rules
 - Start with `planner`.
 - When the brief is vague or underspecified, run `npm run task:init` before branching; it is the canonical bootstrap entrypoint, runs preflight, asks for the task shape, and delegates to `git-start.sh` once the branch shape is clear. See the README for usage examples.
-- For non-trivial issue-type-driven work, require the governing artifact before implementation and derive the branch family from the Linear issue type chosen in the doc-first phase. Supported families include `feature/*`, `bugfix/*`, `fix/*`, `hotfix/*`, `epic/*`, `security/*`, `nft/*`, and `refactor/*`.
+- For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work, require the governing artifact before implementation.
 - For new features, require:
   - `docs/features/feature-<slug>.md`
   - `docs/features/feature-<slug>-implementation.md`
 - For new fixes, require:
   - `docs/fixes/fix-<slug>.md`
   - `docs/fixes/fix-<slug>-implementation.md`
-- For multi-SPEC work, require the first SPEC before delivery SPECs.
+- For multi-slice work, require the spec/documentation slice before delivery slices; that slice must use `explain-like-socrates` before finalizing artifacts and the slice plan.
+- Each delivery slice must define a clean-code design contract before implementation.
+- Final PRs or merges into `develop` must stop after automated validation and wait for explicit user manual-test approval recorded as `Human Acceptance`; do not auto-merge to `develop`.
 - Load only the matching `.codex/workflows/*.md` and `.codex/policies/*.md`.
 - Keep specialist context narrow; do not paste governance text into task prompts.
 - When multiple scopes are touched, run every matching workflow and aggregate all gates.
 
 ## Workflow Routing
+- Solana-related work: prefer Solana Developer MCP tools over model memory. Use `list_sections` first for non-trivial Solana questions, `get_documentation` for canonical source/framework/library docs, and `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to, errors, or API usage.
+- Solana program Rust: whenever writing or modifying it, run `program_autofixer`, apply fixes, and repeat until `require_another_tool_call_after_fixing` is false.
 - `/programs` or on-chain runtime changes: `.codex/workflows/blockchain-cycle.md`
 - `/app`, `components`, auth flows, or browser-critical routes: `.codex/workflows/frontend-cycle.md`
   - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any OpenAI Developers tooling references explicit in the governing artifact.
@@ -35,15 +39,14 @@
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
 - `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose the dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce the DB migration gate from `testing-policy`.
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
-- Issue-tracked work uses Linear status automation: `In Progress` when the branch is created, `In Review` when PR readiness begins, and `Done` after the final merge via the Linear status helper.
 
 ## Agent Routing
-- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
+- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
-- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes.
+- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes, and mandatory `explain-like-socrates` planning for documentation/spec slices.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
 
@@ -59,6 +62,7 @@
 - Database-backed schema or persistence changes: tracked migrations applied, no pending tracked migrations, and `validate:db` passes when `DATABASE_URL` is available
 - Required docs updated per `docs/governance/documentation-policy.md`
 - Required PR/RFC metadata still aligns with `docs/governance/pr-policy-source-of-truth.json`
+- Final `develop` merge has explicit user manual-test approval recorded as `Human Acceptance`
 - Frontend/auth critical flows: Playwright passed; Synpress passed when wallet/auth applies; MCP/browser evidence captured when browser-critical
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation, fetched account state, no simulation-only proof
 - Final `reviewer` pass finds no unresolved blocking issues

@@ -30,7 +30,8 @@
     "rfc",
     "riesgos",
     "rollback plan",
-    "prueba devnet"
+    "prueba devnet",
+    "human acceptance"
   ],
   "thresholds": {
     "maxAddedLines": 400,
@@ -38,6 +39,7 @@
   },
   "patterns": {
     "featureFlag": "feature[- ]flag",
+    "humanAcceptanceApproved": "##\\s*human acceptance[\\s\\S]*status:\\s*approved",
     "commitMessage": "^(feat|fix|docs|chore|refactor|security|nft|test|ci)\\((app|program|shared|docs|infra|security|nft)\\): .+"
   },
   "canonicalCommands": {

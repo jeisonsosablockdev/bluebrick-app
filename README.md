@@ -110,9 +110,10 @@ Expected behavior:
 Important for this project (Devnet-only policy):
 
 - Helius MCP defaults to `mainnet-beta`.
-- Before Helius MCP usage, set:
-  - `export HELIUS_NETWORK=devnet`
-  - `export HELIUS_API_KEY=YOUR_API_KEY`
+- Project MCP config loads `.env.local` before starting `helius-mcp@latest`, so local usage should inherit:
+  - `HELIUS_NETWORK=devnet`
+  - `HELIUS_API_KEY=YOUR_API_KEY`
+- If you launch Helius MCP outside this repo config, export those variables manually first.
 
 ## Linear MCP Bridge
 
@@ -203,7 +204,7 @@ Promotion order:
 
 Use `npm run task:init` to start a new task the canonical way.
 
-- If the brief is vague or you want the Socratic clarification pass, run:
+- If the brief is vague or you want the Socratic clarification pass with `explain-like-socrates`, run:
   - `npm run task:init -- --ask`
 - If you already know the branch shape, pass the `git-start.sh` arguments through:
   - `npm run task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`

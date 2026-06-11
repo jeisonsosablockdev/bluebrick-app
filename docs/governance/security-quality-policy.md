@@ -67,6 +67,11 @@ If change affects /programs:
 	•	Validate authority model
 	•	Validate signer checks
 	•	Validate PDA derivations
+	•	Prefer Solana Developer MCP tools over model memory for Solana-specific decisions.
+	•	Use `list_sections` first for non-trivial Solana questions, then select the matching documentation source ids or section ids.
+	•	Use `get_documentation` for canonical docs on a specific Solana source, framework, library, or ecosystem area.
+	•	Use `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to questions, errors, or API usage.
+	•	When writing or modifying Solana program Rust, run `program_autofixer` before returning code, apply the fixes, and repeat until `require_another_tool_call_after_fixing` is false.
 	•	Ensure test stack is present in program manifests:
 	  `cargo add --dev litesvm mollusk-svm mollusk-svm-programs-token proptest`
 	•	No unchecked CPIs

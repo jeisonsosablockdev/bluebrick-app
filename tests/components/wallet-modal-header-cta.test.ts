@@ -381,6 +381,122 @@ describe("components/WalletModal header CTA", () => {
     });
   });
 
+  it("does not preselect Phantom before the user chooses wallet sign-in", async () => {
+    const select = vi.fn();
+    const phantomAdapter = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: null,
+      connect: vi.fn(),
+      signMessage: vi.fn()
+    };
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: null,
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: null,
+      connected: false,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select,
+      signMessage: undefined
+    });
+
+    const { root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(select).not.toHaveBeenCalled();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("selects and connects Phantom only after the user chooses wallet sign-in", async () => {
+    const select = vi.fn();
+    const signMessage = vi.fn();
+    const phantomAdapter: {
+      name: string;
+      readyState: WalletReadyState;
+      publicKey: null | { toBase58: () => string };
+      connect: () => Promise<void>;
+      signMessage: typeof signMessage;
+    } = {
+      name: "Phantom",
+      readyState: WalletReadyState.Installed,
+      publicKey: null,
+      connect: async () => undefined,
+      signMessage
+    };
+    const adapterConnect = vi.fn(async () => {
+      phantomAdapter.publicKey = {
+        toBase58: () => TEST_WALLET_PUBLIC_KEY
+      };
+    });
+    phantomAdapter.connect = adapterConnect;
+
+    walletMocks.useWallet.mockReturnValue({
+      wallet: null,
+      wallets: [{ adapter: phantomAdapter, readyState: WalletReadyState.Installed }],
+      publicKey: null,
+      connected: false,
+      connecting: false,
+      disconnecting: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      select,
+      signMessage: undefined
+    });
+    authClientMocks.startSiws.mockResolvedValue({
+      publicKey: TEST_WALLET_PUBLIC_KEY,
+      isNewUser: false
+    });
+
+    const { container, root } = renderWalletModal({
+      authenticated: false,
+      federatedAvailable: true,
+      pubkey: null
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const openButton = findButtonByText(container, "Ingresar");
+
+    act(() => {
+      openButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const walletButton = findButtonByText(document.body, "Wallet");
+
+    await act(async () => {
+      walletButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+      await Promise.resolve();
+    });
+
+    expect(select).toHaveBeenCalledWith("Phantom");
+    expect(adapterConnect).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("does not spin the modal status indicator when reduced motion is requested", async () => {
     Object.defineProperty(window, "matchMedia", {
       writable: true,

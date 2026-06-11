@@ -1,6 +1,40 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-06
+
+## BRI-174 Investor Portfolio Protected Read Boundary
+- The Investor Dashboard Portfolio now reads real collection-level holdings through `GET /api/protected/portfolio`.
+- This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.
+- Authority is resolved server-side through `resolveAppAuthContext`.
+- The route rejects unauthenticated account sessions before portfolio data is queried.
+- The route derives `walletPublicKey` from the server-side auth context and ignores client-provided wallet identifiers.
+- Federated/account-only sessions without a wallet return a `wallet_required` Portfolio state instead of cross-wallet holdings.
+- If the hybrid WorkOS/SIWS context is conflicted, portfolio data is not queried as another wallet.
+- The browser receives a presentation DTO grouped by collection; it does not decide current ownership, project percentage, purchase price, or estimated yield.
+- Portfolio data is composed from existing trusted sources: server-side BRIDS wallet inventory, persisted marketplace entries, and existing purchase context when future currency-safe enrichment is available.
+- Purchase price in BRI-174 v1 is the marketplace/listing USD price from the admin form multiplied by current owned quantity; `preparedPriceLamports` and `quotedPriceLamports` are not presented as USD.
+
+## BRI-171 Investor Overview Protected Read Boundary
+- The Investor Dashboard Overview now reads real user data through `GET /api/protected/overview`.
+- This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.
+- Authority is resolved server-side through `resolveAppAuthContext`.
+- The route rejects unauthenticated account sessions before any investor data is queried.
+- The route derives `walletPublicKey` from the server-side auth context and ignores client-provided wallet identifiers.
+- Federated/account-only sessions without a wallet return a `wallet_required` Overview state instead of cross-wallet metrics.
+- If the hybrid WorkOS/SIWS context is conflicted, investor data is not queried as another wallet.
+- The browser receives a presentation DTO only; it does not decide holdings, eligibility, investment amount, stake state, or distribution totals.
+- Overview data is composed from existing trusted sources: profile/compliance DB, confirmed purchase attempts, server-side BRIDS wallet inventory, BRI-5/BRI-170 stake history, and BRI-6 distribution preparation when available.
+
+## BRI-6 Distribution Preparation Admin Boundary
+- New admin distribution preparation routes:
+  - `GET /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs/[runId]/finalize`
+- These routes do not introduce a new auth cookie, browser token, role, or wallet authority source.
+- Authority is resolved server-side through `getRequestRole`; the caller must be authenticated as `admin`.
+- Request payloads define distribution scope and treasury amount, but they are not trusted as identity or eligibility authority.
+- Eligibility is derived server-side from validated `user_profile_stake_events` plus persisted profile compliance status.
+- Finalization records admin actor evidence and does not execute an on-chain payment or claim.
 
 ## BRI-170 Marketplace Owner-Freeze Mint Boundary
 - Marketplace mint now requires the existing authenticated SIWS wallet session before `prepare` and `submit`; no new auth cookie, token, route role, or browser authority source was introduced.
@@ -25,6 +59,8 @@ Last Updated: 2026-06-05
   - connected wallet adapter without SIWS shows a connected-wallet pending sign-in action instead of the anonymous chooser
   - active SIWS wallet session with a connected adapter shows neutral wallet-session status plus secondary actions, not a colorful `Signed in` primary button
 - `Sign out & disconnect wallet` now asks the wallet adapter to disconnect when the adapter is connected or when it still exposes a public key during reconnect/autoConnect recovery, then clears the BRIDS SIWS session through `POST /api/auth/logout`.
+- Phantom wallet-adapter `autoConnect` is scoped to `/admin/assets/new` only so admin deploy/mint can recover a signer without making public login surfaces feel wallet-mandatory.
+- Public and account-entry routes may detect Phantom, but they do not select or connect it until the user explicitly chooses the Wallet entry.
 - This is a presentation and accessibility containment change only:
   - no cookie, token, nonce, role, redirect, or auth route changes were introduced
   - `GET /api/auth/me` remains the browser's canonical auth introspection surface
@@ -116,6 +152,7 @@ Last Updated: 2026-06-05
   - `app/providers.tsx` keeps only locale state
   - Solana wallet providers moved into `components/wallet/wallet-runtime-provider.tsx`
   - public pages mount wallet runtime only where the wallet CTA/modal is actually present
+  - wallet-adapter `autoConnect` defaults off and is opt-in only for the `/admin/assets/new` mint/deploy surface
 - Public wallet entry now defaults to anonymous bootstrap:
   - `WalletModal` accepts `ANONYMOUS_AUTH_STATE` when no server auth snapshot is provided
   - browser-side auth introspection still resolves through `GET /api/auth/me`
@@ -830,3 +867,8 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/admin/health/collections` now uses the same compact review-queue language as the main collections console.
 - The health surface still renders only rows returned by `loadAdminCollectionsHealthPageState()` and keeps ready collections separated from review-required rows.
 - No SIWS challenge, signature verification, wallet signer behavior, cookie handling, admin role derivation, snapshot validation, ownership enforcement, document upload authority, or blockchain mutation authority changed in this slice.
+
+## Admin Candy Machine Deploy Detailed Logs
+- `/api/admin/core-candy-machine/submit` now accepts an optional `deployId` solely to correlate deploy preparation, wallet signing, backend submit, RPC confirmation, and snapshot-facing logs.
+- The route still derives the authenticated admin wallet from the existing SIWS session through `getRequestRole`; the client-provided `deployId` is never used for authorization, payer validation, snapshot verification, or Create Asset gating.
+- No SIWS challenge, signature verification, cookie strategy, nonce lifecycle, admin role derivation, or browser-owned permission model changed in this slice.

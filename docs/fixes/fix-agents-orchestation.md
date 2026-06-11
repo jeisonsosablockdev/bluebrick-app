@@ -1,6 +1,6 @@
 # Fix: Agents Orchestation
 
-Last Updated: 2026-05-18 UTC
+Last Updated: 2026-06-07 UTC
 Status: planned
 Owner: shared workflow
 Artifact Type: problem
@@ -102,6 +102,7 @@ Los gaps actuales más importantes son estos:
    - pero no resuelve el outcome real
    - o improvisa cuando falta una decisión material
 15. El sistema todavía no define con suficiente claridad cuándo debe detenerse y preguntar, en vez de completar con suposiciones silenciosas.
+16. La calidad clean-code todavía podía quedar como auditoría tardía de `reviewer`, en vez de entrar al diseño de cada delivery slice antes de implementar.
 
 ## Root Cause Pattern
 

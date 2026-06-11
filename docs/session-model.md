@@ -1,6 +1,37 @@
 # Session Model
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-06
+
+## BRI-174 Investor Portfolio Session Boundary
+- Investor Portfolio uses the existing protected account/session model and does not create a new session layer.
+- `GET /api/protected/portfolio` resolves session state with `resolveAppAuthContext`.
+- Account authentication is required to read the route.
+- Wallet-bound portfolio holdings require a server-resolved `walletPublicKey`; client query/body wallet values are not session authority.
+- Account-only/federated sessions may render the protected shell, but the Portfolio returns `wallet_required` until a wallet session/link is available.
+- Session conflict remains fail-closed for portfolio data: the Portfolio must not silently choose one wallet when WorkOS and SIWS resolve to different account ownership.
+- The Portfolio DTO is derived presentation data grouped by collection. It does not become a browser session capability, ownership credential, payout entitlement, or wallet authority substitute.
+- No cookie names, TTLs, nonce behavior, SIWS verification flow, WorkOS session behavior, or role derivation changed in BRI-174.
+
+## BRI-171 Investor Overview Session Boundary
+- Investor Overview uses the existing protected account/session model and does not create a new session layer.
+- `GET /api/protected/overview` resolves session state with `resolveAppAuthContext`.
+- Account authentication is required to read the route.
+- Wallet-bound investor metrics require a server-resolved `walletPublicKey`; client query/body wallet values are not session authority.
+- Account-only/federated sessions may render the protected shell, but the Overview returns `wallet_required` for investment metrics until a wallet session/link is available.
+- Session conflict remains fail-closed for investment data: the Overview must not silently choose one wallet when WorkOS and SIWS resolve to different account ownership.
+- The Overview DTO is derived data. It does not become a browser session capability, payout entitlement, claim credential, or wallet authority substitute.
+- No cookie names, TTLs, nonce behavior, SIWS verification flow, WorkOS session behavior, or role derivation changed in BRI-171.
+
+## BRI-6 Distribution Preparation Session Boundary
+- Distribution preparation reuses the existing admin SIWS session model.
+- New admin routes require `getRequestRole(request)` to resolve an authenticated `admin` wallet:
+  - `GET /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs`
+  - `POST /api/admin/distributions/runs/[runId]/finalize`
+- No new session cookie, nonce, browser token, refresh path, or account-only authority is introduced.
+- The admin session identifies the actor who creates/finalizes a preparation run; it does not determine wallet eligibility for payouts.
+- Wallet eligibility remains data-derived from validated stake history and `user_profiles.compliance_status`.
+- Prepared distribution rows are server-owned records and never become a browser session capability.
 
 ## BRI-170 Marketplace Mint Session Boundary
 - Marketplace mint continues to use the existing SIWS wallet session; account-only/federated-only authority is not sufficient for purchase prepare or submit.
@@ -29,6 +60,7 @@ Last Updated: 2026-06-05
   - WorkOS/account authority still comes from the federated session layer
   - wallet authority still comes from `siws_session`
   - wallet-adapter connection and `autoConnect` remain browser signer availability, not login authority
+- Phantom `autoConnect` is now scoped to `/admin/assets/new`, where admin mint/deploy needs signer recovery. Public login surfaces do not auto-select or auto-connect Phantom before explicit Wallet intent.
 - The S02 viewport slice intentionally does not change `/api/auth/me`, `/api/auth/logout`, `/sign-out`, SIWS cookies, or WorkOS cookies.
 
 ## BRI-165 Admin Upload Edit Session Model
@@ -782,3 +814,11 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-owned health read model
   - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
 - Responsive QA is evidence-only for the existing authenticated admin routes and does not change ownership, snapshot, editability, or document upload decisions.
+
+## Admin Candy Machine Deploy Detailed Logs Session Notes
+- Candy Machine deploy logging adds a server-generated `deployId` to correlate prepare and submit traces.
+- Session invariants remain unchanged:
+  - same `siws_session` cookie contract
+  - same server-side wallet lookup and admin role derivation before deploy prepare/submit
+  - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
+- The browser may echo `deployId` during submit for diagnostics, but the server still validates the signed transaction payer against the authenticated admin pubkey and keeps snapshot/Create Asset decisions server-owned.

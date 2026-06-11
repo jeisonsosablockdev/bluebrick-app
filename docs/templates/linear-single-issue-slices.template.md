@@ -1,49 +1,41 @@
-# Human Brief
-
-## Objective
+# Objective
 {{GOAL}}
 
-## Scope
+# Scope
 {{SCOPE_ITEMS}}
 
-## Non-goals
+# Non-goals
 {{NON_GOAL_ITEMS}}
 
-## Acceptance Criteria
-{{ACCEPTANCE_CRITERIA_ITEMS}}
-
-## Risks
-{{RISK_ITEMS}}
-
-## Open Questions
-{{OPEN_QUESTIONS_ITEMS}}
-
-# Technical Protocol for Agents
-
-## Linear
+# Linear
 - Issue: `{{ISSUE_ID}}`
-- Owner / branch handle: `{{OWNER}}`
+- Owner: `{{OWNER}}`
 
-## Artifact Pair
+# Artifact Pair
 - Problem artifact: `{{PROBLEM_ARTIFACT}}`
 - Solution artifact: `{{SOLUTION_ARTIFACT}}`
 
-## Parent Work Branch
-`{{FEATURE_BRANCH}}`
+# Linear Initiative Branch
+`{{INITIATIVE_BRANCH}}`
 
-## SPEC Plan
-- First SPEC: `{{FIRST_SPEC_BRANCH}}`
-- Branch pattern: `{{SPEC_BRANCH_PATTERN}}`
+# Spec Slice
+- Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`
+- Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`
+- Socratic documentation gate: use `explain-like-socrates` before finalizing artifacts, assumptions, and delivery slices.
 
-| SPEC | Status | Branch | Objective | Scope tecnico | Validation | PR |
+# Slice Plan
+| Slice | Status | Branch | Objective | Scope tecnico | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |
-{{SPEC_ROWS}}
+{{SLICE_ROWS}}
 
-## Order of Execution
+# Order of Execution
 {{EXECUTION_ORDER}}
 
-## Test Plan First
+# Risks
+{{RISK_ITEMS}}
+
+# Test Plan First
 {{TEST_PLAN_FIRST_ITEMS}}
 
-## Completion Gate
+# Completion Gate
 {{COMPLETION_GATE_ITEMS}}

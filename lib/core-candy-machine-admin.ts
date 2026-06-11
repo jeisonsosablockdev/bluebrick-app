@@ -16,6 +16,7 @@ import {
   deriveCoreCandyMachineNames,
   utf8ByteLength
 } from "@/lib/core-candy-machine-naming";
+import { recordOperabilityLog } from "@/lib/observability";
 import { createPurchaseThirdPartySigner, getPurchaseThirdPartySignerAddress } from "@/lib/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/solana";
 import {
@@ -23,6 +24,8 @@ import {
   createKitRpcConnection,
   deserializeLegacyVersionedTransaction,
   getLegacyTransactionPayer,
+  getLegacyTransactionRequiredSignerCount,
+  getLegacyTransactionStaticAccountKeys,
   getSignatureStatusWithKitRpc,
   getTransactionWithKitRpc,
   normalizeLegacyPublicKey,
@@ -159,6 +162,7 @@ export type SubmitSignedCandyMachineTransactionInput = {
 
 export type SubmitSignedCandyMachineTransactionsInput = {
   expectedPayerPublicKey: string;
+  deployId?: string;
   signedTransactions: SubmitSignedCandyMachineTransactionInput[];
 };
 
@@ -199,6 +203,196 @@ export function isCoreCandyMachineAdminInputError(error: unknown): error is Core
 
 export function isCoreCandyMachineSubmitRecoverableError(error: unknown): error is CoreCandyMachineSubmitRecoverableError {
   return error instanceof CoreCandyMachineSubmitRecoverableError;
+}
+
+type CoreCandyMachineDeployLogLevel = "info" | "warn" | "error";
+
+type CoreCandyMachineDeployTraceContext = {
+  deployId?: string | null;
+  payerPublicKey?: string | null;
+  rpcHost?: string | null;
+  index?: number | null;
+  total?: number | null;
+  kind?: PreparedTransactionKind | null;
+  label?: string | null;
+  serial?: number | null;
+  expectedAddress?: string | null;
+  collectionAddress?: string | null;
+  candyMachineAddress?: string | null;
+  signature?: string | null;
+  elapsedMs?: number | null;
+  attempt?: number | null;
+  confirmationAttempt?: number | null;
+  confirmationMode?: "immediate" | "deferred" | null;
+  confirmationStatus?: string | null;
+  statusFound?: boolean | null;
+  hasErr?: boolean | null;
+  err?: string | null;
+  slot?: number | null;
+  confirmations?: number | null;
+  searchTransactionHistory?: boolean | null;
+  transactionByteLength?: number | null;
+  requiredSignerCount?: number | null;
+  staticAccountKeyCount?: number | null;
+  instructionCount?: number | null;
+  messageVersion?: string | null;
+  blockhash?: string | null;
+  lastValidBlockHeight?: number | null;
+  quantity?: number | null;
+  configLinesPerTx?: number | null;
+  configLineOffset?: number | null;
+  configLineChunkCount?: number | null;
+  low?: number | null;
+  high?: number | null;
+  delayMs?: number | null;
+  errorName?: string | null;
+  errorMessage?: string | null;
+  errorCode?: string | null;
+};
+
+const CORE_CANDY_MACHINE_DEPLOY_EVENT_PREFIX = "core_candy_machine.deploy";
+
+function getRpcHost(): string {
+  try {
+    return new URL(getSolanaRpcUrl()).host;
+  } catch {
+    return "unknown";
+  }
+}
+
+function toSafeNumber(value: unknown): number | null {
+  if (typeof value === "bigint") {
+    const numeric = Number(value);
+    return Number.isSafeInteger(numeric) ? numeric : null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  return null;
+}
+
+function describeErrorForTrace(error: unknown): Pick<
+  CoreCandyMachineDeployTraceContext,
+  "errorName" | "errorMessage" | "errorCode"
+> {
+  if (error instanceof CoreCandyMachineSubmitRecoverableError) {
+    return {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorCode: error.code
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorCode: null
+    };
+  }
+
+  return {
+    errorName: "UnknownError",
+    errorMessage: String(error),
+    errorCode: null
+  };
+}
+
+function normalizeTraceContext(context: CoreCandyMachineDeployTraceContext): Record<string, string | number | boolean | null> {
+  const output: Record<string, string | number | boolean | null> = {};
+
+  for (const [key, value] of Object.entries(context)) {
+    if (value === undefined) {
+      continue;
+    }
+
+    output[key] = value;
+  }
+
+  return output;
+}
+
+function emitCoreCandyMachineDeployLog(
+  level: CoreCandyMachineDeployLogLevel,
+  phase: string,
+  message: string,
+  context: CoreCandyMachineDeployTraceContext = {}
+): void {
+  const eventName = `${CORE_CANDY_MACHINE_DEPLOY_EVENT_PREFIX}.${phase}`;
+  const payload = {
+    eventName,
+    emittedAt: new Date().toISOString(),
+    ...normalizeTraceContext(context)
+  };
+  const line = JSON.stringify(payload);
+
+  if (level === "error") {
+    console.error(line);
+  } else {
+    console.warn(line);
+  }
+
+  recordOperabilityLog({
+    level,
+    event: eventName,
+    message,
+    context: payload
+  });
+}
+
+function buildTransactionTraceDiagnostics(
+  transaction: LegacyVersionedTransaction,
+  serializedTransaction: Uint8Array
+): Pick<
+  CoreCandyMachineDeployTraceContext,
+  "payerPublicKey" | "transactionByteLength" | "requiredSignerCount" | "staticAccountKeyCount" | "instructionCount" | "messageVersion"
+> {
+  return {
+    payerPublicKey: getLegacyTransactionPayer(transaction),
+    transactionByteLength: serializedTransaction.length,
+    requiredSignerCount: getLegacyTransactionRequiredSignerCount(transaction),
+    staticAccountKeyCount: getLegacyTransactionStaticAccountKeys(transaction).length,
+    instructionCount: transaction.message.compiledInstructions.length,
+    messageVersion: String(transaction.message.version)
+  };
+}
+
+function buildPreparedTransactionTraceDiagnostics(transactionBase64: string): Pick<
+  CoreCandyMachineDeployTraceContext,
+  "payerPublicKey" | "transactionByteLength" | "requiredSignerCount" | "staticAccountKeyCount" | "instructionCount" | "messageVersion"
+> {
+  const serializedTransaction = fromBase64(transactionBase64);
+  const transaction = deserializeLegacyVersionedTransaction(serializedTransaction);
+  return buildTransactionTraceDiagnostics(transaction, serializedTransaction);
+}
+
+function describeSignatureStatusForTrace(
+  status: Awaited<ReturnType<typeof getSignatureStatusWithKitRpc>>
+): Pick<
+  CoreCandyMachineDeployTraceContext,
+  "statusFound" | "confirmationStatus" | "hasErr" | "err" | "slot" | "confirmations"
+> {
+  if (!status) {
+    return {
+      statusFound: false,
+      confirmationStatus: null,
+      hasErr: false,
+      err: null,
+      slot: null,
+      confirmations: null
+    };
+  }
+
+  return {
+    statusFound: true,
+    confirmationStatus: typeof status.confirmationStatus === "string" ? status.confirmationStatus : null,
+    hasErr: Boolean(status.err),
+    err: status.err ? JSON.stringify(status.err).slice(0, 220) : null,
+    slot: toSafeNumber(status.slot),
+    confirmations: toSafeNumber(status.confirmations)
+  };
 }
 
 function assertNonEmptyString(value: unknown, fieldName: string, maxLength: number): string {
@@ -668,18 +862,42 @@ function resolveDeployPriceUsdcAtomic(value: unknown): number {
   return value;
 }
 
-async function sendRawTransactionWithRetry(rpc: KitRpcConnection, serializedTransaction: Uint8Array): Promise<string> {
+async function sendRawTransactionWithRetry(
+  rpc: KitRpcConnection,
+  serializedTransaction: Uint8Array,
+  traceContext: CoreCandyMachineDeployTraceContext = {}
+): Promise<string> {
   let attempt = 0;
   let delayMs = SEND_TX_RETRY_INITIAL_MS;
 
   while (attempt <= SEND_TX_MAX_RETRIES) {
     try {
-      return await sendRawTransactionWithKitRpc(rpc, serializedTransaction, {
+      emitCoreCandyMachineDeployLog("info", "tx_send_attempt", "Submitting signed transaction to RPC.", {
+        ...traceContext,
+        attempt: attempt + 1,
+        transactionByteLength: serializedTransaction.length
+      });
+
+      const signature = await sendRawTransactionWithKitRpc(rpc, serializedTransaction, {
         skipPreflight: true,
         maxRetries: 3
       });
+      emitCoreCandyMachineDeployLog("info", "tx_send_accepted", "RPC accepted signed transaction.", {
+        ...traceContext,
+        attempt: attempt + 1,
+        signature,
+        transactionByteLength: serializedTransaction.length
+      });
+
+      return signature;
     } catch (error) {
       if (isBlockhashExpiredRpcError(error)) {
+        emitCoreCandyMachineDeployLog("warn", "tx_send_blockhash_expired", "RPC rejected transaction because its blockhash expired.", {
+          ...traceContext,
+          attempt: attempt + 1,
+          transactionByteLength: serializedTransaction.length,
+          ...describeErrorForTrace(error)
+        });
         throw new CoreCandyMachineSubmitRecoverableError(
           "Transaction blockhash expired before submission. Prepare and sign fresh transactions.",
           "BLOCKHASH_EXPIRED"
@@ -687,9 +905,22 @@ async function sendRawTransactionWithRetry(rpc: KitRpcConnection, serializedTran
       }
 
       if (!isTransientRpcError(error) || attempt === SEND_TX_MAX_RETRIES) {
+        emitCoreCandyMachineDeployLog("error", "tx_send_error", "RPC transaction submit failed.", {
+          ...traceContext,
+          attempt: attempt + 1,
+          transactionByteLength: serializedTransaction.length,
+          ...describeErrorForTrace(error)
+        });
         throw error;
       }
 
+      emitCoreCandyMachineDeployLog("warn", "tx_send_retry_wait", "Transient RPC submit error; waiting before retry.", {
+        ...traceContext,
+        attempt: attempt + 1,
+        delayMs,
+        transactionByteLength: serializedTransaction.length,
+        ...describeErrorForTrace(error)
+      });
       await sleep(delayMs);
       delayMs = Math.min(SEND_TX_RETRY_MAX_MS, delayMs * 2);
       attempt += 1;
@@ -768,6 +999,9 @@ function validateMintPrepareInput(input: PrepareCandyMachineMintInput): PrepareC
 
 function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): SubmitSignedCandyMachineTransactionsInput {
   const expectedPayerPublicKey = assertPublicKeyString(input.expectedPayerPublicKey, "expectedPayerPublicKey");
+  const deployId = input.deployId === undefined
+    ? undefined
+    : assertNonEmptyString(input.deployId, "deployId", 128);
 
   if (!Array.isArray(input.signedTransactions) || input.signedTransactions.length === 0) {
     throw new CoreCandyMachineAdminInputError("signedTransactions must be a non-empty array.");
@@ -812,12 +1046,23 @@ function validateSubmitInput(input: SubmitSignedCandyMachineTransactionsInput): 
 
   return {
     expectedPayerPublicKey,
+    deployId,
     signedTransactions
   };
 }
 
 export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachineDeployInput): Promise<PreparedCandyMachineDeploy> {
   const input = validateDeployInput(rawInput);
+  const deployId = randomUUID();
+  const rpcHost = getRpcHost();
+
+  emitCoreCandyMachineDeployLog("info", "prepare_start", "Preparing Core Candy Machine deploy transactions.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    quantity: input.quantity
+  });
+
   const envPermanentFreezeAuthority = process.env.SQUADS_FREEZE_AUTHORITY?.trim();
   if (!envPermanentFreezeAuthority) {
     throw new CoreCandyMachineAdminInputError("SQUADS_FREEZE_AUTHORITY is required.");
@@ -836,6 +1081,14 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
   );
   const { umi, payerSigner } = createServerUmi(input.payerPublicKey);
   const latestBlockhash = await umi.rpc.getLatestBlockhash();
+  emitCoreCandyMachineDeployLog("info", "prepare_blockhash", "Fetched deploy transaction blockhash.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    blockhash: String(latestBlockhash.blockhash ?? ""),
+    lastValidBlockHeight: toSafeNumber(latestBlockhash.lastValidBlockHeight)
+  });
+
   const thirdPartySignerAddress = getPurchaseThirdPartySignerAddress();
   const usdcMintAddress = resolveUsdcMintAddress();
   const usdcRecipient = resolveUsdcPaymentRecipient();
@@ -849,12 +1102,28 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
 
   const collectionSigner = generateSigner(umi);
   const candyMachineSigner = generateSigner(umi);
-  const deployId = randomUUID();
   const transactions: PreparedCandyMachineTransaction[] = [];
   const configLinesPerTx = Math.min(
     MAX_CONFIG_LINES_PER_TX_SAFE,
     Math.max(MIN_CONFIG_LINES_PER_TX, determineConfigLinesPerTx(configLineOptimization.configLineSettings))
   );
+
+  emitCoreCandyMachineDeployLog("info", "prepare_accounts", "Generated deploy account signers.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    collectionAddress: String(collectionSigner.publicKey),
+    candyMachineAddress: String(candyMachineSigner.publicKey),
+    quantity: input.quantity
+  });
+
+  emitCoreCandyMachineDeployLog("info", "config_line_plan", "Built config-line optimization plan.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    quantity: input.quantity,
+    configLinesPerTx
+  });
 
   const createCollectionBuilder = createCollection(umi, {
     collection: collectionSigner,
@@ -881,12 +1150,23 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     ]
   });
 
-  transactions.push({
+  const createCollectionTransaction: PreparedCandyMachineTransaction = {
     kind: "create-collection",
     label: "Create Core Collection",
     serial: null,
     expectedAddress: collectionSigner.publicKey,
     transactionBase64: await serializeSignedBuilderTransaction(umi, createCollectionBuilder, latestBlockhash)
+  };
+  transactions.push(createCollectionTransaction);
+  emitCoreCandyMachineDeployLog("info", "transaction_prepared", "Prepared deploy transaction.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    index: transactions.length,
+    kind: createCollectionTransaction.kind,
+    label: createCollectionTransaction.label,
+    expectedAddress: createCollectionTransaction.expectedAddress,
+    ...buildPreparedTransactionTraceDiagnostics(createCollectionTransaction.transactionBase64)
   });
 
   const guardSet = {
@@ -913,12 +1193,23 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
     groups: []
   });
 
-  transactions.push({
+  const createCandyMachineTransaction: PreparedCandyMachineTransaction = {
     kind: "create-candy-machine",
     label: "Create Core Candy Machine + Guard",
     serial: null,
     expectedAddress: candyMachineSigner.publicKey,
     transactionBase64: await serializeSignedBuilderTransaction(umi, createCandyMachineBuilder, latestBlockhash)
+  };
+  transactions.push(createCandyMachineTransaction);
+  emitCoreCandyMachineDeployLog("info", "transaction_prepared", "Prepared deploy transaction.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    index: transactions.length,
+    kind: createCandyMachineTransaction.kind,
+    label: createCandyMachineTransaction.label,
+    expectedAddress: createCandyMachineTransaction.expectedAddress,
+    ...buildPreparedTransactionTraceDiagnostics(createCandyMachineTransaction.transactionBase64)
   });
 
   let offset = 0;
@@ -951,7 +1242,27 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
 
       try {
         const serialized = await serializeSignedBuilderTransaction(umi, addConfigLinesBuilder, latestBlockhash);
+        const serializedByteLength = fromBase64(serialized).length;
+        emitCoreCandyMachineDeployLog("info", "config_line_chunk_candidate", "Evaluated config-line transaction chunk.", {
+          deployId,
+          payerPublicKey: input.payerPublicKey,
+          rpcHost,
+          configLineOffset: offset,
+          configLineChunkCount: chunkCount,
+          low,
+          high,
+          transactionByteLength: serializedByteLength
+        });
+
         if (!isTransactionWithinSizeLimit(serialized)) {
+          emitCoreCandyMachineDeployLog("warn", "config_line_chunk_too_large", "Config-line chunk exceeded Solana transaction size limit.", {
+            deployId,
+            payerPublicKey: input.payerPublicKey,
+            rpcHost,
+            configLineOffset: offset,
+            configLineChunkCount: chunkCount,
+            transactionByteLength: serializedByteLength
+          });
           high = chunkCount - 1;
           continue;
         }
@@ -962,9 +1273,25 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
       } catch (error) {
         lastError = error;
         if (!isConfigLineChunkTooLargeError(error)) {
+          emitCoreCandyMachineDeployLog("error", "config_line_chunk_error", "Config-line chunk serialization failed.", {
+            deployId,
+            payerPublicKey: input.payerPublicKey,
+            rpcHost,
+            configLineOffset: offset,
+            configLineChunkCount: chunkCount,
+            ...describeErrorForTrace(error)
+          });
           throw error;
         }
 
+        emitCoreCandyMachineDeployLog("warn", "config_line_chunk_too_large", "Config-line chunk serialization was too large.", {
+          deployId,
+          payerPublicKey: input.payerPublicKey,
+          rpcHost,
+          configLineOffset: offset,
+          configLineChunkCount: chunkCount,
+          ...describeErrorForTrace(error)
+        });
         high = chunkCount - 1;
       }
     }
@@ -977,17 +1304,40 @@ export async function prepareCoreCandyMachineDeploy(rawInput: PrepareCandyMachin
       throw new Error("Could not serialize add-config-lines transaction.");
     }
 
-    transactions.push({
+    const addConfigLinesTransaction: PreparedCandyMachineTransaction = {
       kind: "add-config-lines",
       label: `Load config lines ${offset + 1}-${offset + selectedChunkCount}`,
       serial: null,
       expectedAddress: candyMachineSigner.publicKey,
       transactionBase64: serializedTransactionBase64
+    };
+    transactions.push(addConfigLinesTransaction);
+    emitCoreCandyMachineDeployLog("info", "transaction_prepared", "Prepared deploy transaction.", {
+      deployId,
+      payerPublicKey: input.payerPublicKey,
+      rpcHost,
+      index: transactions.length,
+      kind: addConfigLinesTransaction.kind,
+      label: addConfigLinesTransaction.label,
+      expectedAddress: addConfigLinesTransaction.expectedAddress,
+      configLineOffset: offset,
+      configLineChunkCount: selectedChunkCount,
+      ...buildPreparedTransactionTraceDiagnostics(addConfigLinesTransaction.transactionBase64)
     });
 
     chunkTarget = selectedChunkCount;
     offset += selectedChunkCount;
   }
+
+  emitCoreCandyMachineDeployLog("info", "prepare_complete", "Prepared Core Candy Machine deploy transaction set.", {
+    deployId,
+    payerPublicKey: input.payerPublicKey,
+    rpcHost,
+    quantity: input.quantity,
+    total: transactions.length,
+    collectionAddress: String(collectionSigner.publicKey),
+    candyMachineAddress: String(candyMachineSigner.publicKey)
+  });
 
   return {
     network: "devnet",
@@ -1172,9 +1522,20 @@ function assertPayerMatches(transaction: LegacyVersionedTransaction, expectedPay
   }
 }
 
-async function waitForConfirmedSignature(rpc: KitRpcConnection, signature: string): Promise<void> {
+async function waitForConfirmedSignature(
+  rpc: KitRpcConnection,
+  signature: string,
+  traceContext: CoreCandyMachineDeployTraceContext = {}
+): Promise<void> {
   const startedAt = Date.now();
   let rateLimitBackoffMs = RATE_LIMIT_BACKOFF_INITIAL_MS;
+  let confirmationAttempt = 1;
+
+  emitCoreCandyMachineDeployLog("info", "tx_confirm_start", "Started polling transaction confirmation.", {
+    ...traceContext,
+    signature,
+    elapsedMs: 0
+  });
 
   while (Date.now() - startedAt < SIGNATURE_CONFIRM_TIMEOUT_MS) {
     let status: Awaited<ReturnType<typeof getSignatureStatusWithKitRpc>>;
@@ -1183,39 +1544,111 @@ async function waitForConfirmedSignature(rpc: KitRpcConnection, signature: strin
       rateLimitBackoffMs = RATE_LIMIT_BACKOFF_INITIAL_MS;
     } catch (error) {
       if (!isTransientRpcError(error)) {
+        emitCoreCandyMachineDeployLog("error", "tx_confirm_error", "RPC signature status polling failed.", {
+          ...traceContext,
+          signature,
+          confirmationAttempt,
+          elapsedMs: Date.now() - startedAt,
+          ...describeErrorForTrace(error)
+        });
         throw error;
       }
 
+      emitCoreCandyMachineDeployLog("warn", "tx_confirm_transient_error", "Transient RPC signature status polling error.", {
+        ...traceContext,
+        signature,
+        confirmationAttempt,
+        elapsedMs: Date.now() - startedAt,
+        delayMs: rateLimitBackoffMs,
+        ...describeErrorForTrace(error)
+      });
       await sleep(rateLimitBackoffMs);
       rateLimitBackoffMs = Math.min(RATE_LIMIT_BACKOFF_MAX_MS, rateLimitBackoffMs * 2);
+      confirmationAttempt += 1;
       continue;
     }
 
+    emitCoreCandyMachineDeployLog("info", "tx_confirm_status", "Observed transaction signature status.", {
+      ...traceContext,
+      signature,
+      confirmationAttempt,
+      elapsedMs: Date.now() - startedAt,
+      searchTransactionHistory: false,
+      ...describeSignatureStatusForTrace(status)
+    });
+
     if (status?.err) {
+      emitCoreCandyMachineDeployLog("error", "tx_confirm_failed", "Transaction failed on-chain.", {
+        ...traceContext,
+        signature,
+        confirmationAttempt,
+        elapsedMs: Date.now() - startedAt,
+        ...describeSignatureStatusForTrace(status)
+      });
       throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
     }
 
     if (status?.confirmationStatus === "confirmed" || status?.confirmationStatus === "finalized") {
+      emitCoreCandyMachineDeployLog("info", "tx_confirm_ok", "Transaction reached required confirmation status.", {
+        ...traceContext,
+        signature,
+        confirmationAttempt,
+        elapsedMs: Date.now() - startedAt,
+        ...describeSignatureStatusForTrace(status)
+      });
       return;
     }
 
     await sleep(SIGNATURE_CONFIRM_POLL_MS);
+    confirmationAttempt += 1;
   }
 
   let finalStatus: Awaited<ReturnType<typeof getSignatureStatusWithKitRpc>> = null;
   try {
     finalStatus = await getSignatureStatusWithKitRpc(rpc, signature, { searchTransactionHistory: true });
+    emitCoreCandyMachineDeployLog("info", "tx_confirm_history_status", "Checked signature status with transaction history search.", {
+      ...traceContext,
+      signature,
+      elapsedMs: Date.now() - startedAt,
+      searchTransactionHistory: true,
+      ...describeSignatureStatusForTrace(finalStatus)
+    });
   } catch (error) {
     if (!isTransientRpcError(error)) {
+      emitCoreCandyMachineDeployLog("error", "tx_confirm_history_error", "Historical signature status lookup failed.", {
+        ...traceContext,
+        signature,
+        elapsedMs: Date.now() - startedAt,
+        ...describeErrorForTrace(error)
+      });
       throw error;
     }
+
+    emitCoreCandyMachineDeployLog("warn", "tx_confirm_history_transient_error", "Historical signature status lookup had a transient RPC error.", {
+      ...traceContext,
+      signature,
+      elapsedMs: Date.now() - startedAt,
+      ...describeErrorForTrace(error)
+    });
   }
 
   if (finalStatus?.err) {
+    emitCoreCandyMachineDeployLog("error", "tx_confirm_failed", "Transaction failed on-chain after historical lookup.", {
+      ...traceContext,
+      signature,
+      elapsedMs: Date.now() - startedAt,
+      ...describeSignatureStatusForTrace(finalStatus)
+    });
     throw new Error(`Transaction failed: ${JSON.stringify(finalStatus.err)}`);
   }
 
   if (finalStatus?.confirmationStatus === "confirmed" || finalStatus?.confirmationStatus === "finalized") {
+    emitCoreCandyMachineDeployLog("info", "tx_confirm_ok", "Transaction reached required confirmation status after historical lookup.", {
+      ...traceContext,
+      signature,
+      elapsedMs: Date.now() - startedAt,
+      ...describeSignatureStatusForTrace(finalStatus)
+    });
     return;
   }
 
@@ -1223,17 +1656,49 @@ async function waitForConfirmedSignature(rpc: KitRpcConnection, signature: strin
     const transaction = await getTransactionWithKitRpc(rpc, signature, "confirmed");
 
     if (transaction?.meta?.err) {
+      emitCoreCandyMachineDeployLog("error", "tx_confirm_transaction_failed", "Fetched transaction contains on-chain error metadata.", {
+        ...traceContext,
+        signature,
+        elapsedMs: Date.now() - startedAt,
+        hasErr: true,
+        err: JSON.stringify(transaction.meta.err).slice(0, 220)
+      });
       throw new Error(`Transaction failed: ${JSON.stringify(transaction.meta.err)}`);
     }
 
     if (transaction) {
+      emitCoreCandyMachineDeployLog("info", "tx_confirm_transaction_found", "Fetched confirmed transaction after status timeout.", {
+        ...traceContext,
+        signature,
+        elapsedMs: Date.now() - startedAt
+      });
       return;
     }
   } catch (error) {
     if (!isTransientRpcError(error)) {
+      emitCoreCandyMachineDeployLog("error", "tx_confirm_transaction_lookup_error", "Confirmed transaction lookup failed.", {
+        ...traceContext,
+        signature,
+        elapsedMs: Date.now() - startedAt,
+        ...describeErrorForTrace(error)
+      });
       throw error;
     }
+
+    emitCoreCandyMachineDeployLog("warn", "tx_confirm_tx_lookup_transient", "Confirmed transaction lookup had a transient RPC error.", {
+      ...traceContext,
+      signature,
+      elapsedMs: Date.now() - startedAt,
+      ...describeErrorForTrace(error)
+    });
   }
+
+  emitCoreCandyMachineDeployLog("warn", "tx_confirm_timeout", "Timed out waiting for transaction confirmation.", {
+    ...traceContext,
+    signature,
+    elapsedMs: Date.now() - startedAt,
+    errorCode: "CONFIRMATION_TIMEOUT"
+  });
 
   throw new CoreCandyMachineSubmitRecoverableError(
     `Timed out waiting for signature confirmation: ${signature}. The network may still confirm it; verify the signature and retry only pending transactions.`,
@@ -1244,25 +1709,75 @@ async function waitForConfirmedSignature(rpc: KitRpcConnection, signature: strin
 
 export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitSignedCandyMachineTransactionsInput): Promise<SubmittedCandyMachineTransaction[]> {
   const input = validateSubmitInput(rawInput);
-  const rpc = createKitRpcConnection(getSolanaRpcUrl());
+  const rpcUrl = getSolanaRpcUrl();
+  const rpcHost = getRpcHost();
+  const rpc = createKitRpcConnection(rpcUrl);
   const results: SubmittedCandyMachineTransaction[] = [];
-  const deferredConfirmations: string[] = [];
+  const deferredConfirmations: Array<{
+    signature: string;
+    context: CoreCandyMachineDeployTraceContext;
+  }> = [];
+
+  emitCoreCandyMachineDeployLog("info", "submit_start", "Submitting signed Core Candy Machine transaction set.", {
+    deployId: input.deployId ?? null,
+    payerPublicKey: input.expectedPayerPublicKey,
+    rpcHost,
+    total: input.signedTransactions.length
+  });
 
   for (const [index, signed] of input.signedTransactions.entries()) {
+    const traceContext: CoreCandyMachineDeployTraceContext = {
+      deployId: input.deployId ?? null,
+      payerPublicKey: input.expectedPayerPublicKey,
+      rpcHost,
+      index: index + 1,
+      total: input.signedTransactions.length,
+      kind: signed.kind,
+      serial: signed.serial,
+      expectedAddress: signed.expectedAddress
+    };
+
     try {
+      emitCoreCandyMachineDeployLog("info", "tx_parse_start", "Parsing signed transaction payload.", traceContext);
       const transaction = parseSignedTransaction(signed.transactionBase64);
       assertPayerMatches(transaction, input.expectedPayerPublicKey);
       const serializedTransaction = serializeLegacyVersionedTransaction(transaction);
+      const transactionDiagnostics = buildTransactionTraceDiagnostics(transaction, serializedTransaction);
 
-      const signature = await sendRawTransactionWithRetry(rpc, serializedTransaction);
+      emitCoreCandyMachineDeployLog("info", "tx_parsed", "Parsed and validated signed transaction payload.", {
+        ...traceContext,
+        ...transactionDiagnostics
+      });
+
+      const signature = await sendRawTransactionWithRetry(rpc, serializedTransaction, {
+        ...traceContext,
+        ...transactionDiagnostics
+      });
       const mustConfirmImmediately = signed.kind === "create-collection"
         || signed.kind === "create-candy-machine"
         || signed.kind === "mint";
 
+      emitCoreCandyMachineDeployLog("info", "tx_confirmation_strategy", "Selected transaction confirmation strategy.", {
+        ...traceContext,
+        signature,
+        confirmationMode: mustConfirmImmediately ? "immediate" : "deferred"
+      });
+
       if (mustConfirmImmediately) {
-        await waitForConfirmedSignature(rpc, signature);
+        await waitForConfirmedSignature(rpc, signature, {
+          ...traceContext,
+          signature,
+          confirmationMode: "immediate"
+        });
       } else {
-        deferredConfirmations.push(signature);
+        deferredConfirmations.push({
+          signature,
+          context: {
+            ...traceContext,
+            signature,
+            confirmationMode: "deferred"
+          }
+        });
       }
 
       results.push({
@@ -1272,6 +1787,11 @@ export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitS
         signature
       });
     } catch (error) {
+      emitCoreCandyMachineDeployLog("error", "tx_error", "Transaction submit flow failed.", {
+        ...traceContext,
+        ...describeErrorForTrace(error)
+      });
+
       if (isCoreCandyMachineSubmitRecoverableError(error)) {
         throw new CoreCandyMachineSubmitRecoverableError(
           `${error.message} Failed on transaction ${index + 1}/${input.signedTransactions.length}.`,
@@ -1284,9 +1804,27 @@ export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitS
     }
   }
 
-  for (const signature of deferredConfirmations) {
-    await waitForConfirmedSignature(rpc, signature);
+  emitCoreCandyMachineDeployLog("info", "deferred_confirm_start", "Starting deferred transaction confirmation phase.", {
+    deployId: input.deployId ?? null,
+    payerPublicKey: input.expectedPayerPublicKey,
+    rpcHost,
+    total: deferredConfirmations.length
+  });
+
+  for (const [deferredIndex, deferred] of deferredConfirmations.entries()) {
+    await waitForConfirmedSignature(rpc, deferred.signature, {
+      ...deferred.context,
+      index: deferredIndex + 1,
+      total: deferredConfirmations.length
+    });
   }
+
+  emitCoreCandyMachineDeployLog("info", "submit_complete", "Submitted and confirmed Core Candy Machine transaction set.", {
+    deployId: input.deployId ?? null,
+    payerPublicKey: input.expectedPayerPublicKey,
+    rpcHost,
+    total: input.signedTransactions.length
+  });
 
   return results;
 }

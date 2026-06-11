@@ -48,7 +48,7 @@ const ADMIN_NAVIGATION_DEFINITIONS: AdminNavigationSectionDefinition[] = [
       { label: { en: "Sales", es: "Ventas", pt: "Vendas" }, route: "/admin/sales", icon: "VE" },
       { label: { en: "Notifications", es: "Notificaciones", pt: "Notificacoes" }, route: "/admin/notifications", icon: "NT" },
       { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", icon: "TE", releaseControlled: true },
-      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "DI", releaseControlled: true },
+      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "DI" },
       { label: { en: "Monitoring", es: "Monitoreo", pt: "Monitoramento" }, route: "/admin/monitoring", icon: "MO", badgeCount: 3 }
     ]
   },

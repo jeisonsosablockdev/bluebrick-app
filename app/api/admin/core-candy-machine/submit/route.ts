@@ -26,6 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const submitted = await submitCoreCandyMachineSignedTransactions({
       expectedPayerPublicKey: requestRole.pubkey,
+      deployId: body.deployId,
       signedTransactions: body.signedTransactions
     });
 

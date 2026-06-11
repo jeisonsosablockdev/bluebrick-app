@@ -21,17 +21,17 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-05-02T06:24:38.370Z
+Last Generated: 2026-06-11T00:00:00.000Z
 
 ## Snapshot
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 1 |
+| Observations | 6 |
 | Proposals | 0 |
-| Reports | 2 |
+| Reports | 3 |
 | Archived | 0 |
-| Observed status | 3 |
+| Observed status | 9 |
 | Triaged status | 0 |
 | Promoted status | 0 |
 | Archived status | 0 |
@@ -41,6 +41,11 @@ Last Generated: 2026-05-02T06:24:38.370Z
 | ID | Status | Target | File | Source |
 | --- | --- | --- | --- | --- |
 | KNOW-2026-05-001 | observed | guide | [Governance summaries must defer to canonical policy and enforcement](docs/knowledge/inbox/2026-05/KNOW-2026-05-001-governance-summary-defers-to-canonical-policy.md) | BRI-143 |
+| KNOW-2026-06-001 | observed | guide | [Admin Candy Machine module worklog](docs/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md) | n/a |
+| KNOW-2026-06-002 | observed | guide | [Candy Machine deploy iteration 2026-06-07](docs/knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md) | n/a |
+| KNOW-2026-06-003 | observed | guide | [Candy Machine deploy current system branch](docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md) | BRI-176 |
+| KNOW-2026-06-004 | observed | guide | [Stake, distribution, treasury, claim, and traceability draft](docs/knowledge/inbox/2026-06/KNOW-2026-06-004-stake-distribution-traceability-draft.md) | BRI-5, BRI-6, BRI-7, BRI-8 |
+| KNOW-2026-06-005 | observed | guide | [Candy Machine deploy iteration 2026-06-11](docs/knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md) | BRI-173 |
 
 ## Promotion Proposals
 
@@ -51,6 +56,7 @@ _No items yet._
 | ID | Status | Target | File | Source |
 | --- | --- | --- | --- | --- |
 | governance-drift-2026-05-02 | observed | none | [governance-drift-2026-05-02](docs/knowledge/reports/governance-drift-2026-05-02.md) | n/a |
+| governance-drift-2026-06-07 | observed | none | [governance-drift-2026-06-07](docs/knowledge/reports/governance-drift-2026-06-07.md) | n/a |
 | recent-changes-2026-05-02 | observed | none | [recent-changes-2026-05-02](docs/knowledge/reports/recent-changes-2026-05-02.md) | n/a |
 
 ## Archive

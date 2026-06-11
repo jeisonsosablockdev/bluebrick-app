@@ -85,9 +85,16 @@ describe("knowledge system", () => {
     await mkdir(path.join(repoDir, "docs", "governance"), { recursive: true });
     await mkdir(path.join(repoDir, "docs", "guides"), { recursive: true });
     await mkdir(path.join(repoDir, "docs", "rfcs", "templates"), { recursive: true });
+    await mkdir(path.join(repoDir, ".codex", "agents"), { recursive: true });
+    await mkdir(path.join(repoDir, ".github", "workflows"), { recursive: true });
     await mkdir(path.join(repoDir, "scripts", "ci"), { recursive: true });
 
     await writeFile(path.join(repoDir, "AGENTS.md"), "summary without references\n", "utf8");
+    await writeFile(
+      path.join(repoDir, ".codex", "agents", "docs.toml"),
+      'system_prompt = "docs without Socratic skill"\n',
+      "utf8"
+    );
     await writeFile(
       path.join(repoDir, "docs", "governance", "documentation-policy.md"),
       "Allowed status values:\n- `draft`\n- `approved`\n",
@@ -101,6 +108,24 @@ describe("knowledge system", () => {
     await writeFile(
       path.join(repoDir, "docs", "guides", "gitflow-pr-structure.md"),
       "guide without ssot reference\n",
+      "utf8"
+    );
+    await writeFile(
+      path.join(repoDir, "docs", "governance", "pr-policy-source-of-truth.json"),
+      JSON.stringify({
+        requiredPrSections: ["issue"],
+        patterns: {}
+      }),
+      "utf8"
+    );
+    await writeFile(
+      path.join(repoDir, ".github", "pull_request_template.md"),
+      "## Summary\n",
+      "utf8"
+    );
+    await writeFile(
+      path.join(repoDir, ".github", "workflows", "pr-governance-develop.yml"),
+      "name: missing human acceptance\n",
       "utf8"
     );
     await writeFile(

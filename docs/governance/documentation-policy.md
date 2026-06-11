@@ -8,8 +8,6 @@ Documentation must be created and updated alongside development.
 
 No feature is complete without documentation.
 
-Documentation comes before branching. The human-plus-agent brief establishes the issue type, scope, open questions, and branch family first; only then do we create the parent work branch and any SPEC branches.
-
 Canonical precedence and drift control:
 	•	This file is the canonical documentation policy for the repository.
 	•	`AGENTS.md`, guides, helper scripts, and workflow summaries may reference this policy, but must not redefine it with conflicting or looser rules.
@@ -75,19 +73,16 @@ If documentation is missing or outdated → task incomplete.
 
 Artifact-First Rule
 
-For non-trivial issue-type-driven work:
+For non-trivial `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work:
 	•	Implementation must not start until the governing artifact exists locally.
 	•	The artifact is an input to planning, slicing, review, QA, and Linear sync.
 	•	If the solution artifact is not decision-complete, implementation remains blocked.
-	•	One parent Linear issue owns the full initiative; SPECs are documented inside that same issue instead of creating extra Linear issues by default.
 
-For feature, security, nft, refactor, and epic planning, the canonical track is:
+For new feature initiatives, the required artifact pair is:
 	•	Problem artifact: `/docs/features/feature-<slug>.md`
 	•	Solution artifact: `/docs/features/feature-<slug>-implementation.md`
 
-Epic planning remains on the feature-note track unless the epic explicitly uses an RFC workflow, in which case the RFC directory becomes the governing source for the decision record.
-
-For fix, bugfix, and hotfix initiatives, the required artifact pair is:
+For new fix initiatives, the required artifact pair is:
 	•	Problem artifact: `/docs/fixes/fix-<slug>.md`
 	•	Solution artifact: `/docs/fixes/fix-<slug>-implementation.md`
 
@@ -110,41 +105,39 @@ Decision-complete rule:
 	•	If a material decision is missing from the solution artifact, implementation is blocked.
 	•	The missing decision must be documented and resolved before code slices open.
 
-SPEC rule:
-	•	For multi-SPEC initiatives, the first SPEC is mandatory and comes before delivery SPECs.
-	•	The first SPEC owns the artifact pair, the atomic SPEC map, the test-plan-first contract, and RFC creation or update when RFC applies.
+Spec slice rule:
+	•	For multi-slice initiatives, the spec slice is mandatory and comes before delivery slices.
+	•	The spec slice owns the artifact pair, the atomic slice map, the test-plan-first contract, and RFC creation or update when RFC applies.
+	•	The spec slice is the documentation slice and must use `explain-like-socrates` before finalizing the artifact pair, assumptions, slice map, and test-plan-first contract.
+	•	Delivery slices remain blocked until the Socratic planning result is reflected in the solution artifact.
 
 Linear sync rule:
 	•	Linear is updated from the artifact.
 	•	The artifact is not reverse-generated from comments or memory.
+	•	Linear records branch and acceptance traceability; it is not a technical merge destination.
 
 ⸻
 
-Issue-Type Artifacts For Small/Iterative Work
+Feature And Fix Artifacts For Small/Iterative Work
 
 For branch types:
 	•	`feature/*`
-	•	`bugfix/*`
 	•	`fix/*`
-	•	`hotfix/*`
-	•	`epic/*`
-	•	`security/*`
 	•	`nft/*`
 	•	`refactor/*`
 
 If changes touch product code (`/app`, `/programs`, `/packages`, `/lib`, `/tests`, `/e2e`), the PR must update the required branch-family artifact path:
-	•	`feature/*`, `epic/*`, `security/*`, `nft/*`, `refactor/*`:
+	•	`feature/*`, `security/*`, `nft/*`, `refactor/*`:
 	•	`/docs/features/*.md`
-	•	`fix/*`, `bugfix/*`, `hotfix/*`:
+	•	`fix/*`:
 	•	`/docs/fixes/fix-*.md`
 	•	`/docs/fixes/fix-*-implementation.md`
-	•	Multi-SPEC issue-type-driven flows should keep one accumulated parent artifact pair and update it incrementally across SPECs.
 
 Enforcement:
-	•	If qualifying `feature/*`, `epic/*`, `security/*`, `nft/*`, or `refactor/*` changes update no `/docs/features/*.md` file, documentation is considered incomplete.
-	•	If qualifying `fix/*`, `bugfix/*`, or `hotfix/*` changes update no problem artifact or no matching solution artifact under `/docs/fixes/`, documentation is considered incomplete.
-	•	For single-issue SPEC flows, multiple SPEC branches may update the same parent feature-note file incrementally instead of creating one near-duplicate file per SPEC.
-	•	Prefer one accumulated parent artifact pair per parent Linear issue when the SPECs belong to the same initiative.
+	•	If qualifying `feature/*`, `security/*`, `nft/*`, or `refactor/*` changes update no `/docs/features/*.md` file, documentation is considered incomplete.
+	•	If qualifying `fix/*` changes update no problem artifact or no matching solution artifact under `/docs/fixes/`, documentation is considered incomplete.
+	•	For single-issue slice flows, multiple slice branches may update the same parent feature-note file incrementally instead of creating one near-duplicate file per slice.
+	•	Prefer one accumulated parent artifact pair per parent Linear issue when the slices belong to the same initiative.
 
 ⸻
 
@@ -175,7 +168,7 @@ Allowed status values:
 Enforcement:
 	•	Final implementation code must not be produced until `Decision = approved`.
 	•	Each RFC must include traceability links to related issue(s), PR(s), and final commit hash(es).
-	•	If the initiative uses the SPEC model, the RFC must be created or updated in that first SPEC, not invented later in delivery SPECs.
+	•	If the initiative uses the spec-slice model, the RFC must be created or updated in that spec slice, not invented later in delivery slices.
 	•	If naming convention or required sections are missing, documentation is considered incomplete.
 	•	`docs/rfcs/000-manifest.md` is intentionally blank as a bootstrap scaffold and is excluded from story/epic RFC content requirements.
 
