@@ -1,0 +1,76 @@
+name: Block Direct Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  enforce-merge-path:
+    name: Enforce gh CLI / UI Merge Path
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Verify merge came via gh CLI / UI (not direct API)
+        run: |
+          set -euo pipefail
+          MERGE_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          echo "Verifying merge path for PR #$PR_NUMBER"
+          echo "Merge commit: $MERGE_SHA"
+          echo "Base commit:  $BASE_SHA"
+          
+          # Get parents of merge commit
+          PARENTS=$(git log --format=%P -n 1 "$MERGE_SHA" 2>/dev/null || echo "")
+          echo "Merge parents: $PARENTS"
+          
+          # For squash merge via gh CLI / UI, the merge commit should have the base as one parent
+          # Direct API merge (PUT /pulls/{num}/merge) creates a merge commit without base as parent
+          # or creates a commit that doesn't follow the expected pattern
+          
+          if [[ -z "$PARENTS" ]]; then
+            echo "❌ Cannot determine merge commit parents"
+            exit 1
+          fi
+          
+          # Check if base SHA is in parents (normal squash merge)
+          if [[ "$PARENTS" =~ "$BASE_SHA" ]]; then
+            echo "✅ Normal merge path detected (base SHA in parents)"
+            exit 0
+          fi
+          
+          # Additional check: verify the merge was done via expected method
+          # gh CLI / UI squash merge creates a commit with the PR changes on top of base
+          # The merge commit should have exactly 1 parent (the base) for squash
+          PARENT_COUNT=$(echo "$PARENTS" | wc -w)
+          if [[ "$PARENT_COUNT" -eq 1 && "$PARENTS" == "$BASE_SHA" ]]; then
+            echo "✅ Squash merge via gh CLI / UI confirmed"
+            exit 0
+          fi
+          
+          echo "❌ Suspicious merge pattern detected"
+          echo "   Expected: squash merge via 'gh pr merge' or GitHub UI"
+          echo "   Detected: merge commit parents don't match expected pattern"
+          echo "   This may indicate direct API merge (PUT /pulls/{num}/merge) which bypasses CI checks"
+          exit 1
+
+      - name: Comment on PR if merge path invalid
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.pull_request.number }},
+              body: '⚠️ **Merge Path Violation**\n\nThis PR was merged via a method that bypasses required CI checks.\n\n**Required:** Merge via `gh pr merge --squash` or GitHub UI "Squash and merge" button.\n\n**Not Allowed:** Direct API merge (`PUT /pulls/{number}/merge`) or local merge + push.\n\nPlease reopen and merge correctly, or revert and follow the canonical flow.'
+            })

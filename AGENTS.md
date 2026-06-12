@@ -66,3 +66,14 @@
 - Frontend/auth critical flows: Playwright passed; Synpress passed when wallet/auth applies; MCP/browser evidence captured when browser-critical
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation, fetched account state, no simulation-only proof
 - Final `reviewer` pass finds no unresolved blocking issues
+
+## 🚫 MANDATORY BOOTSTRAP SEQUENCE
+
+**BEFORE any planning or implementation:**
+
+1. **ALWAYS** run `npm run task:init` (or `bash scripts/agent-bootstrap.sh`)
+2. **ALWAYS** read the matching `.codex/workflows/*.md` for detected scope
+3. **ALWAYS** verify preconditions in `AGENTS.md` Entry Rules
+4. **NEVER** skip to implementation without planner → workflow activation
+
+**If you bypass this, STOP and restart from step 1.**
