@@ -24,14 +24,15 @@
 ## Execution Sequence
 | Step | Owner | Goal | Gate |
 | --- | --- | --- | --- |
-| 1 | `planner` | Detect NFT scope and layer this workflow over the active domain workflows | NFT-specific evidence and docs are identified |
-| 2 | `nft` | Define the mint, metadata, royalty, collection, and authority invariants | Asset rules are explicit before implementation |
-| 3 | `solana` | Align runtime, PDA, and devnet execution details | On-chain execution plan matches the NFT model |
-| 4 | `security` | Review privileged authorities and mutation paths | Blocking authority or ownership risks are surfaced early |
-| 5 | `nft` + `solana` | Implement the smallest safe change with tests first | Relevant tests lead the implementation |
-| 6 | `docs` | Sync `docs/nft-spec.md`, `docs/devnet-proof.md`, and traceability docs when required | Canonical NFT documentation is current |
-| 7 | `qa` | Verify the mint or metadata flow with repo gates and targeted checks | Required validation and evidence are captured |
-| 8 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
+| 1 | `planner` | Detect NFT scope and check if complexity requires reasoning-cycle first | If architecture-new or multi-slice, activate reasoning-cycle before step 2 |
+| 2 | `reasoning` | **SELECT/ADAPT**: Define problem type, list mint authority, metadata URI, royalty bps, collection verification status | Problem classification explicit, domain adaptation for NFT documented |
+| 3 | `nft` | Define the mint, metadata, royalty, collection, and authority invariants based on reasoning output | Asset rules are explicit before implementation |
+| 4 | `solana` | Align runtime, PDA, and devnet execution details | On-chain execution plan matches the NFT model |
+| 5 | `security` | Review privileged authorities and mutation paths | Blocking authority or ownership risks are surfaced early |
+| 6 | `nft` + `solana` | Implement the smallest safe change with tests first | Relevant tests lead the implementation |
+| 7 | `docs` | Sync `docs/nft-spec.md`, `docs/devnet-proof.md`, and traceability docs when required | Canonical NFT documentation is current |
+| 8 | `qa` | Verify the mint or metadata flow with repo gates and targeted checks | Required validation and evidence are captured |
+| 9 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
 - No NFT task closes without real mint or metadata evidence when acceptance depends on on-chain behavior.
