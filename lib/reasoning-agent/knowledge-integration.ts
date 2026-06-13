@@ -84,15 +84,15 @@ id: ${frontmatter.id}
 title: "${frontmatter.title}"
 status: ${frontmatter.status}
 kind: ${frontmatter.kind}
-promotion_target: ${frontmatter.promotionTarget}
+promotion_target: ${frontmatter.promotion_target}
 scope: ${frontmatter.scope}
-filePath: ${frontmatter.file_path}
+file_path: ${frontmatter.file_path}
 owner: ${frontmatter.owner}
 created_at: ${frontmatter.created_at}
 updated_at: ${frontmatter.updated_at}
-source_issue: ${frontmatter.sourceIssue}
-source_feature: ${frontmatter.sourceFeature}
-enforcement_candidate: ${frontmatter.enforcementCandidate}
+source_issue: ${frontmatter.source_issue}
+source_feature: ${frontmatter.source_feature}
+enforcement_candidate: ${frontmatter.enforcement_candidate}
 ---
 
 # Reasoning Plan: ${task}
