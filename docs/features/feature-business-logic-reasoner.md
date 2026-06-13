@@ -83,7 +83,7 @@ A **Universal Self-Discover Reasoning Agent** (implementing Zhou et al., Google 
 
 ## Open Questions (Resolved via `explain-like-socrates`)
 
-1. **Module Library**: ✅ **16 canonical modules** — domain logic via ADAPT stage (not new modules)
+1. **Module Library**: ✅ **16 canonical modules** — domain logic via ADAPT stage
 2. **LLM Provider**: ✅ **Qwen 3.7 Plus via OpenRouter** — reasoning model with thinking tokens
 3. **Test Strategy**: ✅ **Solana MCP + solana-dev skill** — devnet proofs validate reasoning outputs
 4. **Human Review Iterations**: ✅ **No limit** — iterate until reasoning trace is sound
@@ -96,8 +96,8 @@ A **Universal Self-Discover Reasoning Agent** (implementing Zhou et al., Google 
 - [x] Solution artifact created with architecture, contracts, integration points
 - [x] S01 spec slice completes `explain-like-socrates` pass
 - [x] All open questions resolved via Socratic pass
-- [ ] S02: Universal core engine implements SELECT/ADAPT/IMPLEMENT/SOLVE with structured output
-- [ ] S03: Optional domain adapters (Solana, NFT, Compliance) for ADAPT stage
-- [ ] S04: CLI invocation + workflow integration
-- [ ] S05: Knowledge system integration (reasoning traces as knowledge entries)
-- [ ] S06: Validation gates + Human Acceptance
+- [x] S02: Universal core engine implements SELECT/ADAPT/IMPLEMENT/SOLVE with structured output
+- [x] S03: Optional domain adapters (Solana, NFT, Compliance) for ADAPT stage
+- [x] S04: CLI invocation + workflow integration
+- [x] S05: Knowledge system integration (reasoning traces as knowledge entries)
+- [x] S06: Validation gates + Human Acceptance

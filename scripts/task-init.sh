@@ -10,16 +10,22 @@ usage() {
   cat <<'USAGE'
 Uso:
   ./scripts/task-init.sh [--ask] [--no-fetch] [--base <branch>] [args git-start]
+  ./scripts/task-init.sh --reasoning-agent "task description" [--domain <name>] [--output <mode>]
 
 Ejemplos:
   ./scripts/task-init.sh --ask
   ./scripts/task-init.sh app initial-ui
   ./scripts/task-init.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
+  ./scripts/task-init.sh --reasoning-agent "Design PDA hierarchy for escrow" --domain solana
+  ./scripts/task-init.sh --reasoning-agent "Create threat model for CPI" --domain security --output trace
 
 Opciones del bootstrap:
-  --ask         Fuerza el pase socrático de clarificación antes de crear la rama
-  --no-fetch    Evita refrescar remotos durante el preflight
-  --base <ref>   Base branch para el preflight y la rama (default: develop)
+  --ask              Fuerza el pase socrático de clarificación antes de crear la rama
+  --no-fetch         Evita refrescar remotos durante el preflight
+  --base <ref>       Base branch para el preflight y la rama (default: develop)
+  --reasoning-agent  Invoca el agente Self-Discover para generar feature/fix specs
+  --domain <name>    Dominio para el agente (solana, nft, compliance, security, etc.)
+  --output <mode>    Modo de salida: trace, answer, both (default: both)
 
 El resto de argumentos se pasan a ./scripts/git-start.sh.
 USAGE
@@ -116,6 +122,9 @@ BRANCH_MODE="single"
 ISSUE_KEY=""
 SLICE_ID=""
 SLICE_SLUG=""
+REASONING_AGENT_TASK=""
+REASONING_AGENT_DOMAIN=""
+REASONING_AGENT_OUTPUT="both"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -139,6 +148,18 @@ while [[ $# -gt 0 ]]; do
       FETCH_REMOTE=0
       shift
       ;;
+    --reasoning-agent)
+      REASONING_AGENT_TASK="$2"
+      shift 2
+      ;;
+    --domain)
+      REASONING_AGENT_DOMAIN="$2"
+      shift 2
+      ;;
+    --output)
+      REASONING_AGENT_OUTPUT="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -149,6 +170,33 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ -n "${REASONING_AGENT_TASK}" ]]; then
+  echo "== Reasoning Agent Invoked =="
+  echo "Task: ${REASONING_AGENT_TASK}"
+  echo "Domain: ${REASONING_AGENT_DOMAIN:-general}"
+  echo "Output: ${REASONING_AGENT_OUTPUT}"
+
+  if ! command -v npx &> /dev/null; then
+    echo "❌ npx not found. Install Node.js to use reasoning agent."
+    exit 1
+  fi
+
+  REASONING_ARGS=("--reasoning-agent" "${REASONING_AGENT_TASK}")
+  if [[ -n "${REASONING_AGENT_DOMAIN}" ]]; then
+    REASONING_ARGS+=("--domain" "${REASONING_AGENT_DOMAIN}")
+  fi
+  REASONING_ARGS+=("--output" "${REASONING_AGENT_OUTPUT}")
+
+  if ! npx tsx ./lib/reasoning-agent/cli.ts "${REASONING_ARGS[@]}"; then
+    echo "❌ Reasoning agent failed"
+    exit 1
+  fi
+
+  echo
+  echo "Reasoning complete. Use output to create feature/fix artifacts."
+  exit 0
+fi
 
 if [[ "${ASK_MODE}" == "auto" ]]; then
   if [[ -t 0 && "${#POSITIONAL[@]}" -lt 2 ]]; then

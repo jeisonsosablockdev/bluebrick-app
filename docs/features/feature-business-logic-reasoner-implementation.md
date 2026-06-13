@@ -86,7 +86,7 @@ interface ImplementOutput {
     description: string;           // References adapted module(s)
     expectedOutput: string;        // Concrete expected output
   }>;
-  finalAnswerFormat: string;       // e.g., "Markdown feature spec with frontmatter", "Mermaid diagram", "PlantUML diagram"
+  finalAnswerFormat: string;       // e.g., "Markdown feature spec with frontmatter"
 }
 ```
 
@@ -124,11 +124,11 @@ The **ADAPT stage** is where task-specific language lives. The 16 canonical modu
 | Slice | Type | Branch | Description | Workflow | Depends On |
 |-------|------|--------|-------------|----------|------------|
 | **S01** | spec/doc | `feature/shared-spec-architecture-bri-177-s01-spec-architecture` | **DONE** - Universal architecture, contracts, module library, ADAPT design, integration points | `frontend-cycle` + `docs` + `explain-like-socrates` | — |
-| **S02** | delivery | `feature/shared-core-engine-bri-177-s02-core-engine` | Core engine: SELECT/ADAPT/IMPLEMENT/SOLVE pipeline with structured output (Zod schemas), LLM provider abstraction — **domain-agnostic** | `frontend-cycle` + `reviewer` | S01 |
-| **S03** | delivery | `feature/shared-domain-adapters-bri-177-s03-domain-adapters` | **Optional helpers** for recurrent domains: Solana, NFT, Compliance. Pluggable `DomainAdapter` interface for ADAPT stage | `frontend-cycle` + `blockchain-cycle` | S01, S02 |
-| **S04** | delivery | `feature/shared-cli-invocation-bri-177-s04-cli-invocation` | CLI tool: `reasoning-agent "task" [--domain solana]` + library export; output modes; config | `frontend-cycle` | S01, S02 |
-| **S05** | delivery | `feature/shared-workflow-integration-bri-177-s05-workflow-integration` | Workflow hooks: `task-init.sh --reasoning-agent`, Linear slice planner, knowledge system (`reasoning-plan` kind) | `frontend-cycle` + `docs` | S01, S02, S04 |
-| **S06** | delivery | `feature/shared-validation-gates-bri-177-s06-validation-gates` | Validation gates: test-first pipeline, Solana MCP validation (for Solana tasks), human review workflow, `npm run validate` | `reviewer` + `qa` | S01-S05 |
+| **S02** | delivery | `feature/shared-core-engine-bri-177-s02-core-engine` | **DONE** - Core engine: SELECT/ADAPT/IMPLEMENT/SOLVE pipeline with structured output (Zod schemas), LLM provider abstraction — **domain-agnostic** | `frontend-cycle` + `reviewer` | S01 |
+| **S03** | delivery | `feature/shared-domain-adapters-bri-177-s03-domain-adapters` | **DONE** - **Optional helpers** for recurrent domains: Solana, NFT, Compliance. Pluggable `DomainAdapter` interface for ADAPT stage | `frontend-cycle` + `blockchain-cycle` | S01, S02 |
+| **S04** | delivery | `feature/shared-cli-invocation-bri-177-s04-cli-invocation` | **DONE** - CLI tool: `reasoning-agent "task" [--domain solana]` + library export; output modes; config | `frontend-cycle` | S01, S02 |
+| **S05** | delivery | `feature/shared-workflow-integration-bri-177-s05-workflow-integration` | **THIS SLICE** - Workflow hooks: `task-init.sh --reasoning-agent`, Linear slice planner integration, knowledge system (`reasoning-plan` kind) | `frontend-cycle` + `docs` | S01, S02, S04 |
+| **S06** | delivery | `feature/shared-validation-gates-bri-177-s06-validation-gates` | Validation gates: test-first pipeline, Solana MCP validation, human review workflow, `npm run validate` integration | `reviewer` + `qa` | S01-S05 |
 
 ## Integration Points
 
@@ -159,7 +159,7 @@ interface ReasoningPlanEntry extends KnowledgeEntry {
 ### 2. Task Bootstrap (`scripts/task-init.sh`)
 ```bash
 # New flag
-./scripts/task-init.sh --reasoning-agent "Design PDA hierarchy for escrow program"
+./scripts/task-init.sh --reasoning-agent "Design PDA hierarchy for escrow program" --domain solana
 
 # Behavior:
 # 1. Runs preflight
@@ -195,11 +195,10 @@ interface ReasoningPlanEntry extends KnowledgeEntry {
 - **No Side Effects**: Stages are pure functions (input → output)
 - **Testability**: Deterministic with mocked LLM; golden file tests for each stage
 
-### S03: Domain Adapters (Optional Helpers)
+### S03: Domain Adapters
 - **Strategy Pattern**: Domain adapters implement `DomainAdapter` interface
 - **Extensibility**: New domains (DeFi, Gaming) add adapter without modifying core
 - **Type Safety**: Domain-specific types (SolanaAccount, NFTMetadata, ComplianceGate)
-- **Opt-in**: Core agent functions without any adapters; ADAPT uses LLM knowledge if no adapter registered
 
 ### S04: CLI Invocation
 - **Command Pattern**: `reasoning-agent` delegates to agent service
@@ -294,7 +293,7 @@ lib/
 │   ├── adapters/
 │   │   ├── index.ts                # DomainAdapter interface (optional)
 │   │   ├── solana-adapter.ts       # Solana domain adaptation (optional helper)
-│   │   ├── nft-adapter.ts          # NFT domain adaptation (optional helper)
+│   │   ├── collectible-domain-adapter.ts  # NFT/Metaplex (optional helper)
 │   │   └── compliance-adapter.ts   # Compliance domain adaptation (optional helper)
 │   ├── llm/
 │   │   ├── index.ts                # ReasoningLLM interface
@@ -315,7 +314,7 @@ tests/
 │   │   └── solve.test.ts
 │   ├── adapters/
 │   │   ├── solana-adapter.test.ts
-│   │   ├── nft-adapter.test.ts
+│   │   ├── collectible-domain-adapter.test.ts
 │   │   └── compliance-adapter.test.ts
 │   ├── integration/
 │   │   ├── knowledge-index.test.ts
