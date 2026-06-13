@@ -109,6 +109,8 @@ export const ReasoningResultSchema = z.object({
 
 export type ReasoningResult = z.infer<typeof ReasoningResultSchema>;
 
+export type ReasoningTrace = z.infer<typeof ReasoningResultSchema> extends { trace: infer T } ? T : never;
+
 export interface ReasoningLLM {
   invokeStructured<T extends z.ZodTypeAny>(
     schema: T,
