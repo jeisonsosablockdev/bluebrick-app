@@ -1,11 +1,11 @@
 import { ReasoningLLM } from "./llm";
-import { createLLMProvider } from "./llm";
 import { getModuleLibrary } from "./module-library";
 import { selectStage } from "./stages/select";
 import { adaptStage } from "./stages/adapt";
 import { implementStage } from "./stages/implement";
 import { solveStage } from "./stages/solve";
 import { getAdapterByName, NULL_ADAPTER, DomainAdapter } from "./adapters";
+import { createProvider, ProviderConfig, detectProviderFromEnv } from "./llm/provider-factory";
 import {
   ReasoningAgentOptions,
   ReasoningAgentOptionsSchema,
@@ -18,30 +18,23 @@ import {
 } from "./types";
 
 export interface ReasoningAgentConfig {
-  apiKey: string;
-  baseUrl?: string;
-  defaultModel?: string;
-  defaultTemperature?: number;
-  defaultMaxTokens?: number;
+  provider?: ProviderConfig;
+  defaultOptions?: Partial<ReasoningAgentOptions>;
 }
 
 export class ReasoningAgent {
   private llm: ReasoningLLM;
   private defaultOptions: ReasoningAgentOptions;
 
-  constructor(config: ReasoningAgentConfig) {
-    this.llm = createLLMProvider({
-      apiKey: config.apiKey,
-      baseUrl: config.baseUrl,
-      model: config.defaultModel ?? "qwen/qwen3-235b-a22b-thinking-2507-fast",
-      temperature: config.defaultTemperature ?? 0.4,
-      maxTokens: config.defaultMaxTokens ?? 8192,
-    });
+  constructor(config: ReasoningAgentConfig = {}) {
+    const providerConfig = config.provider ?? detectProviderFromEnv();
+    this.llm = createProvider(providerConfig);
 
     this.defaultOptions = ReasoningAgentOptionsSchema.parse({
-      model: config.defaultModel ?? "qwen/qwen3-235b-a22b-thinking-2507-fast",
-      temperature: config.defaultTemperature ?? 0.4,
-      maxTokens: config.defaultMaxTokens ?? 8192,
+      model: providerConfig.model ?? "qwen/qwen3-235b-a22b-thinking-2507-fast",
+      temperature: providerConfig.temperature ?? 0.4,
+      maxTokens: providerConfig.maxTokens ?? 8192,
+      ...config.defaultOptions,
     });
   }
 
@@ -111,3 +104,5 @@ export type { ModuleLibrary } from "./module-library";
 export { getModuleLibrary } from "./module-library";
 export type { DomainAdapter } from "./adapters";
 export { getAdapterByName, NULL_ADAPTER } from "./adapters";
+export type { ProviderConfig, ProviderType } from "./llm/provider-factory";
+export { createProvider, detectProviderFromEnv } from "./llm/provider-factory";

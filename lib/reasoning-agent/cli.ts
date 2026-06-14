@@ -1,24 +1,35 @@
 #!/usr/bin/env node
 import { ReasoningAgent } from "./index";
 import { ReasoningAgentOptions } from "./types";
+import { ProviderConfig, ProviderType, detectProviderFromEnv } from "./llm/provider-factory";
 
 function printUsage() {
   console.log(`
 Usage: reasoning-agent "task" [options]
 
 Options:
-  --domain <name>        Domain context (solana, nft, compliance, or custom)
-  --model <name>         LLM model (default: qwen/qwen3-235b-a22b-thinking-2507-fast)
+  --domain <name>        Domain context (solana, nft, compliance, security, architecture, debugging, or custom)
+  --provider <type>      LLM provider: openrouter, anthropic, openai, ollama, local (default: auto-detect from env)
+  --model <name>         LLM model (provider-specific defaults)
   --temperature <num>    Temperature 0-1 (default: 0.4)
   --max-tokens <num>     Max tokens (default: 8192)
   --output <mode>        Output mode: trace, answer, both (default: both)
-  --api-key <key>        OpenRouter API key (or set OPENROUTER_API_KEY env)
+  --api-key <key>        API key for the selected provider
+  --base-url <url>       Custom base URL for provider (OpenRouter, Ollama, etc.)
   --help                 Show this help
+
+Environment Variables (auto-detected):
+  OPENROUTER_API_KEY     OpenRouter API key
+  ANTHROPIC_API_KEY      Anthropic API key
+  OPENAI_API_KEY         OpenAI API key
+  OLLAMA_BASE_URL        Ollama base URL (default: http://localhost:11434)
+  OLLAMA_MODEL           Ollama model (default: qwen2.5:32b)
 
 Examples:
   reasoning-agent "Design PDA hierarchy for escrow program" --domain solana
-  reasoning-agent "Create threat model for cross-program invocation" --domain security
-  reasoning-agent "Design rate limiter with sliding window" --output answer
+  reasoning-agent "Create threat model for CPI" --domain security --provider anthropic
+  reasoning-agent "Design rate limiter" --provider ollama --model llama3.1:70b --output answer
+  reasoning-agent "Plan feature slices" --domain nft --output both
 `);
 }
 
@@ -44,6 +55,9 @@ async function main() {
     outputMode: "both",
   };
 
+  let providerConfig: ProviderConfig = detectProviderFromEnv();
+  let providerOverridden = false;
+
   for (let i = 1; i < args.length; i++) {
     const arg = args[i];
     const next = args[i + 1];
@@ -53,15 +67,23 @@ async function main() {
         options.domain = next;
         i++;
         break;
+      case "--provider":
+        providerConfig = { ...providerConfig, type: next as ProviderType };
+        providerOverridden = true;
+        i++;
+        break;
       case "--model":
+        providerConfig = { ...providerConfig, model: next };
         options.model = next;
         i++;
         break;
       case "--temperature":
+        providerConfig = { ...providerConfig, temperature: parseFloat(next) };
         options.temperature = parseFloat(next);
         i++;
         break;
       case "--max-tokens":
+        providerConfig = { ...providerConfig, maxTokens: parseInt(next, 10) };
         options.maxTokens = parseInt(next, 10);
         i++;
         break;
@@ -70,23 +92,32 @@ async function main() {
         i++;
         break;
       case "--api-key":
-        process.env.OPENROUTER_API_KEY = next;
+        providerConfig = { ...providerConfig, apiKey: next };
+        i++;
+        break;
+      case "--base-url":
+        providerConfig = { ...providerConfig, baseUrl: next };
         i++;
         break;
     }
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    console.error("Error: OPENROUTER_API_KEY environment variable or --api-key required");
+  if (!providerOverridden && providerConfig.type === "local") {
+    console.error("Error: No LLM provider configured. Set API key env var or use --provider/--api-key");
+    console.error("Supported providers: openrouter, anthropic, openai, ollama, local");
     process.exit(1);
   }
 
-  const agent = new ReasoningAgent({ apiKey });
+  if (providerConfig.type !== "local" && !providerConfig.apiKey) {
+    console.error(`Error: ${providerConfig.type} provider requires --api-key or corresponding env var`);
+    process.exit(1);
+  }
+
+  const agent = new ReasoningAgent({ provider: providerConfig, defaultOptions: options });
 
   console.log(`\n🧠 Reasoning Agent - Task: ${task}\n`);
   console.log(`Domain: ${options.domain ?? "general"}`);
-  console.log(`Model: ${options.model}`);
+  console.log(`Provider: ${providerConfig.type}${providerConfig.model ? ` (${providerConfig.model})` : ""}`);
   console.log(`Output: ${options.outputMode}\n`);
 
   try {

@@ -182,7 +182,7 @@ if [[ -n "${REASONING_AGENT_TASK}" ]]; then
     exit 1
   fi
 
-  REASONING_ARGS=("--reasoning-agent" "${REASONING_AGENT_TASK}")
+  REASONING_ARGS=("${REASONING_AGENT_TASK}")
   if [[ -n "${REASONING_AGENT_DOMAIN}" ]]; then
     REASONING_ARGS+=("--domain" "${REASONING_AGENT_DOMAIN}")
   fi
