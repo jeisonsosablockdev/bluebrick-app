@@ -2,7 +2,7 @@ import { ReasoningLLM } from "../types";
 import { createLLMProvider as createOpenRouterProvider } from "./index";
 import { createLocalProvider } from "./local-provider";
 
-export type ProviderType = "openrouter" | "anthropic" | "openai" | "local" | "ollama";
+export type ProviderType = "openrouter" | "anthropic" | "openai" | "nvidia" | "local" | "ollama";
 
 export interface ProviderConfig {
   type: ProviderType;
@@ -50,6 +50,19 @@ export function createProvider(config: ProviderConfig): ReasoningLLM {
         apiKey: config.apiKey,
         baseUrl: config.baseUrl || "https://api.openai.com/v1",
         model: config.model || "gpt-4o",
+        temperature: config.temperature ?? 0.4,
+        maxTokens: config.maxTokens ?? 8192,
+      });
+    }
+
+    case "nvidia": {
+      if (!config.apiKey) {
+        throw new Error("NVIDIA provider requires apiKey");
+      }
+      return createNVIDIAProvider({
+        apiKey: config.apiKey,
+        baseUrl: config.baseUrl || "https://integrate.api.nvidia.com/v1",
+        model: config.model || "nvidia/nemotron-3-ultra",
         temperature: config.temperature ?? 0.4,
         maxTokens: config.maxTokens ?? 8192,
       });
@@ -181,6 +194,65 @@ function createOpenAIProvider(config: {
   };
 }
 
+function createNVIDIAProvider(config: {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+}): ReasoningLLM {
+  return {
+    async invokeStructured<T extends { parse: (json: string) => any }>(
+      schema: T,
+      prompt: string,
+      options?: { temperature?: number; maxTokens?: number }
+    ): Promise<any> {
+      const response = await fetch(`${config.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${config.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            {
+              role: "system",
+              content: "You are a structured reasoning agent. Output ONLY valid JSON matching the provided schema. No markdown, no explanation.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: options?.temperature ?? config.temperature,
+          max_tokens: options?.maxTokens ?? config.maxTokens,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`NVIDIA API error: ${response.status} - ${error}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error("Empty response from NVIDIA");
+      }
+
+      try {
+        const parsed = JSON.parse(content);
+        return schema.parse(parsed);
+      } catch (e) {
+        throw new Error(`Failed to parse/validate NVIDIA response: ${e instanceof Error ? e.message : String(e)}\nRaw: ${content}`);
+      }
+    },
+  };
+}
+
 function createOllamaProvider(config: {
   baseUrl: string;
   model: string;
@@ -269,6 +341,16 @@ export function detectProviderFromEnv(): ProviderConfig {
       model: process.env.OPENAI_MODEL || "gpt-4o",
       temperature: parseFloat(process.env.OPENAI_TEMPERATURE || "0.4"),
       maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || "8192"),
+    };
+  }
+
+  if (process.env.NVIDIA_API_KEY) {
+    return {
+      type: "nvidia",
+      apiKey: process.env.NVIDIA_API_KEY,
+      model: process.env.NVIDIA_MODEL || "nvidia/nemotron-3-ultra",
+      temperature: parseFloat(process.env.NVIDIA_TEMPERATURE || "0.4"),
+      maxTokens: parseInt(process.env.NVIDIA_MAX_TOKENS || "8192"),
     };
   }
 

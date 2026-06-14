@@ -9,7 +9,7 @@ Usage: reasoning-agent "task" [options]
 
 Options:
   --domain <name>        Domain context (solana, nft, compliance, security, architecture, debugging, or custom)
-  --provider <type>      LLM provider: openrouter, anthropic, openai, ollama, local (default: auto-detect from env)
+  --provider <type>      LLM provider: openrouter, anthropic, openai, nvidia, ollama, local (default: auto-detect from env)
   --model <name>         LLM model (provider-specific defaults)
   --temperature <num>    Temperature 0-1 (default: 0.4)
   --max-tokens <num>     Max tokens (default: 8192)
@@ -22,6 +22,7 @@ Environment Variables (auto-detected):
   OPENROUTER_API_KEY     OpenRouter API key
   ANTHROPIC_API_KEY      Anthropic API key
   OPENAI_API_KEY         OpenAI API key
+  NVIDIA_API_KEY         NVIDIA API key (integrate.api.nvidia.com)
   OLLAMA_BASE_URL        Ollama base URL (default: http://localhost:11434)
   OLLAMA_MODEL           Ollama model (default: qwen2.5:32b)
 
