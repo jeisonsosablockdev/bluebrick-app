@@ -3,7 +3,7 @@ import path from "node:path";
 
 export type KnowledgeStatus = "observed" | "triaged" | "promoted" | "archived";
 export type PromotionTarget = "guide" | "governance" | "automation" | "none";
-export type KnowledgeKind = "observation" | "proposal" | "report" | "archive";
+export type KnowledgeKind = "observation" | "proposal" | "report" | "archive" | "reasoning-plan";
 
 type Frontmatter = Record<string, string>;
 
@@ -105,6 +105,10 @@ function inferKind(relativePath: string): KnowledgeKind {
 
   if (relativePath.startsWith("docs/knowledge/reports/")) {
     return "report";
+  }
+
+  if (relativePath.startsWith("docs/knowledge/reasoning-plans/")) {
+    return "reasoning-plan";
   }
 
   return "archive";

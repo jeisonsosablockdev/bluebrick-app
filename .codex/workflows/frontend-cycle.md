@@ -24,13 +24,14 @@
 ## Execution Sequence
 | Step | Owner | Goal | Gate |
 | --- | --- | --- | --- |
-| 1 | `planner` | Detect frontend scope and activate this workflow | Routes, UI surfaces, motion intent, evidence needs, and any required artifact/SPEC model are identified |
-| 2 | `frontend` | Define the SSR/client split, motion language, and server trust boundary | Client-only wallet code, Motion 12 runtime choice, current syntax, and any OpenAI Developers tooling references are explicit |
-| 3 | `security` | Review auth, signer, session, and privilege assumptions when in scope | Trust-boundary gaps are surfaced before implementation closes |
-| 4 | `docs` | Confirm artifact prerequisites and sync required docs for non-trivial work | Implementation does not run ahead of the governing artifact, and motion/tooling language is captured in the SPEC plan |
-| 5 | `frontend` | Implement with tests first and keep the diff local to the touched surface | Relevant tests are updated before final verification |
-| 6 | `qa` | Run targeted tests, Playwright, Synpress, and browser evidence as required | Workflow-specific gates pass with deterministic artifacts |
-| 7 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
+| 1 | `planner` | Detect frontend scope and check if complexity requires reasoning-cycle first | If feature-planning or architecture-new, activate reasoning-cycle before step 2 |
+| 2 | `reasoning` | **SELECT/ADAPT**: Define problem type, list SSR/client boundaries, motion language, server trust assumptions | Problem classification explicit, domain adaptation for frontend documented |
+| 3 | `frontend` | Define the SSR/client split, motion language, and server trust boundary based on reasoning output | Client-only wallet code, Motion 12 runtime choice, current syntax explicit |
+| 4 | `security` | Review auth, signer, session, and privilege assumptions when in scope | Trust-boundary gaps are surfaced before implementation closes |
+| 5 | `docs` | Confirm artifact prerequisites and sync required docs for non-trivial work | Implementation does not run ahead of the governing artifact, and motion/tooling language is captured in the SPEC plan |
+| 6 | `frontend` | Implement with tests first and keep the diff local to the touched surface | Relevant tests are updated before final verification |
+| 7 | `qa` | Run targeted tests, Playwright, Synpress, and browser evidence as required | Workflow-specific gates pass with deterministic artifacts |
+| 8 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
 ## Blocking Gates
 - Non-trivial work does not move into implementation without the required artifact and, when applicable, the first SPEC.

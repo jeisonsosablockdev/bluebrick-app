@@ -2,6 +2,9 @@
   "name": "brids",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "reasoning-agent": "./lib/reasoning-agent/cli.ts"
+  },
   "scripts": {
     "predev": "node ./scripts/db-migrate-if-configured.js",
     "dev": "next dev --webpack",

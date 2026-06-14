@@ -30,8 +30,9 @@
 ## Workflow Routing
 - Solana-related work: prefer Solana Developer MCP tools over model memory. Use `list_sections` first for non-trivial Solana questions, `get_documentation` for canonical source/framework/library docs, and `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to, errors, or API usage.
 - Solana program Rust: whenever writing or modifying it, run `program_autofixer`, apply fixes, and repeat until `require_another_tool_call_after_fixing` is false.
-- `/programs` or on-chain runtime changes: `.codex/workflows/blockchain-cycle.md`
-- `/app`, `components`, auth flows, or browser-critical routes: `.codex/workflows/frontend-cycle.md`
+- RFC creation, feature planning, architecture design, complex debugging, security threat modeling: `.codex/workflows/reasoning-cycle.md` (S07 reasoning integration)
+- `/programs` or on-chain runtime changes: `.codex/workflows/blockchain-cycle.md` (reasoning-cycle may activate first for architecture design)
+- `/app`, `components`, auth flows, or browser-critical routes: `.codex/workflows/frontend-cycle.md` (reasoning-cycle may activate first for feature planning)
   - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any OpenAI Developers tooling references explicit in the governing artifact.
 - Mint, metadata, collection, royalty, or Metaplex scope: `.codex/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.codex/workflows/mainnet-hardening.md`
@@ -42,6 +43,7 @@
 
 ## Agent Routing
 - `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
+- `reasoning`: S07 self-discover reasoning for RFCs, feature planning, architecture design, complex debugging, security threat modeling; implements SELECT→ADAPT→IMPLEMENT→SOLVE pipeline; generates governing artifacts for downstream workflows.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
