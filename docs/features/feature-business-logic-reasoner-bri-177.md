@@ -1,14 +1,14 @@
 ---
-id: feature-business-logic-reasoner
+id: feature-business-logic-reasoner-bri-177
 title: Business Logic Reasoner - Self-Discover Agent
 status: observed
 kind: observation
 promotion_target: guide
 scope: shared
-filePath: docs/features/feature-business-logic-reasoner.md
+filePath: docs/features/feature-business-logic-reasoner-bri-177.md
 owner: unassigned
 created_at: 2026-06-12T18:30:00.000Z
-updated_at: 2026-06-12T18:30:00.000Z
+updated_at: 2026-06-13T06:30:00.000Z
 source_issue: BRI-177
 source_feature: business-logic-reasoner
 enforcement_candidate: yes
@@ -101,3 +101,5 @@ A **Universal Self-Discover Reasoning Agent** (implementing Zhou et al., Google 
 - [x] S04: CLI invocation + workflow integration
 - [x] S05: Knowledge system integration (reasoning traces as knowledge entries)
 - [x] S06: Validation gates + Human Acceptance
+- [x] S07: Reasoning Integration workflow + AGENTS.md routing + workflow hooks
+- [ ] S08: Current Harness Fix — all S02-S06 tests passing in CI
