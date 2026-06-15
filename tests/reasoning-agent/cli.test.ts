@@ -14,7 +14,9 @@ describe("ReasoningAgent CLI Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    agent = new ReasoningAgent({ apiKey: "test-key" });
+    agent = new ReasoningAgent({
+      provider: { type: "local" },
+    });
   });
 
   it("runs full pipeline for Solana task", async () => {
