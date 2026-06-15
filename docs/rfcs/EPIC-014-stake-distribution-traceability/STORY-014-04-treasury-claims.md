@@ -1,0 +1,398 @@
+# STORY-014-04-treasury-claims
+
+## Metadata
+- Epic: `EPIC-014-stake-distribution-traceability`
+- Story ID: `STORY-014-04-treasury-claims`
+- Status: `planned`
+- Owner: `codex`
+- RFC owner slice: `<branch-or-slice-id>`
+- Created: `2026-06-15`
+- Last Updated: `2026-06-15`
+- Parent Story: `STORY-014-01-draft`
+- Slice: `S04` (Delivery Slice 3 of 3)
+
+## Context
+- Problem: Implement Squads v4 treasury execution, claim lifecycle with fee policy, compliance hold TTL, and audit trail. This is the money-movement layer.
+- Why now: BRI-8 (Distribution microservice & Claim/Payout) requires this layer after Distribution Engine (S03).
+- Constraints:
+  - Hot wallet payments forbidden; Squads multisig controls treasury
+  - Single batched vault transaction with multiple legs (Squads v4 `initiate_batch_transfer`)
+  - Fee applied at claim layer (after gross); versioned, per project/CM
+  - Compliance re-check at claim time; `restricted_aml`/`suspended` blocked at gate
+  - Compliance hold TTL: 12 months max → auto-clawback to treasury
+  - Individual claim failure in batch does not stop others (granular `failed` status)
+- Affected paths: lib/squads, lib/claims, API claims, Squads proposals, UI Rentas/Yield
+
+## Proposal
+### Approach Summary
+Build claim lifecycle: user requests claim → fee quote locked → compliance re-check → committee review → Squads batch proposal → execution → reconciliation. Implement fee policies, compliance TTL, and audit trail.
+
+### Technical Design
+
+#### 1. Database Schema (Pseudocode)
+```
+ClaimFeePolicy
+  id, scopeType(GLOBAL|PROJECT|CANDY_MACHINE), scopeAddress
+  tokenMint, feeMode(FLAT|PERCENTAGE), flatFeeMinor, percentageBps
+  minFeeMinor?, maxFeeMinor?
+  effectiveFrom, effectiveTo, version
+  createdBy, createdAt
+
+DistributionClaim
+  id, runId, distributionItemId
+  beneficiaryWallet, payoutWallet (defaults to beneficiary)
+  payoutWalletSource(BENEFICIARY|COMMITTEE_OVERRIDE), payoutWalletOverrideId?
+  grossAmountMinor, feeAmountMinor, netAmountMinor
+  claimFeePolicyId, claimFeePolicyVersion
+  status(NOT_CLAIMABLE|CLAIMABLE|QUOTE_CREATED|CLAIM_REQUESTED|QUEUED_FOR_PAYOUT|
+         SQUADS_PROPOSED|APPROVED_FOR_EXECUTION|EXECUTED|FAILED|CANCELED|COMPLIANCE_HOLD|
+         COMPLIANCE_HOLD_EXPIRED|CLAWED_BACK)
+  quoteCreatedAt, claimRequestedAt, queuedAt, proposedAt, executedAt, failedAt
+  complianceSnapshot (KYC|AML|FULLY_VERIFIED at claim time)
+  createdAt, updatedAt
+
+SquadsPayoutBatch
+  id, projectId, runId, tokenMint, treasuryVault
+  squadsMultisigPda, squadsVaultPda, proposalPda, batchPda
+  transactionIndex, status(DRAFT|PROPOSED|APPROVING|APPROVED|EXECUTING|EXECUTED|PARTIALLY_FAILED|FAILED)
+  totalAmountMinor, totalFeesMinor, itemCount, successfulCount, failedCount
+  creator, approvers[], executor, executionSignature?, executionSlot?, executionBlockTime?
+  createdAt, updatedAt
+
+SquadsPayoutBatchItem
+  id, batchId, claimId, instructionIndex
+  recipientTokenAccount, amountMinor
+  transferSignature?, executionSlot?, executionBlockTime?
+  status(PENDING|EXECUTED|FAILED), failureReason?
+  createdAt, updatedAt
+
+ClaimFeePolicyOverride (exceptional payout wallet change)
+  id, runId, beneficiaryWallet, requestedPayoutWallet, requestReason, evidenceUri
+  requestedByUserAt, committeeStatus(PENDING|APPROVED|REJECTED), committeeDecisionAt, committeeEvidence
+```
+
+#### 2. Fee Calculation (Pseudocode)
+```
+CALCULATE_CLAIM_FEE(grossAmountMinor, policy):
+  IF policy.feeMode == FLAT:
+    rawFeeMinor = policy.flatFeeMinor
+  ELSE IF policy.feeMode == PERCENTAGE:
+    rawFeeMinor = FLOOR(grossAmountMinor * policy.percentageBps / 10000)
+
+  // Apply caps
+  IF policy.minFeeMinor AND rawFeeMinor < policy.minFeeMinor:
+    rawFeeMinor = policy.minFeeMinor
+  IF policy.maxFeeMinor AND rawFeeMinor > policy.maxFeeMinor:
+    rawFeeMinor = policy.maxFeeMinor
+
+  // Fee cannot exceed gross
+  feeAmountMinor = MIN(rawFeeMinor, grossAmountMinor)
+  netAmountMinor = grossAmountMinor - feeAmountMinor
+
+  RETURN {feeAmountMinor, netAmountMinor}
+
+GET_ACTIVE_FEE_POLICY(projectId, candyMachineAddress, tokenMint, timestamp):
+  // Priority: candy_machine > project > global
+  FOR scope IN [candy_machine, project, global]:
+    policy = DB.find(ClaimFeePolicy, {
+      scopeType: scope,
+      scopeAddress: scope == candy_machine ? candyMachineAddress : 
+                    scope == project ? projectId : "global",
+      tokenMint,
+      effectiveFrom <= timestamp,
+      effectiveTo >= timestamp,
+      status: ACTIVE
+    })
+    IF policy: RETURN policy
+  RETURN DEFAULT_POLICY
+```
+
+#### 3. Claim Lifecycle (Pseudocode)
+```
+CLAIM_FLOW(wallet, runId):
+  // 1. Validate claimable
+  items = DB.find(DistributionItem, {runId, beneficiaryWallet: wallet, status: CALCULATED})
+  FOR item IN items:
+    IF item.complianceSnapshot != FULLY_VERIFIED:
+      RETURN ERROR("wallet_not_fully_verified")
+    IF item.status != CALCULATED:
+      RETURN ERROR("item_not_claimable")
+
+  // 2. Create claims with locked quote
+  claims = []
+  FOR item IN items:
+    policy = GET_ACTIVE_FEE_POLICY(item.projectId, item.candyMachineAddress, item.tokenMint, NOW())
+    feeCalc = CALCULATE_CLAIM_FEE(item.grossAmountMinor, policy)
+
+    claim = DB.create(DistributionClaim, {
+      runId: item.runId,
+      distributionItemId: item.id,
+      beneficiaryWallet: wallet,
+      payoutWallet: wallet,
+      grossAmountMinor: item.grossAmountMinor,
+      feeAmountMinor: feeCalc.feeAmountMinor,
+      netAmountMinor: feeCalc.netAmountMinor,
+      claimFeePolicyId: policy.id,
+      claimFeePolicyVersion: policy.version,
+      status: QUOTE_CREATED,
+      quoteCreatedAt: NOW(),
+      complianceSnapshot: RECHECK_COMPLIANCE(wallet)
+    })
+    claims.push(claim)
+
+  RETURN {claims, quote: MAP(claims, c => ({gross: c.grossAmountMinor, fee: c.feeAmountMinor, net: c.netAmountMinor}))}
+
+CONFIRM_CLAIM(claimIds, wallet):
+  claims = DB.find(DistributionClaim, {id IN claimIds, beneficiaryWallet: wallet, status: QUOTE_CREATED})
+  
+  // Re-verify compliance at claim time
+  FOR claim IN claims:
+    currentCompliance = RECHECK_COMPLIANCE(wallet)
+    IF currentCompliance != FULLY_VERIFIED:
+      IF currentCompliance IN [RESTRICTED_AML, SUSPENDED]:
+        claim.status = COMPLIANCE_HOLD
+        claim.complianceSnapshot = currentCompliance
+        DB.update(claim)
+      RETURN ERROR("compliance_check_failed")
+
+  // All good - mark requested
+  FOR claim IN claims:
+    claim.status = CLAIM_REQUESTED
+    claim.claimRequestedAt = NOW()
+    DB.update(claim)
+
+  // Trigger backoffice batching job
+  ENQUEUE_BATCHING_JOB(claims.map(c => c.id))
+  RETURN {status: "queued_for_payout"}
+
+BATCHING_JOB(claimIds):
+  claims = DB.find(DistributionClaim, {id IN claimIds, status: CLAIM_REQUESTED})
+  
+  // Group by: project, run, tokenMint, feePolicy, treasuryVault
+  batches = GROUP_BY(claims, [projectId, runId, tokenMint, claimFeePolicyId, treasuryVault])
+  
+  FOR batchClaims IN batches:
+    batch = DB.create(SquadsPayoutBatch, {
+      projectId: batchClaims[0].projectId,
+      runId: batchClaims[0].runId,
+      tokenMint: batchClaims[0].tokenMint,
+      treasuryVault: batchClaims[0].treasuryVault,
+      totalAmountMinor: SUM(c.netAmountMinor),
+      totalFeesMinor: SUM(c.feeAmountMinor),
+      itemCount: batchClaims.length,
+      status: DRAFT
+    })
+
+    // Build Squads batch transfer legs
+    legs = []
+    FOR claim IN batchClaims:
+      legs.push(`${claim.tokenMint}:${claim.payoutWallet}:${claim.netAmountMinor}`)
+      claim.status = QUEUED_FOR_PAYOUT
+      claim.queuedAt = NOW()
+      DB.update(claim)
+      DB.create(SquadsPayoutBatchItem, {
+        batchId: batch.id,
+        claimId: claim.id,
+        instructionIndex: legs.length - 1,
+        recipientTokenAccount: GET_ATA(claim.payoutWallet, claim.tokenMint),
+        amountMinor: claim.netAmountMinor,
+        status: PENDING
+      })
+
+    // Create Squads proposal via `initiate_batch_transfer`
+    proposal = SQUADS_INITIATE_BATCH_TRANSFER({
+      multisig: SQUADS_MULTISIG_PDA,
+      vaultIndex: VAULT_INDEX_FOR_TREASURY(batch.treasuryVault),
+      transfers: legs,  // e.g., "USDC:wallet1:1000000", "USDC:wallet2:2000000"
+      memo: `BRIDS distribution run ${batch.runId} batch ${batch.id}`
+    })
+
+    batch.proposalPda = proposal.proposalPda
+    batch.batchPda = proposal.batchPda
+    batch.transactionIndex = proposal.transactionIndex
+    batch.status = PROPOSED
+    DB.update(batch)
+
+    // Notify committee for review
+    NOTIFY_COMMITTEE(batch.id)
+```
+
+#### 4. Squads Execution & Reconciliation (Pseudocode)
+```
+COMMITTEE_REVIEW_BATCH(batchId, reviewer, action, evidence):
+  batch = DB.find(SquadsPayoutBatch, batchId)
+  IF action == REJECT:
+    batch.status = REJECTED
+    FOR item IN batch.items:
+      claim = DB.find(DistributionClaim, item.claimId)
+      claim.status = CLAIMABLE  // back to claimable
+      DB.update(claim)
+    AUDIT_LOG(batchId, "COMMITTEE_REJECTED", {reviewer, reason})
+    RETURN
+
+  // APPROVE
+  batch.status = APPROVED_FOR_EXECUTION
+  DB.update(batch)
+  AUDIT_LOG(batchId, "COMMITTEE_APPROVED", {reviewer, evidence})
+
+EXECUTE_BATCH(batchId, executor):
+  batch = DB.find(SquadsPayoutBatch, batchId)
+  batch.status = EXECUTING
+  DB.update(batch)
+
+  // Execute via Squads: vault_transaction_execute
+  execution = SQUADS_EXECUTE({
+    multisig: SQUADS_MULTISIG_PDA,
+    proposal: batch.proposalPda,
+    transactionIndex: batch.transactionIndex,
+    vaultIndex: batch.vaultIndex
+  })
+
+  IF execution.success:
+    batch.status = EXECUTED
+    batch.executionSignature = execution.signature
+    batch.executionSlot = execution.slot
+    batch.executionBlockTime = execution.blockTime
+    batch.executor = executor
+    batch.successfulCount = batch.itemCount
+    batch.failedCount = 0
+    
+    FOR item IN batch.items:
+      item.status = EXECUTED
+      item.transferSignature = execution.signature  // same for all in batch
+      item.executionSlot = execution.slot
+      item.executionBlockTime = execution.blockTime
+      DB.update(item)
+      
+      claim = DB.find(DistributionClaim, item.claimId)
+      claim.status = EXECUTED
+      claim.executedAt = execution.blockTime
+      DB.update(claim)
+  ELSE:
+    // Partial failure handling
+    batch.status = PARTIALLY_FAILED
+    // Individual item statuses updated based on execution logs
+    // Failed items → claim.status = FAILED; can retry
+  DB.update(batch)
+  AUDIT_LOG(batchId, "EXECUTION_COMPLETE", {success: execution.success, ...})
+
+RECONCILE_BATCH(batchId):
+  // Called after execution to verify on-chain
+  batch = DB.find(SquadsPayoutBatch, batchId)
+  FOR item IN batch.items:
+    tx = ARCHIVAL_RPC.getTransaction(item.transferSignature)
+    IF tx AND NOT tx.meta.err:
+      item.status = EXECUTED
+      claim = DB.find(DistributionClaim, item.claimId)
+      claim.status = EXECUTED
+    ELSE:
+      item.status = FAILED
+      item.failureReason = "on_chain_verification_failed"
+      claim = DB.find(DistributionClaim, item.claimId)
+      claim.status = FAILED
+    DB.update(item); DB.update(claim)
+  
+  // Recalculate batch counts
+  batch.successfulCount = COUNT(items, EXECUTED)
+  batch.failedCount = COUNT(items, FAILED)
+  IF batch.failedCount == 0: batch.status = EXECUTED
+  ELSE: batch.status = PARTIALLY_FAILED
+  DB.update(batch)
+```
+
+#### 5. Compliance Hold & TTL (Pseudocode)
+```
+RECHECK_COMPLIANCE(wallet):
+  kyc = DB.find(KycCase, {wallet, status: VERIFIED})
+  aml = DB.find(UserProfile, {wallet, amlStatus: CLEAR})
+  compliance = DB.find(UserProfile, {wallet, complianceStatus: FULLY_VERIFIED})
+  IF !kyc: RETURN PENDING_KYC
+  IF !aml: RETURN PENDING_AML
+  IF !compliance: RETURN PENDING_REVIEW
+  IF compliance == SUSPENDED: RETURN SUSPENDED
+  IF aml == FLAGGED: RETURN RESTRICTED_AML
+  RETURN FULLY_VERIFIED
+
+COMPLIANCE_TTL_MONITOR():
+  // Cron job runs daily
+  holds = DB.find(DistributionClaim, {status: COMPLIANCE_HOLD})
+  FOR claim IN holds:
+    holdDuration = NOW() - claim.claimRequestedAt
+    IF holdDuration >= 12 MONTHS:
+      // Auto-clawback
+      claim.status = COMPLIANCE_HOLD_EXPIRED
+      DB.update(claim)
+      
+      // Create clawback record
+      DB.create(ClaimOrPayoutEvent, {
+        type: CLAWBACK,
+        claimId: claim.id,
+        amountMinor: claim.netAmountMinor,
+        reason: "compliance_hold_ttl_expired",
+        timestamp: NOW()
+      })
+      
+      // Funds return to treasury (accounting entry)
+      TREASURY_CREDIT(claim.netAmountMinor, claim.tokenMint, "clawback_ttl_expired")
+      AUDIT_LOG(claim.id, "CLAWBACK_TTL_EXPIRED", {amount: claim.netAmountMinor})
+```
+
+#### 6. State Machines (Pseudocode)
+```
+DISTRIBUTION_CLAIM_STATES:
+  NOT_CLAIMABLE → CLAIMABLE → QUOTE_CREATED → CLAIM_REQUESTED → QUEUED_FOR_PAYOUT
+    → SQUADS_PROPOSED → APPROVED_FOR_EXECUTION → EXECUTED
+    → FAILED (any stage) → retry possible
+    → CANCELED (user cancels before execution)
+    → COMPLIANCE_HOLD → COMPLIANCE_HOLD_EXPIRED → CLAWED_BACK
+    → COMPLIANCE_HOLD → (compliance clears) → back to QUEUED_FOR_PAYOUT
+
+SQUADS_PAYOUT_BATCH_STATES:
+  DRAFT → PROPOSED → APPROVING → APPROVED_FOR_EXECUTION → EXECUTING
+    → EXECUTED | PARTIALLY_FAILED | FAILED
+    → REJECTED (committee) → back to DRAFT (rebuild)
+```
+
+#### 7. Audit Trail (Pseudocode)
+```
+CLAIM_OR_PAYOUT_EVENT:
+  type: STAKE|UNSTAKE|DISTRIBUTION_CALCULATED|CLAIM_QUOTED|CLAIM_REQUESTED|
+        BATCH_PROPOSED|COMMITTEE_REVIEW|BATCH_APPROVED|BATCH_EXECUTED|
+        CLAIM_EXECUTED|CLAIM_FAILED|CLAWBACK_TTL_EXPIRED|PAYOUT_WALLET_OVERRIDE
+  claimId?, batchId?, runId?, wallet?, amountMinor?, tokenMint?, reason?, metadata?, timestamp
+```
+
+## Resolution
+- ClaimFeePolicy: versioned, scoped (global/project/CM), flat or percentage with caps
+- Claim lifecycle: quote lock → compliance re-check → committee → Squads batch → execution → reconciliation
+- Squads v4: single `initiate_batch_transfer` with multiple token legs; granular item status for partial failures
+- Compliance: `restricted_aml`/`suspended` blocked at gate; 12-month TTL with auto-clawback
+- Fee applied at claim layer (after gross); quote shows gross/fee/net before confirmation
+- Full audit trail with immutable event log
+
+## Decision
+- Decision: `pending`
+- Decision date: `2026-06-15`
+- Decision owner:
+- Approval notes:
+
+## Status
+- Current status: `planned`
+- Next action: Open delivery slice branch
+- Exit criteria:
+  - [ ] Fee policy CRUD + versioning works
+  - [ ] Claim flow end-to-end on devnet (Squads devnet)
+  - [ ] Compliance hold TTL + clawback verified
+  - [ ] Partial batch failure handling tested
+  - [ ] Audit trail immutable and queryable
+
+## Test and Validation Plan
+- Unit: fee calculation with caps, Hamilton math not affected by fees
+- Integration: Claim → batch → Squads proposal → execution → reconciliation (devnet)
+- Edge: compliance state changes between quote and claim, partial batch failures
+- Security: payout wallet override requires committee approval
+
+## Traceability
+- Related: BRI-8
+- Parent: STORY-014-01-draft
+- PR(s): TBD
