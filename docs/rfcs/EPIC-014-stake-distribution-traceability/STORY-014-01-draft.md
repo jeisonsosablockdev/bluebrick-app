@@ -15,11 +15,12 @@
 - Constraints:
   - Blockchain truth first, DB projection second
   - Candy Machine is sole financial scope for v1 (never collection)
-  - Final Calculation uses finalized RPC evidence only
+  - Final Calculation uses finalized RPC evidence **from archival nodes only** (projects can exceed 12 months)
   - No floating point for money; integer math with Hamilton remainder
-  - Squads controls treasury; committee reviews before dispersion
+  - Squads controls treasury; committee reviews before dispersion; **single batched vault transaction with multiple transfer legs**
   - User-initiated Claim with configurable fee
-  - Compliance triple-gate: KYC verified + AML clear + fully_verified
+  - Compliance triple-gate: KYC verified + AML clear + fully_verified; **`restricted_aml`/`suspended` users cannot reach claim; TTL 12 months for compliance hold funds with auto-clawback**
+  - Early investor dilution: intentional reward mechanism; no capital injection possible; dilution expected and accepted
 - Affected paths:
   - `/app/(protected)/stake`, `/app/(protected)/portfolio`, `/app/(protected)/rentas`, `/app/(protected)/history`
   - `/api/protected/stake/*`, `/api/webhooks/helius/stake`
@@ -36,10 +37,10 @@
 3. **User Timeline Layer** — Informational UI: frozen since, accumulated time, sync status, last tx. Does NOT calculate final payouts.
 4. **Project Eligibility Window** — Defines when stake time creates beneficiary rights. `earning_start_at = max(project_start_at, freeze_confirmed_at)`, `earning_end_at = min(project_end_at, unfreeze_confirmed_at ?? project_end_at)`. Only owned-and-frozen time inside window counts.
 5. **Dashboard Earning Projection Layer** — UI estimate using current freeze time + developer min/max range. Clear "projection, not guarantee" labeling. Detailed financial surface in `Rentas / Yield`, not `Stake / Unstake`.
-6. **Distribution Snapshot Layer** — Evidence package for Final Calculation. Admin chooses: project_id, eligibility window, snapshot_at, scope_type=candy_machine, scope_address, collection_address, authorized_supply, minimum_sold_count, funding_threshold_met_at, unsold_inventory_policy, investment_model, token_mint, treasury_vault, available_treasury_earnings_minor, distribution_pool_amount_minor, pool_composition_basis=equal_eligible_nft_count, RPC commitment=finalized, context_slot, committee review fields. Final Calculation reconstructs historical intervals from blockchain/RPC.
+6. **Distribution Snapshot Layer** — Evidence package for Final Calculation. Admin chooses: project_id, eligibility window, snapshot_at, scope_type=candy_machine, scope_address, collection_address, authorized_supply, minimum_sold_count, funding_threshold_met_at, unsold_inventory_policy, investment_model, token_mint, treasury_vault, available_treasury_earnings_minor, distribution_pool_amount_minor, pool_composition_basis=equal_eligible_nft_count, **RPC commitment=finalized, archival node required**, context_slot, committee review fields. Final Calculation reconstructs historical intervals from blockchain/RPC **using archival endpoints only (projects can exceed 12 months)**.
 7. **Distribution Calculation Layer** — Time-weighted participation: `asset_earning_seconds = max(0, min(project_end_at, unfreeze_confirmed_at) - max(project_start_at, freeze_confirmed_at))`. `asset_time_weight = 1 * asset_earning_seconds`. `wallet_time_weight = sum(asset_time_weight)`. `pool_time_weight = sum(all wallet_time_weight)`. `wallet_gross_amount = floor(distribution_pool_amount_minor * wallet_time_weight / pool_time_weight)`. Fee applied after gross: `net = gross - fee`. Integer math only.
-8. **Squads Treasury Layer** — Deterministic claim/payout evidence from finalized items. Committee reviews dispersion package. User Claim creates request; batched Squads execution. Hot wallet payments forbidden.
-9. **Claim Lifecycle Layer** — User Claim button → fee quote → claim_requested → committee_review → approved_for_dispersion → Squads batch → executed. Fee policy: versioned, per project/CM, flat or percentage with caps. Compliance re-check at claim time.
+8. **Squads Treasury Layer** — Deterministic claim/payout evidence from finalized items. Committee reviews dispersion package. User Claim creates request; **single batched Squads v4 vault transaction with multiple transfer legs** (Squads CLI `initiate_batch_transfer` supports `sol:<recipient>:<lamports>` and `<mint>:<recipient>:<amount>` legs in one proposal). Hot wallet payments forbidden.
+9. **Claim Lifecycle Layer** — User Claim button → fee quote → claim_requested → committee_review → approved_for_dispersion → Squads batch → executed. Fee policy: versioned, per project/CM, flat or percentage with caps. Compliance re-check at claim time. **`restricted_aml` and `suspended` users blocked at claim gate (never reach claimable state). Compliance hold funds TTL: 12 months maximum; automatic clawback to treasury after TTL expiry.**
 10. **Traceability / Audit Layer** — Immutable audit trail answering 11 minimum questions (NFT, wallet, CM, window, seconds, KYC, treasury, fee, claim request, tx proof, exceptions).
 
 ### Key Data Models (new)
@@ -62,14 +63,15 @@
 
 ### RPC Finalization Protocol
 - commitment: finalized
+- **Archival node required**: all RPC endpoints must be archival (full ledger retention from genesis); validated via `minimumLedgerSlot` check
 - Record: context_slot, RPC endpoint, timestamp, asset owner, collection, approved CM origin, project id, FreezeDelegate.frozen state
 - Staleness guard: max_slot_lag = 100 slots, max_age = 5000ms
-- Multi-provider convergence: Helius primary, Alchemy secondary, public fallback
-- Block reasons: `rpc_stale`, `provider_divergence`, `history_incomplete`, `evidence_parse_mismatch`
+- Multi-provider convergence: Helius Archive primary, Alchemy Archive secondary, self-hosted archival fallback
+- Block reasons: `rpc_stale`, `provider_divergence`, `history_incomplete`, `evidence_parse_mismatch`, `non_archival_node`
 
 ### State Machines
 **Distribution Run**: draft → calculating → ready_for_review → approved → executing → executed; rejected → draft (recalc)
-**Claim Lifecycle**: not_claimable → claimable → claim_requested → fee_quoted → committee_review → approved_for_dispersion → submitted → executed; failed, canceled, compliance_hold
+**Claim Lifecycle**: not_claimable → claimable → claim_requested → fee_quoted → committee_review → approved_for_dispersion → submitted → executed; failed, canceled, compliance_hold → **compliance_hold_expired (TTL 12 months) → clawback_to_treasury**
 
 ### Anti-Dilution Guards
 - scope_type = candy_machine (never collection)
@@ -77,6 +79,8 @@
 - unsold_inventory_policy = exclude_unsold (time_weight = 0)
 - Funding threshold: 70% of CM minted before project starts
 - Project starts at funding_threshold_met_at (blockchain time)
+- **Mint authority frozen at project start** — no late minting allowed after window opens
+- **Early investor dilution is intentional reward mechanism** — no capital injection possible per business model; dilution expected and accepted for early participants
 
 ### UI Layer Boundaries
 - Overview: portfolio summary only
@@ -86,22 +90,34 @@
 - History: chronological ledger (stake, unstake, distributions, claims, fees, payouts)
 
 ### Implementation Phases
-- Phase 1 (BRI-5, BRI-6): Core Infrastructure — Stake/Unstake events, provenance, profile history
-- Phase 2 (BRI-7): Distribution Engine — Snapshot, Final Calculation, RPC protocol
-- Phase 3 (BRI-8): Treasury & Claims — Squads, fee policy, claim lifecycle, audit
+- Phase 1 (BRI-5, BRI-6): Core Infrastructure — Stake/Unstake events, provenance, profile history, **archival node provisioning**
+- Phase 2 (BRI-7): Distribution Engine — Snapshot, Final Calculation, RPC protocol (archival enforcement)
+- Phase 3 (BRI-8): Treasury & Claims — Squads v4 batch transfers, fee policy, claim lifecycle (12m TTL), audit
 - Phase 4: UI & Polish
 
 ## Critique
-- Reviewer(s): TBD
+- Reviewer(s): Staff Engineer (2026-06-15)
 - Critical findings:
-  1. 
-  2. 
-  3. 
+  1. **Early Investor Dilution as Reward Mechanism:** La dilución de inversores iniciales es intencional y planificada como mecanismo de recompensa para early investors. No se puede inyectar más capital (el negocio no da para más). Esta dilución es totalmente esperada y aceptada. **Resolución:** Documentado explícitamente en Anti-Dilution Guards; mint authority congelada al inicio del proyecto.
+  2. **Single Transfer Dispersion via Squads v4 Batch:** Squads v4 soporta batch transfers en una sola vault transaction con múltiples legs (`sol:<recipient>:<lamports>` y `<mint>:<recipient>:<amount>`). **Resolución:** Squads Treasury Layer actualizado para usar `initiate_batch_transfer` con múltiples legs en un solo proposal.
+  3. **restricted_aml/suspended Users Blocked + TTL 12 Months:** Usuarios en estado `restricted_aml` o `suspended` no deben llegar al punto de claim. Si no pasan AML, no reciben transacción. TTL 12 meses para fondos en `compliance_hold` con auto-clawback a treasury. **Resolución:** Claim gate bloquea estos estados; Claim Lifecycle incluye `compliance_hold_expired` → `clawback_to_treasury` a los 12 meses.
+  4. **Archival Nodes Mandatory:** Proyectos pueden durar más de 12 meses. Reconstrucción histórica requiere nodos archival con retención completa de ledger. **Resolución:** RPC Finalization Protocol requiere nodos archival; validación via `minimumLedgerSlot`; proveedores: Helius Archive, Alchemy Archive, self-hosted.
 - Blocking concerns:
+  - Políticas de mint authority freeze, Squads batch transfer CU limits, compliance TTL/clawback, y proveedores archival deben definirse antes de implementar APIs.
 
 ## Resolution
 - Final approach after critique:
+- **Archival Node mandatory**: todos los RPC endpoints para Final Calculation deben ser archival; validación via `minimumLedgerSlot`.
+- **Squads v4 batch transfers**: single vault transaction con múltiples legs (`initiate_batch_transfer`); claims fallidos individualmente se marcan `failed` sin detener el batch.
+- **Mint authority congelada** al inicio del proyecto (proyecto no 100% vendido); evita dilución retroactiva.
+- **Early investor dilution aceptada** como mecanismo de recompensa intencional; no inyección de capital posible.
+- **Compliance hold TTL 12 meses**: `restricted_aml`/`suspended` bloqueados en claim gate; fondos en hold expiran a los 12 meses con auto-clawback a treasury.
 - Changes accepted:
+  - Archival node requirement
+  - Squads batch transfer single transaction
+  - Mint authority freeze at project start
+  - Early investor dilution as reward mechanism
+  - 12-month compliance hold TTL with auto-clawback
 - Changes rejected (with rationale):
 
 ## Decision
