@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Google Maps Embed Preview
+description: Fix Google Maps Embed Preview - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-google-maps-embed-preview.md
+---
+
 # Fix Google Maps Embed Preview
 
 ## Summary

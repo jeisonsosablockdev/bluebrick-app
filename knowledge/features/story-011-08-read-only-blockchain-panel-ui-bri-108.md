@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 08 Read Only Blockchain Panel Ui BRI- 108
+description: STORY- 011 08 Read Only Blockchain Panel Ui BRI- 108 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-08-read-only-blockchain-panel-ui-bri-108.md
+---
+
 # Feature: STORY-011-08 read-only blockchain panel UI (BRI-108)
 
 ## Summary

@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix App Marketplace Map Update Depth BRI- 164
+description: Fix App Marketplace Map Update Depth BRI- 164 - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-map-update-depth-bri-164.md
+---
+
 # Fix: Marketplace map update-depth deployment error
 
 ## Linear

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Wallet Connection Solanakit BRI- 12
+description: Feature App Wallet Connection Solanakit BRI- 12 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-wallet-connection-solanakit-bri-12.md
+---
+
 # BRI-12: Wallet Connection Migration to `@solana/kit`
 
 ## Scope

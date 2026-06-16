@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Stake Event Reconciliation Distribution Preparation BRI- 6
+description: Feature Stake Event Reconciliation Distribution Preparation BRI- 6 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md
+---
+
 # BRI-6 - Stake-event reconciliation and distribution preparation service
 
 ## ES

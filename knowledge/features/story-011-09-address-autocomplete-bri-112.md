@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 09 Address Autocomplete BRI- 112
+description: STORY- 011 09 Address Autocomplete BRI- 112 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-09-address-autocomplete-bri-112.md
+---
+
 # STORY-011-09 / BRI-112
 
 ## Summary

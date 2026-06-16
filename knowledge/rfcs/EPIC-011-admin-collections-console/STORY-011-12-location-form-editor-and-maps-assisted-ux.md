@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 12 Location Form Editor And Maps Assisted Ux
+description: STORY- 011 12 Location Form Editor And Maps Assisted Ux - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-011-admin-collections-console/STORY-011-12-location-form-editor-and-maps-assisted-ux.md
+---
+
 # STORY-011-12-location-form-editor-and-maps-assisted-ux
 
 ## Metadata

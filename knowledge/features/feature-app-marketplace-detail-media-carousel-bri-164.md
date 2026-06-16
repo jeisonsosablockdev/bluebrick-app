@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Marketplace Detail Media Carousel BRI- 164
+description: Feature App Marketplace Detail Media Carousel BRI- 164 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-marketplace-detail-media-carousel-bri-164.md
+---
+
 # Feature: Marketplace detail project media carousel
 
 ## Linear

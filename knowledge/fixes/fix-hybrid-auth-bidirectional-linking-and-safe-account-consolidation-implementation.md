@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation
+description: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md
+---
+
 # implementation(shared): hybrid auth bidirectional linking and safe account consolidation
 
 ## Status

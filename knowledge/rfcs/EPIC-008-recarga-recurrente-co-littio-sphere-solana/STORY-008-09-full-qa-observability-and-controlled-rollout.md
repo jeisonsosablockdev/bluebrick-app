@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 09 Full Qa Observability And Controlled Rollout
+description: STORY- 008 09 Full Qa Observability And Controlled Rollout - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-09-full-qa-observability-and-controlled-rollout.md
+---
+
 # STORY-008-09-full-qa-observability-and-controlled-rollout
 
 ## Metadata

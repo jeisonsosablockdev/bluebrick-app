@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 07 Playwright Admin Collections Flow BRI- 101
+description: STORY- 011 07 Playwright Admin Collections Flow BRI- 101 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-07-playwright-admin-collections-flow-bri-101.md
+---
+
 # STORY-011-07 / BRI-101 / Playwright Admin Collections Flow
 
 ## Summary

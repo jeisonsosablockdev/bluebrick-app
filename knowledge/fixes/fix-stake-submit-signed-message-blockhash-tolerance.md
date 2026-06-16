@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Stake Submit Signed Message Blockhash Tolerance
+description: Fix Stake Submit Signed Message Blockhash Tolerance - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-stake-submit-signed-message-blockhash-tolerance.md
+---
+
 # Fix - Stake submit signed message blockhash tolerance
 
 ## Espanol

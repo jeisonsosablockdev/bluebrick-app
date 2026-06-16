@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 005 01 Kickoff And Inventory
+description: STORY- 005 01 Kickoff And Inventory - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/STORY-005-01-kickoff-and-inventory.md
+---
+
 # STORY-005-01-kickoff-and-inventory
 
 ## Metadata

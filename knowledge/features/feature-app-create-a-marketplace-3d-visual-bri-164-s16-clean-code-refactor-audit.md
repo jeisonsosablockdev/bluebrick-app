@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Create A Marketplace 3d Visual BRI- 164 S16 Clean Code Refactor Audit
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S16 Clean Code Refactor Audit - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit.md
+---
+
 # S16 Audit: Marketplace Map Clean-Code Refactor
 
 ## Scope

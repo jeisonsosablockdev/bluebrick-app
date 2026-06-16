@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Create A Marketplace 3d Visual BRI- 164 S29 Selector Extraction
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S29 Selector Extraction - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction.md
+---
+
 # S29 Plan: Marketplace Selector Extraction
 
 ## Scope

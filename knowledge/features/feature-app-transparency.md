@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Transparency
+description: Feature App Transparency - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-transparency.md
+---
+
 # Transparency Section
 
 El objetivo de este feature es proporcionar a los usuarios una vista dedicada a la "Transparencia" del proyecto, la cual será accesible desde el pie de página (Footer) de la aplicación.

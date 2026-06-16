@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 07 Api Integration Regression BRI- 100
+description: STORY- 011 07 Api Integration Regression BRI- 100 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-07-api-integration-regression-bri-100.md
+---
+
 # STORY-011-07 / BRI-100 / API and Integration Regression Coverage
 
 ## Summary

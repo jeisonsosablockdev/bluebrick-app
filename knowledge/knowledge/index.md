@@ -1,3 +1,4 @@
+
 # Knowledge Inbox
 
 Incoming knowledge items awaiting promotion to formal documentation.

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 006 01 Deploy And Mint Permanent Freeze Delegate Plugin
+description: STORY- 006 01 Deploy And Mint Permanent Freeze Delegate Plugin - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin.md
+---
+
 # STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin
 
 ## Metadata

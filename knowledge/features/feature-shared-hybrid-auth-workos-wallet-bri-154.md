@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared HyBRI-d Auth Workos Wallet BRI- 154
+description: Feature Shared HyBRI-d Auth Workos Wallet BRI- 154 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md
+---
+
 # feature(shared): hybrid federated login plus wallet-linked auth (BRI-154)
 
 ## Status

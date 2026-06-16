@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 08 Authorities Aggregation BRI- 105
+description: STORY- 011 08 Authorities Aggregation BRI- 105 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-08-authorities-aggregation-bri-105.md
+---
+
 # STORY-011-08 Authorities Aggregation (`BRI-105`)
 
 ## Summary

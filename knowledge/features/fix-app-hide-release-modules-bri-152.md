@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Hide Release Modules BRI- 152
+description: Fix App Hide Release Modules BRI- 152 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-hide-release-modules-bri-152.md
+---
+
 # BRI-152 — Hide development-only modules in RC and release
 
 ## Summary

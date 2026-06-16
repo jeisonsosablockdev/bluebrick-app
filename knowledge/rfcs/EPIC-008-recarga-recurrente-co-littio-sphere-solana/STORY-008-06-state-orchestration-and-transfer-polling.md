@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 06 State Orchestration And Transfer Polling
+description: STORY- 008 06 State Orchestration And Transfer Polling - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-06-state-orchestration-and-transfer-polling.md
+---
+
 # STORY-008-06-state-orchestration-and-transfer-polling
 
 ## Metadata

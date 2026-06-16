@@ -1,3 +1,12 @@
+---
+type: Guide
+title: Gitflow Pr Structure
+description: Gitflow Pr Structure - migrated from docs/
+tags: [guides]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/gitflow-pr-structure.md
+---
+
 # Gitflow PR Structure (Metadata-First)
 
 ## Objective

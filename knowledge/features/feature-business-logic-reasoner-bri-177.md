@@ -1,18 +1,12 @@
 ---
-id: feature-business-logic-reasoner-bri-177
-title: Business Logic Reasoner - Self-Discover Agent
-status: observed
-kind: observation
-promotion_target: guide
-scope: shared
-filePath: docs/features/feature-business-logic-reasoner-bri-177.md
-owner: unassigned
-created_at: 2026-06-12T18:30:00.000Z
-updated_at: 2026-06-13T06:30:00.000Z
-source_issue: BRI-177
-source_feature: business-logic-reasoner
-enforcement_candidate: yes
+type: Feature Spec
+title: Feature Business Logic Reasoner BRI- 177
+description: Feature Business Logic Reasoner BRI- 177 - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-business-logic-reasoner-bri-177.md
 ---
+
 
 # Feature: Business Logic Reasoner - Self-Discover Agent
 

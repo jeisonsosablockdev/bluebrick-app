@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 03 Solana Wallet Destination And Usdc Ata Validation
+description: STORY- 008 03 Solana Wallet Destination And Usdc Ata Validation - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-03-solana-wallet-destination-and-usdc-ata-validation.md
+---
+
 # STORY-008-03-solana-wallet-destination-and-usdc-ata-validation
 
 ## Metadata

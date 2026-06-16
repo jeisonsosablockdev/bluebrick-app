@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 007 01 Recovery Workflow Specification
+description: STORY- 007 01 Recovery Workflow Specification - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-007-offline-recovery-protocol/STORY-007-01-recovery-workflow-specification.md
+---
+
 # STORY-007-01-recovery-workflow-specification
 
 ## Metadata

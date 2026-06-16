@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 04 Dedicated Onramper Account Provisioning
+description: STORY- 008 04 Dedicated Onramper Account Provisioning - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-04-dedicated-onramper-account-provisioning.md
+---
+
 # STORY-008-04-dedicated-onramper-account-provisioning
 
 ## Metadata

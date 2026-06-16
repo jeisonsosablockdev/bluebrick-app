@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix May 2026 Ui Errors Implementation
+description: Fix May 2026 Ui Errors Implementation - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-may-2026-ui-errors-implementation.md
+---
+
 # Implementation: May 2026 UI Errors (BRI-166)
 
 ## Resolution Strategy

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation
+description: Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-wide-motion-12-ux-polish-bri-163-implementation.md
+---
+
 # Implementation Plan: App-wide Motion 12 UX Polish (BRI-163)
 
 ## Status

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 02 Admin Collections Read Model
+description: STORY- 011 02 Admin Collections Read Model - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-011-admin-collections-console/STORY-011-02-admin-collections-read-model.md
+---
+
 # STORY-011-02-admin-collections-read-model
 
 ## Metadata

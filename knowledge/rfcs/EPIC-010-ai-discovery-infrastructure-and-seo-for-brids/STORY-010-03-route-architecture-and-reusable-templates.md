@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 010 03 Route Architecture And Reusable Templates
+description: STORY- 010 03 Route Architecture And Reusable Templates - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-010-ai-discovery-infrastructure-and-seo-for-brids/STORY-010-03-route-architecture-and-reusable-templates.md
+---
+
 # STORY-010-03-route-architecture-and-reusable-templates
 
 ## Metadata

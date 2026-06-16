@@ -1,3 +1,12 @@
+---
+type: RFC
+title: README
+description: README - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-004-user-profile-kyc-aml/README.md
+---
+
 # EPIC-004-user-profile-kyc-aml
 
 ## Metadata

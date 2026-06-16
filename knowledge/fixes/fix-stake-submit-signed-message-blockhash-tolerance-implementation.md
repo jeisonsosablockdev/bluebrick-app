@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Stake Submit Signed Message Blockhash Tolerance Implementation
+description: Fix Stake Submit Signed Message Blockhash Tolerance Implementation - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md
+---
+
 # implementation(fix): Stake submit signed transaction semantic validation
 
 ## Espanol

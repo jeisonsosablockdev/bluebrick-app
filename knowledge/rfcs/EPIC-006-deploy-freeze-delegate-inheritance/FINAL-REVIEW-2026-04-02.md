@@ -1,3 +1,12 @@
+---
+type: RFC
+title: FINAL REVIEW 2026 04 02
+description: FINAL REVIEW 2026 04 02 - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/FINAL-REVIEW-2026-04-02.md
+---
+
 # EPIC-006 Final Review (2026-04-02)
 
 ## Objetivo

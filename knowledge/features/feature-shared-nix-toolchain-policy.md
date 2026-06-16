@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Nix Toolchain Policy
+description: Feature Shared Nix Toolchain Policy - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-nix-toolchain-policy.md
+---
+
 # Feature: Shared Nix Environment + Toolchain Maintenance Policy (BRI-43)
 
 ## Date

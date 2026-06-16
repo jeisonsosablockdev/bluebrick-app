@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 08 Copy Link Interactions And Tests BRI- 109
+description: STORY- 011 08 Copy Link Interactions And Tests BRI- 109 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-08-copy-link-interactions-and-tests-bri-109.md
+---
+
 # Feature: STORY-011-08 copy/link interactions and tests (BRI-109)
 
 ## Summary

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: Solana Kit Migration Recipes
+description: Solana Kit Migration Recipes - migrated from docs/
+tags: [guides]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/solana-kit-migration-recipes.md
+---
+
 # Solana Kit Migration Recipes
 
 Quick reference for `EPIC-005` migration work from `@solana/web3.js` to `@solana/kit`.

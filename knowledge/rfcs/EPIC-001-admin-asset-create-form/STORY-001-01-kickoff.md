@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 001 01 Kickoff
+description: STORY- 001 01 Kickoff - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-001-admin-asset-create-form/STORY-001-01-kickoff.md
+---
+
 # STORY-001-01-kickoff
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Refactor Shared Codex Orchestration Architecture
+description: Refactor Shared Codex Orchestration Architecture - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/refactor-shared-codex-orchestration-architecture.md
+---
+
 # Refactor Shared Codex Orchestration Architecture
 
 Date: 2026-05-10

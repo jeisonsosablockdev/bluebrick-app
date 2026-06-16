@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Create A Marketplace 3d Visual BRI- 164 S37 Detail Deal Economics
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S37 Detail Deal Economics - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics.md
+---
+
 # S37 Plan: Detail Deal Economics Extraction
 
 ## Scope

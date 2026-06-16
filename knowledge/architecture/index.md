@@ -1,3 +1,4 @@
+
 # Architecture
 
 System architecture documents, ADRs, and design decisions.

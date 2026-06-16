@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Human Acceptance Gated Merge
+description: Feature Shared Human Acceptance Gated Merge - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-human-acceptance-gated-merge.md
+---
+
 # Human Acceptance Gated Merge
 
 ## Problem

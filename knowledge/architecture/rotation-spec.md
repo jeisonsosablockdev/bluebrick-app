@@ -1,3 +1,12 @@
+---
+type: ADR
+title: Rotation Spec
+description: Rotation Spec - migrated from docs/
+tags: [architecture]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/architecture/rotation-spec.md
+---
+
 # Rotation Lifecycle Spec (STORY-006-04)
 
 ## 1. Objetivo

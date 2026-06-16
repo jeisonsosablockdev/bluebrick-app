@@ -1,16 +1,12 @@
 ---
-id: KNOW-2026-06-001
-title: Admin Candy Machine module worklog
-status: observed
-promotion_target: guide
-scope: admin-assets-new-core-candy-machine
-owner: codex
-created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T00:00:00.000Z
-source_issue: n/a
-source_feature: admin-assets-new
-enforcement_candidate: no
+type: Feature Spec
+title: KNOW 2026 06 001 Admin Candy Machine Module Worklog
+description: KNOW 2026 06 001 Admin Candy Machine Module Worklog - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md
 ---
+
 
 # Admin Candy Machine Module Worklog
 

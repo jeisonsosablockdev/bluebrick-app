@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Marketplace Release Placeholder Graphs BRI- 153
+description: Fix App Marketplace Release Placeholder Graphs BRI- 153 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-marketplace-release-placeholder-graphs-bri-153.md
+---
+
 # fix(app): hide marketplace placeholder graphs in release (BRI-153 / s03)
 
 ## Summary

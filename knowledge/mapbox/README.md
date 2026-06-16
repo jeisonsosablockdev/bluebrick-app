@@ -1,3 +1,12 @@
+---
+type: Config
+title: README
+description: README - migrated from docs/
+tags: [mapbox]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/mapbox/README.md
+---
+
 # BRIDS Marketplace Mapbox Style
 
 ## Artifact

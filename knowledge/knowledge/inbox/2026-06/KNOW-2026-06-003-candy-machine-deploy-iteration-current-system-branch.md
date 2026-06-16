@@ -1,16 +1,12 @@
 ---
-id: KNOW-2026-06-003
-title: Candy Machine deploy current system branch
-status: observed
-promotion_target: guide
-scope: admin-assets-new-core-candy-machine
-owner: codex
-created_at: 2026-06-07T00:00:00.000Z
-updated_at: 2026-06-07T21:59:00.000Z
-source_issue: BRI-176
-source_feature: admin-assets-new
-enforcement_candidate: no
+type: Feature Spec
+title: KNOW 2026 06 003 Candy Machine Deploy Iteration Current System Branch
+description: KNOW 2026 06 003 Candy Machine Deploy Iteration Current System Branch - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md
 ---
+
 
 # Candy Machine Deploy Iteration: Current System Branch
 

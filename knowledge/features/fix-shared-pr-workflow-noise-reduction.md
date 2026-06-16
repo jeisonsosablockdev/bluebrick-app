@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Shared Pr Workflow Noise Reduction
+description: Fix Shared Pr Workflow Noise Reduction - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-shared-pr-workflow-noise-reduction.md
+---
+
 # Feature Note: shared-pr-workflow-noise-reduction
 
 ## Summary

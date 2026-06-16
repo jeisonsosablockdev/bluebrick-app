@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 004 03 Stripe Webhook Handler
+description: STORY- 004 03 Stripe Webhook Handler - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-004-user-profile-kyc-aml/STORY-004-03-stripe-webhook-handler.md
+---
+
 # STORY-004-03-stripe-webhook-handler
 
 ## Metadata

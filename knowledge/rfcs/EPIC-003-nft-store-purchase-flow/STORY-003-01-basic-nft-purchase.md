@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 003 01 Basic Nft Purchase
+description: STORY- 003 01 Basic Nft Purchase - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-003-nft-store-purchase-flow/STORY-003-01-basic-nft-purchase.md
+---
+
 # STORY-003-01-basic-nft-purchase
 
 ## Metadata

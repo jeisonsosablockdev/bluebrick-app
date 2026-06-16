@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 11 Location Form Contract And Persistence Parity BRI- 124
+description: STORY- 011 11 Location Form Contract And Persistence Parity BRI- 124 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-11-location-form-contract-and-persistence-parity-bri-124.md
+---
+
 # STORY-011-11 Location form contract and persistence parity
 
 ## Summary

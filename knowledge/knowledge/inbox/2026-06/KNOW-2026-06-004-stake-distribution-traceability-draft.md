@@ -1,17 +1,12 @@
 ---
-id: KNOW-2026-06-004
-title: Stake, distribution, treasury, claim, and traceability draft
-status: draft
-scope: stake-distribution-traceability
-source_issue: BRI-5, BRI-6, BRI-7, BRI-8
-source_feature: docs/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md
-source_commit: pending
-promotion_target: guide
-enforcement_candidate: no
-owner: jaysosa
-created_at: 2026-06-08
-updated_at: 2026-06-08
+type: Feature Spec
+title: KNOW 2026 06 004 Stake Distribution Traceability Draft
+description: KNOW 2026 06 004 Stake Distribution Traceability Draft - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/knowledge/inbox/2026-06/KNOW-2026-06-004-stake-distribution-traceability-draft.md
 ---
+
 
 # Language Policy
 

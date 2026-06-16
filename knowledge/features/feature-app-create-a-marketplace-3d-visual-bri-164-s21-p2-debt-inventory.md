@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Create A Marketplace 3d Visual BRI- 164 S21 P2 Debt Inventory
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S21 P2 Debt Inventory - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md
+---
+
 # S21 Artifact: P2 Clean-Code Debt Inventory
 
 ## Scope

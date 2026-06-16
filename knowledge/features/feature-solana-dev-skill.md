@@ -1,12 +1,12 @@
 ---
-id: feature-solana-dev-skill
-title: Add solana-dev skill to .agents/skills for canonical in-repo access
-status: approved
-scope: tooling
-source_branch: feature/shared-solana-dev-skill
-created_at: 2026-06-14
-updated_at: 2026-06-14
+type: Feature Spec
+title: Feature Solana Dev Skill
+description: Feature Solana Dev Skill - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-solana-dev-skill.md
 ---
+
 
 # Feature: Solana Dev Skill In-Repo
 

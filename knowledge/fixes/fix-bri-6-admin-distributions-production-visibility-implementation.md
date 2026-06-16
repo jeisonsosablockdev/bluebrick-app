@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix BRI- 6 Admin Distributions Production Visibility Implementation
+description: Fix BRI- 6 Admin Distributions Production Visibility Implementation - migrated from docs/
+tags: [fixes]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-bri-6-admin-distributions-production-visibility-implementation.md
+---
+
 # implementation(fix): BRI-6 admin distributions production visibility
 
 ## Summary

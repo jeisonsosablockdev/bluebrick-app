@@ -1,17 +1,12 @@
 ---
-id: KNOW-2026-05-001
-title: Governance summaries must defer to canonical policy and enforcement
-status: observed
-scope: shared
-source_issue: BRI-143
-source_feature: docs/features/feature-shared-knowledge-promotion-system-bri-143.md
-source_commit: 8e17d7d
-promotion_target: guide
-enforcement_candidate: yes
-owner: jaymusicmachine
-created_at: 2026-05-02
-updated_at: 2026-05-02
+type: Feature Spec
+title: KNOW 2026 05 001 Governance Summary Defers To Canonical Policy
+description: KNOW 2026 05 001 Governance Summary Defers To Canonical Policy - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/knowledge/inbox/2026-05/KNOW-2026-05-001-governance-summary-defers-to-canonical-policy.md
 ---
+
 
 # Signal
 

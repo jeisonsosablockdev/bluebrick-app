@@ -1,16 +1,12 @@
 ---
-id: KNOW-2026-06-005
-title: Candy Machine deploy iteration 2026-06-11
-status: observed
-promotion_target: guide
-scope: admin-assets-new-core-candy-machine
-owner: codex
-created_at: 2026-06-11T00:00:00.000Z
-updated_at: 2026-06-11T00:00:00.000Z
-source_issue: BRI-173
-source_feature: admin-assets-new
-enforcement_candidate: no
+type: Feature Spec
+title: KNOW 2026 06 005 Candy Machine Deploy Iteration 2026 06 11 Branching Policy Preflight
+description: KNOW 2026 06 005 Candy Machine Deploy Iteration 2026 06 11 Branching Policy Preflight - migrated from docs/
+tags: [knowledge]
+timestamp: 2026-06-16T15:15:38Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md
 ---
+
 
 # Candy Machine Deploy Iteration: 2026-06-11
 

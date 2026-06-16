@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Rfc EPIC- 014
+description: Rfc EPIC- 014 - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/rfc-epic-014.md
+---
+
 # RFC EPIC-014: Stake Distribution Traceability System
 
 ## Executive Summary

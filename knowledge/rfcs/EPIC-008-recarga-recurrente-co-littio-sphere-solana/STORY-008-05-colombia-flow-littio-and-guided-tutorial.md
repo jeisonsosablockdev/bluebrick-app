@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 05 Colombia Flow Littio And Guided Tutorial
+description: STORY- 008 05 Colombia Flow Littio And Guided Tutorial - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-05-colombia-flow-littio-and-guided-tutorial.md
+---
+
 # STORY-008-05-colombia-flow-littio-and-guided-tutorial
 
 ## Metadata

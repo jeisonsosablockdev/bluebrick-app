@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 002 02 Create Asset To Mint Flow
+description: STORY- 002 02 Create Asset To Mint Flow - migrated from docs/
+tags: [rfcs]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-02-create-asset-to-mint-flow.md
+---
+
 # STORY-002-02-create-asset-to-mint-flow
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Shared Pr Policy Lite And Log Noise
+description: Fix Shared Pr Policy Lite And Log Noise - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-shared-pr-policy-lite-and-log-noise.md
+---
+
 # Feature Note: shared-pr-policy-lite-and-log-noise
 
 ## Summary
