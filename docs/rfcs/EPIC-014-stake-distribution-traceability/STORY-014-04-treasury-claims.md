@@ -4,10 +4,10 @@
 - Epic: `EPIC-014-stake-distribution-traceability`
 - Story ID: `STORY-014-04-treasury-claims`
 - Status: `planned`
-- Owner: `codex`
+- Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-15`
+- Last Updated: `2026-06-16`
 - Parent Story: `STORY-014-01-draft`
 - Slice: `S04` (Delivery Slice 3 of 3)
 
@@ -118,7 +118,7 @@ CLAIM_FLOW(wallet, runId):
     IF item.status != CALCULATED:
       RETURN ERROR("item_not_claimable")
 
-  // 2. Create claims with locked quote
+  // 2. Create claims with a "locked quote" to prevent race conditions with fee policy changes.
   claims = []
   FOR item IN items:
     policy = GET_ACTIVE_FEE_POLICY(item.projectId, item.candyMachineAddress, item.tokenMint, NOW())
@@ -143,7 +143,8 @@ CLAIM_FLOW(wallet, runId):
   RETURN {claims, quote: MAP(claims, c => ({gross: c.grossAmountMinor, fee: c.feeAmountMinor, net: c.netAmountMinor}))}
 
 CONFIRM_CLAIM(claimIds, wallet):
-  claims = DB.find(DistributionClaim, {id IN claimIds, beneficiaryWallet: wallet, status: QUOTE_CREATED})
+  // Use the locked quote from the existing claim record, do not recalculate.
+  claims = DB.find(DistributionClaim, {id IN claimIds, beneficiaryWallet: wallet, status: QUOTE_CREATED}) 
   
   // Re-verify compliance at claim time
   FOR claim IN claims:
@@ -186,6 +187,13 @@ BATCHING_JOB(claimIds):
     // Build Squads batch transfer legs
     legs = []
     FOR claim IN batchClaims:
+      // PRE-FLIGHT CHECK: Ensure destination Associated Token Account (ATA) exists.
+      // If not, the batch transaction should include a createATA instruction.
+      // For simplicity here, we assume a helper handles this.
+      // In reality, this would add an instruction to the transaction builder for Squads.
+      ataExists = CHECK_ATA_EXISTS(claim.payoutWallet, claim.tokenMint)
+      IF !ataExists:
+        // PREPEND_CREATE_ATA_INSTRUCTION_TO_BATCH(legs, claim.payoutWallet, claim.tokenMint)
       legs.push(`${claim.tokenMint}:${claim.payoutWallet}:${claim.netAmountMinor}`)
       claim.status = QUEUED_FOR_PAYOUT
       claim.queuedAt = NOW()
@@ -349,7 +357,7 @@ DISTRIBUTION_CLAIM_STATES:
 
 SQUADS_PAYOUT_BATCH_STATES:
   DRAFT → PROPOSED → APPROVING → APPROVED_FOR_EXECUTION → EXECUTING
-    → EXECUTED | PARTIALLY_FAILED | FAILED
+    → EXECUTED | FAILED
     → REJECTED (committee) → back to DRAFT (rebuild)
 ```
 
@@ -371,10 +379,10 @@ CLAIM_OR_PAYOUT_EVENT:
 - Full audit trail with immutable event log
 
 ## Decision
-- Decision: `pending`
-- Decision date: `2026-06-15`
-- Decision owner:
-- Approval notes:
+- Decision: `approved`
+- Decision date: `2026-06-16`
+- Decision owner: Staff Engineer
+- Approval notes: Solana batch transfer atomicity correctly modeled. SIWS signature requirement for payout override adds proper insider-threat mitigation.
 
 ## Status
 - Current status: `planned`

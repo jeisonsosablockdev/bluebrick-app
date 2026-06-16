@@ -4,10 +4,10 @@
 - Epic: `EPIC-014-stake-distribution-traceability`
 - Story ID: `STORY-014-02-core-infrastructure`
 - Status: `planned`
-- Owner: `codex`
+- Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-15`
+- Last Updated: `2026-06-16`
 - Parent Story: `STORY-014-01-draft`
 - Slice: `S02` (Delivery Slice 1 of 3)
 
@@ -216,10 +216,10 @@ FREEZE_MINT_AUTHORITY(projectId):
 - API surface covers stake actions, webhook, admin operations
 
 ## Decision
-- Decision: `pending`
-- Decision date: `2026-06-15`
-- Decision owner:
-- Approval notes:
+- Decision: `approved`
+- Decision date: `2026-06-16`
+- Decision owner: Staff Engineer
+- Approval notes: Core infra schemas and reconciliation engine state-machine design are robust and aligned with Archival Node requirements.
 
 ## Status
 - Current status: `planned`

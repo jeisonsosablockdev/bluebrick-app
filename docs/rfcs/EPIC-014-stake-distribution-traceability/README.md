@@ -3,16 +3,16 @@
 ## Metadata
 - Epic ID: `EPIC-014`
 - Title: `Stake, Distribution, Treasury, Claim, and Traceability`
-- Status: `draft`
-- Owner: `codex`
+- Status: `approved`
+- Owner: `jaysosa`
 - Spec owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-15`
+- Last Updated: `2026-06-16`
 
 ## Scope
 - Problem statement: BRIDS needs a system that can answer: "How much should BRIDS send this user for the amount of time they kept eligible assets staked?" The calculation starts from available treasury earnings for a scoped project eligibility window, distributed across the investor pool according to time-weighted eligible participation.
 - Business goal: Provide auditable, blockchain-verified distribution of real estate project yields to NFT holders who stake/freeze their assets, with immutable audit trail from freeze events through Squads treasury execution.
-- Technical goal: Implement 8-layer architecture (Stake/Unstake Event Layer, Project Eligibility Window, Dashboard Projection, Distribution Snapshot, Distribution Calculation, Squads Treasury, Claim Lifecycle, Traceability/Audit) using MPL Core freeze/thaw, Candy Machine as sole financial scope, finalized RPC evidence from archival nodes, and deterministic integer math.
+- Technical goal: Implement 8-layer architecture (Stake/Unstake Event Layer, Project Eligibility Window, Dashboard Projection, Distribution Snapshot, Distribution Calculation, Squads Treasury, Claim Lifecycle, Traceability/Audit) using MPL Core freeze/thaw, Candy Machine as sole financial scope, finalized RPC evidence from archival nodes, and deterministic integer math (Largest-Remainder Hamilton method).
 - Out of scope: Collection-based financial scope, custom Anchor notary program, per-NFT economic tiers, multi-Candy Machine tranche merging, floating-point money math, hot wallet payouts.
 
 ## Success Criteria
@@ -20,7 +20,7 @@
 - [ ] Project eligibility window defines when stake time creates beneficiary rights
 - [ ] Dashboard projections use Helius/webhooks for UI only; never finalize payouts
 - [ ] Distribution Snapshot produces evidence package for Final Calculation using finalized RPC from archival nodes
-- [ ] Final Calculation reconstructs historical freeze intervals from blockchain evidence (archival node access), computes time-weighted wallet weights, allocates with integer math + Hamilton remainder
+- [ ] Final Calculation reconstructs historical disjoint freeze intervals from blockchain evidence, computes time-weighted wallet weights, allocates with exact integer math using the 2-pass Largest-Remainder (Hamilton) method to prevent dust.
 - [ ] Squads multisig controls treasury execution; committee reviews dispersion package before funds move; single batched vault transaction with multiple transfer legs
 - [ ] User-initiated Claim with configurable fee, compliance re-check at claim time, batch Squads execution
 - [ ] Full audit trail answers: which NFT, which wallet, which Candy Machine, what window, how many seconds, KYC state, treasury source, fee policy, Squads proposal, transaction proof, exceptions
@@ -39,7 +39,8 @@
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
 | --- | --- | --- | --- | --- |
-| 2026-06-15 | STORY-014-01 | Created RFC scaffold from KNOW-2026-06-004 draft | codex | #BRI-7 |
+| 2026-06-15 | STORY-014-01 | Created RFC scaffold from KNOW-2026-06-004 draft | jaysosa | #BRI-7 |
+| 2026-06-16 | EPIC-014 | Approved epic and implementation slices | Staff Engineer | |
 
 ## Risks and Dependencies
 - Risks:
@@ -49,6 +50,7 @@
   - Compliance state changes between Final Calculation and claim execution
   - Partial failures in Squads batched transactions (due to destination account errors) causing operational gridlock.
   - Retroactive dilution if users can continue to mint from the Candy Machine after the project window has started.
+  - Payout wallet override insider threat: an admin maliciously altering the destination wallet for a valid claim.
   - Early investor dilution: planned reward mechanism; no capital injection possible per business model; dilution is expected and accepted.
 - Dependencies:
   - Helius MCP for enhanced RPC and webhook indexing
@@ -64,6 +66,7 @@
   - Withheld allocation bucket for non-verified wallets (future design)
   - Freeze mint authority on Candy Machine when project starts to lock the pool denominator.
   - Implement granular `failed` status for individual payout batch items allowing retry queues.
+  - Force cryptographic proof (SIWS) from the original beneficiary wallet or formal KYC recovery pipeline to process a payout wallet override.
   - **Early investor dilution explicitly accepted as reward mechanism** — no capital injection, dilution is expected.
   - **Squads v4 batch transfers**: single vault transaction with multiple transfer legs (SOL + SPL) per Squads CLI `initiate_batch_transfer`.
   - **Compliance hold TTL**: 12 months max for `restricted_aml`/`suspended` funds; automatic clawback to treasury after TTL expiry.

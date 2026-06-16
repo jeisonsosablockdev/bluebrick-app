@@ -4,10 +4,10 @@
 - Epic: `EPIC-014-stake-distribution-traceability`
 - Story ID: `STORY-014-03-distribution-engine`
 - Status: `planned`
-- Owner: `codex`
+- Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-15`
+- Last Updated: `2026-06-16`
 - Parent Story: `STORY-014-01-draft`
 - Slice: `S03` (Delivery Slice 2 of 3)
 
@@ -161,7 +161,11 @@ CALCULATE_DISTRIBUTION(runId, config):
 
   // 6. Hamilton remainder distribution
   remainderTotal = config.distributionPoolAmountMinor - SUM(i.grossAmountMinor for i in items if i.status != EXCLUDED)
-  sorted = SORT(items, BY remainder DESC, THEN BY firstFreezeAt ASC, THEN BY wallet ASC)
+  // Sort by the 3-level tie-breaking rule for deterministic distribution
+  // 1. Largest fractional remainder DESC
+  // 2. Earliest first_freeze_confirmed_at for the wallet (FIFO) ASC
+  // 3. Wallet address lexicographically ASC
+  sorted = SORT(items, BY remainder DESC, THEN BY wallet.firstFreezeAt ASC, THEN BY wallet.address ASC)
   FOR i = 0 to remainderTotal - 1:
     sorted[i].grossAmountMinor += 1
     sorted[i].netAmountMinor += 1
@@ -294,10 +298,10 @@ COMMITTEE_ACTIONS:
 - State machine with committee gate before dispersion
 
 ## Decision
-- Decision: `pending`
-- Decision date: `2026-06-15`
-- Decision owner:
-- Approval notes:
+- Decision: `approved`
+- Decision date: `2026-06-16`
+- Decision owner: Staff Engineer
+- Approval notes: Deterministic tie-breaking rules for the Largest-Remainder (Hamilton) method are mathematically sound.
 
 ## Status
 - Current status: `planned`
