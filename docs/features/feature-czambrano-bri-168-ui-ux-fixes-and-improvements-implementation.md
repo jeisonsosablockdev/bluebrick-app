@@ -403,3 +403,7 @@ Install these rules into the primary BRIDS policy and workflow documents:
 #### Estado post SPEC MERGE
 - `SPEC05` checkpoint commit listo para merge a Feature branch.
 - Author y committer: `czambrano`.
+- Merge commit: `ce232b5 merge: SPEC05 landing header full-width visual into Feature`
+- Merge completado: 2026-06-16.
+- Rama Feature actualizada: `feature/czambrano-bri-168-ui-ux-fixes-and-improvements`
+- Sin PR intermedio (protocolo SPEC MERGE interno).
