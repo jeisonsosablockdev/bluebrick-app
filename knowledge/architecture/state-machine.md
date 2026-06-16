@@ -1,20 +1,9 @@
----
-type: ADR
-title: State Machine — Mint Job Idempotency & AppData Economic Lifecycle
-description: Deterministic state machine for mint job orchestration and AppData economic payload lifecycle — states, transitions, illegal transitions, and invariants
-tags: [architecture, state-machine, mint-jobs, idempotency, appdata, nft, devnet]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/state-machine.md
----
-
 # State Machine
 
 ## Scope
 - Feature: P0-06 H1 - Backend mint job idempotency states.
-- Extension: EPIC-006 STORY-006-03 - Economic AppData Lifecycle.
 
-## Core Mint Job States
-
+## States
 | State | Description | Entry Condition | Exit Condition |
 | --- | --- | --- | --- |
 | `queued` | Job accepted and persisted | First idempotent creation by `emission_id` | Batch preparation starts |
@@ -26,8 +15,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/state-ma
 | `completed` | All items confirmed | `confirmed_items == total_items` | Terminal |
 | `failed` | Terminal operational failure | Irrecoverable error | Terminal |
 
-## Core Transitions
-
+## Transitions
 | From | Action | To | Validation |
 | --- | --- | --- | --- |
 | `queued` | prepare batch | `preparing` | Admin-authenticated job exists |
@@ -39,21 +27,25 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/state-ma
 | `confirming` | mixed outcome | `partial` | At least one failed and one confirmed item |
 | `confirming` | unrecoverable | `failed` | Retries exhausted with no safe continuation |
 
-## Illegal Transitions (Enforced)
-- [x] `completed` → `preparing` — Completed jobs are immutable and must not mint extra serials.
-- [x] `failed` → `signing` — Requires explicit recovery workflow, not direct signing.
-- [x] `submitting` → `preparing` — Could duplicate batch/item state after network uncertainty.
+## Illegal Transitions
+- [x] Transition: `completed -> preparing`
+  - Reason blocked: Completed jobs are immutable and must not mint extra serials.
+  - Expected error: backend validation error.
+
+- [x] Transition: `failed -> signing`
+  - Reason blocked: Requires explicit recovery workflow, not direct signing.
+  - Expected error: backend validation error.
+
+- [x] Transition: `submitting -> preparing`
+  - Reason blocked: Could duplicate batch/item state after network uncertainty.
+  - Expected error: backend validation error.
 
 ## Determinism Notes
 - No floating point arithmetic used: [x]
 - Transition outputs are deterministic: [x]
 
----
-
 ## EPIC-006 STORY-006-03 Addendum (Economic AppData Lifecycle)
-
 ### AppData States
-
 | State | Description | Entry Condition | Exit Condition |
 | --- | --- | --- | --- |
 | `appdata_unset` | Asset exists without economic adapter data | Asset minted (`CreateV2`) | External adapter created |
@@ -62,7 +54,6 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/state-ma
 | `appdata_v1_updated` | Updated payload persisted (`v1`) | Subsequent `WriteExternalPluginAdapterDataV1` confirmed | Terminal for this story |
 
 ### Allowed Transitions
-
 | From | Action | To | Validation |
 | --- | --- | --- | --- |
 | `appdata_unset` | add adapter | `appdata_adapter_ready` | Admin signer + `UpdateAuthority` key |
@@ -70,8 +61,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/state-ma
 | `appdata_v1_written` | write updated payload | `appdata_v1_updated` | Same schema + authority constraints |
 
 ### Illegal Transitions
-- [x] `appdata_unset` → `appdata_v1_written` without adapter attach.
-- [x] Any state → update with invalid `yield_mode`.
-- [x] Any state → write with unsupported payload keys.
+- [x] `appdata_unset -> appdata_v1_written` without adapter attach.
+- [x] Any state -> update with invalid `yield_mode`.
+- [x] Any state -> write with unsupported payload keys.
 
 Last Updated: 2026-04-01 08:20:33 UTC
