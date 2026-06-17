@@ -1,6 +1,6 @@
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-06-06
+Last Updated: 2026-06-16
 
 ## BRI-174 Investor Portfolio Protected Read Boundary
 - The Investor Dashboard Portfolio now reads real collection-level holdings through `GET /api/protected/portfolio`.

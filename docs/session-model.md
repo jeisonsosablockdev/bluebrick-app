@@ -1,6 +1,6 @@
 # Session Model
 
-Last Updated: 2026-06-06
+Last Updated: 2026-06-16
 
 ## BRI-174 Investor Portfolio Session Boundary
 - Investor Portfolio uses the existing protected account/session model and does not create a new session layer.
