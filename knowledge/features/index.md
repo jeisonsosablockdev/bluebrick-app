@@ -1,97 +1,200 @@
+---
+type: Feature Index
+title: Features
+description: Feature specifications and implementation guides organized by BRI and Epic
+tags: [feature, index]
+timestamp: 2026-06-16T00:00:00Z
+resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/features
+---
 
 # Features
 
-Feature specifications and implementation guides organized by epic and story.
+Feature specifications and implementation guides organized by BRI and Epic.
 
-## Epics
+## By BRI
+
+### BRI-5
+* [Discovery Brief Anchor Notary Freeze Control](bri-5/index.md)
+
+### BRI-10
+* [Contextual Hints Admin Assets New Exclude Location](bri-10/index.md)
+
+### BRI-12
+* [App Wallet Connection SolanaKit](bri-12/index.md)
+
+### BRI-16
+* [Shared Referral Marketing System](bri-16/index.md)
+
+### BRI-39
+* [App Home Copy](bri-39/index.md)
+
+### BRI-61
+* [Flujo GitFlow PR Structure](bri-61/index.md)
+
+### BRI-62
+* [Flujo GitFlow PR Structure Improvement](bri-62/index.md)
+
+### BRI-63..68
+* [BRI-63: Remove UI States](bri-63/index.md)
+* [BRI-64: Marketplace Remove Hardcoded Fallback](bri-64/index.md)
+* [BRI-65: Landing Featured Properties](bri-65/index.md)
+* [BRI-66: SIWS Session Nonce Stateless](bri-66/index.md)
+* [BRI-67: App Favicon](bri-67/index.md)
+* [BRI-68: App Home Title](bri-68/index.md)
+
+### BRI-79
+* [Collections Health Manual Review Queue](bri-79/index.md)
+
+### BRI-92..99
+* [BRI-92: Empty Loading Error States](bri-92/index.md)
+* [BRI-93: Collection Cards UI](bri-93/index.md)
+* [BRI-94: Navigation to Detail View](bri-94/index.md)
+* [BRI-95: Read-Only Detail Shell](bri-95/index.md)
+* [BRI-96: Summary Editor](bri-96/index.md)
+* [BRI-97: Property Information Editor](bri-97/index.md)
+* [BRI-98: Gallery Tabs Shell](bri-98/index.md)
+* [BRI-99: Documents Editor](bri-99/index.md)
+
+### BRI-100..114
+* [BRI-100: API Integration Regression](bri-100/index.md)
+* [BRI-101: Playwright Admin Collections Flow](bri-101/index.md)
+* [BRI-102: Docs Sync RFC Traceability](bri-102/index.md)
+* [BRI-103: Responsive QA Evidence Pack](bri-103/index.md)
+* [BRI-104: Base Blockchain Addresses Aggregation](bri-104/index.md)
+* [BRI-105: Authorities Aggregation](bri-105/index.md)
+* [BRI-106: Guard Fields Aggregation](bri-106/index.md)
+* [BRI-107: AppData Plugin Fields Aggregation](bri-107/index.md)
+* [BRI-108: Read-Only Blockchain Panel UI](bri-108/index.md)
+* [BRI-109: Copy Link Interactions](bri-109/index.md)
+* [BRI-110: Current Address Outbound Maps](bri-110/index.md)
+* [BRI-111: Backend Location Maps Contract](bri-111/index.md)
+* [BRI-112: Address Autocomplete](bri-112/index.md)
+* [BRI-113: Persist Google Maps Place JSON](bri-113/index.md)
+* [BRI-114: Manual Save Cancel Integration](bri-114/index.md)
+
+### BRI-121
+* [App Startup Splash Screen](bri-121/index.md)
+
+### BRI-123
+* [Admin Shell CleanCode](bri-123/index.md)
+
+### BRI-124
+* [Location Form Contract Persistence Parity](bri-124/index.md)
+
+### BRI-143
+* [Shared Knowledge Promotion System](bri-143/index.md)
+
+### BRI-144
+* [Next Proxy Convention](bri-144/index.md)
+
+### BRI-149
+* [Shared Single Issue Slice Planning](bri-149/index.md)
+
+### BRI-151
+* [App Profile Completion Reward](bri-151/index.md)
+
+### BRI-152
+* [App Hide Release Modules](bri-152/index.md)
+
+### BRI-153
+* [Shared Hybrid Auth Clean Code](bri-159-feature-shared-hybrid-auth-clean-code/index.md)
+
+### BRI-154
+* [Shared Hybrid Auth WorkOS Wallet](bri-154/index.md)
+
+### BRI-156
+* [Shared DB Migration Enforcement](bri-156/index.md)
+
+### BRI-157
+* [Shared Agents Orchestration Enforcement](bri-157/index.md)
+* [Shared PWA Web Push](bri-157/index.md)
+
+### BRI-160
+* [Shared Wallet Modal Clean Code](bri-160/index.md)
+
+### BRI-163
+* [App Wide Motion 12 UX Polish](bri-163/index.md)
+
+### BRI-164
+* [Marketplace 3D Visual](bri-164-marketplace-3d-visual/index.md)
+* [Marketplace Detail Media Carousel](bri-164-media-carousel/index.md)
+
+### BRI-165
+* [AdminAssetsNew Fixes](bri-165/index.md)
+
+### BRI-167
+* [Phantom Autoconnect Scope](bri-167/index.md)
+
+### BRI-169
+* [Admin Collections UI Reorganization](bri-169/index.md)
+
+### BRI-170
+* [Stake Fixes](bri-170/index.md)
+
+### BRI-171
+* [Investor Dashboard Overview](bri-171/index.md)
+
+### BRI-173
+* [CZAMBRANO Branching Policy Preflight](bri-173/index.md)
+
+### BRI-174
+* [Investor Portfolio Real Holdings](bri-174/index.md)
+
+### BRI-177
+* [Business Logic Reasoner](bri-177/index.md)
+
+## By Epic
 
 ### Epic 010 - AI Discovery Infrastructure
-* [Story 01: Foundation and Layered Architecture](epic-010/story-01-foundation-layered-architecture.md)
-* [Story 02: Content as Code and Editorial Contracts](epic-010/story-02-content-as-code-editorial-contracts.md)
-* [Story 03: Route Architecture and Reusable Templates](epic-010/story-03-route-architecture-templates.md)
-* [Story 04: Technical SEO Infrastructure](epic-010/story-04-technical-seo-infrastructure.md)
-* [Story 05: Structured Data JSON-LD Layer](epic-010/story-05-structured-data-json-ld.md)
-* [Story 06: AI-Readable Machine Endpoints](epic-010/story-06-ai-readable-machine-endpoints.md)
-* [Story 07: Content Pipeline Serialization](epic-010/story-07-content-pipeline-serialization.md)
-* [Story 08: Semantic Layer for Entities and Relations](epic-010/story-08-semantic-layer-entities-relations.md)
-* [Story 09: Feeds, Exports, Internal Search Readiness](epic-010/story-09-feeds-exports-internal-search.md)
-* [Story 10: Observability Security Performance Deploy Docs](epic-010/story-10-observability-security-performance-deploy-docs.md)
+* [Story 01: Foundation Layered Architecture](epic-010/index.md)
+* [Story 02: Content as Code Editorial Contracts](epic-010/index.md)
+* [Story 03: Route Architecture Templates](epic-010/index.md)
+* [Story 04: Technical SEO Infrastructure](epic-010/index.md)
+* [Story 05: Structured Data JSON-LD Layer](epic-010/index.md)
+* [Story 06: AI-Readable Machine Endpoints](epic-010/index.md)
+* [Story 07: Content Pipeline Serialization](epic-010/index.md)
+* [Story 08: Semantic Layer Entities Relations](epic-010/index.md)
+* [Story 09: Feeds Exports Internal Search Readiness](epic-010/index.md)
+* [Story 10: Observability Security Performance Deploy Docs](epic-010/index.md)
 
 ### Epic 011 - Admin Collections Console
-* [Story 02: Admin Collections Read Model](epic-011/story-02-admin-collections-read-model.md)
-* [Story 03: Collection Content Persistence](epic-011/story-03-collection-content-persistence.md)
-* [Story 04: Collections API Ownership](epic-011/story-04-collections-api-ownership.md)
-* [Story 05: Collection Cards UI](epic-011/story-05-collection-cards-ui-bri-93.md)
-* [Story 05: Empty Loading Error States](epic-011/story-05-empty-loading-error-states-bri-92.md)
-* [Story 05: Navigation to Detail View](epic-011/story-05-navigation-to-detail-view-bri-94.md)
-* [Story 06: Read-Only Detail Shell](epic-011/story-06-read-only-detail-shell-bri-95.md)
-* [Story 06: Documents Editor](epic-011/story-06-documents-editor-bri-99.md)
-* [Story 06: Gallery Tabs Shell](epic-011/story-06-gallery-tabs-shell-bri-98.md)
-* [Story 06: Property Information Editor](epic-011/story-06-property-information-editor-bri-97.md)
-* [Story 06: Summary Editor](epic-011/story-06-summary-editor-bri-96.md)
-* [Story 07: API Integration Regression](epic-011/story-07-api-integration-regression-bri-100.md)
-* [Story 07: Docs Sync and RFC Traceability](epic-011/story-07-docs-sync-rfc-traceability-bri-102.md)
-* [Story 07: Playwright Admin Collections Flow](epic-011/story-07-playwright-admin-collections-bri-101.md)
-* [Story 07: Responsive QA Evidence Pack](epic-011/story-07-responsive-qa-evidence-bri-103.md)
-* [Story 08: AppData Plugin Fields Aggregation](epic-011/story-08-appdata-plugin-fields-aggregation-bri-107.md)
-* [Story 08: Authorities Aggregation](epic-011/story-08-authorities-aggregation-bri-105.md)
-* [Story 08: Base Blockchain Addresses Aggregation](epic-011/story-08-base-blockchain-addresses-aggregation-bri-104.md)
-* [Story 08: Copy Link Interactions and Tests](epic-011/story-08-copy-link-interactions-bri-109.md)
-* [Story 08: Guard Fields Aggregation](epic-011/story-08-guard-fields-aggregation-bri-106.md)
-* [Story 08: Read-Only Blockchain Panel UI](epic-011/story-08-read-only-blockchain-panel-ui-bri-108.md)
-* [Story 09: Address Autocomplete](epic-011/story-09-address-autocomplete-bri-112.md)
-* [Story 09: Backend Location Maps Contract](epic-011/story-09-backend-location-maps-contract-bri-111.md)
-* [Story 09: Current Address and Outbound Maps CTA](epic-011/story-09-current-address-outbound-maps-cta-bri-110.md)
-* [Story 09: Manual Save Cancel Integration and QA](epic-011/story-09-manual-save-cancel-integration-qa-bri-114.md)
-* [Story 09: Persist Google Maps Place JSON](epic-011/story-09-persist-google-maps-place-json-bri-113.md)
-* [Story 10: Collections Health and Manual Review Queue](epic-011/story-10-collections-health-manual-review-queue-bri-79.md)
-* [Story 11: Location Form Contract and Persistence Parity](epic-011/story-11-location-form-contract-persistence-parity-bri-124.md)
-* [Story 12: Location Form Editor and Maps Assisted UX](epic-011/story-12-location-form-editor-maps-assisted-ux-bri-125.md)
+* [Story 02: Admin Collections Read Model](epic-011/index.md)
+* [Story 03: Collection Content Persistence](epic-011/index.md)
+* [Story 04: Collections API Ownership](epic-011/index.md)
+* [Story 05: Collection Cards UI](epic-011/index.md)
+* [Story 05: Empty Loading Error States](epic-011/index.md)
+* [Story 05: Navigation to Detail View](epic-011/index.md)
+* [Story 06: Read-Only Detail Shell](epic-011/index.md)
+* [Story 06: Documents Editor](epic-011/index.md)
+* [Story 06: Gallery Tabs Shell](epic-011/index.md)
+* [Story 06: Property Information Editor](epic-011/index.md)
+* [Story 06: Summary Editor](epic-011/index.md)
+* [Story 07: API Integration Regression](epic-011/index.md)
+* [Story 07: Docs Sync RFC Traceability](epic-011/index.md)
+* [Story 07: Playwright Admin Collections Flow](epic-011/index.md)
+* [Story 07: Responsive QA Evidence Pack](epic-011/index.md)
+* [Story 08: AppData Plugin Fields Aggregation](epic-011/index.md)
+* [Story 08: Authorities Aggregation](epic-011/index.md)
+* [Story 08: Base Blockchain Addresses Aggregation](epic-011/index.md)
+* [Story 08: Copy Link Interactions Tests](epic-011/index.md)
+* [Story 08: Guard Fields Aggregation](epic-0111/index.md)
+* [Story 08: Read-Only Blockchain Panel UI](epic-011/index.md)
+* [Story 09: Address Autocomplete](epic-011/index.md)
+* [Story 09: Backend Location Maps Contract](epic-011/index.md)
+* [Story 09: Current Address Outbound Maps CTA](epic-011/index.md)
+* [Story 09: Manual Save Cancel Integration QA](epic-011/index.md)
+* [Story 09: Persist Google Maps Place JSON](epic-011/index.md)
+* [Story 10: Collections Health Manual Review Queue](epic-011/index.md)
+* [Story 11: Location Form Contract Persistence Parity](epic-011/index.md)
+* [Story 12: Location Form Editor Maps Assisted UX](epic-011/index.md)
 
 ### Epic 003 - NFT Store Purchase Flow
-* [Story 01: Basic NFT Purchase](epic-003/story-01-basic-nft-purchase.md)
-* [Story 02: Anti-Bot Without Wallet Cap](epic-003/story-02-anti-bot-without-wallet-cap.md)
-* [Story 03: Transaction Integrity and Idempotency](epic-003/story-03-transaction-integrity-idempotency.md)
-* [Story 04: Quantity Foundation and Multi-Quantity Rollout](epic-003/story-04-quantity-foundation-multi-qty.md)
-* [Story 05: Purchase Traceability and Metrics](epic-003/story-05-purchase-traceability-metrics.md)
-* [Story 06: Admin Dashboard Metrics Binding](epic-003/story-06-admin-dashboard-metrics.md)
+* [Story 01: Basic NFT Purchase](epic-003/index.md)
+* [Story 02: Anti-Bot Without Wallet Cap](epic-003/index.md)
+* [Story 03: Transaction Integrity Idempotency](epic-003/index.md)
+* [Story 04: Quantity Foundation Multi-Quantity](epic-003/index.md)
+* [Story 05: Purchase Traceability Metrics](epic-003/index.md)
+* [Story 06: Admin Dashboard Metrics Binding](epic-003/index.md)
 
-### Other Features
-* [Solana Dev Skill](feature-solana-dev-skill.md)
-* [App Checkout Dual Crypto Airwallex](feature-app-checkout-dual-crypto-airwallex.md)
-* [App Create Marketplace 3D Visual BRI-164](feature-app-create-a-marketplace-3d-visual-bri-164.md)
-* [App Home Copy BRI-39](feature-app-home-copy-bri-39.md)
-* [App Image Storage Blob Pinata](feature-app-image-storage-blob-pinata.md)
-* [App Investor Dashboard Overview BRI-171](feature-app-investor-dashboard-overview-real-data-bri-171.md)
-* [App Investor Portfolio BRI-174](feature-app-investor-portfolio-real-holdings-bri-174.md)
-* [App Marketplace Detail Media Carousel BRI-164](feature-app-marketplace-detail-media-carousel-bri-164.md)
-* [App Mobile Pill Phantom](feature-app-mobile-pill-phantom.md)
-* [App Profile Completion Reward BRI-151](feature-app-profile-completion-reward-prompt-bri-151.md)
-* [App Quick Tour](feature-app-quick-tour.md)
-* [App Startup Splash Screen BRI-121](feature-app-startup-splash-screen-bri-121.md)
-* [App Transparency](feature-app-transparency.md)
-* [App Wallet Connection SolanaKit BRI-12](feature-app-wallet-connection-solanakit-bri-12.md)
-* [App Wide Motion 12 UX Polish BRI-163](feature-app-wide-motion-12-ux-polish-bri-163.md)
-* [Business Logic Reasoner BRI-177](feature-business-logic-reasoner-bri-177.md)
-* [Contextual Hints Admin Assets New BRI-10](feature-contextual-hints-admin-assets-new-exclude-location-bri-10.md)
-* [CZAMBRANO BRI-173 Branching Policy Preflight](feature-czambrano-BRI-173-branching-policy-preflight.md)
-* [Discovery Brief Anchor Notary Freeze Control BRI-5](feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md)
-* [Flujo GitFlow PR Structure BRI-61](feature-flujo-gitflow-pr-structure-bri-61.md)
-* [Flujo GitFlow PR Structure Improvement BRI-62](feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md)
-* [NFT Authority Lifecycle Rotation Revocation](feature-nft-authority-lifecycle-rotation-revocation.md)
-* [NFT Economic AppData Plugin](feature-nft-economic-appdata-plugin.md)
-* [NFT Permanent Transfer Delegate](feature-nft-permanent-transfer-delegate.md)
-* [Redirect First Connection](feature-redirect-first-connection.md)
-* [Shared Agents Orchestration Enforcement BRI-157](feature-shared-agents-orchestration-enforcement-bri-157.md)
-* [Shared Human Acceptance Gated Merge](feature-shared-human-acceptance-gated-merge.md)
-* [Shared Hybrid Auth Clean Code BRI-159](feature-shared-hybrid-auth-clean-code-bri-159.md)
-* [Shared Hybrid Auth WorkOS Wallet BRI-154](feature-shared-hybrid-auth-workos-wallet-bri-154.md)
-* [Shared Knowledge Promotion System BRI-143](feature-shared-knowledge-promotion-system-bri-143.md)
-* [Shared Nix Toolchain Policy](feature-shared-nix-toolchain-policy.md)
-* [Shared PR Governance Flow Flexibility](feature-shared-pr-governance-flow-flexibility.md)
-* [Shared PR Governance Metadata Race Fix](feature-shared-pr-governance-metadata-race-fix.md)
-* [Shared PWA Web Push BRI-157](feature-shared-pwa-web-push-bri-157.md)
-* [Shared Referral Marketing System BRI-16](feature-shared-referral-marketing-system-bri-16.md)
-* [Shared Single Issue Slice Planning BRI-149](feature-shared-single-issue-slice-planning-bri-149.md)
-* [Shared Wallet Modal Clean Code BRI-160](feature-shared-wallet-modal-clean-code-bri-160.md)
-* [Stake Event Reconciliation Distribution BRI-6](feature-stake-event-reconciliation-distribution-preparation-bri-6.md)
+## Other Features (No Specific BRI)
+* [Other Features](other/index.md)
