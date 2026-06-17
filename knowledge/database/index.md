@@ -41,8 +41,9 @@ Database schemas, migrations, and data models.
 
 ## Data Models
 
-* [Stake Event Model](models/stake-event.md)
-* [Marketplace Entry Model](models/marketplace-entry.md)
-* [Asset Mint Snapshot Model](models/asset-mint-snapshot.md)
-* [User Profile Model](models/user-profile.md)
-* [Purchase Attempt Model](models/purchase-attempt.md)
+* [Marketplace Entry](models/marketplace-entry.md)
+* [Purchase Attempt](models/purchase-attempt.md)
+* [Stake Action Attempt](models/stake-action.md)
+* [Mint Job](models/mint-job.md)
+* [User Profile](models/user-profile.md)
+* [Authority Registry](models/authority-registry.md)
