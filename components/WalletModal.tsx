@@ -79,7 +79,7 @@ type NavEntry = {
 type Translate = (text: LocaleText) => string;
 
 const PRIMARY_NAV_LINK_BASE_CLASSNAME =
-  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition";
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-medium transition";
 const PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME = "sm:w-[6.75rem] sm:px-2.5 sm:justify-center";
 
 function WalletCtaIcon() {
@@ -1241,14 +1241,14 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
   return (
     <>
       <header className="sticky top-3 z-40 mb-5">
-        <div className="glass-surface px-3 py-3 md:px-4">
+        <div className="landing-header-surface px-3 py-3 md:px-4">
           <div className="pointer-events-none absolute -left-8 top-0 h-24 w-24 rounded-full bg-cyan-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-fuchsia-300/20 blur-3xl" />
 
           <div className="relative z-10 flex items-center gap-2">
             <Link
               href="/"
-              className="brand-pill inline-flex min-h-11 shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 transition hover:bg-white/10"
+              className="brand-pill landing-header-pill inline-flex min-h-11 shrink-0 items-center rounded-full px-3 transition"
               aria-label={t({ en: "Back to home", es: "Volver al inicio", pt: "Voltar para inicio" })}
             >
               <Image
@@ -1264,7 +1264,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
             </Link>
 
             <nav className="hidden min-w-0 flex-1 sm:block" aria-label="Primary">
-              <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
+              <div className="no-scrollbar -my-2 flex items-center gap-2 overflow-x-auto py-2">
                 {menuEntries.map((entry) => {
                   const active = isActivePath(pathname, entry.href);
 
@@ -1277,8 +1277,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                         PRIMARY_NAV_LINK_BASE_CLASSNAME,
                         PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME,
                         active
-                          ? "border-cyan-300/45 bg-gradientPrimary text-white shadow-[0_10px_30px_rgba(59,130,246,0.25)]"
-                          : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                          ? "landing-header-active-pill bg-gradientPrimary text-white"
+                          : "landing-header-pill text-white/80 hover:text-white"
                       )}
                     >
                       {entry.label}
@@ -1290,7 +1290,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
             <button
               type="button"
-              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20 sm:hidden"
+              className="landing-header-pill inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-white transition hover:text-white sm:hidden"
               onClick={() => setIsMobileMenuOpen((previous) => !previous)}
               aria-label={
                 isMobileMenuOpen
@@ -1355,8 +1355,8 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
                       PRIMARY_NAV_LINK_BASE_CLASSNAME,
                       PRIMARY_NAV_LINK_STABLE_WIDTH_CLASSNAME,
                       active
-                        ? "border-cyan-300/45 bg-gradientPrimary text-white shadow-[0_10px_30px_rgba(59,130,246,0.25)]"
-                        : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                        ? "landing-header-active-pill bg-gradientPrimary text-white"
+                        : "landing-header-pill text-white/80 hover:text-white"
                     )}
                   >
                     {entry.label}

@@ -62,29 +62,34 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       <motion.button
         type="button"
         onClick={toggleTheme}
-        whileHover={{ y: -1 }}
-        whileTap={{ scale: 0.985 }}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-3 whitespace-nowrap rounded-full border border-white/20 bg-slate-900/85 px-4 text-sm font-medium text-white shadow-[0_10px_26px_rgba(0,0,0,0.25)] transition hover:bg-slate-900"
+        className="grid min-h-11 w-full grid-cols-[3rem_minmax(0,1fr)] items-center gap-3 whitespace-nowrap rounded-full bg-slate-950/42 px-4 text-sm font-medium text-white shadow-[0_12px_32px_rgba(0,0,0,0.18)] transition hover:bg-slate-950/58"
         aria-label={t({
           en: "Toggle color theme",
           es: "Cambiar tema de color",
           pt: "Alternar tema de cor"
         })}
       >
-        <motion.span
-          layout
-          className="inline-flex h-6 w-12 items-center rounded-full border border-white/15 bg-black/20 p-1"
-          transition={{ type: "spring", stiffness: 520, damping: 36 }}
+        <span
+          className={cn(
+            "relative inline-flex h-6 w-12 shrink-0 items-center rounded-full p-1 shadow-[inset_0_-1px_0_rgba(0,176,249,0.05)]",
+            theme === "dark"
+              ? "bg-black/22"
+              : "bg-[linear-gradient(135deg,rgba(47,198,255,0.18)_0%,rgba(124,58,237,0.2)_100%)] shadow-[inset_0_1px_12px_rgba(47,198,255,0.16),inset_0_-1px_0_rgba(124,58,237,0.08)]"
+          )}
         >
           <motion.span
-            layout
+            animate={{ x: theme === "dark" ? 24 : 0 }}
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.94 }}
             className={cn(
-              "h-4 w-4 rounded-full shadow-[0_6px_18px_rgba(255,255,255,0.18)]",
-              theme === "dark" ? "bg-sky-200" : "bg-amber-200"
+              "absolute left-1 top-1 h-4 w-4 rounded-full will-change-transform",
+              theme === "dark"
+                ? "bg-sky-200 shadow-[0_6px_18px_rgba(255,255,255,0.18)]"
+                : "bg-gradientPrimary shadow-[0_6px_18px_rgba(47,198,255,0.3)]"
             )}
-            transition={{ type: "spring", stiffness: 520, damping: 36 }}
+            transition={{ type: "spring", stiffness: 260, damping: 28 }}
           />
-        </motion.span>
+        </span>
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={theme}

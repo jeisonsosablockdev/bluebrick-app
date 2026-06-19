@@ -132,12 +132,24 @@ fix/app-<name>-bri-<id>-s02-<slice-slug>
 security/program-<issue>-bri-<id>-s03-<slice-slug>
 refactor/shared-<name>-bri-<id>-s04-<slice-slug>
 
+BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
+
+SPEC/<developer>-bri<id>-specNN-<spec-slug>
+
+Example:
+
+SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
+
 Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
+	•	For `SPEC/*` branches, `specNN` is the zero-padded SPEC number from the parent issue body, and the number organizes scope rather than mandatory execution priority.
 	•	Linear initiative branches start from latest `develop`.
 	•	The Linear initiative branch name must match the parent issue `git branch name` field.
 	•	Slice branches start from the Linear initiative branch, not directly from `develop`.
+	•	Each completed `SPEC/*` branch must document `SPEC HISTORY` before integration.
+	•	For BRIDS SPEC branches, `SPEC MERGE` is the internal merge from `SPEC/*` back into the issue `Feature` branch and does not require a PR.
+	•	The Feature branch still requires the project-defined PR before integration into the base branch.
 
 Examples:
 
@@ -187,6 +199,32 @@ Traceability record must include:
 	•	Manual test evidence
 	•	Human Acceptance approval
 	•	Final merge commit or squash commit
+
+⸻
+
+🔀 BRIDS SPEC MERGE FLOW (MANDATORY WHEN USING SPEC/* BRANCHES)
+
+VERSION ESPAÑOL
+
+	1.	Confirmar que el desarrollador responsable y el SPEC destino están definidos.
+	2.	Actualizar `SPEC HISTORY` en el documento del Feature, el documento del SPEC y el documento de implementación.
+	3.	Sincronizar el cuerpo del issue de Linear como fuente principal.
+	4.	Ejecutar validaciones razonables según el alcance tocado.
+	5.	Revisar `git status` y separar cambios ajenos al SPEC.
+	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue.
+	7.	Dejar la rama `Feature` lista para continuar con el siguiente SPEC.
+	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature`.
+
+ENGLISH VERSION
+
+	1.	Confirm that the responsible developer and target SPEC are defined.
+	2.	Update `SPEC HISTORY` in the Feature document, SPEC document, and implementation document.
+	3.	Sync the Linear issue body as the primary source.
+	4.	Run reasonable validations for the touched scope.
+	5.	Review `git status` and separate changes unrelated to the SPEC.
+	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch.
+	7.	Leave the `Feature` branch ready for the next SPEC.
+	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure.
 
 ⸻
 

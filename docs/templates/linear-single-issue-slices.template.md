@@ -23,8 +23,11 @@
 - Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`
 - Socratic documentation gate: use `explain-like-socrates` before finalizing artifacts, assumptions, and delivery slices.
 
+# SPEC HISTORY
+{{SPEC_HISTORY_ITEMS}}
+
 # Slice Plan
-| Slice | Status | Branch | Objective | Scope tecnico | Validation | PR |
+| Slice | Status | Branch | Objective | Scope técnico | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |
 {{SLICE_ROWS}}
 
@@ -39,3 +42,6 @@
 
 # Completion Gate
 {{COMPLETION_GATE_ITEMS}}
+
+# SPEC MERGE
+{{SPEC_MERGE_ITEMS}}
