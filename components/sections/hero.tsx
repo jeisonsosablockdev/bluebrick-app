@@ -89,10 +89,10 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
             </Lead>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/marketplace" className="inline-flex">
-                <Button size="lg">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
+                <Button className="px-8 py-3 text-base">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
               </Link>
               <Link href="/transparencia" className="inline-flex">
-                <Button variant="ghost" className="landing-hero-secondary-cta size-lg">
+                <Button variant="ghost" className="landing-hero-secondary-cta px-8 py-3 text-base">
                   {t({ en: "Transparency", es: "Transparencia", pt: "Transparencia" })}
                 </Button>
               </Link>
