@@ -1,0 +1,45 @@
+---
+type: Feature Spec
+title: Feature App Create A Marketplace 3d Visual BRI- 164 S28 Write Repository Extraction
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S28 Write Repository Extraction - migrated from docs/
+tags: [features]
+timestamp: 2026-06-16T15:03:01Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction.md
+---
+
+# S28 Plan: Marketplace Write Repository Extraction
+
+## Scope
+- Priority: P2.
+- Planned branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction`.
+- Runtime scope when implemented: marketplace persisted create SQL.
+- Tests: `tests/lib/property-marketplace-server.test.ts` and `tests/api/admin-marketplace-entries-route.test.ts` if needed.
+
+## Problem
+Marketplace create SQL is coupled to reads, mapping, selectors, and sync logic.
+
+## Solution
+Extract create/write SQL into a focused write repository module while preserving duplicate-entry behavior.
+
+## TDD Contract
+1. Add or preserve tests for successful create.
+2. Add or preserve tests for duplicate id conflict.
+3. Extract write SQL only.
+4. Assert admin route behavior remains unchanged.
+
+## Out Of Scope
+- Read repository changes.
+- Admin safe-error response changes from S22.
+- Selector extraction.
+
+## Acceptance Criteria
+- Write repository owns create SQL.
+- Duplicate entry error mapping remains stable.
+- No UI behavior changes.
+
+## Implementation Evidence
+- Preserved create and duplicate-entry coverage before extraction.
+- Extracted persisted create SQL into `lib/marketplace/property-write-repository.ts`.
+- Kept `createMarketplacePropertyEntryPersistent` as the public server facade.
+- Targeted test command: `npm run test -- tests/lib/property-marketplace-server.test.ts tests/api/admin-marketplace-entries-route.test.ts`.
+- Targeted result: `2` test files and `10` tests passed.
