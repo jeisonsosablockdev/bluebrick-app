@@ -364,3 +364,42 @@ Install these rules into the primary BRIDS policy and workflow documents:
 - Merge a Feature completado: `aac3913 feat(app): merge spec03 dark mode modules depth`.
 - Author y committer usados para los commits del SPEC: `czambrano`.
 - Linear queda como fuente principal y este documento actúa como espejo local Git del historial de desarrollo.
+
+---
+
+### SPEC05 - Landing Header Full Width Visual
+
+#### Checkpoint: Header infinito horizontal y vertical
+- Fecha: 2026-06-16.
+- Desarrollador responsable: `czambrano`.
+- Rama SPEC: `SPEC/czambrano-bri168-spec05-landing-header-full-width-visual`.
+- Estado: primer avance funcional; header expande edge-to-edge horizontal y vertical (top viewport), elimina bordes redondeados e imagen de habitación, textos y CTAs alineados a la izquierda, stats grid inferior preservado.
+
+#### Implementación consolidada
+- `.landing-hero-shell` en `app/globals.css`: márgenes negativos `calc(-50vw + 50%)` para romper contenedor horizontal, `margin-top: -100vh` + `padding-top: calc(100vh + Xrem)` para extender fondo gradiente azul/morado desde top:0 del viewport.
+- `components/sections/hero.tsx`: layout flex horizontal (texto izquierda 2/3, espacio vacío derecha 1/3), títulos escalados `text-4xl md:text-5xl lg:text-6xl`, botones `size="lg"`, imagen de habitación removida, stats grid (`heroStats`) intacto abajo.
+- `app/page.tsx`: eliminado wrapper restrictivo, hero maneja su propio full-width.
+
+#### Aprendizajes técnicos aprobados
+- Extender fondo via márgenes negativos en el propio elemento (no pseudo-elemento fixed) preserva scroll nativo y parallax de gradientes radiales.
+- `margin-top: -100vh` + `padding-top: calc(100vh + ...)` patrón reutilizable para "infinite vertical top" sin fixed positioning.
+- Mantener stats grid sin cambios asegura consistencia con SPEC01-04.
+
+#### Validación
+- Revisión visual local: header cubre top viewport sin división, gradientes se desplazan con scroll, textos/CTAs legibles left-aligned, stats grid posicionado correctamente.
+- `npm run lint`: pendiente (entorno sin node en PATH).
+- Responsive: mobile/tablet/desktop breakpoints escalan padding horizontal progresivamente (1.5rem → 6rem).
+
+#### Implementación final consolidada
+- `app/globals.css`: `.landing-hero-shell` con márgenes negativos horizontales + verticales, media queries para padding responsive.
+- `components/sections/hero.tsx`: composición flex, max-w-2xl para contenido, md:w-1/3 spacer, stats grid preservado.
+- `app/page.tsx`: main `pt-0`, hero sin wrapper restrictivo.
+
+#### Decisiones reutilizables
+- No usar `position: fixed` para fondo extensible; rompe scroll y parallax de gradientes radiales.
+- Patrón `margin-top: -100vh` + `padding-top: calc(100vh + offset)` aplica a cualquier sección que deba sangrar al top viewport.
+- Separar layout de contenido (hero.tsx) de extensión visual (globals.css) permite ajustes independientes.
+
+#### Estado post SPEC MERGE
+- `SPEC05` checkpoint commit listo para merge a Feature branch.
+- Author y committer: `czambrano`.

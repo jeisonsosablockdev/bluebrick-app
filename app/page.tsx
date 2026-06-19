@@ -51,7 +51,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+    <main className="mx-auto max-w-6xl px-4 pb-6 md:px-6 md:pb-8 pt-0">
       <PwaClientRuntime />
       <JsonLdScript id="jsonld-home" schemas={homeSchemas} />
       <WalletRuntimeProvider>
