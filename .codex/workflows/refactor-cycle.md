@@ -63,6 +63,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 - Use one branch per slice.
 - Each slice owns exactly one extraction, one naming cleanup, one dependency inversion, one test-hardening move, or one dead-code removal.
 - Each delivery slice must define its clean-code design contract before implementation: single responsibility, intended boundary or extraction, names that must become clearer, coupling or duplication risk, dead-code policy, and tests that preserve the design.
+- No delivery slice proceeds from planning to implementation without a clean-code design contract.
 - Do not bundle unrelated files just because they are nearby.
 - If a refactor reveals another smell, document it as a new slice instead of expanding the current slice.
 - Merge each slice into the integration branch before starting the next implementation slice.

@@ -8,7 +8,7 @@ Documentation must be created and updated alongside development.
 
 No feature is complete without documentation.
 
-Documentation comes before branching. The human-plus-agent brief establishes the issue type, scope, open questions, and branch family first; only then do we create the parent work branch and any SPEC branches.
+Documentation comes before branching. The human-plus-agent brief establishes the issue type, scope, open questions, and branch family first; only then do we create the parent work branch and any SPEC branches. The documentation/spec slice must use explain-like-socrates before delivery slices open.
 
 Canonical precedence and drift control:
 	•	This file is the canonical documentation policy for the repository.

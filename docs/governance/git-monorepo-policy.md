@@ -108,6 +108,17 @@ Artifact-first and SPEC rule:
 	•	If the solution artifact is not decision-complete, code implementation remains blocked.
 	•	The documentation/spec slice must record that `explain-like-socrates` was used before delivery slices open.
 
+## HUMAN ACCEPTANCE GATE BEFORE DEVELOP
+
+Every PR targeting `develop` must have explicit user manual-test approval recorded as **Human Acceptance** in the PR body before merge. The PR body must include a section:
+
+```
+## Human Acceptance
+Status: approved
+```
+
+This is enforced by the PR governance workflow (`.github/workflows/pr-governance-develop.yml`). The `humanAcceptanceApproved` pattern requires `Status: approved` to pass.
+
 ⸻
 
 Branch Naming Convention (Scope Required)

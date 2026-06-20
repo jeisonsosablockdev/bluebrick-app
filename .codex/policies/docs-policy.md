@@ -24,3 +24,7 @@
 - Socratic planning evidence for documentation/spec slices
 - Human Acceptance evidence for final `develop` merge
 - Output from `scripts/ci/check-required-docs.sh` or `npm run validate`
+
+## Hard Constraints
+- Delivery slices require a clean-code design contract
+- Documentation slices must use explain-like-socrates before delivery slices open

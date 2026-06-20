@@ -40,14 +40,14 @@
 - Issue-tracked work uses Linear status automation: `In Progress` when the branch is created, `In Review` when PR readiness begins, and `Done` after the final merge via the Linear status helper.
 
 ## Agent Routing
-- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
+- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved. Requires explain-like-socrates for Socratic clarification and clean-code design contract for delivery slices.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
 - `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes, and mandatory `explain-like-socrates` planning for documentation/spec slices.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
-- `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
+- `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate. Human Acceptance is a mandatory gate.
 
 ## Delegation Rules
 - Delegate the smallest possible context: changed paths, active workflow, required policies, expected evidence.
