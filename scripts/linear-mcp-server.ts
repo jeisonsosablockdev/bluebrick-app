@@ -1,613 +1,301 @@
-import { createRequire } from "node:module";
+#!/usr/bin/env tsx
 
-import { McpServer, StdioServerTransport } from "@modelcontextprotocol/server";
-import * as z from "zod4";
-
-const require = createRequire(import.meta.url);
-const {
-  linearGraphQLRequest,
-  normalizeIssueKey,
-  updateLinearIssueStatus
-} = require("./linear-status-core.js");
-
-const LINEAR_GRAPHQL_ENDPOINT = process.env.LINEAR_GRAPHQL_ENDPOINT || "https://api.linear.app/graphql";
-
-type IssueState = {
-  id?: string;
-  name?: string | null;
-  type?: string | null;
+type JsonRpcRequest = {
+  jsonrpc?: string;
+  id?: string | number | null;
+  method?: string;
+  params?: any;
 };
 
-type LinearIssueSummary = {
-  id: string;
-  identifier?: string | null;
-  title?: string | null;
-  description?: string | null;
-  url?: string | null;
-  updatedAt?: string | null;
-  state?: IssueState | null;
-  assignee?: {
-    id?: string;
-    name?: string | null;
-  } | null;
-  team?: {
-    id?: string;
-    name?: string | null;
-  } | null;
+type JsonRpcResponse = {
+  jsonrpc: "2.0";
+  id: string | number | null;
+  result?: any;
+  error?: { code: number; message: string; data?: any };
 };
 
-type LinearCommentSummary = {
-  id: string;
-  body?: string | null;
-  createdAt?: string | null;
-  url?: string | null;
-  user?: {
-    id?: string;
-    name?: string | null;
-  } | null;
-};
+const LINEAR_API_URL = "https://api.linear.app/graphql";
+const protocolVersion = "2024-11-05";
+const homeDir = process.env.HOME || "";
 
-type LinearViewerIssueNode = {
-  id?: string;
-  identifier?: string | null;
-  title?: string | null;
-  url?: string | null;
-  updatedAt?: string | null;
-  state?: IssueState | null;
-  team?: { name?: string | null } | null;
-};
+const tools = [
+  {
+    name: "linear_fetch_issue",
+    description: "Fetch a Linear issue by identifier, for example BRI-168.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Linear issue identifier, for example BRI-168." }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "linear_update_issue",
+    description: "Update a Linear issue title, description, or assignee. Requires LINEAR_API_KEY.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Linear issue identifier, for example BRI-168." },
+        title: { type: "string", description: "New issue title." },
+        description: { type: "string", description: "New Markdown issue description." },
+        assigneeEmail: { type: "string", description: "Email of the assignee." }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "linear_search_issues",
+    description: "Search Linear issues by text query. Requires LINEAR_API_KEY.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search text." },
+        first: { type: "number", description: "Maximum number of issues to return." }
+      },
+      required: ["query"]
+    }
+  }
+];
 
-type LinearTeamNode = {
-  id?: string;
-  key?: string | null;
-  name?: string | null;
-};
+function readFileIfExists(path: string): string | null {
+  try {
+    return require("node:fs").readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+}
 
-function requireLinearApiKey(): string {
-  const apiKey = String(process.env.LINEAR_API_KEY ?? "").trim();
-  if (!apiKey) {
+function readEnvFileKey(): string | null {
+  if (!homeDir) return null;
+  const text = readFileIfExists(`${homeDir}/.codex/linear.env`);
+  if (!text) return null;
+
+  for (const line of text.split(/\r?\n/)) {
+    const match = line.match(/^\s*(LINEAR_API_KEY|LINEAR_API_TOKEN)\s*=\s*(.+?)\s*$/);
+    if (!match) continue;
+    return match[2].replace(/^['"]|['"]$/g, "");
+  }
+  return null;
+}
+
+function readKeychainKey(): string | null {
+  if (!homeDir) return null;
+  try {
+    const { execFileSync } = require("node:child_process");
+    return execFileSync("security", ["find-generic-password", "-s", "LINEAR_API_KEY", "-w"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function apiKey(): string {
+  const key = process.env.LINEAR_API_KEY || process.env.LINEAR_API_TOKEN || readEnvFileKey() || readKeychainKey();
+  if (!key) {
     throw new Error(
-      "LINEAR_API_KEY is required. Create a personal Linear API key and export it before starting the MCP server."
+      "Missing LINEAR_API_KEY. Add a Linear personal API key to the MCP server environment, ~/.codex/linear.env, or macOS Keychain item LINEAR_API_KEY before using Linear tools."
     );
   }
-  return apiKey;
+  return key;
 }
 
-function toTextContent(text: string) {
-  return [{ type: "text" as const, text }];
-}
-
-function summarizeIssue(issue: LinearIssueSummary): string {
-  const assignee = issue.assignee?.name || "unassigned";
-  const state = issue.state?.name || "unknown";
-  const team = issue.team?.name || "unknown team";
-  const description = issue.description ? ["", issue.description] : [];
-
-  return [
-    `# ${issue.identifier || issue.id}`,
-    "",
-    `- Title: ${issue.title || "untitled"}`,
-    `- Team: ${team}`,
-    `- State: ${state}`,
-    `- Assignee: ${assignee}`,
-    `- URL: ${issue.url || "n/a"}`,
-    ...description
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-async function fetchIssue(issueKey: string): Promise<LinearIssueSummary> {
-  const data = await linearGraphQLRequest({
-    apiKey: requireLinearApiKey(),
-    endpoint: LINEAR_GRAPHQL_ENDPOINT,
-    query: `
-      query LinearIssueBridgeIssue($issueId: String!) {
-        issue(id: $issueId) {
-          id
-          identifier
-          title
-          description
-          url
-          updatedAt
-          state {
-            id
-            name
-            type
-          }
-          assignee {
-            id
-            name
-          }
-          team {
-            id
-            name
-          }
-        }
-      }
-    `,
-    variables: {
-      issueId: normalizeIssueKey(issueKey)
-    }
+async function linearGraphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+  const response = await fetch(LINEAR_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: apiKey()
+    },
+    body: JSON.stringify({ query, variables })
   });
 
-  const issue = data?.issue;
-  if (!issue) {
-    throw new Error(`Linear issue not found: ${issueKey}`);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.errors) {
+    const detail = payload.errors?.map((error: any) => error.message).join("; ") || response.statusText;
+    throw new Error(`Linear GraphQL request failed: ${detail}`);
   }
-
-  return issue as LinearIssueSummary;
+  return payload.data as T;
 }
 
-async function listTeams(): Promise<LinearTeamNode[]> {
-  const data = await linearGraphQLRequest({
-    apiKey: requireLinearApiKey(),
-    endpoint: LINEAR_GRAPHQL_ENDPOINT,
-    query: `
-      query LinearBridgeTeams {
-        teams {
-          nodes {
-            id
-            key
-            name
-          }
-        }
+async function findIssue(identifier: string) {
+  const data = await linearGraphql<{
+    issue: null | {
+      id: string;
+      identifier: string;
+      title: string;
+      description: string | null;
+      url: string;
+      branchName: string | null;
+      assignee: null | { id: string; name: string; email: string | null };
+      creator: null | { id: string; name: string; email: string | null };
+      team: { id: string; key: string; name: string };
+      state: { id: string; name: string; type: string };
+    };
+  }>(
+    `query Issue($id: String!) {
+      issue(id: $id) {
+        id identifier title description url branchName
+        assignee { id name email }
+        creator { id name email }
+        team { id key name }
+        state { id name type }
       }
-    `,
-    variables: {}
-  });
+    }`,
+    { id: identifier }
+  );
 
-  return (data?.teams?.nodes || []) as LinearTeamNode[];
+  if (!data.issue) throw new Error(`Linear issue not found: ${identifier}`);
+  return data.issue;
 }
 
-async function resolveTeamId(teamInput: string): Promise<string> {
-  const normalized = String(teamInput ?? "").trim();
-  if (!normalized) {
-    throw new Error("A Linear team is required.");
+async function findUserIdByEmail(email: string): Promise<string> {
+  const data = await linearGraphql<{ users: { nodes: Array<{ id: string; email: string; name: string }> } }>(
+    `query Users($filter: UserFilter) {
+      users(filter: $filter, first: 5) { nodes { id email name } }
+    }`,
+    { filter: { email: { eq: email } } }
+  );
+  const user = data.users.nodes[0];
+  if (!user) throw new Error(`Linear user not found for email: ${email}`);
+  return user.id;
+}
+
+async function callTool(name: string, args: any) {
+  if (name === "linear_fetch_issue") {
+    return { content: [{ type: "text", text: JSON.stringify(await findIssue(args.id), null, 2) }] };
   }
 
-  const teams = await listTeams();
-  const match = teams.find((team) => {
-    return (
-      String(team.id || "").trim() === normalized ||
-      String(team.name || "").trim().toLowerCase() === normalized.toLowerCase() ||
-      String(team.key || "").trim().toLowerCase() === normalized.toLowerCase()
+  if (name === "linear_search_issues") {
+    const data = await linearGraphql<{ issues: { nodes: any[] } }>(
+      `query SearchIssues($query: String!, $first: Int!) {
+        issues(filter: { searchableContent: { containsIgnoreCase: $query } }, first: $first, orderBy: updatedAt) {
+          nodes { id identifier title url branchName updatedAt state { name type } assignee { name email } }
+        }
+      }`,
+      { query: args.query, first: Math.min(Math.max(Number(args.first || 10), 1), 50) }
     );
-  });
-
-  if (!match?.id) {
-    const available = teams.map((team) => `${team.key || team.id || "unknown"}: ${team.name || "untitled"}`).join(", ");
-    throw new Error(`Unable to resolve Linear team '${teamInput}'. Available teams: ${available || "none"}.`);
+    return { content: [{ type: "text", text: JSON.stringify(data.issues.nodes, null, 2) }] };
   }
 
-  return match.id;
-}
+  if (name === "linear_update_issue") {
+    const issue = await findIssue(args.id);
+    const input: Record<string, unknown> = {};
+    if (typeof args.title === "string") input.title = args.title;
+    if (typeof args.description === "string") input.description = args.description;
+    if (typeof args.assigneeEmail === "string") input.assigneeId = await findUserIdByEmail(args.assigneeEmail);
 
-async function createIssueOnLinear({
-  team,
-  title,
-  description,
-  state
-}: {
-  team: string;
-  title: string;
-  description?: string;
-  state?: string;
-}): Promise<LinearIssueSummary> {
-  const teamId = await resolveTeamId(team);
-  const data = await linearGraphQLRequest({
-    apiKey: requireLinearApiKey(),
-    endpoint: LINEAR_GRAPHQL_ENDPOINT,
-    query: `
-      mutation LinearBridgeIssueCreate($teamId: String!, $title: String!, $description: String) {
-        issueCreate(input: { teamId: $teamId, title: $title, description: $description }) {
+    if (Object.keys(input).length === 0) {
+      throw new Error("No update fields provided. Pass title, description, or assigneeEmail.");
+    }
+
+    const data = await linearGraphql<{ issueUpdate: { success: boolean; issue: any } }>(
+      `mutation IssueUpdate($id: String!, $input: IssueUpdateInput!) {
+        issueUpdate(id: $id, input: $input) {
           success
-          issue {
-            id
-            identifier
-            title
-            description
-            url
-            updatedAt
-            state {
-              id
-              name
-              type
-            }
-            assignee {
-              id
-              name
-            }
-            team {
-              id
-              name
-            }
-          }
+          issue { id identifier title description url branchName assignee { name email } }
         }
-      }
-    `,
-    variables: {
-      teamId,
-      title,
-      description: description || null
-    }
-  });
-
-  const payload = data?.issueCreate;
-  if (!payload?.success || !payload?.issue) {
-    throw new Error(`Failed to create Linear issue '${title}'.`);
+      }`,
+      { id: issue.id, input }
+    );
+    return { content: [{ type: "text", text: JSON.stringify(data.issueUpdate.issue, null, 2) }] };
   }
 
-  const createdIssue = payload.issue as LinearIssueSummary;
-  if (state) {
-    await updateLinearIssueStatus({
-      issueKey: createdIssue.identifier || createdIssue.id,
-      stateCommand: state
+  throw new Error(`Unknown tool: ${name}`);
+}
+
+function send(message: JsonRpcResponse | Record<string, unknown>) {
+  const payload = JSON.stringify(message);
+  process.stdout.write(`Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`);
+}
+
+async function handle(request: JsonRpcRequest) {
+  const id = request.id ?? null;
+  try {
+    switch (request.method) {
+      case "initialize":
+        send({
+          jsonrpc: "2.0",
+          id,
+          result: {
+            protocolVersion,
+            capabilities: { tools: {} },
+            serverInfo: { name: "brids-linear-mcp", version: "1.0.0" }
+          }
+        });
+        return;
+      case "notifications/initialized":
+        return;
+      case "tools/list":
+        send({ jsonrpc: "2.0", id, result: { tools } });
+        return;
+      case "tools/call": {
+        const result = await callTool(request.params?.name, request.params?.arguments || {});
+        send({ jsonrpc: "2.0", id, result });
+        return;
+      }
+      case "ping":
+        send({ jsonrpc: "2.0", id, result: {} });
+        return;
+      default:
+        send({ jsonrpc: "2.0", id, error: { code: -32601, message: `Method not found: ${request.method}` } });
+    }
+  } catch (error) {
+    send({
+      jsonrpc: "2.0",
+      id,
+      error: { code: -32000, message: error instanceof Error ? error.message : String(error) }
     });
-    return fetchIssue(createdIssue.identifier || createdIssue.id);
   }
-
-  return createdIssue;
 }
 
-async function updateIssueOnLinear({
-  issue,
-  title,
-  description,
-  state
-}: {
-  issue: string;
-  title?: string;
-  description?: string;
-  state?: string;
-}): Promise<LinearIssueSummary> {
-  const issueKey = normalizeIssueKey(issue);
-  const input: Record<string, string> = {};
+let buffer = Buffer.alloc(0);
 
-  if (typeof title === "string" && title.trim()) {
-    input.title = title.trim();
-  }
-  if (typeof description === "string") {
-    input.description = description;
-  }
+function consumeBuffer() {
+  while (buffer.length > 0) {
+    const headerEnd = buffer.indexOf("\r\n\r\n");
 
-  if (Object.keys(input).length > 0) {
-    const data = await linearGraphQLRequest({
-      apiKey: requireLinearApiKey(),
-      endpoint: LINEAR_GRAPHQL_ENDPOINT,
-      query: `
-        mutation LinearBridgeIssueUpdate($issueId: String!, $input: IssueUpdateInput!) {
-          issueUpdate(id: $issueId, input: $input) {
-            success
-            issue {
-              id
-              identifier
-              title
-              description
-              url
-              updatedAt
-              state {
-                id
-                name
-                type
-              }
-              assignee {
-                id
-                name
-              }
-              team {
-                id
-                name
-              }
-            }
-          }
-        }
-      `,
-      variables: {
-        issueId: issueKey,
-        input
-      }
-    });
-
-    const payload = data?.issueUpdate;
-    if (!payload?.success || !payload?.issue) {
-      throw new Error(`Failed to update Linear issue ${issueKey}.`);
-    }
-  }
-
-  if (state) {
-    const stateResult = await updateLinearIssueStatus({
-      issueKey,
-      stateCommand: state
-    });
-    if (!stateResult.skipped) {
-      return fetchIssue(issueKey);
-    }
-  }
-
-  return fetchIssue(issueKey);
-}
-
-async function listMyIssues(limit = 10): Promise<LinearViewerIssueNode[]> {
-  const data = await linearGraphQLRequest({
-    apiKey: requireLinearApiKey(),
-    endpoint: LINEAR_GRAPHQL_ENDPOINT,
-    query: `
-      query LinearViewerAssignedIssues {
-        viewer {
-          id
-          name
-          assignedIssues {
-            nodes {
-              id
-              identifier
-              title
-              url
-              updatedAt
-              state {
-                id
-                name
-                type
-              }
-              team {
-                name
-              }
-            }
-          }
-        }
-      }
-    `,
-    variables: {}
-  });
-
-  const nodes = (data?.viewer?.assignedIssues?.nodes || []) as LinearViewerIssueNode[];
-  return nodes.slice(0, Math.max(1, Math.min(100, limit)));
-}
-
-async function addIssueComment(issueKey: string, body: string): Promise<LinearCommentSummary> {
-  const data = await linearGraphQLRequest({
-    apiKey: requireLinearApiKey(),
-    endpoint: LINEAR_GRAPHQL_ENDPOINT,
-    query: `
-      mutation LinearIssueBridgeCommentCreate($issueId: String!, $body: String!) {
-        commentCreate(input: { issueId: $issueId, body: $body }) {
-          success
-          comment {
-            id
-            body
-            createdAt
-            url
-            user {
-              id
-              name
-            }
-          }
-        }
-      }
-    `,
-    variables: {
-      issueId: normalizeIssueKey(issueKey),
-      body
-    }
-  });
-
-  const payload = data?.commentCreate;
-  if (!payload?.success || !payload?.comment) {
-    throw new Error(`Failed to add comment to Linear issue ${issueKey}.`);
-  }
-
-  return payload.comment as LinearCommentSummary;
-}
-
-function buildIssueListMarkdown(issues: LinearViewerIssueNode[]): string {
-  if (!issues.length) {
-    return "No assigned issues found.";
-  }
-
-  return issues
-    .map((issue, index) => {
-      const state = issue.state?.name || "unknown";
-      const team = issue.team?.name || "unknown team";
-      return `${index + 1}. ${issue.identifier || issue.id} - ${issue.title || "untitled"} [${team} / ${state}]`;
-    })
-    .join("\n");
-}
-
-function buildTeamListMarkdown(teams: LinearTeamNode[]): string {
-  if (!teams.length) {
-    return "No Linear teams found.";
-  }
-
-  return teams
-    .map((team, index) => {
-      return `${index + 1}. ${team.key || team.id || "unknown"} - ${team.name || "untitled"}`;
-    })
-    .join("\n");
-}
-
-function buildCommentMarkdown(comment: LinearCommentSummary, issueKey: string): string {
-  return [
-    `Comment added to ${issueKey}.`,
-    "",
-    `- Comment ID: ${comment.id}`,
-    `- Created At: ${comment.createdAt || "n/a"}`,
-    `- URL: ${comment.url || "n/a"}`
-  ].join("\n");
-}
-
-function makeToolResult(text: string) {
-  return {
-    content: toTextContent(text)
-  };
-}
-
-async function main() {
-  const server = new McpServer({
-    name: "brids-linear-bridge",
-    version: "0.1.0"
-  });
-
-  server.registerTool(
-    "linear_get_issue",
-    {
-      title: "Get Linear Issue",
-      description: "Fetch a Linear issue by identifier and return a compact summary.",
-      inputSchema: z.object({
-        issue: z.string().min(1).describe("Linear issue key, for example BRI-38")
-      }) as any
-    },
-    async (args: any) => {
-      const { issue } = args;
-      const issueData = await fetchIssue(issue);
-      return makeToolResult(summarizeIssue(issueData));
-    }
-  );
-
-  server.registerTool(
-    "linear_list_my_issues",
-    {
-      title: "List My Issues",
-      description: "List issues assigned to the authenticated Linear user.",
-      inputSchema: z.object({
-        limit: z.number().int().min(1).max(100).optional().default(10)
-      }) as any
-    },
-    async (args: any) => {
-      const { limit } = args;
-      const issues = await listMyIssues(limit);
-      return makeToolResult(buildIssueListMarkdown(issues));
-    }
-  );
-
-  server.registerTool(
-    "linear_list_teams",
-    {
-      title: "List Linear Teams",
-      description: "List the Linear teams available in this workspace.",
-      inputSchema: z.object({}) as any
-    },
-    async () => {
-      const teams = await listTeams();
-      return makeToolResult(buildTeamListMarkdown(teams));
-    }
-  );
-
-  server.registerTool(
-    "linear_create_issue",
-    {
-      title: "Create Linear Issue",
-      description: "Create a Linear issue in a team.",
-      inputSchema: z.object({
-        team: z.string().min(1).describe("Team name, key, or UUID"),
-        title: z.string().min(1).describe("Issue title"),
-        description: z.string().optional().describe("Optional Markdown description"),
-        state: z.string().optional().describe("Optional workflow state command such as start, review, or done")
-      }) as any
-    },
-    async ({ team, title, description, state }: any) => {
-      const issue = await createIssueOnLinear({ team, title, description, state });
-      return makeToolResult(summarizeIssue(issue));
-    }
-  );
-
-  server.registerTool(
-    "linear_update_issue",
-    {
-      title: "Update Linear Issue",
-      description: "Update a Linear issue title or description, and optionally move its state.",
-      inputSchema: z.object({
-        issue: z.string().min(1).describe("Linear issue key, for example BRI-38"),
-        title: z.string().optional().describe("Optional new issue title"),
-        description: z.string().optional().describe("Optional new Markdown description"),
-        state: z.string().optional().describe("Optional workflow state command such as start, review, or done")
-      }) as any
-    },
-    async ({ issue, title, description, state }: any) => {
-      const updatedIssue = await updateIssueOnLinear({ issue, title, description, state });
-      return makeToolResult(summarizeIssue(updatedIssue));
-    }
-  );
-
-  server.registerTool(
-    "linear_update_issue_state",
-    {
-      title: "Update Linear Issue State",
-      description: "Move a Linear issue to a workflow state such as In Progress, In Review, or Done.",
-      inputSchema: z.object({
-        issue: z.string().min(1).optional().describe("Linear issue key, for example BRI-38"),
-        branch: z.string().min(1).optional().describe("Branch name to resolve the issue from if issue is omitted"),
-        state: z.enum(["start", "review", "done"]).describe("Target workflow state")
-      }) as any
-    },
-    async ({ issue, branch, state }: any) => {
-      const result = await updateLinearIssueStatus({
-        issueKey: issue,
-        branchName: branch,
-        stateCommand: state
-      });
-
-      if (result.skipped) {
-        return makeToolResult(`Linear status sync skipped: ${result.reason}.`);
+    if (headerEnd !== -1) {
+      const header = buffer.slice(0, headerEnd).toString("utf8");
+      const match = header.match(/Content-Length:\s*(\d+)/i);
+      if (!match) {
+        send({ jsonrpc: "2.0", id: null, error: { code: -32600, message: "Missing Content-Length header" } });
+        buffer = Buffer.alloc(0);
+        return;
       }
 
-      return makeToolResult(`Linear issue ${result.issueId} moved to ${result.stateName}.`);
-    }
-  );
+      const length = Number(match[1]);
+      const messageStart = headerEnd + 4;
+      const messageEnd = messageStart + length;
+      if (buffer.length < messageEnd) return;
 
-  server.registerTool(
-    "linear_add_comment",
-    {
-      title: "Add Linear Comment",
-      description: "Post a comment to a Linear issue.",
-      inputSchema: z.object({
-        issue: z.string().min(1).describe("Linear issue key, for example BRI-38"),
-        body: z.string().min(1).describe("Comment body in Markdown")
-      }) as any
-    },
-    async ({ issue, body }: any) => {
-      const comment = await addIssueComment(issue, body);
-      return makeToolResult(buildCommentMarkdown(comment, normalizeIssueKey(issue)));
+      const payload = buffer.slice(messageStart, messageEnd).toString("utf8");
+      buffer = buffer.slice(messageEnd);
+      try {
+        void handle(JSON.parse(payload));
+      } catch {
+        send({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } });
+      }
+      continue;
     }
-  );
 
-  server.registerPrompt(
-    "linear_issue_brief",
-    {
-      title: "Linear Issue Brief",
-      description: "Generate a concise issue brief for a Linear ticket based on the current repo protocol.",
-      argsSchema: z.object({
-        issue: z.string().min(1).describe("Linear issue key, for example BRI-38")
-      }) as any
-    },
-    async (args: any) => {
-      const { issue } = args;
-      const issueData = await fetchIssue(issue);
-      return {
-        messages: [
-          {
-            role: "assistant" as const,
-            content: {
-              type: "text" as const,
-              text: [
-                `Issue: ${issueData.identifier || issueData.id}`,
-                `Title: ${issueData.title || "untitled"}`,
-                `State: ${issueData.state?.name || "unknown"}`,
-                "",
-                "Use the repository's documentation-first flow before making code changes.",
-                "Document the human brief, then the technical slices, then start the first SPEC."
-              ].join("\n")
-            }
-          }
-        ]
-      };
+    const newline = buffer.indexOf("\n");
+    if (newline === -1) return;
+
+    const line = buffer.slice(0, newline).toString("utf8").trim();
+    buffer = buffer.slice(newline + 1);
+    if (!line) continue;
+    try {
+      void handle(JSON.parse(line));
+    } catch {
+      send({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } });
     }
-  );
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  }
 }
 
-main().catch((error) => {
-  console.error(`❌ Linear MCP server failed: ${error instanceof Error ? error.message : String(error)}`);
-  process.exit(1);
+process.stdin.on("data", (chunk) => {
+  buffer = Buffer.concat([buffer, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)]);
+  consumeBuffer();
 });

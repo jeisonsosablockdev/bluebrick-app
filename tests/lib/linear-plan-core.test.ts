@@ -5,8 +5,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const {
-  buildInitiativeBranchName,
+  buildFeatureBranchName,
+  buildProblemArtifactPath,
   buildSliceBranchName,
+  buildSpecBranchName,
+  buildSolutionArtifactPath,
   createLinearPlan,
   normalizeIssueId,
   normalizeSliceId
@@ -19,45 +22,54 @@ async function createTemplateFile(rootDir: string) {
   await writeFile(
     path.join(templateDir, "linear-single-issue-slices.template.md"),
     [
-      "# Objective",
+      "# Human Brief",
+      "",
+      "## Objective",
       "{{GOAL}}",
       "",
-      "# Scope",
+      "## Scope",
       "{{SCOPE_ITEMS}}",
       "",
-      "# Non-goals",
+      "## Non-goals",
       "{{NON_GOAL_ITEMS}}",
       "",
-      "# Linear",
-      "- Issue: `{{ISSUE_ID}}`",
-      "- Owner: `{{OWNER}}`",
+      "## Acceptance Criteria",
+      "{{ACCEPTANCE_CRITERIA_ITEMS}}",
       "",
-      "# Artifact Pair",
+      "## Risks",
+      "{{RISK_ITEMS}}",
+      "",
+      "## Open Questions",
+      "{{OPEN_QUESTIONS_ITEMS}}",
+      "",
+      "# Technical Protocol for Agents",
+      "",
+      "## Linear",
+      "- Issue: `{{ISSUE_ID}}`",
+      "- Owner / branch handle: `{{OWNER}}`",
+      "",
+      "## Artifact Pair",
       "- Problem artifact: `{{PROBLEM_ARTIFACT}}`",
       "- Solution artifact: `{{SOLUTION_ARTIFACT}}`",
       "",
-      "# Linear Initiative Branch",
-      "`{{INITIATIVE_BRANCH}}`",
+      "## Parent Work Branch",
+      "`{{FEATURE_BRANCH}}`",
       "",
-      "# Spec Slice",
-      "- Branch: `{{DOCUMENTATION_SLICE_BRANCH}}`",
-      "- Objective: `{{DOCUMENTATION_SLICE_OBJECTIVE}}`",
+      "## SPEC Plan",
+      "- First SPEC: `{{FIRST_SPEC_BRANCH}}`",
+      "- Branch pattern: `{{SPEC_BRANCH_PATTERN}}`",
       "",
-      "# Slice Plan",
-      "| Slice | Status | Branch | Objective | Scope tecnico | Validation | PR |",
+      "| SPEC | Status | Branch | Objective | Scope tecnico | Validation | PR |",
       "| --- | --- | --- | --- | --- | --- | --- |",
-      "{{SLICE_ROWS}}",
+      "{{SPEC_ROWS}}",
       "",
-      "# Order of Execution",
+      "## Order of Execution",
       "{{EXECUTION_ORDER}}",
       "",
-      "# Risks",
-      "{{RISK_ITEMS}}",
-      "",
-      "# Test Plan First",
+      "## Test Plan First",
       "{{TEST_PLAN_FIRST_ITEMS}}",
       "",
-      "# Completion Gate",
+      "## Completion Gate",
       "{{COMPLETION_GATE_ITEMS}}"
     ].join("\n"),
     "utf8"
@@ -72,25 +84,69 @@ describe("scripts/linear-plan-core", () => {
     expect(normalizeSliceId("s3")).toBe("S03");
   });
 
-  it("builds initiative and slice branches from the same parent slug", () => {
+  it("builds parent work and SPEC branches from the same parent slug", () => {
     expect(
-      buildInitiativeBranchName({
+      buildFeatureBranchName({
         type: "feature",
         scope: "shared",
-        slug: "single-issue-slice-planning",
-        issueId: "BRI-149"
+        slug: "fix-ui-elements",
+        issueId: "BRI-38",
+        owner: "czambrano"
       })
-    ).toBe("initiative/bri-149-single-issue-slice-planning");
+    ).toBe("feature/czambrano-BRI-38-fix-ui-elements");
+    expect(
+      buildSpecBranchName({
+        owner: "czambrano",
+        issueId: "BRI-38",
+        specSlug: "landing-compliance-audit"
+      })
+    ).toBe("SPEC/czambrano-BRI-38-landing-compliance-audit");
     expect(
       buildSliceBranchName({
-        type: "feature",
-        scope: "shared",
-        slug: "single-issue-slice-planning",
-        issueId: "BRI-149",
-        sliceId: "S02",
-        sliceSlug: "tooling-and-ci"
+        owner: "czambrano",
+        issueId: "BRI-38",
+        sliceSlug: "landing-compliance-audit"
       })
-    ).toBe("feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
+    ).toBe("SPEC/czambrano-BRI-38-landing-compliance-audit");
+  });
+
+  it("supports issue-type-driven branch and artifact families beyond feature", () => {
+    expect(
+      buildFeatureBranchName({
+        type: "bugfix",
+        scope: "shared",
+        slug: "login-redirect-fix",
+        issueId: "BRI-171",
+        owner: "czambrano"
+      })
+    ).toBe("bugfix/czambrano-BRI-171-login-redirect-fix");
+    expect(
+      buildFeatureBranchName({
+        type: "hotfix",
+        scope: "shared",
+        slug: "session-cookie-restore",
+        issueId: "BRI-172",
+        owner: "czambrano"
+      })
+    ).toBe("hotfix/czambrano-BRI-172-session-cookie-restore");
+    expect(
+      buildFeatureBranchName({
+        type: "epic",
+        scope: "shared",
+        slug: "admin-collections-console",
+        issueId: "EPIC-011",
+        owner: "czambrano"
+      })
+    ).toBe("epic/czambrano-EPIC-011-admin-collections-console");
+    expect(
+      buildProblemArtifactPath({ type: "bugfix", slug: "login-redirect-fix" })
+    ).toBe("docs/fixes/fix-login-redirect-fix.md");
+    expect(
+      buildSolutionArtifactPath({ type: "hotfix", slug: "session-cookie-restore" })
+    ).toBe("docs/fixes/fix-session-cookie-restore-implementation.md");
+    expect(
+      buildProblemArtifactPath({ type: "epic", slug: "admin-collections-console" })
+    ).toBe("docs/features/feature-admin-collections-console.md");
   });
 
   it("renders a full issue body and command summary from the template", async () => {
@@ -99,47 +155,51 @@ describe("scripts/linear-plan-core", () => {
 
     const result = await createLinearPlan({
       rootDir,
-      issueId: "BRI-149",
+      issueId: "BRI-38",
       type: "feature",
       scope: "shared",
-      slug: "single-issue-slice-planning",
-      title: "Single-issue slice planning with Linear initiative branches",
-      goal: "Institutionalize single-issue slice planning without Linear subissue noise.",
+      slug: "fix-ui-elements",
+      title: "Landing Page Rewrite (UI + Copy Compliance BRIDS)",
+      goal: "Rewrite the BRIDS landing page with compliant UI and copy.",
       scopeItems: [
-        "Governance summaries and canonical git policy",
-        "Guides, template, and helper tooling"
+        "Landing UI cleanup and copy alignment",
+        "Branch and documentation governance for the feature"
       ],
-      nonGoals: ["No product UI or blockchain behavior changes"],
-      risks: ["Over-documenting the flow without enough automation"],
-      owner: "qa-user",
+      nonGoals: ["No auth, blockchain, or backend behavior changes"],
+      acceptanceCriteria: [
+        "Copy stays neutral and compliant",
+        "The landing remains responsive"
+      ],
+      risks: ["Copy drift from the approved compliance annex"],
+      openQuestions: ["Which sections need the strongest wording changes?"],
+      owner: "czambrano",
       slices: [
-        "S01|Formalize governance policy|AGENTS.md, docs/governance/git-monorepo-policy.md|npm run validate:docs-governance",
-        "S02|tooling-and-ci|Add generator and initiative-target CI|scripts/linear-plan-core.js, .github/workflows, tests/lib|npm run validate"
+        "S01|landing-compliance-audit|Audit landing content and structure|docs/features, app|npm run validate",
+        "S02|hero-copy-ui-cleanup|Rewrite hero copy and CTA surfaces|app, components|npm run validate",
+        "S03|supporting-sections-compliance|Normalize supporting sections and disclaimers|app, components|npm run validate"
       ]
     });
 
-    expect(result.body).toContain("Issue: `BRI-149`");
-    expect(result.body).toContain("Problem artifact: `docs/features/feature-single-issue-slice-planning.md`");
-    expect(result.body).toContain("Solution artifact: `docs/features/feature-single-issue-slice-planning-implementation.md`");
-    expect(result.body).toContain("initiative/bri-149-single-issue-slice-planning");
-    expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s01-formalize-governance-policy");
-    expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s01-formalize-governance-policy");
-    expect(result.body).toContain("feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
-    expect(result.body).toContain("1. S01 - Formalize governance policy");
-    expect(result.body).toContain("# Spec Slice");
-    expect(result.body).toContain("Spec/documentation slice used `explain-like-socrates`");
-    expect(result.body).toContain("Human Acceptance approved by the user after manual testing");
-    expect(result.commandSummary).toContain("git checkout -b initiative/bri-149-single-issue-slice-planning");
-    expect(result.commandSummary).toContain("git checkout -b feature/shared-single-issue-slice-planning-bri-149-s02-tooling-and-ci");
+    expect(result.body).toContain("Issue: `BRI-38`");
+    expect(result.body).toContain("Problem artifact: `docs/features/feature-fix-ui-elements.md`");
+    expect(result.body).toContain("Solution artifact: `docs/features/feature-fix-ui-elements-implementation.md`");
+    expect(result.body).toContain("feature/czambrano-BRI-38-fix-ui-elements");
+    expect(result.body).toContain("SPEC/czambrano-BRI-38-landing-compliance-audit");
+    expect(result.body).toContain("SPEC/czambrano-BRI-38-hero-copy-ui-cleanup");
+    expect(result.body).toContain("SPEC/czambrano-BRI-38-supporting-sections-compliance");
+    expect(result.body).toContain("1. S01 - Audit landing content and structure");
+    expect(result.body).toContain("## SPEC Plan");
+    expect(result.commandSummary).toContain("git checkout -b feature/czambrano-BRI-38-fix-ui-elements");
+    expect(result.commandSummary).toContain("git checkout -b SPEC/czambrano-BRI-38-hero-copy-ui-cleanup");
 
     const templateCopy = await readFile(
       path.join(rootDir, "docs", "templates", "linear-single-issue-slices.template.md"),
       "utf8"
     );
-    expect(templateCopy).toContain("{{SLICE_ROWS}}");
+    expect(templateCopy).toContain("{{SPEC_ROWS}}");
   });
 
-  it("requires the first slice to be S01 so documentation owns the plan first", async () => {
+  it("requires the first SPEC to be S01 so documentation owns the plan first", async () => {
     const rootDir = await mkdtemp(path.join(tmpdir(), "linear-plan-test-"));
     await createTemplateFile(rootDir);
 
@@ -160,6 +220,6 @@ describe("scripts/linear-plan-core", () => {
           "S02|tooling|Update generator and branch helpers|scripts|npm run validate"
         ]
       })
-    ).rejects.toThrow("The first slice must be S01");
+    ).rejects.toThrow("The first SPEC must be S01");
   });
 });

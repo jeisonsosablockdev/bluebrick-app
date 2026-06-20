@@ -61,7 +61,7 @@ docs/
 1. `planner` reads `AGENTS.md`, the touched paths, and only the workflow and policy files that match the task.
    - If the brief is vague, the bootstrap flow should run a Socratic clarification pass with `explain-like-socrates` before choosing the branch shape so the task expands into a concrete problem, outcome, scope, and branch plan.
 2. `planner` activates one or more workflows based on scope: blockchain, frontend, NFT, mainnet hardening, responsive QA.
-3. For multi-slice work, `planner` and `docs` require the spec/documentation slice to use `explain-like-socrates` before finalizing artifacts and to define a clean-code design contract for each delivery slice before implementation opens.
+3. For multi-slice work, `planner` and `docs` require the spec/documentation slice to use `explain-like-socrates` before finalizing artifacts and to define a clean-code design contract for each delivery slice before implementation opens. Each delivery slice must have a clean-code design contract for each delivery slice before implementation opens.
 4. `planner` delegates the smallest useful context to specialists, including changed paths, active workflow, required policies, evidence expectations, clean-code design contract, and open risks.
 5. Domain specialists implement or analyze within their lane:
    - `solana` for runtime and devnet proof

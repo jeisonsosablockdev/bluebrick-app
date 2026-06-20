@@ -653,7 +653,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-white/15 bg-white/[0.02] p-3">
+      <div className="marketplace-detail-inset rounded-xl p-3">
         <p className="text-sm text-slate-200">
           {t({ en: "Mint price", es: "Precio de mint", pt: "Preco de mint" })}: <span className="font-semibold text-cyan-300">{priceLabel}</span>
         </p>
@@ -687,19 +687,19 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
       </div>
 
       {quoteError ? (
-        <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-sm text-rose-100">{quoteError}</p>
+        <p className="marketplace-detail-alert marketplace-detail-alert-error rounded-lg p-2 text-sm text-rose-100">{quoteError}</p>
       ) : null}
 
       {purchaseError ? (
-        <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-sm text-rose-100">{purchaseError}</p>
+        <p className="marketplace-detail-alert marketplace-detail-alert-error rounded-lg p-2 text-sm text-rose-100">{purchaseError}</p>
       ) : null}
 
       {addToCartError ? (
-        <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-sm text-rose-100">{addToCartError}</p>
+        <p className="marketplace-detail-alert marketplace-detail-alert-error rounded-lg p-2 text-sm text-rose-100">{addToCartError}</p>
       ) : null}
 
       {submittedSignature ? (
-        <p className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-2 text-sm text-emerald-100">
+        <p className="marketplace-detail-alert marketplace-detail-alert-success rounded-lg p-2 text-sm text-emerald-100">
           {t({
             en: "Purchase submitted:",
             es: "Compra enviada:",
@@ -717,7 +717,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
       ) : null}
 
       {PURCHASE_TRACE_UI_ENABLED && (lastFlowId || activeFlowId) ? (
-        <p className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-2 text-xs text-cyan-100">
+        <p className="marketplace-detail-alert marketplace-detail-alert-info rounded-lg p-2 text-xs text-cyan-100">
           {t({
             en: "Trace flow ID (current):",
             es: "Flow ID de trazado (actual):",
@@ -727,13 +727,13 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
         </p>
       ) : null}
 
-      <div className="rounded-xl border border-white/15 bg-white/[0.02] p-3">
+      <div className="marketplace-detail-inset rounded-xl p-3">
         <p className="mb-2 text-xs text-slate-300">
           {t({ en: "Quantity", es: "Cantidad", pt: "Quantidade" })}
         </p>
         <div className="flex items-center gap-2">
           <Button
-            className="min-h-11 w-11 px-0"
+            className="marketplace-detail-round-button min-h-11 w-11 px-0"
             variant="outline"
             disabled={isLoadingQuote || isSubmitting || requestedQuantity <= 1}
             onClick={() => {
@@ -747,7 +747,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
             min={1}
             max={maxSelectableQuantity}
             value={requestedQuantity}
-            className="h-11 w-24 rounded-md border border-white/20 bg-black/20 px-3 text-center text-sm text-slate-100 outline-none focus:border-cyan-400"
+            className="marketplace-detail-quantity-input h-11 w-24 rounded-xl px-3 text-center text-sm font-semibold text-slate-100 outline-none"
             onChange={(event) => {
               const parsed = Number(event.target.value);
               if (!Number.isFinite(parsed)) {
@@ -760,7 +760,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
             }}
           />
           <Button
-            className="min-h-11 w-11 px-0"
+            className="marketplace-detail-round-button min-h-11 w-11 px-0"
             variant="outline"
             disabled={isLoadingQuote || isSubmitting || requestedQuantity >= maxSelectableQuantity}
             onClick={() => {
@@ -792,7 +792,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
             })}
         </Button>
         <Button
-          className="min-h-11"
+          className="marketplace-brand-pill min-h-11"
           variant="outline"
           disabled={isLoadingQuote || isSubmitting || isAddingToCart || !canAttemptPurchase}
           onClick={() => {

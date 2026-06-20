@@ -73,13 +73,14 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           placeholder={t({ en: "Search by name or city", es: "Buscar por nombre o ciudad", pt: "Buscar por nome ou cidade" })}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
+          className="marketplace-brand-pill h-[46px] rounded-[1.35rem]"
         />
 
         <select
           aria-label={t({ en: "Filter by city", es: "Filtrar por ciudad", pt: "Filtrar por cidade" })}
           value={city}
           onChange={(event) => setCity(event.target.value)}
-          className="glass-control h-[46px] w-full rounded-xl px-4 text-sm text-slate-100 outline-none"
+          className="glass-control marketplace-brand-pill h-[46px] w-full rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
         >
           <option value="">{t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" })}</option>
           {cityOptions.map((city) => (
@@ -93,7 +94,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           aria-label={t({ en: "Filter by status", es: "Filtrar por estado", pt: "Filtrar por status" })}
           value={status}
           onChange={(event) => setStatus(event.target.value as ListingStatus | "")}
-          className="glass-control h-[46px] w-full rounded-xl px-4 text-sm text-slate-100 outline-none"
+          className="glass-control marketplace-brand-pill h-[46px] w-full rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
         >
           <option value="">{t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" })}</option>
           <option value="active">{t({ en: "Active", es: "Activo", pt: "Ativo" })}</option>
@@ -108,6 +109,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           placeholder={t({ en: "Minimum ROI %", es: "ROI minimo %", pt: "ROI minimo %" })}
           value={minRoi}
           onChange={(event) => setMinRoi(event.target.value)}
+          className="marketplace-brand-pill h-[46px] rounded-[1.35rem]"
         />
       </div>
 
@@ -118,7 +120,7 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
             event.preventDefault();
             clearFilters();
           }}
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+          className="marketplace-brand-pill inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white"
         >
           {t({ en: "Clear filters", es: "Limpiar filtros", pt: "Limpar filtros" })}
         </Link>

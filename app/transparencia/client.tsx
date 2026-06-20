@@ -8,11 +8,12 @@ import { ContactFormSection } from "@/components/sections/contact-form";
 export function TransparencyContent() {
   const { t } = useI18n();
 
-  // Custom class for hover-only glassmorphism
-  const hoverGlassEffect = "relative overflow-hidden transition-all duration-300 bg-slate-900/40 border border-white/5 hover:bg-white/5 hover:backdrop-blur-[22px] hover:saturate-150 hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.18)]";
+  const depthCard = "relative overflow-hidden transparency-depth-card";
+  const depthSurface = "relative overflow-hidden transparency-depth-surface";
+  const depthCode = "transparency-depth-code";
 
   return (
-    <main className="container mx-auto px-4 py-20 lg:py-32">
+    <div className="transparency-page py-20 lg:py-28">
       <div className="mx-auto max-w-4xl text-center">
         <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl text-gradientPrimary bg-clip-text text-transparent">
           {t({
@@ -47,7 +48,7 @@ export function TransparencyContent() {
 
         <div className="grid gap-6 sm:grid-cols-3">
           {/* FIX & FLIP */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 hover:border-cyan-500/40 group`}>
+          <div className={`${depthCard} transparency-accent-cyan rounded-3xl p-8 group`}>
             <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-cyan-400/5 blur-[60px] transition-all group-hover:bg-cyan-400/20 group-hover:blur-[40px]"></div>
             <div className="relative z-10 flex h-full flex-col">
               <h3 className="mb-1 text-xl font-bold text-white uppercase">FIX & FLIP</h3>
@@ -88,7 +89,7 @@ export function TransparencyContent() {
           </div>
 
           {/* FIX & HOLD */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 hover:border-fuchsia-500/40 group`}>
+          <div className={`${depthCard} transparency-accent-fuchsia rounded-3xl p-8 group`}>
             <div className="absolute -bottom-16 -right-16 h-40 w-40 rounded-full bg-fuchsia-400/5 blur-[60px] transition-all group-hover:bg-fuchsia-400/20 group-hover:blur-[40px]"></div>
             <div className="relative z-10 flex h-full flex-col">
               <h3 className="mb-1 text-xl font-bold text-white uppercase">FIX & HOLD</h3>
@@ -129,7 +130,7 @@ export function TransparencyContent() {
           </div>
 
           {/* DESARROLLO */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 hover:border-blue-500/40 group`}>
+          <div className={`${depthCard} transparency-accent-blue rounded-3xl p-8 group`}>
             <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-blue-400/5 blur-[60px] transition-all group-hover:bg-blue-400/20 group-hover:blur-[40px]"></div>
             <div className="relative z-10 flex h-full flex-col">
               <h3 className="mb-1 text-xl font-bold text-white uppercase">
@@ -174,7 +175,7 @@ export function TransparencyContent() {
       </section>
 
       {/* Banner CTA */}
-      <section className={`mt-16 sm:mt-24 rounded-[2rem] p-8 sm:p-12 text-center group ${hoverGlassEffect} hover:border-cyan-500/30`}>
+      <section className={`mt-16 sm:mt-24 rounded-[2rem] p-8 sm:p-12 text-center group ${depthSurface} transparency-accent-cyan`}>
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-fuchsia-500/0 to-blue-500/0 opacity-0 blur-xl transition-all duration-500 group-hover:opacity-50 group-hover:from-cyan-500/10 group-hover:via-fuchsia-500/10 group-hover:to-blue-500/10"></div>
         <div className="relative z-10 max-w-3xl mx-auto">
           <h3 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
@@ -194,7 +195,7 @@ export function TransparencyContent() {
           <div className="flex justify-center">
             <Link
               href="/marketplace"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-cyan-500 px-8 text-sm font-bold text-slate-900 transition hover:bg-cyan-400"
+              className="marketplace-brand-pill inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-bold text-white transition hover:-translate-y-0.5"
             >
               {t({
                 en: "See active projects",
@@ -224,10 +225,10 @@ export function TransparencyContent() {
         <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-700 before:to-transparent">
           {/* Step 1 */}
           <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-slate-900 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 transition-colors group-hover:bg-cyan-500 group-hover:text-slate-900 group-hover:border-cyan-400">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border-0 bg-slate-950/90 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[inset_0_1px_14px_rgba(47,198,255,0.08),0_10px_24px_rgba(0,0,0,0.18)] z-10 transition-colors group-hover:bg-cyan-500 group-hover:text-slate-900">
               1
             </div>
-            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${hoverGlassEffect}`}>
+            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${depthCard} transparency-accent-cyan`}>
               <h3 className="font-bold text-white mb-2">{t({ en: "Step 1 – Investor Application", es: "Paso 1 – Aplicación del inversionista", pt: "Passo 1 – Aplicação do Investidor" })}</h3>
               <p className="text-sm text-slate-400">{t({ en: "The investor completes an initial application to define their goals, profile, and expectations.", es: "El inversionista completa una aplicación inicial para conocer sus objetivos, perfil y expectativas de inversión.", pt: "O investidor preenche uma aplicação inicial para definir seus objetivos, perfil e expectativas." })}</p>
             </div>
@@ -235,10 +236,10 @@ export function TransparencyContent() {
 
           {/* Step 2 */}
           <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-slate-900 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 transition-colors group-hover:bg-fuchsia-500 group-hover:text-slate-900 group-hover:border-fuchsia-400">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border-0 bg-slate-950/90 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[inset_0_1px_14px_rgba(217,70,239,0.08),0_10px_24px_rgba(0,0,0,0.18)] z-10 transition-colors group-hover:bg-fuchsia-500 group-hover:text-slate-900">
               2
             </div>
-            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${hoverGlassEffect}`}>
+            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${depthCard} transparency-accent-fuchsia`}>
               <h3 className="font-bold text-white mb-2">{t({ en: "Step 2 – Profile Evaluation", es: "Paso 2 – Evaluación del perfil", pt: "Passo 2 – Avaliação do perfil" })}</h3>
               <p className="text-sm text-slate-400">{t({ en: "We analyze the investor profile to assure alignment with the strategy, horizon, and project risk.", es: "Analizamos el perfil del inversionista para asegurar alineación con la estrategia, el horizonte y el nivel de riesgo del proyecto.", pt: "Analisamos o perfil do investidor para assegurar o alinhamento com a estratégia, o horizonte e o risco do projeto." })}</p>
             </div>
@@ -246,10 +247,10 @@ export function TransparencyContent() {
 
           {/* Step 3 */}
           <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-slate-900 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 transition-colors group-hover:bg-blue-500 group-hover:text-slate-900 group-hover:border-blue-400">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border-0 bg-slate-950/90 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[inset_0_1px_14px_rgba(59,130,246,0.08),0_10px_24px_rgba(0,0,0,0.18)] z-10 transition-colors group-hover:bg-blue-500 group-hover:text-slate-900">
               3
             </div>
-            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${hoverGlassEffect}`}>
+            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${depthCard} transparency-accent-blue`}>
               <h3 className="font-bold text-white mb-2">{t({ en: "Step 3 – Project Presentation", es: "Paso 3 – Presentación del proyecto", pt: "Passo 3 – Apresentação do projeto" })}</h3>
               <p className="text-sm text-slate-400">{t({ en: "The investment opportunity is presented with clear structure, returns, risks, and timeline.", es: "Se presenta la oportunidad de inversión con información clara sobre estructura, retornos, riesgos y timeline.", pt: "A oportunidade de investimento é apresentada com clareza sobre estrutura, retornos, riscos e linha do tempo." })}</p>
             </div>
@@ -257,10 +258,10 @@ export function TransparencyContent() {
 
           {/* Step 4 */}
           <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-slate-900 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 transition-colors group-hover:bg-amber-500 group-hover:text-slate-900 group-hover:border-amber-400">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border-0 bg-slate-950/90 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[inset_0_1px_14px_rgba(245,158,11,0.08),0_10px_24px_rgba(0,0,0,0.18)] z-10 transition-colors group-hover:bg-amber-500 group-hover:text-slate-900">
               4
             </div>
-            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${hoverGlassEffect}`}>
+            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${depthCard} transparency-accent-amber`}>
               <h3 className="font-bold text-white mb-2">{t({ en: "Step 4 – Legal Framework", es: "Paso 4 – Firma y estructura legal", pt: "Passo 4 – Quadro Jurídico" })}</h3>
               <p className="text-sm text-slate-400">{t({ en: "The investment is formalized through private legal documentation and clear frameworks.", es: "La inversión se formaliza mediante documentación legal privada y estructuras claras diseñadas para cada proyecto.", pt: "O investimento é formalizado por documentação legal privada e estruturas claras." })}</p>
             </div>
@@ -268,10 +269,10 @@ export function TransparencyContent() {
 
           {/* Step 5 */}
           <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-slate-900 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 transition-colors group-hover:bg-emerald-500 group-hover:text-slate-900 group-hover:border-emerald-400">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border-0 bg-slate-950/90 text-slate-300 font-semibold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[inset_0_1px_14px_rgba(16,185,129,0.08),0_10px_24px_rgba(0,0,0,0.18)] z-10 transition-colors group-hover:bg-emerald-500 group-hover:text-slate-900">
               5
             </div>
-            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${hoverGlassEffect}`}>
+            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-2xl p-6 ${depthCard} transparency-accent-emerald`}>
               <h3 className="font-bold text-white mb-2">{t({ en: "Step 5 – Execution & Reporting", es: "Paso 5 – Ejecución y reportes periódicos", pt: "Passo 5 – Execução e Relatórios" })}</h3>
               <p className="text-sm text-slate-400">{t({ en: "We execute the project and keep the investor informed through ongoing reports and tracking.", es: "Ejecutamos el proyecto y mantenemos al inversionista informado a través de reportes periódicos y seguimiento continuo.", pt: "Executamos o projeto e mantemos o investidor informado através de relatórios e acompanhamento." })}</p>
             </div>
@@ -281,7 +282,7 @@ export function TransparencyContent() {
         <div className="mt-12 flex justify-center">
           <Link
             href="#"
-            className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-bold text-slate-900 transition hover:bg-slate-200"
+            className="marketplace-brand-pill inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-bold text-white transition hover:-translate-y-0.5"
           >
             {t({
               en: "Start as an investor",
@@ -293,8 +294,8 @@ export function TransparencyContent() {
       </section>
 
       {/* Closing Statement & BlueBrick Partner Banner */}
-      <section className={`mt-24 rounded-[2rem] p-8 sm:p-12 text-center group ${hoverGlassEffect} hover:border-blue-500/30`}>
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 via-slate-900/50 to-transparent opacity-0 blur-2xl transition-all duration-500 group-hover:opacity-100"></div>
+      <section className={`mt-24 rounded-[2rem] p-8 sm:p-12 text-center group ${depthSurface} transparency-accent-blue`}>
+        <div className="transparency-closing-hover absolute inset-0 bg-gradient-to-t from-blue-900/10 via-slate-900/50 to-transparent opacity-0 blur-2xl transition-all duration-500 group-hover:opacity-100"></div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <h2 className="mb-6 text-3xl font-extrabold text-white sm:text-4xl text-gradientPrimary bg-clip-text text-transparent leading-tight">
             {t({
@@ -313,7 +314,7 @@ export function TransparencyContent() {
           <div className="flex justify-center">
             <Link
               href="/marketplace"
-              className="inline-flex h-14 items-center justify-center rounded-full bg-blue-600 px-10 text-base font-bold text-white transition hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]"
+              className="marketplace-brand-pill inline-flex h-14 items-center justify-center rounded-full px-10 text-base font-bold text-white transition hover:-translate-y-0.5"
             >
               {t({
                 en: "Start investing",
@@ -335,7 +336,7 @@ export function TransparencyContent() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {/* Card 1: Contracts */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 group`}>
+          <div className={`${depthCard} transparency-accent-cyan rounded-3xl p-8 group`}>
             <div className="absolute -left-12 -top-12 h-32 w-32 rounded-full bg-cyan-400/5 blur-3xl transition-all group-hover:bg-cyan-400/10"></div>
             <div className="relative z-10">
               <h3 className="mb-3 text-xl font-semibold text-white">
@@ -348,14 +349,14 @@ export function TransparencyContent() {
                   pt: "Revise o código fonte de nossos Programas Solana verificados on-chain."
                 })}
               </p>
-              <div className="flex font-mono text-xs text-cyan-300 p-3 rounded-xl border border-white/10 bg-black/30">
+              <div className={`flex font-mono text-xs text-cyan-300 p-3 rounded-xl ${depthCode}`}>
                 {t({ en: "Coming soon...", es: "Próximamente...", pt: "Em breve..." })}
               </div>
             </div>
           </div>
 
           {/* Card 2: Wallets */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 group`}>
+          <div className={`${depthCard} transparency-accent-fuchsia rounded-3xl p-8 group`}>
             <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-fuchsia-400/5 blur-3xl transition-all group-hover:bg-fuchsia-400/10"></div>
             <div className="relative z-10">
               <h3 className="mb-3 text-xl font-semibold text-white">
@@ -368,14 +369,14 @@ export function TransparencyContent() {
                   pt: "Monitore os endereços públicos."
                 })}
               </p>
-              <div className="flex font-mono text-xs text-fuchsia-300 p-3 rounded-xl border border-white/10 bg-black/30">
+              <div className={`flex font-mono text-xs text-fuchsia-300 p-3 rounded-xl ${depthCode}`}>
                 {t({ en: "Coming soon...", es: "Próximamente...", pt: "Em breve..." })}
               </div>
             </div>
           </div>
 
           {/* Card 3: Nuestro SQUAD */}
-          <div className={`${hoverGlassEffect} rounded-3xl p-8 sm:col-span-2 lg:col-span-1 group`}>
+          <div className={`${depthCard} transparency-accent-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-1 group`}>
             <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-blue-400/5 blur-3xl transition-all group-hover:bg-blue-400/10"></div>
             <div className="relative z-10">
               <h3 className="mb-3 text-xl font-semibold text-white">
@@ -388,7 +389,7 @@ export function TransparencyContent() {
                   pt: "Integração com Squads Multisig para garantir segurança de nível empresarial."
                 })}
               </p>
-              <div className="flex font-mono text-xs text-blue-300 p-3 rounded-xl border border-white/10 bg-black/30">
+              <div className={`flex font-mono text-xs text-blue-300 p-3 rounded-xl ${depthCode}`}>
                 Squads V4 (Mainnet/Devnet)
               </div>
             </div>
@@ -397,7 +398,7 @@ export function TransparencyContent() {
       </section>
 
       {/* Brand values divider */}
-      <div className="mt-24 max-w-5xl mx-auto text-center border-y border-white/5 py-10 bg-slate-900/20 backdrop-blur-md rounded-3xl">
+      <div className={`${depthSurface} transparency-accent-cyan mt-24 max-w-5xl mx-auto text-center py-10 rounded-3xl`}>
         <p className="text-lg md:text-xl font-bold text-slate-300 tracking-[0.15em] uppercase flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6">
           <span className="text-cyan-100">{t({ en: "Structured Capital", es: "Capital estructurado", pt: "Capital estruturado" })}</span>
           <span className="hidden md:inline-block text-cyan-500/50 opacity-50">I</span>
@@ -409,6 +410,6 @@ export function TransparencyContent() {
 
       <ContactFormSection />
       <FooterSection />
-    </main>
+    </div>
   );
 }

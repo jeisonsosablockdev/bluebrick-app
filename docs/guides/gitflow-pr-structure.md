@@ -24,9 +24,9 @@ It runs the preflight diagnostics, asks a Socratic clarification pass with `expl
 For multi-slice work, the first branch after the Linear initiative branch is the spec/documentation slice. That slice must use `explain-like-socrates` before artifacts, assumptions, and delivery slices are finalized.
 
 ## Mandatory Sequence
-1. For non-trivial work, create/update one parent Linear issue with a Markdown slice plan before coding.
-2. If slices are required, create the Linear initiative branch from `develop` and create slice branches from that initiative branch.
-3. For multi-slice work, complete the spec/documentation slice with `explain-like-socrates` before delivery slices open.
+1. For non-trivial work, create/update one parent Linear issue with a human-first brief and a technical protocol before coding.
+2. The issue type selected in the documentation pass determines the parent work branch family.
+3. If multiple phases are required, create the parent work branch from `develop` and create SPEC branches from that parent work branch one at a time.
 4. Commit in the active working branch (never `develop`/`main`).
 5. Push branch to origin.
 6. Prepare PR body with required sections:
@@ -35,55 +35,62 @@ For multi-slice work, the first branch after the Linear initiative branch is the
    - `Riesgos`
    - `Rollback Plan`
    - `Prueba Devnet`
-   - `Human Acceptance`
 7. Run local metadata lint.
 8. Run lightweight local governance preflight.
 9. Open PR in draft mode and apply required labels.
 10. Wait for governance gates.
-11. For final PRs into `develop`, stop for user manual testing and explicit Human Acceptance.
-12. Mark PR ready and merge only after checks and Human Acceptance pass.
+11. Mark PR ready and merge only after checks pass.
 
-## Single-Issue Slice Planning
+## Single-Issue SPEC Planning
 - Preferred tracking model: one Linear issue with Markdown slices, not a pile of subissues.
+- The parent issue should clearly state the issue type, because the type controls the branch family and the artifact track.
 - Detailed planning guide: `docs/guides/linear-single-issue-slice-planning.md`
 - Template: `docs/templates/linear-single-issue-slices.template.md`
 - Generator: `npm run linear:plan -- ...`
 
 Use the parent issue to store:
 - objective, scope, and non-goals
-- Linear initiative branch name
-- slice table with one branch per slice
+- parent work branch name
+- SPEC table with one branch per SPEC
 - execution order and completion gate
 
 ## Branch And PR Targets
-- Slice branch PRs target the parent Linear initiative branch.
-- Final initiative PR targets `develop`.
-- Slice PRs must still pass `npm run validate` and the required docs sync check.
+- SPEC branch PRs target the parent work branch.
+- Final parent work branch PR targets `develop`.
+- SPEC PRs must still pass `npm run validate` and the required docs sync check.
 - Final PRs to `develop` continue to use the full governance workflow and metadata policy.
 - Final PRs to `develop` cannot be merged until Human Acceptance records explicit user manual-test approval.
 - `scripts/git-start.sh`, `scripts/git-flow.sh`, and `scripts/full-cycle.sh` must generate branches that follow this target model.
 
+## Linear Status Automation
+- When issue-tracked work starts, the branch helper moves the Linear issue to `In Progress`.
+- When the issue enters review, `pr:ready` or `pr:open` moves the Linear issue to `In Review`.
+- When the final parent work branch is merged to `develop`, the protected-branch push workflow resolves the merged PR issue key(s) and runs `npm run linear:issue-done` to move the issue to `Done`.
+- If the issue key cannot be resolved or the Linear API key is absent, the automation skips safely and prints a note instead of blocking local work.
+
 Example slice PR opener:
 ```bash
 npm run pr:open -- \
-  --title "feat(shared): close BRI-149 S01 governance policy" \
+  --title "feat(shared): close <issue> SPEC governance policy" \
   --body-file /tmp/pr-s01.md \
   --scope scope:shared \
   --type type:feature \
   --risk risk:low \
-  --base initiative/bri-149-single-issue-slice-planning
+  --base feature/<developer>-<issue>-<name>
 ```
 
-Example initiative/slice branch creation:
+Example parent/SPEC branch creation:
 ```bash
-./scripts/git-start.sh feature shared single-issue-slice-planning --mode initiative --issue BRI-149
-./scripts/git-start.sh feature shared single-issue-slice-planning --mode slice --issue BRI-149 --slice-id S01 --slice-slug spec
+./scripts/git-start.sh feature shared <slug> --mode parent --owner <developer> --issue <issue> --base develop
+./scripts/git-start.sh SPEC governance-policy --mode spec --owner <developer> --issue <issue> --base feature/<developer>-<issue>-<name>
 ```
+
+Issue-type-driven variants use the same flow, for example `bugfix/<developer>-<issue>-<name>`, `hotfix/<developer>-<issue>-<name>`, or `epic/<developer>-<issue>-<name>` when the issue type demands those families.
 
 Example final PR opener:
 ```bash
 npm run pr:open -- \
-  --title "feat(shared): institutionalize single-issue slice planning" \
+  --title "feat(shared): institutionalize single-issue SPEC planning" \
   --body-file /tmp/pr-final.md \
   --scope scope:shared \
   --type type:feature \

@@ -61,7 +61,7 @@ export function PropertiesSection({ properties }: PropertiesSectionProps) {
 
       <div className="grid gap-4 md:grid-cols-3">
         {effectiveProperties.map((property) => (
-          <Card key={property.id} className="overflow-hidden p-0">
+          <Card key={property.id} className="landing-depth-card overflow-hidden p-0">
             <Image
               src={property.image}
               alt={property.title}

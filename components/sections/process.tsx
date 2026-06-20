@@ -34,7 +34,7 @@ export function ProcessSection() {
   ];
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-gradientPanel p-7 md:p-10">
+    <section className="landing-depth-surface rounded-3xl p-7 md:p-10">
       <div className="mb-8 text-center">
         <H2 className="text-white">{t({ en: "How to Start", es: "Como Empezar", pt: "Como Comecar" })}</H2>
         <Lead className="mx-auto mt-2 max-w-xl">
@@ -48,7 +48,7 @@ export function ProcessSection() {
 
       <div className="grid gap-3 md:grid-cols-4">
         {steps.map((step, index) => (
-          <Card key={step} className="bg-slate-950/45">
+          <Card key={step} className="landing-depth-inset">
             <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradientPrimary text-xs font-bold text-white">
               {index + 1}
             </div>

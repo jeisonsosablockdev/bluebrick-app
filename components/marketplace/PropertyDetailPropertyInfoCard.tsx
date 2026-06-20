@@ -14,7 +14,7 @@ export function PropertyDetailPropertyInfoCard({ property }: PropertyDetailPrope
   const { t } = useI18n();
 
   return (
-    <Card className="space-y-3">
+    <Card className="marketplace-detail-card space-y-3">
       <H2 className="text-2xl text-white">{t({ en: "Property information", es: "Informacion de la propiedad", pt: "Informacoes da propriedade" })}</H2>
       <p className="text-sm text-slate-300">{property.investmentNotes}</p>
       <p className="text-sm text-slate-300">
