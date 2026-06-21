@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Landing Featured Properties Source BRI- 65
-description: Fix Landing Featured Properties Source BRI- 65 - migrated from docs/
+description: Fix Landing Featured Properties Source BRI- 65 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-landing-featured-properties-source-bri-65.md

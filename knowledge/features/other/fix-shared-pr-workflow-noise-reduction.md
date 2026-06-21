@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Shared Pr Workflow Noise Reduction
-description: Fix Shared Pr Workflow Noise Reduction - migrated from docs/
+description: Fix Shared Pr Workflow Noise Reduction - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-shared-pr-workflow-noise-reduction.md
@@ -26,7 +26,7 @@ Reduce GitHub PR automation noise by keeping governance checks in a conservative
   - `tests/lib/pr-governance-workflow.test.ts`
   - `tests/lib/github-actions-node24-runtime.test.ts`
 - Updated operator guidance in:
-  - `docs/guides/gitflow-pr-structure.md`
+  - `knowledge/guides/gitflow-pr-structure.md`
 
 ## Why
 - `pr:open` still applies labels automatically, so re-triggering governance on every label mutation adds little value and a lot of CI noise.

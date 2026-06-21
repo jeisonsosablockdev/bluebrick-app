@@ -1,12 +1,16 @@
 ---
-type: Knowledge Item
-title: KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07
-description: Knowledge item from development session
-tags: [knowledge, inbox, KNOW-2026]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md
+id: KNOW-2026-06-002
+title: Candy Machine deploy iteration 2026-06-07
+status: observed
+promotion_target: guide
+scope: admin-assets-new-core-candy-machine
+owner: codex
+created_at: 2026-06-07T00:00:00.000Z
+updated_at: 2026-06-07T00:00:00.000Z
+source_issue: n/a
+source_feature: admin-assets-new
+enforcement_candidate: no
 ---
-
 
 # Candy Machine Deploy Iteration: 2026-06-07
 
@@ -70,7 +74,7 @@ Observability:
 
 - Files: `lib/core-candy-machine-admin.ts`, `components/admin/core-candy-machine-panel.tsx`, `lib/observability/store.ts`
 - Runtime log location: structured JSON in server console, browser console, and operability logs.
-- Markdown memory location: `docs/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md`
+- Markdown memory location: `knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md`
 
 ## Flow Diagram
 

@@ -95,19 +95,19 @@ async function listMarkdownFiles(dirPath: string): Promise<string[]> {
 }
 
 function inferKind(relativePath: string): KnowledgeKind {
-  if (relativePath.startsWith("docs/knowledge/inbox/")) {
+  if (relativePath.startsWith("knowledge/inbox/")) {
     return "observation";
   }
 
-  if (relativePath.startsWith("docs/knowledge/proposals/")) {
+  if (relativePath.startsWith("knowledge/proposals/")) {
     return "proposal";
   }
 
-  if (relativePath.startsWith("docs/knowledge/reports/")) {
+  if (relativePath.startsWith("knowledge/reports/")) {
     return "report";
   }
 
-  if (relativePath.startsWith("docs/knowledge/reasoning-plans/")) {
+  if (relativePath.startsWith("knowledge/reasoning-plans/")) {
     return "reasoning-plan";
   }
 
@@ -167,7 +167,7 @@ function resolveIndexTimestamp(entries: KnowledgeEntry[]): string {
 }
 
 export async function collectKnowledgeIndex(rootDir: string): Promise<KnowledgeIndex> {
-  const knowledgeRoot = path.join(rootDir, "docs", "knowledge");
+  const knowledgeRoot = path.join(rootDir, "knowledge");
   const markdownFiles = await listMarkdownFiles(knowledgeRoot);
   const entries = await Promise.all(markdownFiles.map((filePath) => readKnowledgeEntry(rootDir, filePath)));
   const filteredEntries = entries.filter((entry) => !entry.filePath.endsWith("README.md") && !entry.filePath.includes("/templates/"));
@@ -215,11 +215,11 @@ export function renderKnowledgeReadme(index: KnowledgeIndex): string {
     "This directory is the shared capture-and-promotion layer for reusable workflow knowledge.",
     "",
     "Promotion ladder:",
-    "1. `docs/features/*.md` or RFCs capture delivery-specific evidence.",
-    "2. `docs/knowledge/inbox/*` stores reusable observations.",
-    "3. `docs/knowledge/proposals/*` stores promotion candidates.",
-    "4. `docs/guides/*` stores approved reusable guides.",
-    "5. `docs/governance/*` and CI/scripts store stable mandatory rules and executable enforcement.",
+    "1. `knowledge/features/*.md` or RFCs capture delivery-specific evidence.",
+    "2. `knowledge/inbox/*` stores reusable observations.",
+    "3. `knowledge/proposals/*` stores promotion candidates.",
+    "4. `knowledge/guides/*` stores approved reusable guides.",
+    "5. `knowledge/governance/*` and CI/scripts store stable mandatory rules and executable enforcement.",
     "",
     "Human checkpoints:",
     "- Inbox items can be captured by the agent.",

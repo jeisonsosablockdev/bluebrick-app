@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Quick Tour
-description: Feature App Quick Tour - migrated from docs/
+description: Feature App Quick Tour - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-quick-tour.md

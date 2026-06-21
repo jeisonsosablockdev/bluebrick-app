@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Czambrano BRI- 173 Branching Policy Preflight Implementation
-description: Feature Czambrano BRI- 173 Branching Policy Preflight Implementation - migrated from docs/
+description: Feature Czambrano BRI- 173 Branching Policy Preflight Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md
@@ -19,13 +19,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - Source issue: [Branching policy and preflight protocol architecture](https://linear.app/brids-app/issue/BRI-173/branching-policy-and-preflight-protocol-architecture)
 
 ### Artifact Pair
-- Problem artifact: `docs/features/feature-czambrano-BRI-173-branching-policy-preflight.md`
-- Solution artifact: `docs/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md`
+- Problem artifact: `knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md`
+- Solution artifact: `knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md`
 
 ### Source of Truth
-- Repo policy: `docs/governance/git-monorepo-policy.md`
-- Planning guide: `docs/guides/linear-single-issue-slice-planning.md`
-- PR structure: `docs/guides/gitflow-pr-structure.md`
+- Repo policy: `knowledge/governance/git-monorepo-policy.md`
+- Planning guide: `knowledge/guides/linear-single-issue-slice-planning.md`
+- PR structure: `knowledge/guides/gitflow-pr-structure.md`
 - Preflight entrypoint: `scripts/ci/preflight-start.sh`
 - Task bootstrap: `scripts/task-init.sh`
 - Branch helper: `scripts/git-start.sh`

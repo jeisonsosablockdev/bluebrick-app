@@ -36,7 +36,7 @@ detect_scope() {
   if echo "$changed_files" | grep -qE '^(scripts/db-|lib/db|db/)'; then
     workflow="${workflow:-db}"
   fi
-  if echo "$changed_files" | grep -qE '^(\.codex|docs/governance|AGENTS\.md)'; then
+  if echo "$changed_files" | grep -qE '^(\.codex|knowledge/governance|AGENTS\.md)'; then
     workflow="${workflow:-refactor-cycle}"
   fi
   

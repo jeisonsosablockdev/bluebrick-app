@@ -1,12 +1,3 @@
----
-type: Guide
-title: Content Authoring Code Only
-description: Content Authoring Code Only - migrated from docs/
-tags: [guides]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/content-authoring-code-only.md
----
-
 # Content Authoring (Code-Only)
 
 ## Objective

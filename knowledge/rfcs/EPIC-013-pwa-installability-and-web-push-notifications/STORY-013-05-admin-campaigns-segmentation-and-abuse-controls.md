@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 013 05 Admin Campaigns Segmentation And Abuse Controls
-description: STORY- 013 05 Admin Campaigns Segmentation And Abuse Controls - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-05-admin-campaigns-segmentation-and-abuse-controls.md
----
-
 # STORY-013-05-admin-campaigns-segmentation-and-abuse-controls
 
 ## Metadata

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Profile Completion Reward Prompt BRI- 151
-description: Feature App Profile Completion Reward Prompt BRI- 151 - migrated from docs/
+description: Feature App Profile Completion Reward Prompt BRI- 151 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-profile-completion-reward-prompt-bri-151.md
@@ -202,7 +202,7 @@ Last Updated: 2026-05-06
   - Playwright and Synpress coverage
   - responsive QA at required widths
   - MCP browser evidence
-  - updates to `docs/auth-flow.md` and `docs/session-model.md`
+  - updates to `knowledge/auth-flow.md` and `knowledge/session-model.md`
   - final feature note sync and reward-state documentation
 
 ## Integration Branch

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature EPIC- 011 STORY- 04 Collections Api Ownership
-description: Feature EPIC- 011 STORY- 04 Collections Api Ownership - migrated from docs/
+description: Feature EPIC- 011 STORY- 04 Collections Api Ownership - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-011-story-04-collections-api-ownership.md

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Investor Portfolio Real Holdings BRI- 174 Implementation
-description: Feature App Investor Portfolio Real Holdings BRI- 174 Implementation - migrated from docs/
+description: Feature App Investor Portfolio Real Holdings BRI- 174 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-investor-portfolio-real-holdings-bri-174-implementation.md
@@ -134,8 +134,8 @@ S06 debe ejecutar:
 - `tests/lib/investor-portfolio-service.test.ts`
 - `tests/api/protected-portfolio-route.test.ts`
 - `tests/components/portfolio-module.test.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 
 ### Migraciones
 
@@ -167,7 +167,7 @@ Si durante implementacion se descubre que algun dato requerido no existe en la D
 - RED: `npm test -- tests/api/protected-portfolio-route.test.ts` fallo porque `@/app/api/protected/portfolio/route` no existia.
 - GREEN: `npm test -- tests/api/protected-portfolio-route.test.ts tests/lib/investor-portfolio-service.test.ts` paso, 7 tests.
 - Lint: `npm run lint -- --max-warnings=0 app/api/protected/portfolio/route.ts tests/api/protected-portfolio-route.test.ts lib/investor-portfolio-service.ts tests/lib/investor-portfolio-service.test.ts` paso.
-- Docs governance: `npm run validate:docs-governance` paso despues de actualizar `docs/auth-flow.md` y `docs/session-model.md`.
+- Docs governance: `npm run validate:docs-governance` paso despues de actualizar `knowledge/auth-flow.md` y `knowledge/session-model.md`.
 - Diff check: `git diff --check` paso.
 
 ### S04 Evidence
@@ -196,7 +196,7 @@ Si durante implementacion se descubre que algun dato requerido no existe en la D
 - Coincidencias permitidas:
   - tests con `vi.mock`.
   - docs que describen el placeholder removido.
-  - `docs/auth-flow.md` y `docs/session-model.md` con usos historicos de la palabra `any` en secciones previas no tocadas por BRI-174.
+  - `knowledge/auth-flow.md` y `knowledge/session-model.md` con usos historicos de la palabra `any` en secciones previas no tocadas por BRI-174.
 - Responsabilidad por archivo:
   - `lib/investor-portfolio-service.ts`: orquestacion server-side y helpers puros de agrupacion/precio/yield.
   - `app/api/protected/portfolio/route.ts`: frontera auth/API sin SQL ni calculos.
@@ -327,8 +327,8 @@ S06 must run:
 - `tests/lib/investor-portfolio-service.test.ts`
 - `tests/api/protected-portfolio-route.test.ts`
 - `tests/components/portfolio-module.test.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 
 ### Migrations
 
@@ -360,7 +360,7 @@ If implementation discovers that required data does not exist in the DB, the sli
 - RED: `npm test -- tests/api/protected-portfolio-route.test.ts` failed because `@/app/api/protected/portfolio/route` did not exist.
 - GREEN: `npm test -- tests/api/protected-portfolio-route.test.ts tests/lib/investor-portfolio-service.test.ts` passed, 7 tests.
 - Lint: `npm run lint -- --max-warnings=0 app/api/protected/portfolio/route.ts tests/api/protected-portfolio-route.test.ts lib/investor-portfolio-service.ts tests/lib/investor-portfolio-service.test.ts` passed.
-- Docs governance: `npm run validate:docs-governance` passed after updating `docs/auth-flow.md` and `docs/session-model.md`.
+- Docs governance: `npm run validate:docs-governance` passed after updating `knowledge/auth-flow.md` and `knowledge/session-model.md`.
 - Diff check: `git diff --check` passed.
 
 ### S04 Evidence
@@ -389,7 +389,7 @@ If implementation discovers that required data does not exist in the DB, the sli
 - Allowed matches:
   - tests with `vi.mock`.
   - docs describing the removed placeholder.
-  - `docs/auth-flow.md` and `docs/session-model.md` historical uses of `any` in sections not touched by BRI-174.
+  - `knowledge/auth-flow.md` and `knowledge/session-model.md` historical uses of `any` in sections not touched by BRI-174.
 - Responsibility by file:
   - `lib/investor-portfolio-service.ts`: server-side orchestration and pure grouping/price/yield helpers.
   - `app/api/protected/portfolio/route.ts`: auth/API boundary with no SQL or calculations.

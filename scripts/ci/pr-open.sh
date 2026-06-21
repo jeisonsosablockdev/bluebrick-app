@@ -9,7 +9,7 @@ TYPE_LABEL=""
 RISK_LABEL=""
 SIZE_EXEMPT=""
 DRAFT="1"
-POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
 VALIDATE_MODE="${VALIDATE_MODE:-governance-only}"
 
 usage() {

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Flujo Gitflow Pr Structure BRI- 61
-description: Feature Flujo Gitflow Pr Structure BRI- 61 - migrated from docs/
+description: Feature Flujo Gitflow Pr Structure BRI- 61 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-flujo-gitflow-pr-structure-bri-61.md
@@ -20,7 +20,7 @@ Introduces metadata-first PR automation to reduce governance friction and avoid 
   - branch push,
   - draft PR creation,
   - required label application via `gh api`.
-- Added usage guide at `docs/guides/gitflow-pr-structure.md`.
+- Added usage guide at `knowledge/guides/gitflow-pr-structure.md`.
 - Added npm scripts:
   - `pr:metadata`
   - `pr:open`

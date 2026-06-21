@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Pwa Web Push BRI- 157
-description: Feature Shared Pwa Web Push BRI- 157 - migrated from docs/
+description: Feature Shared Pwa Web Push BRI- 157 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-pwa-web-push-bri-157.md
@@ -13,7 +13,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 
 - Planning artifact
 - Parent issue: `BRI-157`
-- RFC: `docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/README.md`
+- RFC: `knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/README.md`
 - Integration branch: `feature/shared-pwa-web-push-bri-157-integration`
 - Current slice: `feature/shared-pwa-web-push-bri-157-s08-user-push-opt-in-enrollment`
 

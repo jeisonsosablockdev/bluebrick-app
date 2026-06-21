@@ -126,10 +126,10 @@ branch_artifact_guidance() {
 
   case "${branch_name}" in
     feature/*|security/*|nft/*|refactor/*|epic/*)
-      echo "- Parent work branch detected: keep /docs/features/*.md aligned with the parent issue and update it incrementally across SPECs."
+      echo "- Parent work branch detected: keep /knowledge/features/*.md aligned with the parent issue and update it incrementally across SPECs."
       ;;
     fix/*|bugfix/*|hotfix/*)
-      echo "- Parent work branch detected: keep /docs/fixes/fix-<slug>.md and /docs/fixes/fix-<slug>-implementation.md aligned with the parent issue and update it incrementally across SPECs."
+      echo "- Parent work branch detected: keep /knowledge/fixes/fix-<slug>.md and /knowledge/fixes/fix-<slug>-implementation.md aligned with the parent issue and update it incrementally across SPECs."
       ;;
     SPEC/*)
       parent_work_branch="$(git config --get "branch.${branch_name}.parentWorkBranch" || true)"

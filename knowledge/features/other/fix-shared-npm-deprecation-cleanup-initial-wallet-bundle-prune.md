@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Shared Npm Deprecation Cleanup Initial Wallet Bundle Prune
-description: Fix Shared Npm Deprecation Cleanup Initial Wallet Bundle Prune - migrated from docs/
+description: Fix Shared Npm Deprecation Cleanup Initial Wallet Bundle Prune - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune.md

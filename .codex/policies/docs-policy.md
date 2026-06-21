@@ -1,15 +1,15 @@
 # Docs Policy
 
 ## Canonical Sources
-- `docs/governance/documentation-policy.md`
-- `docs/governance/pr-policy-source-of-truth.json`
+- `knowledge/governance/documentation-policy.md`
+- `knowledge/governance/pr-policy-source-of-truth.json`
 - `scripts/ci/check-required-docs.sh`
 
 ## Apply When
 - Product code, governance summaries, RFCs, or agent orchestration files change
 
 ## Hard Constraints
-- `docs/governance/*` remains the single source of truth; `AGENTS.md` and `.codex/*` only reference or compress it.
+- `knowledge/governance/*` remains the single source of truth; `AGENTS.md` and `.codex/*` only reference or compress it.
 - Update required canonical docs by impacted scope before completion.
 - RFC structure, status values, and traceability must follow the documentation policy, templates, and enforcement scripts.
 - Non-trivial work requires an artifact before implementation.

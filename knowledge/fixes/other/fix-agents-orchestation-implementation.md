@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Agents Orchestation Implementation
-description: Fix Agents Orchestation Implementation - migrated from docs/
+description: Fix Agents Orchestation Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-agents-orchestation-implementation.md
@@ -39,7 +39,7 @@ Regla:
 
 El artefacto de problema que acompaña esta solución vive en:
 
-- `docs/fixes/fix-agents-orchestation.md`
+- `knowledge/fixes/fix-agents-orchestation.md`
 
 La regla propuesta en este fix aplica el modelo de doble artefacto a:
 
@@ -105,13 +105,13 @@ El flujo operativo objetivo queda así:
 Convención propuesta de artefactos:
 
 - feature problem artifact:
-  - `docs/features/feature-<slug>.md`
+  - `knowledge/features/feature-<slug>.md`
 - feature solution artifact:
-  - `docs/features/feature-<slug>-implementation.md`
+  - `knowledge/features/feature-<slug>-implementation.md`
 - fix problem artifact:
-  - `docs/fixes/fix-<slug>.md`
+  - `knowledge/fixes/fix-<slug>.md`
 - fix solution artifact:
-  - `docs/fixes/fix-<slug>-implementation.md`
+  - `knowledge/fixes/fix-<slug>-implementation.md`
 
 ## Specific Weak Enforcement In The Current System
 
@@ -393,11 +393,11 @@ Reglas del slice plan:
 
 | Slice | Branch | Objetivo | Scope | Archivos esperados | Tests first | Gate de cierre |
 | --- | --- | --- | --- | --- | --- | --- |
-| `s01` | `fix/shared-agents-orchestation-enforcement-bri-157-s01-documentation` | Cerrar el contrato documental y la secuencia oficial del workflow | Definir doble artefacto para features y fixes, mother branch, documentation slice, RFC ownership, Linear sync | `docs/fixes/fix-agents-orchestation.md`, `docs/fixes/fix-agents-orchestation-implementation.md`, `docs/governance/documentation-policy.md`, `docs/governance/git-monorepo-policy.md`, `docs/guides/linear-single-issue-slice-planning.md`, templates asociados | Validar que el artifact pair y el slice map existan completos antes de tocar scripts | El artefacto de solución queda decision-complete para Part A y `validate:docs-governance` pasa |
-| `s02` | `fix/shared-agents-orchestation-enforcement-bri-157-s02-linear-branch-enforcement` | Endurecer Linear-first y mother branch canónica | Generación/validación de branch desde issue madre y `git branch name` | `scripts/linear-plan-core.js`, `scripts/git-start.sh`, `docs/guides/linear-single-issue-slice-planning.md`, `docs/templates/linear-single-issue-slices.template.md` | Tests para branch naming, branch generation y required parent issue metadata | Generación de plan y branch helpers reflejan el modelo canónico y tests pasan |
-| `s03` | `fix/shared-agents-orchestation-enforcement-bri-157-s03-artifact-enforcement` | Hacer obligatorio el artefacto correcto por family branch | Enforce de dual artifact en `docs/features/*.md` y `docs/fixes/*.md` | `scripts/ci/check-required-docs.sh`, `docs/governance/documentation-policy.md`, `.codex/policies/docs-policy.md` | Tests para PR con cambio calificado sin docs, con solo un artifact, y con pair válido | El repo bloquea missing artifact y acepta el artifact pair correcto por tipo de iniciativa |
-| `s04` | `fix/shared-agents-orchestation-enforcement-bri-157-s04-rfc-ownership` | Anclar RFC al documentation slice cuando aplique | Templates, guías y ownership operacional del RFC | `docs/rfcs/templates/EPIC-README.template.md`, `docs/rfcs/templates/STORY.template.md`, `docs/governance/documentation-policy.md`, `.codex/agents/docs.toml`, `.codex/agents/planner.toml` | Tests o validaciones de template/section presence y sync rules cuando RFC aplica | El RFC queda explícitamente owned by documentation slice y la policy no deja ambigüedad |
-| `s05` | `fix/shared-agents-orchestation-enforcement-bri-157-s05-agent-handoff-contracts` | Volver estructurados los handoffs mínimos entre agentes | Contracts para `planner`, `docs`, `qa`, `reviewer`, triggers de clarificación, excepciones de trabajo trivial y clean-code design contract por delivery slice | `AGENTS.md`, `.codex/agents/*.toml`, `.codex/workflows/*.md`, `.codex/policies/*.md`, `docs/guides/codex-orchestration-architecture.md`, `tests/lib/workflow-evals.test.ts` | Tests de fixtures o validaciones de contract presence/required fields | Los agentes dejan de depender de contexto libre para gates críticos, preguntan cuando falta contexto material, diseñan slices con clean code desde el artifact y el repo define excepciones explícitas |
+| `s01` | `fix/shared-agents-orchestation-enforcement-bri-157-s01-documentation` | Cerrar el contrato documental y la secuencia oficial del workflow | Definir doble artefacto para features y fixes, mother branch, documentation slice, RFC ownership, Linear sync | `knowledge/fixes/fix-agents-orchestation.md`, `knowledge/fixes/fix-agents-orchestation-implementation.md`, `knowledge/governance/documentation-policy.md`, `knowledge/governance/git-monorepo-policy.md`, `knowledge/guides/linear-single-issue-slice-planning.md`, templates asociados | Validar que el artifact pair y el slice map existan completos antes de tocar scripts | El artefacto de solución queda decision-complete para Part A y `validate:docs-governance` pasa |
+| `s02` | `fix/shared-agents-orchestation-enforcement-bri-157-s02-linear-branch-enforcement` | Endurecer Linear-first y mother branch canónica | Generación/validación de branch desde issue madre y `git branch name` | `scripts/linear-plan-core.js`, `scripts/git-start.sh`, `knowledge/guides/linear-single-issue-slice-planning.md`, `knowledge/templates/linear-single-issue-slices.template.md` | Tests para branch naming, branch generation y required parent issue metadata | Generación de plan y branch helpers reflejan el modelo canónico y tests pasan |
+| `s03` | `fix/shared-agents-orchestation-enforcement-bri-157-s03-artifact-enforcement` | Hacer obligatorio el artefacto correcto por family branch | Enforce de dual artifact en `knowledge/features/*.md` y `knowledge/fixes/*.md` | `scripts/ci/check-required-docs.sh`, `knowledge/governance/documentation-policy.md`, `.codex/policies/docs-policy.md` | Tests para PR con cambio calificado sin docs, con solo un artifact, y con pair válido | El repo bloquea missing artifact y acepta el artifact pair correcto por tipo de iniciativa |
+| `s04` | `fix/shared-agents-orchestation-enforcement-bri-157-s04-rfc-ownership` | Anclar RFC al documentation slice cuando aplique | Templates, guías y ownership operacional del RFC | `knowledge/rfcs/templates/EPIC-README.template.md`, `knowledge/rfcs/templates/STORY.template.md`, `knowledge/governance/documentation-policy.md`, `.codex/agents/docs.toml`, `.codex/agents/planner.toml` | Tests o validaciones de template/section presence y sync rules cuando RFC aplica | El RFC queda explícitamente owned by documentation slice y la policy no deja ambigüedad |
+| `s05` | `fix/shared-agents-orchestation-enforcement-bri-157-s05-agent-handoff-contracts` | Volver estructurados los handoffs mínimos entre agentes | Contracts para `planner`, `docs`, `qa`, `reviewer`, triggers de clarificación, excepciones de trabajo trivial y clean-code design contract por delivery slice | `AGENTS.md`, `.codex/agents/*.toml`, `.codex/workflows/*.md`, `.codex/policies/*.md`, `knowledge/guides/codex-orchestration-architecture.md`, `tests/lib/workflow-evals.test.ts` | Tests de fixtures o validaciones de contract presence/required fields | Los agentes dejan de depender de contexto libre para gates críticos, preguntan cuando falta contexto material, diseñan slices con clean code desde el artifact y el repo define excepciones explícitas |
 
 ### Part B: Enforcement And Quality Gates
 
@@ -406,7 +406,7 @@ Reglas del slice plan:
 | `s06` | `fix/shared-agents-orchestation-enforcement-bri-157-s06-tdd-baseline` | Instalar el baseline TDD real para Next.js | `Vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`, `npm test`, wiring base | `package.json`, `vitest.config.ts`, `tests/setup/vitest.setup.ts`, `tests/`, `.codex/policies/testing-policy.md` | Smoke test de runner, test unitario mínimo y prueba de script interno | `npm test` existe, corre en local/CI, y el repo ya tiene baseline usable |
 | `s07` | `fix/shared-agents-orchestation-enforcement-bri-157-s07-pr-governance-gates` | Reemplazar PR governance placeholder por gates reales | PR readiness, metadata lint, open flow, labels/body required | `scripts/ci/pr-ready.sh`, `scripts/ci/pr-metadata-lint.sh`, `scripts/ci/pr-open.sh`, governance docs relacionadas | Tests para metadata mínima, labels, body sections y failure modes | PR governance deja de ser checklist blando y pasa a bloquear por reglas ejecutables |
 | `s08` | `fix/shared-agents-orchestation-enforcement-bri-157-s08-responsive-browser-gates` | Endurecer responsive/browser-critical QA | Artifact mínimo, overflow global, evidencia ambigua como fail | `.codex/workflows/responsive-qa.md`, `.codex/policies/testing-policy.md`, scripts o helpers QA asociados | Tests o fixtures que demuestren detección de evidencia ausente/ambigua | Browser-critical QA deja contrato mínimo verificable y bloquea evidencia insuficiente |
-| `s09` | `fix/shared-agents-orchestation-enforcement-bri-157-s09-git-atomicity-enforcement` | Endurecer staging y disciplina de commits | Evitar `git add .`, bloquear commits directos a ramas protegidas, alinear helpers | `scripts/git-save.sh`, `scripts/git-push.sh`, `docs/governance/git-monorepo-policy.md`, `AGENTS.md` si requiere resumen | Tests de helpers o checks de shell sobre staging/branch protection rules | Los helpers ya no incentivan atomicidad rota ni bypass evidente del workflow |
+| `s09` | `fix/shared-agents-orchestation-enforcement-bri-157-s09-git-atomicity-enforcement` | Endurecer staging y disciplina de commits | Evitar `git add .`, bloquear commits directos a ramas protegidas, alinear helpers | `scripts/git-save.sh`, `scripts/git-push.sh`, `knowledge/governance/git-monorepo-policy.md`, `AGENTS.md` si requiere resumen | Tests de helpers o checks de shell sobre staging/branch protection rules | Los helpers ya no incentivan atomicidad rota ni bypass evidente del workflow |
 | `s10` | `fix/shared-agents-orchestation-enforcement-bri-157-s10-workflow-evals` | Agregar evals del propio sistema de desarrollo | Tests del workflow: artifact detection, slice ordering, branch rules, gate failures, spirit-preservation y clarification-required scenarios | `tests/`, scripts afectados, `package.json`, docs de testing y governance asociadas | Escribir primero casos que hoy deberían fallar con enforcement ausente | El repo puede demostrar que su propio workflow está protegido por pruebas y no solo por intención |
 
 ## Slice Execution Order
@@ -533,12 +533,12 @@ Como mínimo, esta solución espera cambios en:
 - `.codex/policies/testing-policy.md`
 - `.codex/policies/frontend-policy.md`
 - `.codex/policies/docs-policy.md`
-- `docs/governance/documentation-policy.md`
-- `docs/governance/git-monorepo-policy.md`
-- `docs/guides/linear-single-issue-slice-planning.md`
-- `docs/templates/linear-single-issue-slices.template.md`
-- `docs/rfcs/templates/EPIC-README.template.md`
-- `docs/rfcs/templates/STORY.template.md`
+- `knowledge/governance/documentation-policy.md`
+- `knowledge/governance/git-monorepo-policy.md`
+- `knowledge/guides/linear-single-issue-slice-planning.md`
+- `knowledge/templates/linear-single-issue-slices.template.md`
+- `knowledge/rfcs/templates/EPIC-README.template.md`
+- `knowledge/rfcs/templates/STORY.template.md`
 - `scripts/ci/check-required-docs.sh`
 - `scripts/ci/pr-ready.sh`
 - `scripts/ci/pr-metadata-lint.sh`
@@ -560,8 +560,8 @@ También probablemente:
 
 La solución debe demostrar:
 
-- enforcement de problem + solution artifact en `docs/features/*.md`
-- enforcement de problem + solution artifact en `docs/fixes/*.md`
+- enforcement de problem + solution artifact en `knowledge/features/*.md`
+- enforcement de problem + solution artifact en `knowledge/fixes/*.md`
 - issue obligatorio en Linear
 - mother branch canónica desde Linear
 - documentation slice como primer slice
@@ -622,8 +622,8 @@ Cambios ejecutados en esta slice de harness:
 - No se introdujo `.claude/commands` ni estructura Claude; el harness se mantiene Codex-first.
 - `AGENTS.md`, `planner`, `docs`, `docs-policy`, `refactor-cycle` y la guía de orquestación exigen `clean-code design contract` antes de implementar delivery slices.
 - `tests/lib/workflow-evals.test.ts` protege esa regla con una eval del workflow.
-- `npm run knowledge:drift` generó `docs/knowledge/reports/governance-drift-2026-06-07.md` con `Failing Checks: 0`.
-- `npm run knowledge:index` actualizó `docs/knowledge/README.md` para mantener el conocimiento incremental sincronizado.
+- `npm run knowledge:drift` generó `knowledge/reports/governance-drift-2026-06-07.md` con `Failing Checks: 0`.
+- `npm run knowledge:index` actualizó `knowledge/README.md` para mantener el conocimiento incremental sincronizado.
 
 Validaciones ya ejecutadas:
 

@@ -26,7 +26,7 @@
 - Accepted residual risk:
 
 ## Feature Note (/docs/features)
-- Path to feature note markdown file under `docs/features/*.md`: <!-- required for feature/fix/refactor/nft product changes; otherwise write N/A -->
+- Path to feature note markdown file under `knowledge/features/*.md`: <!-- required for feature/fix/refactor/nft product changes; otherwise write N/A -->
 
 ## Scope Labels (Required)
 - [ ] I added exactly one `scope:*` label

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Home Copy BRI- 39
-description: Feature App Home Copy BRI- 39 - migrated from docs/
+description: Feature App Home Copy BRI- 39 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-home-copy-bri-39.md
@@ -53,8 +53,8 @@ Actualizar la narrativa principal de Home para BRIDS/RIDS y alinear los CTA con 
 - `components/sections/first-investment.tsx`
 - `components/sections/process.tsx`
 - `components/sections/faq.tsx`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 
 ## Notes
 - Cambio de frontend/copy sin impacto en flujo criptografico SIWS.

@@ -51,7 +51,7 @@ El cambio **no requiere feature flag**:
 > **Aprobado por:** Camilo Zambrano
 
 ## Feature Note (/docs/features)
-- **Path:** `docs/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md`
+- **Path:** `knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md`
 
 ## SPEC Traceability
 | SPEC | Rama | Estado | Alcance |
@@ -74,7 +74,7 @@ El cambio **no requiere feature flag**:
 ## Review Notes
 - Los merges **SPEC → Feature** son internos (sin PR intermedios) según protocolo del proyecto; este PR fusiona la rama Feature en `develop`.
 - **6 build‑web‑apps skills** importados a `.opencode/skills/` (frontend‑app‑builder, frontend‑testing‑debugging, react‑best‑practices, shadcn‑best‑practices, stripe‑best‑practices, supabase‑best‑practices) – requieren reinicio de opencode.
-- Documentación actualizada en `docs/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md` (historial SPEC05 + merge).
+- Documentación actualizada en `knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md` (historial SPEC05 + merge).
 - Todos los SPECs rastreados en Linear (BRI‑168) con artefactos bilingües (ES/EN).
 
 ## Etiquetas requeridas (Required Labels)

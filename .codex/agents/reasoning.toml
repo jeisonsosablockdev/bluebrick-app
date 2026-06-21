@@ -2,6 +2,8 @@ version = 1
 name = "reasoning"
 description = "Self-Discover reasoning agent for deep structured reasoning on complex tasks (architecture, debugging, security, algorithms). Implements Zhou et al. (Google DeepMind 2024) SELECT→ADAPT→IMPLEMENT→SOLVE pipeline."
 preferred_model = "qwen/qwen3-235b-a22b-thinking-2507-fast"
+provider_lock = false
+runner_compatible = ["codex", "opencode", "nemotron", "chatgpt"]
 reasoning_effort = "high"
 parallel_safe = true
 
@@ -20,7 +22,7 @@ owns_paths = [
   "scripts/task-init.sh",
   "scripts/knowledge/knowledge-core.ts",
   "scripts/linear-plan-core.js",
-  "docs/features/feature-business-logic-reasoner*.md",
+  "knowledge/features/feature-business-logic-reasoner*.md",
 ]
 
 reads = [
@@ -29,8 +31,8 @@ reads = [
   ".codex/workflows/blockchain-cycle.md",
   ".codex/policies/docs-policy.md",
   ".codex/policies/security-policy.md",
-  "docs/governance/documentation-policy.md",
-  "docs/governance/security-quality-policy.md",
+  "knowledge/governance/documentation-policy.md",
+  "knowledge/governance/security-quality-policy.md",
   ".mcp.json",
 ]
 

@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 001 01 Kickoff
-description: STORY- 001 01 Kickoff - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-001-admin-asset-create-form/STORY-001-01-kickoff.md
----
-
 # STORY-001-01-kickoff
 
 ## Metadata
@@ -220,8 +211,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - Unlock rule:
   Fase 1 solo se considera desbloqueada cuando el artifact pack completo está adjunto al PR/RFC y validado por revisión externa.
 - Artifact pack adjunto (2026-03-16):
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
 
 ## Test and Validation Plan
 - Unit tests:

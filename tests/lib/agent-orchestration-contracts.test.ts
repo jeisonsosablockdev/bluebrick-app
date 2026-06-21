@@ -9,8 +9,8 @@ describe("agent orchestration contracts", () => {
   it("keeps AGENTS.md aligned with artifact-first and SPEC-first", () => {
     const source = readFileSync(path.join(repoRoot, "AGENTS.md"), "utf8");
 
-    expect(source).toContain("docs/features/feature-<slug>.md");
-    expect(source).toContain("docs/fixes/fix-<slug>.md");
+    expect(source).toContain("knowledge/features/feature-<slug>.md");
+    expect(source).toContain("knowledge/fixes/fix-<slug>.md");
     expect(source).toContain("first SPEC");
     expect(source).toContain("npm run task:init");
     expect(source).toContain("In Progress");

@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Test Suite Drift Marketplace I18n And Pr Governance
-description: Fix Test Suite Drift Marketplace I18n And Pr Governance - migrated from docs/
+description: Fix Test Suite Drift Marketplace I18n And Pr Governance - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md

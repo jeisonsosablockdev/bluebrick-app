@@ -1,9 +1,9 @@
 # Frontend Policy
 
 ## Canonical Sources
-- `docs/governance/frontend-ui-policy.md`
-- `docs/governance/security-quality-policy.md`
-- `docs/governance/documentation-policy.md`
+- `knowledge/governance/frontend-ui-policy.md`
+- `knowledge/governance/security-quality-policy.md`
+- `knowledge/governance/documentation-policy.md`
 
 ## Apply When
 - `/app`, `components`, auth, wallet, or browser-facing flow changes
@@ -16,7 +16,7 @@
 - Do not use mocked wallet or provider behavior as final proof for critical auth, wallet, or browser flows.
 - Coordinate with `security` for auth, replay, or privilege changes and with `solana` when frontend changes alter on-chain request contracts.
 - For motion-driven UX/UI work, use Motion 12 (`motion.dev`) and the current `motion` syntax only; do not reintroduce legacy `framer-motion` imports, examples, or patterns.
-- When a UX/UI SPEC depends on current Motion 12 docs, AI-assisted tooling, or bridge-style guidance, document the OpenAI Developers tooling reference used for the SPEC before implementation closes.
+- When a UX/UI SPEC depends on current Motion 12 docs, AI-assisted tooling, or bridge-style guidance, document the provider-specific tooling reference used for the SPEC before implementation closes.
 
 ## Required Evidence
 - Touched routes and UI surfaces

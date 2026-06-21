@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: STORY- 011 07 Docs Sync And Rfc Traceability BRI- 102
-description: STORY- 011 07 Docs Sync And Rfc Traceability BRI- 102 - migrated from docs/
+description: STORY- 011 07 Docs Sync And Rfc Traceability BRI- 102 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-07-docs-sync-and-rfc-traceability-bri-102.md

@@ -1,12 +1,3 @@
----
-type: Policy
-title: Git Governance + Monorepo Policy
-description: Mandatory monorepo structure, branch strategy, TDD workflow, slice planning, Human Acceptance gate, and CI policy
-tags: [governance, git, monorepo, branching, tdd, slices, human-acceptance, ci]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/governance/git-monorepo-policy.md
----
-
 🌿 GIT GOVERNANCE + MONOREPO POLICY
 
 (MANDATORY – NON-NEGOTIABLE)
@@ -37,11 +28,11 @@ No business logic outside defined boundaries.
 Main Rules
 	1.	main is protected.
 	2.	develop is the default consolidation branch for day-to-day work.
-	3.	Direct work branches and Linear initiative branches MUST start from latest `develop`.
+	3.	Direct work branches and parent work branches MUST start from latest `develop`. SPEC branches MUST start from the parent work branch they refine.
 	4.	No direct commits to main.
 	5.	No direct commits to develop.
 	6.	All changes go through Pull Request.
-	7.	Direct single-branch work targets `develop`; slice PRs target the Linear initiative branch from the parent Linear issue.
+	7.	Direct single-branch work targets `develop`; SPEC PRs target the parent work branch from the same Linear issue.
 	8.	Only release PRs may target `main` (source branch: `develop`).
 	9.	Squash and merge only.
 	10.	No merge commits.
@@ -77,125 +68,179 @@ For every story branch (`h1`, `h2`, `h3`, ... and independent stories):
 
 🧩 SINGLE-ISSUE SLICE PLANNING (MANDATORY FOR NON-TRIVIAL WORK)
 
-Applies to `feature/*`, `fix/*`, `security/*`, `nft/*`, and `refactor/*` work that is expected to:
+Applies to issue-type-driven work that is expected to:
 	•	require more than one logical slice,
 	•	require more than one PR before `develop`,
 	•	or touch more than one technical area.
 
-Rules
-	1.	Use one parent Linear issue as the planning and tracking container.
-	2.	Create the parent issue before starting non-trivial work.
-	3.	For initiatives with multiple slices, use the Linear initiative branch from the parent issue `git branch name` field.
-	4.	Do not create multiple Linear subissues by default.
-	5.	The parent issue must contain:
-	•	Objective
-	•	Scope
-	•	Non-goals
-	•	Problem artifact path
-	•	Solution artifact path
-	•	Linear initiative branch
-	•	Spec slice
-	•	Slice plan table
-	•	Order of execution
-	•	Risks
-	•	Test plan first
-	•	Completion gate
-	6.	Each slice must have one dominant responsibility and one proposed branch.
-	7.	The first slice in multi-slice work is the spec slice.
-	8.	The spec slice is also the documentation slice and MUST use `explain-like-socrates` before finalizing the artifact, slice map, assumptions, and test-plan-first contract.
-	9.	Delivery slices open only after the spec slice stabilizes the artifact, slice map, and test-plan-first contract.
-	10.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+The issue type is established in the human-plus-agent documentation phase before any branch is created. The selected issue type determines the parent work branch family, the docs track, and the SPEC map. Do not assume `feature` unless the issue itself was classified that way.
 
-Artifact-first and spec-slice rule:
-	•	Non-trivial feature/fix/security/nft/refactor work starts with an artifact before implementation.
-	•	Features and fixes use a problem artifact plus a solution artifact.
+	Rules
+		1.	Use one parent Linear issue as the planning and tracking container.
+		2.	Create the parent issue before starting non-trivial work.
+		3.	For parent work branches with multiple SPECs, use the parent work branch from the parent issue `git branch name` field.
+		4.	Do not create multiple Linear subissues by default.
+		5.	The parent issue must contain:
+		•	Human brief
+		•	Objective
+		•	Scope
+		•	Non-goals
+		•	Acceptance criteria
+		•	Risks
+		•	Open questions
+		•	Technical protocol for agents
+		•	Problem artifact path
+		•	Solution artifact path
+		•	Parent work branch
+		•	SPEC plan table
+		•	Order of execution
+		•	Test plan first
+		•	Completion gate
+		6.	Each SPEC must have one dominant responsibility and one proposed branch.
+		7.	The first SPEC in multi-SPEC work is the planning SPEC.
+		8.	Later SPECs open only after the previous SPEC stabilizes the artifact, branch map, and test-plan-first contract.
+		9.	Only create separate Linear subissues when multiple owners or cross-team dependencies require independent tracking.
+
+Artifact-first and SPEC rule:
+	•	Non-trivial issue-type-driven work starts with an artifact before implementation.
+	•	Feature, security, nft, refactor, and epic planning use the feature-note track plus the relevant RFC traceability when applicable.
+	•	Fix, bugfix, and hotfix planning use a problem artifact plus a solution artifact under `knowledge/fixes/`.
 	•	If the solution artifact is not decision-complete, code implementation remains blocked.
 	•	The documentation/spec slice must record that `explain-like-socrates` was used before delivery slices open.
+
+## HUMAN ACCEPTANCE GATE BEFORE DEVELOP
+
+Every PR targeting `develop` must have explicit user manual-test approval recorded as **Human Acceptance** in the PR body before merge. The PR body must include a section:
+
+```
+## Human Acceptance
+Status: approved
+```
+
+This is enforced by the PR governance workflow (`.github/workflows/pr-governance-develop.yml`). The `humanAcceptanceApproved` pattern requires `Status: approved` to pass.
 
 ⸻
 
 Branch Naming Convention (Scope Required)
 
-feature/program-<name>
-feature/app-<name>
-feature/shared-<name>
-fix/program-<name>
-fix/app-<name>
-fix/shared-<name>
-security/program-<issue>
-security/app-<issue>
-security/shared-<issue>
-nft/program-<feature>
-refactor/program-<name>
-refactor/app-<name>
-refactor/shared-<name>
+feature/<developer>-<issue>-<name>
+bugfix/<developer>-<issue>-<name>
+fix/<developer>-<issue>-<name>
+hotfix/<developer>-<issue>-<name>
+epic/<developer>-<issue>-<name>
+security/<developer>-<issue>-<name>
+nft/<developer>-<issue>-<name>
+refactor/<developer>-<issue>-<name>
 
-Linear initiative branches (Git branch name stored on the parent Linear issue):
+Parent work branches (Git branch name stored on the parent Linear issue):
 
-initiative/bri-<id>-<name>
+feature/<developer>-<issue>-<name>
+fix/czambrano-BRI-171-landing-copy-cleanup
+bugfix/czambrano-BRI-172-list-scroll-jump
+hotfix/czambrano-BRI-173-login-redirect-fix
+epic/czambrano-EPIC-011-admin-collections-console
 
-Slice branches:
+SPEC branches (created one at a time from the parent work branch):
 
-feature/shared-<name>-bri-<id>-s01-<slice-slug>
-fix/app-<name>-bri-<id>-s02-<slice-slug>
-security/program-<issue>-bri-<id>-s03-<slice-slug>
-refactor/shared-<name>-bri-<id>-s04-<slice-slug>
+SPEC/<developer>-<issue>-<spec-slug>
+
+BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
+
+SPEC/<developer>-bri<id>-specNN-<spec-slug>
+
+Example:
+
+SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
+
+BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
+
+SPEC/<developer>-bri<id>-specNN-<spec-slug>
+
+Example:
+
+SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
 
 Rules:
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
+	•	For `SPEC/*` branches, `specNN` is the zero-padded SPEC number from the parent issue body, and the number organizes scope rather than mandatory execution priority.
 	•	Linear initiative branches start from latest `develop`.
 	•	The Linear initiative branch name must match the parent issue `git branch name` field.
 	•	Slice branches start from the Linear initiative branch, not directly from `develop`.
+	•	Each completed `SPEC/*` branch must document `SPEC HISTORY` before integration.
+	•	For BRIDS SPEC branches, `SPEC MERGE` is the internal merge from `SPEC/*` back into the issue `Feature` branch and does not require a PR.
+	•	The Feature branch still requires the project-defined PR before integration into the base branch.
 
 Examples:
 
-feature/program-staking
-feature/app-wallet-login
-nft/program-collection-mint
-security/program-authority-check
-initiative/bri-143-knowledge-promotion
-feature/shared-knowledge-promotion-bri-143-s01-governance-policy
+feature/czambrano-BRI-149-staking-architecture
+feature/<developer>-<issue>-<name>
+epic/czambrano-EPIC-011-admin-collections-console
+SPEC/<developer>-<issue>-<spec-slug>
 
 ⸻
 
-🔀 LINEAR INITIATIVE BRANCH FLOW (MANDATORY WHEN USING SLICES)
+🔀 PARENT WORK BRANCH FLOW (MANDATORY WHEN USING SPECs)
 
-	1.	Create the Linear initiative branch from latest `develop`.
-	2.	Create the spec slice first from the Linear initiative branch.
-	3.	In the spec/documentation slice, use `explain-like-socrates` to explain the proposed work and let the user redirect scope before delivery slices open.
-	4.	Create each delivery slice from the Linear initiative branch after the spec slice closes the planning contract.
-	5.	Open slice PRs into the Linear initiative branch.
-	6.	Merge reviewed slices into the Linear initiative branch.
-	7.	Open the final initiative PR from the Linear initiative branch into `develop`.
-	8.	Stop before merging the final PR to `develop` until the user manually tests and explicitly approves Human Acceptance.
-	9.	Delete the temporary Linear initiative branch after the final merge.
+	1.	Create the parent work branch from latest `develop`.
+	2.	Create the first SPEC from the parent work branch.
+	3.	Create each next SPEC only after the previous SPEC merges into the parent work branch.
+	4.	Open SPEC PRs into the parent work branch.
+	5.	Merge reviewed SPECs into the parent work branch.
+	6.	Open the final parent work branch PR from the parent work branch into `develop`.
+	7.	Delete the temporary parent work branch after the final merge.
 
 ⸻
 
-🧍 HUMAN ACCEPTANCE GATE BEFORE DEVELOP (MANDATORY)
+🔀 BRIDS SPEC MERGE FLOW (MANDATORY WHEN USING SPEC/* BRANCHES)
 
-Applies to every final PR or merge path targeting `develop`.
+VERSION ESPAÑOL
 
-Rules
-	1.	Automated validation is necessary but not sufficient for the final merge to `develop`.
-	2.	After implementation slices, local validation, CI, and final reviewer pass, the agent MUST stop and wait for explicit user manual-test approval.
-	3.	The PR body must include `Human Acceptance`.
-	4.	The governance check only passes when the Human Acceptance section records `Status: approved`.
-	5.	If Human Acceptance is pending, missing, or ambiguous, merge to `develop` is blocked.
-	6.	Approval evidence must include who approved, when, what was manually tested, and any accepted residual risk.
-	7.	The agent must not enable auto-merge or perform the final merge to `develop` before this approval.
-	8.	Linear records traceability and status sync; Linear is not a technical merge destination.
+	1.	Confirmar que el desarrollador responsable y el SPEC destino están definidos.
+	2.	Actualizar `SPEC HISTORY` en el documento del Feature, el documento del SPEC y el documento de implementación.
+	3.	Sincronizar el cuerpo del issue de Linear como fuente principal.
+	4.	Ejecutar validaciones razonables según el alcance tocado.
+	5.	Revisar `git status` y separar cambios ajenos al SPEC.
+	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue.
+	7.	Dejar la rama `Feature` lista para continuar con el siguiente SPEC.
+	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature`.
 
-Traceability record must include:
-	•	Parent Linear issue
-	•	Linear initiative branch
-	•	Documentation/spec slice branch
-	•	Delivery slice branches and PRs
-	•	Validation evidence
-	•	Manual test evidence
-	•	Human Acceptance approval
-	•	Final merge commit or squash commit
+ENGLISH VERSION
+
+	1.	Confirm that the responsible developer and target SPEC are defined.
+	2.	Update `SPEC HISTORY` in the Feature document, SPEC document, and implementation document.
+	3.	Sync the Linear issue body as the primary source.
+	4.	Run reasonable validations for the touched scope.
+	5.	Review `git status` and separate changes unrelated to the SPEC.
+	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch.
+	7.	Leave the `Feature` branch ready for the next SPEC.
+	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure.
+
+⸻
+
+🔀 BRIDS SPEC MERGE FLOW (MANDATORY WHEN USING SPEC/* BRANCHES)
+
+VERSION ESPAÑOL
+
+	1.	Confirmar que el desarrollador responsable y el SPEC destino están definidos.
+	2.	Actualizar `SPEC HISTORY` en el documento del Feature, el documento del SPEC y el documento de implementación.
+	3.	Sincronizar el cuerpo del issue de Linear como fuente principal.
+	4.	Ejecutar validaciones razonables según el alcance tocado.
+	5.	Revisar `git status` y separar cambios ajenos al SPEC.
+	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue.
+	7.	Dejar la rama `Feature` lista para continuar con el siguiente SPEC.
+	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature`.
+
+ENGLISH VERSION
+
+	1.	Confirm that the responsible developer and target SPEC are defined.
+	2.	Update `SPEC HISTORY` in the Feature document, SPEC document, and implementation document.
+	3.	Sync the Linear issue body as the primary source.
+	4.	Run reasonable validations for the touched scope.
+	5.	Review `git status` and separate changes unrelated to the SPEC.
+	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch.
+	7.	Leave the `Feature` branch ready for the next SPEC.
+	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure.
 
 ⸻
 
@@ -248,9 +293,9 @@ PR must include:
 	•	RFC reference (if applicable)
 	•	Risk analysis section
 	•	Rollback plan section
-	•	Human Acceptance section; final PRs into `develop` require `Status: approved`
-	•	Feature note path under `/docs/features/*.md` for small/iterative feature/fix/refactor/nft product changes
-	•	For slice PRs, the slice id and parent Linear initiative branch reference
+	•	Feature note path under `/docs/features/*.md` for small/iterative feature/security/refactor/nft/epic product changes
+	•	Fix note path under `/docs/fixes/*.md` for fix/bugfix/hotfix product changes
+	•	For SPEC PRs, the SPEC id and parent work branch reference
 
 No PR allowed without macro completion.
 
@@ -258,10 +303,10 @@ No PR allowed without macro completion.
 
 🔒 LINEAR INITIATIVE-TARGET PR GATES (MANDATORY)
 
-Every PR targeting an `initiative/*` branch must pass:
+Every PR targeting a parent work branch must pass:
 	1.	`npm run validate`
 	2.	Required docs scope check
-	3.	Local preflight against the Linear initiative branch base (`npm run pr:ready -- --base <initiative-branch>`)
+	3.	Local preflight against the parent work branch base (`npm run pr:ready -- --base <parent-work-branch>`)
 
 Full label/template governance remains mandatory for PRs targeting `develop`.
 

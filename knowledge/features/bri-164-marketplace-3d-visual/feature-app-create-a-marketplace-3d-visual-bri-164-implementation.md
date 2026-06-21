@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Create A Marketplace 3d Visual BRI- 164 Implementation
-description: Feature App Create A Marketplace 3d Visual BRI- 164 Implementation - migrated from docs/
+description: Feature App Create A Marketplace 3d Visual BRI- 164 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md
@@ -11,7 +11,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 
 ## Status
 - Solution artifact
-- Depends on: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- Depends on: `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
 - Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 
@@ -276,8 +276,8 @@ Fallback behavior:
 ### S21 - P2 clean-code debt artifacts
 - Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 - Documentation scope:
-  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
-  - atomic implementation artifacts S22-S43 under `docs/features/`
+  - `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
+  - atomic implementation artifacts S22-S43 under `knowledge/features/`
 - Scope:
   - document strict audit P2 findings with problem, solution, impact, and prevention plan
   - split the P2 follow-ups into one-change implementation slices before touching runtime code
@@ -498,7 +498,7 @@ Fallback behavior:
 - Runtime file scope:
   - none expected
 - Documentation file scope:
-  - `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md`
+  - `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md`
 - Scope:
   - run an exhaustive security audit over marketplace routes, detail, public APIs, admin create, purchase APIs, Mapbox/Google Maps surfaces, repositories, CSP, dependencies, and secret patterns
   - document findings with severity, evidence, impact, and solution
@@ -583,8 +583,8 @@ Before implementation is considered complete:
 - Runtime env var: `NEXT_PUBLIC_MAPBOX_STYLE_URL`.
 - Safe fallback: `mapbox://styles/mapbox/dark-v11`.
 - Desired published style name: `BRIDS Marketplace Decimal`.
-- Importable style artifact: `docs/mapbox/brids-marketplace-decimal-style.json`.
-- Publish runbook: `docs/mapbox/README.md`.
+- Importable style artifact: `knowledge/mapbox/brids-marketplace-decimal-style.json`.
+- Publish runbook: `knowledge/mapbox/README.md`.
 - Desired visual outcome:
   - dark editorial base rather than default navigation map
   - USA landmass reads in cyan like the marketplace chart lines

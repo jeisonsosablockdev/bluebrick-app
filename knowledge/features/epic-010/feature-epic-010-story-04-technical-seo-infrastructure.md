@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature EPIC- 010 STORY- 04 Technical Seo Infrastructure
-description: Feature EPIC- 010 STORY- 04 Technical Seo Infrastructure - migrated from docs/
+description: Feature EPIC- 010 STORY- 04 Technical Seo Infrastructure - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-010-story-04-technical-seo-infrastructure.md

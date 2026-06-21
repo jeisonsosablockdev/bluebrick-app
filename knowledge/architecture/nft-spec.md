@@ -148,7 +148,7 @@ Logs must not include full serialized transaction payloads, private keys, cookie
   - `purchase_challenges` stores challenge nonce/message/TTL and consumption/failure state.
   - `purchase_rate_limit_events` stores rolling rate-limit event evidence by endpoint + wallet + IP.
   - Submit now confirms the transaction and verifies every expected asset before returning `confirmed`; missing assets, wrong owner/collection, or missing `FreezeDelegate Owner` leave the attempt failed/recoverable.
-  - Reusable implementation playbook: `docs/purchase-tracing.md`.
+  - Reusable implementation playbook: `knowledge/purchase-tracing.md`.
 
 ## Mint Authority Model
 - Mint authority:

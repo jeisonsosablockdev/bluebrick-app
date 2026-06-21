@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Knowledge Promotion System BRI- 143
-description: Feature Shared Knowledge Promotion System BRI- 143 - migrated from docs/
+description: Feature Shared Knowledge Promotion System BRI- 143 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-knowledge-promotion-system-bri-143.md
@@ -12,7 +12,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 Introduce a concrete shared system so development knowledge can accumulate with promotion gates instead of remaining scattered across feature notes, RFCs, and ad-hoc memory.
 
 ## Added
-- `docs/knowledge/*` structure for:
+- `knowledge/*` structure for:
   - inbox observations
   - promotion proposals
   - reports
@@ -22,7 +22,7 @@ Introduce a concrete shared system so development knowledge can accumulate with 
   - building the repo knowledge index
   - scanning recent branch changes for reusable workflow signals
   - generating governance drift reports
-- `docs/guides/knowledge-promotion-gitflow.md` to explain the operational loop.
+- `knowledge/guides/knowledge-promotion-gitflow.md` to explain the operational loop.
 
 ## Gitflow Integration
 - Added package commands:
@@ -33,7 +33,7 @@ Introduce a concrete shared system so development knowledge can accumulate with 
 - Extended the shared validation chain so the knowledge index must stay in sync.
 - Kept the knowledge system below canonical governance:
   - `AGENTS.md` remains a summary,
-  - `docs/governance/*` remains canonical,
+  - `knowledge/governance/*` remains canonical,
   - promotion to governance or automation requires human review.
 
 ## Seeded Observation

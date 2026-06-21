@@ -47,7 +47,7 @@ function splitLines(value: string): string[] {
 
 function defaultOutputPath(rootDir: string): string {
   const dateStamp = new Date().toISOString().slice(0, 10);
-  return path.join(rootDir, "docs", "knowledge", "reports", `recent-changes-${dateStamp}.md`);
+  return path.join(rootDir, "knowledge", "reports", `recent-changes-${dateStamp}.md`);
 }
 
 async function main(): Promise<void> {

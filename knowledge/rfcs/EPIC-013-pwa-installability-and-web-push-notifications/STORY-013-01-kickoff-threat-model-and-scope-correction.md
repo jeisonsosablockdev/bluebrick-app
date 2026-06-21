@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 013 01 Kickoff Threat Model And Scope Correction
-description: STORY- 013 01 Kickoff Threat Model And Scope Correction - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-01-kickoff-threat-model-and-scope-correction.md
----
-
 # STORY-013-01-kickoff-threat-model-and-scope-correction
 
 ## Metadata
@@ -32,8 +23,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `app/*`
   - `lib/*`
   - `db/migrations/*`
-  - `docs/auth-flow.md`
-  - `docs/session-model.md`
+  - `knowledge/auth-flow.md`
+  - `knowledge/session-model.md`
 
 ## Proposal
 - Approach summary:

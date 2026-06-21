@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Create A Marketplace 3d Visual BRI- 164 S41 Coordinate Range Validation
-description: Feature App Create A Marketplace 3d Visual BRI- 164 S41 Coordinate Range Validation - migrated from docs/
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S41 Coordinate Range Validation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation.md

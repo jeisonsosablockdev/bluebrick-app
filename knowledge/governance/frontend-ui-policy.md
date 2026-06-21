@@ -1,12 +1,3 @@
----
-type: Policy
-title: Frontend UI Policy
-description: Mandatory responsive design and motion language standards for all frontend work
-tags: [governance, frontend, ui, responsive, motion, qa, accessibility]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/governance/frontend-ui-policy.md
----
-
 📱 FRONTEND UI POLICY
 
 (MANDATORY – NON-NEGOTIABLE)

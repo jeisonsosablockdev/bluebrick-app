@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Linear Initiative Branch Workflow Implementation
-description: Fix Linear Initiative Branch Workflow Implementation - migrated from docs/
+description: Fix Linear Initiative Branch Workflow Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-linear-initiative-branch-workflow-implementation.md
@@ -32,10 +32,10 @@ Slice branches keep the branch family and scope because they describe the delive
 
 ## Scope
 
-- `docs/governance/git-monorepo-policy.md`
-- `docs/guides/linear-single-issue-slice-planning.md`
-- `docs/guides/gitflow-pr-structure.md`
-- `docs/templates/linear-single-issue-slices.template.md`
+- `knowledge/governance/git-monorepo-policy.md`
+- `knowledge/guides/linear-single-issue-slice-planning.md`
+- `knowledge/guides/gitflow-pr-structure.md`
+- `knowledge/templates/linear-single-issue-slices.template.md`
 - `AGENTS.md`
 - `.codex` workflow/policy summaries that name the old parent branch concept
 - `scripts/git-start.sh`
@@ -57,7 +57,7 @@ Slice branches keep the branch family and scope because they describe the delive
 
 | Slice | Status | Branch | Objective | Validation |
 | --- | --- | --- | --- | --- |
-| S01 | complete | current branch | Create artifacts and update workflow docs/scripts/tests in one small governance fix. | Focused Vitest workflow tests, docs governance validation, and full repo validation. |
+| S01 | complete | current branch | Create artifacts and update workflow knowledge/scripts/tests in one small governance fix. | Focused Vitest workflow tests, docs governance validation, and full repo validation. |
 
 ## Test Plan First
 

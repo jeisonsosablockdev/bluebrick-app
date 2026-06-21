@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Login Modal Issue Implementation
-description: Fix Login Modal Issue Implementation - migrated from docs/
+description: Fix Login Modal Issue Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-login-modal-issue-implementation.md
@@ -44,8 +44,8 @@ Fix the login modal so it behaves as viewport-owned auth chrome and presents a c
 - `tests/components/wallet-modal-header-cta.test.ts`
 - `tests/lib/motion.test.ts`
 - `e2e/wallet-modal-auth-entry.pw.spec.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 - possibly `tests/api/auth-me-route.test.ts` or logout route coverage if investigation shows server response drift
 
 ## Non-Goals
@@ -60,8 +60,8 @@ Fix the login modal so it behaves as viewport-owned auth chrome and presents a c
 - Linear entry slug: `fix-login-modal-issue-bri-167`
 
 ## Artifact Pair
-- Problem artifact: `docs/fixes/fix-login-modal-issue.md`
-- Solution artifact: `docs/fixes/fix-login-modal-issue-implementation.md`
+- Problem artifact: `knowledge/fixes/fix-login-modal-issue.md`
+- Solution artifact: `knowledge/fixes/fix-login-modal-issue-implementation.md`
 
 ## Linear Initiative Branch
 Proposed once issue key exists:
@@ -85,7 +85,7 @@ Initiative branch:
 ## Slice Plan
 | Slice | Status | Branch | Objective | Technical Scope | Validation | PR |
 | --- | --- | --- | --- | --- | --- | --- |
-| S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
+| S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `knowledge/fixes/fix-login-modal-issue.md`, `knowledge/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
 | S02 | merged | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | merged locally |
 | S03 | merged | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | merged locally |
 | S04 | merged | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | merged locally |
@@ -98,7 +98,7 @@ Initiative branch:
 | S11 | implemented | `fix/app-login-modal-issue-bri-167-s11-wallet-progress-polish` | Align wallet proof progress indicators with the BRIDS glass palette | `WalletModal` progress/status styling, component assertions, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
 | S12 | merged | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
-| S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `docs/fixes/fix-login-modal-issue.md`, `docs/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
+| S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `knowledge/fixes/fix-login-modal-issue.md`, `knowledge/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
 | S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 | S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
 | S17 | implemented | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
@@ -115,7 +115,7 @@ Initiative branch:
 | S28 | implemented | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S29 | implemented | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
 | S30 | implemented | `fix/app-login-modal-issue-bri-167-s30-wallet-modal-orchestration-cleanup` | Compose extracted helpers and reduce `WalletModal` orchestration density | `WalletModal`, extracted helper imports, component regressions | RED characterization gap if needed, implementation, full targeted wallet modal suite, typecheck, docs governance, clean-code pass | local slice |
-| S31 | implemented | `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec` | Define Phantom autoConnect route scoping as a BRI-167 bugfix | `docs/fixes/fix-bri-167-phantom-autoconnect-scope.md`, `docs/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md` | docs governance, Linear BRI-167 trace | local slice |
+| S31 | implemented | `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec` | Define Phantom autoConnect route scoping as a BRI-167 bugfix | `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md`, `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md` | docs governance, Linear BRI-167 trace | local slice |
 | S32 | implemented | `fix/app-login-modal-issue-bri-167-s32-runtime-autoconnect-scope` | Make wallet runtime autoConnect default-off and opt-in only on `/admin/assets/new` | `WalletRuntimeProvider`, admin asset route/layout composition | provider tests, route composition assertions | local slice |
 | S33 | implemented | `fix/app-login-modal-issue-bri-167-s33-wallet-selection-intent` | Remove mount-time Phantom selection from public login surfaces and keep explicit wallet action working | `WalletModal`, modal tests | no-selection-on-mount test, explicit connect test | local slice |
 | S34 | implemented | `fix/app-login-modal-issue-bri-167-s34-admin-reconnect-regression` | Preserve BRI-165 admin reconnect behavior and mismatch guard | admin asset wallet reconnect path | admin reconnect regression, targeted modal tests | local slice |
@@ -707,7 +707,7 @@ S05 evidence:
 6. Refresh auth state and router state after completion.
 
 ### S05 - QA, Docs, Review
-1. Update `docs/auth-flow.md` and `docs/session-model.md` only with final implemented behavior.
+1. Update `knowledge/auth-flow.md` and `knowledge/session-model.md` only with final implemented behavior.
 2. Run targeted tests and browser evidence.
 3. Run `npm run validate`.
 4. Complete explicit `code-refactoring-refactor-clean` pass.
@@ -729,7 +729,7 @@ No auth authority changes are allowed by default:
 - no change to SIWS nonce or verification
 - no change to WorkOS redirect semantics
 
-Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`, SIWS cookies, or WorkOS cookies must be reviewed as an auth/session change and update `docs/auth-flow.md` plus `docs/session-model.md`.
+Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`, SIWS cookies, or WorkOS cookies must be reviewed as an auth/session change and update `knowledge/auth-flow.md` plus `knowledge/session-model.md`.
 
 ## Completion Gate
 - S01 approved before delivery starts.

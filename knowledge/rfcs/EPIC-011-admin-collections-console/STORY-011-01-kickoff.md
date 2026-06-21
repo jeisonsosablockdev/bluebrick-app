@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 011 01 Kickoff
-description: STORY- 011 01 Kickoff - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-011-admin-collections-console/STORY-011-01-kickoff.md
----
-
 # STORY-011-01-kickoff
 
 ## Metadata
@@ -44,8 +35,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `components/admin/*`
   - `tests/api/*`
   - `e2e/*`
-  - `docs/features/*.md`
-  - `docs/auth-flow.md`
+  - `knowledge/features/*.md`
+  - `knowledge/auth-flow.md`
 
 ## Proposal
 - Approach summary:

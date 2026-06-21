@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Create A Marketplace 3d Visual BRI- 164 S16 Clean Code Refactor Audit
-description: Feature App Create A Marketplace 3d Visual BRI- 164 S16 Clean Code Refactor Audit - migrated from docs/
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S16 Clean Code Refactor Audit - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit.md
@@ -75,7 +75,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 ## S21 Strict P2 Addendum
 - S21 added a documentation-only P2 inventory after the stricter clean-code pass on the integration branch.
 - The inventory keeps runtime behavior unchanged and splits remaining P2 work into atomic implementation slices.
-- Central inventory: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- Central inventory: `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
 - S22-S25 cover reliability and observability as separate one-change slices.
 - S26-S31 cover the `lib/property-marketplace-server.ts` boundary refactor as one extraction per slice.
 - S32-S40 cover `PropertyDetailContent` decomposition as one formatter or section extraction per slice.

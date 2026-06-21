@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 011 10 Collections Health And Manual Review Queue
-description: STORY- 011 10 Collections Health And Manual Review Queue - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-011-admin-collections-console/STORY-011-10-collections-health-and-manual-review-queue.md
----
-
 # STORY-011-10-collections-health-and-manual-review-queue
 
 ## Metadata

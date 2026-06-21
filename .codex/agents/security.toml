@@ -2,6 +2,8 @@ version = 1
 name = "security"
 description = "Security and trust-boundary specialist."
 preferred_model = "gpt-5.5"
+provider_lock = false
+runner_compatible = ["codex", "opencode", "nemotron", "chatgpt"]
 reasoning_effort = "high"
 parallel_safe = true
 
@@ -16,8 +18,8 @@ reads = [
   ".codex/policies/security-policy.md",
   ".codex/policies/blockchain-policy.md",
   ".codex/policies/frontend-policy.md",
-  "docs/governance/security-quality-policy.md",
-  "docs/governance/nft-policy.md",
+  "knowledge/governance/security-quality-policy.md",
+  "knowledge/governance/nft-policy.md",
 ]
 
 system_prompt = """

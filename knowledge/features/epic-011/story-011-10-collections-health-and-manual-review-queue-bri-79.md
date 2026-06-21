@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: STORY- 011 10 Collections Health And Manual Review Queue BRI- 79
-description: STORY- 011 10 Collections Health And Manual Review Queue BRI- 79 - migrated from docs/
+description: STORY- 011 10 Collections Health And Manual Review Queue BRI- 79 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-10-collections-health-and-manual-review-queue-bri-79.md

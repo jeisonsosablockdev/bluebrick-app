@@ -46,10 +46,10 @@ for (const rel of files) {
   const frontmatter = `---
 type: ${type}
 title: ${title}
-description: ${title} - migrated from docs/
+description: ${title} - migrated from knowledge/
 tags: [${rel.split('/')[0]}]
 timestamp: ${now}
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/${rel}
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/${rel}
 ---
 
 `;

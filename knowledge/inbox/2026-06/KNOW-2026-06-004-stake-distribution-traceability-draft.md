@@ -1,12 +1,17 @@
 ---
-type: Knowledge Item
-title: KNOW-2026-06-004-stake-distribution-traceability-draft
-description: Knowledge item from development session
-tags: [knowledge, inbox, KNOW-2026]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/inbox/2026-06/KNOW-2026-06-004-stake-distribution-traceability-draft.md
+id: KNOW-2026-06-004
+title: Stake, distribution, treasury, claim, and traceability draft
+status: draft
+scope: stake-distribution-traceability
+source_issue: BRI-5, BRI-6, BRI-7, BRI-8
+source_feature: knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md
+source_commit: pending
+promotion_target: guide
+enforcement_candidate: no
+owner: codex
+created_at: 2026-06-08
+updated_at: 2026-06-08
 ---
-
 
 # Language Policy
 
@@ -848,20 +853,11 @@ Working v1 formula:
 - Allocate with integer math:
 
 ```text
-// Step 1: Calculate time weight across all disjoint freeze intervals
-asset_time_weight = SUM_i ( max(0, min(project_end_at, unfreeze_i_confirmed_at ?? project_end_at) - max(project_start_at, freeze_i_confirmed_at)) )
+asset_earning_seconds = max(0, min(project_end_at, unfreeze_confirmed_at ?? project_end_at) - max(project_start_at, freeze_confirmed_at))
+asset_time_weight = 1 * asset_earning_seconds
 wallet_time_weight = sum(asset_time_weight for all wallet assets)
 pool_time_weight = sum(all_eligible_wallet_time_weight)
-
-// Step 2: Largest-Remainder Method (Hamilton) - First Pass
-wallet_exact_amount = distribution_pool_amount_minor * wallet_time_weight / pool_time_weight
-wallet_gross_amount = floor(wallet_exact_amount)
-wallet_fractional_remainder = wallet_exact_amount - wallet_gross_amount
-
-// Step 3: Largest-Remainder Method - Second Pass
-remainder_pool = distribution_pool_amount_minor - sum(all wallet_gross_amount)
-Sort all wallets by `wallet_fractional_remainder` DESC.
-Add 1 minor unit to `wallet_gross_amount` for the top `remainder_pool` wallets.
+wallet_gross_amount = floor(distribution_pool_amount_minor * wallet_time_weight / pool_time_weight)
 ```
 
 After gross allocation:

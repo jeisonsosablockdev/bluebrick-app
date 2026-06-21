@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 006 04 Onchain Delegate Rotation Revocation
-description: STORY- 006 04 Onchain Delegate Rotation Revocation - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-04-onchain-delegate-rotation-revocation.md
----
-
 # STORY-006-04-onchain-delegate-rotation-revocation
 
 ## Metadata
@@ -113,7 +104,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - role `appdata_authority`
   - authority `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
   - `authority_version = 3`
-- Full evidence: `docs/devnet-proof.md` section `EPIC-006 STORY-006-04 Proof (On-chain Authority Lifecycle)`.
+- Full evidence: `knowledge/devnet-proof.md` section `EPIC-006 STORY-006-04 Proof (On-chain Authority Lifecycle)`.
 
 ## Traceability
 - Related issue(s): `EPIC-006 / STORY-006-04`

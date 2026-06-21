@@ -257,16 +257,20 @@ fi
 echo "🧪 Gate inicial obligatorio:"
 echo "   1) Crea o actualiza el artefacto que gobierna el trabajo antes de implementar."
 if [[ "${TYPE}" == "fix" ]]; then
-  echo "      - docs/fixes/fix-<slug>.md"
-  echo "      - docs/fixes/fix-<slug>-implementation.md"
+  echo "      - knowledge/fixes/fix-<slug>.md"
+  echo "      - knowledge/fixes/fix-<slug>-implementation.md"
 elif [[ "${TYPE}" == "feature" || "${TYPE}" == "security" || "${TYPE}" == "nft" || "${TYPE}" == "refactor" ]]; then
-  echo "      - docs/features/feature-<slug>.md"
-  echo "      - docs/features/feature-<slug>-implementation.md"
+  echo "      - knowledge/features/feature-<slug>.md"
+  echo "      - knowledge/features/feature-<slug>-implementation.md"
 fi
 
 if [[ "${MODE}" == "parent" || "${MODE}" == "spec" ]]; then
-  echo "🔄 Sincronizando Linear a 'In Progress' para ${NORMALIZED_ISSUE}."
-  npm run linear:issue-start -- --issue "${NORMALIZED_ISSUE}"
+  if npm run --silent | grep -q 'linear:issue-start'; then
+    echo "🔄 Sincronizando Linear a 'In Progress' para ${NORMALIZED_ISSUE}."
+    npm run linear:issue-start -- --issue "${NORMALIZED_ISSUE}"
+  else
+    echo "ℹ️ linear:issue-start no está disponible; omitiendo sincronización Linear."
+  fi
 fi
 if [[ "${MODE}" == "spec" ]]; then
   echo "   2) Para trabajo multi-SPEC, resuelve la SPEC de planificación antes de delivery SPECs."

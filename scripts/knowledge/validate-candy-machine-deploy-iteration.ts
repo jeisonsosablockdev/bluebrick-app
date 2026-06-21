@@ -125,7 +125,7 @@ async function main(): Promise<void> {
   }
 
   const currentBranch = runGit(["branch", "--show-current"]);
-  const inboxRoot = path.join(rootDir, "docs", "knowledge", "inbox");
+  const inboxRoot = path.join(rootDir, "knowledge", "inbox");
   const markdownFiles = await listMarkdownFiles(inboxRoot);
   const iterationFiles = markdownFiles.filter((filePath) =>
     path.basename(filePath).includes("candy-machine-deploy-iteration")
@@ -135,7 +135,7 @@ async function main(): Promise<void> {
     throw new Error(
       [
         "Candy Machine deploy changes require an iteration knowledge file.",
-        "Create one from docs/knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md.",
+        "Create one from knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md.",
         `Changed files: ${candyMachineDeployChanges.join(", ")}`
       ].join("\n")
     );
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
     throw new Error(
       [
         `Candy Machine deploy changes require an iteration file for branch ${currentBranch}.`,
-        "Create one from docs/knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md.",
+        "Create one from knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md.",
         `Changed files: ${candyMachineDeployChanges.join(", ")}`
       ].join("\n")
     );

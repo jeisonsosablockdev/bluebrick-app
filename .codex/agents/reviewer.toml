@@ -2,6 +2,8 @@ version = 1
 name = "reviewer"
 description = "Final code and governance gate."
 preferred_model = "gpt-5.5"
+provider_lock = false
+runner_compatible = ["codex", "opencode", "nemotron", "chatgpt"]
 reasoning_effort = "high"
 parallel_safe = true
 
@@ -17,7 +19,7 @@ reads = [
   "AGENTS.md",
   ".codex/workflows/*.md",
   ".codex/policies/*.md",
-  "docs/governance/*.md",
+  "knowledge/governance/*.md",
 ]
 
 system_prompt = """

@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 012 02 Tracking Dashboard And Retention
-description: STORY- 012 02 Tracking Dashboard And Retention - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-012-referral-marketing-system-in-user-dashboard/STORY-012-02-tracking-dashboard-and-retention.md
----
-
 # STORY-012-02-tracking-dashboard-and-retention
 
 ## Metadata

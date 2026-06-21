@@ -1,12 +1,3 @@
----
-type: RFC
-title: README
-description: README - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/README.md
----
-
 # EPIC-013-pwa-installability-and-web-push-notifications
 
 ## Metadata

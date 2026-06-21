@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 002 04 Mint Execution And Progress
-description: STORY- 002 04 Mint Execution And Progress - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-04-mint-execution-and-progress.md
----
-
 # STORY-002-04-mint-execution-and-progress
 
 ## Metadata
@@ -28,7 +19,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Exponer tx signatures confirmadas.
 - Affected paths:
   - `/app` (orquestación de mint y UI de progreso)
-  - Documentación de prueba devnet (`docs/devnet-proof.md`)
+  - Documentación de prueba devnet (`knowledge/devnet-proof.md`)
 
 ## Proposal
 - Approach summary:

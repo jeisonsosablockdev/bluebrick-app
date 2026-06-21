@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 005 02 Foundation Rpc Address And Compat Adapters
-description: STORY- 005 02 Foundation Rpc Address And Compat Adapters - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/STORY-005-02-foundation-rpc-address-and-compat-adapters.md
----
-
 # STORY-005-02-foundation-rpc-address-and-compat-adapters
 
 ## Metadata
@@ -43,7 +34,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
     - `lib/solana-kit/compat/*` como unica zona donde se acepta `@solana/web3-compat`.
     - Regla de arquitectura: dominio/UI/servicios no importan `@solana/web3.js` ni `@solana/web3-compat` directamente.
   - Agregar check de arquitectura (regla lint) para detectar imports prohibidos fuera de adapters.
-  - Publicar recetario operativo para patrones repetidos en `docs/guides/solana-kit-migration-recipes.md`.
+  - Publicar recetario operativo para patrones repetidos en `knowledge/guides/solana-kit-migration-recipes.md`.
 - Alternatives considered:
   - Migrar cada modulo con utilidades ad-hoc: rechazado por duplicacion y deriva.
 - Tradeoffs:

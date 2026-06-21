@@ -1,12 +1,3 @@
----
-type: Policy
-title: Security + Quality Policy
-description: Mandatory security audit pack, story-level test gates, database schema change gate, pre-mainnet checklist, and monorepo security rules
-tags: [governance, security, quality, testing, database, mainnet, audit, threat-modeling]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/governance/security-quality-policy.md
----
-
 🔴 SECURITY + QUALITY POLICY
 
 ⸻

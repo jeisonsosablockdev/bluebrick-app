@@ -35,7 +35,7 @@ describe("Linear MCP tooling config", () => {
 
   it("documents the bridge usage and required environment", () => {
     const readme = readRepoFile("README.md");
-    const guide = readRepoFile("docs/guides/linear-mcp-bridge.md");
+    const guide = readRepoFile("knowledge/guides/linear-mcp-bridge.md");
     const server = readRepoFile("scripts/linear-mcp-server.ts");
 
     expect(readme).toContain("Linear MCP Bridge");

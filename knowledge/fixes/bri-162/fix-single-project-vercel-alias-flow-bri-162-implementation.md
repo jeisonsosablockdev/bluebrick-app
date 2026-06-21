@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Single Project Vercel Alias Flow BRI- 162 Implementation
-description: Fix Single Project Vercel Alias Flow BRI- 162 Implementation - migrated from docs/
+description: Fix Single Project Vercel Alias Flow BRI- 162 Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md
@@ -20,7 +20,7 @@ Este artefacto define cómo BRIDS debe operar `production`, `qa`, `rc` y preview
 
 El artefacto de problema asociado vive en:
 
-- `docs/fixes/fix-single-project-vercel-alias-flow-bri-162.md`
+- `knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162.md`
 
 La implementación permanece bloqueada hasta que este documento siga siendo decision-complete al abrir cada slice técnico.
 
@@ -500,8 +500,8 @@ Objetivo:
 
 Entrega:
 
-- `docs/fixes/fix-single-project-vercel-alias-flow-bri-162.md`
-- `docs/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md`
+- `knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162.md`
+- `knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md`
 - Linear `BRI-162` sincronizado con esta decisión
 
 ## Slice 1: Vercel Topology Baseline

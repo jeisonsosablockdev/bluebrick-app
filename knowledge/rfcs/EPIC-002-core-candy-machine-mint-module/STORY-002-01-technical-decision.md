@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 002 01 Technical Decision
-description: STORY- 002 01 Technical Decision - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-01-technical-decision.md
----
-
 # STORY-002-01-technical-decision
 
 ## Metadata
@@ -29,7 +20,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Cobro simbólico: `0.00001 SOL` por NFT.
   - Cantidad variable (`1`, `10`, `1000`, ...).
 - Affected paths:
-  - `docs/rfcs/EPIC-002-core-candy-machine-mint-module/*`
+  - `knowledge/rfcs/EPIC-002-core-candy-machine-mint-module/*`
   - `/app/admin/assets/new`
   - `/app` (módulo de mint y orquestación UI/server)
 

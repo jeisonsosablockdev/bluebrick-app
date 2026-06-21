@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: Rotation Spec
-description: Rotation Spec - migrated from docs/
+description: Rotation Spec - migrated from knowledge/
 tags: [architecture]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/architecture/rotation-spec.md
@@ -265,7 +265,7 @@ Tablas:
 ## 7. Evidencia Devnet (ya ejecutada)
 
 Fuente detallada:
-- `docs/devnet-proof.md` sección `EPIC-006 STORY-006-04 Proof (On-chain Authority Lifecycle)`.
+- `knowledge/devnet-proof.md` sección `EPIC-006 STORY-006-04 Proof (On-chain Authority Lifecycle)`.
 
 Run principal (Alchemy devnet):
 - RPC: `https://solana-devnet.g.alchemy.com/v2/0yIenKKNLWTTAWxKRcUvB`
@@ -286,18 +286,18 @@ Run principal (Alchemy devnet):
 - `tests/lib/core-authority-lifecycle.test.ts`
 - `tests/api/admin-core-candy-machine-authorities-prepare-route.test.ts`
 - `tests/api/admin-core-candy-machine-authorities-submit-route.test.ts`
-- `docs/features/feature-nft-authority-lifecycle-rotation-revocation.md`
+- `knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md`
 - `scripts/devnet-authority-lifecycle-proof.ts`
-- `docs/rotation-spec.md`
+- `knowledge/rotation-spec.md`
 
 ## 8.2 Modificados (story + documentación de gobierno)
-- `docs/auth-flow.md`
-- `docs/session-model.md`
-- `docs/authority-model.md`
-- `docs/nft-spec.md`
-- `docs/devnet-proof.md`
-- `docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/README.md`
-- `docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-04-onchain-delegate-rotation-revocation.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- `knowledge/authority-model.md`
+- `knowledge/nft-spec.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/README.md`
+- `knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-04-onchain-delegate-rotation-revocation.md`
 
 ## 9. Qué Falta y Cómo Implementarlo
 
@@ -386,7 +386,7 @@ git log --oneline -- db/migrations/017_authority_lifecycle_registry.sql
 git log --oneline -- tests/lib/core-authority-lifecycle.test.ts tests/api/admin-core-candy-machine-authorities-prepare-route.test.ts tests/api/admin-core-candy-machine-authorities-submit-route.test.ts
 
 # Ver commits de documentación de la story
-git log --oneline -- docs/rotation-spec.md docs/devnet-proof.md docs/features/feature-nft-authority-lifecycle-rotation-revocation.md docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance
+git log --oneline -- knowledge/rotation-spec.md knowledge/devnet-proof.md knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance
 ```
 
 ## 11. Validaciones Ejecutadas

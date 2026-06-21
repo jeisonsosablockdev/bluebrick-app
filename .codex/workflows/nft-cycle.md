@@ -30,7 +30,7 @@
 | 4 | `solana` | Align runtime, PDA, and devnet execution details | On-chain execution plan matches the NFT model |
 | 5 | `security` | Review privileged authorities and mutation paths | Blocking authority or ownership risks are surfaced early |
 | 6 | `nft` + `solana` | Implement the smallest safe change with tests first | Relevant tests lead the implementation |
-| 7 | `docs` | Sync `docs/nft-spec.md`, `docs/devnet-proof.md`, and traceability docs when required | Canonical NFT documentation is current |
+| 7 | `docs` | Sync `knowledge/nft-spec.md`, `knowledge/devnet-proof.md`, and traceability docs when required | Canonical NFT documentation is current |
 | 8 | `qa` | Verify the mint or metadata flow with repo gates and targeted checks | Required validation and evidence are captured |
 | 9 | `reviewer` | Run explicit clean-code audit and audit the final diff plus completion status | No unresolved blocking findings remain and clean-code findings are resolved or documented |
 
@@ -48,5 +48,5 @@
 
 ## Handoffs
 - `planner -> nft/solana/security`: affected asset flows, evidence expectations, required docs
-- `nft/solana -> docs/qa`: mint plan, proof artifacts, touched files
+- `nft/solana -> knowledge/qa`: mint plan, proof artifacts, touched files
 - `qa/security -> reviewer`: gate results and unresolved risks

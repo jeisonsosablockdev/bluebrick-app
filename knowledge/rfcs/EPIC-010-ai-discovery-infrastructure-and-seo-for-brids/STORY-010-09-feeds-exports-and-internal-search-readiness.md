@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 010 09 Feeds Exports And Internal Search Readiness
-description: STORY- 010 09 Feeds Exports And Internal Search Readiness - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-010-ai-discovery-infrastructure-and-seo-for-brids/STORY-010-09-feeds-exports-and-internal-search-readiness.md
----
-
 # STORY-010-09-feeds-exports-and-internal-search-readiness
 
 ## Metadata

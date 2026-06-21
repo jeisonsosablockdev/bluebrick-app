@@ -23,11 +23,11 @@ afterEach(async () => {
 describe("knowledge system", () => {
   it("collects inbox and proposal entries and renders the README index", async () => {
     const repoDir = await createTempRepo("knowledge-index-");
-    await mkdir(path.join(repoDir, "docs", "knowledge", "inbox", "2026-05"), { recursive: true });
-    await mkdir(path.join(repoDir, "docs", "knowledge", "proposals", "guide"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge", "inbox", "2026-05"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge", "proposals", "guide"), { recursive: true });
 
     await writeFile(
-      path.join(repoDir, "docs", "knowledge", "inbox", "2026-05", "KNOW-2026-05-001.md"),
+      path.join(repoDir, "knowledge", "inbox", "2026-05", "KNOW-2026-05-001.md"),
       [
         "---",
         "id: KNOW-2026-05-001",
@@ -35,7 +35,7 @@ describe("knowledge system", () => {
         "status: observed",
         "scope: shared",
         "source_issue: BRI-143",
-        "source_feature: docs/features/example.md",
+        "source_feature: knowledge/features/example.md",
         "promotion_target: guide",
         "enforcement_candidate: yes",
         "owner: team",
@@ -49,7 +49,7 @@ describe("knowledge system", () => {
     );
 
     await writeFile(
-      path.join(repoDir, "docs", "knowledge", "proposals", "guide", "PROMO-2026-05-001.md"),
+      path.join(repoDir, "knowledge", "proposals", "guide", "PROMO-2026-05-001.md"),
       [
         "---",
         "id: PROMO-2026-05-001",
@@ -57,7 +57,7 @@ describe("knowledge system", () => {
         "status: triaged",
         "scope: shared",
         "source_issue: BRI-143",
-        "source_feature: docs/features/example.md",
+        "source_feature: knowledge/features/example.md",
         "promotion_target: governance",
         "enforcement_candidate: no",
         "owner: team",
@@ -82,9 +82,9 @@ describe("knowledge system", () => {
 
   it("detects governance drift when AGENTS or status values are misaligned", async () => {
     const repoDir = await createTempRepo("knowledge-drift-");
-    await mkdir(path.join(repoDir, "docs", "governance"), { recursive: true });
-    await mkdir(path.join(repoDir, "docs", "guides"), { recursive: true });
-    await mkdir(path.join(repoDir, "docs", "rfcs", "templates"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge", "governance"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge", "guides"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge", "rfcs", "templates"), { recursive: true });
     await mkdir(path.join(repoDir, ".codex", "agents"), { recursive: true });
     await mkdir(path.join(repoDir, ".github", "workflows"), { recursive: true });
     await mkdir(path.join(repoDir, "scripts", "ci"), { recursive: true });
@@ -96,22 +96,22 @@ describe("knowledge system", () => {
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "governance", "documentation-policy.md"),
+      path.join(repoDir, "knowledge", "governance", "documentation-policy.md"),
       "Allowed status values:\n- `draft`\n- `approved`\n",
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "governance", "git-monorepo-policy.md"),
+      path.join(repoDir, "knowledge", "governance", "git-monorepo-policy.md"),
       "feature/program-<name>\nfix/app-<name>\n",
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "guides", "gitflow-pr-structure.md"),
+      path.join(repoDir, "knowledge", "guides", "gitflow-pr-structure.md"),
       "guide without ssot reference\n",
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "governance", "pr-policy-source-of-truth.json"),
+      path.join(repoDir, "knowledge", "governance", "pr-policy-source-of-truth.json"),
       JSON.stringify({
         requiredPrSections: ["issue"],
         patterns: {}
@@ -129,7 +129,7 @@ describe("knowledge system", () => {
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "rfcs", "templates", "STORY.template.md"),
+      path.join(repoDir, "knowledge", "rfcs", "templates", "STORY.template.md"),
       "- Status: `draft` (`draft | approved`)\n",
       "utf8"
     );
@@ -146,10 +146,10 @@ describe("knowledge system", () => {
   });
 
   it("classifies changed files into reusable knowledge signals", () => {
-    expect(classifyChangedFile("docs/governance/documentation-policy.md").bucket).toBe("governance");
+    expect(classifyChangedFile("knowledge/governance/documentation-policy.md").bucket).toBe("governance");
     expect(classifyChangedFile("package.json").bucket).toBe("automation");
-    expect(classifyChangedFile("docs/features/example.md").bucket).toBe("guide");
-    expect(collectCandidateActions(["docs/governance/documentation-policy.md", "scripts/ci/pr-open.sh"])).toContain(
+    expect(classifyChangedFile("knowledge/features/example.md").bucket).toBe("guide");
+    expect(collectCandidateActions(["knowledge/governance/documentation-policy.md", "scripts/ci/pr-open.sh"])).toContain(
       "Consider a governance drift observation or promotion proposal."
     );
   });

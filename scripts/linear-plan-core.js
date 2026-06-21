@@ -2,7 +2,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 
 const TEMPLATE_RELATIVE_PATH = path.join(
-  "docs",
+  "knowledge",
   "templates",
   "linear-single-issue-slices.template.md"
 );
@@ -145,10 +145,10 @@ function buildProblemArtifactPath({ type, slug }) {
   }
 
   if (FIX_ARTIFACT_TYPES.has(normalizedType)) {
-    return `docs/fixes/fix-${normalizedSlug}.md`;
+    return `knowledge/fixes/fix-${normalizedSlug}.md`;
   }
 
-  return `docs/features/feature-${normalizedSlug}.md`;
+  return `knowledge/features/feature-${normalizedSlug}.md`;
 }
 
 function buildSolutionArtifactPath({ type, slug }) {
@@ -160,10 +160,10 @@ function buildSolutionArtifactPath({ type, slug }) {
   }
 
   if (FIX_ARTIFACT_TYPES.has(normalizedType)) {
-    return `docs/fixes/fix-${normalizedSlug}-implementation.md`;
+    return `knowledge/fixes/fix-${normalizedSlug}-implementation.md`;
   }
 
-  return `docs/features/feature-${normalizedSlug}-implementation.md`;
+  return `knowledge/features/feature-${normalizedSlug}-implementation.md`;
 }
 
 function renderBulletList(items, fallback = "- TBD") {

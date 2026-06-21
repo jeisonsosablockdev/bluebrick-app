@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts
-description: Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts - migrated from docs/
+description: Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-010-story-02-content-as-code-editorial-contracts.md
@@ -32,7 +32,7 @@ Implementa el contrato editorial base para contenido versionado en código (MD/M
 - Unit tests:
   - `tests/lib/content-contracts.test.ts`
 - Code-only authoring guide:
-  - `docs/guides/content-authoring-code-only.md`
+  - `knowledge/guides/content-authoring-code-only.md`
 
 ## CI/Validation Gate
 - `package.json` now runs content contract checks inside `npm run validate` through:

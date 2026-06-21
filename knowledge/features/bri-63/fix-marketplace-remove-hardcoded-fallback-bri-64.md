@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Marketplace Remove Hardcoded Fallback BRI- 64
-description: Fix Marketplace Remove Hardcoded Fallback BRI- 64 - migrated from docs/
+description: Fix Marketplace Remove Hardcoded Fallback BRI- 64 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-marketplace-remove-hardcoded-fallback-bri-64.md

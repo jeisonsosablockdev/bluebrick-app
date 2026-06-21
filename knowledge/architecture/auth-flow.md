@@ -511,7 +511,7 @@ Last Updated: 2026-06-06
 | `/api/webhooks/helius/mint-orchestrator` | `POST` | No (SIWS) | None | Ingests Helius events, validates optional webhook secret, deduplicates retries, reconciles job signatures |
 | `/api/webhooks/stripe/identity` | `POST` | No (SIWS) | None | Validates Stripe signature, deduplicates event id, updates KYC/compliance status |
 
-See reusable tracing playbook: `docs/purchase-tracing.md`.
+See reusable tracing playbook: `knowledge/purchase-tracing.md`.
 
 ## Trust Boundaries
 - Client responsibilities:

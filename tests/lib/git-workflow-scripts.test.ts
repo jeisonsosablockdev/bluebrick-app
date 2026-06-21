@@ -59,7 +59,7 @@ async function createWorkflowRepo(): Promise<string> {
 
   await cp(path.join(repoRoot, "scripts"), path.join(workDir, "scripts"), { recursive: true });
 
-  await mkdir(path.join(workDir, "docs", "features"), { recursive: true });
+  await mkdir(path.join(workDir, "knowledge", "features"), { recursive: true });
   await writeFile(
     path.join(workDir, "package.json"),
     JSON.stringify(
@@ -155,8 +155,8 @@ describe("git workflow scripts", () => {
     );
 
     expect(output).toContain("Parent work branch detectada");
-    expect(output).toContain("docs/fixes/fix-<slug>.md");
-    expect(output).toContain("docs/fixes/fix-<slug>-implementation.md");
+    expect(output).toContain("knowledge/fixes/fix-<slug>.md");
+    expect(output).toContain("knowledge/fixes/fix-<slug>-implementation.md");
   });
 
   it("accepts bugfix, hotfix, and epic parent work branches", async () => {

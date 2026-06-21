@@ -1,12 +1,16 @@
 ---
-type: Knowledge Item
-title: KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch
-description: Knowledge item from development session
-tags: [knowledge, inbox, KNOW-2026]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md
+id: KNOW-2026-06-003
+title: Candy Machine deploy current system branch
+status: observed
+promotion_target: guide
+scope: admin-assets-new-core-candy-machine
+owner: codex
+created_at: 2026-06-07T00:00:00.000Z
+updated_at: 2026-06-07T21:59:00.000Z
+source_issue: BRI-176
+source_feature: admin-assets-new
+enforcement_candidate: no
 ---
-
 
 # Candy Machine Deploy Iteration: Current System Branch
 
@@ -489,8 +493,8 @@ Client-provided correlation ids must not authorize, verify, or unblock Create As
 
 ## What Did Not Work
 
-- The first automated validation run failed the NFT documentation gate because Candy Machine UI changes require `docs/nft-spec.md`.
-- Resolved by documenting the snapshot re-check policy in `docs/nft-spec.md` without changing authority or Create Asset gate semantics.
+- The first automated validation run failed the NFT documentation gate because Candy Machine UI changes require `knowledge/nft-spec.md`.
+- Resolved by documenting the snapshot re-check policy in `knowledge/nft-spec.md` without changing authority or Create Asset gate semantics.
 
 Carryover lessons:
 

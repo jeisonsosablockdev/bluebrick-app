@@ -1,18 +1,9 @@
----
-type: Guide
-title: Codex Orchestration Architecture
-description: Codex Orchestration Architecture - migrated from docs/
-tags: [guides]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/codex-orchestration-architecture.md
----
-
 # Codex Orchestration Architecture
 
 ## Goal
 
 - Replace the monolithic `AGENTS.md` playbook with a layered Codex-first architecture.
-- Keep `docs/governance/*` and executable CI scripts as the canonical source of truth.
+- Keep `knowledge/governance/*` and executable CI scripts as the canonical source of truth.
 - Reduce context pollution, prompt collisions, and repeated governance text.
 - Improve deterministic workflow activation and future parallel delegation.
 
@@ -42,7 +33,7 @@ AGENTS.md
     security-policy.md
     docs-policy.md
     testing-policy.md
-docs/
+knowledge/
   governance/
 ```
 
@@ -54,7 +45,7 @@ docs/
 | `.codex/agents/*.toml` | Narrow specialist prompts, model preference, scope, read set, delegation surface | Cross-cutting process definitions, duplicated hard rules |
 | `.codex/workflows/*.md` | Execution order, gates, required evidence, handoffs | Specialist implementation detail, long policy prose |
 | `.codex/policies/*.md` | Reusable hard constraints summarized from canonical docs | Full governance duplication, workflow sequencing |
-| `docs/governance/*` | Canonical repository policy | Agent-specific prompting or orchestration detail |
+| `knowledge/governance/*` | Canonical repository policy | Agent-specific prompting or orchestration detail |
 
 ## Migration Rationale
 
@@ -70,7 +61,7 @@ docs/
 1. `planner` reads `AGENTS.md`, the touched paths, and only the workflow and policy files that match the task.
    - If the brief is vague, the bootstrap flow should run a Socratic clarification pass with `explain-like-socrates` before choosing the branch shape so the task expands into a concrete problem, outcome, scope, and branch plan.
 2. `planner` activates one or more workflows based on scope: blockchain, frontend, NFT, mainnet hardening, responsive QA.
-3. For multi-slice work, `planner` and `docs` require the spec/documentation slice to use `explain-like-socrates` before finalizing artifacts and to define a clean-code design contract for each delivery slice before implementation opens.
+3. For multi-SPEC work, `planner` and `docs` require the spec/documentation slice to use `explain-like-socrates` before finalizing artifacts and to define a clean-code design contract for each delivery slice before implementation opens. Each delivery slice must have a clean-code design contract for each delivery slice before implementation opens.
 4. `planner` delegates the smallest useful context to specialists, including changed paths, active workflow, required policies, evidence expectations, clean-code design contract, and open risks.
 5. Domain specialists implement or analyze within their lane:
    - `solana` for runtime and devnet proof
@@ -100,5 +91,5 @@ docs/
 - Workflows define process, gates, evidence, and handoffs only.
 - Agents define expertise, scope, and context boundaries only.
 - Policies define reusable constraints only.
-- Canonical governance remains in `docs/governance/*` and executable scripts.
+- Canonical governance remains in `knowledge/governance/*` and executable scripts.
 - The architecture is safe for parallel specialist delegation because write ownership is explicit and cross-cutting reviewers are reusable.

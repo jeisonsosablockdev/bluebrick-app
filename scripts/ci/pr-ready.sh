@@ -4,7 +4,7 @@ set -euo pipefail
 source "$(dirname "$0")/pr-governance-lib.sh"
 
 BASE_REF="develop"
-POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
 VALIDATE_MODE="${VALIDATE_MODE:-full}"
 HEAD_BRANCH_OVERRIDE="${HEAD_BRANCH_OVERRIDE:-}"
 
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
     *)
       if [[ "${BASE_REF}" == "develop" && "$1" != -* ]]; then
         BASE_REF="$1"
-      elif [[ "${POLICY_FILE}" == "docs/governance/pr-policy-source-of-truth.json" && "$1" != -* ]]; then
+      elif [[ "${POLICY_FILE}" == "knowledge/governance/pr-policy-source-of-truth.json" && "$1" != -* ]]; then
         POLICY_FILE="$1"
       else
         echo "❌ Unknown argument: $1"

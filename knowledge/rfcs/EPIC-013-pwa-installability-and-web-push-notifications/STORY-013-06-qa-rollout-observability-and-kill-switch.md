@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 013 06 Qa Rollout Observability And Kill Switch
-description: STORY- 013 06 Qa Rollout Observability And Kill Switch - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-06-qa-rollout-observability-and-kill-switch.md
----
-
 # STORY-013-06-qa-rollout-observability-and-kill-switch
 
 ## Metadata
@@ -28,9 +19,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Debe haber evidencia reproducible.
 - Affected paths:
   - `e2e/*`
-  - `docs/features/*`
-  - `docs/auth-flow.md`
-  - `docs/session-model.md`
+  - `knowledge/features/*`
+  - `knowledge/auth-flow.md`
+  - `knowledge/session-model.md`
   - observabilidad y feature flags
 
 ## Proposal

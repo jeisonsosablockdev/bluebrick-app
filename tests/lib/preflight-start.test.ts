@@ -158,7 +158,7 @@ describe("preflight:start", () => {
     expect(output).toContain("Start with `planner`.");
     expect(output).toContain("fix/shared-merged-cleanup");
     expect(output).toContain("chore/local-only-scratch");
-    expect(output).toContain("/docs/features/*.md");
+    expect(output).toContain("/knowledge/features/*.md");
     expect(output).toContain("6) Recommended Next Steps");
     expect(output).toContain("delete them manually only after confirming they are no longer needed");
     expect(output).toContain("Review AGENTS.md before implementation");

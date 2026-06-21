@@ -28,15 +28,15 @@
 - `clean-code`: use as the general reviewer gate when no more specific refactor skill is needed, or alongside `code-refactoring-refactor-clean` for broad naming, duplication, dead-code, and coupling review.
 
 ## Optional Tooling References
-- OpenAI Developers tooling is not mandatory for every refactor.
-- When a refactor slice depends on AI-assisted API, SDK, framework, or tooling guidance, record the OpenAI Developers docs/tooling reference in the governing artifact before implementation closes.
-- Motion/UI refactors must also follow `frontend-cycle` Motion 12 and OpenAI Developers documentation requirements when motion behavior, syntax, or tooling is in scope.
+- Provider-specific tooling is not mandatory for every refactor.
+- When a refactor slice depends on AI-assisted API, SDK, framework, or tooling guidance, record the OpenAI Developers knowledge/tooling reference in the governing artifact before implementation closes.
+- Motion/UI refactors must also follow `frontend-cycle` Motion 12 and provider-specific documentation requirements when motion behavior, syntax, or tooling is in scope.
 
 ## Change-Type Routing
 | Refactor Type | Activate | Extra Gates |
 | --- | --- | --- |
 | UI, `/app`, `components`, client hooks, route shells | `frontend-cycle` | Browser evidence for browser-critical flows; `responsive-qa` when layout, touch targets, modals, or viewport behavior can change |
-| Motion-driven UI or transition refactor | `frontend-cycle` | Motion 12 current syntax, reduced-motion behavior, and OpenAI Developers tooling reference when docs/tooling guidance is used |
+| Motion-driven UI or transition refactor | `frontend-cycle` | Motion 12 current syntax, reduced-motion behavior, and provider-specific tooling reference when knowledge/tooling guidance is used |
 | Backend API routes, server actions, service modules, repositories without schema changes | Dominant runtime workflow plus `qa` and `reviewer` | Targeted API/unit tests, trust-boundary notes, and `security` when auth/admin/payment/session behavior is touched |
 | DB schema, migrations, persistence adapters, SQL assumptions | Dominant runtime workflow plus DB gate | Tracked migration, `validate:db`, no pending migrations, and migration evidence when `DATABASE_URL` is available |
 | Shared packages, `/packages`, shared `lib`, scripts, tests, e2e harnesses | Dominant runtime workflow plus `reviewer` | Full type-check, no circular dependencies, relevant test harness validation, and docs when traceability changes |
@@ -70,7 +70,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 - For small single-slice refactors, the slice branch can merge directly to the target branch when the artifact says so.
 
 ## Required Artifact Content
-- Refactor work uses the same artifact enforcement path as feature/security/nft work: `docs/features/feature-<slug>.md` and `docs/features/feature-<slug>-implementation.md`.
+- Refactor work uses the same artifact enforcement path as feature/security/nft work: `knowledge/features/feature-<slug>.md` and `knowledge/features/feature-<slug>-implementation.md`.
 - Problem: what structure is hurting maintainability, testability, reliability, or clarity.
 - Current behavior: what must not change.
 - Invariants: user-visible behavior, API contracts, data contracts, security assumptions, and performance boundaries.

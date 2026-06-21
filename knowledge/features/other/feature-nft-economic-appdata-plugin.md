@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Nft Economic Appdata Plugin
-description: Feature Nft Economic Appdata Plugin - migrated from docs/
+description: Feature Nft Economic Appdata Plugin - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-nft-economic-appdata-plugin.md
@@ -24,12 +24,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - `lib/core-candy-machine-admin.ts`
 - `components/admin/core-candy-machine-panel.tsx`
 - `tests/lib/core-candy-machine-admin-validation.test.ts`
-- `docs/architecture.md`
-- `docs/authority-model.md`
-- `docs/state-machine.md`
-- `docs/threat-model.md`
-- `docs/devnet-proof.md`
-- `docs/nft-spec.md`
+- `knowledge/architecture.md`
+- `knowledge/authority-model.md`
+- `knowledge/state-machine.md`
+- `knowledge/threat-model.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/nft-spec.md`
 
 ## Prueba en devnet
 - Wallet administradora: `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`

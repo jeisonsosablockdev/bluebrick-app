@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 07 Limits Risk And Compliance Controls
-description: STORY- 008 07 Limits Risk And Compliance Controls - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-07-limits-risk-and-compliance-controls.md
----
-
 # STORY-008-07-limits-risk-and-compliance-controls
 
 ## Metadata
@@ -43,7 +34,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 ## Existing Infrastructure Reuse (Project)
 - `db/migrations/012_profile_kyc_compliance.sql` (`compliance_audit_events`)
 - `db/migrations/017_authority_lifecycle_registry.sql` (`authority_audit_events` como patrón de auditoría)
-- `docs/purchase-tracing.md` (correlación operativa por flujo)
+- `knowledge/purchase-tracing.md` (correlación operativa por flujo)
 
 ## Proposal
 - Approach summary:

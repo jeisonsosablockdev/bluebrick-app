@@ -59,11 +59,11 @@
 - Architecture decisions no se comprometen sin trade-off table documentada
 
 ## Output Artifacts
-- `docs/features/feature-<slug>.md` (business logic spec)
-- `docs/features/feature-<slug>-implementation.md` (delivery plan with slices)
-- `docs/rfc/rfc-<slug>.md` (when RFC required)
-- `docs/adr/adr-<slug>.md` (architecture decisions)
-- `docs/knowledge/reasoning-plan-<timestamp>.md` (reasoning traces)
+- `knowledge/features/feature-<slug>.md` (business logic spec)
+- `knowledge/features/feature-<slug>-implementation.md` (delivery plan with slices)
+- `knowledge/rfc/rfc-<slug>.md` (when RFC required)
+- `knowledge/adr/adr-<slug>.md` (architecture decisions)
+- `knowledge/reasoning-plan-<timestamp>.md` (reasoning traces)
 - Linear issue updates with slice breakdown
 
 ## Validation Requirements

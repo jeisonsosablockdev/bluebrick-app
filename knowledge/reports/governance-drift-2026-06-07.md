@@ -1,12 +1,3 @@
----
-type: Report
-title: governance-drift-2026-06-07
-description: Governance drift/recent changes report
-tags: [knowledge, reports, governance, drift]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/reports/governance-drift-2026-06-07
----
-
 # Governance Drift Report
 
 Generated: 2026-06-07T05:49:42.156Z

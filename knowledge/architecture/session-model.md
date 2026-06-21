@@ -531,7 +531,7 @@ Last Updated: 2026-06-06
   - `authority_version` monotonic update is enforced on submit to avoid stale concurrent writes.
 
 Implementation guide for request correlation and timeline tracing:
-- `docs/purchase-tracing.md`
+- `knowledge/purchase-tracing.md`
 
 ## BRI-39 Session Boundary Confirmation
 - Home copy and section additions in `/app` are presentation-only changes.

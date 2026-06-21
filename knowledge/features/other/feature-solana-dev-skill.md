@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Solana Dev Skill
-description: Feature Solana Dev Skill - migrated from docs/
+description: Feature Solana Dev Skill - migrated from knowledge/
 tags: [knowledge]
 timestamp: 2026-06-16T15:15:38Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-solana-dev-skill.md

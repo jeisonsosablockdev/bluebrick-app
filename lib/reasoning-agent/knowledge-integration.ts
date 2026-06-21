@@ -38,7 +38,7 @@ export async function storeReasoningPlan(
   issueKey: string = "BRI-177",
   featureSlug: string = "business-logic-reasoner"
 ): Promise<string> {
-  const knowledgeDir = path.join(process.cwd(), "docs", "knowledge", "reasoning-plans");
+  const knowledgeDir = path.join(process.cwd(), "knowledge", "reasoning-plans");
   await mkdir(knowledgeDir, { recursive: true });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -54,7 +54,7 @@ export async function storeReasoningPlan(
     kind: "reasoning-plan",
     promotion_target: "automation",
     scope: "shared",
-    file_path: `docs/knowledge/reasoning-plans/${fileName}`,
+    file_path: `knowledge/reasoning-plans/${fileName}`,
     owner: "reasoning-agent",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -140,7 +140,7 @@ ${result.answer}
 }
 
 export async function listReasoningPlans(): Promise<string[]> {
-  const knowledgeDir = path.join(process.cwd(), "docs", "knowledge", "reasoning-plans");
+  const knowledgeDir = path.join(process.cwd(), "knowledge", "reasoning-plans");
   try {
     const entries = await readdir(knowledgeDir, { withFileTypes: true });
     return entries

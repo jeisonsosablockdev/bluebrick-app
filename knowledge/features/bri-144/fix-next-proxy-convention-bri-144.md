@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Next Proxy Convention BRI- 144
-description: Fix Next Proxy Convention BRI- 144 - migrated from docs/
+description: Fix Next Proxy Convention BRI- 144 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-next-proxy-convention-bri-144.md

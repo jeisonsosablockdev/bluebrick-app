@@ -127,7 +127,7 @@ describe("scripts/linear-status-core", () => {
     const logger = { info: vi.fn() };
 
     const unresolvedResult = await updateLinearIssueStatus({
-      branchName: "docs/readme",
+      branchName: "knowledge/readme",
       stateCommand: "review",
       apiKey: "linear-test-key",
       fetchImpl: vi.fn(),

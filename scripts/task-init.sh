@@ -5,6 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_REF="develop"
 FETCH_REMOTE=1
 ASK_MODE="auto"
+REASONING_AGENT_TASK="${REASONING_AGENT_TASK:-}"
+REASONING_AGENT_DOMAIN="${REASONING_AGENT_DOMAIN:-}"
+REASONING_AGENT_OUTPUT="${REASONING_AGENT_OUTPUT:-both}"
 
 usage() {
   cat <<'USAGE'
@@ -102,13 +105,13 @@ print_hint() {
 
   case "${branch_type}" in
     fix|bugfix|hotfix)
-      echo "- Canonical docs: docs/fixes/fix-${branch_slug}.md and docs/fixes/fix-${branch_slug}-implementation.md"
+      echo "- Canonical docs: knowledge/fixes/fix-${branch_slug}.md and knowledge/fixes/fix-${branch_slug}-implementation.md"
       ;;
     epic)
-      echo "- Canonical docs: docs/features/feature-${branch_slug}.md and the matching RFC story set when the epic is RFC-backed."
+      echo "- Canonical docs: knowledge/features/feature-${branch_slug}.md and the matching RFC story set when the epic is RFC-backed."
       ;;
     feature|security|nft|refactor)
-      echo "- Canonical docs: docs/features/feature-${branch_slug}.md"
+      echo "- Canonical docs: knowledge/features/feature-${branch_slug}.md"
       ;;
   esac
 
@@ -303,7 +306,7 @@ bash "${SCRIPT_DIR}/git-start.sh" "${GIT_START_ARGS[@]}" --base "${GIT_START_BAS
 if [[ "${ASK_MODE}" == "ask" ]]; then
   echo
   echo "Next steps"
-  echo "- If this is fix/bugfix/hotfix work, create docs/fixes/fix-<slug>.md and docs/fixes/fix-<slug>-implementation.md."
-  echo "- If this is feature/security/nft/refactor/epic work, keep docs/features/feature-<slug>.md aligned with the branch and add RFC docs when the epic requires them."
+  echo "- If this is fix/bugfix/hotfix work, create knowledge/fixes/fix-<slug>.md and knowledge/fixes/fix-<slug>-implementation.md."
+  echo "- If this is feature/security/nft/refactor/epic work, keep knowledge/features/feature-<slug>.md aligned with the branch and add RFC docs when the epic requires them."
   echo "- If the work is multi-SPEC, start with the planning SPEC before delivery SPECs and keep them one at a time."
 fi

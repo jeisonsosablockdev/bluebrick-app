@@ -1,12 +1,3 @@
----
-type: RFC
-title: EPIC- README.Template
-description: EPIC- README.Template - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/templates/EPIC-README.template.md
----
-
 # EPIC-<id>-<slug>
 
 ## Metadata

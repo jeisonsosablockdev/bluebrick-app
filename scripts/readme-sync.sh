@@ -70,13 +70,13 @@ collect_scope() {
     fi
 
     printf '| [`%s`](./%s) | %s | %s | %s |\n' "$name" "$rel_path" "$scope" "$last_updated" "$last_commit"
-  done < <(find "$ROOT_DIR/docs" -maxdepth 1 -type f -name '*.md' | sort)
+  done < <(find "$ROOT_DIR/knowledge/architecture" -maxdepth 1 -type f -name '*.md' | sort)
 
   echo
   echo "### Required Docs by Change Type"
-  echo '- Blockchain (/programs): `architecture.md`, `authority-model.md`, `state-machine.md`, `threat-model.md`, `devnet-proof.md`'
-  echo '- Frontend/Auth (/app): `auth-flow.md`, `session-model.md`'
-  echo '- NFT features: `nft-spec.md`'
+  echo '- Blockchain (/programs): `knowledge/architecture/architecture-overview.md`, `knowledge/architecture/authority-model.md`, `knowledge/architecture/state-machine.md`, `knowledge/architecture/threat-model.md`, `knowledge/architecture/devnet-proof.md`'
+  echo '- Frontend/Auth (/app): `knowledge/architecture/auth-flow.md`, `knowledge/architecture/session-model.md`'
+  echo '- NFT features: `knowledge/architecture/nft-spec.md`'
 } > "$TMP_BLOCK"
 
 if grep -q "$START_MARKER" "$README_FILE" && grep -q "$END_MARKER" "$README_FILE"; then

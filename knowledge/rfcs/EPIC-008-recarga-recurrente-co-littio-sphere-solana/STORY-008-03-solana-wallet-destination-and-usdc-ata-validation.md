@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 03 Solana Wallet Destination And Usdc Ata Validation
-description: STORY- 008 03 Solana Wallet Destination And Usdc Ata Validation - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-03-solana-wallet-destination-and-usdc-ata-validation.md
----
-
 # STORY-008-03-solana-wallet-destination-and-usdc-ata-validation
 
 ## Metadata
@@ -26,7 +17,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `blockedBy`: `STORY-008-02`.
   - Validaciones de ownership y consistencia deben ser server-side.
   - Politica devnet-only para pruebas transaccionales de acceptance.
-  - Evidencia final debe registrarse en `docs/devnet-proof.md` con firmas reales y estado on-chain consultable.
+  - Evidencia final debe registrarse en `knowledge/devnet-proof.md` con firmas reales y estado on-chain consultable.
 - Affected paths:
   - `app/api/**` wallet/ata validation
   - `lib/**` utilidades Solana/USDC
@@ -39,8 +30,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 
 ## Existing Infrastructure Reuse (Project)
 - `lib/das-client.ts` (guardrails devnet-only para lecturas blockchain)
-- `docs/devnet-proof.md` (formato oficial de evidencia on-chain del repositorio)
-- `docs/auth-flow.md` (validaciones server-side y no confianza en cliente)
+- `knowledge/devnet-proof.md` (formato oficial de evidencia on-chain del repositorio)
+- `knowledge/auth-flow.md` (validaciones server-side y no confianza en cliente)
 
 ## Proposal
 - Approach summary:
@@ -100,7 +91,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Provision ATA idempotente y reintento seguro.
 - Devnet validation (if applicable):
   - Validar wallet lista + ATA existente en devnet con evidencia real.
-  - Publicar en `docs/devnet-proof.md` la firma, slot, estado `finalized` y enlace explorer por caso validado.
+  - Publicar en `knowledge/devnet-proof.md` la firma, slot, estado `finalized` y enlace explorer por caso validado.
 - Responsive QA (if applicable):
   - Estado wallet listo/no listo visible en bloque de recarga.
 

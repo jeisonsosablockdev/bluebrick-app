@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 003 05 Purchase Traceability And Metrics Backend
-description: STORY- 003 05 Purchase Traceability And Metrics Backend - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-003-nft-store-purchase-flow/STORY-003-05-purchase-traceability-and-metrics-backend.md
----
-
 # STORY-003-05-purchase-traceability-and-metrics-backend
 
 ## Metadata

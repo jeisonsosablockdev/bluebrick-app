@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Nft Authority Lifecycle Rotation Revocation
-description: Feature Nft Authority Lifecycle Rotation Revocation - migrated from docs/
+description: Feature Nft Authority Lifecycle Rotation Revocation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-nft-authority-lifecycle-rotation-revocation.md
@@ -57,7 +57,7 @@ Added tests:
 - Audit operation IDs:
   - `ccedf55f-7f75-4088-8e81-7faaf2220da1`
   - `817d5ef3-10a0-4c87-b1f5-21052a7232b4`
-- Full verification details: `docs/devnet-proof.md`.
+- Full verification details: `knowledge/devnet-proof.md`.
 
 ## Notes
 - This implementation validates and records multisig evidence server-side.

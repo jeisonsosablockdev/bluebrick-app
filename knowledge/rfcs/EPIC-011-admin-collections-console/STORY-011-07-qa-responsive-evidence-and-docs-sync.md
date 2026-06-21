@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 011 07 Qa Responsive Evidence And Docs Sync
-description: STORY- 011 07 Qa Responsive Evidence And Docs Sync - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-011-admin-collections-console/STORY-011-07-qa-responsive-evidence-and-docs-sync.md
----
-
 # STORY-011-07-qa-responsive-evidence-and-docs-sync
 
 ## Metadata
@@ -25,13 +16,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - Constraints:
   - Playwright obligatorio para frontend/auth changes.
   - Responsive QA obligatorio.
-  - Debe actualizar al menos un `docs/features/*.md`.
+  - Debe actualizar al menos un `knowledge/features/*.md`.
   - Si cambia trust boundary admin/content edit, actualizar docs canónicos.
 - Affected paths:
   - `e2e/*`
-  - `docs/features/*`
-  - `docs/auth-flow.md`
-  - `docs/session-model.md` (si aplica)
+  - `knowledge/features/*`
+  - `knowledge/auth-flow.md`
+  - `knowledge/session-model.md` (si aplica)
 
 ## Proposal
 - Approach summary:
@@ -50,7 +41,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
     - 1024px
   - Docs:
     - feature note nueva del epic
-    - `docs/auth-flow.md` si se agregan endpoints admin nuevos
+    - `knowledge/auth-flow.md` si se agregan endpoints admin nuevos
     - `README` y story RFCs actualizados con status/traceability
 - Alternatives considered:
   - Dejar QA/doc como parte implícita de otros stories.

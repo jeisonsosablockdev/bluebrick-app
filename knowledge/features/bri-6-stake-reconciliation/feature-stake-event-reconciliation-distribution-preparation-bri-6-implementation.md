@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Stake Event Reconciliation Distribution Preparation BRI- 6 Implementation
-description: Feature Stake Event Reconciliation Distribution Preparation BRI- 6 Implementation - migrated from docs/
+description: Feature Stake Event Reconciliation Distribution Preparation BRI- 6 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation.md
@@ -15,7 +15,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - Issue padre: `BRI-6`
 - Rama de iniciativa: `initiative/bri-6-stake-event-reconciliation-distribution`
 - Slice actual: `S01 - Spec`
-- Artefacto base: `docs/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md`
+- Artefacto base: `knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md`
 - Este artefacto define el contrato de build, no ejecuta pagos.
 
 ## Objetivo técnico
@@ -336,7 +336,7 @@ Reglas obligatorias:
 - Parent issue: `BRI-6`
 - Initiative branch: `initiative/bri-6-stake-event-reconciliation-distribution`
 - Current slice: `S01 - Spec`
-- Base artifact: `docs/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md`
+- Base artifact: `knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md`
 - This artifact defines the build contract and does not execute payments.
 
 ## Technical Goal

@@ -78,13 +78,13 @@ async function createDocsRepo(): Promise<string> {
 
   await copyScriptIntoRepo(workDir);
 
-  await mkdir(path.join(workDir, "docs", "rfcs", "EPIC-011-admin-collections-console"), {
+  await mkdir(path.join(workDir, "knowledge", "rfcs", "EPIC-011-admin-collections-console"), {
     recursive: true
   });
   await mkdir(path.join(workDir, "lib"), { recursive: true });
 
   await writeFile(
-    path.join(workDir, "docs", "rfcs", "EPIC-011-admin-collections-console", "README.md"),
+    path.join(workDir, "knowledge", "rfcs", "EPIC-011-admin-collections-console", "README.md"),
     [
       "# EPIC-011-admin-collections-console",
       "",
@@ -100,7 +100,7 @@ async function createDocsRepo(): Promise<string> {
   await writeFile(
     path.join(
       workDir,
-      "docs",
+      "knowledge",
       "rfcs",
       "EPIC-011-admin-collections-console",
       "STORY-011-02-admin-collections-read-model.md"
@@ -157,8 +157,8 @@ async function createFeatureBranchRepo(branchName: string): Promise<string> {
   runGit(["init", "-b", "develop"], workDir);
 
   await copyScriptIntoRepo(workDir);
-  await mkdir(path.join(workDir, "docs", "features"), { recursive: true });
-  await mkdir(path.join(workDir, "docs", "fixes"), { recursive: true });
+  await mkdir(path.join(workDir, "knowledge", "features"), { recursive: true });
+  await mkdir(path.join(workDir, "knowledge", "fixes"), { recursive: true });
 
   await writeFile(path.join(workDir, "README.md"), "# Temp Repo\n", "utf8");
 
@@ -180,11 +180,11 @@ async function createAppDocsRepo(): Promise<string> {
 
   await copyScriptIntoRepo(workDir);
   await mkdir(path.join(workDir, "app", "api", "admin", "collections"), { recursive: true });
-  await mkdir(path.join(workDir, "docs"), { recursive: true });
+  await mkdir(path.join(workDir, "knowledge", "architecture"), { recursive: true });
 
   await writeFile(path.join(workDir, "app", "api", "admin", "collections", "route.ts"), "// seed\n", "utf8");
-  await writeFile(path.join(workDir, "docs", "auth-flow.md"), "# Auth Flow\n", "utf8");
-  await writeFile(path.join(workDir, "docs", "session-model.md"), "# Session Model\n", "utf8");
+  await writeFile(path.join(workDir, "knowledge", "architecture", "auth-flow.md"), "# Auth Flow\n", "utf8");
+  await writeFile(path.join(workDir, "knowledge", "architecture", "session-model.md"), "# Session Model\n", "utf8");
 
   runGit(["add", "."], workDir);
   runGit(["commit", "-m", "docs(shared): seed app governance fixtures"], workDir);
@@ -253,7 +253,7 @@ describe("PR governance shell helpers", () => {
     await writeFile(
       path.join(
         repoDir,
-        "docs",
+        "knowledge",
         "rfcs",
         "EPIC-011-admin-collections-console",
         "README.md"
@@ -272,7 +272,7 @@ describe("PR governance shell helpers", () => {
     await writeFile(
       path.join(
         repoDir,
-        "docs",
+        "knowledge",
         "rfcs",
         "EPIC-011-admin-collections-console",
         "STORY-011-02-admin-collections-read-model.md"
@@ -334,7 +334,7 @@ describe("PR governance shell helpers", () => {
     );
 
     await writeFile(
-      path.join(repoDir, "docs", "fixes", "fix-pr-governance-flow-flexibility.md"),
+      path.join(repoDir, "knowledge", "fixes", "fix-pr-governance-flow-flexibility.md"),
       "# Fix Problem\n",
       "utf8"
     );
@@ -346,7 +346,7 @@ describe("PR governance shell helpers", () => {
     await writeFile(
       path.join(
         repoDir,
-        "docs",
+        "knowledge",
         "fixes",
         "fix-pr-governance-flow-flexibility-implementation.md"
       ),
@@ -375,7 +375,7 @@ describe("PR governance shell helpers", () => {
     );
 
     await writeFile(
-      path.join(repoDir, "docs", "features", "feature-pr-governance-flow-flexibility.md"),
+      path.join(repoDir, "knowledge", "features", "feature-pr-governance-flow-flexibility.md"),
       "# Feature Problem\n",
       "utf8"
     );
@@ -387,7 +387,7 @@ describe("PR governance shell helpers", () => {
     await writeFile(
       path.join(
         repoDir,
-        "docs",
+        "knowledge",
         "features",
         "feature-pr-governance-flow-flexibility-implementation.md"
       ),
@@ -397,7 +397,7 @@ describe("PR governance shell helpers", () => {
 
     const output = runBash("bash ./scripts/ci/check-required-docs.sh", repoDir);
 
-    expect(output).toContain("Feature/security/nft/refactor scope detected -> validating feature artifacts");
+    expect(output).toContain("Feature/security/nft/refactor/epic scope detected -> validating feature artifacts");
     expect(output).toContain("Required docs check passed.");
   });
 
@@ -406,7 +406,7 @@ describe("PR governance shell helpers", () => {
 
     await mkdir(path.join(repoDir, "tests", "lib"), { recursive: true });
     await mkdir(path.join(repoDir, ".npm-cache", "_logs"), { recursive: true });
-    await mkdir(path.join(repoDir, "docs"), { recursive: true });
+    await mkdir(path.join(repoDir, "knowledge"), { recursive: true });
 
     await writeFile(
       path.join(repoDir, "tests", "lib", "real-change.test.ts"),
@@ -419,17 +419,17 @@ describe("PR governance shell helpers", () => {
       "debug noise\n",
       "utf8"
     );
-    await writeFile(path.join(repoDir, "docs", "linear-context.md"), "noise\n", "utf8");
-    await mkdir(path.join(repoDir, "docs", "fixes"), { recursive: true });
+    await writeFile(path.join(repoDir, "knowledge", "linear-context.md"), "noise\n", "utf8");
+    await mkdir(path.join(repoDir, "knowledge", "fixes"), { recursive: true });
     await writeFile(
-      path.join(repoDir, "docs", "fixes", "fix-pr-governance-flow-flexibility.md"),
+      path.join(repoDir, "knowledge", "fixes", "fix-pr-governance-flow-flexibility.md"),
       "# Fix Problem\n",
       "utf8"
     );
     await writeFile(
       path.join(
         repoDir,
-        "docs",
+        "knowledge",
         "fixes",
         "fix-pr-governance-flow-flexibility-implementation.md"
       ),
@@ -444,7 +444,7 @@ describe("PR governance shell helpers", () => {
     expect(output).toContain("Suppressed local-noise paths from docs log: 3");
     expect(output).not.toContain(".npm-cache/_logs/debug.log");
     expect(output).not.toContain(".env.vercel");
-    expect(output).not.toContain("docs/linear-context.md");
+    expect(output).not.toContain("knowledge/linear-context.md");
   });
 
   it("passes app doc enforcement when required docs are updated in the working tree", async () => {
@@ -456,12 +456,12 @@ describe("PR governance shell helpers", () => {
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "auth-flow.md"),
+      path.join(repoDir, "knowledge", "architecture", "auth-flow.md"),
       "# Auth Flow\n\n## Admin Collections\nUpdated.\n",
       "utf8"
     );
     await writeFile(
-      path.join(repoDir, "docs", "session-model.md"),
+      path.join(repoDir, "knowledge", "architecture", "session-model.md"),
       "# Session Model\n\n## Admin Collections\nUpdated.\n",
       "utf8"
     );

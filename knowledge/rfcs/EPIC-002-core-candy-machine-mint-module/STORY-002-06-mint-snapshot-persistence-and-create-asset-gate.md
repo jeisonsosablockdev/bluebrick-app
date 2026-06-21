@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 002 06 Mint Snapshot Persistence And Create Asset Gate
-description: STORY- 002 06 Mint Snapshot Persistence And Create Asset Gate - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-06-mint-snapshot-persistence-and-create-asset-gate.md
----
-
 # STORY-002-06-mint-snapshot-persistence-and-create-asset-gate
 
 ## Metadata

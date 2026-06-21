@@ -1,7 +1,7 @@
 ---
 type: Config
 title: README
-description: README - migrated from docs/
+description: README - migrated from knowledge/
 tags: [mapbox]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/mapbox/README.md
@@ -10,7 +10,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/mapbox/R
 # BRIDS Marketplace Mapbox Style
 
 ## Artifact
-- Style JSON: `docs/mapbox/brids-marketplace-decimal-style.json`
+- Style JSON: `knowledge/mapbox/brids-marketplace-decimal-style.json`
 - Intended Mapbox style name: `BRIDS Marketplace Decimal`
 - Runtime env var after publishing: `NEXT_PUBLIC_MAPBOX_STYLE_URL`
 - Safe runtime fallback: `mapbox://styles/mapbox/dark-v11`
@@ -30,7 +30,7 @@ The style JSON handles the base map only. Property pins are injected by the app 
 Use Mapbox Studio when possible:
 1. Open Mapbox Studio.
 2. Create a new style.
-3. Import `docs/mapbox/brids-marketplace-decimal-style.json`.
+3. Import `knowledge/mapbox/brids-marketplace-decimal-style.json`.
 4. Publish the style.
 5. Copy the `mapbox://styles/{username}/{style_id}` URL.
 6. Set `NEXT_PUBLIC_MAPBOX_STYLE_URL` to that URL.
@@ -40,7 +40,7 @@ Use the Styles API only with a private token that has `styles:write`:
 ```bash
 curl -X POST "https://api.mapbox.com/styles/v1/$MAPBOX_USERNAME?access_token=$MAPBOX_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
-  --data @docs/mapbox/brids-marketplace-decimal-style.json
+  --data @knowledge/mapbox/brids-marketplace-decimal-style.json
 ```
 
 Do not commit `MAPBOX_ACCESS_TOKEN`. The app only needs the public `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to render the published style.

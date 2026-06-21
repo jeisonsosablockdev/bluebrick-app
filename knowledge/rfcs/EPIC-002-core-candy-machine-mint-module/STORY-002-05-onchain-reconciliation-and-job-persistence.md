@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 002 05 Onchain Reconciliation And Job Persistence
-description: STORY- 002 05 Onchain Reconciliation And Job Persistence - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-05-onchain-reconciliation-and-job-persistence.md
----
-
 # STORY-002-05-onchain-reconciliation-and-job-persistence
 
 ## Metadata
@@ -28,8 +19,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Sin mocks/simulación.
 - Affected paths:
   - `/app` (persistencia job + endpoint/acción de reconciliación)
-  - `docs/state-machine.md`
-  - `docs/devnet-proof.md`
+  - `knowledge/state-machine.md`
+  - `knowledge/devnet-proof.md`
 
 ## Proposal
 - Approach summary:

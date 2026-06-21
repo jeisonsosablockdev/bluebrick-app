@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Wallet Modal Clean Code BRI- 160
-description: Feature Shared Wallet Modal Clean Code BRI- 160 - migrated from docs/
+description: Feature Shared Wallet Modal Clean Code BRI- 160 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-wallet-modal-clean-code-bri-160.md
@@ -75,5 +75,5 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - `npm run validate`
 
 ## Notes
-- This is a `refactor/*` initiative and therefore uses `docs/features/*` artifacts.
+- This is a `refactor/*` initiative and therefore uses `knowledge/features/*` artifacts.
 - The screenshot-level UI is intentionally changing in one focused way: remove the extra wallet CTA and make `Mail` / `Wallet` direct entry actions.

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Business Logic Reasoner BRI- 177
-description: Feature Business Logic Reasoner BRI- 177 - migrated from docs/
+description: Feature Business Logic Reasoner BRI- 177 - migrated from knowledge/
 tags: [knowledge]
 timestamp: 2026-06-16T15:15:38Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-business-logic-reasoner-bri-177.md
@@ -26,7 +26,7 @@ Developers rely on ad-hoc Chain-of-Thought ("think step by step") which:
 
 ## Why It Matters
 
-1. **Governance compliance**: `docs/governance/documentation-policy.md` requires feature/fix artifact pairs before implementation — but artifacts are low quality without deep reasoning
+1. **Governance compliance**: `knowledge/governance/documentation-policy.md` requires feature/fix artifact pairs before implementation — but artifacts are low quality without deep reasoning
 2. **Velocity**: Teams spend hours debugging logic gaps that structured reasoning would catch early
 3. **Quality**: Business logic complexity (Solana/NFT/compliance) needs **discovered reasoning structure**, not free-form text
 4. **Reusability**: Reasoning patterns (e.g., "validate PDA seeds → check authority → build instruction") should be composable across tasks
@@ -72,7 +72,7 @@ A **Universal Self-Discover Reasoning Agent** (implementing Zhou et al., Google 
 
 ### Out of Scope (Future)
 - Auto-commit without human approval
-- Full code generation (only reasoning → docs/designs)
+- Full code generation (only reasoning → knowledge/designs)
 - Multi-language support
 
 ## Open Questions (Resolved via `explain-like-socrates`)
@@ -81,7 +81,7 @@ A **Universal Self-Discover Reasoning Agent** (implementing Zhou et al., Google 
 2. **LLM Provider**: ✅ **Qwen 3.7 Plus via OpenRouter** — reasoning model with thinking tokens
 3. **Test Strategy**: ✅ **Solana MCP + solana-dev skill** — devnet proofs validate reasoning outputs
 4. **Human Review Iterations**: ✅ **No limit** — iterate until reasoning trace is sound
-5. **Scope Boundary**: ✅ **Reasoning agent** — produces docs/designs; code gen separate
+5. **Scope Boundary**: ✅ **Reasoning agent** — produces knowledge/designs; code gen separate
 6. **Invocation Model**: ✅ **CLI tool + library** — usable standalone or in workflows
 
 ## Success Criteria

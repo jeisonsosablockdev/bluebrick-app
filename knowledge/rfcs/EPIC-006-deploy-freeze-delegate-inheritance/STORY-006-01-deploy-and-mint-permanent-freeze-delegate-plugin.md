@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 006 01 Deploy And Mint Permanent Freeze Delegate Plugin
-description: STORY- 006 01 Deploy And Mint Permanent Freeze Delegate Plugin - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin.md
----
-
 # STORY-006-01-deploy-and-mint-permanent-freeze-delegate-plugin
 
 ## Metadata
@@ -50,7 +41,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 
 ## Devnet Evidence
 - Referencia de prueba compartida con STORY-006-02 (el deploy fija ambos delegados permanentes):
-  - `docs/features/feature-nft-permanent-transfer-delegate.md`
+  - `knowledge/features/feature-nft-permanent-transfer-delegate.md`
   - Transaction: `i5JG91SZbgU9YBdJMpT3y5oDhWFPVaJhseg71bsDnGM81bXk9WVCGNwyafnbCX9tgpFdiQems4XLNZLipjyMgeJ`
 
 ## Traceability

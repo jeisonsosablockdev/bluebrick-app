@@ -1,9 +1,9 @@
 # Blockchain Policy
 
 ## Canonical Sources
-- `docs/governance/security-quality-policy.md`
-- `docs/governance/nft-policy.md`
-- `docs/governance/documentation-policy.md`
+- `knowledge/governance/security-quality-policy.md`
+- `knowledge/governance/nft-policy.md`
+- `knowledge/governance/documentation-policy.md`
 
 ## Apply When
 - `/programs`, Solana runtime, on-chain admin flows, devnet proof, or NFT on-chain behavior changes
@@ -23,4 +23,4 @@
 ## Required Evidence
 - Real transaction hash or hashes
 - Account or state readback
-- Matching docs updates, including `docs/devnet-proof.md` when required
+- Matching docs updates, including `knowledge/devnet-proof.md` when required

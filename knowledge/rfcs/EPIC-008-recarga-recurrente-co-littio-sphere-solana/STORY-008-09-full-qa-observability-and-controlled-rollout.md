@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 09 Full Qa Observability And Controlled Rollout
-description: STORY- 008 09 Full Qa Observability And Controlled Rollout - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-09-full-qa-observability-and-controlled-rollout.md
----
-
 # STORY-008-09-full-qa-observability-and-controlled-rollout
 
 ## Metadata
@@ -26,12 +17,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `blockedBy`: `STORY-008-08`.
   - Debe cubrir flujo principal, fallback y estados de error.
   - Requiere plan de rollout por cohortes y KPIs iniciales.
-  - Para flujos con impacto on-chain, la evidencia final en devnet es obligatoria en `docs/devnet-proof.md`.
+  - Para flujos con impacto on-chain, la evidencia final en devnet es obligatoria en `knowledge/devnet-proof.md`.
 - Affected paths:
   - `e2e/**` playwright/synpress
   - `app/**` instrumentacion de eventos
   - `lib/**` observabilidad/metrics
-  - `docs/features/*.md`, `docs/devnet-proof.md`
+  - `knowledge/features/*.md`, `knowledge/devnet-proof.md`
 
 ## Sphere References (Story Scope)
 - `/platform/reference/webhooks/manage-webhook`
@@ -41,10 +32,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - `/platform/transfer-lifecycle`
 
 ## Existing Infrastructure Reuse (Project)
-- `docs/purchase-tracing.md` (checklist de trazabilidad y soporte)
+- `knowledge/purchase-tracing.md` (checklist de trazabilidad y soporte)
 - `app/api/admin/monitoring/events/route.ts` (patrón de consulta operativa de eventos)
 - `app/api/admin/monitoring/events/[eventId]/reprocess/route.ts` (patrón de reproceso controlado)
-- `docs/devnet-proof.md` (formato de evidencia transaccional)
+- `knowledge/devnet-proof.md` (formato de evidencia transaccional)
 
 ## Proposal
 - Approach summary:
@@ -106,7 +97,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Pipeline completo de eventos operativos y dashboards.
 - Devnet validation (if applicable):
   - Evidencia de flujo end-to-end en devnet antes de cohortes productivas.
-  - Registrar firmas finalizadas y verificaciones de estado en `docs/devnet-proof.md`.
+  - Registrar firmas finalizadas y verificaciones de estado en `knowledge/devnet-proof.md`.
 - Responsive QA (if applicable):
   - Validar tab de recarga en 320/375/768/1024 con checklist en PR.
 

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Image Storage Blob Pinata
-description: Feature App Image Storage Blob Pinata - migrated from docs/
+description: Feature App Image Storage Blob Pinata - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-image-storage-blob-pinata.md

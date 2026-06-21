@@ -1,12 +1,3 @@
----
-type: RFC
-title: README
-description: README - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/README.md
----
-
 # EPIC-008-recarga-recurrente-co-littio-sphere-solana
 
 ## Metadata
@@ -37,7 +28,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - [ ] Fallback a Transfers API funciona con la misma UX.
 - [ ] Existe un audit trail inmutable y completo de todas las transacciones, estados y decisiones de riesgo/compliance.
 - [ ] Existe matriz unificada de errores de usuario (copy + codigo + accion recomendada) para todo el journey de recarga.
-- [ ] Las historias con alcance on-chain (`STORY-008-03`, `STORY-008-06`, `STORY-008-09`) incluyen evidencia verificable en `docs/devnet-proof.md`.
+- [ ] Las historias con alcance on-chain (`STORY-008-03`, `STORY-008-06`, `STORY-008-09`) incluyen evidencia verificable en `knowledge/devnet-proof.md`.
 - [ ] QA integral, observabilidad y rollout por cohortes quedan documentados.
 
 ## Architecture Baseline
@@ -84,8 +75,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `db/migrations/017_authority_lifecycle_registry.sql`
 - Observabilidad y trazabilidad existentes:
   - `lib/purchase-flow-trace.ts`
-  - `docs/purchase-tracing.md`
-  - `docs/devnet-proof.md`
+  - `knowledge/purchase-tracing.md`
+  - `knowledge/devnet-proof.md`
 
 ## Sphere Resource Matrix (Story-by-Story)
 | Story | Recursos Sphere prioritarios |

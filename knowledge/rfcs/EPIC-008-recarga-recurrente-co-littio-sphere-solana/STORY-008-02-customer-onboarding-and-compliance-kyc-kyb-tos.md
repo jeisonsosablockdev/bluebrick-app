@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 02 Customer Onboarding And Compliance Kyc Kyb Tos
-description: STORY- 008 02 Customer Onboarding And Compliance Kyc Kyb Tos - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-02-customer-onboarding-and-compliance-kyc-kyb-tos.md
----
-
 # STORY-008-02-customer-onboarding-and-compliance-kyc-kyb-tos
 
 ## Metadata
@@ -31,7 +22,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `app/api/**` onboarding/compliance
   - `lib/**` integracion Sphere customers
   - `app/**` estado de verificacion en recarga
-  - `docs/auth-flow.md`, `docs/session-model.md` (si cambia modelo)
+  - `knowledge/auth-flow.md`, `knowledge/session-model.md` (si cambia modelo)
 
 ## Sphere References (Story Scope)
 - `/platform/customers`
@@ -45,7 +36,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 ## Existing Infrastructure Reuse (Project)
 - `app/api/webhooks/stripe/identity/route.ts` (patron de webhook compliance + validacion firma)
 - `db/migrations/012_profile_kyc_compliance.sql` (`kyc_webhook_events`, `compliance_audit_events`)
-- `docs/auth-flow.md` (modelo actual de onboarding/compliance server-side)
+- `knowledge/auth-flow.md` (modelo actual de onboarding/compliance server-side)
 
 ## Proposal
 - Approach summary:

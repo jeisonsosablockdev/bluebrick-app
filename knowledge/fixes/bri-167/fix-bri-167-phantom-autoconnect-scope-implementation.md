@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix BRI- 167 Phantom Autoconnect Scope Implementation
-description: Fix BRI- 167 Phantom Autoconnect Scope Implementation - migrated from docs/
+description: Fix BRI- 167 Phantom Autoconnect Scope Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md
@@ -13,7 +13,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fi
 - Implemented locally across S31-S36.
 - Branch: `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec`.
 - Linear issue key: `BRI-167`.
-- Problem artifact: `docs/fixes/fix-bri-167-phantom-autoconnect-scope.md`.
+- Problem artifact: `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md`.
 
 ## Objective
 Limit Phantom wallet auto-connect to `/admin/assets/new`, preserving BRI-165 admin deploy/mint signer recovery while restoring explicit wallet consent on public and account-entry routes.
@@ -29,7 +29,7 @@ Limit Phantom wallet auto-connect to `/admin/assets/new`, preserving BRI-165 adm
 | S33 | `fix/app-login-modal-issue-bri-167-s33-wallet-selection-intent` | Phantom selection intent boundary | `WalletModal` mount effect and explicit wallet action path | modal tests for no mount selection and explicit select/connect |
 | S34 | `fix/app-login-modal-issue-bri-167-s34-admin-reconnect-regression` | Preserve BRI-165 admin recovery | admin asset route/modal reconnect behavior | admin reconnect regression tests, Synpress or browser evidence if feasible |
 | S35 | `fix/app-login-modal-issue-bri-167-s35-cross-context-loop-qa` | Focus/visibility/storage loop guard | auth sync/focus revalidation behavior | targeted tests or browser proof for no reconnect loop on public routes |
-| S36 | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Docs, QA, clean-code closeout | `docs/auth-flow.md`, `docs/session-model.md`, final validation | Playwright, Synpress as applicable, `npm run validate`, clean-code review |
+| S36 | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Docs, QA, clean-code closeout | `knowledge/auth-flow.md`, `knowledge/session-model.md`, final validation | Playwright, Synpress as applicable, `npm run validate`, clean-code review |
 
 All delivery slices were implemented in the active branch to keep the bugfix atomic, while preserving the slice ownership boundaries above for review.
 
@@ -49,8 +49,8 @@ All delivery slices were implemented in the active branch to keep the bugfix ato
 
 ## Documentation Plan
 After implementation, update:
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 - parent BRI-167 artifacts if slice status changes
 
 The docs must explicitly state:

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared HyBRI-d Auth Clean Code BRI- 159 Implementation
-description: Feature Shared HyBRI-d Auth Clean Code BRI- 159 Implementation - migrated from docs/
+description: Feature Shared HyBRI-d Auth Clean Code BRI- 159 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md
@@ -13,9 +13,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 
 - Solution artifact
 - Depends on:
-  - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
-  - `docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md`
-  - `docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md`
+  - `knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
+  - `knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md`
+  - `knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md`
 
 ## Goal
 

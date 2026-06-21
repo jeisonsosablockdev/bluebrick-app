@@ -1,12 +1,3 @@
----
-type: RFC
-title: README
-description: README - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/README.md
----
-
 # EPIC-005-full-migration-from-solana-web3-js-to-solana-kit
 
 ## Metadata
@@ -36,7 +27,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - [x] Criterio final de cierre definido: cero referencias directas a `@solana/web3.js` en codigo de producto.
 - [x] Gates de validacion y regresion establecidos para ejecucion de historias (`validate`, unit/integration, Playwright, Synpress, devnet).
 - [x] Existe barrera automatica para prevenir nueva deuda: lint rule para bloquear nuevas importaciones directas de `@solana/web3.js`.
-- [x] Existe recetario operativo de migracion en `docs/guides/solana-kit-migration-recipes.md`.
+- [x] Existe recetario operativo de migracion en `knowledge/guides/solana-kit-migration-recipes.md`.
 
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
@@ -81,7 +72,7 @@ Referencias directas detectadas en codigo de trabajo (`app/lib/components/tests/
 | 2026-04-02 | STORY-005-04 | Migracion de pipelines transaccionales aprobada con rollout por flujo critico | jaymusicmachine | `STORY-005-04-transaction-pipelines-purchase-and-admin-migration.md` |
 | 2026-04-02 | STORY-005-05 | Cierre final aprobado con criterio de cero referencias directas y remocion de dependencia | jaymusicmachine | `STORY-005-05-cleanup-dependency-removal-and-final-regression.md` |
 | 2026-04-02 | EPIC-005 | Se agrega hardening automatico por ESLint para bloquear nuevas importaciones directas de `@solana/web3.js` fuera del allowlist legacy | jaymusicmachine | `README.md` |
-| 2026-04-02 | EPIC-005 | Se agrega recetario de migracion en `docs/guides/solana-kit-migration-recipes.md` para estandarizar patrones de implementacion | jaymusicmachine | `README.md` |
+| 2026-04-02 | EPIC-005 | Se agrega recetario de migracion en `knowledge/guides/solana-kit-migration-recipes.md` para estandarizar patrones de implementacion | jaymusicmachine | `README.md` |
 
 ## Risks and Dependencies
 - Risks:

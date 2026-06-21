@@ -2,6 +2,8 @@ version = 1
 name = "solana"
 description = "Solana runtime and devnet execution specialist."
 preferred_model = "gpt-5.5"
+provider_lock = false
+runner_compatible = ["codex", "opencode", "nemotron", "chatgpt"]
 reasoning_effort = "high"
 parallel_safe = true
 
@@ -16,14 +18,14 @@ owns_paths = [
   "programs/**",
   "lib/solana*",
   "scripts/devnet*",
-  "docs/devnet-proof.md",
+  "knowledge/devnet-proof.md",
 ]
 
 reads = [
   ".codex/policies/blockchain-policy.md",
   ".codex/policies/security-policy.md",
-  "docs/governance/nft-policy.md",
-  "docs/governance/security-quality-policy.md",
+  "knowledge/governance/nft-policy.md",
+  "knowledge/governance/security-quality-policy.md",
   ".mcp.json",
   ".codex/config.toml",
 ]

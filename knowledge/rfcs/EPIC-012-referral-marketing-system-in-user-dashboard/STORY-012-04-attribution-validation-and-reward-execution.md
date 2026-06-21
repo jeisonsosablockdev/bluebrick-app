@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 012 04 Attribution Validation And Reward Execution
-description: STORY- 012 04 Attribution Validation And Reward Execution - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-012-referral-marketing-system-in-user-dashboard/STORY-012-04-attribution-validation-and-reward-execution.md
----
-
 # STORY-012-04-attribution-validation-and-reward-execution
 
 ## Metadata

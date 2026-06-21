@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix App Marketplace Detail Modal Scroll BRI- 164
-description: Fix App Marketplace Detail Modal Scroll BRI- 164 - migrated from docs/
+description: Fix App Marketplace Detail Modal Scroll BRI- 164 - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-detail-modal-scroll-bri-164.md

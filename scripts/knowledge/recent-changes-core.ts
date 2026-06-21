@@ -8,7 +8,7 @@ export type ChangeSummary = {
 export function classifyChangedFile(filePath: string): ChangeSummary {
   if (
     filePath === "AGENTS.md" ||
-    filePath.startsWith("docs/governance/") ||
+    filePath.startsWith("knowledge/governance/") ||
     filePath.startsWith("scripts/ci/") ||
     filePath === ".github/workflows/pr-governance-develop.yml"
   ) {
@@ -25,14 +25,14 @@ export function classifyChangedFile(filePath: string): ChangeSummary {
     };
   }
 
-  if (filePath.startsWith("docs/guides/") || filePath.startsWith("docs/features/")) {
+  if (filePath.startsWith("knowledge/guides/") || filePath.startsWith("knowledge/features/")) {
     return {
       bucket: "guide",
       reason: "Touches reusable guidance or delivery evidence."
     };
   }
 
-  if (filePath.startsWith("docs/")) {
+  if (filePath.startsWith("knowledge/")) {
     return {
       bucket: "docs",
       reason: "Touches repository documentation."

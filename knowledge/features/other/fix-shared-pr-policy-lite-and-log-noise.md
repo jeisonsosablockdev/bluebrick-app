@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix Shared Pr Policy Lite And Log Noise
-description: Fix Shared Pr Policy Lite And Log Noise - migrated from docs/
+description: Fix Shared Pr Policy Lite And Log Noise - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-shared-pr-policy-lite-and-log-noise.md
@@ -25,7 +25,7 @@ Make the PR policy surface clearer on newly opened pull requests and suppress no
   - `tests/lib/pr-governance-workflow.test.ts`
   - `tests/lib/pr-governance-shell.test.ts`
 - Updated operator guidance in:
-  - `docs/guides/gitflow-pr-structure.md`
+  - `knowledge/guides/gitflow-pr-structure.md`
 
 ## Why
 - A `skipped` PR policy check on `opened` was technically safe but ambiguous enough to force extra human verification.

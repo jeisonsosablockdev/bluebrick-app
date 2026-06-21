@@ -11,16 +11,16 @@ function read(relativePath: string): string {
 
 describe("workflow evals", () => {
   it("keeps the solution artifact decision-complete and anti-improvisation oriented", () => {
-    const source = read("docs/fixes/fix-agents-orchestation-implementation.md");
+    const source = read("knowledge/fixes/fix-agents-orchestation-implementation.md");
 
     expect(source).toContain("decision-complete");
-    expect(source).toContainclude("si falta una decisión material, no se implementa todavía");
+    expect(source).toContain("si falta una decisión material, no se implementa todavía");
     expect(source).toContain("clarification-required scenarios");
     expect(source).toContain("following the letter, but not the spirit");
   });
 
   it("keeps the problem artifact explicit about spirit drift and halt-and-ask gaps", () => {
-    const source = read("docs/fixes/fix-agents-orchestation.md");
+    const source = read("knowledge/fixes/fix-agents-orchestation.md");
 
     expect(source).toContain("following the letter, but not the spirit");
     expect(source).toContain("detenerse y preguntar");
@@ -72,7 +72,7 @@ describe("workflow evals", () => {
     const docs = read(".codex/agents/docs.toml");
     const docsPolicy = read(".codex/policies/docs-policy.md");
     const refactorCycle = read(".codex/workflows/refactor-cycle.md");
-    const architectureGuide = read("docs/guides/codex-orchestration-architecture.md");
+    const architectureGuide = read("knowledge/guides/codex-orchestration-architecture.md");
 
     expect(agents).toContain("clean-code design contract");
     expect(planner).toContain("require every delivery slice to define a clean-code design contract");
@@ -87,8 +87,8 @@ describe("workflow evals", () => {
     const planner = read(".codex/agents/planner.toml");
     const docs = read(".codex/agents/docs.toml");
     const docsPolicy = read(".codex/policies/docs-policy.md");
-    const documentationPolicy = read("docs/governance/documentation-policy.md");
-    const gitPolicy = read("docs/governance/git-monorepo-policy.md");
+    const documentationPolicy = read("knowledge/governance/documentation-policy.md");
+    const gitPolicy = read("knowledge/governance/git-monorepo-policy.md");
 
     expect(agents).toContain("explain-like-socrates");
     expect(planner).toContain("explain-like-socrates");
@@ -102,7 +102,7 @@ describe("workflow evals", () => {
     const agents = read("AGENTS.md");
     const planner = read(".codex/agents/planner.toml");
     const reviewer = read(".codex/agents/reviewer.toml");
-    const gitPolicy = read("docs/governance/git-monorepo-policy.md");
+    const gitPolicy = read("knowledge/governance/git-monorepo-policy.md");
     const workflow = read(".github/workflows/pr-governance-develop.yml");
     const prTemplate = read(".github/pull_request_template.md");
 

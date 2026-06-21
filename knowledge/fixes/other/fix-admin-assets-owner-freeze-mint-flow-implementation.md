@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Admin Assets Owner Freeze Mint Flow Implementation
-description: Fix Admin Assets Owner Freeze Mint Flow Implementation - migrated from docs/
+description: Fix Admin Assets Owner Freeze Mint Flow Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md
@@ -77,8 +77,8 @@ Responsabilidad:
 
 Archivos esperados:
 
-- `docs/fixes/fix-admin-assets-owner-freeze-mint-flow.md`
-- `docs/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md`
+- `knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md`
+- `knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md`
 
 Gates:
 
@@ -751,8 +751,8 @@ Responsibility:
 
 Expected files:
 
-- `docs/fixes/fix-admin-assets-owner-freeze-mint-flow.md`
-- `docs/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md`
+- `knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md`
+- `knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md`
 
 Gates:
 

@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Wallet Modal Clean Code BRI- 160 Implementation
-description: Feature Shared Wallet Modal Clean Code BRI- 160 Implementation - migrated from docs/
+description: Feature Shared Wallet Modal Clean Code BRI- 160 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md
@@ -12,9 +12,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 ## Status
 - Solution artifact
 - Depends on:
-  - `docs/features/feature-shared-wallet-modal-clean-code-bri-160.md`
-  - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
-  - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md`
+  - `knowledge/features/feature-shared-wallet-modal-clean-code-bri-160.md`
+  - `knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
+  - `knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md`
 
 ## Goal
 Restructure `components/WalletModal.tsx` into smaller, more maintainable units and simplify the auth-entry UI so `Mail` and `Wallet` directly start their flows.

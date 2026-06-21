@@ -93,7 +93,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
-            const policyPath = "docs/governance/pr-policy-source-of-truth.json";
+            const policyPath = "knowledge/governance/pr-policy-source-of-truth.json";
             const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
             const { data: pr } = await github.rest.pulls.get({
               owner,

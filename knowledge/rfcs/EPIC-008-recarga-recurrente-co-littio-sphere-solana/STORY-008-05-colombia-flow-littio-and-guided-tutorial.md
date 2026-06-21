@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 05 Colombia Flow Littio And Guided Tutorial
-description: STORY- 008 05 Colombia Flow Littio And Guided Tutorial - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-05-colombia-flow-littio-and-guided-tutorial.md
----
-
 # STORY-008-05-colombia-flow-littio-and-guided-tutorial
 
 ## Metadata
@@ -29,7 +20,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Debe aplicar matriz unificada de errores definida en `STORY-008-01`.
 - Affected paths:
   - `app/**` bloques de instrucciones/tutorial
-  - `docs/features/*.md`
+  - `knowledge/features/*.md`
 
 ## Sphere References (Story Scope)
 - `/platform/onramper-accounts`
@@ -38,9 +29,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - `/platform/transfer-lifecycle`
 
 ## Existing Infrastructure Reuse (Project)
-- `docs/rfcs/EPIC-003-nft-store-purchase-flow/STORY-003-01-basic-nft-purchase.md` (estandar de contrato de errores UX)
-- `docs/purchase-tracing.md` (flujo de soporte con trace id)
-- `docs/features/*.md` (plantillas de feature-note para cambios iterativos)
+- `knowledge/rfcs/EPIC-003-nft-store-purchase-flow/STORY-003-01-basic-nft-purchase.md` (estandar de contrato de errores UX)
+- `knowledge/purchase-tracing.md` (flujo de soporte con trace id)
+- `knowledge/features/*.md` (plantillas de feature-note para cambios iterativos)
 
 ## Proposal
 - Approach summary:

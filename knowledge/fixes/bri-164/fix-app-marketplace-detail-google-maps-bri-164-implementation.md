@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix App Marketplace Detail Google Maps BRI- 164 Implementation
-description: Fix App Marketplace Detail Google Maps BRI- 164 Implementation - migrated from docs/
+description: Fix App Marketplace Detail Google Maps BRI- 164 Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md
@@ -11,7 +11,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fi
 
 ## Status
 - Implementation slice
-- Depends on: `docs/fixes/fix-app-marketplace-detail-google-maps-bri-164.md`
+- Depends on: `knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md`
 - Branch: `fix/app-marketplace-detail-google-maps-bri-164-s08-detail-map`
 
 ## Goal
@@ -35,10 +35,10 @@ Make marketplace property detail pages show the Google Maps preview for the prop
 - Add route/API coverage only if the creation payload path needs a new contract assertion.
 
 ## Files Expected To Change
-- `docs/fixes/fix-app-marketplace-detail-google-maps-bri-164.md`
-- `docs/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md`
-- `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
-- `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md`
+- `knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md`
+- `knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md`
+- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md`
 - `lib/property-service.ts`
 - `lib/property-marketplace-server.ts`
 - `lib/admin/marketplace-entry-location-columns.ts`

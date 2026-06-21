@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 06 State Orchestration And Transfer Polling
-description: STORY- 008 06 State Orchestration And Transfer Polling - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-06-state-orchestration-and-transfer-polling.md
----
-
 # STORY-008-06-state-orchestration-and-transfer-polling
 
 ## Metadata
@@ -50,8 +41,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - `app/api/webhooks/helius/purchase/route.ts` (ingestión webhook + deduplicación)
 - `db/migrations/011_purchase_webhook_events.sql` (modelo de evento inmutable y idempotencia por fingerprint/event_id)
 - `lib/purchase-flow-trace.ts` (correlación de flujo y trazabilidad)
-- `docs/purchase-tracing.md` (runbook operativo de investigación por trace id)
-- `docs/devnet-proof.md` (evidencia blockchain final para estados terminales)
+- `knowledge/purchase-tracing.md` (runbook operativo de investigación por trace id)
+- `knowledge/devnet-proof.md` (evidencia blockchain final para estados terminales)
 
 ## Proposal
 - Approach summary:
@@ -130,7 +121,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Prueba de paridad de proyección al cambiar `source_type` de `polling` a `webhook` con mismo payload lógico.
 - Devnet validation (if applicable):
   - Evidencia real de recepcion USDC y cambio de estado final.
-  - Registro en `docs/devnet-proof.md` de firmas on-chain usadas para confirmar estados terminales.
+  - Registro en `knowledge/devnet-proof.md` de firmas on-chain usadas para confirmar estados terminales.
 - Responsive QA (if applicable):
   - Etiquetas de estado y timeline legibles en mobile/desktop.
 

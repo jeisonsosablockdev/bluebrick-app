@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Business Logic Reasoner BRI- 177 Implementation
-description: Feature Business Logic Reasoner BRI- 177 Implementation - migrated from docs/
+description: Feature Business Logic Reasoner BRI- 177 Implementation - migrated from knowledge/
 tags: [knowledge]
 timestamp: 2026-06-16T15:15:38Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-business-logic-reasoner-bri-177-implementation.md
@@ -28,7 +28,7 @@ Each stage is a structured-output LLM call. The agent **designs its reasoning st
 | 2 | Output Format | Structured reasoning trace + final answer (Markdown) | Trace inspectable; answer reusable |
 | 3 | LLM Provider | Qwen 3.7 Plus via **OpenRouter** | Multi-provider gateway; fallback support |
 | 4 | Human-in-the-loop | Review reasoning trace → Approve / Request Changes → Iterate → Wait Approval (**no iteration limit**) | Mandatory per governance; no auto-commit |
-| 5 | Scope | **Reasoning agent** — produces docs/designs, **Mermaid/PlantUML diagrams**, algorithms, threat models; code gen separate | Clear boundary |
+| 5 | Scope | **Reasoning agent** — produces knowledge/designs, **Mermaid/PlantUML diagrams**, algorithms, threat models; code gen separate | Clear boundary |
 | 6 | Test Strategy | **Solana MCP + solana-dev skill** for validation | Real devnet proofs validate reasoning outputs |
 | 6 | Invocation Model | **CLI tool + library** — `reasoning-agent "task"` or `import { reason } from 'reasoning-agent'` | Usable standalone or in workflows |
 

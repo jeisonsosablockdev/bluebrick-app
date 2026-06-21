@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation
-description: Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation - migrated from docs/
+description: Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md
@@ -17,7 +17,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - Rama de integracion: `discovery-brief-anchor-notary-and-freeze-control-bri-5`
 - Slice actual: `discovery-brief-anchor-notary-and-freeze-control-bri-5-s01-documentation`
 - Depende de:
-  - `docs/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md`
+  - `knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md`
   - `lib/core-candy-machine-admin.ts`
   - `app/protected/stake/page.tsx`
   - `components/dashboard/stake-module.tsx`
@@ -382,7 +382,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - Integration branch: `discovery-brief-anchor-notary-and-freeze-control-bri-5`
 - Current slice: `discovery-brief-anchor-notary-and-freeze-control-bri-5-s01-documentation`
 - Depends on:
-  - `docs/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md`
+  - `knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md`
   - `lib/core-candy-machine-admin.ts`
   - `app/protected/stake/page.tsx`
   - `components/dashboard/stake-module.tsx`

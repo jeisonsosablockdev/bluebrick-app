@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Solana Dev Skill Implementation
-description: Feature Solana Dev Skill Implementation - migrated from docs/
+description: Feature Solana Dev Skill Implementation - migrated from knowledge/
 tags: [knowledge]
 timestamp: 2026-06-16T15:15:38Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-solana-dev-skill-implementation.md
@@ -38,8 +38,8 @@ git commit -m "feature(shared): add solana-dev skill from solana-foundation"
 ```
 
 ### 4. Create Governance Artifacts
-- `docs/features/feature-solana-dev-skill.md` (problem statement)
-- `docs/features/feature-solana-dev-skill-implementation.md` (this file)
+- `knowledge/features/feature-solana-dev-skill.md` (problem statement)
+- `knowledge/features/feature-solana-dev-skill-implementation.md` (this file)
 
 ## Validation
 

@@ -1,12 +1,3 @@
----
-type: Guide
-title: Linear Mcp BRI-dge
-description: Linear Mcp BRI-dge - migrated from docs/
-tags: [guides]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/linear-mcp-bridge.md
----
-
 # Linear MCP Bridge
 
 This repository now includes a local MCP bridge for Linear so Codex and other MCP-capable tools can talk to Linear using the same BRIDS workflow rules that already govern branch naming, slice planning, and issue-state transitions.

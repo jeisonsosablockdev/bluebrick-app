@@ -49,7 +49,7 @@ This created friction where developers had to create full documentation artifact
 ### Code Changes
 - `scripts/ci/validate-doc-governance.sh`: Added tier detection
 - `scripts/ci/pr-metadata-lint.sh`: Reduced log verbosity
-- `docs/governance/pr-policy-source-of-truth.json`: Added size thresholds
+- `knowledge/governance/pr-policy-source-of-truth.json`: Added size thresholds
 
 ## Verification
 - Small changes (typos, config) pass with minimal requirements

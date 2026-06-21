@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Agents Orchestation
-description: Fix Agents Orchestation - migrated from docs/
+description: Fix Agents Orchestation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-agents-orchestation.md
@@ -28,7 +28,7 @@ No define todavía la solución completa ni habilita implementación. Su funció
 
 La solución formal vive aparte en:
 
-- `docs/fixes/fix-agents-orchestation-implementation.md`
+- `knowledge/fixes/fix-agents-orchestation-implementation.md`
 
 ## Problem Statement
 
@@ -89,7 +89,7 @@ Eso significa:
 Los gaps actuales más importantes son estos:
 
 1. Los artefactos existen, pero todavía no gobiernan el trabajo.
-2. `docs/fixes/*.md` no está enforced al mismo nivel que `docs/features/*.md`.
+2. `knowledge/fixes/*.md` no está enforced al mismo nivel que `knowledge/features/*.md`.
 3. Linear participa, pero no controla formalmente la identidad de la iniciativa.
 4. La mother branch todavía puede desviarse de la rama canónica de Linear.
 5. El documentation slice no está suficientemente obligado como primer slice.

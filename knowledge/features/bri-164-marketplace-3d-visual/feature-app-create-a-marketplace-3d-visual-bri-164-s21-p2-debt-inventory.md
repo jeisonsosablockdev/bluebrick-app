@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Create A Marketplace 3d Visual BRI- 164 S21 P2 Debt Inventory
-description: Feature App Create A Marketplace 3d Visual BRI- 164 S21 P2 Debt Inventory - migrated from docs/
+description: Feature App Create A Marketplace 3d Visual BRI- 164 S21 P2 Debt Inventory - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md
@@ -43,28 +43,28 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 ## Atomic Slice Queue
 | Slice | One Change Only | Primary Test Gate | Artifact |
 | --- | --- | --- | --- |
-| S22 | Safe generic admin create 500 response | API route test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors.md` |
-| S23 | Typed marketplace read result contract | Server test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract.md` |
-| S24 | Marketplace page degraded-state rendering | Page/component test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state.md` |
-| S25 | Marketplace read failure structured logging | Server/observability test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging.md` |
-| S26 | Row mapper extraction | Server mapper behavior test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction.md` |
-| S27 | Persisted read repository extraction | Repository/server read test | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction.md` |
-| S28 | Persisted write repository extraction | Create/conflict tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction.md` |
-| S29 | Pure selector extraction | Selector tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction.md` |
-| S30 | Solana sync status extraction | Sync status tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction.md` |
-| S31 | Server facade cleanup after extractions | Full targeted server suite | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup.md` |
-| S32 | Detail formatter extraction | Formatter tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction.md` |
-| S33 | Detail Google Maps card extraction | Google Maps card tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card.md` |
-| S34 | Detail hero section extraction | Hero component tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section.md` |
-| S35 | Detail investment summary extraction | Investment card tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary.md` |
-| S36 | Detail property information extraction | Property info card tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info.md` |
-| S37 | Detail deal economics extraction | Deal economics card tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics.md` |
-| S38 | Detail fees/return extraction | Fees card tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return.md` |
-| S39 | Detail execution/governance extraction | Execution/governance tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance.md` |
-| S40 | Detail documents/blockchain extraction | Documents/blockchain tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain.md` |
-| S41 | Coordinate range validation | Map pin projection tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation.md` |
-| S42 | Mapbox lazy loading boundary | Component and browser tests | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary.md` |
-| S43 | Web Vitals recheck and doc sync | Lighthouse/browser evidence | `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck.md` |
+| S22 | Safe generic admin create 500 response | API route test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors.md` |
+| S23 | Typed marketplace read result contract | Server test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract.md` |
+| S24 | Marketplace page degraded-state rendering | Page/component test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state.md` |
+| S25 | Marketplace read failure structured logging | Server/observability test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging.md` |
+| S26 | Row mapper extraction | Server mapper behavior test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction.md` |
+| S27 | Persisted read repository extraction | Repository/server read test | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction.md` |
+| S28 | Persisted write repository extraction | Create/conflict tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction.md` |
+| S29 | Pure selector extraction | Selector tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction.md` |
+| S30 | Solana sync status extraction | Sync status tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction.md` |
+| S31 | Server facade cleanup after extractions | Full targeted server suite | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup.md` |
+| S32 | Detail formatter extraction | Formatter tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction.md` |
+| S33 | Detail Google Maps card extraction | Google Maps card tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card.md` |
+| S34 | Detail hero section extraction | Hero component tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section.md` |
+| S35 | Detail investment summary extraction | Investment card tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary.md` |
+| S36 | Detail property information extraction | Property info card tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info.md` |
+| S37 | Detail deal economics extraction | Deal economics card tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics.md` |
+| S38 | Detail fees/return extraction | Fees card tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return.md` |
+| S39 | Detail execution/governance extraction | Execution/governance tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance.md` |
+| S40 | Detail documents/blockchain extraction | Documents/blockchain tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain.md` |
+| S41 | Coordinate range validation | Map pin projection tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation.md` |
+| S42 | Mapbox lazy loading boundary | Component and browser tests | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary.md` |
+| S43 | Web Vitals recheck and doc sync | Lighthouse/browser evidence | `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck.md` |
 
 ## Metrics Dashboard
 | Metric | Current | Target | Notes |

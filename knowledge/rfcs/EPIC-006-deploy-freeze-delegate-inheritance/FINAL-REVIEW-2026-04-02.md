@@ -1,12 +1,3 @@
----
-type: RFC
-title: FINAL REVIEW 2026 04 02
-description: FINAL REVIEW 2026 04 02 - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/FINAL-REVIEW-2026-04-02.md
----
-
 # EPIC-006 Final Review (2026-04-02)
 
 ## Objetivo
@@ -20,10 +11,10 @@ Cierre de auditoría documental del EPIC-006 con trazabilidad de historias, PRs,
   - STORY-006-03: `implemented` (PR #82).
   - STORY-006-04: `implemented` (PR #86).
 - Evidencia devnet consolidada en:
-  - `docs/devnet-proof.md`
-  - `docs/features/feature-nft-permanent-transfer-delegate.md`
-  - `docs/features/feature-nft-economic-appdata-plugin.md`
-  - `docs/features/feature-nft-authority-lifecycle-rotation-revocation.md`
+  - `knowledge/devnet-proof.md`
+  - `knowledge/features/feature-nft-permanent-transfer-delegate.md`
+  - `knowledge/features/feature-nft-economic-appdata-plugin.md`
+  - `knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md`
 
 ## Trazabilidad PR/Commit
 | Story | PR | Estado | Merge commit | Merge date (UTC) |
@@ -45,23 +36,23 @@ PRs cerrados/supersedidos (sin merge):
 ### STORY-006-01 (Freeze delegate)
 - `lib/core-candy-machine-admin.ts`
 - `tests/lib/core-candy-machine-admin-validation.test.ts`
-- `docs/nft-spec.md`
+- `knowledge/nft-spec.md`
 - Nota: el deploy de colección adjunta `PermanentFreezeDelegate` y `PermanentTransferDelegate` en el mismo flujo.
 
 ### STORY-006-02 (Transfer delegate)
 - `lib/core-candy-machine-admin.ts`
 - `tests/lib/core-candy-machine-admin-validation.test.ts`
-- `docs/features/feature-nft-permanent-transfer-delegate.md`
-- `docs/nft-spec.md`
+- `knowledge/features/feature-nft-permanent-transfer-delegate.md`
+- `knowledge/nft-spec.md`
 - Evidencia devnet registrada (tx `i5JG91SZbgU9YBdJMpT3y5oDhWFPVaJhseg71bsDnGM81bXk9WVCGNwyafnbCX9tgpFdiQems4XLNZLipjyMgeJ`).
 
 ### STORY-006-03 (Economic AppData)
 - `components/admin/core-candy-machine-panel.tsx`
 - `lib/core-candy-machine-admin.ts`
 - `tests/lib/core-candy-machine-admin-validation.test.ts`
-- `docs/features/feature-nft-economic-appdata-plugin.md`
-- `docs/devnet-proof.md`
-- `docs/architecture.md`, `docs/state-machine.md`, `docs/threat-model.md`, `docs/authority-model.md`
+- `knowledge/features/feature-nft-economic-appdata-plugin.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/architecture.md`, `knowledge/state-machine.md`, `knowledge/threat-model.md`, `knowledge/authority-model.md`
 
 ### STORY-006-04 (Authority lifecycle rotation/revocation)
 - `app/api/admin/core-candy-machine/authorities/prepare/route.ts`
@@ -72,7 +63,7 @@ PRs cerrados/supersedidos (sin merge):
 - `tests/api/admin-core-candy-machine-authorities-prepare-route.test.ts`
 - `tests/api/admin-core-candy-machine-authorities-submit-route.test.ts`
 - `scripts/devnet-authority-lifecycle-proof.ts`
-- `docs/rotation-spec.md`
+- `knowledge/rotation-spec.md`
 
 ## Evidencia devnet crítica (STORY-006-04)
 - `emergency_rotate`: `DWJkjKQeaeXUXAJdXHmWtZjmsHdqmRcTyGRSHZ5wWyA7Aa1EnNZMwq3kWMmYebfQE8BQxQzZZz2e6QbBcZWcsXg`

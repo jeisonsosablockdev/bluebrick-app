@@ -43,5 +43,5 @@
 
 ## Handoffs
 - `planner -> solana/security`: touched paths, open risks, required evidence
-- `solana -> docs/qa`: commands, signatures, state readbacks, touched docs
+- `solana -> knowledge/qa`: commands, signatures, state readbacks, touched docs
 - `qa/security -> reviewer`: gate results and residual risks

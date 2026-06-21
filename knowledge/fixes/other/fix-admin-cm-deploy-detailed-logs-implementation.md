@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Admin Cm Deploy Detailed Logs Implementation
-description: Fix Admin Cm Deploy Detailed Logs Implementation - migrated from docs/
+description: Fix Admin Cm Deploy Detailed Logs Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-admin-cm-deploy-detailed-logs-implementation.md
@@ -15,7 +15,7 @@ Add structured, security-conscious logs around the current Candy Machine deploy 
 
 The ongoing investigation memory is tracked in:
 
-- `docs/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md`
+- `knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md`
 
 ## Design Contract
 
@@ -30,7 +30,7 @@ The ongoing investigation memory is tracked in:
 
 1. Documentation and contract
    - Create fix artifact pair.
-   - Update `docs/nft-spec.md` with the deploy logging contract.
+   - Update `knowledge/nft-spec.md` with the deploy logging contract.
 
 2. Server deploy logs
    - Add a small logging helper for `core_candy_machine.deploy.*` events.
@@ -50,7 +50,7 @@ The ongoing investigation memory is tracked in:
 
 - Solana Developer MCP was used to confirm transaction lifecycle observability points: recent blockhash, send transaction, and `getSignatureStatuses`.
 - Existing `lib/observability` store will receive operability logs for admin monitoring.
-- `validate:knowledge` now also checks that Candy Machine deploy changes have a branch-level iteration artifact based on `docs/knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md`.
+- `validate:knowledge` now also checks that Candy Machine deploy changes have a branch-level iteration artifact based on `knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md`.
 
 ## Acceptance Gates
 

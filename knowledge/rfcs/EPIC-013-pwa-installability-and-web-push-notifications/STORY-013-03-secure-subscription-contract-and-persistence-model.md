@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 013 03 Secure Subscription Contract And Persistence Model
-description: STORY- 013 03 Secure Subscription Contract And Persistence Model - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-03-secure-subscription-contract-and-persistence-model.md
----
-
 # STORY-013-03-secure-subscription-contract-and-persistence-model
 
 ## Metadata
@@ -31,8 +22,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - `db/migrations/*`
   - `lib/*repository*`
   - `app/api/notifications/subscribe/*`
-  - `docs/auth-flow.md`
-  - `docs/session-model.md`
+  - `knowledge/auth-flow.md`
+  - `knowledge/session-model.md`
 
 ## Proposal
 - Approach summary:

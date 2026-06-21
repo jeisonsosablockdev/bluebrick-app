@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix BRI- 167 Phantom Autoconnect Scope
-description: Fix BRI- 167 Phantom Autoconnect Scope - migrated from docs/
+description: Fix BRI- 167 Phantom Autoconnect Scope - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-bri-167-phantom-autoconnect-scope.md
@@ -13,7 +13,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fi
 - Implemented locally across S31-S36.
 - Branch: `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec`.
 - Linear issue key: `BRI-167`.
-- Parent artifact: `docs/fixes/fix-login-modal-issue.md`.
+- Parent artifact: `knowledge/fixes/fix-login-modal-issue.md`.
 
 ## Problem
 BRI-165 intentionally enabled wallet-adapter `autoConnect` so `/admin/assets/new` could recover a live Phantom signer after navigation or refresh while the admin SIWS session remained valid. That solved the deploy/mint signer recovery bug.

@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 005 04 Transaction Pipelines Purchase And Admin Migration
-description: STORY- 005 04 Transaction Pipelines Purchase And Admin Migration - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/STORY-005-04-transaction-pipelines-purchase-and-admin-migration.md
----
-
 # STORY-005-04-transaction-pipelines-purchase-and-admin-migration
 
 ## Metadata

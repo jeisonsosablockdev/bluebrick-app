@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Admin Cm Deploy Current System
-description: Fix Admin Cm Deploy Current System - migrated from docs/
+description: Fix Admin Cm Deploy Current System - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-admin-cm-deploy-current-system.md
@@ -23,7 +23,7 @@ This is not currently a transaction-construction, wallet-signing, RPC-submit, Ca
 - Base merge commit: `bdb8ba3`
 - Linear issue: `BRI-176`
 - Current deploy diagnostics PR: `#294`
-- Current module snapshot: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
+- Current module snapshot: `knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Known Symptoms Under Investigation
 

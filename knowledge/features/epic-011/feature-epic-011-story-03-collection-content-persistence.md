@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature EPIC- 011 STORY- 03 Collection Content Persistence
-description: Feature EPIC- 011 STORY- 03 Collection Content Persistence - migrated from docs/
+description: Feature EPIC- 011 STORY- 03 Collection Content Persistence - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-011-story-03-collection-content-persistence.md

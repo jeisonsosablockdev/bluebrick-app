@@ -1,8 +1,8 @@
 # Testing Policy
 
 ## Canonical Sources
-- `docs/governance/security-quality-policy.md`
-- `docs/governance/frontend-ui-policy.md`
+- `knowledge/governance/security-quality-policy.md`
+- `knowledge/governance/frontend-ui-policy.md`
 - `package.json`
 
 ## Apply When

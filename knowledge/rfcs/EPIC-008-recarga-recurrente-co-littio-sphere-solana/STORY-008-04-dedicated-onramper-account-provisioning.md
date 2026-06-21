@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 04 Dedicated Onramper Account Provisioning
-description: STORY- 008 04 Dedicated Onramper Account Provisioning - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-04-dedicated-onramper-account-provisioning.md
----
-
 # STORY-008-04-dedicated-onramper-account-provisioning
 
 ## Metadata
@@ -45,7 +36,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 ## Existing Infrastructure Reuse (Project)
 - `db/migrations/011_purchase_webhook_events.sql` (patron de deduplicacion de eventos provider)
 - `db/migrations/012_profile_kyc_compliance.sql` (patron de audit trail compliance)
-- `docs/authority-model.md` (reglas de ownership/segregacion por entidad)
+- `knowledge/authority-model.md` (reglas de ownership/segregacion por entidad)
 
 ## Proposal
 - Approach summary:

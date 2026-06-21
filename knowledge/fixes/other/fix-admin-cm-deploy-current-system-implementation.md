@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Admin Cm Deploy Current System Implementation
-description: Fix Admin Cm Deploy Current System Implementation - migrated from docs/
+description: Fix Admin Cm Deploy Current System Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-admin-cm-deploy-current-system-implementation.md
@@ -91,7 +91,7 @@ Admin operability logs:
 
 Branch memory:
 
-- `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
+- `knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Slices
 

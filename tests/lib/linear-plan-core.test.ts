@@ -16,7 +16,7 @@ const {
 } = require("../../scripts/linear-plan-core.js");
 
 async function createTemplateFile(rootDir: string) {
-  const templateDir = path.join(rootDir, "docs", "templates");
+  const templateDir = path.join(rootDir, "knowledge", "templates");
   await mkdir(templateDir, { recursive: true });
 
   await writeFile(
@@ -140,13 +140,13 @@ describe("scripts/linear-plan-core", () => {
     ).toBe("epic/czambrano-EPIC-011-admin-collections-console");
     expect(
       buildProblemArtifactPath({ type: "bugfix", slug: "login-redirect-fix" })
-    ).toBe("docs/fixes/fix-login-redirect-fix.md");
+    ).toBe("knowledge/fixes/fix-login-redirect-fix.md");
     expect(
       buildSolutionArtifactPath({ type: "hotfix", slug: "session-cookie-restore" })
-    ).toBe("docs/fixes/fix-session-cookie-restore-implementation.md");
+    ).toBe("knowledge/fixes/fix-session-cookie-restore-implementation.md");
     expect(
       buildProblemArtifactPath({ type: "epic", slug: "admin-collections-console" })
-    ).toBe("docs/features/feature-admin-collections-console.md");
+    ).toBe("knowledge/features/feature-admin-collections-console.md");
   });
 
   it("renders a full issue body and command summary from the template", async () => {
@@ -174,15 +174,15 @@ describe("scripts/linear-plan-core", () => {
       openQuestions: ["Which sections need the strongest wording changes?"],
       owner: "czambrano",
       slices: [
-        "S01|landing-compliance-audit|Audit landing content and structure|docs/features, app|npm run validate",
+        "S01|landing-compliance-audit|Audit landing content and structure|knowledge/features, app|npm run validate",
         "S02|hero-copy-ui-cleanup|Rewrite hero copy and CTA surfaces|app, components|npm run validate",
         "S03|supporting-sections-compliance|Normalize supporting sections and disclaimers|app, components|npm run validate"
       ]
     });
 
     expect(result.body).toContain("Issue: `BRI-38`");
-    expect(result.body).toContain("Problem artifact: `docs/features/feature-fix-ui-elements.md`");
-    expect(result.body).toContain("Solution artifact: `docs/features/feature-fix-ui-elements-implementation.md`");
+    expect(result.body).toContain("Problem artifact: `knowledge/features/feature-fix-ui-elements.md`");
+    expect(result.body).toContain("Solution artifact: `knowledge/features/feature-fix-ui-elements-implementation.md`");
     expect(result.body).toContain("feature/czambrano-BRI-38-fix-ui-elements");
     expect(result.body).toContain("SPEC/czambrano-BRI-38-landing-compliance-audit");
     expect(result.body).toContain("SPEC/czambrano-BRI-38-hero-copy-ui-cleanup");
@@ -193,7 +193,7 @@ describe("scripts/linear-plan-core", () => {
     expect(result.commandSummary).toContain("git checkout -b SPEC/czambrano-BRI-38-hero-copy-ui-cleanup");
 
     const templateCopy = await readFile(
-      path.join(rootDir, "docs", "templates", "linear-single-issue-slices.template.md"),
+      path.join(rootDir, "knowledge", "templates", "linear-single-issue-slices.template.md"),
       "utf8"
     );
     expect(templateCopy).toContain("{{SPEC_ROWS}}");

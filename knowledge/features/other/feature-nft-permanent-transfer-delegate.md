@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Nft Permanent Transfer Delegate
-description: Feature Nft Permanent Transfer Delegate - migrated from docs/
+description: Feature Nft Permanent Transfer Delegate - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-nft-permanent-transfer-delegate.md
@@ -16,7 +16,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 ## Alcance técnico
 - `lib/core-candy-machine-admin.ts`
 - `tests/lib/core-candy-machine-admin-validation.test.ts`
-- `docs/nft-spec.md`
+- `knowledge/nft-spec.md`
 
 ## Prueba en devnet
 - Collection: `8rytxyRG4NsZ6b6Vz59Hskyp1PoM4MBqtvTLkdHbpRCF`

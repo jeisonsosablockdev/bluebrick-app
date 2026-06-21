@@ -6,7 +6,7 @@ source "$(dirname "$0")/pr-governance-lib.sh"
 BASE_REF="${BASE_REF:-${GITHUB_BASE_REF:-develop}}"
 HEAD_REF="${HEAD_REF:-HEAD}"
 HEAD_BRANCH="${HEAD_BRANCH:-${GITHUB_HEAD_REF:-}}"
-LOCAL_NOISE_REGEX='^(\.npm-cache/|\.env\.vercel$|docs/linear-context\.md$)'
+LOCAL_NOISE_REGEX='^(\.npm-cache/|\.env\.vercel$|knowledge/linear-context\.md$)'
 MAX_DISPLAYED_CHANGED_FILES=25
 
 echo "Base ref: ${BASE_REF}"
@@ -121,7 +121,7 @@ resolve_spec_parent_work_branch() {
 resolve_epic_dir() {
   local epic_id="$1"
   shopt -s nullglob
-  local matches=(docs/rfcs/EPIC-"${epic_id}"-*)
+  local matches=(knowledge/rfcs/EPIC-"${epic_id}"-*)
   shopt -u nullglob
   local dirs=()
   for item in "${matches[@]}"; do
@@ -287,24 +287,24 @@ fi
 if [[ "${touches_program}" -eq 1 ]]; then
   echo "Program scope detected -> validating required blockchain docs."
   require_docs_changed "program" \
-    "docs/architecture.md" \
-    "docs/authority-model.md" \
-    "docs/state-machine.md" \
-    "docs/threat-model.md" \
-    "docs/devnet-proof.md" || missing_any=1
+    "knowledge/architecture/architecture-overview.md" \
+    "knowledge/architecture/authority-model.md" \
+    "knowledge/architecture/state-machine.md" \
+    "knowledge/architecture/threat-model.md" \
+    "knowledge/architecture/devnet-proof.md" || missing_any=1
 fi
 
 if [[ "${touches_app}" -eq 1 ]]; then
   echo "App scope detected -> validating required frontend/auth docs."
   require_docs_changed "app" \
-    "docs/auth-flow.md" \
-    "docs/session-model.md" || missing_any=1
+    "knowledge/architecture/auth-flow.md" \
+    "knowledge/architecture/session-model.md" || missing_any=1
 fi
 
 if [[ "${touches_nft}" -eq 1 ]]; then
   echo "NFT scope detected -> validating required NFT docs."
   require_docs_changed "nft" \
-    "docs/nft-spec.md" || missing_any=1
+    "knowledge/architecture/nft-spec.md" || missing_any=1
 fi
 
 requires_feature_artifact_pair=0
@@ -341,17 +341,17 @@ if [[ "${touches_product_code}" -eq 1 ]]; then
 fi
 
 if [[ "${requires_feature_artifact_pair}" -eq 1 ]]; then
-  echo "Feature/security/nft/refactor/epic scope detected -> validating feature artifacts under docs/features."
-  feature_problem_artifacts="$(changed_files_match '^docs/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
-  feature_solution_artifacts="$(changed_files_match '^docs/features/feature-.*-implementation\.md$')"
+  echo "Feature/security/nft/refactor/epic scope detected -> validating feature artifacts under knowledge/features."
+  feature_problem_artifacts="$(changed_files_match '^knowledge/features/feature-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  feature_solution_artifacts="$(changed_files_match '^knowledge/features/feature-.*-implementation\.md$')"
 
   if [[ -z "${feature_problem_artifacts}" ]]; then
-    echo "::error::Missing feature problem artifact update: add/update docs/features/feature-<slug>.md for this PR."
+    echo "::error::Missing feature problem artifact update: add/update knowledge/features/feature-<slug>.md for this PR."
     missing_any=1
   fi
 
   if [[ -z "${feature_solution_artifacts}" ]]; then
-    echo "::error::Missing feature solution artifact update: add/update docs/features/feature-<slug>-implementation.md for this PR."
+    echo "::error::Missing feature solution artifact update: add/update knowledge/features/feature-<slug>-implementation.md for this PR."
     missing_any=1
   fi
 
@@ -368,24 +368,24 @@ if [[ "${requires_feature_artifact_pair}" -eq 1 ]]; then
     done <<<"${feature_problem_artifacts}"
 
     if [[ "${matching_feature_pair}" -eq 0 ]]; then
-      echo "::error::Feature artifact pair mismatch: update a matching docs/features/feature-<slug>.md and docs/features/feature-<slug>-implementation.md in the same PR."
+      echo "::error::Feature artifact pair mismatch: update a matching knowledge/features/feature-<slug>.md and knowledge/features/feature-<slug>-implementation.md in the same PR."
       missing_any=1
     fi
   fi
 fi
 
 if [[ "${requires_fix_artifact_pair}" -eq 1 ]]; then
-  echo "Fix scope detected -> validating problem + solution artifact pair under docs/fixes."
-  fix_problem_artifacts="$(changed_files_match '^docs/fixes/fix-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
-  fix_solution_artifacts="$(changed_files_match '^docs/fixes/fix-.*-implementation\.md$')"
+  echo "Fix scope detected -> validating problem + solution artifact pair under knowledge/fixes."
+  fix_problem_artifacts="$(changed_files_match '^knowledge/fixes/fix-.*\.md$' | grep -E -v -- '-implementation\.md$' || true)"
+  fix_solution_artifacts="$(changed_files_match '^knowledge/fixes/fix-.*-implementation\.md$')"
 
   if [[ -z "${fix_problem_artifacts}" ]]; then
-    echo "::error::Missing fix problem artifact update: add/update docs/fixes/fix-<slug>.md for this PR."
+    echo "::error::Missing fix problem artifact update: add/update knowledge/fixes/fix-<slug>.md for this PR."
     missing_any=1
   fi
 
   if [[ -z "${fix_solution_artifacts}" ]]; then
-    echo "::error::Missing fix solution artifact update: add/update docs/fixes/fix-<slug>-implementation.md for this PR."
+    echo "::error::Missing fix solution artifact update: add/update knowledge/fixes/fix-<slug>-implementation.md for this PR."
     missing_any=1
   fi
 
@@ -402,7 +402,7 @@ if [[ "${requires_fix_artifact_pair}" -eq 1 ]]; then
     done <<<"${fix_problem_artifacts}"
 
     if [[ "${matching_fix_pair}" -eq 0 ]]; then
-      echo "::error::Fix artifact pair mismatch: update a matching docs/fixes/fix-<slug>.md and docs/fixes/fix-<slug>-implementation.md in the same PR."
+      echo "::error::Fix artifact pair mismatch: update a matching knowledge/fixes/fix-<slug>.md and knowledge/fixes/fix-<slug>-implementation.md in the same PR."
       missing_any=1
     fi
   fi

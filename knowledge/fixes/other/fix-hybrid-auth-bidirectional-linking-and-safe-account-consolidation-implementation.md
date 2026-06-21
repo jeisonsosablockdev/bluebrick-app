@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation
-description: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation - migrated from docs/
+description: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md
@@ -13,9 +13,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fi
 
 - Solution artifact
 - Depends on:
-  - `docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md`
-  - `docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
-  - `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
+  - `knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md`
+  - `knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
+  - `knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md`
 
 ## Goal
 
@@ -303,8 +303,8 @@ During consolidation:
 
 Before closing implementation, update:
 
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 
 Must add:
 

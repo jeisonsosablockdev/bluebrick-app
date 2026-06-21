@@ -148,7 +148,7 @@ describe("task:init", () => {
     expect(output).toContain("Preflight complete.");
     expect(output).toContain("Breakdown");
     expect(output).toContain("Socratic pass complete.");
-    expect(output).toContain("Canonical docs: docs/features/feature-task-bootstrap.md");
+    expect(output).toContain("Canonical docs: knowledge/features/feature-task-bootstrap.md");
     expect(output).toContain("Multi-SPEC reminder");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
       "feature/czambrano-BRI-149-task-bootstrap"

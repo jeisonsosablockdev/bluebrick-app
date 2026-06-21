@@ -1,23 +1,14 @@
----
-type: Guide
-title: Knowledge Promotion Gitflow
-description: Knowledge Promotion Gitflow - migrated from docs/
-tags: [guides]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/guides/knowledge-promotion-gitflow.md
----
-
 # Knowledge Promotion Gitflow
 
 ## Objective
 Capture reusable development knowledge without turning every local observation into governance noise.
 
 ## Promotion Ladder
-1. Delivery evidence lives in `docs/features/*.md` and RFCs.
-2. Reusable observations live in `docs/knowledge/inbox/*`.
-3. Promotion candidates live in `docs/knowledge/proposals/*`.
-4. Approved reusable guidance lives in `docs/guides/*`.
-5. Stable mandatory rules live in `docs/governance/*` and executable enforcement.
+1. Delivery evidence lives in `knowledge/features/*.md` and RFCs.
+2. Reusable observations live in `knowledge/inbox/*`.
+3. Promotion candidates live in `knowledge/proposals/*`.
+4. Approved reusable guidance lives in `knowledge/guides/*`.
+5. Stable mandatory rules live in `knowledge/governance/*` and executable enforcement.
 
 ## Human Checkpoints
 - Agents may capture observations and generate reports.
@@ -35,8 +26,8 @@ npm run validate:knowledge
 ## Gitflow Integration
 Use this loop on shared workflow work:
 1. Implement the shared fix or improvement on the issue-type-driven parent work branch.
-2. Update the required documentation note track (`docs/features/*.md` or `docs/fixes/*.md` as appropriate).
-3. If the branch discovered a reusable workflow or anti-pattern, add or update one inbox item under `docs/knowledge/inbox/*`.
+2. Update the required documentation note track (`knowledge/features/*.md` or `knowledge/fixes/*.md` as appropriate).
+3. If the branch discovered a reusable workflow or anti-pattern, add or update one inbox item under `knowledge/inbox/*`.
 4. Run `npm run knowledge:index` so the repo-level index stays current.
 5. Optionally run `npm run knowledge:scan -- --base develop` to generate a branch report.
 6. Run `npm run knowledge:drift` when governance summaries, CI checks, or operational docs changed.

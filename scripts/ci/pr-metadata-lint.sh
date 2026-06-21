@@ -7,7 +7,7 @@ SCOPE_LABEL=""
 TYPE_LABEL=""
 RISK_LABEL=""
 SIZE_EXEMPT="0"
-POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
 
 usage() {
   cat <<USAGE

@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Single Project Vercel Alias Flow BRI- 162
-description: Fix Single Project Vercel Alias Flow BRI- 162 - migrated from docs/
+description: Fix Single Project Vercel Alias Flow BRI- 162 - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-single-project-vercel-alias-flow-bri-162.md
@@ -28,7 +28,7 @@ No habilita implementación por sí solo. Su función es cerrar:
 
 La solución formal vive en:
 
-- `docs/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md`
+- `knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md`
 
 Linear source of truth:
 

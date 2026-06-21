@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 013 02 Installability Shell And Capability Aware Opt In Ux
-description: STORY- 013 02 Installability Shell And Capability Aware Opt In Ux - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-02-installability-shell-and-capability-aware-opt-in-ux.md
----
-
 # STORY-013-02-installability-shell-and-capability-aware-opt-in-ux
 
 ## Metadata

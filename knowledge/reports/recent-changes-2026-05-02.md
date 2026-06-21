@@ -1,12 +1,3 @@
----
-type: Report
-title: recent-changes-2026-05-02
-description: Governance drift/recent changes report
-tags: [knowledge, reports, governance, drift]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/reports/recent-changes-2026-05-02
----
-
 # Recent Changes Scan
 
 Generated: 2026-05-02T06:24:38.370Z
@@ -20,21 +11,21 @@ Merge Base: 8e17d7d63bea1d2f65f8d0de5eaf20d4ccf857c0
 
 ## Changed Files
 
-- `docs/guides/gitflow-pr-structure.md` -> guide: Touches reusable guidance or delivery evidence.
+- `knowledge/guides/gitflow-pr-structure.md` -> guide: Touches reusable guidance or delivery evidence.
 - `package.json` -> automation: Touches developer-facing commands or automation.
-- `docs/features/feature-shared-knowledge-promotion-system-bri-143.md` -> guide: Touches reusable guidance or delivery evidence.
-- `docs/guides/knowledge-promotion-gitflow.md` -> guide: Touches reusable guidance or delivery evidence.
-- `docs/knowledge/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/archive/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/inbox/2026-05/KNOW-2026-05-001-governance-summary-defers-to-canonical-policy.md` -> docs: Touches repository documentation.
-- `docs/knowledge/proposals/automation/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/proposals/governance/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/proposals/guide/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/reports/README.md` -> docs: Touches repository documentation.
-- `docs/knowledge/reports/governance-drift-2026-05-02.md` -> docs: Touches repository documentation.
-- `docs/knowledge/reports/recent-changes-2026-05-02.md` -> docs: Touches repository documentation.
-- `docs/knowledge/templates/KNOW.template.md` -> docs: Touches repository documentation.
-- `docs/knowledge/templates/PROMOTION.template.md` -> docs: Touches repository documentation.
+- `knowledge/features/feature-shared-knowledge-promotion-system-bri-143.md` -> guide: Touches reusable guidance or delivery evidence.
+- `knowledge/guides/knowledge-promotion-gitflow.md` -> guide: Touches reusable guidance or delivery evidence.
+- `knowledge/README.md` -> docs: Touches repository documentation.
+- `knowledge/archive/README.md` -> docs: Touches repository documentation.
+- `knowledge/inbox/2026-05/KNOW-2026-05-001-governance-summary-defers-to-canonical-policy.md` -> docs: Touches repository documentation.
+- `knowledge/proposals/automation/README.md` -> docs: Touches repository documentation.
+- `knowledge/proposals/governance/README.md` -> docs: Touches repository documentation.
+- `knowledge/proposals/guide/README.md` -> docs: Touches repository documentation.
+- `knowledge/reports/README.md` -> docs: Touches repository documentation.
+- `knowledge/reports/governance-drift-2026-05-02.md` -> docs: Touches repository documentation.
+- `knowledge/reports/recent-changes-2026-05-02.md` -> docs: Touches repository documentation.
+- `knowledge/templates/KNOW.template.md` -> docs: Touches repository documentation.
+- `knowledge/templates/PROMOTION.template.md` -> docs: Touches repository documentation.
 - `scripts/knowledge/build-knowledge-index.ts` -> automation: Touches developer-facing commands or automation.
 - `scripts/knowledge/detect-governance-drift.ts` -> automation: Touches developer-facing commands or automation.
 - `scripts/knowledge/governance-drift-core.ts` -> automation: Touches developer-facing commands or automation.

@@ -121,7 +121,7 @@ case "${CURRENT_BRANCH}" in
   nft/*)
     COMMIT_TYPE="nft"
     ;;
-  docs/*)
+  knowledge/*)
     COMMIT_TYPE="docs"
     ;;
   chore/*)

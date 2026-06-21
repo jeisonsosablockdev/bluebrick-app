@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Referral Marketing System BRI- 16
-description: Feature Shared Referral Marketing System BRI- 16 - migrated from docs/
+description: Feature Shared Referral Marketing System BRI- 16 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-referral-marketing-system-bri-16.md
@@ -85,7 +85,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
   - valid first-auth referral binding
   - skip on existing wallets
   - unchanged nonce-clear behavior on verification failure
-- Synced canonical auth/session docs in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/session-model.md).
+- Synced canonical auth/session docs in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/session-model.md).
 
 ## Slice `S07` - Client Referral Hint Capture and Manual Fallback
 - Added [lib/referrals/client-state.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/lib/referrals/client-state.ts) to centralize client-only referral hint handling:
@@ -100,7 +100,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
   - manual edits override the auto-captured hint
   - the first SIWS verify payload sends referral context from the live client state
 - Added [referral-client-state.test.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/tests/lib/referral-client-state.test.ts) to lock URL extraction, serialization safety, source derivation, and Phantom deep-link preservation.
-- Updated [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/session-model.md) so the auth docs reflect pre-auth referral hint persistence as client-only state.
+- Updated [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/session-model.md) so the auth docs reflect pre-auth referral hint persistence as client-only state.
 
 ## Slice `S08` - Invitee Welcome Preview
 - Added [lib/referrals/preview-service.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/lib/referrals/preview-service.ts) and exported repository lookup by code so public invitee UX can resolve referral preview without exposing full wallet identities.
@@ -109,7 +109,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
   - truncated `referrerWalletDisplay`
 - Added [InviteeWelcomeBanner](/Users/jaymusicmachine/Documents/Desarrollo/brids/components/referrals/invitee-welcome-banner.tsx) and mounted it on [app/page.tsx](/Users/jaymusicmachine/Documents/Desarrollo/brids/app/page.tsx) so invitees arriving with `?ref=` get a subtle, immediate welcome hint before authentication.
 - Added [referral-preview-route.test.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/tests/api/referral-preview-route.test.ts) to lock missing-code, valid-code, and unknown-code behavior.
-- Synced endpoint documentation in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/session-model.md).
+- Synced endpoint documentation in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/session-model.md).
 
 ## Slice `S09` - Protected Referral Summary API
 - Added [lib/referrals/dashboard-service.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/lib/referrals/dashboard-service.ts) as the first referrer read model on top of the canonical wallet-first referral domain.
@@ -122,7 +122,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
   - privacy-safe invitee list with truncated wallet displays
 - Added [app/api/protected/referrals/summary/route.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/app/api/protected/referrals/summary/route.ts) so the dashboard can consume a single wallet-bound referral summary contract.
 - Added [referral-dashboard-service.test.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/tests/lib/referral-dashboard-service.test.ts) and [protected-referrals-summary-route.test.ts](/Users/jaymusicmachine/Documents/Desarrollo/brids/tests/api/protected-referrals-summary-route.test.ts) to lock the read model and the protected route contract.
-- Synced the new protected endpoint in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/docs/session-model.md).
+- Synced the new protected endpoint in [auth-flow.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/auth-flow.md) and [session-model.md](/Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/session-model.md).
 
 ## Slice `S10` - Paginated Invitee Feed Hardening
 - Split the referral dashboard backend contract into:

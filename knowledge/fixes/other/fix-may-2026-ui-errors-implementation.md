@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix May 2026 Ui Errors Implementation
-description: Fix May 2026 Ui Errors Implementation - migrated from docs/
+description: Fix May 2026 Ui Errors Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-may-2026-ui-errors-implementation.md
@@ -200,8 +200,8 @@ If implementation discovers that auth/session code must change, this artifact mu
 
 ## Documentation And Linear Sync
 
-- Problem artifact: `docs/fixes/fix-may-2026-ui-errors.md`
-- Solution artifact: `docs/fixes/fix-may-2026-ui-errors-implementation.md`
+- Problem artifact: `knowledge/fixes/fix-may-2026-ui-errors.md`
+- Solution artifact: `knowledge/fixes/fix-may-2026-ui-errors-implementation.md`
 - PageSpeed mobile report: `https://pagespeed.web.dev/analysis/https-brids-io/nvj0gnc6r8?form_factor=mobile`
 - Linear must be updated from these artifacts after the documentation slice is stable.
 

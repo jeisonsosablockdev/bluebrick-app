@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158
-description: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 - migrated from docs/
+description: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md
@@ -28,7 +28,7 @@ No habilita implementación por sí solo. Su función es estabilizar:
 
 La solución formal vive en:
 
-- `docs/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md`
+- `knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md`
 
 ## Resolution Summary
 

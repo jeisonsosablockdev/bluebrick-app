@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 010 06 Ai Readable And Machine Endpoints
-description: STORY- 010 06 Ai Readable And Machine Endpoints - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-010-ai-discovery-infrastructure-and-seo-for-brids/STORY-010-06-ai-readable-and-machine-endpoints.md
----
-
 # STORY-010-06-ai-readable-and-machine-endpoints
 
 ## Metadata

@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 001 04 Asset Creation Form Structural Refactor
-description: STORY- 001 04 Asset Creation Form Structural Refactor - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-001-admin-asset-create-form/STORY-001-04-asset-creation-form-structural-refactor.md
----
-
 # STORY-001-04-asset-creation-form-structural-refactor
 
 ## Metadata
@@ -194,6 +185,6 @@ The plan is now solid, detailed, and executable. The defined contracts and phase
 - Related PR(s): `#54`
 - Final commit hash(es): `e741486`, `f36704d`, `e558c8d`, `9c7c0e3`, `02e0f55`
 - Phase artifacts:
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase1-inventory.md`
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase2-state-hook.md`
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-27.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase1-inventory.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase2-state-hook.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-27.md`

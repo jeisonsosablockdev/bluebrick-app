@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 001 03 Csv Async Pipeline
-description: STORY- 001 03 Csv Async Pipeline - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-001-admin-asset-create-form/STORY-001-03-csv-async-pipeline.md
----
-
 # STORY-001-03-csv-async-pipeline
 
 ## Metadata
@@ -119,8 +110,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - Sanitización/validación de contrato visibles en respuesta de estado:
   - `totalRows: 2`, `processedRows: 2`, `failedRows: 1`, `errorReportUrl` presente.
 - Evidencia completa:
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
 
 ## Validation Evidence (2026-03-26)
 - Cobertura dedicada `retry -> failed -> DLQ` agregada:

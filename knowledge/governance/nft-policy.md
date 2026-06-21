@@ -1,12 +1,3 @@
----
-type: Policy
-title: NFT Extension Policy (Solana)
-description: Mandatory Solana NFT standards, security rules, and @nft-cycle workflow for all NFT-related development
-tags: [governance, nft, solana, metaplex, spl-token, security, workflow]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/governance/nft-policy.md
----
-
 🟠 NFT EXTENSION POLICY (SOLANA)
 
 When building NFTs on Solana:

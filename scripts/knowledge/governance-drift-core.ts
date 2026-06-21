@@ -73,13 +73,13 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
   ] = await Promise.all([
     readRepoFile(rootDir, "AGENTS.md"),
     readRepoFile(rootDir, ".codex/agents/docs.toml"),
-    readRepoFile(rootDir, "docs/governance/documentation-policy.md"),
-    readRepoFile(rootDir, "docs/governance/git-monorepo-policy.md"),
-    readRepoFile(rootDir, "docs/guides/gitflow-pr-structure.md"),
-    readRepoFile(rootDir, "docs/governance/pr-policy-source-of-truth.json"),
+    readRepoFile(rootDir, "knowledge/governance/documentation-policy.md"),
+    readRepoFile(rootDir, "knowledge/governance/git-monorepo-policy.md"),
+    readRepoFile(rootDir, "knowledge/guides/gitflow-pr-structure.md"),
+    readRepoFile(rootDir, "knowledge/governance/pr-policy-source-of-truth.json"),
     readRepoFile(rootDir, ".github/pull_request_template.md"),
     readRepoFile(rootDir, ".github/workflows/pr-governance-develop.yml"),
-    readRepoFile(rootDir, "docs/rfcs/templates/STORY.template.md"),
+    readRepoFile(rootDir, "knowledge/rfcs/templates/STORY.template.md"),
     readRepoFile(rootDir, "scripts/ci/check-required-docs.sh")
   ]);
 
@@ -94,7 +94,7 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
   const checks: DriftCheck[] = [
     {
       name: "AGENTS summary points to canonical documentation policy",
-      passed: agentsSource.includes("docs/governance/documentation-policy.md"),
+      passed: agentsSource.includes("knowledge/governance/documentation-policy.md"),
       details: "AGENTS.md should point to canonical documentation policy instead of redefining it."
     },
     {
@@ -104,7 +104,7 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
     },
     {
       name: "AGENTS summary points to PR policy SSOT",
-      passed: agentsSource.includes("docs/governance/pr-policy-source-of-truth.json"),
+      passed: agentsSource.includes("knowledge/governance/pr-policy-source-of-truth.json"),
       details: "AGENTS.md should point to the PR policy source of truth."
     },
     {
@@ -132,7 +132,7 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
     },
     {
       name: "Gitflow guide still points to PR policy SSOT",
-      passed: gitflowGuideSource.includes("docs/governance/pr-policy-source-of-truth.json"),
+      passed: gitflowGuideSource.includes("knowledge/governance/pr-policy-source-of-truth.json"),
       details: "The gitflow usage guide should continue pointing to the PR policy SSOT."
     },
     {

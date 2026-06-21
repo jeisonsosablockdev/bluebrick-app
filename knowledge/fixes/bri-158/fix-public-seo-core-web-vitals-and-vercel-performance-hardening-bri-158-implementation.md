@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 Implementation
-description: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 Implementation - migrated from docs/
+description: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 Implementation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md
@@ -20,7 +20,7 @@ Este artefacto deja cerrada la ejecución del fix de performance/SEO público y 
 
 El artefacto de problema asociado vive en:
 
-- `docs/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md`
+- `knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md`
 
 ## Objective
 
@@ -491,8 +491,8 @@ Comandos de soporte según slice:
 
 Si la implementación toca auth/wallet trust boundary o cookie strategy pública, deberán actualizarse también:
 
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 
 Si la implementación redefine la estrategia pública de SEO/performance a nivel sistémico, también debemos considerar actualización de:
 

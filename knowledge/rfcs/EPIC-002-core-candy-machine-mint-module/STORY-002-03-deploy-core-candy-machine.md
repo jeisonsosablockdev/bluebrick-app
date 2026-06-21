@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 002 03 Deploy Core Candy Machine
-description: STORY- 002 03 Deploy Core Candy Machine - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-002-core-candy-machine-mint-module/STORY-002-03-deploy-core-candy-machine.md
----
-
 # STORY-002-03-deploy-core-candy-machine
 
 ## Metadata
@@ -29,7 +20,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - Affected paths:
   - `/app` (server actions / API routes para deploy)
   - Posibles utilidades compartidas de mint en `packages/`
-  - `docs/architecture.md`, `docs/authority-model.md`, `docs/state-machine.md`, `docs/threat-model.md`, `docs/devnet-proof.md`, `docs/nft-spec.md`
+  - `knowledge/architecture.md`, `knowledge/authority-model.md`, `knowledge/state-machine.md`, `knowledge/threat-model.md`, `knowledge/devnet-proof.md`, `knowledge/nft-spec.md`
 
 ## Proposal
 - Approach summary:

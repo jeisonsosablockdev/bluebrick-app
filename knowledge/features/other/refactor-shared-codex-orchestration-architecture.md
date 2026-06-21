@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Refactor Shared Codex Orchestration Architecture
-description: Refactor Shared Codex Orchestration Architecture - migrated from docs/
+description: Refactor Shared Codex Orchestration Architecture - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/refactor-shared-codex-orchestration-architecture.md
@@ -17,7 +17,7 @@ Branch: `refactor/shared-codex-orchestration`
 - Added modular agent definitions under `.codex/agents/`.
 - Added orchestration workflows under `.codex/workflows/`.
 - Added reusable constraint summaries under `.codex/policies/`.
-- Added migration and routing rationale under `docs/guides/codex-orchestration-architecture.md`.
+- Added migration and routing rationale under `knowledge/guides/codex-orchestration-architecture.md`.
 
 ## Baseline Fixes Included
 - Regenerated `package-lock.json` so `npm ci` works again with the current `package.json` on `develop`.
@@ -30,5 +30,5 @@ Branch: `refactor/shared-codex-orchestration`
 - `npm run validate`
 
 ## Scope Notes
-- Governance docs under `docs/governance/` remain the canonical source of truth.
+- Governance docs under `knowledge/governance/` remain the canonical source of truth.
 - This refactor changes Codex orchestration structure and baseline test/install compatibility; it does not weaken PR, RFC, docs, devnet, Playwright, Synpress, responsive, or Definition of Done enforcement.

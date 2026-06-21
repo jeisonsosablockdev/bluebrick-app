@@ -1,12 +1,16 @@
 ---
-type: Knowledge Item
-title: KNOW-2026-06-001-admin-candy-machine-module-worklog
-description: Knowledge item from development session
-tags: [knowledge, inbox, KNOW-2026]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/inbox/2026-06/KNOW-2026-06-001-admin-candy-machine-module-worklog.md
+id: KNOW-2026-06-001
+title: Admin Candy Machine module worklog
+status: observed
+promotion_target: guide
+scope: admin-assets-new-core-candy-machine
+owner: codex
+created_at: 2026-06-07T00:00:00.000Z
+updated_at: 2026-06-07T00:00:00.000Z
+source_issue: n/a
+source_feature: admin-assets-new
+enforcement_candidate: no
 ---
-
 
 # Admin Candy Machine Module Worklog
 
@@ -29,9 +33,9 @@ Runtime logs stay in structured JSON through console output and operability logs
 
 This file is the module index. Each implementation state should be captured as a separate iteration file using:
 
-- `docs/knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md`
+- `knowledge/templates/CANDY_MACHINE_DEPLOY_ITERATION.template.md`
 
-Before changing the module, create a new iteration file under `docs/knowledge/inbox/YYYY-MM/` with the branch, PR baseline, expected behavior, and known risks.
+Before changing the module, create a new iteration file under `knowledge/inbox/YYYY-MM/` with the branch, PR baseline, expected behavior, and known risks.
 
 After testing, append a manual test note to that iteration with the deploy id, public addresses, public signatures, final UI state, and conclusion from logs.
 
@@ -39,8 +43,8 @@ When a proposed recovery or retry strategy fails, keep the note here. Do not era
 
 ## Iteration Registry
 
-- `2026-06-07`: `docs/knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md`
-- `2026-06-07 current-system branch`: `docs/knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
+- `2026-06-07`: `knowledge/inbox/2026-06/KNOW-2026-06-002-candy-machine-deploy-iteration-2026-06-07.md`
+- `2026-06-07 current-system branch`: `knowledge/inbox/2026-06/KNOW-2026-06-003-candy-machine-deploy-iteration-current-system-branch.md`
 
 ## Module Snapshot: 2026-06-07
 

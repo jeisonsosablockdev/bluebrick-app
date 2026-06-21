@@ -1,12 +1,3 @@
----
-type: RFC
-title: README
-description: README - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/README.md
----
-
 # EPIC-006-deploy-freeze-delegate-inheritance
 
 ## Metadata
@@ -100,10 +91,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 ## Final Audit (2026-04-02)
 | Story | Estado final | PR / Commit | Artefactos clave |
 | --- | --- | --- | --- |
-| STORY-006-01 | `implemented` (integrado) | PR `#81` / `3e893036692459219ad46853c63d0f1d1acc9e95` | `lib/core-candy-machine-admin.ts`, `tests/lib/core-candy-machine-admin-validation.test.ts`, `docs/nft-spec.md` |
-| STORY-006-02 | `implemented` | PR `#81` / `3e893036692459219ad46853c63d0f1d1acc9e95` | `docs/features/feature-nft-permanent-transfer-delegate.md`, `lib/core-candy-machine-admin.ts`, `tests/lib/core-candy-machine-admin-validation.test.ts` |
-| STORY-006-03 | `implemented` | PR `#82` / `d179106114aa614c860c96c9b067137e5f076210` | `docs/features/feature-nft-economic-appdata-plugin.md`, `docs/devnet-proof.md`, `lib/core-candy-machine-admin.ts`, `components/admin/core-candy-machine-panel.tsx` |
-| STORY-006-04 | `implemented` | PR `#86` / `3943c72b001fb4d49c9f6306090deaf584112e9b` | `app/api/admin/core-candy-machine/authorities/*`, `lib/core-authority-lifecycle.ts`, `db/migrations/017_authority_lifecycle_registry.sql`, `docs/rotation-spec.md` |
+| STORY-006-01 | `implemented` (integrado) | PR `#81` / `3e893036692459219ad46853c63d0f1d1acc9e95` | `lib/core-candy-machine-admin.ts`, `tests/lib/core-candy-machine-admin-validation.test.ts`, `knowledge/nft-spec.md` |
+| STORY-006-02 | `implemented` | PR `#81` / `3e893036692459219ad46853c63d0f1d1acc9e95` | `knowledge/features/feature-nft-permanent-transfer-delegate.md`, `lib/core-candy-machine-admin.ts`, `tests/lib/core-candy-machine-admin-validation.test.ts` |
+| STORY-006-03 | `implemented` | PR `#82` / `d179106114aa614c860c96c9b067137e5f076210` | `knowledge/features/feature-nft-economic-appdata-plugin.md`, `knowledge/devnet-proof.md`, `lib/core-candy-machine-admin.ts`, `components/admin/core-candy-machine-panel.tsx` |
+| STORY-006-04 | `implemented` | PR `#86` / `3943c72b001fb4d49c9f6306090deaf584112e9b` | `app/api/admin/core-candy-machine/authorities/*`, `lib/core-authority-lifecycle.ts`, `db/migrations/017_authority_lifecycle_registry.sql`, `knowledge/rotation-spec.md` |
 
 ## Traceability
 - Issue(s): `EPIC-006` (seguimiento vía RFC)

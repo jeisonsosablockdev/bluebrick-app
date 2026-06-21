@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 001 02 Signed Url Contract
-description: STORY- 001 02 Signed Url Contract - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-001-admin-asset-create-form/STORY-001-02-signed-url-contract.md
----
-
 # STORY-001-02-signed-url-contract
 
 ## Metadata
@@ -155,8 +146,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - Purga manual RBAC validada:
   - `POST /api/admin/cdn/purge` -> `200`, `status: success`, `providerRequestId` presente.
 - Evidencia completa:
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
-  - `docs/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/latest-validation.json`
+  - `knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-16.md`
 
 ## Traceability
 - Related issue(s): `EPIC-001`

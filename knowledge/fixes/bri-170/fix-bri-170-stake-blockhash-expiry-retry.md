@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix BRI- 170 Stake Blockhash Expiry Retry
-description: Fix BRI- 170 Stake Blockhash Expiry Retry - migrated from docs/
+description: Fix BRI- 170 Stake Blockhash Expiry Retry - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-bri-170-stake-blockhash-expiry-retry.md

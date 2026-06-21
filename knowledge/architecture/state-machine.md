@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: State Machine
-description: State Machine - migrated from docs/
+description: State Machine - migrated from knowledge/
 tags: [architecture]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/architecture/state-machine.md

@@ -1,12 +1,16 @@
 ---
-type: Knowledge Item
-title: KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight
-description: Knowledge item from development session
-tags: [knowledge, inbox, KNOW-2026]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md
+id: KNOW-2026-06-005
+title: Candy Machine deploy iteration 2026-06-11
+status: observed
+promotion_target: guide
+scope: admin-assets-new-core-candy-machine
+owner: codex
+created_at: 2026-06-11T00:00:00.000Z
+updated_at: 2026-06-11T00:00:00.000Z
+source_issue: BRI-173
+source_feature: admin-assets-new
+enforcement_candidate: no
 ---
-
 
 # Candy Machine Deploy Iteration: 2026-06-11
 
@@ -70,9 +74,9 @@ Snapshot/finalize:
 
 Observability:
 
-- Files: `docs/knowledge/inbox/2026-06/*.md`, `docs/knowledge/README.md`
+- Files: `knowledge/inbox/2026-06/*.md`, `knowledge/README.md`
 - Runtime log location: server logs and admin monitoring endpoints
-- Markdown memory location: `docs/knowledge/inbox/2026-06/`
+- Markdown memory location: `knowledge/inbox/2026-06/`
 
 ## Flow Diagram
 
@@ -152,7 +156,7 @@ Client-provided correlation ids must not authorize, verify, or unblock Create As
 ## What Did Not Work
 
 - Attempt: run `npm run validate` before refreshing generated knowledge.
-- Result: validation stopped because `docs/knowledge/README.md` was stale and the candy-machine iteration file was missing.
+- Result: validation stopped because `knowledge/README.md` was stale and the candy-machine iteration file was missing.
 - Why it failed: new Candy Machine-related files require an iteration record for branch-level validation.
 - What future fixes should avoid: merging deploy-adjacent changes without updating the knowledge index and iteration note in the same pass.
 

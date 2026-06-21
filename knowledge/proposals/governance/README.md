@@ -1,12 +1,3 @@
----
-type: Reference
-title: governance Proposals
-description: governance improvement proposals
-tags: [knowledge, proposals, governance, index]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/proposals/governance
----
+# Governance Promotion Proposals
 
-# governance Proposals
-
-_No proposals yet._
+Store proposals here when a reusable pattern is stable enough to be considered for canonical governance.

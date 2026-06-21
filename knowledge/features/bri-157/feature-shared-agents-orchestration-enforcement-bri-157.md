@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Agents Orchestration Enforcement BRI- 157
-description: Feature Shared Agents Orchestration Enforcement BRI- 157 - migrated from docs/
+description: Feature Shared Agents Orchestration Enforcement BRI- 157 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-agents-orchestration-enforcement-bri-157.md
@@ -17,12 +17,12 @@ Mother Branch: `fix/shared-agents-orchestration-enforcement-bri-157`
 
 ## Summary
 
-This traceability note exists as a bridge while the repo still enforces `docs/features/*.md` for qualifying `fix/*` work.
+This traceability note exists as a bridge while the repo still enforces `knowledge/features/*.md` for qualifying `fix/*` work.
 
 The governing planning artifacts for this initiative are:
 
-- `docs/fixes/fix-agents-orchestation.md`
-- `docs/fixes/fix-agents-orchestation-implementation.md`
+- `knowledge/fixes/fix-agents-orchestation.md`
+- `knowledge/fixes/fix-agents-orchestation-implementation.md`
 
 Until slice `s03` lands, this file keeps the current docs governance gate satisfied without replacing the canonical fix artifacts.
 
@@ -57,4 +57,4 @@ Until slice `s03` lands, this file keeps the current docs governance gate satisf
 ## Notes
 
 - this file is transitional traceability for the current repo gate
-- the long-term enforcement target is the fix artifact pair under `docs/fixes/`
+- the long-term enforcement target is the fix artifact pair under `knowledge/fixes/`

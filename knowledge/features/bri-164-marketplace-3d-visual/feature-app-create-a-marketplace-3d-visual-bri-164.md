@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Create A Marketplace 3d Visual BRI- 164
-description: Feature App Create A Marketplace 3d Visual BRI- 164 - migrated from docs/
+description: Feature App Create A Marketplace 3d Visual BRI- 164 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md
@@ -108,8 +108,8 @@ Style rules:
 - avoid a dashboard/heatmap look in the first release
 
 Style artifact:
-- importable JSON: `docs/mapbox/brids-marketplace-decimal-style.json`
-- publishing notes: `docs/mapbox/README.md`
+- importable JSON: `knowledge/mapbox/brids-marketplace-decimal-style.json`
+- publishing notes: `knowledge/mapbox/README.md`
 - runtime env after publish: `NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/{username}/{style_id}`
 - publishing through the Mapbox Styles API requires a private token with `styles:write`; do not commit that token
 - if no published URL is configured, the runtime keeps `mapbox://styles/mapbox/dark-v11` as the safe fallback
@@ -191,7 +191,7 @@ The new 3D visual is meant to add the missing layer of presence:
 - S21 strict debt review normalized the remaining non-blocking issues as P2 follow-ups and split them into S22-S43 atomic implementation artifacts before runtime changes.
 
 ## P2 Debt Follow-Up Artifacts
-- S21 inventory and atomic queue: `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- S21 inventory and atomic queue: `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
 - S22-S25: reliability, safe admin errors, degraded read state, and read-failure logging split into one-change TDD slices.
 - S26-S31: `lib/property-marketplace-server.ts` boundary cleanup split into one extraction per slice.
 - S32-S40: `PropertyDetailContent` decomposition split into one formatter or section extraction per slice.

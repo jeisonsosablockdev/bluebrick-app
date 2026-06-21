@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation
-description: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation - migrated from docs/
+description: Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md
@@ -14,9 +14,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fi
 - Planning artifact
 - Scope: hybrid auth, account linking, conflict recovery
 - Related canonical docs:
-  - `docs/auth-flow.md`
-  - `docs/session-model.md`
-  - `docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
+  - `knowledge/auth-flow.md`
+  - `knowledge/session-model.md`
+  - `knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
 
 ## Summary
 
@@ -31,7 +31,7 @@ This fix introduces an explicit, server-controlled identity consolidation mechan
 
 Follow-up cleanup note:
 
-- The implementation also opened a dedicated clean-code refactor track in `docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md` to reduce repository orchestration size and remove duplicated auth-link status presentation logic without changing the trust model.
+- The implementation also opened a dedicated clean-code refactor track in `knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md` to reduce repository orchestration size and remove duplicated auth-link status presentation logic without changing the trust model.
 
 ## Problem
 

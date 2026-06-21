@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared HyBRI-d Auth Workos Wallet BRI- 154
-description: Feature Shared HyBRI-d Auth Workos Wallet BRI- 154 - migrated from docs/
+description: Feature Shared HyBRI-d Auth Workos Wallet BRI- 154 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md
@@ -401,7 +401,7 @@ This means the feature is not a UI-only change. It changes identity boundaries, 
 ### s01 - plan artifact
 
 - create parent issue and branch strategy
-- create initial feature note under `docs/features`
+- create initial feature note under `knowledge/features`
 - capture the problem, constraints, closed identity model, and implementation gates
 
 ### s02 - WorkOS tooling and CLI setup
@@ -562,5 +562,5 @@ Detailed persistence design, identity-link record shape, and low-level unlink-st
 - parent Linear issue exists and captures the initiative
 - integration branch exists from `develop`
 - planning slice exists from the integration branch
-- a feature note under `docs/features` captures the plan and guardrails
+- a feature note under `knowledge/features` captures the plan and guardrails
 - the repository now has a stable planning artifact that future slices can update incrementally

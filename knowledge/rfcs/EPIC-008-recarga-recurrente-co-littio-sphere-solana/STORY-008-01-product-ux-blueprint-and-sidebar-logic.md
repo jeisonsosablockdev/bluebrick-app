@@ -1,12 +1,3 @@
----
-type: RFC
-title: STORY- 008 01 Product Ux Blueprint And Sidebar Logic
-description: STORY- 008 01 Product Ux Blueprint And Sidebar Logic - migrated from docs/
-tags: [rfcs]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-01-product-ux-blueprint-and-sidebar-logic.md
----
-
 # STORY-008-01-product-ux-blueprint-and-sidebar-logic
 
 ## Metadata
@@ -29,7 +20,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
   - Debe definir matriz unificada de errores UX (codigo backend + copy + accion sugerida) reutilizable por historias 02-09.
 - Affected paths:
   - `app/**` (Profile / sidebar / recarga)
-  - `docs/features/*.md`
+  - `knowledge/features/*.md`
 
 ## Sphere References (Story Scope)
 - `/platform/onramper-accounts`
@@ -37,9 +28,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/rfcs/EPI
 - `/platform/supported-rails-currencies`
 
 ## Existing Infrastructure Reuse (Project)
-- `docs/rfcs/EPIC-003-nft-store-purchase-flow/README.md` (contrato de errores y estado visible en UX)
-- `docs/purchase-tracing.md` (estructura de trazabilidad visible para soporte)
-- `docs/auth-flow.md` (gates y estados backend->UI ya estandarizados)
+- `knowledge/rfcs/EPIC-003-nft-store-purchase-flow/README.md` (contrato de errores y estado visible en UX)
+- `knowledge/purchase-tracing.md` (estructura de trazabilidad visible para soporte)
+- `knowledge/auth-flow.md` (gates y estados backend->UI ya estandarizados)
 
 ## Proposal
 - Approach summary:

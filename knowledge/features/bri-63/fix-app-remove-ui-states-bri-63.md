@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Fix App Remove Ui States BRI- 63
-description: Fix App Remove Ui States BRI- 63 - migrated from docs/
+description: Fix App Remove Ui States BRI- 63 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-remove-ui-states-bri-63.md

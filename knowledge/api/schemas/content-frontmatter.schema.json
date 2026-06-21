@@ -45,7 +45,7 @@
       "type": "Policy",
       "title": "Documentation Policy",
       "description": "Mandatory documentation governance",
-      "resource": "https://github.com/jeisonsosablockdev/brids/blob/develop/docs/governance/documentation-policy.md",
+      "resource": "https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/governance/documentation-policy.md",
       "tags": ["governance", "documentation", "policy"],
       "timestamp": "2026-06-16T00:00:00Z"
     }

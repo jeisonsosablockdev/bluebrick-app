@@ -1,12 +1,3 @@
----
-type: Reference
-title: guide Proposals
-description: guide improvement proposals
-tags: [knowledge, proposals, guide, index]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/proposals/guide
----
+# Guide Promotion Proposals
 
-# guide Proposals
-
-_No proposals yet._
+Store triaged proposals here when an inbox observation is ready to become a reusable guide.

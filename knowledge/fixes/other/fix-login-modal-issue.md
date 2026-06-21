@@ -1,7 +1,7 @@
 ---
 type: Fix Spec
 title: Fix Login Modal Issue
-description: Fix Login Modal Issue - migrated from docs/
+description: Fix Login Modal Issue - migrated from knowledge/
 tags: [fixes]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-login-modal-issue.md
@@ -181,8 +181,8 @@ Touched surfaces:
 - `components/WalletModal.tsx`
 - `tests/components/wallet-modal-header-cta.test.ts`
 - `e2e/wallet-modal-auth-entry.pw.spec.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
 - possibly `tests/api/auth-me-route.test.ts` or logout route coverage if investigation shows server response drift
 
 Out of scope:
@@ -233,5 +233,5 @@ New delivery slices must keep the existing BRI-167 auth boundary intact and land
 - Resolved in follow-up S31: `autoConnect` should become scoped strictly to `/admin/assets/new`, the BRI-165 mint/deploy signer recovery surface.
 
 ## Follow-Up Artifact
-- `docs/fixes/fix-bri-167-phantom-autoconnect-scope.md`
-- `docs/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md`
+- `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md`
+- `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md`

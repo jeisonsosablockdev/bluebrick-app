@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Shared Single Issue Slice Planning BRI- 149
-description: Feature Shared Single Issue Slice Planning BRI- 149 - migrated from docs/
+description: Feature Shared Single Issue Slice Planning BRI- 149 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-single-issue-slice-planning-bri-149.md
@@ -19,9 +19,9 @@ Institutionalize a default planning flow where non-trivial work uses one parent 
   - `-sNN-` slice branches as the execution unit for small, reviewable changes
 - Updated documentation policy to prefer one accumulated feature note per parent issue across related slices.
 - Added operator guidance and a canonical template:
-  - `docs/guides/gitflow-pr-structure.md`
-  - `docs/guides/linear-single-issue-slice-planning.md`
-  - `docs/templates/linear-single-issue-slices.template.md`
+  - `knowledge/guides/gitflow-pr-structure.md`
+  - `knowledge/guides/linear-single-issue-slice-planning.md`
+  - `knowledge/templates/linear-single-issue-slices.template.md`
 - Added `npm run linear:plan` to generate the parent Linear Markdown body plus suggested branch commands.
 - Added integration-target CI so slice PRs into `*-integration` branches run:
   - `npm run validate`

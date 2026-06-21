@@ -25,7 +25,7 @@ const CDN_BACKEND_BUCKET_NAME = "metaplex-admin-assets-bb";
 
 const repoRoot = process.cwd();
 const envLocalPath = path.join(repoRoot, ".env.local");
-const artifactsDir = path.join(repoRoot, "docs", "rfcs", "EPIC-001-admin-asset-create-form", "artifacts");
+const artifactsDir = path.join(repoRoot, "knowledge", "rfcs", "EPIC-001-admin-asset-create-form", "artifacts");
 
 function nowIso() {
   return new Date().toISOString();

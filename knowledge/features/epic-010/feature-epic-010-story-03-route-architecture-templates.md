@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature EPIC- 010 STORY- 03 Route Architecture Templates
-description: Feature EPIC- 010 STORY- 03 Route Architecture Templates - migrated from docs/
+description: Feature EPIC- 010 STORY- 03 Route Architecture Templates - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-010-story-03-route-architecture-templates.md
@@ -18,7 +18,7 @@ Implementación de arquitectura de rutas semánticas y templates reutilizables p
 - Tests unitarios para route generation y colisiones:
   - `tests/lib/content-routes.test.ts`
 - Guía de arquitectura de rutas y templates:
-  - `docs/guides/route-architecture-and-templates.md`
+  - `knowledge/guides/route-architecture-and-templates.md`
 - Templates base reutilizables:
   - `components/templates/*`
 - Rutas públicas iniciales:

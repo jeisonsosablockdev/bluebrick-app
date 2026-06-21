@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation
-description: Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation - migrated from docs/
+description: Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md
@@ -16,7 +16,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 - Linear URL: `https://linear.app/brids-app/issue/BRI-171/feature-investor-dashboard-overview-real-data`
 - Rama de iniciativa canónica: `initiative/bri-171-investor-dashboard-overview-real-data`
 - Slice actual: `S01 - Documentation`
-- Artefacto base: `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
+- Artefacto base: `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
 - Estado: listo para revisión, sin implementación runtime
 
 ## Objetivo técnico
@@ -263,8 +263,8 @@ Nota operativa: Linear generó inicialmente `feature-investor-dashboard-overview
 - Estado: documentación creada, pendiente de revisión del usuario.
 - Implementación: no iniciada.
 - Archivos:
-  - `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
-  - `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md`
+  - `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
+  - `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md`
 
 ## Estado S02
 - Estado: implementado en `feature/app-investor-dashboard-overview-real-data-bri-171-s02-read-model-service`.
@@ -334,8 +334,8 @@ Nota operativa: Linear generó inicialmente `feature-investor-dashboard-overview
 ## Estado S06
 - Estado: ejecutado en `feature/app-investor-dashboard-overview-real-data-bri-171-s06-closeout`.
 - Alcance entregado:
-  - actualización de `docs/auth-flow.md`
-  - actualización de `docs/session-model.md`
+  - actualización de `knowledge/auth-flow.md`
+  - actualización de `knowledge/session-model.md`
   - validación completa de repo
   - clean-code/reviewer pass explícito
 - Evidencia:
@@ -360,7 +360,7 @@ Nota operativa: Linear generó inicialmente `feature-investor-dashboard-overview
 - Linear URL: `https://linear.app/brids-app/issue/BRI-171/feature-investor-dashboard-overview-real-data`
 - Canonical initiative branch: `initiative/bri-171-investor-dashboard-overview-real-data`
 - Current slice: `S01 - Documentation`
-- Base artifact: `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
+- Base artifact: `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
 - Status: ready for review, no runtime implementation
 
 ## Technical Goal
@@ -607,8 +607,8 @@ Operational note: Linear initially generated `feature-investor-dashboard-overvie
 - Status: documentation created, pending user review.
 - Implementation: not started.
 - Files:
-  - `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
-  - `docs/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md`
+  - `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md`
+  - `knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md`
 
 ## S02 Status
 - Status: implemented in `feature/app-investor-dashboard-overview-real-data-bri-171-s02-read-model-service`.
@@ -678,8 +678,8 @@ Operational note: Linear initially generated `feature-investor-dashboard-overvie
 ## S06 Status
 - Status: executed in `feature/app-investor-dashboard-overview-real-data-bri-171-s06-closeout`.
 - Delivered scope:
-  - `docs/auth-flow.md` update
-  - `docs/session-model.md` update
+  - `knowledge/auth-flow.md` update
+  - `knowledge/session-model.md` update
   - full repository validation
   - explicit clean-code/reviewer pass
 - Evidence:

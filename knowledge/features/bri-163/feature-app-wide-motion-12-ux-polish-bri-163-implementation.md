@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation
-description: Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation - migrated from docs/
+description: Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-wide-motion-12-ux-polish-bri-163-implementation.md
@@ -11,7 +11,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 
 ## Status
 - Solution artifact
-- Depends on: `docs/features/feature-app-wide-motion-12-ux-polish-bri-163.md`
+- Depends on: `knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163.md`
 - Mother/integration branch: `feature-app-wide-motion-12-ux-polish-bri-163`
 - Current slice: `feature-app-wide-motion-12-ux-polish-bri-163-s07-nav-origin-expansion`
 

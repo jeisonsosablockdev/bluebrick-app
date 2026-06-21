@@ -1,7 +1,7 @@
 ---
 type: Feature Spec
 title: Feature Flujo Gitflow Pr Structure Improvement 01 BRI- 62
-description: Feature Flujo Gitflow Pr Structure Improvement 01 BRI- 62 - migrated from docs/
+description: Feature Flujo Gitflow Pr Structure Improvement 01 BRI- 62 - migrated from knowledge/
 tags: [features]
 timestamp: 2026-06-16T15:03:01Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md
@@ -14,7 +14,7 @@ Unifica la gobernanza de PR en una fuente única de verdad para eliminar diverge
 
 ## What Changed
 - Added SSOT policy file:
-  - `docs/governance/pr-policy-source-of-truth.json`
+  - `knowledge/governance/pr-policy-source-of-truth.json`
 - Refactored local tooling to consume SSOT:
   - `scripts/ci/pr-metadata-lint.sh`
   - `scripts/ci/pr-ready.sh`
@@ -23,7 +23,7 @@ Unifica la gobernanza de PR en una fuente única de verdad para eliminar diverge
   - `.github/workflows/pr-governance-develop.yml`
 - Updated governance/docs references:
   - `AGENTS.md`
-  - `docs/guides/gitflow-pr-structure.md`
+  - `knowledge/guides/gitflow-pr-structure.md`
 
 ## Why
 - Reduce CI rework caused by policy duplication.

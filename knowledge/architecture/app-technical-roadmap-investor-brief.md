@@ -81,7 +81,7 @@ Evidencia principal:
 - `app/marketplace/[id]/page.tsx`
 - `components/marketplace/*`
 - `lib/property-marketplace-server.ts`
-- `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 
 ### Autenticacion y Modelo de Cuenta
 
@@ -109,9 +109,9 @@ Evidencia principal:
 - `lib/auth-store.ts`
 - `lib/auth-session.ts`
 - `lib/accounts/repository.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
-- `docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- `knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
 
 ### Checkout, Ordenes y Pagos
 
@@ -168,8 +168,8 @@ Evidencia principal:
 - `lib/purchase-anti-bot.ts`
 - `lib/purchase-attempts-repository.ts`
 - `lib/purchase-webhook-reconciliation.ts`
-- `docs/purchase-tracing.md`
-- `docs/devnet-proof.md`
+- `knowledge/purchase-tracing.md`
+- `knowledge/devnet-proof.md`
 
 ### Admin Assets y Collections
 
@@ -258,11 +258,11 @@ Evidencia principal:
 - `lib/core-candy-machine-admin.ts`
 - `lib/core-authority-lifecycle.ts`
 - `lib/metaplex-core-admin.ts`
-- `docs/nft-spec.md`
-- `docs/authority-model.md`
-- `docs/state-machine.md`
-- `docs/devnet-proof.md`
-- `docs/rotation-spec.md`
+- `knowledge/nft-spec.md`
+- `knowledge/authority-model.md`
+- `knowledge/state-machine.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/rotation-spec.md`
 
 ### Compliance, KYC, AML y Suspension
 
@@ -294,7 +294,7 @@ Evidencia principal:
 - `db/migrations/012_profile_kyc_compliance.sql`
 - `db/migrations/013_aml_screening_enrichment.sql`
 - `db/migrations/014_compliance_notes.sql`
-- `docs/architecture.md`
+- `knowledge/architecture.md`
 
 ### Dashboard Protegido para Inversionistas
 
@@ -354,7 +354,7 @@ Evidencia principal:
 - `components/dashboard/stake-module.tsx`
 - `lib/stake-service.ts`
 - `db/migrations/031_stake_profile_persistence.sql`
-- `docs/STAKE_AUDIT.md`
+- `knowledge/STAKE_AUDIT.md`
 
 ### Notificaciones y PWA
 
@@ -414,7 +414,7 @@ Evidencia principal:
 - `scripts/ci/*`
 - `scripts/rfc-new.js`
 - `scripts/linear-plan.js`
-- `docs/governance/*`
+- `knowledge/governance/*`
 - `tests/*`
 - `e2e/*`
 
@@ -632,26 +632,26 @@ Repositorio y gobernanza:
 
 - `README.md`
 - `package.json`
-- `docs/governance/documentation-policy.md`
-- `docs/governance/git-monorepo-policy.md`
-- `docs/governance/security-quality-policy.md`
+- `knowledge/governance/documentation-policy.md`
+- `knowledge/governance/git-monorepo-policy.md`
+- `knowledge/governance/security-quality-policy.md`
 - `scripts/ci/check-required-docs.sh`
 
 Arquitectura y seguridad:
 
-- `docs/architecture.md`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
-- `docs/authority-model.md`
-- `docs/state-machine.md`
-- `docs/threat-model.md`
-- `docs/rbac.md`
+- `knowledge/architecture.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- `knowledge/authority-model.md`
+- `knowledge/state-machine.md`
+- `knowledge/threat-model.md`
+- `knowledge/rbac.md`
 
 Blockchain/NFT:
 
-- `docs/nft-spec.md`
-- `docs/devnet-proof.md`
-- `docs/rotation-spec.md`
+- `knowledge/nft-spec.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/rotation-spec.md`
 - `lib/core-candy-machine-admin.ts`
 - `lib/core-authority-lifecycle.ts`
 - `lib/purchase-service.ts`
@@ -762,7 +762,7 @@ Primary evidence:
 - `app/marketplace/[id]/page.tsx`
 - `components/marketplace/*`
 - `lib/property-marketplace-server.ts`
-- `docs/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 
 ### Authentication and Account Model
 
@@ -790,9 +790,9 @@ Primary evidence:
 - `lib/auth-store.ts`
 - `lib/auth-session.ts`
 - `lib/accounts/repository.ts`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
-- `docs/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- `knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md`
 
 ### Checkout, Orders, and Payments
 
@@ -849,8 +849,8 @@ Primary evidence:
 - `lib/purchase-anti-bot.ts`
 - `lib/purchase-attempts-repository.ts`
 - `lib/purchase-webhook-reconciliation.ts`
-- `docs/purchase-tracing.md`
-- `docs/devnet-proof.md`
+- `knowledge/purchase-tracing.md`
+- `knowledge/devnet-proof.md`
 
 ### Admin Asset and Collection Operations
 
@@ -939,11 +939,11 @@ Primary evidence:
 - `lib/core-candy-machine-admin.ts`
 - `lib/core-authority-lifecycle.ts`
 - `lib/metaplex-core-admin.ts`
-- `docs/nft-spec.md`
-- `docs/authority-model.md`
-- `docs/state-machine.md`
-- `docs/devnet-proof.md`
-- `docs/rotation-spec.md`
+- `knowledge/nft-spec.md`
+- `knowledge/authority-model.md`
+- `knowledge/state-machine.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/rotation-spec.md`
 
 ### Compliance, KYC, AML, and Suspension
 
@@ -975,7 +975,7 @@ Primary evidence:
 - `db/migrations/012_profile_kyc_compliance.sql`
 - `db/migrations/013_aml_screening_enrichment.sql`
 - `db/migrations/014_compliance_notes.sql`
-- `docs/architecture.md`
+- `knowledge/architecture.md`
 
 ### Protected Investor Dashboard
 
@@ -1035,7 +1035,7 @@ Primary evidence:
 - `components/dashboard/stake-module.tsx`
 - `lib/stake-service.ts`
 - `db/migrations/031_stake_profile_persistence.sql`
-- `docs/STAKE_AUDIT.md`
+- `knowledge/STAKE_AUDIT.md`
 
 ### Notifications and PWA
 
@@ -1095,7 +1095,7 @@ Primary evidence:
 - `scripts/ci/*`
 - `scripts/rfc-new.js`
 - `scripts/linear-plan.js`
-- `docs/governance/*`
+- `knowledge/governance/*`
 - `tests/*`
 - `e2e/*`
 
@@ -1313,26 +1313,26 @@ Repository and governance:
 
 - `README.md`
 - `package.json`
-- `docs/governance/documentation-policy.md`
-- `docs/governance/git-monorepo-policy.md`
-- `docs/governance/security-quality-policy.md`
+- `knowledge/governance/documentation-policy.md`
+- `knowledge/governance/git-monorepo-policy.md`
+- `knowledge/governance/security-quality-policy.md`
 - `scripts/ci/check-required-docs.sh`
 
 Architecture and security:
 
-- `docs/architecture.md`
-- `docs/auth-flow.md`
-- `docs/session-model.md`
-- `docs/authority-model.md`
-- `docs/state-machine.md`
-- `docs/threat-model.md`
-- `docs/rbac.md`
+- `knowledge/architecture.md`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- `knowledge/authority-model.md`
+- `knowledge/state-machine.md`
+- `knowledge/threat-model.md`
+- `knowledge/rbac.md`
 
 Blockchain/NFT:
 
-- `docs/nft-spec.md`
-- `docs/devnet-proof.md`
-- `docs/rotation-spec.md`
+- `knowledge/nft-spec.md`
+- `knowledge/devnet-proof.md`
+- `knowledge/rotation-spec.md`
 - `lib/core-candy-machine-admin.ts`
 - `lib/core-authority-lifecycle.ts`
 - `lib/purchase-service.ts`
