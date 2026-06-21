@@ -30,7 +30,7 @@
 ## Optional Tooling References
 - OpenAI Developers tooling is not mandatory for every refactor.
 - When a refactor slice depends on AI-assisted API, SDK, framework, or tooling guidance, record the OpenAI Developers docs/tooling reference in the governing artifact before implementation closes.
-- Motion/UI refactors must also follow the `frontend-cycle` Motion 12 and OpenAI Developers documentation requirements when motion behavior, syntax, or tooling is in scope.
+- Motion/UI refactors must also follow `frontend-cycle` Motion 12 and OpenAI Developers documentation requirements when motion behavior, syntax, or tooling is in scope.
 
 ## Change-Type Routing
 | Refactor Type | Activate | Extra Gates |
@@ -62,8 +62,8 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 ## Slice Model
 - Use one branch per slice.
 - Each slice owns exactly one extraction, one naming cleanup, one dependency inversion, one test-hardening move, or one dead-code removal.
-- Each delivery slice must define its clean-code design contract before implementation: single responsibility, intended boundary or extraction, names that must become clearer, coupling or duplication risk, dead-code policy, and tests that preserve the design.
-- No delivery slice proceeds from planning to implementation without a clean-code design contract.
+- Each delivery slice must define its clean-code design contract before implementation: single responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and tests that preserve the design.
+- No delivery slice proceeds from planning to implementation without a clean-code design contract in the artifact.
 - Do not bundle unrelated files just because they are nearby.
 - If a refactor reveals another smell, document it as a new slice instead of expanding the current slice.
 - Merge each slice into the integration branch before starting the next implementation slice.
@@ -75,7 +75,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 - Current behavior: what must not change.
 - Invariants: user-visible behavior, API contracts, data contracts, security assumptions, and performance boundaries.
 - Slice map: one branch per change with runtime scope and test scope.
-- Clean-code design contract per delivery slice: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and design-protecting tests.
+- Clean-code design contract per delivery slice: one responsibility, intended boundary, naming/coupling risk, duplication/dead-code policy, and tests that preserve the design.
 - TDD plan: which tests go RED or which existing tests are tightened before code changes.
 - Validation plan: targeted tests, `npm run validate`, browser evidence, devnet proof, or DB validation as applicable.
 - Review plan: explicit clean-code/reviewer pass before each merge and final strict audit after the last slice.
@@ -99,6 +99,7 @@ When a slice touches multiple types, activate every matching workflow and aggreg
 ## Blocking Gates
 - No non-trivial refactor proceeds without the required artifact.
 - No multi-SPEC refactor proceeds without a first SPEC.
+- No delivery slice proceeds from planning to implementation without a clean-code design contract in the artifact.
 - No slice can merge if it changes behavior outside its stated invariant without artifact approval.
 - No slice can merge with failing targeted tests.
 - No final closeout without `npm run validate`.

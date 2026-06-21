@@ -37,15 +37,15 @@
 - Responsive or critical browser QA: `.codex/workflows/responsive-qa.md`
 - `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose the dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce the DB migration gate from `testing-policy`.
 - `/packages`, `lib`, `tests`, `e2e`, `scripts`: choose the dominant runtime workflow, then add `reviewer`; add `docs` when canonical docs or feature/RFC traceability move.
-- Issue-tracked work uses Linear status automation: `In Progress` when the branch is created, `In Review` when PR readiness begins, and `Done` after the final merge via the Linear status helper.
+- Issue-tracked work uses Linear status automation: `explain-like-socrates` for Socratic clarification and clean-code design contract for delivery slices.
 
 ## Agent Routing
-- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved. Requires explain-like-socrates for Socratic clarification and clean-code design contract for delivery slices.
+- `planner`: detect scope, require Linear/artifact preconditions when applicable, activate workflows, delegate, aggregate evidence, enforce Definition of Done, and block final `develop` merge until Human Acceptance is approved.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
-- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes, and mandatory `explain-like-socrates` planning for documentation/spec slices.
+- `docs`: canonical doc sync, feature/fix artifacts, RFC traceability, migration notes.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate. Human Acceptance is a mandatory gate.
 

@@ -14,7 +14,7 @@ describe("workflow evals", () => {
     const source = read("docs/fixes/fix-agents-orchestation-implementation.md");
 
     expect(source).toContain("decision-complete");
-    expect(source).toContain("si falta una decisión material, no se implementa todavía");
+    expect(source).toContainclude("si falta una decisión material, no se implementa todavía");
     expect(source).toContain("clarification-required scenarios");
     expect(source).toContain("following the letter, but not the spirit");
   });
