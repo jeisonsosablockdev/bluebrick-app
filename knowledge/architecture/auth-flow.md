@@ -11,6 +11,11 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/auth-flo
 
 Last Updated: 2026-06-06
 
+## BRI-178 Initial Loading Screen Auth Boundary
+- The initial loading screen (splash screen) does not introduce any new authentication cookies, tokens, or roles.
+- It displays the splash screen animations using client-side Motion 12 and transitions to the main landing page.
+- Theme detection is handled locally in the browser's localStorage or system preferences, and sets the initial theme attribute safely without affecting server-side authentication boundaries.
+
 ## BRI-174 Investor Portfolio Protected Read Boundary
 - The Investor Dashboard Portfolio now reads real collection-level holdings through `GET /api/protected/portfolio`.
 - This route does not introduce a new auth cookie, browser token, role, nonce, or wallet authority source.

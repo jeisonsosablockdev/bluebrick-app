@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AppProviders } from "@/app/providers";
+import { AppSplashScreen } from "@/components/brand/app-splash-screen";
 import { ClientAnalytics } from "@/components/observability/client-analytics";
 import { DEFAULT_LOCALE } from "@/lib/i18n";
 import { createRootMetadata } from "@/lib/seo";
@@ -33,12 +34,21 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang={DEFAULT_LOCALE} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <noscript>
+          <style>{`
+            main { opacity: 1 !important; }
+            .app-splash { display: none !important; }
+          `}</style>
+        </noscript>
       </head>
       <body>
         <Suspense fallback={null}>
           <ClientAnalytics />
         </Suspense>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <AppSplashScreen />
+          {children}
+        </AppProviders>
         <SpeedInsights />
       </body>
     </html>

@@ -1,4 +1,15 @@
-import { describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+
+import { describe, expect, it, afterEach, vi } from "vitest";
+import { createElement, act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+
+// Mock next/image since we are rendering in jsdom
+vi.mock("next/image", () => ({
+  default: ({ src, alt, className, ...props }: any) => {
+    return createElement("img", { src, alt, className, ...props });
+  }
+}));
 
 import {
   APP_SPLASH_MARK_DELAY_MS,
@@ -7,12 +18,31 @@ import {
   getAppSplashExitDelay,
   shouldWaitForAppLoad
 } from "@/lib/app-splash";
+import { AppSplashScreen } from "@/components/brand/app-splash-screen";
+
+type RenderHandle = {
+  container: HTMLDivElement;
+  root: Root;
+};
+
+function renderSplash(): RenderHandle {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  act(() => {
+    root.render(createElement(AppSplashScreen));
+  });
+
+  return { container, root };
+}
 
 describe("app splash contract", () => {
-  it("keeps the splash visible for at least one second", () => {
-    expect(APP_SPLASH_MINIMUM_VISIBLE_MS).toBeGreaterThanOrEqual(1000);
-    expect(getAppSplashExitDelay(350)).toBe(650);
-    expect(getAppSplashExitDelay(1200)).toBe(0);
+  it("keeps the splash visible for at least three seconds", () => {
+    expect(APP_SPLASH_MINIMUM_VISIBLE_MS).toBe(3000);
+    expect(getAppSplashExitDelay(350)).toBe(2650);
+    expect(getAppSplashExitDelay(1200)).toBe(1800);
+    expect(getAppSplashExitDelay(3200)).toBe(0);
   });
 
   it("stages the mark after the name intro", () => {
@@ -24,5 +54,41 @@ describe("app splash contract", () => {
     expect(shouldWaitForAppLoad("loading")).toBe(true);
     expect(shouldWaitForAppLoad("interactive")).toBe(true);
     expect(shouldWaitForAppLoad("complete")).toBe(false);
+  });
+});
+
+describe("AppSplashScreen Component", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.clearAllMocks();
+  });
+
+  it("renders the loading screen with status role and correct label", () => {
+    const { container, root } = renderSplash();
+    const splash = container.querySelector('[role="status"]');
+    expect(splash).not.toBeNull();
+    expect(splash?.getAttribute("aria-label")).toBe("BRIDS loading screen");
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not render the text BRIDS (logo only)", () => {
+    const { container, root } = renderSplash();
+    const nameEl = container.querySelector(".app-splash__name");
+    expect(nameEl).toBeNull();
+    expect(container.textContent).not.toContain("BRIDS");
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("renders the four background glow components for the animated lights", () => {
+    const { container, root } = renderSplash();
+    const glows = container.querySelectorAll(".app-splash__glow");
+    expect(glows.length).toBe(4);
+    act(() => {
+      root.unmount();
+    });
   });
 });

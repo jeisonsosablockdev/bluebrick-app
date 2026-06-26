@@ -11,6 +11,11 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/session-
 
 Last Updated: 2026-06-06
 
+## BRI-178 Initial Loading Screen Session Boundary
+- The initial loading screen (splash screen) does not introduce any new session cookie, nonce, browser token, or account-only authority.
+- The browser local storage reads the `brids-ui-theme` key to prevent flash-of-unstyled-content but does not store any auth or session credentials.
+- No session lifecycle, cookie name, TTL, SIWS verification flow, or role derivation changed in BRI-178.
+
 ## BRI-174 Investor Portfolio Session Boundary
 - Investor Portfolio uses the existing protected account/session model and does not create a new session layer.
 - `GET /api/protected/portfolio` resolves session state with `resolveAppAuthContext`.
