@@ -246,6 +246,124 @@ fi
 echo "✅ Rama creada: ${BRANCH}"
 echo "🌿 Base branch: ${BASE_BRANCH}"
 
+# Generar automáticamente plantillas OKF si corresponde
+DOC_SLUG=""
+if [[ "${MODE}" == "parent" || "${MODE}" == "single" ]]; then
+  if [[ "${MODE}" == "parent" ]]; then
+    DOC_SLUG="${NORMALIZED_OWNER}-${NORMALIZED_ISSUE}-${NAME_SLUG}"
+  else
+    DOC_SLUG="${SCOPE}-${NAME_SLUG}"
+  fi
+fi
+
+if [[ -n "${DOC_SLUG}" ]]; then
+  if [[ "${TYPE}" =~ ^(feature|security|nft|refactor|epic)$ ]]; then
+    PROBLEM_FILE="knowledge/features/feature-${DOC_SLUG}.md"
+    SOLUTION_FILE="knowledge/features/feature-${DOC_SLUG}-implementation.md"
+    
+    mkdir -p knowledge/features
+    
+    if [[ ! -f "${PROBLEM_FILE}" ]]; then
+      cat <<EOF > "${PROBLEM_FILE}"
+# Problem Artifact: ${NAME}
+
+## What problem exists
+<!-- Describir el problema o cambio que se está resolviendo -->
+
+## Why it matters
+<!-- Por qué es importante resolverlo y cuál es el impacto -->
+
+## What outcome is expected
+<!-- Qué resultado se espera para considerar esto como terminado -->
+
+## What gaps exist today
+<!-- Qué vacíos o limitaciones existen actualmente en el sistema -->
+
+## What questions remain open
+<!-- Qué preguntas o decisiones quedan abiertas -->
+EOF
+      echo "📝 Creado archivo de problema: ${PROBLEM_FILE}"
+    fi
+
+    if [[ ! -f "${SOLUTION_FILE}" ]]; then
+      cat <<EOF > "${SOLUTION_FILE}"
+# Solution Artifact: ${NAME} Implementation
+
+## How the work will be resolved
+<!-- Cómo se resolverá el trabajo (paso a paso o arquitectura general) -->
+
+## What slices and branches will be used
+<!-- Qué rebanadas y ramas se utilizarán -->
+
+## What tests go first
+<!-- Qué pruebas se escribirán primero (fase RED) -->
+
+## What tooling is required
+<!-- Qué herramientas o MCP servers se requieren -->
+
+## What gates must pass
+<!-- Qué validaciones o compuertas deben aprobarse -->
+
+## What will be synchronized to Linear
+<!-- Qué información se sincronizará con Linear -->
+EOF
+      echo "📝 Creado archivo de solución: ${SOLUTION_FILE}"
+    fi
+  elif [[ "${TYPE}" =~ ^(fix|bugfix|hotfix)$ ]]; then
+    PROBLEM_FILE="knowledge/fixes/fix-${DOC_SLUG}.md"
+    SOLUTION_FILE="knowledge/fixes/fix-${DOC_SLUG}-implementation.md"
+    
+    mkdir -p knowledge/fixes
+    
+    if [[ ! -f "${PROBLEM_FILE}" ]]; then
+      cat <<EOF > "${PROBLEM_FILE}"
+# Problem Artifact: ${NAME}
+
+## What problem exists
+<!-- Describir el problema o cambio que se está resolviendo -->
+
+## Why it matters
+<!-- Por qué es importante resolverlo y cuál es el impacto -->
+
+## What outcome is expected
+<!-- Qué resultado se espera para considerar esto como terminado -->
+
+## What gaps exist today
+<!-- Qué vacíos o limitaciones existen actualmente en el sistema -->
+
+## What questions remain open
+<!-- Qué preguntas o decisiones quedan abiertas -->
+EOF
+      echo "📝 Creado archivo de problema: ${PROBLEM_FILE}"
+    fi
+
+    if [[ ! -f "${SOLUTION_FILE}" ]]; then
+      cat <<EOF > "${SOLUTION_FILE}"
+# Solution Artifact: ${NAME} Implementation
+
+## How the work will be resolved
+<!-- Cómo se resolverá el trabajo (paso a paso o arquitectura general) -->
+
+## What slices and branches will be used
+<!-- Qué rebanadas y ramas se utilizarán -->
+
+## What tests go first
+<!-- Qué pruebas se escribirán primero (fase RED) -->
+
+## What tooling is required
+<!-- Qué herramientas o MCP servers se requieren -->
+
+## What gates must pass
+<!-- Qué validaciones o compuertas deben aprobarse -->
+
+## What will be synchronized to Linear
+<!-- Qué información se sincronizará con Linear -->
+EOF
+      echo "📝 Creado archivo de solución: ${SOLUTION_FILE}"
+    fi
+  fi
+fi
+
 if [[ "${MODE}" == "spec" ]]; then
   echo "🧩 SPEC branch detectada. Siguiente PR objetivo: ${BASE_BRANCH}"
   echo "📝 Recuerda: la primera SPEC debe ser la de planificación y las siguientes salen una por una."

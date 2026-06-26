@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 664 |
+| Archived | 666 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 662 |
+| Archived status | 664 |
 
 ## Inbox
 
@@ -337,6 +337,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-epic-011-story-06-read-only-detail-shell-bri-95 | archived | none | [feature-epic-011-story-06-read-only-detail-shell-bri-95](knowledge/features/feature-epic-011-story-06-read-only-detail-shell-bri-95.md) | n/a |
 | feature-flujo-gitflow-pr-structure-bri-61 | archived | none | [feature-flujo-gitflow-pr-structure-bri-61](knowledge/features/feature-flujo-gitflow-pr-structure-bri-61.md) | n/a |
 | feature-flujo-gitflow-pr-structure-improvement-01-bri-62 | archived | none | [feature-flujo-gitflow-pr-structure-improvement-01-bri-62](knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md) | n/a |
+| feature-gemini-antigravity-workflows-implementation | archived | none | [feature-gemini-antigravity-workflows-implementation](knowledge/features/feature-gemini-antigravity-workflows-implementation.md) | n/a |
+| feature-gemini-antigravity-workflows | archived | none | [feature-gemini-antigravity-workflows](knowledge/features/feature-gemini-antigravity-workflows.md) | n/a |
 | feature-landing-dark-hero-look-and-feel-implementation | archived | none | [feature-landing-dark-hero-look-and-feel-implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
 | feature-landing-dark-hero-look-and-feel | archived | none | [feature-landing-dark-hero-look-and-feel](knowledge/features/feature-landing-dark-hero-look-and-feel.md) | n/a |
 | feature-nft-authority-lifecycle-rotation-revocation | archived | none | [feature-nft-authority-lifecycle-rotation-revocation](knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |

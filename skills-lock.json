@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "explain-like-socrates": {
+      "source": "tapanshah/antigravity-aswsome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/explain-like-socrates/SKILL.md",
+      "computedHash": "cee8e366b69735214dad0b1ae7b522dc899a84261479a113565c4a433a1a70cd"
+    },
+    "solana-dev": {
+      "source": "solana-foundation/solana-dev-skill",
+      "sourceType": "github",
+      "skillPath": "skill/SKILL.md",
+      "computedHash": "51ba37080e2377cd57f278db8702dc9cfcd1f7520a42cbcca8f83924d59b0560"
+    }
+  }
+}

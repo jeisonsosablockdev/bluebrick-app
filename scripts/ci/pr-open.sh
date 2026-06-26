@@ -10,7 +10,7 @@ RISK_LABEL=""
 SIZE_EXEMPT=""
 DRAFT="1"
 POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
-VALIDATE_MODE="${VALIDATE_MODE:-governance-only}"
+VALIDATE_MODE="${VALIDATE_MODE:-full}"
 
 usage() {
   cat <<USAGE
@@ -30,7 +30,7 @@ Usage:
 Notes:
 - If --size-exempt is omitted, it is inferred automatically from diff size threshold in policy.
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
-- Default local validation mode for pr:open is governance-only; CI still runs full validate after PR creation.
+- Default local validation mode for pr:open is full; catching lint/type/doc errors locally before pushing is mandatory.
 - Use the branch-family artifact pair and SPEC-first model already defined in repo governance before opening delivery PRs.
 USAGE
 }
