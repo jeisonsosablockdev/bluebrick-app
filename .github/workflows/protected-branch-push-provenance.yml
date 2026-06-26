@@ -44,3 +44,52 @@ jobs:
             core.info(
               `Protected branch push provenance passed via PR #${matchingMergedPr.number} (${matchingMergedPr.head.ref} -> ${matchingMergedPr.base.ref}).`
             );
+
+  sync-linear-done:
+    name: Sync Linear Done Status
+    runs-on: ubuntu-latest
+    needs: verify-push-provenance
+    if: ${{ secrets.LINEAR_API_KEY != '' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Resolve Linear issue keys from the merged PR
+        id: issue-keys
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const branch = context.ref.replace("refs/heads/", "");
+            const sha = context.sha;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: sha,
+            });
+
+            const mergedPrs = prs.filter((pr) => pr.merged_at && pr.base?.ref === branch);
+            const issueKeys = [...new Set(
+              mergedPrs.flatMap((pr) => {
+                const haystacks = [pr.head?.ref || "", pr.title || ""];
+                return haystacks.flatMap((text) => text.match(/[A-Z]+-\d+/g) || []);
+              })
+            )];
+
+            core.info(`Resolved Linear issue keys for Done sync: ${issueKeys.join(", ") || "none"}`);
+            core.setOutput("issue_keys", JSON.stringify(issueKeys));
+
+      - name: Sync Linear issues to Done
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          LINEAR_AUTOSTATUS: "1"
+          ISSUE_KEYS_JSON: ${{ steps.issue-keys.outputs.issue_keys }}
+        run: |
+          node -e 'const { execFileSync } = require("node:child_process"); const issues = JSON.parse(process.env.ISSUE_KEYS_JSON || "[]"); if (!issues.length) { console.log("No Linear issue keys detected on the merged PR."); process.exit(0); } for (const issue of issues) { console.log(`Syncing Linear issue ${issue} to Done...`); execFileSync("npm", ["run", "linear:issue-done", "--", "--issue", issue], { stdio: "inherit" }); }'

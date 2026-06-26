@@ -142,6 +142,22 @@ type RunState = {
   signatures: RunSignatureEntry[];
 };
 
+type SnapshotFinalizeInput = {
+  quantity: number;
+  candyMachineAddress: string;
+  collectionAddress: string;
+  signatures: RunSignatureEntry[];
+  formState: PanelFormState;
+  draftId: string;
+  formSnapshot: Record<string, unknown>;
+};
+
+type SnapshotRecoveryContext = SnapshotFinalizeInput & {
+  deployId: string;
+};
+
+type SnapshotRecheckMode = "manual" | "auto";
+
 export function isDeploySignatureConfirmedForCreateAsset(status: unknown): boolean {
   if (!status || typeof status !== "object") {
     return false;
@@ -175,6 +191,7 @@ const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg",
 const SUBMIT_TX_TIMEOUT_MS = 120_000;
 const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
 const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
+const SNAPSHOT_AUTO_RECHECK_DELAY_MS = 15_000;
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
@@ -190,6 +207,14 @@ function truncate(value: string): string {
   }
 
   return `${value.slice(0, 8)}...${value.slice(-8)}`;
+}
+
+function logClientDeployTrace(event: string, context: Record<string, unknown> = {}): void {
+  console.info(JSON.stringify({
+    eventName: `core_candy_machine.deploy.client.${event}`,
+    emittedAt: new Date().toISOString(),
+    ...context
+  }));
 }
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -350,6 +375,8 @@ export function CoreCandyMachinePanel({
   const [isGeneratingUri, setIsGeneratingUri] = useState(false);
   const [isFinalizingSnapshot, setIsFinalizingSnapshot] = useState(false);
   const [snapshotResult, setSnapshotResult] = useState<SnapshotFinalizeResponse | null>(null);
+  const [snapshotRecoveryContext, setSnapshotRecoveryContext] = useState<SnapshotRecoveryContext | null>(null);
+  const [snapshotAutoRecheckArmed, setSnapshotAutoRecheckArmed] = useState(false);
 
   const requestGeneratedMetadataUris = useCallback(async (): Promise<GeneratedMetadataUris> => {
     if (!prefill?.imageUrl) {
@@ -506,6 +533,7 @@ export function CoreCandyMachinePanel({
     }
   }, [configuredNftPriceUsd, prefill?.solUsdRate]);
   async function submitSignedTransactionsBatch(
+    deployId: string,
     preparedTransactions: PreparedTransaction[],
     signedTransactionsBase64: string[]
   ): Promise<SubmitResponse["transactions"]> {
@@ -515,11 +543,17 @@ export function CoreCandyMachinePanel({
     }, SUBMIT_TX_TIMEOUT_MS);
 
     try {
+      logClientDeployTrace("submit_request", {
+        deployId,
+        total: preparedTransactions.length
+      });
+
       const response = await fetch("/api/admin/core-candy-machine/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
+          deployId,
           signedTransactions: preparedTransactions.map((transaction, index) => ({
             kind: transaction.kind,
             serial: transaction.serial,
@@ -534,12 +568,25 @@ export function CoreCandyMachinePanel({
         throw new Error(readErrorMessage(payload, "Could not submit deploy transactions."));
       }
 
+      logClientDeployTrace("submit_response", {
+        deployId,
+        total: payload.transactions.length
+      });
+
       return payload.transactions;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
+        logClientDeployTrace("submit_timeout", {
+          deployId,
+          total: preparedTransactions.length
+        });
         throw new Error("Timed out submitting deploy transactions. The backend did not respond in time.");
       }
 
+      logClientDeployTrace("submit_error", {
+        deployId,
+        message: error instanceof Error ? error.message : "Unknown submit error"
+      });
       throw error;
     } finally {
       clearTimeout(timeoutId);
@@ -547,14 +594,26 @@ export function CoreCandyMachinePanel({
   }
 
   async function signPreparedTransactions(
+    deployId: string,
     preparedTransactions: PreparedTransaction[],
     signSingle: NonNullable<ReturnType<typeof useWallet>["signTransaction"]>
   ): Promise<string[]> {
+    logClientDeployTrace("sign_start", {
+      deployId,
+      total: preparedTransactions.length,
+      mode: signAllTransactions ? "signAllTransactions" : "signTransaction"
+    });
+
     if (signAllTransactions) {
       const unsignedTransactions = preparedTransactions.map((transaction) =>
         deserializeLegacyVersionedTransaction(fromBase64(transaction.transactionBase64))
       );
       const signedTransactions = await signAllTransactions(unsignedTransactions);
+      logClientDeployTrace("sign_complete", {
+        deployId,
+        total: signedTransactions.length,
+        mode: "signAllTransactions"
+      });
       return signedTransactions.map((signedTransaction) => toBase64(serializeLegacyVersionedTransaction(signedTransaction)));
     }
 
@@ -568,45 +627,49 @@ export function CoreCandyMachinePanel({
         ...current,
         status: `Signing (${index + 1}/${preparedTransactions.length})`
       }));
+
+      logClientDeployTrace("sign_single_complete", {
+        deployId,
+        index: index + 1,
+        total: preparedTransactions.length,
+        kind: transaction.kind,
+        expectedAddress: transaction.expectedAddress
+      });
     }
+
+    logClientDeployTrace("sign_complete", {
+      deployId,
+      total: signedTransactionsBase64.length,
+      mode: "signTransaction"
+    });
 
     return signedTransactionsBase64;
   }
 
-  async function finalizeSnapshot(
-    currentQuantity: number,
-    candyMachineAddress: string,
-    collectionAddress: string,
-    signatures: RunSignatureEntry[]
-  ): Promise<SnapshotFinalizeResponse | null> {
+  const finalizeSnapshot = useCallback(async (input: SnapshotFinalizeInput): Promise<SnapshotFinalizeResponse | null> => {
     setIsFinalizingSnapshot(true);
 
     try {
-      const draftId = snapshotContext?.draftId?.trim() || `core-cm-${Date.now()}`;
-      const formSnapshot = snapshotContext?.formSnapshot ?? {
-        internalCode: prefill?.internalCode ?? "",
-        collectionName: form.collectionName,
-        assetNamePrefix: form.assetNamePrefix,
-        quantity: currentQuantity
-      };
+      const currentQuantity = input.quantity;
+      const requestForm = input.formState;
 
       const response = await fetch("/api/admin/core-candy-machine/snapshot/finalize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          draftId,
-          formSnapshot,
+          draftId: input.draftId,
+          formSnapshot: input.formSnapshot,
           mint: {
             quantity: currentQuantity,
             status: "Mint complete.",
-            collectionName: form.collectionName,
-            collectionUri: form.collectionUri,
-            assetNamePrefix: form.assetNamePrefix,
-            assetUri: form.assetUri,
-            startDate: form.startDate,
-            candyMachineAddress,
-            collectionAddress,
-            signatures
+            collectionName: requestForm.collectionName,
+            collectionUri: requestForm.collectionUri,
+            assetNamePrefix: requestForm.assetNamePrefix,
+            assetUri: requestForm.assetUri,
+            startDate: requestForm.startDate,
+            candyMachineAddress: input.candyMachineAddress,
+            collectionAddress: input.collectionAddress,
+            signatures: input.signatures
           }
         })
       });
@@ -626,7 +689,92 @@ export function CoreCandyMachinePanel({
     } finally {
       setIsFinalizingSnapshot(false);
     }
-  }
+  }, [onSnapshotFinalized]);
+
+  const recheckSnapshot = useCallback(async (mode: SnapshotRecheckMode = "manual"): Promise<void> => {
+    if (!snapshotRecoveryContext) {
+      setErrorMessage("No confirmed Candy Machine deploy is available for snapshot re-check.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setSnapshotAutoRecheckArmed(false);
+    setRunState((current) => ({
+      ...current,
+      status: mode === "auto"
+        ? "Automatically re-checking mint snapshot..."
+        : "Re-checking mint snapshot..."
+    }));
+    logClientDeployTrace("snapshot_recheck_request", {
+      deployId: snapshotRecoveryContext.deployId,
+      candyMachineAddress: snapshotRecoveryContext.candyMachineAddress,
+      collectionAddress: snapshotRecoveryContext.collectionAddress,
+      mode,
+      signatures: snapshotRecoveryContext.signatures.length
+    });
+
+    const finalizedSnapshot = await finalizeSnapshot(snapshotRecoveryContext);
+
+    logClientDeployTrace("snapshot_recheck_response", {
+      deployId: snapshotRecoveryContext.deployId,
+      canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
+      verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
+      mode,
+      snapshotId: finalizedSnapshot?.snapshotId ?? null
+    });
+
+    if (!finalizedSnapshot) {
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy confirmed, but mint snapshot is not ready."
+      }));
+      return;
+    }
+
+    if (!finalizedSnapshot.canCreateAsset) {
+      const message = finalizedSnapshot.verificationError?.message
+        ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
+      setRunState((current) => ({
+        ...current,
+        status: "Deploy confirmed, but mint snapshot is not ready."
+      }));
+      setErrorMessage(message);
+      return;
+    }
+
+    setSnapshotRecoveryContext(null);
+    setRunState((current) => ({
+      ...current,
+      status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
+    }));
+    onDeployCompleted?.({
+      candyMachineAddress: snapshotRecoveryContext.candyMachineAddress,
+      collectionAddress: snapshotRecoveryContext.collectionAddress,
+      quantity: snapshotRecoveryContext.quantity,
+      signatures: [...snapshotRecoveryContext.signatures]
+    });
+  }, [finalizeSnapshot, onDeployCompleted, snapshotRecoveryContext]);
+
+  useEffect(() => {
+    if (!snapshotRecoveryContext || !snapshotAutoRecheckArmed || busyAction !== null || isFinalizingSnapshot) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSnapshotAutoRecheckArmed(false);
+      void recheckSnapshot("auto");
+    }, SNAPSHOT_AUTO_RECHECK_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    busyAction,
+    isFinalizingSnapshot,
+    recheckSnapshot,
+    snapshotAutoRecheckArmed,
+    snapshotRecoveryContext
+  ]);
 
   async function runDeployFlow(): Promise<void> {
     if (!canRun || !publicKey || !signTransaction) {
@@ -684,6 +832,8 @@ export function CoreCandyMachinePanel({
 
     setErrorMessage(null);
     setSnapshotResult(null);
+    setSnapshotRecoveryContext(null);
+    setSnapshotAutoRecheckArmed(false);
     setBusyAction("deploy");
     setRunState((current) => ({
       ...current,
@@ -693,6 +843,18 @@ export function CoreCandyMachinePanel({
     }));
 
     try {
+      const deployFormState: PanelFormState = {
+        ...form,
+        collectionUri,
+        assetUri
+      };
+
+      logClientDeployTrace("prepare_request", {
+        quantity,
+        hasCollectionUri: Boolean(collectionUri),
+        hasAssetUri: Boolean(assetUri)
+      });
+
       const prepareResponse = await fetch("/api/admin/core-candy-machine/deploy/prepare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -712,6 +874,13 @@ export function CoreCandyMachinePanel({
         throw new Error(readErrorMessage(prepared, "Could not prepare deploy transactions."));
       }
 
+      logClientDeployTrace("prepare_response", {
+        deployId: prepared.deployId,
+        candyMachineAddress: prepared.candyMachineAddress,
+        collectionAddress: prepared.collectionAddress,
+        total: prepared.transactions.length
+      });
+
       setRunState((current) => ({
         ...current,
         status: "Deploy prepared. Signing transactions...",
@@ -721,14 +890,18 @@ export function CoreCandyMachinePanel({
         signatures: []
       }));
 
-      const signedTransactionsBase64 = await signPreparedTransactions(prepared.transactions, signTransaction);
+      const signedTransactionsBase64 = await signPreparedTransactions(prepared.deployId, prepared.transactions, signTransaction);
 
       setRunState((current) => ({
         ...current,
         status: `Submitting ${prepared.transactions.length} transactions...`
       }));
 
-      const submittedTransactions = await submitSignedTransactionsBatch(prepared.transactions, signedTransactionsBase64);
+      const submittedTransactions = await submitSignedTransactionsBatch(
+        prepared.deployId,
+        prepared.transactions,
+        signedTransactionsBase64
+      );
       const collectedSignatures: RunSignatureEntry[] = submittedTransactions.map((submitted, index) => ({
         signature: submitted.signature,
         kind: submitted.kind,
@@ -747,6 +920,13 @@ export function CoreCandyMachinePanel({
         collectedSignatures.map((entry) => entry.signature)
       );
       const { allConfirmed, hasFailedSignature } = deploySignatureStatuses;
+
+      logClientDeployTrace("status_poll_complete", {
+        deployId: prepared.deployId,
+        allConfirmed,
+        hasFailedSignature,
+        attempts: deploySignatureStatuses.attempts
+      });
 
       if (hasFailedSignature) {
         setErrorMessage("One or more deploy transactions failed on-chain. Create Asset remains blocked.");
@@ -772,24 +952,47 @@ export function CoreCandyMachinePanel({
         return;
       }
 
-      const finalizedSnapshot = await finalizeSnapshot(
+      const snapshotFinalizeInput: SnapshotFinalizeInput = {
         quantity,
-        prepared.candyMachineAddress,
-        prepared.collectionAddress,
-        collectedSignatures
-      );
+        candyMachineAddress: prepared.candyMachineAddress,
+        collectionAddress: prepared.collectionAddress,
+        signatures: collectedSignatures,
+        formState: deployFormState,
+        draftId: snapshotContext?.draftId?.trim() || `core-cm-${Date.now()}`,
+        formSnapshot: snapshotContext?.formSnapshot ?? {
+          internalCode: prefill?.internalCode ?? "",
+          collectionName: deployFormState.collectionName,
+          assetNamePrefix: deployFormState.assetNamePrefix,
+          quantity
+        }
+      };
+      const finalizedSnapshot = await finalizeSnapshot(snapshotFinalizeInput);
+
+      logClientDeployTrace("snapshot_finalize_response", {
+        deployId: prepared.deployId,
+        canCreateAsset: finalizedSnapshot?.canCreateAsset ?? false,
+        verificationStatus: finalizedSnapshot?.verificationStatus ?? null,
+        snapshotId: finalizedSnapshot?.snapshotId ?? null
+      });
 
       if (!finalizedSnapshot?.canCreateAsset) {
         const message = finalizedSnapshot?.verificationError?.message
           ?? "Mint snapshot could not be verified. Create Asset remains blocked until the snapshot is finalized.";
+        setSnapshotRecoveryContext({
+          deployId: prepared.deployId,
+          ...snapshotFinalizeInput
+        });
+        setSnapshotAutoRecheckArmed(true);
         setRunState((current) => ({
           ...current,
-          status: "Deploy confirmed, but mint snapshot is not ready."
+          status: "Deploy confirmed. Waiting 15 seconds before snapshot re-check."
         }));
         setErrorMessage(message);
         return;
       }
 
+      setSnapshotRecoveryContext(null);
+      setSnapshotAutoRecheckArmed(false);
       setRunState((current) => ({
         ...current,
         status: "Deploy complete. Snapshot verified. Candy Machine ready for Create Asset."
@@ -802,6 +1005,9 @@ export function CoreCandyMachinePanel({
         signatures: [...collectedSignatures]
       });
     } catch (error) {
+      logClientDeployTrace("flow_error", {
+        message: error instanceof Error ? error.message : "Deploy failed unexpectedly."
+      });
       setErrorMessage(error instanceof Error ? error.message : "Deploy failed unexpectedly.");
       setRunState((current) => ({
         ...current,
@@ -949,7 +1155,23 @@ export function CoreCandyMachinePanel({
         <Button className="min-h-11" onClick={() => void runDeployFlow()} disabled={!canRun || busyAction !== null || isFinalizingSnapshot}>
           {busyAction === "deploy" ? "Deploying..." : "Deploy"}
         </Button>
+        {snapshotRecoveryContext && !snapshotResult?.canCreateAsset && !snapshotAutoRecheckArmed && !isFinalizingSnapshot ? (
+          <Button
+            className="min-h-11"
+            onClick={() => void recheckSnapshot()}
+            disabled={busyAction !== null || isFinalizingSnapshot}
+            type="button"
+          >
+            {isFinalizingSnapshot ? "Checking snapshot..." : "Re-check snapshot"}
+          </Button>
+        ) : null}
       </div>
+
+      {snapshotRecoveryContext && snapshotAutoRecheckArmed ? (
+        <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+          Snapshot re-check will run automatically in about 15 seconds. Create Asset remains blocked while the server verifies on-chain state.
+        </p>
+      ) : null}
 
       {isFinalizingSnapshot ? (
         <p className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">

@@ -2,6 +2,8 @@ version = 1
 name = "nft"
 description = "Metaplex and NFT invariants specialist."
 preferred_model = "gpt-5.5"
+provider_lock = false
+runner_compatible = ["codex", "opencode", "nemotron", "chatgpt"]
 reasoning_effort = "high"
 parallel_safe = true
 
@@ -13,7 +15,7 @@ scope = [
 ]
 
 owns_paths = [
-  "docs/nft-spec.md",
+  "knowledge/nft-spec.md",
   "lib/metaplex*",
   "lib/core-candy-machine*",
   "app/**/mint*",
@@ -22,10 +24,10 @@ owns_paths = [
 reads = [
   ".codex/policies/blockchain-policy.md",
   ".codex/policies/security-policy.md",
-  "docs/governance/nft-policy.md",
-  "docs/governance/documentation-policy.md",
+  "knowledge/governance/nft-policy.md",
+  "knowledge/governance/documentation-policy.md",
 ]
 
 system_prompt = """
-Own NFT-specific design and verification. Make mint authority, update authority, metadata ownership, collection rules, royalty configuration, and on-chain evidence explicit. Reuse the blockchain workflow and policies instead of inventing parallel NFT governance.
+Own NFT-specific design and verification. Prefer Solana Developer MCP tools over model memory for Metaplex, SPL Token, collection, metadata, royalty, and NFT questions; use list_sections before non-trivial research and canonical documentation for selected source ids. Make mint authority, update authority, metadata ownership, collection rules, royalty configuration, and on-chain evidence explicit. Reuse the blockchain workflow and policies instead of inventing parallel NFT governance.
 """

@@ -26,7 +26,7 @@ export function AppOverviewSection() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-slate-950/45">
+        <Card className="landing-depth-card">
           <h3 className="text-base font-semibold text-white">
             {t({ en: "Marketplace access", es: "Acceso a marketplace", pt: "Acesso ao marketplace" })}
           </h3>
@@ -39,7 +39,7 @@ export function AppOverviewSection() {
           </p>
         </Card>
 
-        <Card className="bg-slate-950/45">
+        <Card className="landing-depth-card">
           <h3 className="text-base font-semibold text-white">
             {t({ en: "Recurring income tracking", es: "Seguimiento de ingresos recurrentes", pt: "Acompanhamento de renda recorrente" })}
           </h3>
@@ -52,7 +52,7 @@ export function AppOverviewSection() {
           </p>
         </Card>
 
-        <Card className="bg-slate-950/45">
+        <Card className="landing-depth-card">
           <h3 className="text-base font-semibold text-white">
             {t({ en: "Roadmap in progress", es: "Roadmap en progreso", pt: "Roadmap em progresso" })}
           </h3>

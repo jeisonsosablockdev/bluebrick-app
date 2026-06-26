@@ -17,7 +17,7 @@ export function PropertyDetailDealEconomicsCard({ economics }: PropertyDetailDea
   const { locale, t } = useI18n();
 
   return (
-    <Card className="space-y-3">
+    <Card className="marketplace-detail-card space-y-3">
       <H2 className="text-2xl text-white">{t({ en: "Deal economics", es: "Economia del deal", pt: "Economia do deal" })}</H2>
       <div className="grid gap-2 text-sm text-slate-300">
         {shouldRenderMarketplaceDetailMetric(economics.purchasePriceUsd) ? <p>{t({ en: "Purchase price", es: "Purchase Price", pt: "Purchase Price" })}: {formatMarketplaceDetailUsd(economics.purchasePriceUsd, locale)}</p> : null}

@@ -341,6 +341,151 @@ describe("CoreCandyMachinePanel snapshot deploy gate", () => {
     }));
     expect(onDeployCompleted).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Mint proof status is not completed.");
+    expect(container.textContent).toContain("Snapshot re-check will run automatically in about 15 seconds.");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("automatically re-checks a blocked snapshot without preparing or submitting another deploy", async () => {
+    const onSnapshotFinalized = vi.fn();
+    const onDeployCompleted = vi.fn();
+    const fetchCalls: string[] = [];
+    const finalizeBodies: unknown[] = [];
+    let finalizeAttempts = 0;
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      fetchCalls.push(url);
+
+      if (url === "/api/admin/core-candy-machine/metadata") {
+        return new Response(JSON.stringify({
+          collectionUri: "https://cdn.example.test/collection.json",
+          assetUri: "https://cdn.example.test/asset.json"
+        }), { status: 200 });
+      }
+
+      if (url === "/api/admin/core-candy-machine/deploy/prepare") {
+        return new Response(JSON.stringify({
+          deployId: "deploy-1",
+          candyMachineAddress: "CandyMachine111111111111111111111111111111",
+          collectionAddress: "Collection11111111111111111111111111111111",
+          quantity: 1,
+          paymentMode: "USDC",
+          priceUsdcAtomic: 1000000,
+          priceLamports: null,
+          startDate: "2026-06-01T00:00:00.000Z",
+          transactions: []
+        }), { status: 200 });
+      }
+
+      if (url === "/api/admin/core-candy-machine/submit") {
+        return new Response(JSON.stringify({ transactions: [] }), { status: 200 });
+      }
+
+      if (url === "/api/admin/core-candy-machine/status") {
+        return new Response(JSON.stringify({ statuses: {} }), { status: 200 });
+      }
+
+      if (url === "/api/admin/core-candy-machine/snapshot/finalize") {
+        finalizeAttempts += 1;
+        finalizeBodies.push(JSON.parse(String(init?.body ?? "{}")));
+
+        if (finalizeAttempts === 1) {
+          return new Response(JSON.stringify({
+            snapshotId: "snapshot-degraded",
+            mintJobId: "mint-job-1",
+            verificationStatus: "degraded",
+            verificationMethod: "candy_machine_items_loaded",
+            marketplaceHandoffStatus: "failed",
+            expectedQuantity: 1,
+            foundAssets: null,
+            canCreateAsset: false,
+            verificationError: {
+              code: "CONFIG_LINES_NOT_READY",
+              message: "Candy Machine config lines are not visible yet.",
+              details: {}
+            }
+          }), { status: 200 });
+        }
+
+        return new Response(JSON.stringify({
+          snapshotId: "snapshot-verified",
+          mintJobId: "mint-job-1",
+          verificationStatus: "verified",
+          verificationMethod: "candy_machine_items_loaded",
+          marketplaceHandoffStatus: "ready",
+          expectedQuantity: 1,
+          foundAssets: null,
+          canCreateAsset: true,
+          verificationError: null
+        }), { status: 200 });
+      }
+
+      return new Response(JSON.stringify({ error: "Unexpected request" }), { status: 500 });
+    }));
+
+    const { container, root } = renderNode(createElement(CoreCandyMachinePanel, {
+      prefill: {
+        collectionName: "Fix & Flip Lakeland",
+        assetNamePrefix: "Lakeland",
+        imageUrl: "https://blob.example.test/admin-assets/gallery/lakeland.png",
+        quantity: 1,
+        nftPriceUsd: 1
+      },
+      snapshotContext: {
+        draftId: "draft-lakeland",
+        formSnapshot: {
+          assetName: "Fix & Flip Lakeland"
+        }
+      },
+      onSnapshotFinalized,
+      onDeployCompleted
+    }));
+
+    await act(async () => {
+      await flushAsync();
+    });
+
+    const deployButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("Deploy")
+    );
+
+    await act(async () => {
+      deployButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushAsync();
+      await vi.advanceTimersByTimeAsync(2100);
+      await flushAsync();
+    });
+
+    expect(onDeployCompleted).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Create Asset gate: blocked");
+    expect(container.textContent).toContain("Candy Machine config lines are not visible yet.");
+    expect(container.textContent).toContain("Snapshot re-check will run automatically in about 15 seconds.");
+    expect(Array.from(container.querySelectorAll("button")).some((button) =>
+      button.textContent?.includes("Re-check snapshot")
+    )).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000);
+      await flushAsync();
+    });
+
+    expect(finalizeAttempts).toBe(2);
+    expect(fetchCalls.filter((url) => url === "/api/admin/core-candy-machine/deploy/prepare")).toHaveLength(1);
+    expect(fetchCalls.filter((url) => url === "/api/admin/core-candy-machine/submit")).toHaveLength(1);
+    expect(fetchCalls.filter((url) => url === "/api/admin/core-candy-machine/snapshot/finalize")).toHaveLength(2);
+    expect(finalizeBodies[1]).toEqual(finalizeBodies[0]);
+    expect(onSnapshotFinalized).toHaveBeenLastCalledWith(expect.objectContaining({
+      snapshotId: "snapshot-verified",
+      canCreateAsset: true
+    }));
+    expect(onDeployCompleted).toHaveBeenCalledWith(expect.objectContaining({
+      candyMachineAddress: "CandyMachine111111111111111111111111111111",
+      collectionAddress: "Collection11111111111111111111111111111111",
+      quantity: 1
+    }));
+    expect(container.textContent).toContain("Create Asset gate: enabled");
 
     act(() => {
       root.unmount();

@@ -19,8 +19,14 @@
 - Real transaction signature(s): <!-- required for blockchain/NFT/auth-sensitive flows -->
 - On-chain state evidence used for verification:
 
+## Human Acceptance
+- Status: pending <!-- change to approved only after user manual testing explicitly approves final merge to develop -->
+- Approved by:
+- Manual test evidence:
+- Accepted residual risk:
+
 ## Feature Note (/docs/features)
-- Path to feature note markdown file under `docs/features/*.md`: <!-- required for feature/fix/refactor/nft product changes; otherwise write N/A -->
+- Path to feature note markdown file under `knowledge/features/*.md`: <!-- required for feature/fix/refactor/nft product changes; otherwise write N/A -->
 
 ## Scope Labels (Required)
 - [ ] I added exactly one `scope:*` label

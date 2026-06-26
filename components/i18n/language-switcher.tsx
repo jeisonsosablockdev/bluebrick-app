@@ -18,7 +18,7 @@ export function LanguageSwitcher() {
   return (
     <motion.div
       layout
-      className="language-switcher inline-flex min-h-11 items-center rounded-full border border-white/15 bg-white/5 p-1"
+      className="language-switcher inline-flex min-h-11 items-center rounded-full bg-slate-950/28 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.12),inset_0_-1px_0_rgba(0,176,249,0.04)]"
       role="group"
       aria-label="Language selector"
     >

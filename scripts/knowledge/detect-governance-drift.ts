@@ -26,7 +26,7 @@ function parseCliOptions(argv: string[]): CliOptions {
 
 function defaultOutputPath(rootDir: string): string {
   const dateStamp = new Date().toISOString().slice(0, 10);
-  return path.join(rootDir, "docs", "knowledge", "reports", `governance-drift-${dateStamp}.md`);
+  return path.join(rootDir, "knowledge", "reports", `governance-drift-${dateStamp}.md`);
 }
 
 async function main(): Promise<void> {

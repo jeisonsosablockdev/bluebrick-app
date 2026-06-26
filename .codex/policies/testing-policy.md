@@ -1,8 +1,8 @@
 # Testing Policy
 
 ## Canonical Sources
-- `docs/governance/security-quality-policy.md`
-- `docs/governance/frontend-ui-policy.md`
+- `knowledge/governance/security-quality-policy.md`
+- `knowledge/governance/frontend-ui-policy.md`
 - `package.json`
 
 ## Apply When
@@ -10,7 +10,7 @@
 
 ## Hard Constraints
 - Start with targeted tests first; untested implementation is not complete.
-- When the work uses the artifact-driven slice model, define the test-plan-first contract in the solution artifact before delivery slices open.
+- When the work uses the artifact-driven SPEC model, define the test-plan-first contract in the solution artifact before delivery SPECs open.
 - `npm run validate` is mandatory before completion.
 - Database schema or persistence changes require `npm run validate:db`; pending tracked migrations block completion.
 - Frontend and auth critical paths require Playwright coverage.

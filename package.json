@@ -2,6 +2,9 @@
   "name": "brids",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "reasoning-agent": "./lib/reasoning-agent/cli.ts"
+  },
   "scripts": {
     "predev": "node ./scripts/db-migrate-if-configured.js",
     "dev": "next dev --webpack",
@@ -17,6 +20,11 @@
     "purchase:trace": "node ./scripts/purchase-trace.js",
     "rfc:new": "node ./scripts/rfc-new.js",
     "linear:plan": "node ./scripts/linear-plan.js",
+    "linear:issue-status": "node ./scripts/linear-status.js",
+    "linear:issue-start": "node ./scripts/linear-status.js --state start",
+    "linear:issue-review": "node ./scripts/linear-status.js --state review",
+    "linear:issue-done": "node ./scripts/linear-status.js --state done",
+    "mcp:linear": "tsx ./scripts/linear-mcp-server.ts",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -33,7 +41,7 @@
     "validate:ai": "vitest run tests/lib/ai-readable-contracts.test.ts tests/api/ai-readable-endpoints.test.ts",
     "validate:feeds": "vitest run tests/lib/feed-search-contracts.test.ts tests/api/feeds-endpoints.test.ts",
     "validate:operability": "vitest run tests/lib/security-headers.test.ts tests/lib/observability-store.test.ts tests/lib/semantic-extension-contract.test.ts tests/api/analytics-events-route.test.ts tests/api/health-route.test.ts tests/api/admin-monitoring-analytics-route.test.ts tests/api/admin-monitoring-logs-route.test.ts",
-    "validate:knowledge": "vitest run tests/lib/knowledge-system.test.ts && tsx ./scripts/knowledge/build-knowledge-index.ts --check",
+    "validate:knowledge": "vitest run tests/lib/knowledge-system.test.ts && tsx ./scripts/knowledge/build-knowledge-index.ts --check && tsx ./scripts/knowledge/validate-candy-machine-deploy-iteration.ts",
     "validate:workflow": "vitest run tests/lib/workflow-evals.test.ts",
     "validate:docs-governance": "bash ./scripts/ci/validate-doc-governance.sh",
     "preflight:start": "bash ./scripts/ci/preflight-start.sh",
@@ -55,12 +63,14 @@
     "e2e": "npm run e2e:playwright && npm run e2e:synpress"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
     "@metaplex-foundation/mpl-core": "^1.7.0",
     "@metaplex-foundation/mpl-core-candy-machine": "^0.3.0",
     "@metaplex-foundation/umi": "^1.5.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
     "@metaplex-foundation/umi-signer-wallet-adapters": "^1.5.1",
     "@metaplex-foundation/umi-web3js-adapters": "^1.5.1",
+    "@modelcontextprotocol/server": "^2.0.0-alpha.2",
     "@solana/kit": "^2.3.0",
     "@solana/wallet-adapter-phantom": "^0.9.28",
     "@solana/wallet-adapter-react": "^0.15.39",
@@ -85,7 +95,8 @@
     "tweetnacl": "^1.0.3",
     "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zod4": "npm:zod@^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
@@ -109,6 +120,7 @@
     "tailwindcss": "3.4.17",
     "tsx": "^4.20.6",
     "typescript": "5.8.2",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "yaml": "^2.9.0"
   }
 }

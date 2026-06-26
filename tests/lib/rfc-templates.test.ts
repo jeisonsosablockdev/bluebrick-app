@@ -8,7 +8,7 @@ const repoRoot = process.cwd();
 describe("RFC templates", () => {
   it("records spec-slice ownership in the epic README template", () => {
     const epicTemplate = readFileSync(
-      path.join(repoRoot, "docs", "rfcs", "templates", "EPIC-README.template.md"),
+      path.join(repoRoot, "knowledge", "rfcs", "templates", "EPIC-README.template.md"),
       "utf8"
     );
 
@@ -17,7 +17,7 @@ describe("RFC templates", () => {
 
   it("records RFC owner slice in the story template", () => {
     const storyTemplate = readFileSync(
-      path.join(repoRoot, "docs", "rfcs", "templates", "STORY.template.md"),
+      path.join(repoRoot, "knowledge", "rfcs", "templates", "STORY.template.md"),
       "utf8"
     );
 

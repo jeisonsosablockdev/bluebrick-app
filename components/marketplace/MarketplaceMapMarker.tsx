@@ -22,7 +22,7 @@ export function MarketplaceMapMarker({ pin, onActivate }: MarketplaceMapMarkerPr
           onFocus={() => onActivate(pin)}
         >
           <span className="max-w-[7.5rem] truncate text-[11px] font-semibold leading-none">{pin.title}</span>
-          <span className="rounded-full bg-slate-950/85 px-2 py-1 text-[11px] font-semibold shadow-inner shadow-black/25">
+          <span className="marketplace-map-marker-percent rounded-full bg-slate-950/85 px-2 py-1 text-[11px] font-semibold shadow-inner shadow-black/25">
             {formatMarketplaceSoldPercent(pin.soldPercent)}
           </span>
         </button>

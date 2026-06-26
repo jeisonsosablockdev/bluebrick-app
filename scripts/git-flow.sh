@@ -10,7 +10,7 @@ if [[ $# -lt 3 ]]; then
 fi
 
 is_branch_type() {
-  [[ "${1:-}" =~ ^(feature|fix|security|nft|refactor)$ ]]
+  [[ "${1:-}" =~ ^(feature|bugfix|fix|hotfix|epic|security|nft|refactor)$ ]]
 }
 
 TYPE="feature"

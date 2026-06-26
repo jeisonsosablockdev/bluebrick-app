@@ -9,8 +9,8 @@ TYPE_LABEL=""
 RISK_LABEL=""
 SIZE_EXEMPT=""
 DRAFT="1"
-POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
-VALIDATE_MODE="${VALIDATE_MODE:-governance-only}"
+POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
+VALIDATE_MODE="${VALIDATE_MODE:-full}"
 
 usage() {
   cat <<USAGE
@@ -30,8 +30,8 @@ Usage:
 Notes:
 - If --size-exempt is omitted, it is inferred automatically from diff size threshold in policy.
 - Labels are applied via gh api to avoid gh pr edit label instability in some environments.
-- Default local validation mode for pr:open is governance-only; CI still runs full validate after PR creation.
-- Use the branch-family artifact pair and spec-slice-first model already defined in repo governance before opening delivery PRs.
+- Default local validation mode for pr:open is full; catching lint/type/doc errors locally before pushing is mandatory.
+- Use the branch-family artifact pair and SPEC-first model already defined in repo governance before opening delivery PRs.
 USAGE
 }
 
@@ -144,9 +144,9 @@ bash ./scripts/ci/pr-metadata-lint.sh \
   --policy-file "$POLICY_FILE"
 
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
-  SIZE_EXEMPT=1 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
+  LINEAR_AUTOSTATUS=0 SIZE_EXEMPT=1 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 else
-  npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
+  LINEAR_AUTOSTATUS=0 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 fi
 
 git push -u origin "$CURRENT_BRANCH"
@@ -168,6 +168,10 @@ else
   PR_NUMBER="$(gh pr list --repo "$OWNER_REPO" --head "$CURRENT_BRANCH" --json number --limit 1 -q '.[0].number')"
   echo "✅ PR created: ${PR_URL}"
 fi
+
+echo
+echo "Linear status"
+npm run linear:issue-review
 
 LABEL_ARGS=(-f "labels[]=${SCOPE_LABEL}" -f "labels[]=${TYPE_LABEL}" -f "labels[]=${RISK_LABEL}")
 if [[ "$SIZE_EXEMPT" == "1" ]]; then

@@ -32,7 +32,7 @@ export function FeaturesSection() {
 
       <div className="grid gap-4 md:grid-cols-3">
         {features.map((feature) => (
-          <Card key={feature.title} className="flex h-full flex-col justify-between gap-4">
+          <Card key={feature.title} className="landing-depth-card flex h-full flex-col justify-between gap-4">
             <div>
               <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradientPrimary text-lg text-white">
                 {feature.icon ?? "•"}

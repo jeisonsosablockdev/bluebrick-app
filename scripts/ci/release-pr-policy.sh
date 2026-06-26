@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-POLICY_FILE="${POLICY_FILE:-docs/governance/pr-policy-source-of-truth.json}"
+POLICY_FILE="${POLICY_FILE:-knowledge/governance/pr-policy-source-of-truth.json}"
 EVENT_PATH="${GITHUB_EVENT_PATH:-}"
 
 if [[ -z "${EVENT_PATH}" || ! -f "${EVENT_PATH}" ]]; then

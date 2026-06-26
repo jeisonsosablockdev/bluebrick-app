@@ -138,7 +138,7 @@ async function ensureTemplateFiles(templateDir) {
     await fs.access(storyTemplatePath);
   } catch {
     throw new Error(
-      "RFC templates not found. Expected files: docs/rfcs/templates/EPIC-README.template.md and docs/rfcs/templates/STORY.template.md"
+      "RFC templates not found. Expected files: knowledge/rfcs/templates/EPIC-README.template.md and knowledge/rfcs/templates/STORY.template.md"
     );
   }
 
@@ -162,7 +162,7 @@ async function createRfcScaffold(options) {
     throw new Error("`--story-slug` cannot be empty.");
   }
 
-  const rfcsRoot = path.join(rootDir, "docs", "rfcs");
+  const rfcsRoot = path.join(rootDir, "knowledge", "rfcs");
   const templateDir = path.join(rfcsRoot, "templates");
   const { epicTemplatePath, storyTemplatePath } = await ensureTemplateFiles(templateDir);
   const { epicName, storyName, replacements } = buildReplacements({

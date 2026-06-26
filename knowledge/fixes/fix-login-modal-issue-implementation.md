@@ -1,0 +1,855 @@
+# Implementation: Login modal viewport anchoring and auth state clarity
+
+## Status
+- S01 artifact slice merged into the initiative branch.
+- S02 modal viewport slice is merged into the initiative branch.
+- S03 auth-state matrix slice is merged into the initiative branch.
+- S04 disconnect/sign-out slice is merged into the initiative branch.
+- S05 QA/review/docs slice is merged into the initiative branch.
+- S06 modal action layout slice is implemented after visual review.
+- S07 connected-wallet disconnect visual-state slice is implemented after follow-up review.
+- S08 wallet intent gating slice is implemented after reload-flow review.
+- S09 wallet-connected page sharpness slice is implemented after visual review.
+- S10 wallet signing intent modal redesign slice is implemented after UX review.
+- S11 wallet proof progress polish slice is implemented after visual color review.
+- Initial BRI-167 implementation was merged into `develop`.
+- S12 P1 logout refresh hardening is merged into the hardening branch.
+- S13 P2 reduced-motion hardening is merged into the hardening branch.
+- S14 P3 artifact status sync is implemented in this slice.
+- S15 clean-code extraction is implemented in this slice.
+- S16 reviewer clean-code follow-up is implemented in this slice.
+- S17-S20 technical-debt cleanup slices are implemented from the strict audit.
+- S21 private-route logout redirect is implemented after admin dashboard regression review.
+- S22 Clean Code remediation plan is documented from the post-S21 audit.
+- S23-S30 are planned as TDD-first clean-code remediation slices.
+- S31-S36 implement the Phantom `autoConnect` route-scope follow-up.
+- Linear issue key: `BRI-167`.
+
+## Objective
+Fix the login modal so it behaves as viewport-owned auth chrome and presents a clear state model across anonymous, wallet-connected, SIWS-authenticated, federated, and hybrid states.
+
+## Scope
+- `components/WalletModal.tsx`
+- `components/motion/route-transition.tsx`
+- `lib/motion.ts`
+- `tests/components/wallet-modal-header-cta.test.ts`
+- `tests/lib/motion.test.ts`
+- `e2e/wallet-modal-auth-entry.pw.spec.ts`
+- `knowledge/auth-flow.md`
+- `knowledge/session-model.md`
+- possibly `tests/api/auth-me-route.test.ts` or logout route coverage if investigation shows server response drift
+
+## Non-Goals
+- Do not change SIWS signature verification, nonce generation, or role derivation.
+- Do not change WorkOS account creation/linking semantics.
+- Do not redesign the broader login modal visual language beyond state clarity.
+- Do not change wallet adapter library configuration unless disconnect investigation proves it is required.
+
+## Linear
+- Issue: `BRI-167`
+- Owner: `Codex`
+- Linear entry slug: `fix-login-modal-issue-bri-167`
+
+## Artifact Pair
+- Problem artifact: `knowledge/fixes/fix-login-modal-issue.md`
+- Solution artifact: `knowledge/fixes/fix-login-modal-issue-implementation.md`
+
+## Linear Initiative Branch
+Proposed once issue key exists:
+
+`fix/app-login-modal-issue-bri-167`
+
+Initiative branch:
+
+`fix/app-login-modal-issue-bri-167`
+
+## Spec Slice
+- Branch: `fix/app-login-modal-issue-bri-167-s01-spec`
+- Status: `in-review`
+- Objective: make the artifact pair decision-complete, confirm slice boundaries, and define test-plan-first gates before implementation.
+- Deliverables:
+  - problem artifact finalized
+  - solution artifact finalized
+  - slice table approved
+  - open questions resolved or explicitly deferred
+
+## Slice Plan
+| Slice | Status | Branch | Objective | Technical Scope | Validation | PR |
+| --- | --- | --- | --- | --- | --- | --- |
+| S01 | merged | `fix/app-login-modal-issue-bri-167-s01-spec` | Finalize scope, risks, state matrix, and acceptance gates | `knowledge/fixes/fix-login-modal-issue.md`, `knowledge/fixes/fix-login-modal-issue-implementation.md` | artifact review, docs governance later in closeout | merged locally |
+| S02 | merged | `fix/app-login-modal-issue-bri-167-s02-modal-viewport` | Make the modal viewport-owned and stop page scroll-on-open | `components/WalletModal.tsx`, component test coverage, Playwright modal bounding-box evidence | targeted Vitest, `/marketplace` + `/` Playwright screenshots, responsive 320/375/768/1024 | merged locally |
+| S03 | merged | `fix/app-login-modal-issue-bri-167-s03-auth-state-matrix` | Separate wallet adapter connection from authenticated session UI | `WalletModal` derived state names and render branches, focused component tests | targeted Vitest for anonymous, connected-pending-auth, wallet session, federated-only states | merged locally |
+| S04 | merged | `fix/app-login-modal-issue-bri-167-s04-disconnect-signout` | Verify and tighten sign-out/disconnect behavior without changing server authority | `WalletModal` disconnect flow; API tests only if route behavior is implicated | targeted Vitest, possible `tests/api/auth-me-route.test.ts` or logout tests, manual/browser proof | merged locally |
+| S05 | implemented | `fix/app-login-modal-issue-bri-167-s05-qa-review-docs` | Close frontend/auth QA, docs sync, clean-code reviewer gate | docs updates, responsive evidence, full validation | Playwright, Synpress if wallet auth path is exercised, `npm run validate`, clean-code pass | local slice |
+| S06 | implemented | `fix/app-login-modal-issue-bri-167-s06-modal-action-layout` | Restore visual harmony for authenticated modal actions | `WalletModal` action layout, component assertion, artifact evidence | targeted Vitest, targeted Playwright modal evidence, docs governance | local slice |
+| S07 | implemented | `fix/app-login-modal-issue-bri-167-s07-disconnect-visual-state` | Fix connected-wallet pending layout and visible disconnect completion | `WalletModal` action stack, disconnect local state, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
+| S08 | implemented | `fix/app-login-modal-issue-bri-167-s08-wallet-intent-gating` | Avoid exposing auto-connected wallet technical state on generic sign-in after reload | `WalletModal` wallet-intent state, connected-wallet UI gating, component assertions, artifact evidence | targeted Vitest, typecheck, Playwright smoke, docs governance | local slice |
+| S09 | implemented | `fix/app-login-modal-issue-bri-167-s09-wallet-connected-sharpness` | Keep marketplace content sharp after wallet sign-in refresh | navigation-origin fallback motion, motion regression assertion, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke if needed | local slice |
+| S10 | implemented | `fix/app-login-modal-issue-bri-167-s10-wallet-signing-intent-modal` | Redesign wallet-signing modal so it communicates intent and progress | `WalletModal` wallet proof panel, Motion progress states, copy/action hierarchy, component assertions | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
+| S11 | implemented | `fix/app-login-modal-issue-bri-167-s11-wallet-progress-polish` | Align wallet proof progress indicators with the BRIDS glass palette | `WalletModal` progress/status styling, component assertions, artifact evidence | targeted Vitest, typecheck, docs governance, Playwright smoke | local slice |
+| S12 | merged | `fix/app-login-modal-issue-bri-167-s12-logout-refresh-hardening` | Resolve P1 logout refresh asymmetry after wallet-only sign-out | `WalletModal` disconnect success branch, component assertion | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S13 | merged | `fix/app-login-modal-issue-bri-167-s13-reduced-motion-hardening` | Resolve P2 reduced-motion gaps in modal progress and route fallback motion | `WalletModal`, `components/motion/route-transition.tsx`, `lib/motion.ts`, motion assertions | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S14 | implemented | `fix/app-login-modal-issue-bri-167-s14-artifact-status-sync` | Resolve P3 artifact drift after implementation and reviewer pass | `knowledge/fixes/fix-login-modal-issue.md`, `knowledge/fixes/fix-login-modal-issue-implementation.md`, Linear note if needed | docs governance, artifact review | local slice |
+| S15 | implemented | `fix/app-login-modal-issue-bri-167-s15-clean-code-wallet-proof-panel` | Extract wallet proof presentation to reduce `WalletModal` concentration without changing auth authority | `WalletModal`, `WalletProofPanel`, wallet modal constants, focused tests | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S16 | implemented | `fix/app-login-modal-issue-bri-167-s16-wallet-modal-boundaries` | Resolve reviewer clean-code follow-up for SIWS/adapter mismatch and reduced-motion shell coverage | `WalletModal`, `WalletProofPanel`, component assertions, artifacts | targeted Vitest, typecheck, docs governance, clean-code pass | local slice |
+| S17 | implemented | `fix/app-login-modal-issue-bri-167-s17-modal-shell-extraction` | Reduce `WalletModal` size by extracting modal shell presentation | `WalletModal`, new wallet modal shell component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S18 | implemented | `fix/app-login-modal-issue-bri-167-s18-wallet-proof-props` | Replace broad scalar `WalletProofPanel` API with cohesive prop groups | `WalletProofPanel`, `WalletModal`, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S19 | implemented | `fix/app-login-modal-issue-bri-167-s19-referral-section` | Remove duplicated referral field presentation across auth paths | `WalletModal`, `WalletProofPanel`, new referral section component, component assertions | targeted Vitest, typecheck, whitespace check | local slice |
+| S20 | implemented | `fix/app-login-modal-issue-bri-167-s20-test-mock-types` | Remove brittle `as never` casts from wallet modal tests | `tests/components/wallet-modal-header-cta.test.ts` | targeted Vitest, typecheck, whitespace check | local slice |
+| S21 | implemented | `fix/app-login-modal-issue-bri-167-s21-private-logout-redirect` | Redirect logout from private routes to public main instead of refreshing into forbidden content | `WalletModal` disconnect success branch, component assertion, artifacts | targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S22 | implemented | `fix/app-login-modal-issue-bri-167-s22-clean-code-remediation-plan` | Capture Clean Code findings and TDD remediation slice map | artifacts only | docs governance, artifact review | local slice |
+| S23 | implemented | `fix/app-login-modal-issue-bri-167-s23-private-route-helper` | Move private-route logout detection out of `WalletModal` | new private-route helper, `WalletModal`, helper tests, modal regression | RED helper test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S24 | implemented | `fix/app-login-modal-issue-bri-167-s24-auth-state-equality` | Extract auth-state equality and remove duplicated comparison noise | auth equality helper, `WalletModal`, helper tests | RED equality test, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S25 | implemented | `fix/app-login-modal-issue-bri-167-s25-wallet-modal-test-factories` | Reduce wallet modal test fixture duplication | wallet modal test helpers/factories, migrated focused tests | RED helper-backed regression shape, helper implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S26 | implemented | `fix/app-login-modal-issue-bri-167-s26-referral-auth-payload` | Extract referral auth payload building from wallet sign-in handler | referral auth payload helper, `WalletModal`, helper tests | RED payload test matrix, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S27 | implemented | `fix/app-login-modal-issue-bri-167-s27-wallet-signing-prep` | Extract wallet connection/sign-message preparation from `handleWalletPrimaryAction` | wallet signing preparation helper/hook boundary, `WalletModal`, focused tests | RED connect/signature-prep tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S28 | implemented | `fix/app-login-modal-issue-bri-167-s28-post-auth-decision` | Extract post-auth profile/reward decision after SIWS success | post-auth decision helper, `WalletModal`, helper tests | RED decision tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S29 | implemented | `fix/app-login-modal-issue-bri-167-s29-wallet-proof-view-model` | Move `WalletProofPanel` copy/status derivation into a tested view model | wallet proof view-model helper, `WalletProofPanel`, tests | RED view-model state tests, implementation, targeted Vitest, typecheck, docs governance, whitespace check | local slice |
+| S30 | implemented | `fix/app-login-modal-issue-bri-167-s30-wallet-modal-orchestration-cleanup` | Compose extracted helpers and reduce `WalletModal` orchestration density | `WalletModal`, extracted helper imports, component regressions | RED characterization gap if needed, implementation, full targeted wallet modal suite, typecheck, docs governance, clean-code pass | local slice |
+| S31 | implemented | `fix/app-login-modal-issue-bri-167-s31-phantom-autoconnect-scope-spec` | Define Phantom autoConnect route scoping as a BRI-167 bugfix | `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md`, `knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md` | docs governance, Linear BRI-167 trace | local slice |
+| S32 | implemented | `fix/app-login-modal-issue-bri-167-s32-runtime-autoconnect-scope` | Make wallet runtime autoConnect default-off and opt-in only on `/admin/assets/new` | `WalletRuntimeProvider`, admin asset route/layout composition | provider tests, route composition assertions | local slice |
+| S33 | implemented | `fix/app-login-modal-issue-bri-167-s33-wallet-selection-intent` | Remove mount-time Phantom selection from public login surfaces and keep explicit wallet action working | `WalletModal`, modal tests | no-selection-on-mount test, explicit connect test | local slice |
+| S34 | implemented | `fix/app-login-modal-issue-bri-167-s34-admin-reconnect-regression` | Preserve BRI-165 admin reconnect behavior and mismatch guard | admin asset wallet reconnect path | admin reconnect regression, targeted modal tests | local slice |
+| S35 | implemented | `fix/app-login-modal-issue-bri-167-s35-cross-context-loop-qa` | Verify focus/visibility/storage revalidation does not trigger public wallet reconnect loops | auth sync/focus behavior | default-off runtime and no mount-selection regression tests | local slice |
+| S36 | active | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Close docs, QA, and clean-code evidence for Phantom autoConnect route scope | docs, validation evidence, final review | docs governance, Playwright/Synpress, `npm run validate` | in progress |
+| S36 | planned | `fix/app-login-modal-issue-bri-167-s36-docs-qa-review` | Update auth/session docs and close QA/reviewer gates | docs and final validation | Playwright, Synpress as applicable, `npm run validate`, clean-code pass | pending |
+
+## Order Of Execution
+1. Complete S01 and get explicit approval for the slice map.
+2. Run S02 first because viewport anchoring affects all modal evidence and screenshots.
+3. Run S03 after viewport behavior is stable so UI-state assertions are not polluted by layout bugs.
+4. Run S04 after state labels are clear, because disconnect success/failure must be validated against the final state matrix.
+5. Run S05 as aggregation: responsive QA, auth/session docs, security check, reviewer/clean-code closeout.
+6. Run follow-up slices S06-S11 only for visual/regression issues found in browser review, keeping each slice scoped to one observable defect.
+7. Run S12-S15 as post-review hardening after the first merge to `develop`: P1 behavioral fix, P2 accessibility/motion fix, P3 artifact sync, then clean-code extraction.
+8. Run S17-S20 as strict audit remediation after S16: modal shell extraction, wallet proof prop grouping, shared referral section, then typed test mocks.
+9. Run S21 after admin dashboard regression review: private-route logout must leave the private route before the route refresh can render forbidden state.
+10. Run S22 as a documentation-only planning slice for the post-S21 Clean Code audit.
+11. Run S23-S30 in order. Each slice starts with a failing or missing targeted test, lands the smallest implementation needed to pass, and then updates this artifact with evidence.
+12. Run S31-S36 as the Phantom autoConnect route-scope follow-up. Each delivery slice owns one responsibility so public wallet consent and admin signer recovery can be reviewed independently.
+
+## Post-Reviewer Hardening Plan
+### S12 - P1 Logout Refresh Hardening
+Problem:
+- wallet login success calls `router.refresh()` after SIWS session creation
+- wallet-only logout clears local state and broadcasts auth sync, but the non-federated success branch does not refresh the route
+
+Implementation:
+- add route refresh after successful wallet-only logout/disconnect
+- keep server auth authority unchanged
+- add a component regression assertion for the logout refresh branch
+
+Acceptance:
+- successful wallet-only logout clears local UI state and requests a route refresh
+- federated sign-out behavior remains unchanged
+
+Status:
+- Implemented in S12 by refreshing the route after successful wallet-only logout.
+- Component regression coverage confirms `router.refresh()` is called in that branch.
+
+### S13 - P2 Prefers Reduced Motion Hardening
+Problem:
+- the wallet proof panel can animate status/progress even when the user requests reduced motion
+- route transition fallback/page variants still animate in reduced-motion mode
+
+Implementation:
+- gate repeated wallet proof animations with `useReducedMotion`
+- add reduced-motion route variants that avoid transform/filter motion
+- preserve the normal BRIDS Motion 12 experience for users without reduced-motion preference
+
+Acceptance:
+- reduced-motion users do not receive repeated progress sweeps or page transform/filter transitions
+- existing visual states remain legible without animation
+
+Status:
+- Implemented in S13 by gating wallet proof repeated animations with `useReducedMotion`.
+- Route transitions now use reduced-motion variants without transform/filter movement when the preference is active.
+
+### S14 - P3 Artifact Status Sync
+Problem:
+- artifacts still carried stale pre-implementation wording after the initial merge
+
+Implementation:
+- update problem and implementation artifacts to reflect merged implementation plus reopened hardening slices
+- keep Linear issue key and artifact pair traceability explicit
+
+Acceptance:
+- docs governance passes
+- artifacts describe current branch intent and remaining slices without contradicting implementation state
+
+Status:
+- Implemented in S14.
+- S15 remains as the clean-code closeout slice before final validation.
+
+### S15 - Clean-Code Wallet Proof Refactor
+Problem:
+- `WalletModal` has become a large orchestration component that also owns detailed wallet proof presentation
+
+Implementation:
+- extract wallet proof presentation into a focused child component or narrow helpers
+- keep auth decisions, fetch/logout, SIWS signing, and router refresh in the parent
+- preserve copy, state names, and tests unless the extraction reveals a safer naming improvement
+
+Acceptance:
+- no auth behavior change
+- component tests still pass
+- clean-code review has no blocking findings
+
+Status:
+- Implemented in S15 by extracting the wallet proof presentation into `components/wallet-modal/wallet-proof-panel.tsx`.
+- The parent modal still owns auth decisions, SIWS signing, disconnect/logout, and route refresh.
+- Phantom install URL now lives in `components/wallet-modal/constants.ts` to avoid duplicate presentation constants.
+
+### S16 - Reviewer Clean-Code Boundary Follow-Up
+Problem:
+- A connected Phantom adapter could differ from the active SIWS session wallet while the modal still presented the SIWS session as active.
+- `Copy Address` could copy the adapter public key even when the SIWS session belonged to a different public key.
+- The modal shell still used entrance/exit motion and an animated status spinner when `prefers-reduced-motion` was active.
+
+Implementation:
+- derive `hasWalletSessionAdapterMismatch` explicitly in `WalletModal`
+- remove primary wallet and copy actions from the mismatch state
+- show a wallet mismatch status in `WalletProofPanel`
+- keep sign-out/disconnect as the recovery action
+- gate overlay, panel, and top status indicator motion with reduced-motion preference
+
+Acceptance:
+- SIWS wallet A plus connected adapter wallet B is not rendered as an active matching wallet session
+- copy address is hidden in mismatch state
+- reduced-motion users do not receive shell transform/scale motion or spinning status feedback
+
+Status:
+- Implemented in S16.
+
+### S17 - Modal Shell Extraction
+Problem:
+- `WalletModal` remains a large orchestration component and still owns modal shell markup.
+
+Implementation:
+- extract portal overlay, panel motion, close control, title, and top feedback presentation into a focused shell component
+- keep auth state, wallet adapter logic, SIWS, logout, referrals, and navigation decisions in `WalletModal`
+
+Acceptance:
+- no auth behavior change
+- modal remains viewport-owned and reduced-motion aware
+- component tests still pass
+
+Status:
+- Implemented in S17 by extracting `components/wallet-modal/wallet-modal-shell.tsx`.
+- The shell now owns portal, overlay, panel, close action, title, top feedback, and reduced-motion motion variants.
+
+### S18 - Wallet Proof Prop Groups
+Problem:
+- `WalletProofPanel` receives many scalar props, making parent/presentational coupling noisy.
+
+Implementation:
+- group props into `session`, `walletStatus`, `referral`, and `actions`
+- preserve the same UI states and copy
+
+Acceptance:
+- no behavior change
+- easier review surface for future wallet proof changes
+
+Status:
+- Implemented in S18 by grouping `WalletProofPanel` inputs into `session`, `connection`, `referral`, and `actions`.
+- Auth authority and derived state ownership remain in `WalletModal`.
+
+### S19 - Referral Section Extraction
+Problem:
+- referral field presentation is duplicated between anonymous auth and wallet proof flows.
+
+Implementation:
+- extract a shared `ReferralCodeSection` wrapper around `ReferralCodeField`
+- use it in both auth entry and wallet proof paths
+
+Acceptance:
+- copy remains identical
+- future referral field changes have one presentation owner
+
+Status:
+- Implemented in S19 by introducing `components/wallet-modal/referral-code-section.tsx`.
+- Anonymous auth entry and wallet proof now share the same referral presentation owner.
+
+### S20 - Wallet Modal Test Mock Typing
+Problem:
+- wallet modal tests use `as never` for referral mock implementations.
+
+Implementation:
+- introduce typed referral hint fixtures/helpers
+- remove `as never` casts while preserving test intent
+
+Acceptance:
+- component tests pass
+- test helper types better reflect production referral hint shape
+
+Status:
+- Implemented in S20 by typing referral hint fixtures and the SIWS mock input/output.
+- `tests/components/wallet-modal-header-cta.test.ts` no longer uses `as never`.
+
+### S21 - Private Route Logout Redirect
+Problem:
+- From `/admin/dashboard`, wallet sign-out clears admin authorization and then refreshes the same private route.
+- The admin layout correctly renders forbidden content after auth is gone, so the user lands on `/403`/forbidden instead of returning to the public main surface.
+
+Implementation:
+- detect private current paths during logout (`/admin`, `/protected`, `/checkout`)
+- after successful wallet-only logout, push to `/` when the current path is private
+- keep public-route wallet logout behavior as a refresh so public content can revalidate auth-dependent chrome in place
+- keep federated sign-out return target public when initiated from a private route
+
+Acceptance:
+- signing out from `/admin/dashboard` navigates to `/`
+- existing public-route logout refresh behavior remains covered
+- server-side admin authorization remains unchanged
+
+Status:
+- Implemented in S21 by routing wallet-only logout from private paths to `/` instead of refreshing the private route.
+- Federated sign-out also uses `/` as the `returnTo` target when initiated from a private path.
+- Public-route wallet logout still refreshes in place.
+- S21 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S21 type validation: `npm run typecheck` passed.
+- S21 docs governance validation: `npm run validate:docs-governance` passed.
+- S21 whitespace validation: `git diff --check` passed.
+- S21 full validation: `npm run validate` passed with the known `pg` SSL mode warning.
+
+### S22 - Clean Code Remediation Plan
+Problem:
+- The post-S21 Clean Code audit found no blockers, but `WalletModal` and its test file remain high-change hotspots.
+
+Implementation:
+- add the audit findings to the problem artifact
+- create the TDD-first remediation slice map in this implementation artifact
+- keep this slice documentation-only
+
+Acceptance:
+- artifacts identify every Clean Code finding and the slice that owns it
+- every remediation slice states the RED test first, implementation scope, and validation gate
+
+Status:
+- Implemented in S22.
+- S22 docs governance validation: `npm run validate:docs-governance` passed.
+- S22 whitespace validation: `git diff --check` passed.
+
+### S23 - Private Route Helper Extraction
+Problem:
+- Private route prefixes are hardcoded inside `WalletModal`.
+
+TDD plan:
+1. RED: add helper tests proving `/admin`, `/admin/dashboard`, `/protected`, `/protected/perfil`, and `/checkout` are private post-logout paths, while `/`, `/marketplace`, and `/403` are not.
+2. Implement a shared helper, likely under `lib/navigation/private-routes.ts` or an equivalent local navigation helper module.
+3. Replace `WalletModal` local constants and `shouldRedirectToPublicAfterLogout` with the helper.
+4. Re-run the S21 component regression to confirm `/admin/dashboard` still pushes `/`.
+
+Validation:
+- new helper unit test
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts <new-helper-test>`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S23 by adding `lib/navigation/private-routes.ts`.
+- RED confirmed before implementation: `tests/lib/private-routes.test.ts` failed because the helper module did not exist.
+- S23 targeted validation: `npm test -- tests/lib/private-routes.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 24 tests.
+- S23 type validation: `npm run typecheck` passed.
+- S23 docs governance validation: `npm run validate:docs-governance` passed.
+- S23 whitespace validation: `git diff --check` passed.
+
+### S24 - Auth State Equality Extraction
+Problem:
+- `refreshAuthState` keeps a long inline equality check and repeats `federatedAvailable`.
+
+TDD plan:
+1. RED: add tests for an `areAuthMeResponsesEquivalent` helper covering identical auth payloads, role changes, pubkey changes, federated availability changes, and optional account flags.
+2. Implement the helper in a focused auth client/state module.
+3. Replace the inline comparison in `WalletModal`.
+4. Confirm `refreshAuthState` still preserves the previous object when the payload is equivalent.
+
+Validation:
+- new auth equality unit test
+- targeted wallet modal component test
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S24 by adding `lib/auth-state.ts`.
+- RED confirmed before implementation: `tests/lib/auth-state.test.ts` failed because the helper module did not exist.
+- S24 targeted validation: `npm test -- tests/lib/auth-state.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S24 type validation: `npm run typecheck` passed.
+- S24 docs governance validation: `npm run validate:docs-governance` passed.
+- S24 whitespace validation: `git diff --check` passed.
+
+### S25 - Wallet Modal Test Factories
+Problem:
+- `tests/components/wallet-modal-header-cta.test.ts` repeats large Phantom wallet and auth fixtures.
+
+TDD plan:
+1. RED: add or migrate one regression to express setup through helper intent, for example `mockConnectedPhantomWallet()` plus `mockWalletAuthSession()`.
+2. Implement test factories in the test file or a colocated test helper.
+3. Migrate only the duplicated logout/mismatch setup first; keep assertions unchanged.
+4. Verify the suite remains behavior-equivalent.
+
+Validation:
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S25 by adding `createWalletAuthSession` and `mockAuthenticatedPhantomWalletSession` test helpers.
+- RED confirmed before implementation: the private admin logout regression failed with `mockAuthenticatedPhantomWalletSession is not defined`.
+- Migrated the private admin logout and public logout regression setup to the helper-backed shape.
+- S25 targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 22 tests.
+- S25 type validation: `npm run typecheck` passed.
+- S25 docs governance validation: `npm run validate:docs-governance` passed.
+- S25 whitespace validation: `git diff --check` passed.
+
+### S26 - Referral Auth Payload Extraction
+Problem:
+- `handleWalletPrimaryAction` builds referral normalization, attribution source, and metadata inline.
+
+TDD plan:
+1. RED: add tests for a pure referral auth payload helper covering empty codes, manual codes, auto query hints, mobile/Phantom-app attribution, and metadata landing path.
+2. Implement the helper.
+3. Replace the inline referral block in `handleWalletPrimaryAction`.
+4. Preserve existing SIWS and referral intent behavior.
+
+Validation:
+- new referral payload unit test
+- targeted wallet modal referral tests
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S26 by adding `buildReferralAuthPayload` to `lib/referrals/client-state.ts`.
+- RED confirmed before implementation: referral client-state tests failed because `buildReferralAuthPayload` was not a function.
+- Updated the wallet modal referral client-state mock to expose the new helper contract.
+- S26 targeted validation: `npm test -- tests/lib/referral-client-state.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 29 tests.
+- S26 type validation: `npm run typecheck` passed.
+- S26 docs governance validation: `npm run validate:docs-governance` passed.
+- S26 whitespace validation: `git diff --check` passed.
+
+### S27 - Wallet Signing Preparation Extraction
+Problem:
+- `handleWalletPrimaryAction` mixes adapter selection/connection, public-key waiting, and sign-message waiting with SIWS/session behavior.
+
+TDD plan:
+1. RED: add tests for the smallest extractable wallet signing decision helper, covering already-connected wallet, missing public key, reconnecting existing session, and mismatched session wallet.
+2. Implement the helper or hook boundary without changing wallet adapter authority.
+3. Update `handleWalletPrimaryAction` to call the helper before SIWS.
+4. Keep Phantom selection/connect side effects in the React boundary where adapter APIs require it.
+
+Validation:
+- new helper/hook tests where practical
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S27 by adding `lib/wallet-signing-prep.ts`.
+- RED confirmed before implementation: `tests/lib/wallet-signing-prep.test.ts` failed because the helper module did not exist.
+- The helper now owns mismatch, already-authenticated, needs-connection, and ready decisions while adapter side effects remain in `WalletModal`.
+- S27 targeted validation: `npm test -- tests/lib/wallet-signing-prep.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S27 type validation: `npm run typecheck` passed.
+- S27 docs governance validation: `npm run validate:docs-governance` passed.
+- S27 whitespace validation: `git diff --check` passed.
+
+### S28 - Post Auth Decision Extraction
+Problem:
+- After SIWS success, `handleWalletPrimaryAction` fetches profile data, derives onboarding reward UI state, mutates modal state, and navigates.
+
+TDD plan:
+1. RED: add tests for a pure post-auth decision helper covering profile complete, reward reminder, missing profile fields, 404 fallback, and fetch failure fail-open.
+2. Implement the helper with the fallback reward contract.
+3. Replace the inline profile/reward decision branch in `handleWalletPrimaryAction`.
+4. Preserve new-user navigation to `/protected`.
+
+Validation:
+- new post-auth decision unit test
+- targeted wallet modal post-auth tests
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S28 by adding `lib/post-auth-decision.ts`.
+- RED confirmed before implementation: `tests/lib/post-auth-decision.test.ts` failed because the helper module did not exist.
+- `WalletModal` now delegates post-SIWS profile/reward modal routing decisions to the pure helper while keeping fetch and navigation side effects in the component.
+- S28 targeted validation: `npm test -- tests/lib/post-auth-decision.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S28 type validation: `npm run typecheck` passed.
+- S28 docs governance validation: `npm run validate:docs-governance` passed.
+- S28 whitespace validation: `git diff --check` passed.
+
+### S29 - Wallet Proof View Model
+Problem:
+- `WalletProofPanel` still derives title, description, status badge, and progress steps inline in JSX.
+
+TDD plan:
+1. RED: add view-model tests for mismatch, signing, verifying, active session, pending wallet proof, reduced-motion neutral state, and step completion.
+2. Implement `getWalletProofViewModel` or equivalent.
+3. Update `WalletProofPanel` to render the view model.
+4. Keep visual output and copy unchanged.
+
+Validation:
+- new wallet proof view-model test
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `git diff --check`
+
+Status:
+- Implemented in S29 by adding `lib/wallet-proof-view-model.ts`.
+- RED confirmed before implementation: `tests/lib/wallet-proof-view-model.test.ts` failed because the helper module did not exist.
+- `WalletProofPanel` now renders a tested view model for eyebrow, title, description, status tone, status label, selected-wallet copy, and progress steps.
+- S29 targeted validation: `npm test -- tests/lib/wallet-proof-view-model.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 27 tests.
+- S29 type validation: `npm run typecheck` passed.
+- S29 docs governance validation: `npm run validate:docs-governance` passed.
+- S29 whitespace validation: `git diff --check` passed.
+
+### S30 - Wallet Modal Orchestration Cleanup
+Problem:
+- After helper extractions, `WalletModal` should be simplified so the top-level component reads as orchestration instead of mixed business logic and low-level side effects.
+
+TDD plan:
+1. RED: identify any missing characterization test before moving composition code; if no gap exists, run the existing wallet modal suite as the safety net and document why no new behavior test is needed.
+2. Replace remaining inline helper glue with named calls from S23-S29.
+3. Remove now-dead constants, duplicated branches, and noisy temporary variables.
+4. Run a final Clean Code pass against `WalletModal` and update residual debt notes.
+
+Validation:
+- `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts`
+- `npm run typecheck`
+- `npm run validate:docs-governance`
+- `npm run validate`
+- Playwright/Synpress if auth-critical behavior moved across boundaries
+- final clean-code review
+
+Status:
+- Implemented in S30 by reusing the tested post-auth fallback reward builder in `WalletModal`.
+- RED confirmed before implementation: `tests/lib/post-auth-decision.test.ts` failed because `createPostAuthFallbackReward` was not exported.
+- The prompted post-auth effect no longer rebuilds fallback reward data inline; it now shares the S28 contract without changing modal side effects or routing behavior.
+- S30 targeted validation: `npm test -- tests/lib/post-auth-decision.test.ts tests/components/wallet-modal-header-cta.test.ts tests/lib/wallet-proof-view-model.test.ts` passed with 33 tests.
+- S30 type validation: `npm run typecheck` passed.
+- S30 docs governance validation: `npm run validate:docs-governance` passed.
+- S30 whitespace validation: `git diff --check` passed.
+- S30 clean-code pass: no new blocking findings in the wallet modal module; accepted residual debt is that `WalletModal` remains a large auth/navigation orchestrator, now with private-route, auth equality, referral payload, signing prep, post-auth decision, fallback reward, and proof view-model logic extracted behind tests.
+
+Final closeout validation:
+- Full targeted wallet modal/helper suite passed: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts tests/lib/private-routes.test.ts tests/lib/auth-state.test.ts tests/lib/referral-client-state.test.ts tests/lib/wallet-signing-prep.test.ts tests/lib/post-auth-decision.test.ts tests/lib/wallet-proof-view-model.test.ts` passed with 60 tests.
+- `npm run validate` passed, including lint, typecheck, DB validation, content, route, SEO, schema, AI, feeds, operability, knowledge, workflow, and docs-governance gates.
+- `npm run e2e:synpress` passed with the `synpress-phantom` project.
+- `npm run e2e:playwright` passed the wallet modal auth entry coverage across `/` and `/marketplace` at 320/375/768/1024 and passed 20 of 22 smoke specs. `e2e/story-010-03-routes.responsive.pw.spec.ts` passed on isolated retry. `e2e/protected-profile-push-enrollment.pw.spec.ts` still fails outside this modal scope because the profile push-enrollment assertion is blocked by the protected profile onboarding/tour state during smoke execution.
+
+## Root-Cause Analysis
+### BRI-165 reconnect precedent
+BRI-165 slice 16 documented a real admin deploy regression:
+- the UI could show `Connected wallet: Not connected`
+- the admin session/header still showed an authenticated wallet
+- deploy still needed a live wallet adapter signer to submit transactions
+
+The BRI-165 fix intentionally kept two concepts separate:
+- authenticated SIWS/admin session used for server authorization
+- live wallet-adapter connection used for browser transaction signing
+
+The documented implementation enabled wallet-adapter `autoConnect` in `WalletRuntimeProvider` and changed `WalletModal` so an active SIWS wallet session with a disconnected adapter could show `Reconnect wallet`. That reconnect path calls the adapter `connect` flow without rerunning SIWS, then validates that the recovered public key matches the active session public key.
+
+This was correct for the admin deploy case. The likely BRI-167 side effect is that the inverse state became common and visible on public pages:
+- Phantom can be connected or auto-reconnected
+- `/api/auth/me` can still be anonymous, expired, or pending refresh
+- `WalletModal` can therefore show adapter state (`Connected: <wallet>`) alongside anonymous auth entry (`Mail` / `Wallet`)
+
+BRI-167 should preserve the BRI-165 security invariant: reconnecting an adapter must never bypass SIWS authorization and must reject mismatched wallet addresses. The fix should instead make the UI state matrix explicit so adapter connection is not presented as logged-in account state.
+
+### A. Modal sticks to page content or map
+`WalletModal` currently renders the modal overlay inline in every page that mounts it. The overlay uses `fixed inset-0`, but CSS fixed positioning is only viewport-fixed until an ancestor creates a fixed-position containing block. Common triggers include `transform`, `filter`, `perspective`, `contain`, and motion-generated transform styles.
+
+Because BRIDS has Motion 12 route/page surfaces and glass effects, the login modal should not depend on the page subtree for its viewport coordinate system. The screenshot behavior is consistent with the overlay being centered inside an ancestor/page box instead of the browser viewport: the backdrop still covers/dims the current view, but the dialog itself is vertically displaced and partially unreachable.
+
+Opening the modal also focuses the close button. If that close button lives in a page-local or transformed modal subtree, browser focus can scroll the underlying document toward that subtree. This explains the "se esta pegando al mapa" symptom: the modal appears connected to the marketplace map state instead of behaving like viewport chrome.
+
+Likely S02 fix:
+- portal the modal layer to `document.body`
+- focus the close button with `preventScroll`
+- give the overlay its own `overflow-y-auto` and safe-area-aware vertical padding
+- constrain the panel with `100svh`
+
+### A2. Marketplace remains blurred after wallet connection
+The marketplace route uses `PathRouteTransition` with `mode="navigation-origin"` so route changes can expand from the clicked navigation control. Wallet sign-in, however, completes with an in-place `router.refresh()` rather than a route navigation with a recorded click origin.
+
+When there is no navigation origin, the previous fallback reused full page motion variants. Those variants include `filter: blur(2px)` in the initial/exit states. If a wallet sign-in refresh lands during that page-level fallback transition, the entire marketplace shell can visually remain softened even though the modal has closed and the wallet session is valid.
+
+S09 keeps the navigation-origin fallback visually sharp by using opacity/scale-only motion for refresh-style updates. Origin-based route changes still keep their intended clip-path animation; regular page transitions outside navigation-origin mode keep their existing behavior.
+
+### E. Wallet signing modal reused a generic login action model
+The post-S08 state model was technically correct but still reused the same generic action surface for a different job: proving wallet ownership through SIWS. In the explicit wallet path, the UI could show:
+- `Conectada: <wallet>`
+- a primary `Iniciar sesion` button
+- `Cerrar sesion y desconectar wallet`
+- `Copiar direccion`
+
+That combination is confusing because the user already chose `Ingresar > Wallet`; the next task is not a generic login choice but an external Phantom signature confirmation. While Phantom is open, the modal must communicate:
+- BRIDS is waiting on Phantom
+- the signature creates the BRIDS session
+- this is not a transaction
+- disconnect is an escape action, not a competing primary path
+
+S10 changes the wallet-specific surface into a wallet proof panel with Motion-powered progress states (`Conectar`, `Firmar`, `Sesion`), a selected-wallet status, and phase-aware primary copy. The generic `Iniciar sesion` label is removed from the wallet proof path; signing now shows `Esperando confirmacion en Phantom` as a disabled progress state.
+
+### F. Wallet proof indicators overused status colors
+The S10 structure clarified the wallet signing intent, but the step chips and status badge used strong cyan/emerald treatments that read like separate colored buttons. That clashed with the modal's subdued BRIDS glass language and made `Verificando` / `Activa` feel too prominent.
+
+S11 keeps the same information architecture but restyles those indicators as quiet glass states. Completed and active steps use white glass surfaces with a restrained cyan underline for motion; active wallet session status uses a neutral white glass badge instead of emerald. The result keeps progress legible without introducing a competing color system.
+
+### B. Connected wallet is being mistaken for authenticated login
+The component currently derives:
+- `isConnected` from the wallet adapter
+- `hasWalletSession` from `authState.walletAuthenticated ?? authState.authenticated`
+- `hasFederatedSession` from `authState.federatedAuthenticated`
+- `shouldShowDirectAuthEntryActions` from federated availability plus absence of wallet/federated session
+
+That leaves a mixed state: wallet adapter connected, but no SIWS wallet session. In that state the modal can show both:
+- `Connected: <wallet>`
+- default direct entry choices: `Mail` and `Wallet`
+
+This is technically possible but confusing. Adapter connection is not login. S03 should introduce a dedicated "wallet connected, sign-in pending" state.
+
+BRI-165 makes this distinction especially important because `autoConnect` can restore the adapter without restoring or extending `siws_session`. The modal must therefore treat these as separate axes:
+- adapter signer availability
+- server-authenticated SIWS wallet session
+- federated WorkOS account session
+
+### C. Sign out may not visibly clear all local state
+`handleDisconnect` has to coordinate:
+- Solana wallet adapter disconnect
+- BRIDS SIWS session logout through `/api/auth/logout`
+- WorkOS sign-out through `/sign-out` when federated auth exists
+- local `authState`
+- cross-tab auth sync
+- router refresh
+
+S04 should verify which layer is failing before changing behavior.
+
+### D. `Signed in` should not be a primary action
+When `hasWalletSession && isConnected`, the primary wallet button can render `Signed in` with the primary gradient styling. That reads as an action button and competes with real actions like sign out, link email, and copy address.
+
+Likely S03 fix:
+- remove the `Signed in` primary CTA from the active session view
+- render signed-in state as a neutral status row
+- keep destructive/secondary actions visually separate
+
+## Test Plan First
+S02 viewport anchoring:
+- RED: open the modal and assert the dialog is rendered outside the page render container.
+- RED: opening the modal does not change the page scroll position.
+- Browser: `/marketplace` and `/` dialog top/bottom are inside the viewport.
+
+S03 auth state matrix:
+- Anonymous, no adapter, no session: show `Mail` and `Wallet`.
+- Adapter connected, no SIWS/federated session: do not show default anonymous chooser; show connected-wallet pending-auth action plus disconnect.
+- SIWS session active and adapter connected: no primary `Signed in` button; show neutral status plus secondary actions.
+- SIWS session active and adapter disconnected: show reconnect/sign out path.
+- Federated-only session: preserve current link-wallet/sign-out semantics.
+
+S04 disconnect/sign-out:
+- Clicking sign out calls wallet adapter `disconnect` when an adapter is connected or has a public key.
+- Clicking sign out posts to `/api/auth/logout`.
+- Successful logout clears local session state, broadcasts auth sync, and refreshes route/auth state.
+- Failure shows an explicit error and does not claim the user is signed out.
+
+S05 evidence:
+- Playwright evidence for `/marketplace` and `/`.
+- Responsive modal evidence at 320, 375, 768, and 1024 widths.
+- Synpress if wallet extension-dependent sign-in/sign-out is exercised as final proof.
+
+## Implementation By Slice
+### S02 - Modal Viewport
+1. Add a small `WalletModalPortal` helper in `components/WalletModal.tsx`.
+2. Render the `AnimatePresence` modal layer through the portal.
+3. Focus the initial close button with `preventScroll`.
+4. Update overlay layout classes to own modal-state overflow:
+   - `overflow-y-auto`
+   - safe-area-aware vertical padding
+   - `max-h` based on `100svh`
+
+### S03 - Auth State Matrix
+1. Introduce explicit derived state names:
+   - `hasConnectedWalletAdapter`
+   - `hasAuthenticatedWalletSession`
+   - `hasAuthenticatedAccountSession`
+   - `shouldShowAnonymousAuthEntry`
+   - `shouldShowConnectedWalletPendingAuth`
+   - `shouldShowAuthenticatedWalletActions`
+2. Replace the mixed anonymous/connected rendering with a state matrix:
+   - anonymous + adapter disconnected: direct `Mail`/`Wallet`
+   - anonymous + adapter connected: connected-wallet sign-in prompt
+   - wallet session active + adapter connected: neutral signed-in status/actions
+   - wallet session active + adapter disconnected: reconnect/sign out
+   - federated-only session: link wallet/sign out according to current semantics
+
+### S04 - Disconnect And Sign-Out
+1. Verify adapter disconnect and server logout behavior independently.
+2. Disconnect adapter when connected or when an adapter public key is present.
+3. Call `/api/auth/logout` for SIWS cleanup.
+4. Call `/sign-out` only for WorkOS/federated session cleanup.
+5. Clear local state only after successful server logout, or show a clear error if logout fails.
+6. Refresh auth state and router state after completion.
+
+### S05 - QA, Docs, Review
+1. Update `knowledge/auth-flow.md` and `knowledge/session-model.md` only with final implemented behavior.
+2. Run targeted tests and browser evidence.
+3. Run `npm run validate`.
+4. Complete explicit `code-refactoring-refactor-clean` pass.
+5. Final reviewer gate confirms no unresolved blocking findings.
+
+## Risks
+- Portal changes can affect focus, Escape close, click-outside close, and React context assumptions.
+- State-matrix changes can accidentally alter wallet linking or federated-only behavior.
+- Disconnect behavior involves both browser adapter state and server cookies; false positives are possible without browser evidence.
+- Changing auth routes would expand scope and require security/docs review.
+- Regressing the BRI-165 admin deploy recovery path would strand admins with a valid SIWS session but no live signer after refresh/navigation.
+- Removing or weakening wallet-adapter `autoConnect` globally could fix the public confusion while reintroducing the original admin deploy bug.
+
+## Security Boundary
+No auth authority changes are allowed by default:
+- no new cookies
+- no new session state
+- no client-side role decision
+- no change to SIWS nonce or verification
+- no change to WorkOS redirect semantics
+
+Any implementation that changes `/api/auth/me`, `/api/auth/logout`, `/sign-out`, SIWS cookies, or WorkOS cookies must be reviewed as an auth/session change and update `knowledge/auth-flow.md` plus `knowledge/session-model.md`.
+
+## Completion Gate
+- S01 approved before delivery starts.
+- All slice PRs target the initiative branch.
+- The final initiative PR targets `develop`.
+- Opening the login modal does not scroll the underlying page.
+- The modal is visually centered/reachable on `/marketplace` and `/`.
+- A connected wallet without SIWS auth does not show the same UI as an anonymous disconnected user.
+- Active SIWS wallet sessions do not show a colorful `Signed in` primary CTA.
+- BRI-165 admin reconnect behavior is preserved: active SIWS session plus disconnected adapter can reconnect Phantom without rerunning SIWS, and mismatched wallet recovery is rejected.
+- `Sign out & disconnect wallet` visibly removes connected/session UI after success.
+- If any logout/disconnect layer fails, the modal shows an explicit error and does not claim the user is fully signed out.
+- Required auth/session docs are updated after implementation.
+- Responsive evidence is captured at 320, 375, 768, and 1024 widths.
+- `npm run validate` passes.
+- Explicit clean-code/reviewer pass has no unresolved blocking findings.
+
+## Validation Results
+- S02 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because the open dialog still rendered inside the page render container.
+- S02 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 13 tests.
+- S02 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests across `/` and `/marketplace` at 320, 375, 768, and 1024 px widths.
+- S02 type validation: `npm run typecheck` passed.
+- S02 docs governance validation: `npm run validate:docs-governance` passed.
+- S02 whitespace validation: `git diff --check` passed.
+- S02 observed non-blocking marketplace warnings: existing chart containers can report `width(-1)` / `height(-1)` during the smoke run; the modal viewport assertions and screenshots still passed.
+- S03 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because a connected wallet adapter without SIWS still showed the anonymous `Mail` / `Wallet` chooser, and an authenticated wallet session still exposed the colorful `Sesion iniciada` action.
+- S03 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 15 tests.
+- S03 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests after the state-matrix change.
+- S03 type validation: `npm run typecheck` passed.
+- S03 docs governance validation: `npm run validate:docs-governance` passed.
+- S03 whitespace validation: `git diff --check` passed.
+- S04 RED component proof: `npm test -- tests/components/wallet-modal-header-cta.test.ts` failed before implementation because `Sign out & disconnect wallet` did not call wallet-adapter `disconnect()` when the adapter still exposed a public key but `connected` was false.
+- S04 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests.
+- S04 targeted browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests after the disconnect tightening.
+- S04 type validation: `npm run typecheck` passed.
+- S04 docs governance validation: `npm run validate:docs-governance` passed.
+- S04 whitespace validation: `git diff --check` passed.
+- S05 clean-code pass: `code-refactoring-refactor-clean` review found one lint/performance cleanup in `WalletModalPortal`; the portal now avoids effect-driven state and reads `document.body` directly on the client.
+- S05 targeted component validation after cleanup: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests.
+- S05 full validation: `npm run validate` passed.
+- S05 final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S05 Synpress validation: `npm run e2e:synpress` passed with 1 test (`phantom cache boots and the app shell loads`).
+- S05 observed non-blocking warnings: Playwright marketplace smoke still reports existing chart container width/height warnings and the database validator reports the existing pg SSL mode warning; neither blocked validation.
+- S06 visual review note: authenticated wallet sessions can show only `Sign out & disconnect wallet` in the action group; that single action must occupy the full row rather than inheriting the split two-column layout used when primary and secondary actions are both visible.
+- S06 implementation: the wallet action group now uses `sm:grid-cols-2` only when both primary wallet action and disconnect action are visible; single-action states use `grid-cols-1`, and action labels use `whitespace-nowrap` to preserve button rhythm.
+- S06 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 16 tests, including a regression assertion that the authenticated-wallet sign-out action is full-row and not split into two columns.
+- S06 type validation: `npm run typecheck` passed.
+- S06 docs governance validation: `npm run validate:docs-governance` passed.
+- S06 whitespace validation: `git diff --check` passed.
+- S06 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on rerun. One previous run had a non-reproduced `/marketplace` 768 px click miss where the modal never opened despite the header `Sign in` button remaining visible; rerun passed without code changes.
+- S07 visual review note: the connected-wallet pending state still used the split action grid, so Spanish `Cerrar sesion y desconectar wallet` crowded the right column and could look unclickable/unfinished.
+- S07 implementation: wallet modal actions now stack full-width for wallet states instead of splitting `Iniciar sesion` and disconnect into two columns.
+- S07 disconnect behavior: after a successful adapter disconnect/logout, the modal suppresses the just-disconnected adapter public key locally so stale wallet-adapter state does not continue rendering `Conectada`; the anonymous state preserves `federatedAvailable` so the modal returns to the normal `Mail` / `Wallet` chooser.
+- S07 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 17 tests, including the connected-wallet pending disconnect regression.
+- S07 type validation: `npm run typecheck` passed.
+- S07 docs governance validation: `npm run validate:docs-governance` passed.
+- S07 whitespace validation: `git diff --check` passed.
+- S07 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S08 reload-flow review note: Phantom `autoConnect` can restore adapter signer availability after page reload even when BRIDS has no SIWS session; generic `Ingresar` should not expose `Conectada / Iniciar sesion` merely because the adapter rehydrated.
+- S08 implementation: connected-wallet pending UI is now gated by explicit wallet intent. Header `Ingresar` clears wallet intent and shows the normal `Mail` / `Wallet` chooser; wallet-specific events/actions can still enter the connected-wallet signing path.
+- S08 implementation detail: connected wallet status and `Copy Address` are hidden from the generic anonymous chooser unless the user has wallet intent or an authenticated wallet session.
+- S08 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 18 tests, including autoConnect-without-SIWS generic sign-in coverage and explicit wallet-intent coverage.
+- S08 Playwright hardening: the header wallet CTA now has a stable `wallet-modal-open-button` test id, and the smoke helper retries the click once if route hydration delays the modal handler.
+- S08 type validation: `npm run typecheck` passed.
+- S08 docs governance validation: `npm run validate:docs-governance` passed.
+- S08 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S09 visual review note: after wallet sign-in, `/marketplace` can refresh in-place without a navigation origin; the route shell should not use a page-level blur fallback for that auth refresh.
+- S09 implementation: `navigation-origin` fallback motion now uses opacity/scale only, leaving origin-based route transitions intact while preventing full-page blur residue after wallet connection.
+- S09 targeted validation: `npm test -- tests/lib/motion.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 24 tests, including a regression assertion that navigation fallback variants do not include `filter`.
+- S09 type validation: `npm run typecheck` passed.
+- S09 docs governance validation: `npm run validate:docs-governance` passed.
+- S09 whitespace validation: `git diff --check` passed.
+- S09 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S09 runtime browser check: `/marketplace` route wrapper computed `filter: none` with no wallet or onboarding overlay mounted after load.
+- S10 UX review note: the wallet path needs its own intent model; after `Ingresar > Wallet`, showing `Iniciar sesion` beside disconnect reads as two competing actions while Phantom is actually waiting for a SIWS signature.
+- S10 implementation: the wallet-specific modal content is now a wallet proof panel with selected-wallet status, `Conectar / Firmar / Sesion` progress chips, phase-aware Motion feedback, and copy that states the signature creates the BRIDS session without sending a transaction.
+- S10 action hierarchy: the wallet proof primary action now reads `Solicitar firma en Phantom` when idle and `Esperando confirmacion en Phantom` while signing; the generic `Iniciar sesion` label is not rendered in this path. Pending disconnect copy is now `Cancelar y desconectar wallet`.
+- S10 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests, including signing-progress copy and disabled CTA coverage.
+- S10 type validation: `npm run typecheck` passed.
+- S10 docs governance validation: `npm run validate:docs-governance` passed.
+- S10 whitespace validation: `git diff --check` passed.
+- S10 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- S11 visual review note: the S10 progress chips communicated intent, but their cyan/emerald badge palette felt disconnected from the BRIDS glass modal.
+- S11 implementation: wallet proof status and progress chips now use quiet white-glass surfaces, restrained cyan underline motion, and no emerald active-session badge.
+- S11 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests, including assertions that `Pendiente` / `Activa` use glass styling and `Activa` avoids emerald styling.
+- S11 type validation: `npm run typecheck` passed.
+- S11 docs governance validation: `npm run validate:docs-governance` passed.
+- S11 whitespace validation: `git diff --check` passed.
+- S11 browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+
+## Post-Review Hardening Validation Results
+- S12 targeted component validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 19 tests.
+- S12 type validation: `npm run typecheck` passed.
+- S12 docs governance validation: `npm run validate:docs-governance` passed.
+- S12 whitespace validation: `git diff --check` passed.
+- S13 targeted motion/modal validation: `npm test -- tests/lib/motion.test.ts tests/components/wallet-modal-header-cta.test.ts` passed with 26 tests.
+- S13 type validation: `npm run typecheck` passed.
+- S13 docs governance validation: `npm run validate:docs-governance` passed.
+- S13 whitespace validation: `git diff --check` passed.
+- S15 clean-code pass: wallet proof UI was extracted from `WalletModal` into `WalletProofPanel`; auth authority remains in the parent.
+- S15 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 26 tests.
+- S15 type validation: `npm run typecheck` passed.
+- S15 docs governance validation: `npm run validate:docs-governance` passed.
+- S15 whitespace validation: `git diff --check` passed.
+- Final clean-code audit: no blocking findings. Non-blocking residual debt is limited to broad `WalletProofPanel` props, duplicated referral copy, and dense-but-localized auth-state derivation in `WalletModal`.
+- Final full validation: `npm run validate` passed.
+- Final browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests.
+- Final Synpress validation: `npm run e2e:synpress` passed with 1 test.
+- Final observed non-blocking warning: database validation still emits the known `pg` SSL mode warning.
+- S16 targeted motion/modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 28 tests.
+- S16 type validation: `npm run typecheck` passed.
+- S16 whitespace validation: `git diff --check` passed.
+- S17 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S17 type validation: `npm run typecheck` passed.
+- S17 whitespace validation: `git diff --check` passed.
+- S18 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S18 type validation: `npm run typecheck` passed.
+- S18 whitespace validation: `git diff --check` passed.
+- S19 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S19 type validation: `npm run typecheck` passed.
+- S19 whitespace validation: `git diff --check` passed.
+- S20 targeted modal validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts` passed with 21 tests.
+- S20 type validation: `npm run typecheck` passed.
+- S20 whitespace validation: `git diff --check` passed.
+- S17-S20 integrated targeted validation: `npm test -- tests/components/wallet-modal-header-cta.test.ts tests/lib/motion.test.ts` passed with 29 tests.
+- S17-S20 integrated type validation: `npm run typecheck` passed.
+- S17-S20 integrated docs governance validation: `npm run validate:docs-governance` passed.
+- S17-S20 integrated full validation: `npm run validate` passed.
+- S17-S20 integrated browser validation: `npx playwright test e2e/wallet-modal-auth-entry.pw.spec.ts --project=playwright-smoke` passed with 9 tests on sequential rerun.
+- S17-S20 integrated Synpress validation: `npm run e2e:synpress` passed with 1 test on sequential rerun.
+- S17-S20 initial parallel browser/Synpress run timed out during `page.goto("/")` while full validation was also running; sequential reruns passed and found no modal assertion failures.
+- S17-S20 reviewer pass: subagent reviewer found no blockers in the wallet/login modal module and confirmed SIWS session, connected adapter, mismatch state, federated flow, and reduced-motion boundaries are consistent.

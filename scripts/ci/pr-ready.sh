@@ -4,7 +4,7 @@ set -euo pipefail
 source "$(dirname "$0")/pr-governance-lib.sh"
 
 BASE_REF="develop"
-POLICY_FILE="docs/governance/pr-policy-source-of-truth.json"
+POLICY_FILE="knowledge/governance/pr-policy-source-of-truth.json"
 VALIDATE_MODE="${VALIDATE_MODE:-full}"
 HEAD_BRANCH_OVERRIDE="${HEAD_BRANCH_OVERRIDE:-}"
 
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
     *)
       if [[ "${BASE_REF}" == "develop" && "$1" != -* ]]; then
         BASE_REF="$1"
-      elif [[ "${POLICY_FILE}" == "docs/governance/pr-policy-source-of-truth.json" && "$1" != -* ]]; then
+      elif [[ "${POLICY_FILE}" == "knowledge/governance/pr-policy-source-of-truth.json" && "$1" != -* ]]; then
         POLICY_FILE="$1"
       else
         echo "❌ Unknown argument: $1"
@@ -76,7 +76,7 @@ if [[ -z "${CURRENT_BRANCH}" ]]; then
 fi
 
 if [[ "${CURRENT_BRANCH}" == "${BASE_REF}" ]]; then
-  echo "❌ You are on '${BASE_REF}'. Create a feature/fix branch first."
+  echo "❌ You are on '${BASE_REF}'. Create a parent work branch first."
   exit 1
 fi
 
@@ -155,9 +155,13 @@ echo "5) PR metadata checklist (manual before opening PR):"
 echo "- Add exactly one scope label (scope:*)"
 echo "- Add exactly one type label (type:*)"
 echo "- Add exactly one risk label (risk:*)"
-echo "- Fill PR template sections: Issue, RFC, Riesgos, Rollback Plan, Prueba Devnet"
+echo "- Fill PR template sections: Issue, RFC, Riesgos, Rollback Plan, Prueba Devnet, Human Acceptance"
 echo "- If branch touches qualifying product code, update the required artifact pair for that branch family"
-echo "- For multi-slice work, confirm the spec slice closed before delivery slices"
+echo "- For multi-SPEC work, confirm the previous SPEC merged into the parent work branch before opening the next SPEC"
 
 echo
 echo "🎉 PR preflight passed. Safe to open PR against ${BASE_REF}."
+
+echo
+echo "6) Syncing Linear review status..."
+npm run linear:issue-review

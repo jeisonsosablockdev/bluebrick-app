@@ -9,7 +9,7 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
-DOCS_DIR="docs"
+DOCS_DIR="knowledge/architecture"
 SCOPES_RAW="$1"
 IFS=',' read -r -a SCOPES <<< "$SCOPES_RAW"
 
@@ -52,7 +52,7 @@ ensure_file() {
 for scope in "${SCOPES[@]}"; do
   case "$scope" in
     program)
-      ensure_file "$DOCS_DIR/architecture.md" "Architecture"
+      ensure_file "$DOCS_DIR/architecture-overview.md" "Architecture"
       ensure_file "$DOCS_DIR/authority-model.md" "Authority Model"
       ensure_file "$DOCS_DIR/state-machine.md" "State Machine"
       ensure_file "$DOCS_DIR/threat-model.md" "Threat Model"

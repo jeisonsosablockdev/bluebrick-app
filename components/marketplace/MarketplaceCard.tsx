@@ -34,7 +34,7 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
 
   return (
     <motion.article
-      className="glass-interactive-card overflow-hidden rounded-2xl border border-white/10 bg-panel p-0"
+      className="marketplace-depth-card overflow-hidden rounded-2xl p-0"
       layoutId={layoutId}
       transition={MOTION_FAST_OPACITY_TRANSITION}
       whileHover={{ y: -3 }}
@@ -82,7 +82,7 @@ export function MarketplaceCard({ property, onOpenDetail, prioritizeImage = fals
           type="button"
           onClick={() => onOpenDetail(property.id)}
           variant="outline"
-          className="min-h-11 w-full rounded-full"
+          className="marketplace-brand-pill min-h-11 w-full rounded-full"
         >
           {t({ en: "View details", es: "Ver detalle", pt: "Ver detalhes" })}
         </Button>

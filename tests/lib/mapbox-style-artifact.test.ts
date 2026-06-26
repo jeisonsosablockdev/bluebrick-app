@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const stylePath = join(process.cwd(), "docs/mapbox/brids-marketplace-decimal-style.json");
+const stylePath = join(process.cwd(), "knowledge/mapbox/brids-marketplace-decimal-style.json");
 const styleText = readFileSync(stylePath, "utf8");
 const style = JSON.parse(styleText) as {
   version: number;

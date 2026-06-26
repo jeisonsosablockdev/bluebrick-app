@@ -6,6 +6,7 @@ yarn-error.log*
 pnpm-debug.log*
 .env
 .env.local
+.env.vercel
 .DS_Store
 playwright-report
 test-results
@@ -14,4 +15,5 @@ test-results
 .vercel
 .env*.local
 next-env.d.ts
-artifacts/
+/artifacts/
+opencode.json

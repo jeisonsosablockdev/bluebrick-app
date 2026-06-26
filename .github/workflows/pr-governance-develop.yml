@@ -93,7 +93,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
-            const policyPath = "docs/governance/pr-policy-source-of-truth.json";
+            const policyPath = "knowledge/governance/pr-policy-source-of-truth.json";
             const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
             const { data: pr } = await github.rest.pulls.get({
               owner,
@@ -118,6 +118,7 @@ jobs:
             const sizeExemptLabel = policy.labels.sizeExempt;
             const branchAgeExemptLabel = policy.labels.branchAgeExempt;
             const featureFlagRegex = new RegExp(policy.patterns.featureFlag);
+            const humanAcceptanceApprovedRegex = new RegExp(policy.patterns.humanAcceptanceApproved);
             const conventionalRegex = new RegExp(policy.patterns.commitMessage);
 
             const scopeCount = countInGroup(scopeLabels);
@@ -138,6 +139,12 @@ jobs:
             if (missingSections.length > 0) {
               errors.push(
                 `PR body is missing required sections: ${missingSections.join(", ")}. Use the PR template.`
+              );
+            }
+
+            if (!humanAcceptanceApprovedRegex.test(body)) {
+              errors.push(
+                "Human Acceptance must be approved before merge to develop. Update the PR body with `Status: approved` only after user manual testing explicitly approves the merge."
               );
             }
 

@@ -30,7 +30,7 @@ function LoadingRail({ prefersReducedMotion }: { prefersReducedMotion: boolean }
 
 function LoadingCard({ delay, prefersReducedMotion }: { delay: number; prefersReducedMotion: boolean }) {
   const card = (
-    <Card className="space-y-4 overflow-hidden bg-slate-900/70 p-0">
+    <Card className="marketplace-depth-card space-y-4 overflow-hidden p-0">
       <div className={prefersReducedMotion ? "h-44 bg-slate-700/50" : "h-44 animate-pulse bg-slate-700/50"} />
       <div className="space-y-3 p-4">
         <div className={prefersReducedMotion ? "h-4 w-2/3 rounded bg-slate-700/50" : "h-4 w-2/3 animate-pulse rounded bg-slate-700/50"} />

@@ -59,7 +59,7 @@ async function createWorkflowRepo(): Promise<string> {
 
   await cp(path.join(repoRoot, "scripts"), path.join(workDir, "scripts"), { recursive: true });
 
-  await mkdir(path.join(workDir, "docs", "features"), { recursive: true });
+  await mkdir(path.join(workDir, "knowledge", "features"), { recursive: true });
   await writeFile(
     path.join(workDir, "package.json"),
     JSON.stringify(
@@ -99,55 +99,91 @@ describe("git workflow scripts", () => {
     expect(runGit(["branch", "--show-current"], repoDir)).toBe("feature/app-initial-ui");
   });
 
-  it("creates canonical initiative and slice branches from typed arguments", async () => {
+  it("creates canonical parent work and SPEC branches from typed arguments", async () => {
     const repoDir = await createWorkflowRepo();
     const gitStartPath = path.join(repoDir, "scripts", "git-start.sh");
 
-    runBash(gitStartPath, ["feature", "shared", "slice-planning", "--mode", "initiative", "--issue", "BRI-149"], repoDir);
+    runBash(
+      gitStartPath,
+      ["feature", "shared", "fix-ui-elements", "--mode", "parent", "--owner", "czambrano", "--issue", "BRI-149"],
+      repoDir
+    );
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
-      "initiative/bri-149-slice-planning"
+      "feature/czambrano-BRI-149-fix-ui-elements"
     );
 
     runGit(["checkout", "develop"], repoDir);
-    const sliceOutput = runBash(
+    const specOutput = runBash(
       gitStartPath,
       [
-        "feature",
-        "shared",
-        "slice-planning",
+        "SPEC",
+        "governance-policy",
         "--mode",
-        "slice",
+        "spec",
+        "--owner",
+        "czambrano",
         "--issue",
         "BRI-149",
-        "--slice-id",
-        "S01",
-        "--slice-slug",
-        "governance-policy"
+        "--base",
+        "feature/czambrano-BRI-149-fix-ui-elements"
       ],
       repoDir
     );
 
-    expect(sliceOutput).toContain(
-      "Siguiente PR objetivo: initiative/bri-149-slice-planning"
+    expect(specOutput).toContain(
+      "Siguiente PR objetivo: feature/czambrano-BRI-149-fix-ui-elements"
     );
-    expect(sliceOutput).toContain("spec slice");
+    expect(specOutput).toContain("SPEC branch detectada");
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
-      "feature/shared-slice-planning-bri-149-s01-governance-policy"
+      "SPEC/czambrano-BRI-149-governance-policy"
     );
+    expect(
+      runGit(
+        ["config", "--get", "branch.SPEC/czambrano-BRI-149-governance-policy.parentWorkBranch"],
+        repoDir
+      )
+    ).toBe("feature/czambrano-BRI-149-fix-ui-elements");
   });
 
-  it("prints artifact-first guidance for fix initiative branches", async () => {
+  it("prints artifact-first guidance for fix parent work branches", async () => {
     const repoDir = await createWorkflowRepo();
 
     const output = runBash(
       path.join(repoDir, "scripts", "git-start.sh"),
-      ["fix", "shared", "agent-enforcement", "--mode", "initiative", "--issue", "BRI-157"],
+      ["fix", "shared", "agent-enforcement", "--mode", "parent", "--owner", "czambrano", "--issue", "BRI-157"],
       repoDir
     );
 
-    expect(output).toContain("spec slice");
-    expect(output).toContain("docs/fixes/fix-<slug>.md");
-    expect(output).toContain("docs/fixes/fix-<slug>-implementation.md");
+    expect(output).toContain("Parent work branch detectada");
+    expect(output).toContain("knowledge/fixes/fix-<slug>.md");
+    expect(output).toContain("knowledge/fixes/fix-<slug>-implementation.md");
+  });
+
+  it("accepts bugfix, hotfix, and epic parent work branches", async () => {
+    const repoDir = await createWorkflowRepo();
+
+    const bugfixOutput = runBash(
+      path.join(repoDir, "scripts", "git-start.sh"),
+      ["bugfix", "shared", "login-redirect-fix", "--mode", "parent", "--owner", "czambrano", "--issue", "BRI-171"],
+      repoDir
+    );
+    expect(bugfixOutput).toContain("Rama creada: bugfix/czambrano-BRI-171-login-redirect-fix");
+
+    runGit(["checkout", "develop"], repoDir);
+    const hotfixOutput = runBash(
+      path.join(repoDir, "scripts", "git-start.sh"),
+      ["hotfix", "shared", "session-cookie-restore", "--mode", "parent", "--owner", "czambrano", "--issue", "BRI-172"],
+      repoDir
+    );
+    expect(hotfixOutput).toContain("Rama creada: hotfix/czambrano-BRI-172-session-cookie-restore");
+
+    runGit(["checkout", "develop"], repoDir);
+    const epicOutput = runBash(
+      path.join(repoDir, "scripts", "git-start.sh"),
+      ["epic", "shared", "admin-collections-console", "--mode", "parent", "--owner", "czambrano", "--issue", "EPIC-011"],
+      repoDir
+    );
+    expect(epicOutput).toContain("Rama creada: epic/czambrano-EPIC-011-admin-collections-console");
   });
 
   it("rejects ambiguous two-argument calls for typed branch families", async () => {
@@ -209,18 +245,22 @@ describe("git workflow scripts", () => {
     ).toThrow("No se permiten commits directos en develop");
   });
 
-  it("guides slice pushes toward the Linear initiative branch", async () => {
+  it("guides SPEC pushes toward the parent work branch", async () => {
     const repoDir = await createWorkflowRepo();
 
     runGit(
-      ["checkout", "-b", "feature/shared-slice-planning-bri-149-s01-governance-policy"],
+      ["checkout", "-b", "SPEC/czambrano-BRI-149-governance-policy"],
+      repoDir
+    );
+    runGit(
+      ["config", "branch.SPEC/czambrano-BRI-149-governance-policy.parentWorkBranch", "feature/czambrano-BRI-149-fix-ui-elements"],
       repoDir
     );
 
     const output = runBash(path.join(repoDir, "scripts", "git-push.sh"), [], repoDir);
 
     expect(output).toContain(
-      "abrir PR desde 'feature/shared-slice-planning-bri-149-s01-governance-policy' hacia 'initiative/bri-149-slice-planning'"
+      "abrir PR desde 'SPEC/czambrano-BRI-149-governance-policy' hacia 'feature/czambrano-BRI-149-fix-ui-elements'"
     );
   });
 

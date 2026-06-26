@@ -48,7 +48,7 @@ if [[ -z "${MSG}" ]]; then
 fi
 
 if [[ -z "${SCOPE}" ]]; then
-  if [[ "${CURRENT_BRANCH}" =~ ^(feature|fix|security|nft|refactor|docs|chore)/([a-z]+)- ]]; then
+  if [[ "${CURRENT_BRANCH}" =~ ^(feature|bugfix|fix|hotfix|epic|security|nft|refactor|docs|chore)/([a-z]+)- ]]; then
     SCOPE="${BASH_REMATCH[2]}"
   fi
 fi
@@ -100,8 +100,17 @@ case "${CURRENT_BRANCH}" in
   feature/*)
     COMMIT_TYPE="feat"
     ;;
+  bugfix/*)
+    COMMIT_TYPE="fix"
+    ;;
   fix/*)
     COMMIT_TYPE="fix"
+    ;;
+  hotfix/*)
+    COMMIT_TYPE="fix"
+    ;;
+  epic/*)
+    COMMIT_TYPE="feat"
     ;;
   security/*)
     COMMIT_TYPE="security"
@@ -112,7 +121,7 @@ case "${CURRENT_BRANCH}" in
   nft/*)
     COMMIT_TYPE="nft"
     ;;
-  docs/*)
+  knowledge/*)
     COMMIT_TYPE="docs"
     ;;
   chore/*)

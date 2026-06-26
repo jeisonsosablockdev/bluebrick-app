@@ -5,26 +5,31 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-04-01 08:20:34 UTC
+Updated: 2026-06-21 06:05:34 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
-| [`STAKE_AUDIT.md`](./docs/STAKE_AUDIT.md) | general | not set | 2026-04-01 d0c0f7d |
-| [`architecture.md`](./docs/architecture.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
-| [`auth-flow.md`](./docs/auth-flow.md) | frontend/auth | 2026-03-27 08:35:00 UTC | 2026-04-01 d0c0f7d |
-| [`authority-model.md`](./docs/authority-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
-| [`devnet-proof.md`](./docs/devnet-proof.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
-| [`nft-spec.md`](./docs/nft-spec.md) | nft | 2026-04-01 08:20:33 UTC | 2026-04-01 3e89303 |
-| [`purchase-tracing.md`](./docs/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-04-01 d0c0f7d |
-| [`rbac.md`](./docs/rbac.md) | general | 2026-03-03 UTC | 2026-04-01 d0c0f7d |
-| [`session-model.md`](./docs/session-model.md) | frontend/auth | 2026-03-27 08:35:00 UTC | 2026-04-01 d0c0f7d |
-| [`state-machine.md`](./docs/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
-| [`threat-model.md`](./docs/threat-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-04-01 d0c0f7d |
+| [`app-technical-roadmap-investor-brief.md`](./knowledge/architecture/app-technical-roadmap-investor-brief.md) | general | not set | 2026-06-18 1f8b29f |
+| [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | 2026-04-01 08:20:33 UTC | 2026-06-16 ea2ee14 |
+| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | 2026-06-06 | 2026-06-16 edc6ed6 |
+| [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | 2026-04-01 10:45:00 UTC | 2026-06-16 6716384 |
+| [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | 2026-04-01 16:05:30 UTC | 2026-06-16 ea2ee14 |
+| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-06-16 03166ec |
+| [`linear-context.md`](./knowledge/architecture/linear-context.md) | general | not set | 2026-06-18 1f8b29f |
+| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | 2026-06-07 | 2026-06-16 ea2ee14 |
+| [`purchase-tracing.md`](./knowledge/architecture/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-06-16 ea2ee14 |
+| [`rbac.md`](./knowledge/architecture/rbac.md) | general | 2026-03-03 UTC | 2026-06-16 ea2ee14 |
+| [`rotation-spec.md`](./knowledge/architecture/rotation-spec.md) | general | not set | 2026-06-16 03166ec |
+| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | 2026-06-06 | 2026-06-16 ea2ee14 |
+| [`stake-audit.md`](./knowledge/architecture/stake-audit.md) | general | not set | 2026-06-18 1f8b29f |
+| [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-16 03166ec |
+| [`threat-model.md`](./knowledge/architecture/threat-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-16 ea2ee14 |
+| [`toolchain-policy.md`](./knowledge/architecture/toolchain-policy.md) | general | not set | 2026-06-16 ea2ee14 |
 
 ### Required Docs by Change Type
-- Blockchain (/programs): `architecture.md`, `authority-model.md`, `state-machine.md`, `threat-model.md`, `devnet-proof.md`
-- Frontend/Auth (/app): `auth-flow.md`, `session-model.md`
-- NFT features: `nft-spec.md`
+- Blockchain (/programs): `knowledge/architecture/architecture-overview.md`, `knowledge/architecture/authority-model.md`, `knowledge/architecture/state-machine.md`, `knowledge/architecture/threat-model.md`, `knowledge/architecture/devnet-proof.md`
+- Frontend/Auth (/app): `knowledge/architecture/auth-flow.md`, `knowledge/architecture/session-model.md`
+- NFT features: `knowledge/architecture/nft-spec.md`
 <!-- DOCS-AUTO:END -->
 
 ## Operational Map
@@ -39,7 +44,7 @@ This repository is currently a Next.js application with Solana integrations and 
 - `db/`: SQL migrations and database evolution. Start here when a feature needs new persistence, audit tables, queue state, idempotency storage, or read-model support.
 - `tests/`: Unit and route-level verification with Vitest. This is the first place to update for TDD and regression coverage on application logic.
 - `e2e/`: Playwright and Synpress coverage for browser, auth, admin, wallet, and responsive flows. Use this when the change affects critical UI journeys or wallet-connected behavior.
-- `docs/`: Canonical architecture, security, auth, NFT, feature-note, RFC, and workflow documentation. Update this alongside code according to `docs/governance/documentation-policy.md`.
+- `knowledge/`: Canonical architecture, security, auth, NFT, feature-note, RFC, and workflow documentation. Update this alongside code according to `knowledge/governance/documentation-policy.md`.
 - `scripts/`: Repo automation for docs sync, PR governance, RFC scaffolding, devnet proof helpers, migrations, and workflow bootstrap. Check here before inventing a new one-off command.
 - `.mcp.json`: Solana MCP and Helius MCP project wiring. Review this when the task depends on MCP-backed Solana guidance or Helius asset/transaction inspection.
 
@@ -55,7 +60,7 @@ This repository is currently a Next.js application with Solana integrations and 
 - Core Candy Machine, Metaplex Core minting, authority rotation, snapshots, or devnet mint/admin tooling: start in `lib/core-candy-machine-admin.ts`, `lib/metaplex-core-admin.ts`, `lib/core-authority-lifecycle.ts`, and the matching `app/api/admin/core-candy-machine/*` or `app/api/admin/metaplex-core/*` handlers.
 - Compliance, KYC, AML, suspension, or operational review queues: start in `lib/compliance/*`, `lib/kyc/*`, `app/api/internal/compliance/*`, and `app/api/admin/compliance/*`.
 - Content, AI-readable endpoints, knowledge pages, feeds, or SEO/schema output: start in `lib/content/*`, `lib/knowledge*`, `lib/schema/*`, `lib/seo/*`, and the related route handlers under `app/api`, `app/feeds`, `app/knowledge`, `app/ai.txt`, and `app/llms.txt`.
-- Governance, docs sync, PR policy, RFC enforcement, or branch/PR automation: start in `scripts/ci/*`, `scripts/docs-sync.sh`, `scripts/rfc-new*.js`, `scripts/linear-plan*.js`, and `docs/governance/*`.
+- Governance, docs sync, PR policy, RFC enforcement, or branch/PR automation: start in `scripts/ci/*`, `scripts/docs-sync.sh`, `scripts/rfc-new*.js`, `scripts/linear-plan*.js`, and `knowledge/governance/*`.
 
 ### Current Architectural Notes
 
@@ -70,11 +75,11 @@ The following screenshots were exported with VS Code's `Dependency Graph Viewer`
 
 Graph view:
 
-![Dependency Graph Viewer graph export for purchase-service.ts](./docs/images/purchase-service-ts-graph.png)
+![Dependency Graph Viewer graph export for purchase-service.ts](./knowledge/images/purchase-service-ts-graph.png)
 
 Sequential view:
 
-![Dependency Graph Viewer sequential export for purchase-service.ts](./docs/images/purchase-service-ts-sequential.png)
+![Dependency Graph Viewer sequential export for purchase-service.ts](./knowledge/images/purchase-service-ts-sequential.png)
 
 ## Auth Persistence Note
 
@@ -115,6 +120,24 @@ Important for this project (Devnet-only policy):
   - `HELIUS_API_KEY=YOUR_API_KEY`
 - If you launch Helius MCP outside this repo config, export those variables manually first.
 
+## Linear MCP Bridge
+
+This repo also ships a local Linear MCP bridge tailored to BRIDS workflow automation:
+
+- Project scope: [`/.mcp.json`](./.mcp.json)
+- Cursor workspace scope: [`/.cursor/mcp.json`](./.cursor/mcp.json)
+- Local server: [`scripts/linear-mcp-server.ts`](./scripts/linear-mcp-server.ts)
+- Usage guide: [`knowledge/guides/linear-mcp-bridge.md`](./knowledge/guides/linear-mcp-bridge.md)
+
+Environment:
+
+- `LINEAR_API_KEY` is required.
+- Optional override: `LINEAR_GRAPHQL_ENDPOINT`
+
+Start it with:
+
+- `npm run mcp:linear`
+
 ## Nix Dev Environment
 
 This repository includes a reproducible Nix development shell:
@@ -126,7 +149,7 @@ This repository includes a reproducible Nix development shell:
 
 Toolchain governance for maintenance/update cadence is defined in:
 
-- [`docs/toolchain-policy.md`](./docs/toolchain-policy.md)
+- [`knowledge/toolchain-policy.md`](./knowledge/toolchain-policy.md)
 
 ## Testing
 
@@ -135,7 +158,7 @@ Toolchain governance for maintenance/update cadence is defined in:
 - `npm run test:coverage`: run tests with coverage report.
 - `npm run preflight:start`: run an initial workspace preflight that reviews branches, suggests next actions, checks package/lock drift, and summarizes `AGENTS.md` guidance without cleaning branches automatically.
 - `npm run pr:ready`: run local PR governance preflight (`validate` + required docs + commit convention + PR-size + branch-age checks).
-  - Includes feature-note enforcement: qualifying feature/fix/refactor/nft product changes must update `docs/features/*.md`.
+  - Includes feature-note enforcement: qualifying feature/fix/refactor/nft product changes must update `knowledge/features/*.md`.
 - `npm run e2e:install`: install Playwright Chromium (one-time setup).
 - `npm run e2e:playwright`: run Playwright smoke gate.
 - `npm run e2e:synpress`: build Synpress Phantom cache and run wallet E2E gate.
@@ -186,7 +209,7 @@ Promotion order:
 
 Use `npm run task:init` to start a new task the canonical way.
 
-- If the brief is vague or you want the Socratic clarification pass, run:
+- If the brief is vague or you want the Socratic clarification pass with `explain-like-socrates`, run:
   - `npm run task:init -- --ask`
 - If you already know the branch shape, pass the `git-start.sh` arguments through:
   - `npm run task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`
@@ -206,8 +229,8 @@ Start every epic with the RFC scaffold command:
 
 This creates:
 
-- `docs/rfcs/EPIC-012-staking/README.md`
-- `docs/rfcs/EPIC-012-staking/STORY-012-01-kickoff.md`
+- `knowledge/rfcs/EPIC-012-staking/README.md`
+- `knowledge/rfcs/EPIC-012-staking/STORY-012-01-kickoff.md`
 
 Common options:
 
@@ -218,4 +241,4 @@ Common options:
 Notes:
 
 - Use `--` before script flags so npm forwards arguments correctly.
-- Naming follows the governance policy in `docs/governance/documentation-policy.md`.
+- Naming follows the governance policy in `knowledge/governance/documentation-policy.md`.

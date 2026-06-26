@@ -12,7 +12,7 @@ const {
 } = require("../../scripts/rfc-new-core.js");
 
 async function createTemplateFiles(rootDir: string) {
-  const templateDir = path.join(rootDir, "docs", "rfcs", "templates");
+  const templateDir = path.join(rootDir, "knowledge", "rfcs", "templates");
   await mkdir(templateDir, { recursive: true });
 
   await writeFile(

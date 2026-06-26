@@ -19,7 +19,7 @@ export function PropertyDetailDocumentsBlockchainCards({
 
   return (
     <>
-      <Card className="space-y-3">
+      <Card className="marketplace-detail-card space-y-3">
         <H2 className="text-2xl text-white">{t({ en: "Documents", es: "Documentos", pt: "Documentos" })}</H2>
         <ul className="space-y-2">
           {documents.map((document) => (
@@ -37,7 +37,7 @@ export function PropertyDetailDocumentsBlockchainCards({
         </ul>
       </Card>
 
-      <Card className="space-y-3">
+      <Card className="marketplace-detail-card space-y-3">
         <H2 className="text-2xl text-white">{t({ en: "Blockchain info", es: "Blockchain info", pt: "Blockchain info" })}</H2>
         <p className="text-sm text-slate-300">Network: {blockchain.network}</p>
         <p className="break-all text-sm text-slate-300">Collection: {blockchain.collectionAddress}</p>
@@ -50,7 +50,7 @@ export function PropertyDetailDocumentsBlockchainCards({
           {formatMarketplaceDetailDate(blockchain.lastOnchainUpdate, locale)}
         </p>
         {blockchain.syncStatus === "unavailable" ? (
-          <p className="rounded-md bg-amber-500/15 p-2 text-xs text-amber-100">
+          <p className="marketplace-detail-alert marketplace-detail-alert-warning rounded-md p-2 text-xs text-amber-100">
             {t({
               en: "Blockchain data is not available yet for this asset.",
               es: "Datos blockchain no disponibles todavia para este activo.",

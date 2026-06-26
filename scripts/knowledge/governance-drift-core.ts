@@ -61,28 +61,40 @@ function sameSet(left: string[], right: string[]): boolean {
 export async function buildGovernanceDriftReport(rootDir: string): Promise<DriftReport> {
   const [
     agentsSource,
+    docsAgentSource,
     documentationPolicySource,
     gitMonorepoPolicySource,
     gitflowGuideSource,
+    prPolicySource,
+    prTemplateSource,
+    developWorkflowSource,
     storyTemplateSource,
     docsCheckerSource
   ] = await Promise.all([
     readRepoFile(rootDir, "AGENTS.md"),
-    readRepoFile(rootDir, "docs/governance/documentation-policy.md"),
-    readRepoFile(rootDir, "docs/governance/git-monorepo-policy.md"),
-    readRepoFile(rootDir, "docs/guides/gitflow-pr-structure.md"),
-    readRepoFile(rootDir, "docs/rfcs/templates/STORY.template.md"),
+    readRepoFile(rootDir, ".codex/agents/docs.toml"),
+    readRepoFile(rootDir, "knowledge/governance/documentation-policy.md"),
+    readRepoFile(rootDir, "knowledge/governance/git-monorepo-policy.md"),
+    readRepoFile(rootDir, "knowledge/guides/gitflow-pr-structure.md"),
+    readRepoFile(rootDir, "knowledge/governance/pr-policy-source-of-truth.json"),
+    readRepoFile(rootDir, ".github/pull_request_template.md"),
+    readRepoFile(rootDir, ".github/workflows/pr-governance-develop.yml"),
+    readRepoFile(rootDir, "knowledge/rfcs/templates/STORY.template.md"),
     readRepoFile(rootDir, "scripts/ci/check-required-docs.sh")
   ]);
 
   const policyStatuses = extractDocumentationPolicyStatuses(documentationPolicySource);
   const templateStatuses = extractTemplateStatuses(storyTemplateSource);
   const checkerStatuses = extractCheckerStatuses(docsCheckerSource);
+  const prPolicy = JSON.parse(prPolicySource) as {
+    requiredPrSections?: string[];
+    patterns?: { humanAcceptanceApproved?: string };
+  };
 
   const checks: DriftCheck[] = [
     {
       name: "AGENTS summary points to canonical documentation policy",
-      passed: agentsSource.includes("docs/governance/documentation-policy.md"),
+      passed: agentsSource.includes("knowledge/governance/documentation-policy.md"),
       details: "AGENTS.md should point to canonical documentation policy instead of redefining it."
     },
     {
@@ -92,7 +104,7 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
     },
     {
       name: "AGENTS summary points to PR policy SSOT",
-      passed: agentsSource.includes("docs/governance/pr-policy-source-of-truth.json"),
+      passed: agentsSource.includes("knowledge/governance/pr-policy-source-of-truth.json"),
       details: "AGENTS.md should point to the PR policy source of truth."
     },
     {
@@ -111,13 +123,38 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
       name: "Shared branch names are documented in monorepo policy",
       passed:
         gitMonorepoPolicySource.includes("feature/shared-<name>") &&
-        gitMonorepoPolicySource.includes("fix/shared-<name>"),
-      details: "Shared feature/fix branch naming must stay visible in the branch naming convention."
+        gitMonorepoPolicySource.includes("fix/shared-<name>") &&
+        gitMonorepoPolicySource.includes("bugfix/<developer>-<issue>-<name>") &&
+        gitMonorepoPolicySource.includes("hotfix/<developer>-<issue>-<name>") &&
+        gitMonorepoPolicySource.includes("epic/<developer>-<issue>-<name>"),
+      details:
+        "Shared and issue-type-driven branch naming must stay visible in the branch naming convention."
     },
     {
       name: "Gitflow guide still points to PR policy SSOT",
-      passed: gitflowGuideSource.includes("docs/governance/pr-policy-source-of-truth.json"),
+      passed: gitflowGuideSource.includes("knowledge/governance/pr-policy-source-of-truth.json"),
       details: "The gitflow usage guide should continue pointing to the PR policy SSOT."
+    },
+    {
+      name: "Documentation slices require explain-like-socrates",
+      passed:
+        agentsSource.includes("explain-like-socrates") &&
+        docsAgentSource.includes("explain-like-socrates") &&
+        documentationPolicySource.includes("explain-like-socrates") &&
+        gitMonorepoPolicySource.includes("explain-like-socrates"),
+      details: "The spec/documentation slice must keep the required Socratic skill visible across routing, docs agent, and governance."
+    },
+    {
+      name: "Develop merge remains gated by Human Acceptance",
+      passed:
+        agentsSource.includes("Human Acceptance") &&
+        gitMonorepoPolicySource.includes("HUMAN ACCEPTANCE GATE BEFORE DEVELOP") &&
+        Array.isArray(prPolicy.requiredPrSections) &&
+        prPolicy.requiredPrSections.includes("human acceptance") &&
+        Boolean(prPolicy.patterns?.humanAcceptanceApproved?.includes("status")) &&
+        prTemplateSource.includes("## Human Acceptance") &&
+        developWorkflowSource.includes("humanAcceptanceApproved"),
+      details: "Final PRs to develop should remain blocked until user manual-test approval is recorded."
     }
   ];
 

@@ -35,12 +35,12 @@ export function listingStatusLabel(status: ListingStatus, locale: AppLocale = "e
 
 export function listingStatusClasses(status: ListingStatus): string {
   if (status === "active") {
-    return "bg-emerald-500/15 text-emerald-200";
+    return "marketplace-status-badge marketplace-status-active bg-emerald-500/15 text-emerald-200";
   }
 
   if (status === "funding") {
-    return "bg-amber-500/15 text-amber-200";
+    return "marketplace-status-badge marketplace-status-funding bg-amber-500/15 text-amber-200";
   }
 
-  return "bg-slate-500/20 text-slate-200";
+  return "marketplace-status-badge marketplace-status-sold-out bg-slate-500/20 text-slate-200";
 }

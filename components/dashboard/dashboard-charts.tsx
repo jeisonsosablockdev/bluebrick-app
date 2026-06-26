@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   Area,
   AreaChart,
@@ -19,7 +19,10 @@ import {
   YAxis
 } from "recharts";
 
+import { DEFAULT_THEME_MODE, sanitizeThemeMode, THEME_STORAGE_KEY, type ThemeMode } from "@/lib/theme";
+
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
+const THEME_CHANGE_EVENT = "brids-theme-change";
 
 type DashboardChartsProps = {
   context: "user" | "admin" | "marketplace";
@@ -273,6 +276,31 @@ const TITLE_BY_CONTEXT: Record<DashboardChartsProps["context"], string> = {
   marketplace: "Marketplace Pulse"
 };
 
+function readThemeSnapshot(): ThemeMode {
+  if (typeof window === "undefined") {
+    return DEFAULT_THEME_MODE;
+  }
+
+  return sanitizeThemeMode(
+    document.documentElement.getAttribute("data-theme")
+    ?? window.localStorage.getItem(THEME_STORAGE_KEY)
+  );
+}
+
+function subscribeToThemeChange(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener(THEME_CHANGE_EVENT, onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+
 function shortDayLabel(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -284,6 +312,7 @@ function shortDayLabel(value: string): string {
 
 export function DashboardCharts({ context, adminChartsData }: DashboardChartsProps) {
   const [chartsReady, setChartsReady] = useState(false);
+  const theme = useSyncExternalStore(subscribeToThemeChange, readThemeSnapshot, () => DEFAULT_THEME_MODE);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -323,6 +352,12 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
   }, [adminChartsData, context]);
 
   const title = TITLE_BY_CONTEXT[context];
+  const useLightMarketplaceChart = context === "marketplace" && theme === "light";
+  const chartAxisColor = useLightMarketplaceChart ? "#64748B" : "#CBD5E1";
+  const chartGridColor = useLightMarketplaceChart ? "rgba(100,116,139,0.18)" : "rgba(255,255,255,0.1)";
+  const chartTooltipBorderColor = useLightMarketplaceChart ? "rgba(15,23,42,0.14)" : "rgba(255,255,255,0.2)";
+  const chartTooltipBackgroundColor = useLightMarketplaceChart ? "rgba(248,251,255,0.96)" : "rgba(11,16,31,0.92)";
+  const chartTooltipTextColor = useLightMarketplaceChart ? "#0F172A" : "#E2E8F0";
 
   const echartsOption = useMemo(
     () => ({
@@ -330,21 +365,21 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
       grid: { top: 22, right: 24, bottom: 30, left: 24 },
       tooltip: {
         trigger: "axis",
-        borderColor: "rgba(255,255,255,0.2)",
-        backgroundColor: "rgba(11,16,31,0.92)",
-        textStyle: { color: "#E2E8F0" }
+        borderColor: chartTooltipBorderColor,
+        backgroundColor: chartTooltipBackgroundColor,
+        textStyle: { color: chartTooltipTextColor }
       },
       xAxis: {
         type: "category",
         boundaryGap: false,
-        axisLine: { lineStyle: { color: "rgba(255,255,255,0.24)" } },
-        axisLabel: { color: "#CBD5E1" },
+        axisLine: { lineStyle: { color: chartGridColor } },
+        axisLabel: { color: chartAxisColor },
         data: data.monthly.map((item) => item.month)
       },
       yAxis: {
         type: "value",
-        splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
-        axisLabel: { color: "#CBD5E1" }
+        splitLine: { lineStyle: { color: chartGridColor } },
+        axisLabel: { color: chartAxisColor }
       },
       series: [
         {
@@ -380,15 +415,16 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
         }
       ]
     }),
-    [data.monthly]
+    [chartAxisColor, chartGridColor, chartTooltipBackgroundColor, chartTooltipBorderColor, chartTooltipTextColor, data.monthly]
   );
+  const chartSurfaceClass = context === "marketplace" ? "marketplace-depth-card rounded-2xl p-4" : "glass-surface p-4";
 
   if (!chartsReady) {
     return (
       <section className="space-y-4" aria-hidden="true">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <article key={`kpi-skeleton-${index}`} className="glass-surface p-4">
+            <article key={`kpi-skeleton-${index}`} className={chartSurfaceClass}>
               <div className="space-y-3">
                 <div className="h-3 w-24 rounded-full bg-white/10" />
                 <div className="h-8 w-20 rounded-full bg-white/10" />
@@ -400,13 +436,13 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
         </div>
 
         <div className="grid gap-4 xl:grid-cols-3">
-          <article className="glass-surface h-80 p-4 xl:col-span-2" />
-          <article className="glass-surface h-80 p-4" />
+          <article className={`${chartSurfaceClass} h-80 xl:col-span-2`} />
+          <article className={`${chartSurfaceClass} h-80`} />
         </div>
 
         <div className="grid gap-4 xl:grid-cols-3">
-          <article className="glass-surface h-96 p-4 xl:col-span-2" />
-          <article className="glass-surface h-96 p-4" />
+          <article className={`${chartSurfaceClass} h-96 xl:col-span-2`} />
+          <article className={`${chartSurfaceClass} h-96`} />
         </div>
       </section>
     );
@@ -416,7 +452,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
     <section className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {data.kpis.map((kpi) => (
-          <article key={kpi.label} className="glass-surface p-4">
+          <article key={kpi.label} className={chartSurfaceClass}>
             <div className="relative z-10 space-y-2">
               <p className="text-xs uppercase tracking-[0.16em] text-white/65">{kpi.label}</p>
               <p className="text-2xl font-semibold text-white">{kpi.value}</p>
@@ -434,7 +470,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
-        <article className="glass-surface p-4 xl:col-span-2">
+        <article className={`${chartSurfaceClass} xl:col-span-2`}>
           <div className="relative z-10">
             <p className="text-sm font-semibold text-white">Revenue & Growth Trend</p>
             <p className="mt-1 text-xs text-white/65">Recharts base chart for daily dashboard monitoring.</p>
@@ -447,15 +483,15 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
                       <stop offset="100%" stopColor="#2FC6FF" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="#CBD5E1" tickLine={false} axisLine={false} />
-                  <YAxis stroke="#CBD5E1" tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="4 6" stroke={chartGridColor} />
+                  <XAxis dataKey="month" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} tickLine={false} axisLine={false} />
+                  <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(11,16,31,0.92)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: chartTooltipBackgroundColor,
+                      border: `1px solid ${chartTooltipBorderColor}`,
                       borderRadius: 12,
-                      color: "#E2E8F0"
+                      color: chartTooltipTextColor
                     }}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="#2FC6FF" strokeWidth={3} fill={`url(#areaRevenue-${context})`} />
@@ -465,24 +501,35 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
           </div>
         </article>
 
-        <article className="glass-surface p-4">
+        <article className={chartSurfaceClass}>
           <div className="relative z-10">
             <p className="text-sm font-semibold text-white">Portfolio Distribution</p>
             <p className="mt-1 text-xs text-white/65">Recharts donut for fast composition reading.</p>
             <div className="mt-4 h-72 w-full">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={288}>
                 <PieChart>
-                  <Pie data={data.distribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={72} outerRadius={102} paddingAngle={3}>
+                  <Pie
+                    data={data.distribution}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={72}
+                    outerRadius={102}
+                    paddingAngle={3}
+                    stroke="none"
+                    strokeWidth={0}
+                  >
                     {data.distribution.map((slice) => (
-                      <Cell key={slice.name} fill={slice.color} />
+                      <Cell key={slice.name} fill={slice.color} stroke="none" strokeWidth={0} />
                     ))}
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(11,16,31,0.92)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: chartTooltipBackgroundColor,
+                      border: `1px solid ${chartTooltipBorderColor}`,
                       borderRadius: 12,
-                      color: "#E2E8F0"
+                      color: chartTooltipTextColor
                     }}
                   />
                 </PieChart>
@@ -504,7 +551,7 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
-        <article className="glass-surface p-4 xl:col-span-2">
+        <article className={`${chartSurfaceClass} xl:col-span-2`}>
           <div className="relative z-10">
             <p className="text-sm font-semibold text-white">{title}</p>
             <p className="mt-1 text-xs text-white/65">ECharts hero chart for high-impact trend storytelling.</p>
@@ -514,22 +561,23 @@ export function DashboardCharts({ context, adminChartsData }: DashboardChartsPro
           </div>
         </article>
 
-        <article className="glass-surface p-4">
+        <article className={chartSurfaceClass}>
           <div className="relative z-10">
             <p className="text-sm font-semibold text-white">Conversion Funnel</p>
             <p className="mt-1 text-xs text-white/65">Recharts horizontal bars for stage drop-off clarity.</p>
             <div className="mt-4 h-80 w-full">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
                 <BarChart data={data.funnel} layout="vertical" margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="4 6" stroke={chartGridColor} />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" tick={{ fill: "#CBD5E1", fontSize: 12 }} width={88} />
+                  <YAxis dataKey="name" type="category" tick={{ fill: chartAxisColor, fontSize: 12 }} width={88} />
                   <Tooltip
+                    cursor={false}
                     contentStyle={{
-                      backgroundColor: "rgba(11,16,31,0.92)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: chartTooltipBackgroundColor,
+                      border: `1px solid ${chartTooltipBorderColor}`,
                       borderRadius: 12,
-                      color: "#E2E8F0"
+                      color: chartTooltipTextColor
                     }}
                   />
                   <Bar dataKey="value" radius={[10, 10, 10, 10]} fill="#7C3AED" />

@@ -75,7 +75,7 @@ describe("components/motion/navigation-origin", () => {
         shiftKey: false,
         altKey: false
       } as never,
-      "/docs"
+      "/knowledge"
     );
 
     expect(getNavigationOrigin()).toBeNull();

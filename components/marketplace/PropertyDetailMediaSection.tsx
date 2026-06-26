@@ -83,7 +83,7 @@ export function PropertyDetailMediaSection({ property }: PropertyDetailMediaSect
   }
 
   return (
-    <Card className="space-y-6">
+    <Card className="marketplace-detail-card space-y-6">
       <H2 className="text-2xl text-white">{t({ en: "Project media", es: "Imagenes del proyecto", pt: "Midia do projeto" })}</H2>
 
       {groups.map((group) => {
@@ -107,13 +107,13 @@ export function PropertyDetailMediaSection({ property }: PropertyDetailMediaSect
               </div>
 
               {hasMultipleImages ? (
-                <p aria-live="polite" className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-200">
+                <p aria-live="polite" className="marketplace-detail-inset rounded-full px-3 py-1 text-xs font-semibold text-slate-200">
                   {activeIndex + 1} / {group.images.length}
                 </p>
               ) : null}
             </div>
 
-            <figure className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950/70 shadow-[0_24px_80px_rgba(0,0,0,0.26)]">
+            <figure className="marketplace-detail-media-frame overflow-hidden rounded-3xl">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
                 <Image
                   alt={activeImage.alt || activeImage.title || property.title}
@@ -132,7 +132,7 @@ export function PropertyDetailMediaSection({ property }: PropertyDetailMediaSect
                         es: `Imagen anterior de ${group.label}`,
                         pt: `Imagem anterior de ${group.label}`
                       })}
-                      className="min-h-11 min-w-11 cursor-pointer rounded-full border border-white/15 bg-slate-950/80 px-3 text-lg font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,0.42)] transition hover:border-cyan-200/60 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      className="marketplace-detail-round-button min-h-11 min-w-11 cursor-pointer rounded-full px-3 text-lg font-semibold text-white"
                       onClick={() => updateActiveImage(group.key, group.images.length, -1)}
                     >
                       ‹
@@ -144,7 +144,7 @@ export function PropertyDetailMediaSection({ property }: PropertyDetailMediaSect
                         es: `Siguiente imagen de ${group.label}`,
                         pt: `Proxima imagem de ${group.label}`
                       })}
-                      className="min-h-11 min-w-11 cursor-pointer rounded-full border border-white/15 bg-slate-950/80 px-3 text-lg font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,0.42)] transition hover:border-cyan-200/60 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      className="marketplace-detail-round-button min-h-11 min-w-11 cursor-pointer rounded-full px-3 text-lg font-semibold text-white"
                       onClick={() => updateActiveImage(group.key, group.images.length, 1)}
                     >
                       ›

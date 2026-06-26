@@ -14,7 +14,7 @@ export function PropertyDetailInvestmentSummaryCard({ property }: PropertyDetail
   const { locale, t } = useI18n();
 
   return (
-    <Card className="space-y-3">
+    <Card className="marketplace-detail-card space-y-3">
       <H2 className="text-2xl text-white">
         {t({
           en: "Fractional investment summary",

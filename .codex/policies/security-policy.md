@@ -1,9 +1,9 @@
 # Security Policy
 
 ## Canonical Sources
-- `docs/governance/security-quality-policy.md`
-- `docs/governance/nft-policy.md`
-- `docs/governance/documentation-policy.md`
+- `knowledge/governance/security-quality-policy.md`
+- `knowledge/governance/nft-policy.md`
+- `knowledge/governance/documentation-policy.md`
 
 ## Apply When
 - Blockchain, auth, admin, wallet, payment, or other privileged-path changes

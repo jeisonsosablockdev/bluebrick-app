@@ -22,7 +22,7 @@ export function MarketplaceViewModeButton({ currentMode, onCycle }: MarketplaceV
   return (
     <button
       type="button"
-      className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+      className="marketplace-brand-pill inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white"
       onClick={handleClick}
       aria-label={getMarketplaceViewModeButtonLabel(currentMode)}
     >
