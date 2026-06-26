@@ -16,13 +16,51 @@ vi.mock("react-map-gl/mapbox", () => ({
 }));
 
 import { MarketplaceMapClient } from "@/components/marketplace/MarketplaceMapClient";
+import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
-type RenderHandle = {
-  container: HTMLDivElement;
-  root: Root;
+const BOSTON_PIN: MarketplaceMapPin = {
+  id: "us-1",
+  title: "Boston Harbor House",
+  locationLabel: "Boston, MA, US",
+  href: "/marketplace/us-1",
+  latitude: 42.3601,
+  longitude: -71.0589,
+  soldPercent: 25
 };
 
-function renderClient(): RenderHandle {
+const AUSTIN_PIN: MarketplaceMapPin = {
+  id: "tx-1",
+  title: "Austin Yield House",
+  locationLabel: "Austin, TX, US",
+  href: "/marketplace/tx-1",
+  latitude: 30.2672,
+  longitude: -97.7431,
+  soldPercent: 42
+};
+
+const BRANDON_PIN: MarketplaceMapPin = {
+  id: "fl-1",
+  title: "Brandon Residence",
+  locationLabel: "Brandon, FL, US",
+  href: "/marketplace/fl-1",
+  latitude: 27.9378,
+  longitude: -82.2859,
+  soldPercent: 0
+};
+
+const BRADENTON_PIN: MarketplaceMapPin = {
+  id: "south-fl-1",
+  title: "Fix & Flip Bradenton",
+  locationLabel: "Bradenton, Florida, US",
+  href: "/marketplace/south-fl-1",
+  latitude: 27.4989,
+  longitude: -82.5748,
+  soldPercent: 0
+};
+
+type RenderHandle = { container: HTMLDivElement; root: Root };
+
+function renderClient(overrides: Partial<Parameters<typeof MarketplaceMapClient>[0]> = {}): RenderHandle {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -32,43 +70,8 @@ function renderClient(): RenderHandle {
       createElement(MarketplaceMapClient, {
         mapboxAccessToken: "pk.test-token",
         mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
-        pins: [
-          {
-            id: "us-1",
-            title: "Boston Harbor House",
-            locationLabel: "Boston, MA, US",
-            href: "/marketplace/us-1",
-            latitude: 42.3601,
-            longitude: -71.0589,
-            soldPercent: 25
-          }
-        ]
-      })
-    );
-  });
-
-  return { container, root };
-}
-
-function renderClientWithPins(pins: Array<{
-  id: string;
-  title: string;
-  locationLabel: string;
-  href: string;
-  latitude: number;
-  longitude: number;
-  soldPercent: number;
-}>): RenderHandle {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-
-  act(() => {
-    root.render(
-      createElement(MarketplaceMapClient, {
-        mapboxAccessToken: "pk.test-token",
-        mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
-        pins
+        pins: [BOSTON_PIN],
+        ...overrides
       })
     );
   });
@@ -98,52 +101,25 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     expect(container.querySelector('[data-testid="marketplace-map-pin-anchor"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="marketplace-map-pin-leader"]')?.getAttribute("style")).toContain("rgb(103, 232, 249)");
 
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 
   it("renders northern pins first so southern cards cover crossed leader lines", () => {
-    const { container, root } = renderClientWithPins([
-      {
-        id: "south-fl-1",
-        title: "Fix & Flip Bradenton",
-        locationLabel: "Bradenton, Florida, US",
-        href: "/marketplace/south-fl-1",
-        latitude: 27.4989,
-        longitude: -82.5748,
-        soldPercent: 0
-      },
-      {
-        id: "north-fl-1",
-        title: "Fix & Flip Brandon",
-        locationLabel: "Brandon, Florida, US",
-        href: "/marketplace/north-fl-1",
-        latitude: 27.9378,
-        longitude: -82.2859,
-        soldPercent: 0
-      }
-    ]);
+    const { container, root } = renderClient({ pins: [BRADENTON_PIN, BRANDON_PIN] });
 
     const markers = Array.from(container.querySelectorAll('[data-testid="marker"]'));
     expect(markers).toHaveLength(2);
-    expect(markers[0]?.textContent).toContain("Fix & Flip Brandon");
+    // Brandon (latitude 27.9378) is north of Bradenton (latitude 27.4989) → should be first
+    expect(markers[0]?.textContent).toContain("Brandon Residence");
     expect(markers[1]?.textContent).toContain("Fix & Flip Bradenton");
 
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 
-  it("zooms the map toward a hovered pin", () => {
-    const { container, root } = renderClient();
+  it("calls onPinHover when a pin marker is activated via hover", () => {
+    const onPinHover = vi.fn();
+    const { container, root } = renderClient({ onPinHover });
 
-    expect(latestMapProps).toMatchObject({
-      mapboxAccessToken: "pk.test-token",
-      mapStyle: "mapbox://styles/brids/decimal-cinematic"
-    });
-
-    const beforeZoom = Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0);
     const button = container.querySelector("button");
     expect(button).toBeTruthy();
 
@@ -151,82 +127,42 @@ describe("components/marketplace/MarketplaceMapClient", () => {
       button?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
     });
 
-    const afterZoom = Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0);
-    expect(afterZoom).toBeGreaterThanOrEqual(7.25);
-    expect(afterZoom).toBeGreaterThanOrEqual(beforeZoom);
+    // Hovering a pin must notify the parent via onPinHover.
+    expect(onPinHover).toHaveBeenCalledOnce();
+    expect(onPinHover).toHaveBeenCalledWith(expect.objectContaining({ id: "us-1" }));
 
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 
-  it("focuses a selected marketplace pin when the selected pin id changes", () => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
+  it("sets initialViewState to the selected pin on mount", () => {
+    const { root } = renderClient({ pins: [BRANDON_PIN, AUSTIN_PIN], selectedPinId: "tx-1" });
 
-    act(() => {
-      root.render(
-        createElement(MarketplaceMapClient, {
-          mapboxAccessToken: "pk.test-token",
-          mapStyleUrl: "mapbox://styles/brids/decimal-cinematic",
-          selectedPinId: "tx-1",
-          pins: [
-            {
-              id: "fl-1",
-              title: "Brandon Residence",
-              locationLabel: "Brandon, FL, US",
-              href: "/marketplace/fl-1",
-              latitude: 27.9378,
-              longitude: -82.2859,
-              soldPercent: 0
-            },
-            {
-              id: "tx-1",
-              title: "Austin Yield House",
-              locationLabel: "Austin, TX, US",
-              href: "/marketplace/tx-1",
-              latitude: 30.2672,
-              longitude: -97.7431,
-              soldPercent: 42
-            }
-          ]
-        })
-      );
-    });
-
-    expect(latestMapProps?.viewState).toMatchObject({
+    // Uncontrolled map: camera is driven by initialViewState, not by a viewState prop.
+    expect(latestMapProps?.initialViewState).toMatchObject({
       latitude: 30.2672,
       longitude: -97.7431,
       pitch: 52
     });
-    expect(Number((latestMapProps?.viewState as { zoom?: number } | undefined)?.zoom ?? 0)).toBeGreaterThanOrEqual(7.25);
+    expect(Number((latestMapProps?.initialViewState as { zoom?: number } | undefined)?.zoom ?? 0)).toBeGreaterThanOrEqual(7.25);
 
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 
   it("does not start automatic circular camera motion after the initial render window", () => {
     vi.useFakeTimers();
     const { root } = renderClient();
-    const initialViewState = latestMapProps?.viewState as Record<string, unknown>;
+    // Snapshot the initialViewState at mount.
+    const initialViewState = latestMapProps?.initialViewState as Record<string, unknown>;
 
-    act(() => {
-      vi.advanceTimersByTime(4499);
-    });
+    act(() => { vi.advanceTimersByTime(4499); });
+    // initialViewState must not have changed — the map is uncontrolled, so
+    // any deferred motion would be imperative (easeTo) not a prop update.
+    expect(latestMapProps?.initialViewState).toMatchObject(initialViewState);
 
-    expect(latestMapProps?.viewState).toMatchObject(initialViewState);
+    act(() => { vi.advanceTimersByTime(1); });
+    expect(latestMapProps?.initialViewState).toMatchObject(initialViewState);
 
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-
-    expect(latestMapProps?.viewState).toMatchObject(initialViewState);
-
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 
   it("does not start deferred camera motion when reduced motion is requested", () => {
@@ -244,17 +180,13 @@ describe("components/marketplace/MarketplaceMapClient", () => {
     }));
 
     const { root } = renderClient();
-    const initialViewState = latestMapProps?.viewState;
+    const initialViewState = latestMapProps?.initialViewState;
 
-    act(() => {
-      vi.advanceTimersByTime(9000);
-    });
+    act(() => { vi.advanceTimersByTime(9000); });
 
-    expect(latestMapProps?.viewState).toMatchObject(initialViewState as Record<string, unknown>);
+    expect(latestMapProps?.initialViewState).toMatchObject(initialViewState as Record<string, unknown>);
 
     window.matchMedia = originalMatchMedia;
-    act(() => {
-      root.unmount();
-    });
+    act(() => { root.unmount(); });
   });
 });

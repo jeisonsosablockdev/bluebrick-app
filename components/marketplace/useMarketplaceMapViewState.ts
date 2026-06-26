@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ViewState } from "react-map-gl/mapbox";
 
 import { createMarketplaceMapCameraViewState } from "@/lib/marketplace-map-camera";
@@ -64,6 +64,20 @@ function createFocusedPinViewState(pin: MarketplaceMapPin, current: MarketplaceM
   };
 }
 
+function arePaddingsEqual(
+  left: MarketplaceMapViewState["padding"],
+  right: MarketplaceMapViewState["padding"]
+): boolean {
+  if (left === right) return true;
+  if (!left || !right) return left === right;
+  return (
+    (left.top ?? 0) === (right.top ?? 0)
+    && (left.bottom ?? 0) === (right.bottom ?? 0)
+    && (left.left ?? 0) === (right.left ?? 0)
+    && (left.right ?? 0) === (right.right ?? 0)
+  );
+}
+
 function areViewStatesEqual(left: MarketplaceMapViewState, right: MarketplaceMapViewState): boolean {
   return (
     left.latitude === right.latitude
@@ -71,7 +85,7 @@ function areViewStatesEqual(left: MarketplaceMapViewState, right: MarketplaceMap
     && left.zoom === right.zoom
     && left.pitch === right.pitch
     && left.bearing === right.bearing
-    && left.padding === right.padding
+    && arePaddingsEqual(left.padding, right.padding)
   );
 }
 
@@ -113,7 +127,17 @@ export function useMarketplaceMapViewState({
   initialViewState
 }: UseMarketplaceMapViewStateInput): MarketplaceMapViewStateController {
   const cameraKey = createCameraKey(pins, selectedPinId);
-  const cameraViewState = createCameraViewState(pins, selectedPinId, initialViewState);
+
+  // Memoize so that cameraViewState has a stable reference between renders.
+  // Without this, createMovedViewState receives a new object every render,
+  // its areViewStatesEqual bail-out never fires (padding object ref differs),
+  // and setMovedViewState is called on every render → React error #185.
+  const cameraViewState = useMemo(
+    () => createCameraViewState(pins, selectedPinId, initialViewState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cameraKey]
+  );
+
   const [movedViewState, setMovedViewState] = useState<CameraScopedViewState | null>(null);
   const viewState = getCameraScopedViewState(movedViewState, cameraKey, cameraViewState);
 

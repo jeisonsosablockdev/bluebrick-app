@@ -122,4 +122,42 @@ describe("components/marketplace/useMarketplaceMapViewState", () => {
       root.unmount();
     });
   });
+
+  it("does not schedule another render when Mapbox reports the same view state with different padding references", () => {
+    function PaddingMoveProbe() {
+      const controller = useMarketplaceMapViewState({ pins, selectedPinId: "tx-1" });
+      const hasAppliedMove = useRef(false);
+
+      useEffect(() => {
+        renderCount += 1;
+        latestController = controller;
+        if (hasAppliedMove.current) {
+          return;
+        }
+
+        hasAppliedMove.current = true;
+        // Simulate Mapbox returning a new object reference for padding
+        controller.applyMapMove({
+          ...controller.displayedViewState,
+          padding: { top: 0, bottom: 0, left: 0, right: 0 }
+        });
+      }, [controller]);
+
+      return null;
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(createElement(PaddingMoveProbe));
+    });
+
+    expect(renderCount).toBe(1);
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

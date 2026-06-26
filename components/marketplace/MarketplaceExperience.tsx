@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 
 import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
@@ -32,25 +32,38 @@ function renderList(properties: PropertyListItem[]): ReactElement {
 export function MarketplaceExperience({ properties, mapSources, mapboxAccessToken, mapboxStyleUrl }: MarketplaceExperienceProps) {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isMapBoundaryReady, setIsMapBoundaryReady] = useState(false);
-  const pins = projectMarketplaceMapPins(mapSources);
+
+  // Memoize pins so its reference is stable across renders that don't change
+  // mapSources. A fresh array reference on every render destabilizes cameraKey
+  // inside useMarketplaceMapViewState, causing continuous state updates.
+  const pins = useMemo(() => projectMarketplaceMapPins(mapSources), [mapSources]);
+
   const canRenderMap = Boolean(mapboxAccessToken && pins.length > 0 && isMapBoundaryReady);
   const listNode = renderList(properties);
-  const mapNode = (
-    <MarketplaceMapShell
-      mapboxAccessToken={mapboxAccessToken}
-      selectedPinId={selectedPinId}
-      onPinSelect={setSelectedPinId}
-      pins={pins}
-      map={
-        <DeferredMarketplaceMapClient
-          mapboxAccessToken={mapboxAccessToken ?? ""}
-          mapStyleUrl={mapboxStyleUrl}
-          pins={pins}
-          selectedPinId={selectedPinId}
-        />
-      }
-      fallback={listNode}
-    />
+
+  // Memoize mapNode so DeferredMarketplaceMapClient does not receive new prop
+  // references on every render, which would remount the controlled map and
+  // fire onMove, contributing to the infinite update loop.
+  const mapNode = useMemo(
+    () => (
+      <MarketplaceMapShell
+        mapboxAccessToken={mapboxAccessToken}
+        selectedPinId={selectedPinId}
+        onPinSelect={setSelectedPinId}
+        pins={pins}
+        map={
+          <DeferredMarketplaceMapClient
+            mapboxAccessToken={mapboxAccessToken ?? ""}
+            mapStyleUrl={mapboxStyleUrl}
+            pins={pins}
+            selectedPinId={selectedPinId}
+          />
+        }
+        fallback={listNode}
+      />
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pins, selectedPinId, mapboxAccessToken, mapboxStyleUrl, listNode]
   );
 
   useEffect(() => {
