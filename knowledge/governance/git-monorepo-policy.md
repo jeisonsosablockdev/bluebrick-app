@@ -146,28 +146,25 @@ SPEC/<developer>-<issue>-<spec-slug>
 
 BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
 
-SPEC/<developer>-bri<id>-specNN-<spec-slug>
+SPEC/<developer>-bri-<id>-specNN-<spec-slug>
 
-Example:
+Ejemplo:
 
-SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
+SPEC/czambrano-bri-168-spec01-landing-dark-hero-look-and-feel
 
-BRIDS SPEC branches for feature issues intentionally split from a main `Feature` branch:
-
-SPEC/<developer>-bri<id>-specNN-<spec-slug>
-
-Example:
-
-SPEC/czambrano-bri168-spec01-landing-dark-hero-look-and-feel
+Política de rama transversal:
+Toda documentación, SPEC o cambio de implementación (por ejemplo, relacionado con BRI-168) debe vivir primero en la rama principal `feature/<developer>-bri-<id>-<name>` y mantenerse congruente con el cuerpo del issue en Linear.
+La rama `Feature` principal se divide en múltiples ramas `SPEC`, desarrolladas una por una según estabilidad, dependencia técnica y prioridad del producto. El orden numérico (specNN) ayuda a organizar el scope, pero no obliga a ejecutar los SPECS en ese orden si la estabilidad del producto recomienda otra secuencia. Cada rama SPEC debe partir desde la rama `Feature` principal y volver a ella para revisión. El cierre completo del bloque debe integrarse desde la rama `Feature` principal hacia la rama base definida por el flujo del proyecto.
 
 Rules:
+	•	**Ownership & Template Protocol:** Antes de escribir código, el desarrollador asignado (`czambrano` o `Jeison Sosa`) debe estar declarado en el bloque `Ownership` del issue en Linear y en su respectivo artefacto Markdown (`Human Brief` template).
 	•	Use the lowercase Linear issue key in branch names (example: `bri-149`).
 	•	`-sNN-` is the zero-padded slice order from the parent issue Markdown table.
 	•	For `SPEC/*` branches, `specNN` is the zero-padded SPEC number from the parent issue body, and the number organizes scope rather than mandatory execution priority.
 	•	Linear initiative branches start from latest `develop`.
 	•	The Linear initiative branch name must match the parent issue `git branch name` field.
 	•	Slice branches start from the Linear initiative branch, not directly from `develop`.
-	•	Each completed `SPEC/*` branch must document `SPEC HISTORY` before integration.
+	•	`SPEC DEVELOPMENT HISTORY`: Es un registro obligatorio al final del issue de Linear para documentar por SPEC los patrones, decisiones y resultados que quedaron estables.
 	•	For BRIDS SPEC branches, `SPEC MERGE` is the internal merge from `SPEC/*` back into the issue `Feature` branch and does not require a PR.
 	•	The Feature branch still requires the project-defined PR before integration into the base branch.
 
@@ -197,24 +194,24 @@ SPEC/<developer>-<issue>-<spec-slug>
 VERSION ESPAÑOL
 
 	1.	Confirmar que el desarrollador responsable y el SPEC destino están definidos.
-	2.	Actualizar `SPEC HISTORY` en el documento del Feature, el documento del SPEC y el documento de implementación.
+	2.	Actualizar `SPEC DEVELOPMENT HISTORY` en el issue principal de Linear, el documento del Feature y el documento de implementación, para documentar los patrones, decisiones y resultados que quedaron estables.
 	3.	Sincronizar el cuerpo del issue de Linear como fuente principal.
 	4.	Ejecutar validaciones razonables según el alcance tocado.
 	5.	Revisar `git status` y separar cambios ajenos al SPEC.
-	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue.
+	6.	Integrar la rama `SPEC/*` hacia la rama `Feature` del issue (este protocolo se conoce como `SPEC MERGE` y se hace sin PR intermedio).
 	7.	Dejar la rama `Feature` lista para continuar con el siguiente SPEC.
-	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature`.
+	8.	No crear PR para el merge interno `SPEC/*` → `Feature`; el PR corresponde al cierre de la rama `Feature` hacia `develop`.
 
 ENGLISH VERSION
 
 	1.	Confirm that the responsible developer and target SPEC are defined.
-	2.	Update `SPEC HISTORY` in the Feature document, SPEC document, and implementation document.
+	2.	Update `SPEC DEVELOPMENT HISTORY` in the main Linear issue, Feature document, and implementation document to record stable patterns, decisions, and outcomes.
 	3.	Sync the Linear issue body as the primary source.
 	4.	Run reasonable validations for the touched scope.
 	5.	Review `git status` and separate changes unrelated to the SPEC.
-	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch.
+	6.	Integrate the `SPEC/*` branch into the issue `Feature` branch (this protocol is known as `SPEC MERGE` and is done without an intermediate PR).
 	7.	Leave the `Feature` branch ready for the next SPEC.
-	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure.
+	8.	Do not create a PR for the internal `SPEC/*` → `Feature` merge; the PR belongs to the Feature branch closure into `develop`.
 
 ⸻
 

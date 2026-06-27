@@ -18,6 +18,22 @@ Canonical precedence and drift control:
 
 ⸻
 
+Transversal Development Policy
+
+	•	**Developer Identity & Ownership:** Confirmar siempre con qué desarrollador del proyecto se está trabajando antes de crear, actualizar o sincronizar contenido en Linear. Antes de ejecutar protocolos de inicio de desarrollo o cualquier línea de código, el desarrollador asignado (`czambrano` o `Jeison Sosa`) debe estar declarado explícitamente en el bloque de `Ownership` del issue de Linear y en el artefacto local. **REGLA PARA AGENTES**: Cada vez que se vaya a crear un nuevo issue, el agente DEBE preguntar obligatoriamente al usuario: 1) a quién va asignado, 2) qué tipo de feature es, 3) qué prioridad tiene, y 4) qué etiqueta/label le corresponde (Improvement, feature, bug, documentation).
+	•	**Linear as Source of Truth & Mandatory Template:** Usar Linear como fuente principal para issues, objetivos, SPECS y criterios de aceptación. TODO issue en Linear y su correspondiente artefacto Markdown debe seguir OBLIGATORIAMENTE la siguiente plantilla estructural (conocida como "Human Brief"):
+		- **Ownership** (Issue ID, Developer, Team, Feature Type, Priority, Label)
+		- **Objective**
+		- **Scope**
+		- **Non-goals**
+		- **Acceptance Criteria**
+		- **Risks**
+		- **Open Questions**
+	•	**SPEC Tracking:** Evitar que los SPECS principales vivan en comentarios sueltos de Linear; deben ser parte del cuerpo principal del issue o de documentos dedicados.
+	•	**Bilingual Standard & Quality:** Toda documentación bilingüe debe estructurarse con `VERSION ESPAÑOL` primero y `ENGLISH VERSION` después. Se exige el uso correcto de tildes, puntuación y ortografía en toda documentación escrita en español.
+
+⸻
+
 For Blockchain Changes (`/programs`)
 
 Must update or create:
