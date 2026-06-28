@@ -838,12 +838,6 @@ body.app-splash-cleared main {
     background: linear-gradient(180deg, rgba(244, 248, 255, 0.96), rgba(235, 242, 255, 0.98));
   }
 
-  .dashboard-sidebar,
-  .dashboard-sidebar:focus-within {
-    background: linear-gradient(160deg, rgba(19, 27, 43, 0.85) 0%, rgba(7, 11, 20, 0.9) 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.03) !important;
-    box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.06), 0 20px 40px rgba(0, 0, 0, 0.5) !important;
-  }
 
   .dashboard-sidebar > * {
     position: relative;
@@ -862,15 +856,17 @@ body.app-splash-cleared main {
   .dashboard-sidebar .dashboard-sidebar-link:active,
   .dashboard-sidebar .dashboard-sidebar-link:focus {
     color: #ffffff;
-    background-color: transparent;
+    background-color: rgba(66, 135, 245, 0.15);
+    border-radius: 9999px !important;
     outline: none;
   }
 
   .dashboard-sidebar .dashboard-sidebar-link-active {
     color: #ffffff;
-    background: linear-gradient(90deg, rgba(16, 32, 64, 0.8) 0%, rgba(8, 16, 36, 0.4) 100%);
-    box-shadow: none;
-    border-radius: 12px;
+    background: linear-gradient(135deg, #5bbcf4 0%, #5d7bf4 48%, #743bed 100%);
+    box-shadow: 0 4px 14px rgba(93, 123, 244, 0.35);
+    border-radius: 9999px !important;
+    font-weight: 500;
   }
 
   .admin-sidebar > * {

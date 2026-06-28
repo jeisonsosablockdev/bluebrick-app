@@ -180,7 +180,7 @@ export function ProtectedShell({
 
       <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:grid lg:grid-cols-[260px,minmax(0,1fr)] lg:gap-6">
         <aside className="hidden lg:block">
-          <Card className="dashboard-sidebar sticky top-6 h-[calc(100vh-3rem)] space-y-4 border-none bg-transparent p-3 rounded-[28px] backdrop-blur-xl">
+          <div className="dashboard-sidebar marketplace-depth-card sticky top-6 h-[calc(100vh-3rem)] space-y-4 border-none bg-transparent p-3 rounded-[28px] backdrop-blur-xl">
             <div>
               <p className="dashboard-sidebar-title px-2 text-xs uppercase tracking-[0.2em]">
                 {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
@@ -203,7 +203,7 @@ export function ProtectedShell({
                 );
               })}
             </nav>
-          </Card>
+          </div>
         </aside>
 
         <section className="min-w-0 space-y-5">
@@ -272,7 +272,7 @@ export function ProtectedShell({
               transition={MOTION_FAST_OPACITY_TRANSITION}
             />
             <motion.aside
-              className="dashboard-sidebar relative h-full w-[84%] max-w-xs rounded-r-3xl border-none bg-transparent p-4 backdrop-blur-xl"
+              className="dashboard-sidebar marketplace-depth-card relative h-full w-[84%] max-w-xs rounded-r-3xl border-none bg-transparent p-4 backdrop-blur-xl"
               variants={createPanelMotionVariants()}
               initial="initial"
               animate="animate"
