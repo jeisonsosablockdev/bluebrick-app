@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 668 |
+| Archived | 670 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 666 |
+| Archived status | 668 |
 
 ## Inbox
 
@@ -362,6 +362,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-shared-pwa-web-push-bri-157 | archived | none | [feature-shared-pwa-web-push-bri-157](knowledge/features/feature-shared-pwa-web-push-bri-157.md) | n/a |
 | feature-shared-referral-marketing-system-bri-16 | archived | none | [feature-shared-referral-marketing-system-bri-16](knowledge/features/feature-shared-referral-marketing-system-bri-16.md) | n/a |
 | feature-shared-single-issue-slice-planning-bri-149 | archived | none | [feature-shared-single-issue-slice-planning-bri-149](knowledge/features/feature-shared-single-issue-slice-planning-bri-149.md) | n/a |
+| feature-shared-spec-and-branching-governance-implementation | archived | none | [feature-shared-spec-and-branching-governance-implementation](knowledge/features/feature-shared-spec-and-branching-governance-implementation.md) | n/a |
+| feature-shared-spec-and-branching-governance | archived | none | [feature-shared-spec-and-branching-governance](knowledge/features/feature-shared-spec-and-branching-governance.md) | n/a |
 | feature-shared-wallet-modal-clean-code-bri-160-implementation | archived | none | [feature-shared-wallet-modal-clean-code-bri-160-implementation](knowledge/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md) | n/a |
 | feature-shared-wallet-modal-clean-code-bri-160 | archived | none | [feature-shared-wallet-modal-clean-code-bri-160](knowledge/features/feature-shared-wallet-modal-clean-code-bri-160.md) | n/a |
 | feature-solana-dev-skill-implementation | archived | none | [Implementation plan for solana-dev skill in-repo installation](knowledge/features/feature-solana-dev-skill-implementation.md) | n/a |
