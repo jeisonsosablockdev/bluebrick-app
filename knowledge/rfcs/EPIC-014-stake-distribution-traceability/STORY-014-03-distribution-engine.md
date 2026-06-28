@@ -7,7 +7,7 @@
 - Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-16`
+- Last Updated: `2026-06-28`
 - Parent Story: `STORY-014-01-draft`
 - Slice: `S03` (Delivery Slice 2 of 3)
 
@@ -35,7 +35,7 @@ DistributionRun
   eligibilityStartAt, eligibilityEndAt
   scopeType(CANDY_MACHINE), scopeAddress (candyMachineAddress), collectionAddress
   authorizedSupply, minimumSoldCount, soldCountAtStart
-  unsoldInventoryPolicy(EXCLUDE_UNSOLD), investmentModel(FIX_FLIP|FIX_HOLD|REAL_ESTATE_DEV)
+  unsoldInventoryPolicy(EXCLUDE_UNSOLD),  investmentModel(FIX_FLIP|FIX_HOLD|REAL_ESTATE_DEV)  // metadata only in v1; does not affect calculation
   tokenMint, treasuryVault
   availableTreasuryEarningsMinor, distributionPoolAmountMinor
   poolCompositionBasis(EQUAL_ELIGIBLE_NFT_COUNT)
@@ -135,6 +135,14 @@ CALCULATE_DISTRIBUTION(runId, config):
 
   poolTimeWeight = SUM(walletWeights.values())
 
+  // 4b. Zero-pool guard — prevent division by zero
+  IF poolTimeWeight == 0:
+    run.status = BLOCKED
+    run.blockedReason = "no_eligible_participation"
+    DB.update(run)
+    LOG_AUDIT(runId, "CALCULATION_BLOCKED", {reason: "pool_time_weight_is_zero"})
+    RETURN run
+
   // 5. Integer allocation with Hamilton largest-remainder
   items = []
   FOR wallet, walletTimeWeight IN walletWeights:
@@ -144,9 +152,11 @@ CALCULATE_DISTRIBUTION(runId, config):
       items.push({wallet, status: "EXCLUDED_COMPLIANCE", reason: compliance})
       CONTINUE
 
-    exactShare = config.distributionPoolAmountMinor * walletTimeWeight / poolTimeWeight
-    grossAmountMinor = FLOOR(exactShare)
-    remainder = exactShare - grossAmountMinor
+    // BigInt arithmetic to prevent overflow on large pools
+    // (e.g., 1B USDC × 31.5M seconds > Number.MAX_SAFE_INTEGER)
+    exactShare = BigInt(config.distributionPoolAmountMinor) * BigInt(walletTimeWeight) / BigInt(poolTimeWeight)
+    grossAmountMinor = Number(exactShare)  // safe after division
+    remainder = (config.distributionPoolAmountMinor * walletTimeWeight) % poolTimeWeight  // exact remainder for Hamilton
 
     items.push({
       wallet,
@@ -315,7 +325,8 @@ COMMITTEE_ACTIONS:
 ## Test and Validation Plan
 - Unit: Hamilton allocation with various pool sizes, remainder edge cases
 - Integration: Full calculation on devnet test data
-- Property-based: Invariant ΣgrossAmountMinor == distributionPoolAmountMinor
+- Property-based: Invariant ΣgrossAmountMinor == distributionPoolAmountMinor; BigInt arithmetic never truncates
+- Edge: pool_time_weight == 0 → BLOCKED state transition
 - RPC: minimumLedgerSlot rejection on non-archival endpoints
 
 ## Traceability

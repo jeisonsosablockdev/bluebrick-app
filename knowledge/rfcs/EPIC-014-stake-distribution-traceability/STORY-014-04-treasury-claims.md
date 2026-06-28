@@ -7,7 +7,7 @@
 - Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-16`
+- Last Updated: `2026-06-28`
 - Parent Story: `STORY-014-01-draft`
 - Slice: `S04` (Delivery Slice 3 of 3)
 
@@ -16,7 +16,7 @@
 - Why now: BRI-8 (Distribution microservice & Claim/Payout) requires this layer after Distribution Engine (S03).
 - Constraints:
   - Hot wallet payments forbidden; Squads multisig controls treasury
-  - Single batched vault transaction with multiple legs (Squads v4 `initiate_batch_transfer`)
+  - Single batched vault transaction with multiple legs (Squads v4 `initiate_batch_transfer`), capped at `MAX_LEGS_PER_BATCH = 20` per proposal to stay within CU limits
   - Fee applied at claim layer (after gross); versioned, per project/CM
   - Compliance re-check at claim time; `restricted_aml`/`suspended` blocked at gate
   - Compliance hold TTL: 12 months max → auto-clawback to treasury
@@ -110,6 +110,9 @@ GET_ACTIVE_FEE_POLICY(projectId, candyMachineAddress, tokenMint, timestamp):
 #### 3. Claim Lifecycle (Pseudocode)
 ```
 CLAIM_FLOW(wallet, runId):
+  // 0. Concurrent claim guard — advisory lock prevents duplicate quotes
+  ACQUIRE_ADVISORY_LOCK(wallet, runId)
+  
   // 1. Validate claimable
   items = DB.find(DistributionItem, {runId, beneficiaryWallet: wallet, status: CALCULATED})
   FOR item IN items:
@@ -141,6 +144,14 @@ CLAIM_FLOW(wallet, runId):
     claims.push(claim)
 
   RETURN {claims, quote: MAP(claims, c => ({gross: c.grossAmountMinor, fee: c.feeAmountMinor, net: c.netAmountMinor}))}
+
+QUOTE_EXPIRY_MONITOR():
+  // Cron job runs every hour
+  expired = DB.find(DistributionClaim, {status: QUOTE_CREATED, quoteCreatedAt < NOW() - 48_HOURS})
+  FOR claim IN expired:
+    claim.status = CLAIMABLE
+    DB.update(claim)
+    AUDIT_LOG(claim.id, "QUOTE_EXPIRED", {quoteCreatedAt: claim.quoteCreatedAt})
 
 CONFIRM_CLAIM(claimIds, wallet):
   // Use the locked quote from the existing claim record, do not recalculate.
@@ -340,8 +351,9 @@ COMPLIANCE_TTL_MONITOR():
         timestamp: NOW()
       })
       
-      // Funds return to treasury (accounting entry)
-      TREASURY_CREDIT(claim.netAmountMinor, claim.tokenMint, "clawback_ttl_expired")
+      // Funds return to per-project clawback reserve
+      TREASURY_CREDIT(claim.netAmountMinor, claim.tokenMint, "clawback_ttl_expired", targetAccount: PROJECT_CLAWBACK_RESERVE(claim.projectId))
+      // Re-distribution requires a new committee-approved distribution run
       AUDIT_LOG(claim.id, "CLAWBACK_TTL_EXPIRED", {amount: claim.netAmountMinor})
 ```
 
@@ -352,8 +364,9 @@ DISTRIBUTION_CLAIM_STATES:
     → SQUADS_PROPOSED → APPROVED_FOR_EXECUTION → EXECUTED
     → FAILED (any stage) → retry possible
     → CANCELED (user cancels before execution)
-    → COMPLIANCE_HOLD → COMPLIANCE_HOLD_EXPIRED → CLAWED_BACK
+    → COMPLIANCE_HOLD → COMPLIANCE_HOLD_EXPIRED → CLAWED_BACK (to project reserve)
     → COMPLIANCE_HOLD → (compliance clears) → back to QUEUED_FOR_PAYOUT
+    → QUOTE_CREATED → (48h expiry) → CLAIMABLE
 
 SQUADS_PAYOUT_BATCH_STATES:
   DRAFT → PROPOSED → APPROVING → APPROVED_FOR_EXECUTION → EXECUTING
@@ -397,7 +410,8 @@ CLAIM_OR_PAYOUT_EVENT:
 ## Test and Validation Plan
 - Unit: fee calculation with caps, Hamilton math not affected by fees
 - Integration: Claim → batch → Squads proposal → execution → reconciliation (devnet)
-- Edge: compliance state changes between quote and claim, partial batch failures
+- Edge: compliance state changes between quote and claim, partial batch failures, quote expiry after 48h
+- Concurrency: duplicate CLAIM_FLOW calls with same (wallet, runId) must not produce duplicate quotes
 - Security: payout wallet override requires committee approval
 
 ## Traceability

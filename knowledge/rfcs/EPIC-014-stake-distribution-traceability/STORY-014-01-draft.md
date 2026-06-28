@@ -8,7 +8,7 @@
 - Owner: `jaysosa`
 - RFC owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-16`
+- Last Updated: `2026-06-28`
 
 ## Context
 
@@ -18,9 +18,10 @@
   - Blockchain truth first, DB projection second
   - Candy Machine is sole financial scope for v1 (never collection)
   - Final Calculation uses finalized RPC evidence **from archival nodes only** (projects can exceed 12 months)
-  - No floating point for money; integer math with Hamilton remainder
+  - No floating point for money; `BigInt` integer math with Hamilton remainder (JS `Number` overflows on realistic pool sizes)
+  - All monetary arithmetic must use `BigInt` — intermediate products (e.g., `distributionPoolAmountMinor × walletTimeWeight`) can exceed `Number.MAX_SAFE_INTEGER` (2^53)
   - Squads controls treasury; committee reviews before dispersion; **single batched vault transaction with multiple transfer legs**
-  - Metaplex Core compatibility: Stake/Unstake relies strictly on the `FreezeDelegate` plugin with `Owner` authority. Assets missing this plugin are mathematically ignored.
+  - Metaplex Core compatibility: Stake/Unstake relies on the `FreezeDelegate` plugin with `Owner` authority or `Address` authority where `authority.address == asset.owner`. Assets missing a qualifying `FreezeDelegate` plugin are mathematically ignored.
   - User-initiated Claim with configurable fee
   - Compliance triple-gate: KYC verified + AML clear + fully_verified; **`restricted_aml`/`suspended` users cannot reach claim; TTL 12 months for compliance hold funds with auto-clawback**
   - Early investor dilution: intentional reward mechanism; no capital injection possible; dilution expected and accepted
@@ -35,7 +36,7 @@
 - Approach summary: Consolidate the KNOW-2026-06-004 draft into an RFC with 8-layer architecture. Phase implementation across 4 phases aligned to BRI-5 through BRI-8.
 - Technical design:
 
-### 8-Layer Architecture
+### 10-Layer Architecture
 
 1. **Stake/Unstake Event Layer** — MPL Core `UpdatePlugin` transactions (toggling `frozen` state on the `FreezeDelegate`) as source of truth. Helius webhook + canonical RPC reconciliation. Asset must possess `FreezeDelegate` with `Owner` authority. UI shows partial state; DB derived state never stronger than on-chain. Tables: `stake_action_attempts`, `user_profile_stake_events`.
 2. **Mint Provenance / Project Origin Layer** — `asset_project_origins` links each eligible asset to approved Candy Machine via mint transaction evidence. `project_candy_machine_sources` maps project_id to exactly one approved CM. Collection membership is supporting context only; never financial scope. Provenance captured at mint or reconstructed from transaction history; missing = `needs_review`.
@@ -43,9 +44,9 @@
 4. **Project Eligibility Window** — Defines when stake time creates beneficiary rights. `earning_start_at = max(project_start_at, freeze_confirmed_at)`, `earning_end_at = min(project_end_at, unfreeze_confirmed_at ?? project_end_at)`. Only owned-and-frozen time inside window counts.
 5. **Dashboard Earning Projection Layer** — UI estimate using current freeze time + developer min/max range. Clear "projection, not guarantee" labeling. Detailed financial surface in `Rentas / Yield`, not `Stake / Unstake`.
 6. **Distribution Snapshot Layer** — Evidence package for Final Calculation. Admin chooses: project_id, eligibility window, snapshot_at, scope_type=candy_machine, scope_address, collection_address, authorized_supply, minimum_sold_count, funding_threshold_met_at, unsold_inventory_policy, investment_model, token_mint, treasury_vault, available_treasury_earnings_minor, distribution_pool_amount_minor, pool_composition_basis=equal_eligible_nft_count, **RPC commitment=finalized, archival node required**, context_slot, committee review fields. Final Calculation reconstructs historical intervals from blockchain/RPC **using archival endpoints only (projects can exceed 12 months)**.
-7. **Distribution Calculation Layer** — Time-weighted participation: `asset_earning_seconds = SUM(max(0, min(project_end_at, unfreeze_i_confirmed_at ?? project_end_at) - max(project_start_at, freeze_i_confirmed_at)))` across all disjoint valid intervals `i`. `wallet_time_weight = sum(asset_earning_seconds)`. `pool_time_weight = sum(all wallet_time_weight)`. **Hamilton Method (Largest-Remainder):** Pass 1: `wallet_gross_amount = floor(distribution_pool_amount_minor * wallet_time_weight / pool_time_weight)`. Pass 2: Calculate `remainder_minor = distribution_pool_amount - sum(wallet_gross_amount)`. Sort wallets by exact fractional remainder DESC, then tie-break FIFO. Add 1 minor unit to top `remainder_minor` wallets. Fee applied after gross: `net = gross - fee`. Integer math only.
-8. **Squads Treasury Layer** — Deterministic claim/payout evidence from finalized items. Committee reviews dispersion package. User Claim creates request; **single batched Squads v4 vault transaction with multiple transfer legs** (Squads CLI `initiate_batch_transfer` supports `sol:<recipient>:<lamports>` and `<mint>:<recipient>:<amount>` legs in one proposal). Hot wallet payments forbidden.
-9. **Claim Lifecycle Layer** — User Claim button → fee quote → claim_requested → committee_review → approved_for_dispersion → Squads batch → executed. Fee policy: versioned, per project/CM, flat or percentage with caps. Compliance re-check at claim time. **`restricted_aml` and `suspended` users blocked at claim gate (never reach claimable state). Compliance hold funds TTL: 12 months maximum; automatic clawback to treasury after TTL expiry.**
+7. **Distribution Calculation Layer** — Time-weighted participation: `asset_earning_seconds = SUM(max(0, min(project_end_at, unfreeze_i_confirmed_at ?? project_end_at) - max(project_start_at, freeze_i_confirmed_at)))` across all disjoint valid intervals `i`. `wallet_time_weight = sum(asset_earning_seconds)`. `pool_time_weight = sum(all wallet_time_weight)`. **Zero-pool guard**: if `pool_time_weight == 0` (no wallet staked during the window), the run transitions to `BLOCKED` with reason `no_eligible_participation`; no division is attempted. **Hamilton Method (Largest-Remainder):** Pass 1: `wallet_gross_amount = floor(distribution_pool_amount_minor * wallet_time_weight / pool_time_weight)` — all intermediate products use `BigInt` to avoid overflow. Pass 2: Calculate `remainder_minor = distribution_pool_amount - sum(wallet_gross_amount)`. Sort wallets by exact fractional remainder DESC, then tie-break FIFO. Add 1 minor unit to top `remainder_minor` wallets. Fee applied after gross: `net = gross - fee`. `BigInt` integer math only.
+8. **Squads Treasury Layer** — Deterministic claim/payout evidence from finalized items. Committee reviews dispersion package. User Claim creates request; **batched Squads v4 vault transactions with multiple transfer legs** (Squads CLI `initiate_batch_transfer` supports `sol:<recipient>:<lamports>` and `<mint>:<recipient>:<amount>` legs in one proposal). **Batch chunking**: to stay within Solana's ~1.4M CU transaction limit, each Squads proposal is capped at `MAX_LEGS_PER_BATCH` (default: 20 legs). Large distributions produce multiple sequential Squads proposals, each independently reviewed and executed. Atomicity is per-chunk, not per-distribution. Hot wallet payments forbidden.
+9. **Claim Lifecycle Layer** — User Claim button → fee quote → claim_requested → committee_review → approved_for_dispersion → Squads batch → executed. Fee policy: versioned, per project/CM, flat or percentage with caps. Compliance re-check at claim time. **`restricted_aml` and `suspended` users blocked at claim gate (never reach claimable state). Compliance hold funds TTL: 12 months maximum; automatic clawback to treasury project reserve.** **Quote expiry**: fee quotes in `QUOTE_CREATED` status expire after 48 hours and return to `CLAIMABLE`. **Concurrent claim guard**: `CLAIM_FLOW` uses a DB-level advisory lock per `(wallet, runId)` to prevent duplicate quote creation.
 10. **Traceability / Audit Layer** — Immutable audit trail answering 11 minimum questions (NFT, wallet, CM, window, seconds, KYC, treasury, fee, claim request, tx proof, exceptions).
 
 ### Key Data Models (new)
@@ -62,11 +63,22 @@
 - NFT transfer: freeze time follows asset, not wallet
 - Evidence timing: post-project-end, pre-dispersion
 - Unsold inventory: excluded, 100% pool to qualified
-- Fee applied: claim layer (after gross)
+- Fee applied: claim layer (after gross). Gross entitlement is proportional to time-weight; net receipt varies by fee policy. This is an explicit design choice.
 - Rejected state added for audit trail
 - Historical fee quotes in `/protected/rentas`
 - Provenance backfill: manual, 3 months post-project
 - Tie-breaking: 1) largest fractional remainder, 2) earliest first_freeze_confirmed_at (FIFO), 3) lower wallet address
+- **`BigInt` mandate**: all monetary arithmetic uses `BigInt` to prevent overflow on intermediate products exceeding `Number.MAX_SAFE_INTEGER`
+- **Zero-pool guard**: if `pool_time_weight == 0`, the distribution run transitions to `BLOCKED` with reason `no_eligible_participation`
+- **Squads batch chunking**: `MAX_LEGS_PER_BATCH = 20` per Squads proposal. Atomicity is per-chunk. Committee reviews each chunk independently.
+- **Quote expiry**: `QUOTE_CREATED` claims expire after 48 hours → return to `CLAIMABLE`
+- **Concurrent claim guard**: DB-level advisory lock per `(wallet, runId)` prevents duplicate quote creation
+- **Clawback fund destination**: 12-month TTL clawback funds return to a per-project `TreasuryClawbackReserve` account. Re-distribution requires a new committee-approved distribution run.
+- **FreezeDelegate authority alignment**: `Owner` authority OR `Address` authority where `address == asset.owner` both qualify (matches existing codebase `hasOwnerFreezeDelegatePlugin`)
+- **`investmentModel` is metadata only**: the field is stored on `DistributionRun` for audit/reporting but does not affect the calculation algorithm in v1
+- **Transfer mid-window gap**: ownership+freeze gaps between wallets accrue to no one. Documented in `DistributionAuditEvent`.
+- **Provenance post-finalization**: assets moving from `NEEDS_REVIEW` → `VALIDATED` after a run is finalized are NOT retroactively included. They become eligible for the next distribution run only.
+- **Migration 034 schema drift**: existing `034_distribution_preparation.sql` uses `collection_address` as financial scope. A new migration will alter the schema to use `candy_machine_address` and add committee/archival/compliance fields.
 
 ### RPC Finalization Protocol
 

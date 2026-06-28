@@ -7,12 +7,12 @@
 - Owner: `jaysosa`
 - Spec owner slice: `<branch-or-slice-id>`
 - Created: `2026-06-15`
-- Last Updated: `2026-06-16`
+- Last Updated: `2026-06-28`
 
 ## Scope
 - Problem statement: BRIDS needs a system that can answer: "How much should BRIDS send this user for the amount of time they kept eligible assets staked?" The calculation starts from available treasury earnings for a scoped project eligibility window, distributed across the investor pool according to time-weighted eligible participation.
 - Business goal: Provide auditable, blockchain-verified distribution of real estate project yields to NFT holders who stake/freeze their assets, with immutable audit trail from freeze events through Squads treasury execution.
-- Technical goal: Implement 8-layer architecture (Stake/Unstake Event Layer, Project Eligibility Window, Dashboard Projection, Distribution Snapshot, Distribution Calculation, Squads Treasury, Claim Lifecycle, Traceability/Audit) using MPL Core freeze/thaw, Candy Machine as sole financial scope, finalized RPC evidence from archival nodes, and deterministic integer math (Largest-Remainder Hamilton method).
+- Technical goal: Implement 10-layer architecture (Stake/Unstake Event Layer, Mint Provenance, User Timeline, Project Eligibility Window, Dashboard Projection, Distribution Snapshot, Distribution Calculation, Squads Treasury, Claim Lifecycle, Traceability/Audit) using MPL Core freeze/thaw, Candy Machine as sole financial scope, finalized RPC evidence from archival nodes, deterministic `BigInt` integer math (Largest-Remainder Hamilton method), and chunked Squads v4 batch transfers.
 - Out of scope: Collection-based financial scope, custom Anchor notary program, per-NFT economic tiers, multi-Candy Machine tranche merging, floating-point money math, hot wallet payouts.
 
 ## Success Criteria
@@ -41,6 +41,7 @@
 | --- | --- | --- | --- | --- |
 | 2026-06-15 | STORY-014-01 | Created RFC scaffold from KNOW-2026-06-004 draft | jaysosa | #BRI-7 |
 | 2026-06-16 | EPIC-014 | Approved epic and implementation slices | Staff Engineer | |
+| 2026-06-28 | EPIC-014 | Spec review: resolved 6 blocking items (BigInt, zero-pool, batch chunking, quote expiry, clawback destination, FreezeDelegate alignment) | Staff Engineer | PR #300 |
 
 ## Risks and Dependencies
 - Risks:
@@ -78,9 +79,15 @@
 - [ ] Withheld allocation bucket for non-verified wallets — scope for v1?
 - [ ] Provenance backfill automation vs 3-month manual window
 - [ ] Secondary marketplace transfer handling for earning interval splits
-- [ ] What is the TTL (Time-To-Live) for funds locked due to post-calculation `compliance_hold`? **(Resolved: 12 months, auto-clawback)**
-- [ ] Archival node provider selection: Helius Archive, Alchemy Archive, or self-hosted?
-- [ ] Squads v4 batch transfer compute unit limits for large payout batches (N recipients)?
+- [x] What is the TTL (Time-To-Live) for funds locked due to post-calculation `compliance_hold`? **(Resolved: 12 months, auto-clawback to per-project `TreasuryClawbackReserve`)**
+- [x] Archival node provider selection: Helius Archive, Alchemy Archive, or self-hosted? **(Resolved: multi-provider convergence, all three)**
+- [x] Squads v4 batch transfer compute unit limits for large payout batches (N recipients)? **(Resolved: `MAX_LEGS_PER_BATCH = 20` per Squads proposal; large distributions produce multiple sequential proposals)**
+- [x] Integer overflow risk in monetary arithmetic? **(Resolved: `BigInt` mandate for all intermediate products)**
+- [x] Zero pool time weight (nobody staked)? **(Resolved: run transitions to `BLOCKED` with `no_eligible_participation`)**
+- [x] Quote expiry for unclaimed fee quotes? **(Resolved: 48-hour TTL, auto-return to `CLAIMABLE`)**
+- [x] Clawback fund destination after 12-month TTL? **(Resolved: per-project `TreasuryClawbackReserve`; re-distribution requires new committee-approved run)**
+- [x] FreezeDelegate authority strictness? **(Resolved: `Owner` OR `Address` where `address == owner` both qualify)**
+- [x] `investmentModel` impact on calculation? **(Resolved: metadata only in v1)**
 
 ## Traceability
 - Issue(s): BRI-5, BRI-6, BRI-7, BRI-7 (Linear: BRI-7)
