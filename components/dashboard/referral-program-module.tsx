@@ -121,7 +121,7 @@ function stateClassName(state: "pending" | "completed"): string {
 
 function ReferralModuleSkeleton(): ReactElement {
   return (
-    <Card className="space-y-4">
+    <article className="marketplace-depth-card space-y-4 rounded-2xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-2">
           <div className="h-4 w-32 animate-pulse rounded bg-white/10" />
@@ -134,13 +134,13 @@ function ReferralModuleSkeleton(): ReactElement {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={`referral-skeleton-${index}`} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div key={`referral-skeleton-${index}`} className="marketplace-depth-card rounded-2xl p-4">
             <div className="h-4 w-24 animate-pulse rounded bg-white/10" />
             <div className="mt-3 h-8 w-16 animate-pulse rounded bg-white/10" />
           </div>
         ))}
       </div>
-    </Card>
+    </article>
   );
 }
 
@@ -272,7 +272,7 @@ export function ReferralProgramModule(): ReactElement {
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-4">
+      <article className="marketplace-depth-card space-y-4 rounded-2xl p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export function ReferralProgramModule(): ReactElement {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="marketplace-depth-card rounded-2xl p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-white/55">
             {t({ en: "Referral code", es: "Codigo de referido", pt: "Codigo de indicacao" })}
           </p>
@@ -323,25 +323,25 @@ export function ReferralProgramModule(): ReactElement {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="marketplace-depth-card rounded-2xl p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-white/55">
               {t({ en: "Pending invitees", es: "Invitados pendientes", pt: "Convidados pendentes" })}
             </p>
             <p className="mt-3 text-3xl font-semibold text-white">{summary.pendingInviteesCount}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="marketplace-depth-card rounded-2xl p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-white/55">
               {t({ en: "Completed invitees", es: "Invitados completados", pt: "Convidados concluidos" })}
             </p>
             <p className="mt-3 text-3xl font-semibold text-white">{summary.completedInviteesCount}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="marketplace-depth-card rounded-2xl p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-white/55">
               {t({ en: "Accrued rewards", es: "Recompensas acumuladas", pt: "Recompensas acumuladas" })}
             </p>
             <p className="mt-3 text-3xl font-semibold text-white">{formatUsdc(summary.totalAccruedUsdc)}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="marketplace-depth-card rounded-2xl p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-white/55">
               {t({ en: "Paid rewards", es: "Recompensas pagadas", pt: "Recompensas pagas" })}
             </p>
@@ -349,7 +349,7 @@ export function ReferralProgramModule(): ReactElement {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="marketplace-depth-card rounded-2xl p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-white">
@@ -374,9 +374,9 @@ export function ReferralProgramModule(): ReactElement {
             <span className="font-medium text-white">{formatUsdc(summary.totalPendingDistributionUsdc)}</span>
           </p>
         </div>
-      </Card>
+      </article>
 
-      <Card className="space-y-4">
+      <article className="marketplace-depth-card space-y-4 rounded-2xl p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-white">
@@ -398,7 +398,7 @@ export function ReferralProgramModule(): ReactElement {
         ) : null}
 
         {inviteesPage.items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/15 px-4 py-5 text-sm text-white/70">
+          <div className="marketplace-depth-card rounded-2xl px-4 py-5 text-sm text-white/70">
             {t({
               en: "No invitees have entered your referral funnel yet.",
               es: "Todavia no hay invitados dentro de tu funnel de referidos.",
@@ -408,7 +408,7 @@ export function ReferralProgramModule(): ReactElement {
         ) : (
           <div className="space-y-3">
             {inviteesPage.items.map((invitee) => (
-              <div key={`${invitee.inviteeWalletDisplay}-${invitee.boundDay}`} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div key={`${invitee.inviteeWalletDisplay}-${invitee.boundDay}`} className="marketplace-depth-card rounded-2xl p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-white">{invitee.inviteeWalletDisplay}</p>
@@ -463,7 +463,7 @@ export function ReferralProgramModule(): ReactElement {
             </Button>
           </div>
         </div>
-      </Card>
+      </article>
     </div>
   );
 }
