@@ -92,7 +92,7 @@ function DashboardSkeleton(): ReactElement {
 
 function EmptyState({ t }: { t: TranslateFn }): ReactElement {
   return (
-    <Card className="space-y-3 border-dashed">
+    <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
       <h2 className="text-lg font-semibold text-white">
         {t({ en: "No BRIDS NFTs in this wallet yet", es: "Aun no hay NFTs BRIDS en esta wallet", pt: "Ainda nao ha NFTs BRIDS nesta wallet" })}
       </h2>
@@ -113,7 +113,7 @@ function EmptyState({ t }: { t: TranslateFn }): ReactElement {
           {t({ en: "Review profile", es: "Revisar perfil", pt: "Revisar perfil" })}
         </Link>
       </div>
-    </Card>
+    </article>
   );
 }
 
@@ -388,11 +388,11 @@ export function OverviewModule(): ReactElement {
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
-          <Card key={metric.label} className="space-y-1">
+          <article key={metric.label} className="marketplace-depth-card space-y-1 rounded-2xl p-5">
             <p className="text-xs uppercase tracking-[0.12em] text-white/60">{metric.label}</p>
             <p className="text-2xl font-semibold text-white">{metric.value}</p>
             <p className="text-xs text-white/55">{metric.detail}</p>
-          </Card>
+          </article>
         ))}
       </div>
 
