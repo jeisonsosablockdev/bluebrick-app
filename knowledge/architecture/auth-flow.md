@@ -886,3 +886,4 @@ Last Updated: 2026-04-14 14:20:00 UTC
 - `/api/admin/core-candy-machine/submit` now accepts an optional `deployId` solely to correlate deploy preparation, wallet signing, backend submit, RPC confirmation, and snapshot-facing logs.
 - The route still derives the authenticated admin wallet from the existing SIWS session through `getRequestRole`; the client-provided `deployId` is never used for authorization, payer validation, snapshot verification, or Create Asset gating.
 - No SIWS challenge, signature verification, cookie strategy, nonce lifecycle, admin role derivation, or browser-owned permission model changed in this slice.
+<!-- Updated UI styles -->
