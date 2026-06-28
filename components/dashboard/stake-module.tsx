@@ -712,7 +712,7 @@ export function StakeModule(): ReactElement {
           ? "pointer-events-none w-full max-w-full min-w-0 space-y-4 opacity-60 blur-[2px] transition duration-200"
           : "w-full max-w-full min-w-0 space-y-4 transition duration-200"}
       >
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "Fractions eligible for Stake / Unstake", es: "Fracciones elegibles para Stake / Unstake", pt: "Frações elegiveis para Stake / Unstake" })}
         </h2>
@@ -723,9 +723,9 @@ export function StakeModule(): ReactElement {
             pt: "Somente NFTs da BRIDS atualmente possuidos pela wallet conectada aparecem nesta lista."
           })}
         </p>
-      </Card>
+      </article>
 
-      <Card className="space-y-2 border-amber-400/30 bg-amber-500/5">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-amber-400/30 bg-amber-500/5">
         <p className="text-sm text-amber-100">
           {t({
             en: "Important note: staked assets remain transfer-restricted while they are frozen on-chain.",
@@ -733,10 +733,10 @@ export function StakeModule(): ReactElement {
             pt: "Nota importante: ativos em stake mantem restricao de transferencia enquanto seguem congelados on-chain."
           })}
         </p>
-      </Card>
+      </article>
 
       {!connected || !publicKey || !signTransaction ? (
-        <Card className="space-y-2 border-cyan-400/30 bg-cyan-500/5">
+        <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-cyan-400/30 bg-cyan-500/5">
           <p className="text-sm text-cyan-100">
             {t({
               en: "Connect the owner wallet to sign Stake / Unstake actions.",
@@ -744,45 +744,45 @@ export function StakeModule(): ReactElement {
               pt: "Conecte a wallet owner para assinar acoes de Stake / Unstake."
             })}
           </p>
-        </Card>
+        </article>
       ) : null}
 
       {notice ? (
-        <Card className="space-y-1 border-emerald-400/30 bg-emerald-500/5">
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5 border-emerald-400/30 bg-emerald-500/5">
           <p className="text-sm font-semibold text-emerald-200">
             {t({ en: "Action submitted", es: "Accion enviada", pt: "Acao enviada" })}
           </p>
           <p className="text-sm text-emerald-100">{notice}</p>
-        </Card>
+        </article>
       ) : null}
 
       {actionErrorNotice ? (
-        <Card className="space-y-1 border-amber-400/30 bg-amber-500/5">
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5 border-amber-400/30 bg-amber-500/5">
           <p className="text-sm font-semibold text-amber-200">
             {t({ en: "Action needs retry", es: "La accion necesita reintento", pt: "A acao precisa de nova tentativa" })}
           </p>
           <p className="text-sm text-amber-100">{actionErrorNotice}</p>
-        </Card>
+        </article>
       ) : null}
 
       {fetchError ? (
-        <Card className="space-y-1 border-rose-400/30 bg-rose-500/5">
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5 border-rose-400/30 bg-rose-500/5">
           <p className="text-sm font-semibold text-rose-200">
             {t({ en: "Load error", es: "Error de carga", pt: "Erro de carga" })}
           </p>
           <p className="text-sm text-rose-100">{fetchError}</p>
-        </Card>
+        </article>
       ) : null}
 
       {loading ? (
-        <Card className="space-y-2">
+        <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
           <div className="h-5 w-56 animate-pulse rounded bg-white/10" />
           <div className="h-20 animate-pulse rounded bg-white/10" />
-        </Card>
+        </article>
       ) : null}
 
       {!loading && !fetchError && effectiveAssets.length === 0 ? (
-        <Card className="space-y-2 border-dashed">
+        <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-dashed">
           <h2 className="text-lg font-semibold text-white">
             {t({ en: "No eligible BRIDS NFTs", es: "No hay NFTs BRIDS elegibles", pt: "Nao ha NFTs BRIDS elegiveis" })}
           </h2>
@@ -793,7 +793,7 @@ export function StakeModule(): ReactElement {
               pt: "Esta superficie lista apenas NFTs da BRIDS atualmente possuidos pela wallet conectada e validados a partir do inventario server-side."
             })}
           </p>
-        </Card>
+        </article>
       ) : null}
 
       <div className="grid w-full max-w-full min-w-0 gap-3 md:grid-cols-2">
@@ -803,7 +803,7 @@ export function StakeModule(): ReactElement {
           const processing = busy || isProcessingStakeState(asset.effectiveState);
 
           return (
-            <Card key={asset.assetAddress} className="w-full max-w-full min-w-0 overflow-hidden space-y-3 p-4 sm:p-5">
+            <article key={asset.assetAddress} className="marketplace-depth-card w-full max-w-full min-w-0 space-y-3 overflow-hidden rounded-2xl p-4 sm:p-5">
               <div className="flex min-w-0 flex-col gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="break-words text-sm font-semibold text-white">{asset.propertyTitle}</p>
@@ -839,7 +839,7 @@ export function StakeModule(): ReactElement {
                   {t({ en: "No action available", es: "Sin accion disponible", pt: "Sem acao disponivel" })}
                 </Button>
               )}
-            </Card>
+            </article>
           );
         })}
       </div>

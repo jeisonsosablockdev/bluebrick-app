@@ -38,35 +38,35 @@ const ACTIVE_STREAMS: Stream[] = [
 function LoadingState(): ReactElement {
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <div className="h-5 w-48 animate-pulse rounded bg-white/10" />
         <div className="h-4 w-full animate-pulse rounded bg-white/10" />
-      </Card>
-      <Card className="space-y-2">
+      </article>
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <div className="h-44 w-full animate-pulse rounded bg-white/10" />
-      </Card>
+      </article>
     </div>
   );
 }
 
 function ErrorState({ t }: { t: ReturnType<typeof useI18n>["t"] }): ReactElement {
   return (
-    <Card className="space-y-2 border-rose-400/40 bg-rose-500/5">
+    <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-rose-400/40 bg-rose-500/5">
       <h2 className="text-lg font-semibold text-white">{t({ en: "Could not load your yield", es: "No se pudieron cargar tus rentas", pt: "Nao foi possivel carregar suas rendas" })}</h2>
       <p className="text-sm text-white/75">{t({ en: "Try again in a few minutes.", es: "Intenta nuevamente en unos minutos.", pt: "Tente novamente em alguns minutos." })}</p>
       <Button className="min-h-11 w-full sm:w-auto" variant="outline">
         {t({ en: "Retry", es: "Reintentar", pt: "Tentar novamente" })}
       </Button>
-    </Card>
+    </article>
   );
 }
 
 function EmptyState({ t }: { t: ReturnType<typeof useI18n>["t"] }): ReactElement {
   return (
-    <Card className="space-y-2 border-dashed">
+    <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-dashed">
       <h2 className="text-lg font-semibold text-white">{t({ en: "No yield available", es: "Sin rentas disponibles", pt: "Sem rendas disponiveis" })}</h2>
       <p className="text-sm text-white/75">{t({ en: "You do not have generated yield to claim in this period yet.", es: "Todavia no tienes rentas generadas para reclamar en este periodo.", pt: "Voce ainda nao tem rendas geradas para reclamar neste periodo." })}</p>
-    </Card>
+    </article>
   );
 }
 
@@ -104,13 +104,13 @@ export function RentasModule(): ReactElement {
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-white">{t({ en: "Yield and Claim", es: "Rentas y Claim", pt: "Rendas e Claim" })}</h2>
         <p className="text-sm text-white/75">{t({ en: "Check what you can claim, what you already received and the status of active streams.", es: "Consulta cuanto puedes reclamar, cuanto ya recibiste y el estado de tus streams activos.", pt: "Consulte quanto voce pode reclamar, quanto ja recebeu e o status dos seus streams ativos." })}</p>
-      </Card>
+      </article>
 
       {(claimState === "pending" || claimState === "done") && (
-        <Card className={`space-y-1 ${claimState === "pending" ? "border-amber-400/30 bg-amber-500/5" : "border-emerald-400/30 bg-emerald-500/5"}`}>
+        <article className={`marketplace-depth-card space-y-1 rounded-2xl p-5 ${claimState === "pending" ? "border-amber-400/30 bg-amber-500/5" : "border-emerald-400/30 bg-emerald-500/5"}`}>
           <p className={`text-sm font-semibold ${claimState === "pending" ? "text-amber-100" : "text-emerald-100"}`}>
             {claimState === "pending"
               ? t({ en: "Pending claim", es: "Claim pendiente", pt: "Claim pendente" })
@@ -121,29 +121,29 @@ export function RentasModule(): ReactElement {
               ? t({ en: "Your claim request is in confirmation. You can check status again in a few seconds.", es: "Tu solicitud de claim esta en confirmacion. Puedes revisar el estado en unos segundos.", pt: "Sua solicitacao de claim esta em confirmacao. Voce pode revisar o status em alguns segundos." })
               : t({ en: "Your claim was processed correctly and now appears in history.", es: "Tu claim fue procesado correctamente y ya aparece en el historial.", pt: "Seu claim foi processado corretamente e ja aparece no historico." })}
           </p>
-        </Card>
+        </article>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="space-y-1">
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Claimable balance", es: "Balance claimable", pt: "Saldo disponivel para claim" })}</p>
           <p className="text-2xl font-semibold text-white">{summary.claimableBalance}</p>
-        </Card>
-        <Card className="space-y-1">
+        </article>
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Monthly history", es: "Historico mensual", pt: "Historico mensal" })}</p>
           <p className="text-2xl font-semibold text-white">{summary.monthlyGenerated}</p>
-        </Card>
-        <Card className="space-y-1">
+        </article>
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Active streams", es: "Streams activos", pt: "Streams ativos" })}</p>
           <p className="text-2xl font-semibold text-white">{summary.activeStreams}</p>
-        </Card>
-        <Card className="space-y-1">
+        </article>
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Already claimed", es: "Rentas ya reclamadas", pt: "Rendas ja reclamadas" })}</p>
           <p className="text-2xl font-semibold text-white">{summary.alreadyClaimed}</p>
-        </Card>
+        </article>
       </div>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold text-white">{t({ en: "Claim CTA", es: "CTA de Claim", pt: "CTA de Claim" })}</h3>
           <Button className="min-h-11" variant="primary">
@@ -151,9 +151,9 @@ export function RentasModule(): ReactElement {
           </Button>
         </div>
         <p className="text-sm text-white/70">{t({ en: "Claim is prepared to integrate wallet signature and payout backend.", es: "El claim queda preparado para integrar firma wallet y backend de payout.", pt: "O claim fica preparado para integrar assinatura wallet e backend de payout." })}</p>
-      </Card>
+      </article>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <h3 className="text-base font-semibold text-white">{t({ en: "History by period", es: "Historial por periodo", pt: "Historico por periodo" })}</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -183,13 +183,13 @@ export function RentasModule(): ReactElement {
             </tbody>
           </table>
         </div>
-      </Card>
+      </article>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <h3 className="text-base font-semibold text-white">{t({ en: "Active streams", es: "Streams activos", pt: "Streams ativos" })}</h3>
         <ul className="space-y-2">
           {ACTIVE_STREAMS.map((stream) => (
-            <li key={stream.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+            <li key={stream.id} className="marketplace-depth-card rounded-2xl p-4 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-semibold text-white">{stream.property}</p>
                 <span className={`rounded-full px-2 py-1 text-xs ${stream.status === "active" ? "bg-emerald-500/20 text-emerald-200" : "bg-slate-500/20 text-slate-200"}`}>
@@ -204,7 +204,7 @@ export function RentasModule(): ReactElement {
             </li>
           ))}
         </ul>
-      </Card>
+      </article>
     </div>
   );
 }
