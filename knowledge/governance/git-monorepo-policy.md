@@ -179,13 +179,14 @@ SPEC/<developer>-<issue>-<spec-slug>
 
 🔀 PARENT WORK BRANCH FLOW (MANDATORY WHEN USING SPECs)
 
-	1.	Create the parent work branch from latest `develop`.
-	2.	Create the first SPEC from the parent work branch.
-	3.	Create each next SPEC only after the previous SPEC merges into the parent work branch.
-	4.	Open SPEC PRs into the parent work branch.
-	5.	Merge reviewed SPECs into the parent work branch.
-	6.	Open the final parent work branch PR from the parent work branch into `develop`.
-	7.	Delete the temporary parent work branch after the final merge.
+	1.	**Create the Feature branch**: La rama principal (Feature, Epic, etc.) se crea desde `develop` con la nomenclatura adecuada. Las ramas SPEC NO se crean en masa al principio.
+	2.	**Ask the Developer**: El agente DEBE preguntar explícitamente al desarrollador: "¿Con cuál SPEC empezamos?".
+	3.	**Create the SPEC branch**: Una vez el desarrollador elige el SPEC, se crea una ÚNICA rama hija partiendo desde la rama Feature principal, usando la nomenclatura adecuada (ej. `SPEC/...`).
+	4.	**Start Development**: Se inicia el desarrollo en dicha rama SPEC, guiado por el desarrollador.
+	5.	**Next SPECs**: Cada nuevo SPEC se creará bajo este mismo flujo (preguntar, crear una sola rama desde Feature) y SOLO después de que el SPEC anterior haya sido estabilizado e integrado en la rama Feature.
+	6.	**Merge reviewed SPECs**: Merge reviewed SPECs into the parent work branch (`SPEC MERGE`).
+	7.	**Final PR**: Open the final parent work branch PR from the parent work branch into `develop`.
+	8.	**Cleanup**: Delete the temporary parent work branch after the final merge.
 
 ⸻
 
