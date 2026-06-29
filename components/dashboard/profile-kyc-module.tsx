@@ -858,16 +858,31 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
 
           <div className="marketplace-depth-card w-full space-y-3 rounded-2xl p-4 text-center md:w-[260px] md:justify-self-end">
             <div className="flex items-center justify-center">
-              <div className="h-28 w-28 overflow-hidden rounded-2xl bg-black/35">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt={t({ en: "Profile avatar preview", es: "Vista previa del avatar", pt: "Pre-visualizacao do avatar" })}
-                  className="h-full w-full object-cover"
-                  onError={(event) => {
-                    event.currentTarget.src = "/avatars/default-user.svg";
-                  }}
-                  src={selectedAvatarPreviewUrl}
-                />
+              <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-cyan-400 to-violet-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-14 w-14 text-white"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                {selectedAvatarPreviewUrl && selectedAvatarPreviewUrl !== "/avatars/default-user.svg" && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    alt={t({ en: "Profile avatar preview", es: "Vista previa del avatar", pt: "Pre-visualizacao do avatar" })}
+                    className="absolute inset-0 h-full w-full bg-slate-900 object-cover"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                    src={selectedAvatarPreviewUrl}
+                  />
+                )}
               </div>
             </div>
 
