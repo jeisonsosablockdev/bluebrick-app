@@ -264,7 +264,7 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
           : null;
 
   return (
-    <article className="marketplace-depth-card overflow-hidden rounded-2xl p-0 shadow-[0_18px_50px_rgba(3,8,18,0.34)]">
+    <article className="marketplace-depth-card no-hover-lift overflow-hidden rounded-2xl p-0 shadow-[0_18px_50px_rgba(3,8,18,0.34)]">
       <div className="border-b border-white/10 px-4 pb-3 pt-4 sm:px-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-200/88">
           {t({ en: "Installability / Push readiness", es: "Instalabilidad / Preparacion push", pt: "Instalabilidade / Preparacao push" })}

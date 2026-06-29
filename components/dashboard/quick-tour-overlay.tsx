@@ -317,9 +317,37 @@ export function QuickTourOverlay() {
       return;
     }
 
-    // Provisionally activating the tour for testing
-    setShowTour(true);
-    setIsCheckingProfile(false);
+    const dismissed = sessionStorage.getItem(TOUR_DISMISSED_KEY);
+    if (dismissed) {
+      setIsCheckingProfile(false);
+      return;
+    }
+
+    async function checkProfile() {
+      try {
+        const res = await fetch("/api/protected/profile", { cache: "no-store" });
+        if (!res.ok) {
+          return;
+        }
+
+        const payload = (await res.json()) as {
+          data?: { firstName?: string | null; country?: string | null; email?: string | null };
+        };
+
+        if (payload.data) {
+          const { firstName, country, email } = payload.data;
+          if (!firstName || !country || !email) {
+            setShowTour(true);
+          }
+        }
+      } catch {
+        // silently skip tour when profile cannot be checked
+      } finally {
+        setIsCheckingProfile(false);
+      }
+    }
+
+    void checkProfile();
   }, [isProfileRoute]);
 
   useEffect(() => {
