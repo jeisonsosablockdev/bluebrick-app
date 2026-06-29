@@ -282,37 +282,9 @@ export function QuickTourOverlay() {
       return;
     }
 
-    const dismissed = sessionStorage.getItem(TOUR_DISMISSED_KEY);
-    if (dismissed) {
-      setIsCheckingProfile(false);
-      return;
-    }
-
-    async function checkProfile() {
-      try {
-        const res = await fetch("/api/protected/profile", { cache: "no-store" });
-        if (!res.ok) {
-          return;
-        }
-
-        const payload = (await res.json()) as {
-          data?: { firstName?: string | null; country?: string | null; email?: string | null };
-        };
-
-        if (payload.data) {
-          const { firstName, country, email } = payload.data;
-          if (!firstName || !country || !email) {
-            setShowTour(true);
-          }
-        }
-      } catch {
-        // silently skip tour when profile cannot be checked
-      } finally {
-        setIsCheckingProfile(false);
-      }
-    }
-
-    void checkProfile();
+    // Provisionally activating the tour for testing
+    setShowTour(true);
+    setIsCheckingProfile(false);
   }, [isProfileRoute]);
 
   useEffect(() => {
@@ -391,7 +363,7 @@ export function QuickTourOverlay() {
       >
         <div
           ref={cardRef}
-          className="quick-tour-card glass-modal-surface"
+          className="quick-tour-card marketplace-depth-card"
           style={{
             top: `${cardPosition.top}px`,
             left: `${cardPosition.left}px`,
@@ -400,13 +372,7 @@ export function QuickTourOverlay() {
           role="dialog"
           aria-label={t({ en: "Quick onboarding tour", es: "Tour de onboarding", pt: "Tour de onboarding" })}
         >
-          {cardPosition.pointerSide !== "none" && cardPosition.placement === "anchored" ? (
-            <span
-              className={`quick-tour-pointer quick-tour-pointer-${cardPosition.pointerSide}`}
-              style={{ left: `${cardPosition.pointerOffset}px` }}
-              aria-hidden="true"
-            />
-          ) : null}
+
 
           <div className="quick-tour-header">
             <div className="quick-tour-title-wrap">
