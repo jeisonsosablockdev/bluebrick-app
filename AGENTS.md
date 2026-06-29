@@ -77,14 +77,13 @@
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation, fetched account state, no simulation-only proof
 - Final `reviewer` pass finds no unresolved blocking issues
 
-## 🚫 MANDATORY BOOTSTRAP SEQUENCE
+## 🚫 MANDATORY BOOTSTRAP SEQUENCE / PREFLIGHT
 
-**BEFORE any planning or implementation:**
+**When the user requests to "prepare preflight" or start a new task, you MUST execute these steps in order:**
 
-1. **ALWAYS** run `pnpm task:init` (or `bash scripts/agent-bootstrap.sh`)
-2. **ALWAYS** read the matching `.codex/workflows/*.md` for detected scope
-3. **ALWAYS** verify preconditions in `AGENTS.md` Entry Rules
-4. **NEVER** skip to implementation without planner → workflow activation
-5. **HALT AND WAIT**: After branching, you MUST generate an `implementation_plan.md` and then **STOP CALLING TOOLS**. Wait for the human developer to validate the orientation of the plan. Do NOT write code based solely on the issue description without explicit user approval.
+1. **Verify State**: Check that the current branch is the correct `feature/*` or `bugfix/*` branch, that it has the latest approved commits, and that the working directory is clean (no uncommitted/loose changes). If there are loose changes, halt and ask the user.
+2. **Branch Creation**: Run `npm run task:init` (or standard git commands) to create the new SPEC branch using the strict project nomenclature. Once created, **inform the user** that the branch was created so they can verify it.
+3. **Load Context**: If this is a new context (new issue or new feature branch), load ONLY the OKF (knowledge base) and the necessary workflows (e.g., `.codex/workflows/*.md`). Do not assume external logic.
+4. **HALT AND WAIT**: Output your proposed implementation plan directly in the chat message as text. DO NOT create an `implementation_plan.md` artifact for this initial step. Then, **STOP CALLING TOOLS**. Wait for the human developer to validate the orientation of the plan. Do NOT write code based solely on the issue description without explicit user approval.
 
 **If you bypass this, STOP and restart from step 1.**
