@@ -207,6 +207,80 @@ FREEZE_MINT_AUTHORITY(projectId):
 | `/api/admin/archival/health` | GET | Returns health status of all archival endpoints |
 | `/api/admin/provenance/backfill` | POST | Triggers provenance backfill for project |
 
+## Spec Breakdown
+
+> Each spec below is a **single-responsibility delivery unit**. During development, work on one spec at a time. Do not mix code from different specs in the same PR.
+
+---
+
+### SPEC-S02-A: Stake/Unstake Event Pipeline
+
+- **Single Responsibility**: Capture freeze/thaw events from the blockchain and reconcile them into canonical profile events.
+- **Scope**:
+  - Tables: `stake_action_attempts`, `user_profile_stake_events`
+  - Paths: `lib/stake/`, `api/protected/stake/*`, `api/webhooks/helius/stake`
+  - Pseudocode sections: §1 (StakeActionAttempt, UserProfileStakeEvent schemas), §2 (Reconciliation Engine), §6 (API: `/stake/assets`, `/stake/prepare`, `/stake/submit`, `/webhooks/helius/stake`)
+- **Inputs**: User wallet + asset address, Helius webhook payloads, signed freeze/thaw transactions
+- **Outputs**: Reconciled `UserProfileStakeEvent` records with `txSignature`, `slot`, `blockTime`, linked to provenance
+- **Dependencies**: SPEC-S02-C (ArchivalRpcClient for multi-endpoint reconciliation)
+- **Exit Criteria**:
+  - [ ] `stake_action_attempts` and `user_profile_stake_events` migrations applied
+  - [ ] Reconciliation engine parses MPL Core freeze/thaw instructions correctly
+  - [ ] Helius webhook → reconciliation → profile event integration test passes (devnet)
+  - [ ] Duplicate webhook delivery handled gracefully (unique `txSignature` constraint)
+  - [ ] API endpoints return correct visible state (`ready_to_stake`, `ready_to_unstake`, `sync_pending`)
+
+---
+
+### SPEC-S02-B: Mint Provenance Registry
+
+- **Single Responsibility**: Register and verify the mint origin of each eligible NFT, linking assets to their approved Candy Machine.
+- **Scope**:
+  - Tables: `asset_project_origins`, `project_candy_machine_sources`
+  - Paths: `lib/provenance/`, `api/admin/provenance/*`
+  - Pseudocode sections: §1 (AssetProjectOrigin, ProjectCandyMachineSource schemas), §4 (Provenance Backfill Job), §6 (API: `/admin/provenance/backfill`)
+- **Inputs**: Candy Machine address, asset addresses, archival RPC transaction history
+- **Outputs**: `AssetProjectOrigin` records with `provenanceStatus` (VALIDATED | NEEDS_REVIEW | REJECTED)
+- **Dependencies**: SPEC-S02-C (ArchivalRpcClient for historical transaction lookup)
+- **Exit Criteria**:
+  - [ ] `asset_project_origins` and `project_candy_machine_sources` migrations applied
+  - [ ] Provenance backfill processes test assets from devnet Candy Machine
+  - [ ] Assets with pruned mint transactions marked as `NEEDS_REVIEW` (never auto-included)
+  - [ ] `NEEDS_REVIEW` → `VALIDATED` transition requires admin action
+  - [ ] 1:1 mapping enforced between `projectId` and `candyMachineAddress`
+
+---
+
+### SPEC-S02-C: Archival RPC Infrastructure & Mint Authority Freeze
+
+- **Single Responsibility**: Provision and validate archival RPC endpoints for historical blockchain queries. Freeze Candy Machine mint authority at project start.
+- **Scope**:
+  - Tables: `archival_rpc_endpoints`
+  - Paths: `lib/archival/`, `api/admin/archival/*`
+  - Pseudocode sections: §1 (ArchivalRpcEndpoint schema), §3 (Archival RPC Client), §5 (Mint Authority Freeze), §6 (API: `/admin/archival/health`)
+- **Inputs**: RPC endpoint URLs, provider names, project ID for mint authority freeze
+- **Outputs**: Validated `ArchivalRpcClient` with multi-provider fallback; frozen mint authority on Candy Machine
+- **Dependencies**: None (this is the foundational spec; S02-A and S02-B depend on it)
+- **Exit Criteria**:
+  - [ ] `archival_rpc_endpoints` migration applied
+  - [ ] ArchivalRpcClient validates `minimumLedgerSlot` for each endpoint
+  - [ ] Health check endpoint returns status for all configured archival providers
+  - [ ] Multi-provider fallback works when primary is down
+  - [ ] Mint authority freeze verified on devnet Candy Machine
+  - [ ] `max_slot_lag = 100`, `max_age = 5000ms` staleness guards enforced
+
+---
+
+### Spec Dependency Order
+
+```
+SPEC-S02-C  (Archival RPC + Mint Freeze)     ← build first
+    ├── SPEC-S02-A  (Event Pipeline)          ← can start after S02-C
+    └── SPEC-S02-B  (Provenance Registry)     ← can start after S02-C (parallel with S02-A)
+```
+
+---
+
 ## Resolution
 - Schema defined for 5 core tables with indexes
 - Reconciliation engine: webhook → multi-endpoint archival RPC → canonical event persistence

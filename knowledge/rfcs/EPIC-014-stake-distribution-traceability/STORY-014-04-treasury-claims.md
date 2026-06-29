@@ -383,6 +383,96 @@ CLAIM_OR_PAYOUT_EVENT:
   claimId?, batchId?, runId?, wallet?, amountMinor?, tokenMint?, reason?, metadata?, timestamp
 ```
 
+## Spec Breakdown
+
+> Each spec below is a **single-responsibility delivery unit**. During development, work on one spec at a time. Do not mix code from different specs in the same PR.
+
+---
+
+### SPEC-S04-A: Fee Policy Engine
+
+- **Single Responsibility**: Manage versioned, scoped claim fee policies with hierarchical resolution (candy_machine > project > global).
+- **Scope**:
+  - Tables: `claim_fee_policies`
+  - Paths: `lib/claims/fee-policy.ts`, `api/admin/fee-policies/*`
+  - Pseudocode sections: §1 (ClaimFeePolicy schema), §2 (Fee Calculation, GET_ACTIVE_FEE_POLICY)
+- **Inputs**: Admin CRUD operations (scope, fee mode, caps, effective dates)
+- **Outputs**: Active fee policy resolved by scope + timestamp; fee calculation (`gross → fee → net`)
+- **Dependencies**: None (standalone — can be built first or in parallel with S04-B)
+- **Exit Criteria**:
+  - [ ] `claim_fee_policies` migration applied with version tracking
+  - [ ] CRUD: create, read, update (new version), deactivate
+  - [ ] Hierarchical resolution: candy_machine policy overrides project, which overrides global
+  - [ ] Flat fee mode: exact minor units, capped by `minFeeMinor`/`maxFeeMinor`
+  - [ ] Percentage fee mode: `FLOOR(gross * bps / 10000)`, respects caps
+  - [ ] Fee cannot exceed gross amount (`feeAmountMinor = MIN(rawFee, gross)`)
+  - [ ] Default global policy exists and resolves when no scoped policy matches
+  - [ ] Versioning: new version does not retroactively affect locked quotes
+
+---
+
+### SPEC-S04-B: Claim Lifecycle
+
+- **Single Responsibility**: Allow the user to request a claim with a locked fee quote, enforce compliance gates, and manage quote expiry and concurrency.
+- **Scope**:
+  - Tables: `distribution_claims`, `claim_fee_policy_overrides`
+  - Paths: `lib/claims/claim-flow.ts`, `lib/claims/quote-monitor.ts`, `api/protected/claims/*`
+  - Pseudocode sections: §3 (CLAIM_FLOW, QUOTE_EXPIRY_MONITOR, CONFIRM_CLAIM), §6 (DistributionClaim state machine)
+- **Inputs**: User wallet + runId; fee policy from SPEC-S04-A; compliance status from KYC/AML pipeline
+- **Outputs**: `DistributionClaim` records transitioning through: `CLAIMABLE → QUOTE_CREATED → CLAIM_REQUESTED → QUEUED_FOR_PAYOUT`
+- **Dependencies**: SPEC-S04-A (fee policy resolution for quote lock), SPEC-S03 (distribution items must exist)
+- **Exit Criteria**:
+  - [ ] `distribution_claims` and `claim_fee_policy_overrides` migrations applied
+  - [ ] `CLAIM_FLOW`: creates claims with locked fee quote from active policy
+  - [ ] Concurrent claim guard: DB advisory lock per `(wallet, runId)` prevents duplicate quotes
+  - [ ] Quote expiry: `QUOTE_CREATED` claims auto-return to `CLAIMABLE` after 48 hours
+  - [ ] `QUOTE_EXPIRY_MONITOR` cron job runs hourly, expires stale quotes
+  - [ ] Compliance re-check at `CONFIRM_CLAIM`: `restricted_aml`/`suspended` → `COMPLIANCE_HOLD`
+  - [ ] Payout wallet override requires SIWS proof + committee approval (`ClaimFeePolicyOverride`)
+  - [ ] User-facing quote shows `gross / fee / net` breakdown before confirmation
+  - [ ] `CANCELED` state reachable by user before execution
+
+---
+
+### SPEC-S04-C: Squads Treasury Execution & Compliance Monitor
+
+- **Single Responsibility**: Execute approved claims via Squads v4 batched vault transactions, reconcile on-chain, and monitor compliance hold TTL with auto-clawback.
+- **Scope**:
+  - Tables: `squads_payout_batches`, `squads_payout_batch_items`, `claim_or_payout_events`
+  - Paths: `lib/squads/`, `lib/claims/compliance-monitor.ts`, `api/admin/batches/*`
+  - Pseudocode sections: §3 (BATCHING_JOB), §4 (Squads Execution & Reconciliation), §5 (Compliance Hold & TTL), §7 (Audit Trail)
+- **Inputs**: Claims in `CLAIM_REQUESTED` status; Squads multisig configuration; archival RPC for reconciliation
+- **Outputs**: Executed on-chain transfers via Squads; reconciled batch items; clawback records for expired compliance holds
+- **Dependencies**: SPEC-S04-B (claims must be in `CLAIM_REQUESTED` status), SPEC-S02-C (archival RPC for reconciliation)
+- **Exit Criteria**:
+  - [ ] `squads_payout_batches`, `squads_payout_batch_items`, `claim_or_payout_events` migrations applied
+  - [ ] Batch chunking: `MAX_LEGS_PER_BATCH = 20` per Squads proposal (CU limit guard)
+  - [ ] ATA pre-flight: destination Associated Token Account existence checked before batch
+  - [ ] Squads `initiate_batch_transfer` creates proposal with correct legs
+  - [ ] Committee review/reject/approve flow for each batch
+  - [ ] On-chain reconciliation: `getTransaction` verifies execution after Squads execute
+  - [ ] Partial failure: individual items marked `FAILED` while batch marked `PARTIALLY_FAILED`
+  - [ ] Failed items return claims to retryable state (new batch, excluding failed wallet)
+  - [ ] Compliance hold TTL: daily cron, 12-month expiry → `COMPLIANCE_HOLD_EXPIRED` → `CLAWED_BACK`
+  - [ ] Clawback funds credited to per-project `TreasuryClawbackReserve`
+  - [ ] Immutable audit trail: every state transition logged in `claim_or_payout_events`
+  - [ ] End-to-end claim → Squads → execution verified on devnet
+
+---
+
+### Spec Dependency Order
+
+```
+SPEC-S04-A  (Fee Policy Engine)               ← can build first (standalone)
+    └── SPEC-S04-B  (Claim Lifecycle)         ← requires S04-A for fee resolution
+        └── SPEC-S04-C  (Squads + Compliance) ← requires S04-B for claimed items
+```
+
+> [!NOTE]
+> SPEC-S04-A is fully independent and can be developed in parallel with any S02 or S03 spec. SPEC-S04-B and S04-C are sequential.
+
+---
+
 ## Resolution
 - ClaimFeePolicy: versioned, scoped (global/project/CM), flat or percentage with caps
 - Claim lifecycle: quote lock → compliance re-check → committee → Squads batch → execution → reconciliation

@@ -300,6 +300,85 @@ COMMITTEE_ACTIONS:
   APPROVE(approvalEvidence): status = APPROVED_FOR_DISPERSION; store evidence
 ```
 
+## Spec Breakdown
+
+> This story already satisfies SRP (single responsibility: "calculate the distribution"). These specs decompose the internal pipeline into ordered delivery units to enforce disciplined development.
+
+---
+
+### SPEC-S03-A: Distribution Snapshot & Eligible Asset Resolution
+
+- **Single Responsibility**: Configure the snapshot parameters and resolve the set of eligible assets from provenance data.
+- **Scope**:
+  - Tables: `distribution_runs` (DRAFT creation only)
+  - Paths: `lib/distribution/snapshot.ts`, `api/admin/distribution/*`
+  - Pseudocode sections: §1 (DistributionRun schema — creation only), §2 (Snapshot Configuration)
+- **Inputs**: Admin-provided snapshot config (projectId, eligibility window, scope, treasury amounts)
+- **Outputs**: `DistributionRun` in DRAFT status; resolved list of eligible `AssetProjectOrigin` records with `provenanceStatus: VALIDATED`
+- **Dependencies**: SPEC-S02-B (provenance registry must be populated), SPEC-S02-C (archival endpoints configured)
+- **Exit Criteria**:
+  - [ ] Admin can create a `DistributionRun` with all required snapshot fields
+  - [ ] Eligible asset filtering correctly excludes `NEEDS_REVIEW` and `REJECTED` provenance
+  - [ ] Unsold inventory excluded per `unsold_inventory_policy`
+  - [ ] `investmentModel` stored as metadata (no calculation impact verified)
+  - [ ] Validation rejects runs where `distributionPoolAmountMinor > availableTreasuryEarningsMinor`
+
+---
+
+### SPEC-S03-B: Interval Reconstruction & Hamilton Calculation
+
+- **Single Responsibility**: Reconstruct historical freeze intervals from archival RPC and compute time-weighted allocation using BigInt Hamilton method.
+- **Scope**:
+  - Tables: `distribution_items`, `distribution_audit_events`
+  - Paths: `lib/distribution/calculation.ts`, `lib/distribution/hamilton.ts`, `lib/distribution/intervals.ts`
+  - Pseudocode sections: §3 (Final Calculation Engine — steps 2-7), §4 (RPC Finalization Protocol)
+- **Inputs**: Eligible asset set from SPEC-S03-A; archival RPC endpoints; compliance snapshots
+- **Outputs**: `DistributionItem` records with `grossAmountMinor`, `walletTimeWeight`, `earningSeconds`; run transitions to `READY_FOR_REVIEW`
+- **Dependencies**: SPEC-S03-A (eligible assets resolved), SPEC-S02-C (archival RPC client)
+- **Exit Criteria**:
+  - [ ] `BigInt` arithmetic used for all intermediate products — no `Number` overflow
+  - [ ] Zero-pool guard: `pool_time_weight == 0` → run transitions to `BLOCKED`
+  - [ ] Hamilton remainder: `Σ grossAmountMinor == distributionPoolAmountMinor` (property-based test)
+  - [ ] 3-level tie-breaking deterministic: remainder DESC → first_freeze_at ASC → wallet ASC
+  - [ ] Disjoint intervals across re-freeze events correctly summed per asset
+  - [ ] Transfer mid-window gap: no wallet earns during ownership gap
+  - [ ] `EXCLUDED_COMPLIANCE` items logged but not allocated
+  - [ ] All RPC calls use `commitment: finalized` + `minContextSlot` guard
+
+---
+
+### SPEC-S03-C: Committee Review Package & State Machine
+
+- **Single Responsibility**: Generate the dispersion package for committee review and enforce the state machine transitions.
+- **Scope**:
+  - Tables: `distribution_runs` (status transitions), `distribution_audit_events`
+  - Paths: `lib/distribution/committee.ts`, `lib/distribution/state-machine.ts`
+  - Pseudocode sections: §5 (Committee Review Package), §6 (State Transitions)
+- **Inputs**: Calculated `DistributionRun` in `READY_FOR_REVIEW` status
+- **Outputs**: Structured dispersion package (JSON) with totals, per-item breakdown, exceptions, RPC evidence; run transitions through committee gates
+- **Dependencies**: SPEC-S03-B (calculation must be complete)
+- **Exit Criteria**:
+  - [ ] Committee package includes: totals, per-item breakdown, compliance exceptions, RPC evidence
+  - [ ] State machine enforces: `DRAFT → CALCULATING → READY_FOR_REVIEW → COMMITTEE_REVIEW → APPROVED_FOR_DISPERSION`
+  - [ ] `COMMITTEE_REJECTED → DRAFT` recalculation path works
+  - [ ] Single-wallet concentration flagged in committee package
+  - [ ] Audit events logged for every state transition
+
+---
+
+### Spec Dependency Order
+
+```
+SPEC-S03-A  (Snapshot & Asset Resolution)     ← build first
+    └── SPEC-S03-B  (Intervals & Hamilton)    ← requires S03-A
+        └── SPEC-S03-C  (Committee Package)   ← requires S03-B
+```
+
+> [!NOTE]
+> These specs are sequential — each depends on the previous. They cannot be parallelized, but they can be delivered and reviewed as independent PRs.
+
+---
+
 ## Resolution
 - DistributionRun + DistributionItem + DistributionAuditEvent schemas defined
 - Final Calculation: provenance filtering → archival RPC interval reconstruction → wallet aggregation → Hamilton integer allocation

@@ -31,10 +31,29 @@
 ## Story Index
 | Story ID | Title | RFC File | Status | PR | Notes |
 | --- | --- | --- | --- | --- | --- |
-| STORY-014-01 | Draft Specification | `STORY-014-01-draft.md` | `draft` | `TBD` | Consolidated from KNOW-2026-06-004 |
+| STORY-014-01 | Draft Specification | `STORY-014-01-draft.md` | `approved` | `TBD` | Consolidated from KNOW-2026-06-004 |
 | STORY-014-02 | Core Infrastructure (BRI-5, BRI-6) | `STORY-014-02-core-infrastructure.md` | `planned` | `TBD` | Stake/Unstake events, provenance, profile history |
 | STORY-014-03 | Distribution Engine (BRI-7) | `STORY-014-03-distribution-engine.md` | `planned` | `TBD` | Snapshot, Final Calculation, RPC protocol |
 | STORY-014-04 | Treasury & Claims (BRI-8) | `STORY-014-04-treasury-claims.md` | `planned` | `TBD` | Squads, fee policy, claim lifecycle, audit |
+
+### Spec Delivery Map (9 specs across 3 stories)
+
+```
+Phase 1 — Core Infrastructure (STORY-014-02)
+├── SPEC-S02-C  Archival RPC + Mint Freeze       ← foundation, build first
+├── SPEC-S02-A  Stake/Unstake Event Pipeline      ← parallel after S02-C
+└── SPEC-S02-B  Mint Provenance Registry          ← parallel after S02-C
+
+Phase 2 — Distribution Engine (STORY-014-03)
+├── SPEC-S03-A  Snapshot & Asset Resolution       ← sequential
+├── SPEC-S03-B  Intervals & Hamilton Calculation  ← requires S03-A
+└── SPEC-S03-C  Committee Review Package          ← requires S03-B
+
+Phase 3 — Treasury & Claims (STORY-014-04)
+├── SPEC-S04-A  Fee Policy Engine                 ← standalone (can parallel Phase 1-2)
+├── SPEC-S04-B  Claim Lifecycle                   ← requires S04-A + S03
+└── SPEC-S04-C  Squads Execution + Compliance     ← requires S04-B
+```
 
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
