@@ -25,16 +25,10 @@ type TourStep = {
   isLast?: boolean;
 };
 
-type CardPlacement = "center" | "anchored";
-type PointerSide = "none" | "top" | "bottom";
-
 type TourCardPosition = {
   top: number;
   left: number;
   width: number;
-  placement: CardPlacement;
-  pointerSide: PointerSide;
-  pointerOffset: number;
 };
 
 const TOUR_STEPS: TourStep[] = [
@@ -241,9 +235,6 @@ export function QuickTourOverlay() {
     top: 92,
     left: 16,
     width: 360,
-    placement: "center",
-    pointerSide: "none",
-    pointerOffset: 180,
   });
 
   const step = TOUR_STEPS[currentStep];
@@ -263,9 +254,6 @@ export function QuickTourOverlay() {
         top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
         left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
         width: cardWidth,
-        placement: "center",
-        pointerSide: "none",
-        pointerOffset: cardWidth / 2,
       });
       return;
     }
@@ -276,9 +264,6 @@ export function QuickTourOverlay() {
         top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
         left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
         width: cardWidth,
-        placement: "center",
-        pointerSide: "none",
-        pointerOffset: cardWidth / 2,
       });
       return;
     }
@@ -298,15 +283,10 @@ export function QuickTourOverlay() {
       viewportWidth - cardWidth - HORIZONTAL_MARGIN,
     );
 
-    const pointerOffset = clamp(rect.left + rect.width / 2 - left, 24, cardWidth - 24);
-
     setCardPosition({
       top,
       left,
       width: cardWidth,
-      placement: "anchored",
-      pointerSide: shouldPlaceBelow ? "top" : "bottom",
-      pointerOffset,
     });
   }, [pathname, step?.anchorId]);
 
