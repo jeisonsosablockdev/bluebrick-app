@@ -85,5 +85,6 @@
 2. **ALWAYS** read the matching `.codex/workflows/*.md` for detected scope
 3. **ALWAYS** verify preconditions in `AGENTS.md` Entry Rules
 4. **NEVER** skip to implementation without planner → workflow activation
+5. **HALT AND WAIT**: After branching, you MUST generate an `implementation_plan.md` and then **STOP CALLING TOOLS**. Wait for the human developer to validate the orientation of the plan. Do NOT write code based solely on the issue description without explicit user approval.
 
 **If you bypass this, STOP and restart from step 1.**
