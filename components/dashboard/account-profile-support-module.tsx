@@ -29,7 +29,7 @@ export function AccountProfileSupportModule({ email }: AccountProfileSupportModu
         transition={MOTION_FAST_OPACITY_TRANSITION}
       >
         <motion.article
-          className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto border-white/12 bg-[linear-gradient(180deg,rgba(14,21,37,0.94),rgba(8,12,24,0.98))] p-0 shadow-[0_30px_90px_rgba(5,10,20,0.45)]"
+          className="marketplace-depth-card relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl p-0 shadow-[0_30px_90px_rgba(5,10,20,0.45)]"
           variants={createPanelMotionVariants()}
           initial="initial"
           animate="animate"
@@ -71,7 +71,7 @@ export function AccountProfileSupportModule({ email }: AccountProfileSupportModu
               })}
             </p>
 
-            <div className="rounded-[24px] border border-white/10 bg-black/25 p-4 sm:p-5">
+            <div className="marketplace-depth-card rounded-2xl p-4 sm:p-5">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">
                 {t({ en: "Current account", es: "Cuenta actual", pt: "Conta atual" })}
               </p>
@@ -86,7 +86,7 @@ export function AccountProfileSupportModule({ email }: AccountProfileSupportModu
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-amber-400/18 bg-amber-400/8 p-4 sm:p-5">
+            <div className="marketplace-depth-card rounded-2xl border-amber-400/18 bg-amber-400/8 p-4 sm:p-5">
               <p className="text-sm font-medium text-amber-100">
                 {t({
                   en: "KYC stays blocked until a wallet is linked.",

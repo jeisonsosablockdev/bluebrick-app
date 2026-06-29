@@ -204,13 +204,13 @@ function onboardingRewardBadgeClass(status: OnboardingRewardSnapshot["status"]):
 function LoadingState(): ReactElement {
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <div className="h-5 w-48 animate-pulse rounded bg-white/10" />
         <div className="h-4 w-full animate-pulse rounded bg-white/10" />
-      </Card>
-      <Card className="space-y-2">
+      </article>
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <div className="h-28 w-full animate-pulse rounded bg-white/10" />
-      </Card>
+      </article>
     </div>
   );
 }
@@ -605,19 +605,19 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
 
   if (loadError || !profile) {
     return (
-      <Card className="space-y-3 border-rose-500/30 bg-rose-500/10">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5 border-rose-500/30 bg-rose-500/10">
         <h2 className="text-lg font-semibold text-white">{t({ en: "Could not load your profile", es: "No se pudo cargar tu perfil", pt: "Nao foi possivel carregar seu perfil" })}</h2>
         <p className="text-sm text-white/80">{loadError || t({ en: "Try again in a few minutes.", es: "Intenta nuevamente en unos minutos.", pt: "Tente novamente em alguns minutos." })}</p>
         <Button className="min-h-11 w-full sm:w-auto" onClick={() => window.location.reload()}>
           {t({ en: "Retry", es: "Reintentar", pt: "Tentar novamente" })}
         </Button>
-      </Card>
+      </article>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-4">
+      <article className="marketplace-depth-card space-y-4 rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-1">
             <h2 className="text-lg font-semibold text-white">{t({ en: "Profile / My account", es: "Perfil / Mi cuenta", pt: "Perfil / Minha conta" })}</h2>
@@ -633,13 +633,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                 })}
             </p>
           </div>
-          <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/80">
+          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-100">
             {t({ en: "Wallet linked", es: "Wallet vinculada", pt: "Wallet vinculada" })}
           </span>
         </div>
 
-        <div className="space-y-2 rounded-xl border border-cyan-400/30 bg-cyan-500/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">
+        <div className="relative space-y-2 rounded-2xl bg-[linear-gradient(145deg,rgba(34,211,238,0.15)_0%,rgba(8,145,178,0.05)_100%)] p-4 sm:p-5 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)] backdrop-blur-md">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">
             {t({
               en: "Registered wallet for this profile",
               es: "Wallet registrada para este perfil",
@@ -856,7 +856,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
             </label>
           </div>
 
-          <div className="glass-surface w-full space-y-3 bg-transparent p-4 text-center md:w-[260px] md:justify-self-end">
+          <div className="marketplace-depth-card w-full space-y-3 rounded-2xl p-4 text-center md:w-[260px] md:justify-self-end">
             <div className="flex items-center justify-center">
               <div className="h-28 w-28 overflow-hidden rounded-2xl border border-white/20 bg-black/35">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -987,10 +987,10 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
             </Button>
           )}
         </div>
-      </Card>
+      </article>
 
       {profile.onboardingReward ? (
-        <Card className="space-y-3 border-emerald-400/25 bg-emerald-500/8">
+        <article className="marketplace-depth-card space-y-3 rounded-2xl p-5 border-emerald-400/25 bg-emerald-500/8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
@@ -1036,22 +1036,22 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Status", es: "Estado", pt: "Status" })}</p>
               <p className="mt-1 text-sm font-medium text-white">{t(ONBOARDING_REWARD_STATUS_LABELS[profile.onboardingReward.status])}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Amount", es: "Monto", pt: "Valor" })}</p>
               <p className="mt-1 text-sm font-medium text-white">{formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Window", es: "Ventana", pt: "Janela" })}</p>
               <p className="mt-1 text-sm font-medium text-white">
                 {formatOnboardingRewardRemainingWindow(profile.onboardingReward.remainingSeconds, locale)
                   ?? t({ en: "Closed", es: "Cerrada", pt: "Encerrada" })}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Usage", es: "Uso", pt: "Uso" })}</p>
               <p className="mt-1 text-sm font-medium text-white">
                 {profile.onboardingReward.consumedAt
@@ -1062,10 +1062,10 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               </p>
             </div>
           </div>
-        </Card>
+        </article>
       ) : null}
 
-      <Card id={TOUR_STEP_IDS.KYC} className="space-y-3 scroll-mt-28">
+      <article id={TOUR_STEP_IDS.KYC} className="marketplace-depth-card space-y-3 rounded-2xl p-5 scroll-mt-28">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold text-white">{t({ en: "Compliance", es: "Cumplimiento", pt: "Compliance" })}</h3>
           <div className="flex flex-wrap gap-2">
@@ -1099,7 +1099,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                 : t({ en: "Already verified", es: "Ya verificado", pt: "Ja verificado" })}
           </Button>
         </div>
-      </Card>
+      </article>
     </div>
   );
 }
