@@ -481,6 +481,20 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
     setIsSaving(true);
 
     try {
+      let submitPhone = phone.trim();
+      // If the phone is just the country code, treat it as empty
+      if (submitPhone.startsWith("+")) {
+        const justNumbers = submitPhone.replace(/[^\d]/g, "");
+        if (justNumbers.length <= 4) {
+          // It's likely just a country code (e.g. +1, +57) with no actual number
+          // But to be safe, let's strictly check against COUNTRIES
+          const matchedCountry = COUNTRIES.find((c) => submitPhone.startsWith(c.dialCode));
+          if (matchedCountry && submitPhone === matchedCountry.dialCode) {
+            submitPhone = "";
+          }
+        }
+      }
+
       const response = await fetch("/api/protected/profile", {
         method: "PUT",
         headers: {
@@ -496,7 +510,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           stateProvince,
           email,
           address,
-          phone
+          phone: submitPhone
         })
       });
 
