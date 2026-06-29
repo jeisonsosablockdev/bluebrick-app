@@ -858,7 +858,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
 
           <div className="marketplace-depth-card w-full space-y-3 rounded-2xl p-4 text-center md:w-[260px] md:justify-self-end">
             <div className="flex items-center justify-center">
-              <div className="h-28 w-28 overflow-hidden rounded-2xl border border-white/20 bg-black/35">
+              <div className="h-28 w-28 overflow-hidden rounded-2xl bg-black/35">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt={t({ en: "Profile avatar preview", es: "Vista previa del avatar", pt: "Pre-visualizacao do avatar" })}
