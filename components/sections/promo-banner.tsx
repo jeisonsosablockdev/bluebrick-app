@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "motion/react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
-import { Button } from "@/components/ui/button";
+import { MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 
 export function PromoBannerSection() {
   const { t } = useI18n();
@@ -18,10 +19,32 @@ export function PromoBannerSection() {
             pt: "Explore a BRIDS: investimentos fracionados, rastreabilidade digital e uma experiencia que facilita as transacoes."
           })}
         </h3>
-        <Link href="/transparencia" className="inline-flex">
-          <Button variant="ghost" className="bg-slate-950/75 px-6 text-white hover:bg-slate-950/90">
-            {t({ en: "Learn more", es: "Conocer mas", pt: "Saiba mais" })}
-          </Button>
+        <Link
+          href="/transparencia"
+          className="inline-flex"
+          aria-label={t({
+            en: "Learn more about transparency and platform capabilities",
+            es: "Conocer más sobre transparencia y capacidades de la plataforma",
+            pt: "Saiba mais sobre transparência e capacidades da plataforma"
+          })}
+        >
+          <motion.span
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-950/75 px-6 text-sm font-semibold text-white hover:bg-slate-950/90 transition-all cursor-pointer"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.985 }}
+            transition={MOTION_FAST_OPACITY_TRANSITION}
+          >
+            <span>
+              {t({ en: "Learn more", es: "Conocer mas", pt: "Saiba mais" })}
+              <span className="sr-only">
+                {t({
+                  en: " about transparency and platform capabilities",
+                  es: " sobre transparencia y capacidades de la plataforma",
+                  pt: " sobre transparência e capacidades da plataforma"
+                })}
+              </span>
+            </span>
+          </motion.span>
         </Link>
       </div>
     </section>

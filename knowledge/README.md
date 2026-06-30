@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 670 |
+| Archived | 672 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 668 |
+| Archived status | 670 |
 
 ## Inbox
 
@@ -533,6 +533,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | fix-bri-170-stake-sync-feedback | archived | none | [fix-bri-170-stake-sync-feedback](knowledge/fixes/fix-bri-170-stake-sync-feedback.md) | n/a |
 | fix-bri-171-investor-overview-placeholder-states-implementation | archived | none | [fix-bri-171-investor-overview-placeholder-states-implementation](knowledge/fixes/fix-bri-171-investor-overview-placeholder-states-implementation.md) | n/a |
 | fix-bri-171-investor-overview-placeholder-states | archived | none | [fix-bri-171-investor-overview-placeholder-states](knowledge/fixes/fix-bri-171-investor-overview-placeholder-states.md) | n/a |
+| fix-bri-178-splash-performance-implementation | archived | none | [fix-bri-178-splash-performance-implementation](knowledge/fixes/fix-bri-178-splash-performance-implementation.md) | n/a |
+| fix-bri-178-splash-performance | archived | none | [fix-bri-178-splash-performance](knowledge/fixes/fix-bri-178-splash-performance.md) | n/a |
 | fix-bri-6-admin-distributions-production-visibility-implementation | archived | none | [fix-bri-6-admin-distributions-production-visibility-implementation](knowledge/fixes/fix-bri-6-admin-distributions-production-visibility-implementation.md) | n/a |
 | fix-bri-6-admin-distributions-production-visibility | archived | none | [fix-bri-6-admin-distributions-production-visibility](knowledge/fixes/fix-bri-6-admin-distributions-production-visibility.md) | n/a |
 | fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation | archived | none | [fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation](knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md) | n/a |

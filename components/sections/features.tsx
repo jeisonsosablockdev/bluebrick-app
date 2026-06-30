@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-
+import { motion } from "motion/react";
+import { MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 import { getHomeContent } from "@/app/data";
 import { useI18n } from "@/components/i18n/locale-provider";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { H2, Lead } from "@/components/ui/typography";
 
@@ -40,8 +40,22 @@ export function FeaturesSection() {
               <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
               <p className="mt-2 text-sm text-slate-300">{feature.description}</p>
             </div>
-            <Link href={feature.actionHref ?? "/transparencia"} className="inline-flex">
-              <Button className="w-full">{feature.action}</Button>
+            <Link
+              href={feature.actionHref ?? "/transparencia"}
+              className="w-full inline-flex"
+              aria-label={`${feature.action} - ${feature.title}`}
+            >
+              <motion.span
+                className="w-full text-center inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition-all bg-gradientPrimary text-white shadow-glow hover:opacity-95 cursor-pointer"
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.985 }}
+                transition={MOTION_FAST_OPACITY_TRANSITION}
+              >
+                <span>
+                  {feature.action}
+                  <span className="sr-only"> about {feature.title}</span>
+                </span>
+              </motion.span>
             </Link>
           </Card>
         ))}
