@@ -62,7 +62,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
   );
 
   return (
-    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[88px] min-h-[56.25vw] flex flex-col justify-center">
+    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[88px] min-h-screen flex flex-col justify-center">
       
       {/* 
         We use a negative top margin (-mt-[88px]) to slide the Hero section UP behind the transparent navbar.
@@ -71,11 +71,11 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
       */}
       <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center bg-[#020813]">
         <Image 
-          src="/images/brids-landing-bg-3.png" 
+          src="/images/brids-landing-bg-4.png" 
           alt="Hero Background" 
           fill
           priority
-          className="object-contain object-right-top"
+          className="object-cover object-right-top"
         />
       </div>
       
