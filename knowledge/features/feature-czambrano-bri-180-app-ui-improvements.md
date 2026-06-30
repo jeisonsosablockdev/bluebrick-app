@@ -66,6 +66,8 @@ Elevar el lenguaje visual y la calidad de interacción de la aplicación BRIDS m
 - **Qué estuvo bien**: Rápida iteración y alineación del formulario con el lenguaje visual "dark mode / glassmorphism" de BRIDS. Se detectó y resolvió ágilmente el bug de payload desde el frontend, protegiendo el backend sin ensuciar la lógica de negocio.
 - **Qué estuvo mal**: Los cambios drásticos en el DOM rompieron de manera silenciosa integraciones de terceros (como el User Tour). Además, la validación laxa en el cliente permitió enviar datos que causaron fricción oculta al usuario final, requiriendo revisión de logs para detectar el bloqueo.
 
+- **SPEC02 (Investment Category Iconography)**: Se reemplazaron los emojis estáticos genéricos por un sistema de SVGs minimalistas estilizados (`text-cyan-400 drop-shadow`) sin fondos sólidos. Se documentó formalmente este nuevo paradigma visual en `knowledge/governance/iconography-rules.md` para garantizar consistencia futura. Se respetó la estricta secuencia de *Preflight*.
+
 ---
 
 ## ENGLISH VERSION
@@ -131,4 +133,6 @@ Elevate the BRIDS app visual language and interaction quality through targeted U
 #### Retrospective (OKF Protocol)
 - **What went well**: Rapid UI iteration aligned seamlessly with BRIDS's dark mode / glassmorphism visual language. The payload bug was resolved swiftly on the frontend, protecting backend logic without tight coupling.
 - **What went wrong**: Drastic DOM changes silently broke third-party/global integrations (like the User Tour). Additionally, loose client-side validation allowed sending invalid edge-case data, causing hidden user friction that required log inspection to identify.
+
+- **SPEC02 (Investment Category Iconography)**: Replaced generic static emojis with a system of minimalist styled SVGs (`text-cyan-400 drop-shadow`) lacking solid backgrounds. Formalized this new visual paradigm in `knowledge/governance/iconography-rules.md` to ensure future consistency. Complied strictly with the *Preflight* sequence.
 
