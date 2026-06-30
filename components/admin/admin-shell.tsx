@@ -10,7 +10,7 @@ import {
   buildAdminNavigation,
   resolveCurrentAdminLabel
 } from "@/components/admin/admin-shell-navigation";
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,7 +54,7 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
     <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <Suspense fallback={null}>
-          <WalletModal
+          <MainTopNavigationModal
             initialAuth={{
               authenticated: true,
               pubkey: authenticatedPublicKey,

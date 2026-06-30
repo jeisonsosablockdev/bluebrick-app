@@ -62,8 +62,24 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
   );
 
   return (
-    <section className="landing-hero-shell text-slate-100">
-      <div className="mx-auto max-w-7xl px-6 pb-10 md:px-8 md:pb-16 pt-0">
+    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[88px] min-h-[56.25vw] flex flex-col justify-center">
+      
+      {/* 
+        We use a negative top margin (-mt-[88px]) to slide the Hero section UP behind the transparent navbar.
+        The padding-top (pt-[88px]) pushes the text content back down so it doesn't collide with the navbar.
+        The absolute background spans the entire section, covering the area behind the navbar perfectly.
+      */}
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center bg-[#020813]">
+        <Image 
+          src="/images/brids-landing-bg-3.png" 
+          alt="Hero Background" 
+          fill
+          priority
+          className="object-contain object-right-top"
+        />
+      </div>
+      
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-10 md:px-8 md:pb-16 pt-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div className="max-w-2xl">
             <p className="landing-hero-eyebrow mb-3 text-xs uppercase tracking-[0.25em]">

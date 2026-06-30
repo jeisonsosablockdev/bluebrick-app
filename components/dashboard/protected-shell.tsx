@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
 import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
 import { RouteTransition } from "@/components/motion/route-transition";
@@ -161,7 +161,7 @@ export function ProtectedShell({
     <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <Suspense fallback={null}>
-          <WalletModal
+          <MainTopNavigationModal
             initialAuth={{
               authenticated: walletAuthenticated,
               accountAuthenticated,

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { CheckoutPageClient } from "@/components/checkout/CheckoutPageClient";
 import { H1, Lead } from "@/components/ui/typography";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
@@ -21,7 +21,7 @@ export default function CheckoutPage() {
     <main className="mx-auto max-w-5xl px-4 py-6 md:px-6 md:py-8">
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
-          <WalletModal />
+          <MainTopNavigationModal />
         </Suspense>
       </WalletRuntimeProvider>
 

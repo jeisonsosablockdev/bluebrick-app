@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 672 |
+| Archived | 673 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 670 |
+| Archived status | 671 |
 
 ## Inbox
 
@@ -288,6 +288,7 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-czambrano-bri-168-ui-ux-fixes-and-improvements | archived | none | [feature-czambrano-bri-168-ui-ux-fixes-and-improvements](knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md) | n/a |
 | feature-czambrano-BRI-173-branching-policy-preflight-implementation | archived | none | [feature-czambrano-BRI-173-branching-policy-preflight-implementation](knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md) | n/a |
 | feature-czambrano-BRI-173-branching-policy-preflight | archived | none | [feature-czambrano-BRI-173-branching-policy-preflight](knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md) | n/a |
+| feature-czambrano-bri-180-app-ui-improvements-implementation | archived | none | [feature-czambrano-bri-180-app-ui-improvements-implementation](knowledge/features/feature-czambrano-bri-180-app-ui-improvements-implementation.md) | n/a |
 | feature-czambrano-bri-180-app-ui-improvements | archived | none | [feature-czambrano-bri-180-app-ui-improvements](knowledge/features/feature-czambrano-bri-180-app-ui-improvements.md) | n/a |
 | feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation | archived | none | [feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation](knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md) | n/a |
 | feature-discovery-brief-anchor-notary-and-freeze-control-bri-5 | archived | none | [feature-discovery-brief-anchor-notary-and-freeze-control-bri-5](knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md) | n/a |
