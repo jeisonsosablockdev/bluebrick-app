@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 671 |
+| Archived | 672 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 669 |
+| Archived status | 670 |
 
 ## Inbox
 
@@ -565,6 +565,7 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | documentation-policy | archived | none | [documentation-policy](knowledge/governance/documentation-policy.md) | n/a |
 | frontend-ui-policy | archived | none | [frontend-ui-policy](knowledge/governance/frontend-ui-policy.md) | n/a |
 | git-monorepo-policy | archived | none | [git-monorepo-policy](knowledge/governance/git-monorepo-policy.md) | n/a |
+| iconography-rules | archived | none | [iconography-rules](knowledge/governance/iconography-rules.md) | n/a |
 | index | archived | none | [index](knowledge/governance/index.md) | n/a |
 | nft-policy | archived | none | [nft-policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
