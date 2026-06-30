@@ -79,11 +79,12 @@
 
 ## 🚫 MANDATORY BOOTSTRAP SEQUENCE / PREFLIGHT
 
-**When the user requests to "prepare preflight" or start a new task, you MUST execute these steps in order:**
+**When the user requests to "prepare preflight" or start a new task/SPEC, you MUST execute these steps in order:**
 
-1. **Verify State**: Check that the current branch is the correct `feature/*` or `bugfix/*` branch, that it has the latest approved commits, and that the working directory is clean (no uncommitted/loose changes). If there are loose changes, halt and ask the user.
-2. **Branch Creation**: Run `npm run task:init` (or standard git commands) to create the new SPEC branch using the strict project nomenclature. Once created, **inform the user** that the branch was created so they can verify it.
-3. **Load Context**: If this is a new context (new issue or new feature branch), load ONLY the OKF (knowledge base) and the necessary workflows (e.g., `.codex/workflows/*.md`). Do not assume external logic.
-4. **HALT AND WAIT**: Output your proposed implementation plan directly in the chat message as text. DO NOT create an `implementation_plan.md` artifact for this initial step. Then, **STOP CALLING TOOLS**. Wait for the human developer to validate the orientation of the plan. Do NOT write code based solely on the issue description without explicit user approval.
+1. **Verify Previous SPEC Completion**: Ask if the current SPEC is fully finished. If yes, execute the final commit, run full validation (`npm run validate`), and merge the current SPEC branch into its parent `feature/*` branch.
+2. **Branch Creation**: Create the new `SPEC/*` branch strictly originating from the `feature/*` branch. 
+3. **Linear Context Fetch**: Fetch the issue information from Linear (via MCP). If access to Linear fails for any reason, **report the reason immediately** to the developer and propose a fix to regain access before creating the slug.
+4. **Summary & Wait**: Give a brief summary of what the new SPEC entails, ensure the branches are prepped, resolve any immediate conflicts, report the current state, and **HALT**. Wait for developer instructions.
+   - *CRITICAL*: Do NOT generate or output an implementation plan (either in chat or as a file) unless the developer explicitly requests one. Antigravity will auto-execute file plans, so only create plans on direct demand.
 
 **If you bypass this, STOP and restart from step 1.**
