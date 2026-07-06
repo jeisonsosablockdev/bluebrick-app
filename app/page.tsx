@@ -67,7 +67,7 @@ export default async function HomePage() {
       <HeroSection marketplaceTotal={marketplaceProperties.length} />
       
       {/* Rest of the page content remains constrained */}
-      <div className="mx-auto max-w-6xl px-4 md:px-6">
+      <div className="mx-auto w-full lg:w-[70vw] lg:max-w-none px-6 lg:px-12">
         <WelcomeSection />
         <FeaturesSection />
         <TokenizationProcessSection />

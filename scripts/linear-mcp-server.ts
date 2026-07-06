@@ -208,7 +208,7 @@ async function callTool(name: string, args: any) {
 
 function send(message: JsonRpcResponse | Record<string, unknown>) {
   const payload = JSON.stringify(message);
-  process.stdout.write(`Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`);
+  process.stdout.write(`${payload}\n`);
 }
 
 async function handle(request: JsonRpcRequest) {

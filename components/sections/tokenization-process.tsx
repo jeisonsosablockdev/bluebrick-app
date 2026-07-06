@@ -48,7 +48,7 @@ export function TokenizationProcessSection() {
         </Lead>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="mx-auto max-w-5xl 2xl:max-w-6xl grid gap-3 md:gap-5 md:grid-cols-2">
         {steps.map((step, index) => (
           <Card key={step} className="landing-depth-card">
             <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradientPrimary text-xs font-bold text-white">

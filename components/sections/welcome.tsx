@@ -7,8 +7,8 @@ export function WelcomeSection() {
   const { t } = useI18n();
 
   return (
-    <section className="py-14 text-center">
-      <H2 className="text-white">
+    <section className="pt-20 md:pt-28 pb-20 md:pb-28 text-center">
+      <H2 className="text-white mx-auto max-w-3xl md:max-w-4xl text-4xl md:text-5xl 2xl:text-[4rem] 2xl:leading-[1.15]">
         {t({ en: "Welcome to the", es: "Bienvenido a la", pt: "Bem-vindo a" })}{" "}
         <span className="bg-gradientPrimary bg-clip-text text-transparent">
           {t({ en: "future", es: "futuro", pt: "futuro" })}

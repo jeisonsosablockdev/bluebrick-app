@@ -62,7 +62,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
   );
 
   return (
-    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[88px] min-h-screen flex flex-col justify-center">
+    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[140px] md:pt-[180px] lg:pt-[220px] pb-12 md:pb-20">
       
       {/* 
         We use a negative top margin (-mt-[88px]) to slide the Hero section UP behind the transparent navbar.
@@ -71,7 +71,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
       */}
       <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center bg-[#020813]">
         <Image 
-          src="/images/brids-landing-bg-4.png" 
+          src="/images/hero-bg-enhanced.png" 
           alt="Hero Background" 
           fill
           priority
@@ -79,36 +79,36 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
         />
       </div>
       
-      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-10 md:px-8 md:pb-16 pt-0">
+      <div className="relative z-10 mx-auto w-full lg:w-[70vw] lg:max-w-none px-6 lg:px-12 pb-10 md:pb-16 pt-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-          <div className="max-w-2xl">
-            <p className="landing-hero-eyebrow mb-3 text-xs uppercase tracking-[0.25em]">
+          <div className="max-w-[900px]">
+            <p className="landing-hero-eyebrow mb-4 text-sm uppercase tracking-[0.25em]">
               {t({
                 en: "BRIDS Real Estate Investment",
                 es: "BRIDS Plataforma Tecnologica",
                 pt: "BRIDS Investimento Imobiliario"
               })}
             </p>
-            <H1 className="landing-hero-title text-4xl md:text-5xl lg:text-6xl leading-tight">
+            <H1 className="landing-hero-title text-5xl md:text-6xl lg:text-[4.5rem] 2xl:text-[5.5rem] leading-[1.05] tracking-tight">
               {t({
                 en: "Explore real estate projects and invest in real assets.",
                 es: "Explora proyectos inmobiliarios e invierte en bienes raices.",
                 pt: "Explore projetos imobiliarios e invista em ativos reais."
               })}
             </H1>
-            <Lead className="landing-hero-lead mt-5 max-w-xl text-base md:text-lg">
+            <Lead className="landing-hero-lead mt-6 max-w-2xl text-lg md:text-xl 2xl:text-2xl">
               {t({
                 en: "Access documents, statuses, and project updates from a modern and transparent interface.",
                 es: "Accede a documentos, estados y actualizaciones de proyecto desde una interfaz moderna y transparente.",
                 pt: "Acesse documentos, estados e atualizacoes de projeto em uma interface moderna e transparente."
               })}
             </Lead>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-5">
               <Link href="/marketplace" className="inline-flex">
-                <Button className="px-8 py-3 text-base">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
+                <Button className="px-10 py-6 text-lg 2xl:text-xl">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
               </Link>
               <Link href="/transparencia" className="inline-flex">
-                <Button variant="ghost" className="landing-hero-secondary-cta px-8 py-3 text-base">
+                <Button variant="ghost" className="landing-hero-secondary-cta px-10 py-6 text-lg 2xl:text-xl">
                   {t({ en: "Transparency", es: "Transparencia", pt: "Transparencia" })}
                 </Button>
               </Link>
@@ -118,13 +118,13 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
           <div className="md:w-1/3" aria-hidden="true" />
         </div>
 
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {heroStats.map((stat, index) => (
-            <div key={stat.label} className="landing-hero-panel landing-hero-stat rounded-2xl p-5">
-              <p className="landing-hero-stat-value text-2xl font-bold">{stat.value}</p>
-              <p className="landing-hero-stat-label mt-1 text-xs">{stat.label}</p>
+            <div key={stat.label} className="landing-hero-panel landing-hero-stat rounded-2xl p-6">
+              <p className="landing-hero-stat-value text-3xl 2xl:text-4xl font-bold">{stat.value}</p>
+              <p className="landing-hero-stat-label mt-2 text-sm text-slate-300">{stat.label}</p>
               {index === 1 ? (
-                <p className="landing-hero-stat-note mt-1 text-[11px]">
+                <p className="landing-hero-stat-note mt-2 text-xs text-slate-400">
                   {t({
                     en: "Live total from marketplace records.",
                     es: "Total en vivo desde registros del marketplace.",

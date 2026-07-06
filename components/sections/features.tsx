@@ -64,7 +64,7 @@ export function FeaturesSection() {
         </Lead>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="mx-auto max-w-5xl 2xl:max-w-6xl grid gap-4 md:gap-6 md:grid-cols-3">
         {features.map((feature) => (
           <Card key={feature.title} className="landing-depth-card flex h-full flex-col justify-between gap-4">
             <div>
