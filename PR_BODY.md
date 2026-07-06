@@ -1,24 +1,25 @@
 ## Summary
-This PR implements performance optimizations for the premium mobile initial loading screen (splash screen) under `BRI-178` and resolves SEO/accessibility warnings regarding non-descriptive links to achieve a 100/100 Lighthouse SEO score.
+This PR cleans up the duplicate `BRI-164` marketplace 3D visual markdown files from the `knowledge/features/` root directory. All references across README tables, roadmaps, and feature files have been updated to point to the correct versions under `bri-164-marketplace-3d-visual/`.
 
 **Key Changes**
-- **Splash Screen Optimization (BRI-178):** Applied GPU hardware acceleration using `will-change: transform, opacity` and `transform: translateZ(0)` to the splash screen container, glows, and SVG elements. Extracted animation variant definitions into `useMemo` to eliminate garbage collection and render cycle overhead. These updates completely resolve animation jank/stutter on modest mobile hardware (e.g., Samsung A15, iPhone 13 Pro) without modifying the original design.
-- **Valid Semantic HTML Refactoring:** Fixed an HTML nesting validation issue where `<Button>` (an interactive tag) was wrapped inside `<Link>` (`<a>` tag) in `features.tsx` and `promo-banner.tsx`. Replaced `<Button>` with an animated `<motion.span>` styled exactly like the button to output clean, valid HTML.
-- **Lighthouse SEO Audit (100/100):** Integrated visually hidden Tailwind `.sr-only` tags containing descriptive context (e.g., `<span className="sr-only"> about {feature.title}</span>`) inside the anchor tags of generic links like "Learn more" or "Explore". This provides descriptive anchor text for search engine crawlers and screen readers, elevating the page's Lighthouse SEO score to a perfect 100/100 without affecting the visual UI.
+- Deleted 28 root-level duplicate files under `knowledge/features/`.
+- Updated `knowledge/README.md` and rebuilt the index.
+- Corrected roadmap files (`app-technical-roadmap-investor-brief.md` and `.tex`).
+- Fixed internal paths in subdirectory files and fixes files.
 
 ---
 
 ## Issue
-- **Linear:** `BRI-178`
+- **Linear:** `BRI-164`
 
 ## RFC
 - **RFC:** `N/A`
 
 ## Risks / Riesgos
-- **Risk:** Low. Refactoring changes are strictly isolated to client-side animation parameters and static visual anchor tags. Visually verified and automated test suite passes.
+- **Risk:** Low. Documentation cleanup only, no runtime code changes.
 
 ## Rollback Plan
-- **Rollback:** Revert the merge commit or remove the modifications in `components/brand/app-splash-screen.tsx`, `components/sections/features.tsx`, and `components/sections/promo-banner.tsx`.
+- **Rollback:** Revert the merge commit or restore the deleted markdown files.
 
 ## Devnet Proof / Prueba Devnet
 - **Devnet Proof:** `N/A` (No on-chain interactions are performed).
@@ -32,13 +33,13 @@ Status: approved
 > **Approved by:** Jay / Jaymusicmachine
 
 ## Walkthrough Artifact
-- **Path:** [walkthrough.md](file:///Users/jaymusicmachine/.gemini/antigravity/brain/9701bf38-0665-4271-8079-4d6e43362923/walkthrough.md)
+- **Path:** [walkthrough.md](file:///Users/jaymusicmachine/.gemini/antigravity-ide/brain/a95525be-a6f3-425c-8824-89637ae7935e/walkthrough.md)
 
 ## Validation
-- Unit tests and project validation completed successfully:
+- Documentation validation completed successfully:
   `npm run validate`
 
 ## Required Labels
-- [x] `scope:app`
+- [x] `scope:docs`
 - [x] `type:refactor`
 - [x] `risk:low`

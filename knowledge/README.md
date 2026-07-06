@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 672 |
+| Archived | 646 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 670 |
+| Archived status | 644 |
 
 ## Inbox
 
@@ -264,34 +264,6 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [feature-admin-collection-documents-ui-remake-implementation](knowledge/features/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [feature-admin-collection-documents-ui-remake](knowledge/features/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [feature-app-checkout-dual-crypto-airwallex](knowledge/features/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-implementation | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-implementation](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s15-web-vitals-seo-audit.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s16-clean-code-refactor-audit.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s22-admin-safe-create-errors.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s23-read-result-contract.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s24-page-degraded-state.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s25-read-failure-logging.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s26-row-mapper-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s27-read-repository-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s28-write-repository-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s29-selector-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s30-sync-status-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s31-server-facade-cleanup.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s32-detail-formatters-extraction.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s33-detail-google-maps-card.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s34-detail-hero-section.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s35-detail-investment-summary.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s36-detail-property-info.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s37-detail-deal-economics.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s38-detail-fees-return.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s39-detail-execution-governance.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s40-detail-documents-blockchain.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s41-coordinate-range-validation.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s42-mapbox-lazy-boundary.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md) | n/a |
-| feature-app-create-a-marketplace-3d-visual-bri-164 | archived | none | [feature-app-create-a-marketplace-3d-visual-bri-164](knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md) | n/a |
 | feature-app-home-copy-bri-39 | archived | none | [feature-app-home-copy-bri-39](knowledge/features/feature-app-home-copy-bri-39.md) | n/a |
 | feature-app-image-storage-blob-pinata | archived | none | [feature-app-image-storage-blob-pinata](knowledge/features/feature-app-image-storage-blob-pinata.md) | n/a |
 | feature-app-investor-dashboard-overview-real-data-bri-171-implementation | archived | none | [feature-app-investor-dashboard-overview-real-data-bri-171-implementation](knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md) | n/a |
@@ -350,6 +322,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-shared-agent-system-knowledge-root-implementation | archived | none | [Shared Agent System Knowledge Root Implementation](knowledge/features/feature-shared-agent-system-knowledge-root-implementation.md) | n/a |
 | feature-shared-agent-system-knowledge-root | archived | none | [Shared Agent System Knowledge Root](knowledge/features/feature-shared-agent-system-knowledge-root.md) | n/a |
 | feature-shared-agents-orchestration-enforcement-bri-157 | archived | none | [feature-shared-agents-orchestration-enforcement-bri-157](knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md) | n/a |
+| feature-shared-cleanup-marketplace-3d-visual-docs-implementation | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs-implementation](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md) | n/a |
+| feature-shared-cleanup-marketplace-3d-visual-docs | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md) | n/a |
 | feature-shared-human-acceptance-gated-merge-implementation | archived | none | [feature-shared-human-acceptance-gated-merge-implementation](knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md) | n/a |
 | feature-shared-human-acceptance-gated-merge | archived | none | [feature-shared-human-acceptance-gated-merge](knowledge/features/feature-shared-human-acceptance-gated-merge.md) | n/a |
 | feature-shared-hybrid-auth-clean-code-bri-159-implementation | archived | none | [feature-shared-hybrid-auth-clean-code-bri-159-implementation](knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md) | n/a |

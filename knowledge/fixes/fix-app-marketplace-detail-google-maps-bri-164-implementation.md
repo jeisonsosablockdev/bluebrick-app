@@ -28,8 +28,8 @@ Make marketplace property detail pages show the Google Maps preview for the prop
 ## Files Expected To Change
 - `knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md`
 - `knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md`
-- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
-- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md`
+- `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-implementation.md`
 - `lib/property-service.ts`
 - `lib/property-marketplace-server.ts`
 - `lib/admin/marketplace-entry-location-columns.ts`

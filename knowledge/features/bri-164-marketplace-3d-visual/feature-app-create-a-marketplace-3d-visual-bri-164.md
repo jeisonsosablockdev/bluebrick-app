@@ -191,7 +191,7 @@ The new 3D visual is meant to add the missing layer of presence:
 - S21 strict debt review normalized the remaining non-blocking issues as P2 follow-ups and split them into S22-S43 atomic implementation artifacts before runtime changes.
 
 ## P2 Debt Follow-Up Artifacts
-- S21 inventory and atomic queue: `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
+- S21 inventory and atomic queue: `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`.
 - S22-S25: reliability, safe admin errors, degraded read state, and read-failure logging split into one-change TDD slices.
 - S26-S31: `lib/property-marketplace-server.ts` boundary cleanup split into one extraction per slice.
 - S32-S40: `PropertyDetailContent` decomposition split into one formatter or section extraction per slice.

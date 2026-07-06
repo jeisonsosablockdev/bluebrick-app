@@ -18,5 +18,5 @@ Request for Comments documents organized by epic.
 * [EPIC-011: Admin Collections Console](EPIC-011-admin-collections-console/)
 * [EPIC-012: Referral Marketing System](EPIC-012-referral-marketing-system-in-user-dashboard/)
 * [EPIC-013: PWA Installability Web Push](EPIC-013-pwa-installability-and-web-push-notifications/)
-* [RFC Epic 014](rfc-epic-014.md)
+* [RFC Epic 014](../features/rfc-epic-014.md)
 * [Templates](templates/)

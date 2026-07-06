@@ -11,7 +11,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features
 
 ## Status
 - Solution artifact
-- Depends on: `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- Depends on: `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 - Mother/integration branch: `feature/app-create-a-marketplace-3d-visual-bri-164-integration`
 - Current slice: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 
@@ -276,8 +276,8 @@ Fallback behavior:
 ### S21 - P2 clean-code debt artifacts
 - Branch: `feature/app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-artifacts`
 - Documentation scope:
-  - `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
-  - atomic implementation artifacts S22-S43 under `knowledge/features/`
+  - `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-s21-p2-debt-inventory.md`
+  - atomic implementation artifacts S22-S43 under `knowledge/features/bri-164-marketplace-3d-visual/`
 - Scope:
   - document strict audit P2 findings with problem, solution, impact, and prevention plan
   - split the P2 follow-ups into one-change implementation slices before touching runtime code
@@ -498,7 +498,7 @@ Fallback behavior:
 - Runtime file scope:
   - none expected
 - Documentation file scope:
-  - `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md`
+  - `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md`
 - Scope:
   - run an exhaustive security audit over marketplace routes, detail, public APIs, admin create, purchase APIs, Mapbox/Google Maps surfaces, repositories, CSP, dependencies, and secret patterns
   - document findings with severity, evidence, impact, and solution

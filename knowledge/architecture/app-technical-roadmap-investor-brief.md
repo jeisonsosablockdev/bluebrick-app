@@ -81,7 +81,7 @@ Evidencia principal:
 - `app/marketplace/[id]/page.tsx`
 - `components/marketplace/*`
 - `lib/property-marketplace-server.ts`
-- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 
 ### Autenticacion y Modelo de Cuenta
 
@@ -762,7 +762,7 @@ Primary evidence:
 - `app/marketplace/[id]/page.tsx`
 - `components/marketplace/*`
 - `lib/property-marketplace-server.ts`
-- `knowledge/features/feature-app-create-a-marketplace-3d-visual-bri-164.md`
+- `knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164.md`
 
 ### Authentication and Account Model
 
