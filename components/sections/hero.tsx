@@ -79,24 +79,24 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
         />
       </div>
       
-      <div className="relative z-10 mx-auto w-full lg:w-[70vw] lg:max-w-none px-6 lg:px-12 pb-10 md:pb-16 pt-0">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12 pb-10 md:pb-16 pt-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div className="max-w-[900px]">
             <p className="landing-hero-eyebrow mb-4 text-sm uppercase tracking-[0.25em]">
               {t({
                 en: "BRIDS Real Estate Investment",
-                es: "BRIDS Plataforma Tecnologica",
-                pt: "BRIDS Investimento Imobiliario"
+                es: "Inversión Inmobiliaria BRIDS",
+                pt: "Investimento Imobiliário BRIDS",
               })}
             </p>
-            <H1 className="landing-hero-title text-5xl md:text-6xl lg:text-[4.5rem] 2xl:text-[5.5rem] leading-[1.05] tracking-tight">
+            <H1 className="landing-hero-title text-[clamp(2.5rem,6vw,5.5rem)] leading-tight">
               {t({
                 en: "Explore real estate projects and invest in real assets.",
-                es: "Explora proyectos inmobiliarios e invierte en bienes raices.",
-                pt: "Explore projetos imobiliarios e invista em ativos reais."
+                es: "Explora proyectos inmobiliarios e invierte en bienes raíces.",
+                pt: "Explore projetos imobiliários e invista em ativos reais.",
               })}
             </H1>
-            <Lead className="landing-hero-lead mt-6 max-w-2xl text-lg md:text-xl 2xl:text-2xl">
+            <Lead className="landing-hero-lead mt-5 max-w-xl 2xl:max-w-2xl text-[clamp(1rem,2vw,1.35rem)]">
               {t({
                 en: "Access documents, statuses, and project updates from a modern and transparent interface.",
                 es: "Accede a documentos, estados y actualizaciones de proyecto desde una interfaz moderna y transparente.",

@@ -1240,7 +1240,7 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
 
   return (
     <>
-      <header className="sticky top-3 z-40 mb-5 w-full lg:w-[60vw] lg:max-w-none mx-auto px-6 lg:px-12">
+      <header className="sticky top-3 z-40 mb-5 w-full max-w-5xl mx-auto px-6 lg:px-12">
         <div className="landing-header-surface px-3 py-3 md:px-4">
           <div className="pointer-events-none absolute -left-8 top-0 h-24 w-24 rounded-full bg-cyan-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-fuchsia-300/20 blur-3xl" />
