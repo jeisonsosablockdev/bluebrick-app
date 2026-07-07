@@ -71,7 +71,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
       */}
       <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center bg-[#020813]">
         <Image 
-          src="/images/hero-bg-enhanced.png" 
+          src="/images/BRD_02.png" 
           alt="Hero Background" 
           fill
           priority
