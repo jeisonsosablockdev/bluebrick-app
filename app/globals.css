@@ -2147,3 +2147,11 @@ body.app-splash-cleared main {
     }
   }
 }
+
+/* Hero Background Toggle */
+.hero-bg-wrapper { background-color: #020813; }
+html[data-theme="light"] .hero-bg-wrapper { background-color: #ffffff; }
+
+.hero-bg-light { display: none !important; }
+html[data-theme="light"] .hero-bg-light { display: block !important; }
+html[data-theme="light"] .hero-bg-dark { display: none !important; }

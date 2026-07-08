@@ -47,23 +47,7 @@ export function FeaturesSection() {
   const { features } = getHomeContent(locale);
 
   return (
-    <section className="py-12">
-      <div className="mb-8 text-center">
-        <H2 className="text-white">
-          {t({ en: "Fractional ownership,", es: "Propiedad fraccionada,", pt: "Propriedade fracionada," })}{" "}
-          <span className="bg-gradientPrimary bg-clip-text text-transparent">
-            {t({ en: "transparent experience", es: "transparencia visible", pt: "transparencia visivel" })}
-          </span>
-        </H2>
-        <Lead className="mx-auto mt-3 max-w-2xl">
-          {t({
-            en: "Three capabilities designed to inform and guide your platform experience.",
-            es: "Tres capacidades diseñadas para informar y guiar tu experiencia en la plataforma.",
-            pt: "Tres capacidades desenhadas para informar e orientar sua experiencia na plataforma."
-          })}
-        </Lead>
-      </div>
-
+    <section className="pt-0 pb-20 md:pb-32">
       <div className="mx-auto max-w-5xl 2xl:max-w-6xl grid gap-4 md:gap-6 md:grid-cols-3">
         {features.map((feature) => (
           <Card key={feature.title} className="landing-depth-card flex h-full flex-col justify-between gap-4">
@@ -93,6 +77,22 @@ export function FeaturesSection() {
             </Link>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-16 md:mt-24 text-center">
+        <H2 className="text-white">
+          {t({ en: "Fractional ownership,", es: "Propiedad fraccionada,", pt: "Propriedade fracionada," })}{" "}
+          <span className="bg-gradientPrimary bg-clip-text text-transparent">
+            {t({ en: "transparent experience", es: "transparencia visible", pt: "transparencia visivel" })}
+          </span>
+        </H2>
+        <Lead className="mx-auto mt-3 max-w-2xl">
+          {t({
+            en: "Three capabilities designed to inform and guide your platform experience.",
+            es: "Tres capacidades diseñadas para informar y guiar tu experiencia en la plataforma.",
+            pt: "Tres capacidades desenhadas para informar e orientar sua experiencia na plataforma."
+          })}
+        </Lead>
       </div>
     </section>
   );

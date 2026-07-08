@@ -69,13 +69,22 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
         The padding-top (pt-[88px]) pushes the text content back down so it doesn't collide with the navbar.
         The absolute background spans the entire section, covering the area behind the navbar perfectly.
       */}
-      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center bg-[#020813]">
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center hero-bg-wrapper">
+        {/* Dark Mode Background */}
         <Image 
-          src="/images/BRD_02.png" 
+          src="/images/hero-dark-l8.png" 
           alt="Hero Background" 
           fill
           priority
-          className="object-cover object-right-top"
+          className="hero-bg-dark object-cover object-right-top"
+        />
+        {/* Light Mode Background */}
+        <Image 
+          src="/images/hero-light-l8.png" 
+          alt="Hero Background Light" 
+          fill
+          priority
+          className="hero-bg-light object-cover object-right-top"
         />
       </div>
       

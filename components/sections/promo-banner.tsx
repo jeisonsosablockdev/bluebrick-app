@@ -10,7 +10,7 @@ export function PromoBannerSection() {
   const { t } = useI18n();
 
   return (
-    <section className="rounded-3xl bg-gradientPrimary p-7 md:p-10">
+    <section className="mt-20 md:mt-32 rounded-3xl bg-gradientPrimary p-7 md:p-10">
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <h3 className="max-w-2xl text-2xl font-bold leading-tight text-white md:text-3xl">
           {t({

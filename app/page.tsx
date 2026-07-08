@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { InviteeWelcomeBanner } from "@/components/referrals/invitee-welcome-banner";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
-import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
 import { FeaturesSection } from "@/components/sections/features";
 import { FirstInvestmentSection } from "@/components/sections/first-investment";
@@ -13,7 +12,7 @@ import { HeroSection } from "@/components/sections/hero";
 import { ProcessSection } from "@/components/sections/process";
 import { PromoBannerSection } from "@/components/sections/promo-banner";
 import { PropertiesSection } from "@/components/sections/properties";
-import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
+import { AppCapabilitiesSection } from "@/components/sections/app-capabilities";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { PwaClientRuntime } from "@/components/pwa/pwa-client-runtime";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
@@ -66,12 +65,17 @@ export default async function HomePage() {
       {/* Hero section is now full-width */}
       <HeroSection marketplaceTotal={marketplaceProperties.length} />
       
-      {/* Rest of the page content remains constrained */}
+      {/* First block of constrained content */}
       <div className="mx-auto w-full max-w-7xl px-6 lg:px-12">
         <WelcomeSection />
         <FeaturesSection />
-        <TokenizationProcessSection />
-        <AppOverviewSection />
+      </div>
+
+      {/* Full-bleed Modal-style Section */}
+      <AppCapabilitiesSection />
+
+      {/* Rest of the page content remains constrained */}
+      <div className="mx-auto w-full max-w-7xl px-6 lg:px-12">
         <PromoBannerSection />
         <PropertiesSection properties={featuredProperties} />
         <FirstInvestmentSection />
