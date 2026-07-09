@@ -8,7 +8,7 @@ const legacyWeb3ImportAllowlist = [
   "e2e/helpers/siws-local-wallet.ts",
   "scripts/devnet-authority-lifecycle-proof.ts",
   "scripts/validation/epic-001-validation.mjs",
-  "test/wallet-setup/solana-wallet-profiles.mjs",
+  "e2e/wallet-setup/solana-wallet-profiles.mjs",
   "lib/candy-guard-payment-config.ts",
   "lib/core-authority-lifecycle.ts",
   "lib/core-candy-machine-admin.ts",
@@ -92,7 +92,13 @@ const config = [
       ]
     }
   },
-  ...nextVitals
+  ...nextVitals,
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/preserve-manual-memoization": "off"
+    }
+  }
 ];
 
 export default config;

@@ -144,9 +144,9 @@ bash ./scripts/ci/pr-metadata-lint.sh \
   --policy-file "$POLICY_FILE"
 
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
-  LINEAR_AUTOSTATUS=0 SIZE_EXEMPT=1 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
+  LINEAR_AUTOSTATUS=0 SIZE_EXEMPT=1 pnpm pr:ready --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 else
-  LINEAR_AUTOSTATUS=0 npm run pr:ready -- --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
+  LINEAR_AUTOSTATUS=0 pnpm pr:ready --base "$BASE_REF" --policy-file "$POLICY_FILE" --validate-mode "$VALIDATE_MODE"
 fi
 
 git push -u origin "$CURRENT_BRANCH"
@@ -171,7 +171,7 @@ fi
 
 echo
 echo "Linear status"
-npm run linear:issue-review
+pnpm linear:issue-review
 
 LABEL_ARGS=(-f "labels[]=${SCOPE_LABEL}" -f "labels[]=${TYPE_LABEL}" -f "labels[]=${RISK_LABEL}")
 if [[ "$SIZE_EXEMPT" == "1" ]]; then

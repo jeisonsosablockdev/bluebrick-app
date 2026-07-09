@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 646 |
+| Archived | 648 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 644 |
+| Archived status | 646 |
 
 ## Inbox
 
@@ -324,6 +324,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-shared-agents-orchestration-enforcement-bri-157 | archived | none | [feature-shared-agents-orchestration-enforcement-bri-157](knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md) | n/a |
 | feature-shared-cleanup-marketplace-3d-visual-docs-implementation | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs-implementation](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md) | n/a |
 | feature-shared-cleanup-marketplace-3d-visual-docs | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md) | n/a |
+| feature-shared-cleanup-monorepo-structure-implementation | archived | none | [feature-shared-cleanup-monorepo-structure-implementation](knowledge/features/feature-shared-cleanup-monorepo-structure-implementation.md) | n/a |
+| feature-shared-cleanup-monorepo-structure | archived | none | [feature-shared-cleanup-monorepo-structure](knowledge/features/feature-shared-cleanup-monorepo-structure.md) | n/a |
 | feature-shared-human-acceptance-gated-merge-implementation | archived | none | [feature-shared-human-acceptance-gated-merge-implementation](knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md) | n/a |
 | feature-shared-human-acceptance-gated-merge | archived | none | [feature-shared-human-acceptance-gated-merge](knowledge/features/feature-shared-human-acceptance-gated-merge.md) | n/a |
 | feature-shared-hybrid-auth-clean-code-bri-159-implementation | archived | none | [feature-shared-hybrid-auth-clean-code-bri-159-implementation](knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md) | n/a |

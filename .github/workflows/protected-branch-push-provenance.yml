@@ -54,10 +54,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
       - name: Resolve Linear issue keys from the merged PR
         id: issue-keys
@@ -92,4 +98,4 @@ jobs:
           LINEAR_AUTOSTATUS: "1"
           ISSUE_KEYS_JSON: ${{ steps.issue-keys.outputs.issue_keys }}
         run: |
-          node -e 'const { execFileSync } = require("node:child_process"); const issues = JSON.parse(process.env.ISSUE_KEYS_JSON || "[]"); if (!issues.length) { console.log("No Linear issue keys detected on the merged PR."); process.exit(0); } for (const issue of issues) { console.log(`Syncing Linear issue ${issue} to Done...`); execFileSync("npm", ["run", "linear:issue-done", "--", "--issue", issue], { stdio: "inherit" }); }'
+          node -e 'const { execFileSync } = require("node:child_process"); const issues = JSON.parse(process.env.ISSUE_KEYS_JSON || "[]"); if (!issues.length) { console.log("No Linear issue keys detected on the merged PR."); process.exit(0); } for (const issue of issues) { console.log(`Syncing Linear issue ${issue} to Done...`); execFileSync("pnpm", ["run", "linear:issue-done", "--", "--issue", issue], { stdio: "inherit" }); }'

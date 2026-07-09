@@ -1,45 +1,51 @@
 ## Summary
-This PR cleans up the duplicate `BRI-164` marketplace 3D visual markdown files from the `knowledge/features/` root directory. All references across README tables, roadmaps, and feature files have been updated to point to the correct versions under `bri-164-marketplace-3d-visual/`.
+Este PR alinea la estructura de la raíz del monorepo con las políticas de gobernanza definidas en `knowledge/governance/git-monorepo-policy.md` y realiza la migración del gestor de paquetes de `npm` a `pnpm`.
 
-**Key Changes**
-- Deleted 28 root-level duplicate files under `knowledge/features/`.
-- Updated `knowledge/README.md` and rebuilt the index.
-- Corrected roadmap files (`app-technical-roadmap-investor-brief.md` and `.tex`).
-- Fixed internal paths in subdirectory files and fixes files.
+**Cambios Clave:**
+- **Limpieza de Estructura:** Eliminación del directorio `.opencode/` en la raíz y renombre de `test/wallet-setup/` a `e2e/wallet-setup/` para unificar directorios canónicos.
+- **Validación Automatizada:** Creación del script `scripts/ci/check-monorepo-structure.sh` que valida la raíz del repositorio en CI/CD.
+- **Migración a pnpm:** Remoción de `package-lock.json`, generación de `pnpm-lock.yaml` y actualización de los scripts en `package.json` para usar `pnpm` en lugar de `npm run`.
+- **Workflows adaptados:** Configuración de `pnpm` y cache en los workflows de GitHub Actions.
+- **Gobernanza de Documentos:** Creación de especificaciones de feature y plan de implementación (`feature-shared-cleanup-monorepo-structure.md`).
 
 ---
 
 ## Issue
-- **Linear:** `BRI-164`
+- **Linear:** `N/A` (Tarea de infraestructura transversal)
 
 ## RFC
 - **RFC:** `N/A`
 
 ## Risks / Riesgos
-- **Risk:** Low. Documentation cleanup only, no runtime code changes.
+- **Riesgo:** Bajo. Los scripts de ejecución y flujos de CI/CD han sido probados y validados localmente.
 
 ## Rollback Plan
-- **Rollback:** Revert the merge commit or restore the deleted markdown files.
+1. Eliminar `pnpm-lock.yaml` y `node_modules/`.
+2. Restaurar `package-lock.json` mediante git.
+3. Revertir cambios en `package.json`, `eslint.config.mjs` y workflows.
+4. Ejecutar `npm install`.
 
 ## Devnet Proof / Prueba Devnet
-- **Devnet Proof:** `N/A` (No on-chain interactions are performed).
+- **Devnet Proof:** `N/A` (No hay interacciones en cadena).
 
 ## Feature Flag Strategy
-- **Feature Flag:** N/A.
+- **Feature-flag:** N/A (Este PR es de infraestructura y limpieza, no introduce nueva lógica de negocio reactiva que requiera feature flags).
 
 ## Human Acceptance
 Status: approved
-> ✅ Approved and manually verified in the local workspace session.
-> **Approved by:** Jay / Jaymusicmachine
+> ✅ Aprobado y verificado manualmente en el workspace.
+> **Aprobado por:** Jay / Jaymusicmachine
 
 ## Walkthrough Artifact
-- **Path:** [walkthrough.md](file:///Users/jaymusicmachine/.gemini/antigravity-ide/brain/a95525be-a6f3-425c-8824-89637ae7935e/walkthrough.md)
+- **Path:** [walkthrough.md](file:///Users/jaymusicmachine/.gemini/antigravity/brain/b2844528-7ed9-4dab-bd29-dacea68b3b15/walkthrough.md)
 
 ## Validation
-- Documentation validation completed successfully:
-  `npm run validate`
+- La suite completa de validaciones pasó exitosamente:
+  `pnpm validate`
+- El script de estructura pasó exitosamente:
+  `bash scripts/ci/check-monorepo-structure.sh`
 
 ## Required Labels
-- [x] `scope:docs`
+- [x] `scope:shared`
 - [x] `type:refactor`
 - [x] `risk:low`

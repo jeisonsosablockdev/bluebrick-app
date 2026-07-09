@@ -51,7 +51,7 @@ When a user triggers a macro or touches the specified paths, load the correspond
 | `/programs` | `.agents/workflows/blockchain-cycle.md` |
 | `/app` | `.agents/workflows/frontend-cycle.md` |
 | `/packages` | Shared logic |
-| `/docs` | **Source of Truth** |
+| `/knowledge` | **Source of Truth** |
 | `.agents/` | **Gemini Customizations Root** |
 | `.codex/` | Legacy/Codex Workflows (Do not use directly) |
 
@@ -60,7 +60,7 @@ When a user triggers a macro or touches the specified paths, load the correspond
 - **Artifact Sync**: Generate `walkthrough.md` before requesting a PR review.
 
 ### Mandatory PR Governance for `develop`
-1. PR must pass `npm run validate`. Execute this via background `run_command` early.
+1. PR must pass `pnpm validate`. Execute this via background `run_command` early.
 2. PR must pass required docs scope check (`.agents/policies/docs-policy.md`).
 3. Keep PRs small (target <= 400 added lines). 
 4. PR body must include:

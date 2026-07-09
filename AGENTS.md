@@ -18,7 +18,7 @@
 
 ## Entry Rules
 - Start with `planner`.
-- When the brief is vague or underspecified, run `npm run task:init` before branching; it is the canonical bootstrap entrypoint, runs preflight, asks for the task shape, and delegates to `git-start.sh` once the branch shape is clear. See the README for usage examples.
+- When the brief is vague or underspecified, run `pnpm task:init` before branching; it is the canonical bootstrap entrypoint, runs preflight, asks for the task shape, and delegates to `git-start.sh` once the branch shape is clear. See the README for usage examples.
 - For non-trivial issue-type-driven work, require the governing artifact before implementation and derive the branch family from the Linear issue type chosen in the doc-first phase. Supported families include `feature/*`, `bugfix/*`, `fix/*`, `hotfix/*`, `epic/*`, `security/*`, `nft/*`, and `refactor/*`.
 - For new features, require:
   - `knowledge/features/feature-<slug>.md`
@@ -67,7 +67,7 @@
 - Completion after accepted validation and Human Acceptance syncs the issue to `Done`.
 
 ## Definition of Done
-- `npm run validate`
+- `pnpm validate`
 - Explicit `clean-code` pass completed and any blocking findings are resolved or consciously documented
 - Database-backed schema or persistence changes: tracked migrations applied, no pending tracked migrations, and `validate:db` passes when `DATABASE_URL` is available
 - Required docs updated per `knowledge/governance/documentation-policy.md`
@@ -81,7 +81,7 @@
 
 **BEFORE any planning or implementation:**
 
-1. **ALWAYS** run `npm run task:init` (or `bash scripts/agent-bootstrap.sh`)
+1. **ALWAYS** run `pnpm task:init` (or `bash scripts/agent-bootstrap.sh`)
 2. **ALWAYS** read the matching `.codex/workflows/*.md` for detected scope
 3. **ALWAYS** verify preconditions in `AGENTS.md` Entry Rules
 4. **NEVER** skip to implementation without planner → workflow activation
