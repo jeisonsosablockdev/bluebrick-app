@@ -27,7 +27,7 @@ export function FeaturedPropertiesSection({ properties }: FeaturedPropertiesSect
   });
 
   return (
-    <section ref={containerRef} className="relative w-full bg-[#020813] py-20 md:py-32 overflow-hidden flex flex-col justify-center min-h-[900px] lg:min-h-[1100px]">
+    <section ref={containerRef} className="relative w-full bg-[#020813] pt-20 md:pt-28 pb-20 md:pb-32 overflow-hidden flex flex-col justify-center min-h-[900px] lg:min-h-[1100px]">
       {/* Top Blue Glow Effect (Full Width) */}
       <div className="absolute top-0 left-0 right-0 h-[400px] w-full -translate-y-1/2 bg-[#00b0f9]/20 blur-[120px] pointer-events-none" />
 
@@ -35,7 +35,7 @@ export function FeaturedPropertiesSection({ properties }: FeaturedPropertiesSect
       <div className="absolute bottom-0 left-0 right-0 h-[400px] w-full translate-y-1/2 bg-[#cf84f9]/25 blur-[120px] pointer-events-none" />
 
       {/* Background Animated Logo */}
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 h-[800px] md:h-[1200px] w-[600px] md:w-[800px] -mr-10 md:-mr-[100px] opacity-50 text-white pointer-events-none z-0">
+      <div className="absolute top-1/2 right-[6px] md:right-[8px] -translate-y-1/2 h-[800px] md:h-[1200px] w-[600px] md:w-[800px] opacity-50 text-white pointer-events-none z-0">
         <AnimatedLogoBg pathLength={pathLength} className="w-full h-full" />
       </div>
 

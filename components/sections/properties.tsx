@@ -45,11 +45,32 @@ export function PropertiesSection({ properties }: PropertiesSectionProps) {
   const usesFallback = properties.length === 0;
 
   return (
-    <section className="py-12">
-      <div className="mb-8 text-center">
-        <H2 className="text-white">
-          {t({ en: "Featured Properties", es: "Propiedades Destacadas", pt: "Imoveis em Destaque" })}
-        </H2>
+    <div>
+      <div className="mb-20 md:mb-28 text-center">
+        <h2 className="text-[39px] sm:text-[45px] md:text-[57px] lg:text-[69px] font-bold tracking-tight text-white">
+          {locale === "en" ? (
+            <>
+              Featured{" "}
+              <span className="bg-gradient-to-r from-[#00b0f9] to-[#cf84f9] bg-clip-text text-transparent">
+                Properties
+              </span>
+            </>
+          ) : locale === "pt" ? (
+            <>
+              Imóveis em{" "}
+              <span className="bg-gradient-to-r from-[#00b0f9] to-[#cf84f9] bg-clip-text text-transparent">
+                Destaque
+              </span>
+            </>
+          ) : (
+            <>
+              Propiedades{" "}
+              <span className="bg-gradient-to-r from-[#00b0f9] to-[#cf84f9] bg-clip-text text-transparent">
+                Destacadas
+              </span>
+            </>
+          )}
+        </h2>
         <Lead className="mx-auto mt-2 max-w-xl">
           {t({
             en: "Discover active opportunities in high-demand locations.",
@@ -92,22 +113,6 @@ export function PropertiesSection({ properties }: PropertiesSectionProps) {
         ))}
       </div>
 
-      <p className="mx-auto mt-4 max-w-3xl text-center text-xs text-slate-400">
-        {t({
-          en: "Project metrics are informational references and may change according to partner updates and applicable documentation.",
-          es: "Las metricas del proyecto son referenciales e informativas y pueden cambiar segun actualizaciones del partner y documentacion aplicable.",
-          pt: "As metricas do projeto sao referenciais e informativas e podem mudar conforme atualizacoes do parceiro e documentacao aplicavel."
-        })}
-      </p>
-
-      <div className="mt-6 text-center">
-        <Link
-          href="/marketplace"
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradientPrimary px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:opacity-95"
-        >
-          {t({ en: "View marketplace", es: "Ver marketplace", pt: "Ver marketplace" })}
-        </Link>
-      </div>
-    </section>
+    </div>
   );
 }
