@@ -695,6 +695,14 @@ body.app-splash-cleared main {
     border-color: rgba(15, 23, 42, 0.12);
   }
 
+  html[data-theme="light"] .featured-properties-section {
+    background: #ffffff !important;
+  }
+
+  html[data-theme="light"] .landing-hero-lead {
+    color: #ffffff !important;
+  }
+
   html[data-theme="light"] .border-white\/15 {
     border-color: rgba(15, 23, 42, 0.15);
   }
@@ -2151,6 +2159,18 @@ body.app-splash-cleared main {
 /* Hero Background Toggle */
 .hero-bg-wrapper { background-color: #020813; }
 html[data-theme="light"] .hero-bg-wrapper { background-color: #ffffff; }
+
+/* Hero Background Overlay (Theme Sensitive) */
+.hero-background-overlay {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-theme="light"] .hero-background-overlay {
+  background-color: rgba(4, 6, 15, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
 .hero-bg-light { display: none !important; }
 html[data-theme="light"] .hero-bg-light { display: block !important; }

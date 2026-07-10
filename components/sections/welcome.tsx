@@ -9,7 +9,7 @@ export function WelcomeSection() {
   return (
     <section className="pt-20 md:pt-28 pb-14 md:pb-20 text-center">
       <H2 className="text-white mx-auto max-w-3xl md:max-w-4xl text-4xl md:text-5xl 2xl:text-[4rem] 2xl:leading-[1.15]">
-        {t({ en: "Welcome to the", es: "Bienvenido a la", pt: "Bem-vindo a" })}{" "}
+        {t({ en: "Welcome to the", es: "Bienvenido al", pt: "Bem-vindo a" })}{" "}
         <span className="bg-gradientPrimary bg-clip-text text-transparent">
           {t({ en: "future", es: "futuro", pt: "futuro" })}
         </span>{" "}

@@ -72,7 +72,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
       <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center hero-bg-wrapper">
         {/* Dark Mode Background */}
         <Image 
-          src="/images/hero-dark-l8.png" 
+          src="/images/BRD-NY-04.png" 
           alt="Hero Background" 
           fill
           priority
@@ -80,12 +80,14 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
         />
         {/* Light Mode Background */}
         <Image 
-          src="/images/hero-light-l8.png" 
+          src="/images/BRD-NYDAY-06.png" 
           alt="Hero Background Light" 
           fill
           priority
           className="hero-bg-light object-cover object-right-top"
         />
+        {/* Theme-sensitive Background Overlay */}
+        <div className="absolute inset-0 hero-background-overlay pointer-events-none" />
       </div>
       
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12 pb-10 md:pb-16 pt-0">
@@ -102,14 +104,14 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
               {t({
                 en: "Explore real estate projects and invest in real assets.",
                 es: "Explora proyectos inmobiliarios e invierte en bienes raíces.",
-                pt: "Explore projetos imobiliários e invista em ativos reais.",
+                pt: "Explore projetos imobiliários e invista em activos reais.",
               })}
             </H1>
-            <Lead className="landing-hero-lead mt-5 max-w-xl 2xl:max-w-2xl text-[clamp(1rem,2vw,1.35rem)]">
+            <Lead className="landing-hero-lead mt-5 max-w-xl 2xl:max-w-2xl text-[clamp(1rem,2vw,1.35rem)] text-white">
               {t({
                 en: "Access documents, statuses, and project updates from a modern and transparent interface.",
                 es: "Accede a documentos, estados y actualizaciones de proyecto desde una interfaz moderna y transparente.",
-                pt: "Acesse documentos, estados e atualizacoes de projeto em uma interface moderna e transparente."
+                pt: "Acesse documentos, estados e atualizacoes de projeto em una interface moderna e transparente."
               })}
             </Lead>
             <div className="mt-8 flex flex-col sm:flex-row gap-5">
