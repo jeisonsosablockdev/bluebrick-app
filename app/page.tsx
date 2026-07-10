@@ -10,8 +10,7 @@ import { FirstInvestmentSection } from "@/components/sections/first-investment";
 import { FooterSection } from "@/components/sections/footer";
 import { HeroSection } from "@/components/sections/hero";
 import { ProcessSection } from "@/components/sections/process";
-import { PromoBannerSection } from "@/components/sections/promo-banner";
-import { PropertiesSection } from "@/components/sections/properties";
+import { FeaturedPropertiesSection } from "@/components/sections/featured-properties";
 import { AppCapabilitiesSection } from "@/components/sections/app-capabilities";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { PwaClientRuntime } from "@/components/pwa/pwa-client-runtime";
@@ -74,10 +73,12 @@ export default async function HomePage() {
       {/* Full-bleed Modal-style Section */}
       <AppCapabilitiesSection />
 
+      {/* Showcase full-bleed section */}
+      <FeaturedPropertiesSection properties={featuredProperties} />
+
       {/* Rest of the page content remains constrained */}
       <div className="mx-auto w-full max-w-7xl px-6 lg:px-12">
-        <PromoBannerSection />
-        <PropertiesSection properties={featuredProperties} />
+
         <FirstInvestmentSection />
         <ProcessSection />
         <FaqSection />
