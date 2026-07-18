@@ -26,7 +26,7 @@ Elevar el lenguaje visual y la calidad de interacción de la aplicación BRIDS m
 - **SPEC02 - Investment Category Iconography**: Reemplazar iconos genéricos por iconografía personalizada de BRIDS en todas las superficies públicas. Definir pesos visuales, contrastes (dark/light) y documentar reglas de uso. (SPEC/czambrano-bri-180-spec02-investment-category-iconography)
 - **SPEC04 - Hero Dropdown Visual System**: Extender el lenguaje visual del Hero (fondos oscuros, blur, sombras suaves) a sus menús desplegables, validando estados interactivos y accesibilidad. (SPEC/czambrano-bri-180-spec04-hero-dropdown-visual-system)
 - **SPEC06 - Scroll Motion Experience**: Implementar una capa de animación progresiva basada en scroll para fortalecer la narrativa visual sin comprometer el rendimiento (respetando `prefers-reduced-motion`). (SPEC/czambrano-bri-180-spec06-scroll-motion-experience)
-- **SPEC07 - Marketplace Pins Secondary Scope**: Refinar la jerarquía visual de los pines del mapa, sus estados interactivos (hover, active) y garantizar la sincronización mapa/lista/detalle. (SPEC/czambrano-bri-180-spec07-marketplace-pins-secondary)
+
 
 #### Non-goals
 - Cambios arquitectónicos mayores en el framework de frontend o la capa de datos.
@@ -37,7 +37,7 @@ Elevar el lenguaje visual y la calidad de interacción de la aplicación BRIDS m
 - **SPEC02**: Las categorías priorizadas usan iconos legibles y coherentes con la marca en ambos modos de color, sin romper layouts responsivos.
 - **SPEC04**: El dropdown del Hero se siente parte del mismo sistema visual y su navegación es accesible.
 - **SPEC06**: La experiencia de scroll motion mejora la narrativa, es fluida y respeta configuraciones de accesibilidad.
-- **SPEC07**: Los pines son más claros y la sincronización entre mapa y lista no se rompe.
+
 - **Gobernanza**: El artefacto local, el issue de Linear y la rama principal existen y están sincronizados usando el identificador correcto.
 
 #### Risks
@@ -94,7 +94,7 @@ Elevate the BRIDS app visual language and interaction quality through targeted U
 - **SPEC02 - Investment Category Iconography**: Replace generic icons with custom BRIDS brand-consistent iconography across public surfaces. (SPEC/czambrano-bri-180-spec02-investment-category-iconography)
 - **SPEC04 - Hero Dropdown Visual System**: Extend the deep blur, soft shadow, and dark background visual language to the Hero dropdown menus. (SPEC/czambrano-bri-180-spec04-hero-dropdown-visual-system)
 - **SPEC06 - Scroll Motion Experience**: Implement a progressive, performance-safe scroll-driven animation layer to enhance visual storytelling. (SPEC/czambrano-bri-180-spec06-scroll-motion-experience)
-- **SPEC07 - Marketplace Pins Secondary Scope**: Refine marketplace pin visibility, interactive states, and map/list synchronization. (SPEC/czambrano-bri-180-spec07-marketplace-pins-secondary)
+
 
 #### Non-goals
 - Major architectural changes to the frontend framework or data fetching layer.
@@ -105,7 +105,7 @@ Elevate the BRIDS app visual language and interaction quality through targeted U
 - **SPEC02**: Custom icons are integrated, responsive, and legible in both light and dark modes.
 - **SPEC04**: Hero dropdown matches the overarching visual system with correct interactive states.
 - **SPEC06**: Scroll animations are smooth and respect accessibility settings.
-- **SPEC07**: Marketplace pins maintain state synchronization and clear visibility.
+
 - **Governance**: Branch and SPEC nomenclature strictly follow governance.
 
 #### Risks
