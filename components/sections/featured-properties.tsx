@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useScroll, useSpring } from "framer-motion";
+import { useScroll, useSpring } from "motion/react";
 import { AnimatedLogoBg } from "@/components/brand/animated-logo-bg";
 import Link from "next/link";
 import { useI18n } from "@/components/i18n/locale-provider";

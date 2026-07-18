@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, MotionValue, useTransform } from "framer-motion";
+import { motion, MotionValue, useTransform } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface AnimatedLogoBgProps {
