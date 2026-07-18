@@ -63,10 +63,12 @@ Elevar el lenguaje visual y la calidad de interacción de la aplicación BRIDS m
   - **Causa**: La refactorización de elementos del DOM afectó los selectores ID y referencias que el sistema de tour utilizaba para anclarse, perdiendo el rastro de la interfaz.
 
 #### Retrospectiva (OKF Protocol)
-- **Qué estuvo bien**: Rápida iteración y alineación del formulario con el lenguaje visual "dark mode / glassmorphism" de BRIDS. Se detectó y resolvió ágilmente el bug de payload desde el frontend, protegiendo el backend sin ensuciar la lógica de negocio.
+- **Qué estuvo bien**: Rápida iteración y alineación del formulario con el lenguaje visual "dark mode / glassmorphism" de BRIDS. Se detectó y resolvió ágilmente el bug de payload desde el frontend, protegiendo el backend sin ensuciar la lógica de negocio. Además, la exploración de animaciones complejas (SPEC06) se realizó controladamente sin romper la versión base, permitiendo una rápida reversión.
 - **Qué estuvo mal**: Los cambios drásticos en el DOM rompieron de manera silenciosa integraciones de terceros (como el User Tour). Además, la validación laxa en el cliente permitió enviar datos que causaron fricción oculta al usuario final, requiriendo revisión de logs para detectar el bloqueo.
 
 - **SPEC02 (Investment Category Iconography)**: Se reemplazaron los emojis estáticos genéricos por un sistema de SVGs minimalistas estilizados (`text-cyan-400 drop-shadow`) sin fondos sólidos. Se documentó formalmente este nuevo paradigma visual en `knowledge/governance/iconography-rules.md` para garantizar consistencia futura. Se respetó la estricta secuencia de *Preflight*.
+- **SPEC04 (Hero Dropdown & Background)**: Se refinaron los contrastes de superposición en el componente Hero, forzando legibilidad óptima para textos blancos tanto en modo claro como oscuro. Se realizaron ajustes a nivel de tipografía y alineación ultra-ajustada para el logo animado. Se incluyeron márgenes de separación de diseño en `FirstInvestmentSection`.
+- **SPEC06 (Scroll Motion & Welcome)**: Se iteró sobre la animación basada en scroll de la sección de Propiedades Destacadas (framer-motion). Tras pruebas en vivo del mapeo de scroll (`useScroll`, `useTransform`), se revirtió a la versión original según la decisión de UX del usuario, priorizando estabilidad visual sobre interactividad prolongada. Se corrigió un error gramatical en la copia del componente Welcome ("Bienvenido al futuro").
 
 ---
 
@@ -131,8 +133,9 @@ Elevate the BRIDS app visual language and interaction quality through targeted U
   - **Cause**: Structural DOM refactoring broke the ID selectors and references the tour system relied upon, breaking the flow.
 
 #### Retrospective (OKF Protocol)
-- **What went well**: Rapid UI iteration aligned seamlessly with BRIDS's dark mode / glassmorphism visual language. The payload bug was resolved swiftly on the frontend, protecting backend logic without tight coupling.
+- **What went well**: Rapid UI iteration aligned seamlessly with BRIDS's dark mode / glassmorphism visual language. The payload bug was resolved swiftly on the frontend, protecting backend logic without tight coupling. The complex animation exploration (SPEC06) was managed safely without breaking the baseline, allowing a rapid and clean rollback when the UX direction changed.
 - **What went wrong**: Drastic DOM changes silently broke third-party/global integrations (like the User Tour). Additionally, loose client-side validation allowed sending invalid edge-case data, causing hidden user friction that required log inspection to identify.
 
 - **SPEC02 (Investment Category Iconography)**: Replaced generic static emojis with a system of minimalist styled SVGs (`text-cyan-400 drop-shadow`) lacking solid backgrounds. Formalized this new visual paradigm in `knowledge/governance/iconography-rules.md` to ensure future consistency. Complied strictly with the *Preflight* sequence.
-
+- **SPEC04 (Hero Dropdown & Background)**: Refined overlay contrasts in the Hero component to force optimal readability for white text across both light and dark modes. Applied typography scaling and ultra-tight alignment for the animated logo. Added design separation margins in `FirstInvestmentSection`.
+- **SPEC06 (Scroll Motion & Welcome)**: Iterated on the scroll-bound animation of the Featured Properties section (framer-motion). After live testing the scroll mapping (`useScroll`, `useTransform`), reverted to the original baseline per UX decision, prioritizing visual stability over prolonged interactivity. Fixed a grammar typo in the Welcome component copy ("Bienvenido al futuro").
