@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { InviteeWelcomeBanner } from "@/components/referrals/invitee-welcome-banner";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
-import { AppOverviewSection } from "@/components/sections/app-overview";
 import { FaqSection } from "@/components/sections/faq";
 import { FeaturesSection } from "@/components/sections/features";
 import { FirstInvestmentSection } from "@/components/sections/first-investment";
 import { FooterSection } from "@/components/sections/footer";
 import { HeroSection } from "@/components/sections/hero";
 import { ProcessSection } from "@/components/sections/process";
-import { PromoBannerSection } from "@/components/sections/promo-banner";
-import { PropertiesSection } from "@/components/sections/properties";
-import { TokenizationProcessSection } from "@/components/sections/tokenization-process";
+import { FeaturedPropertiesSection } from "@/components/sections/featured-properties";
+import { AppCapabilitiesSection } from "@/components/sections/app-capabilities";
 import { WelcomeSection } from "@/components/sections/welcome";
 import { PwaClientRuntime } from "@/components/pwa/pwa-client-runtime";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
@@ -51,28 +49,41 @@ export default async function HomePage() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-6 md:px-6 md:pb-8 pt-0">
+    <main className="pb-6 md:pb-8 pt-0">
       <PwaClientRuntime />
       <JsonLdScript id="jsonld-home" schemas={homeSchemas} />
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
-          <WalletModal />
+          <MainTopNavigationModal />
         </Suspense>
       </WalletRuntimeProvider>
       <Suspense fallback={null}>
         <InviteeWelcomeBanner />
       </Suspense>
+      
+      {/* Hero section is now full-width */}
       <HeroSection marketplaceTotal={marketplaceProperties.length} />
-      <WelcomeSection />
-      <FeaturesSection />
-      <TokenizationProcessSection />
-      <AppOverviewSection />
-      <PromoBannerSection />
-      <PropertiesSection properties={featuredProperties} />
-      <FirstInvestmentSection />
-      <ProcessSection />
-      <FaqSection />
-      <FooterSection />
+      
+      {/* First block of constrained content */}
+      <div className="mx-auto w-full max-w-7xl px-6 lg:px-12">
+        <WelcomeSection />
+        <FeaturesSection />
+      </div>
+
+      {/* Full-bleed Modal-style Section */}
+      <AppCapabilitiesSection />
+
+      {/* Showcase full-bleed section */}
+      <FeaturedPropertiesSection properties={featuredProperties} />
+
+      {/* Rest of the page content remains constrained */}
+      <div className="mx-auto w-full max-w-7xl px-6 lg:px-12">
+
+        <FirstInvestmentSection />
+        <ProcessSection />
+        <FaqSection />
+        <FooterSection />
+      </div>
     </main>
   );
 }

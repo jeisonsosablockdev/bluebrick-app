@@ -62,7 +62,7 @@ export function MarketplaceExperience({ properties, mapSources, mapboxAccessToke
         fallback={listNode}
       />
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [pins, selectedPinId, mapboxAccessToken, mapboxStyleUrl, listNode]
   );
 

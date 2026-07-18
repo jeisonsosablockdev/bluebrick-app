@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -18,30 +18,29 @@ export const TOUR_STEP_IDS = {
 type TourStep = {
   id: number;
   anchorId?: string;
-  icon: string;
+  icon: ReactNode;
   title: { en: string; es: string; pt: string };
   description: { en: string; es: string; pt: string };
   cta: { en: string; es: string; pt: string };
   isLast?: boolean;
 };
 
-type CardPlacement = "center" | "anchored";
-type PointerSide = "none" | "top" | "bottom";
-
 type TourCardPosition = {
   top: number;
   left: number;
   width: number;
-  placement: CardPlacement;
-  pointerSide: PointerSide;
-  pointerOffset: number;
 };
 
 const TOUR_STEPS: TourStep[] = [
   {
     id: 1,
     anchorId: TOUR_STEP_IDS.EDIT_BUTTON,
-    icon: "👋",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
     title: {
       en: "This is your profile",
       es: "Esta es la información de tu perfil",
@@ -57,7 +56,12 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 2,
     anchorId: TOUR_STEP_IDS.NAME_EMAIL,
-    icon: "✍️",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
     title: {
       en: "Your name and email",
       es: "Tu nombre y correo electrónico",
@@ -73,7 +77,12 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 3,
     anchorId: TOUR_STEP_IDS.PHONE,
-    icon: "📱",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12.01" y2="18" />
+      </svg>
+    ),
     title: {
       en: "Your contact phone",
       es: "Tu teléfono de contacto",
@@ -89,7 +98,11 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 4,
     anchorId: TOUR_STEP_IDS.BIO,
-    icon: "🌟",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    ),
     title: {
       en: "Tell us about yourself",
       es: "Cuéntanos quién eres",
@@ -105,7 +118,12 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 5,
     anchorId: TOUR_STEP_IDS.ADDRESS,
-    icon: "📍",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
     title: {
       en: "Your address (optional)",
       es: "Tu dirección (opcional)",
@@ -121,7 +139,13 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 6,
     anchorId: TOUR_STEP_IDS.SAVE_CHANGES,
-    icon: "💾",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+        <polyline points="17 21 17 13 7 13 7 21" />
+        <polyline points="7 3 7 8 15 8" />
+      </svg>
+    ),
     title: {
       en: "Save your profile data",
       es: "Guarda los datos de tu perfil",
@@ -137,7 +161,12 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: 7,
     anchorId: TOUR_STEP_IDS.KYC,
-    icon: "🔐",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+    ),
     title: {
       en: "One last step — KYC verification",
       es: "¡Nos falta el último paso! — Verificación KYC",
@@ -206,9 +235,6 @@ export function QuickTourOverlay() {
     top: 92,
     left: 16,
     width: 360,
-    placement: "center",
-    pointerSide: "none",
-    pointerOffset: 180,
   });
 
   const step = TOUR_STEPS[currentStep];
@@ -228,9 +254,6 @@ export function QuickTourOverlay() {
         top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
         left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
         width: cardWidth,
-        placement: "center",
-        pointerSide: "none",
-        pointerOffset: cardWidth / 2,
       });
       return;
     }
@@ -241,9 +264,6 @@ export function QuickTourOverlay() {
         top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
         left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
         width: cardWidth,
-        placement: "center",
-        pointerSide: "none",
-        pointerOffset: cardWidth / 2,
       });
       return;
     }
@@ -263,15 +283,10 @@ export function QuickTourOverlay() {
       viewportWidth - cardWidth - HORIZONTAL_MARGIN,
     );
 
-    const pointerOffset = clamp(rect.left + rect.width / 2 - left, 24, cardWidth - 24);
-
     setCardPosition({
       top,
       left,
       width: cardWidth,
-      placement: "anchored",
-      pointerSide: shouldPlaceBelow ? "top" : "bottom",
-      pointerOffset,
     });
   }, [pathname, step?.anchorId]);
 
@@ -391,7 +406,7 @@ export function QuickTourOverlay() {
       >
         <div
           ref={cardRef}
-          className="quick-tour-card glass-modal-surface"
+          className="quick-tour-card marketplace-depth-card"
           style={{
             top: `${cardPosition.top}px`,
             left: `${cardPosition.left}px`,
@@ -400,13 +415,7 @@ export function QuickTourOverlay() {
           role="dialog"
           aria-label={t({ en: "Quick onboarding tour", es: "Tour de onboarding", pt: "Tour de onboarding" })}
         >
-          {cardPosition.pointerSide !== "none" && cardPosition.placement === "anchored" ? (
-            <span
-              className={`quick-tour-pointer quick-tour-pointer-${cardPosition.pointerSide}`}
-              style={{ left: `${cardPosition.pointerOffset}px` }}
-              aria-hidden="true"
-            />
-          ) : null}
+
 
           <div className="quick-tour-header">
             <div className="quick-tour-title-wrap">

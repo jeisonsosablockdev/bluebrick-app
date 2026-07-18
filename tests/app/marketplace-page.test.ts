@@ -11,8 +11,8 @@ const pageMocks = vi.hoisted(() => ({
   getRoleForWallet: vi.fn()
 }));
 
-vi.mock("@/components/WalletModal", () => ({
-  WalletModal: () => createElement("div", null, "wallet-modal")
+vi.mock("@/components/main-top-navigation-modal", () => ({
+  MainTopNavigationModal: () => createElement("div", null, "wallet-modal")
 }));
 
 vi.mock("@/components/marketplace/MarketplaceFilters", () => ({

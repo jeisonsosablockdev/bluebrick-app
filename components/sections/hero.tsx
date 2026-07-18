@@ -62,37 +62,64 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
   );
 
   return (
-    <section className="landing-hero-shell text-slate-100">
-      <div className="mx-auto max-w-7xl px-6 pb-10 md:px-8 md:pb-16 pt-0">
+    <section className="text-slate-100 relative w-full overflow-hidden -mt-[88px] pt-[140px] md:pt-[180px] lg:pt-[220px] pb-12 md:pb-20">
+      
+      {/* 
+        We use a negative top margin (-mt-[88px]) to slide the Hero section UP behind the transparent navbar.
+        The padding-top (pt-[88px]) pushes the text content back down so it doesn't collide with the navbar.
+        The absolute background spans the entire section, covering the area behind the navbar perfectly.
+      */}
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center hero-bg-wrapper">
+        {/* Dark Mode Background */}
+        <Image 
+          src="/images/BRD-NY-04.png" 
+          alt="Hero Background" 
+          fill
+          priority
+          className="hero-bg-dark object-cover object-right-top"
+        />
+        {/* Light Mode Background */}
+        <Image 
+          src="/images/BRD-NYDAY-06.png" 
+          alt="Hero Background Light" 
+          fill
+          priority
+          className="hero-bg-light object-cover object-right-top"
+        />
+        {/* Theme-sensitive Background Overlay */}
+        <div className="absolute inset-0 hero-background-overlay pointer-events-none" />
+      </div>
+      
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12 pb-10 md:pb-16 pt-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-          <div className="max-w-2xl">
-            <p className="landing-hero-eyebrow mb-3 text-xs uppercase tracking-[0.25em]">
+          <div className="max-w-[900px]">
+            <p className="landing-hero-eyebrow mb-4 text-sm uppercase tracking-[0.25em]">
               {t({
                 en: "BRIDS Real Estate Investment",
-                es: "BRIDS Plataforma Tecnologica",
-                pt: "BRIDS Investimento Imobiliario"
+                es: "Inversión Inmobiliaria BRIDS",
+                pt: "Investimento Imobiliário BRIDS",
               })}
             </p>
-            <H1 className="landing-hero-title text-4xl md:text-5xl lg:text-6xl leading-tight">
+            <H1 className="landing-hero-title text-[clamp(2.5rem,6vw,5.5rem)] leading-tight">
               {t({
                 en: "Explore real estate projects and invest in real assets.",
-                es: "Explora proyectos inmobiliarios e invierte en bienes raices.",
-                pt: "Explore projetos imobiliarios e invista em ativos reais."
+                es: "Explora proyectos inmobiliarios e invierte en bienes raíces.",
+                pt: "Explore projetos imobiliários e invista em activos reais.",
               })}
             </H1>
-            <Lead className="landing-hero-lead mt-5 max-w-xl text-base md:text-lg">
+            <Lead className="landing-hero-lead mt-5 max-w-xl 2xl:max-w-2xl text-[clamp(1rem,2vw,1.35rem)] text-white">
               {t({
                 en: "Access documents, statuses, and project updates from a modern and transparent interface.",
                 es: "Accede a documentos, estados y actualizaciones de proyecto desde una interfaz moderna y transparente.",
-                pt: "Acesse documentos, estados e atualizacoes de projeto em uma interface moderna e transparente."
+                pt: "Acesse documentos, estados e atualizacoes de projeto em una interface moderna e transparente."
               })}
             </Lead>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-5">
               <Link href="/marketplace" className="inline-flex">
-                <Button className="px-8 py-3 text-base">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
+                <Button className="px-10 py-6 text-lg 2xl:text-xl">{t({ en: "Explore properties", es: "Explorar propiedades", pt: "Explorar imoveis" })}</Button>
               </Link>
               <Link href="/transparencia" className="inline-flex">
-                <Button variant="ghost" className="landing-hero-secondary-cta px-8 py-3 text-base">
+                <Button variant="ghost" className="landing-hero-secondary-cta px-10 py-6 text-lg 2xl:text-xl">
                   {t({ en: "Transparency", es: "Transparencia", pt: "Transparencia" })}
                 </Button>
               </Link>
@@ -102,13 +129,13 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
           <div className="md:w-1/3" aria-hidden="true" />
         </div>
 
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {heroStats.map((stat, index) => (
-            <div key={stat.label} className="landing-hero-panel landing-hero-stat rounded-2xl p-5">
-              <p className="landing-hero-stat-value text-2xl font-bold">{stat.value}</p>
-              <p className="landing-hero-stat-label mt-1 text-xs">{stat.label}</p>
+            <div key={stat.label} className="landing-hero-panel landing-hero-stat rounded-2xl p-6">
+              <p className="landing-hero-stat-value text-3xl 2xl:text-4xl font-bold">{stat.value}</p>
+              <p className="landing-hero-stat-label mt-2 text-sm text-slate-300">{stat.label}</p>
               {index === 1 ? (
-                <p className="landing-hero-stat-note mt-1 text-[11px]">
+                <p className="landing-hero-stat-note mt-2 text-xs text-slate-400">
                   {t({
                     en: "Live total from marketplace records.",
                     es: "Total en vivo desde registros del marketplace.",

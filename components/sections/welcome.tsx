@@ -7,9 +7,9 @@ export function WelcomeSection() {
   const { t } = useI18n();
 
   return (
-    <section className="py-14 text-center">
-      <H2 className="text-white">
-        {t({ en: "Welcome to the", es: "Bienvenido a la", pt: "Bem-vindo a" })}{" "}
+    <section className="pt-20 md:pt-28 pb-14 md:pb-20 text-center">
+      <H2 className="text-white mx-auto max-w-3xl md:max-w-4xl text-4xl md:text-5xl 2xl:text-[4rem] 2xl:leading-[1.15]">
+        {t({ en: "Welcome to the", es: "Bienvenido al", pt: "Bem-vindo a" })}{" "}
         <span className="bg-gradientPrimary bg-clip-text text-transparent">
           {t({ en: "future", es: "futuro", pt: "futuro" })}
         </span>{" "}
@@ -19,7 +19,7 @@ export function WelcomeSection() {
           pt: "do investimento imobiliario fracionado."
         })}
       </H2>
-      <Lead className="mx-auto mt-3 max-w-2xl">
+      <Lead className="mx-auto mt-10 md:mt-12 max-w-2xl">
         {t({
           en: "Discover projects from our partners with clear information and digital traceability.",
           es: "Conoce los proyectos de nuestros aliados, proyectos inmobiliarios con trazabilidad digital.",

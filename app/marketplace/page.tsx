@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { MarketplaceExperience } from "@/components/marketplace/MarketplaceExperience";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
@@ -115,7 +115,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
-          <WalletModal />
+          <MainTopNavigationModal />
         </Suspense>
 
         <section className="space-y-3">

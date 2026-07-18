@@ -132,16 +132,16 @@ function PortfolioSkeleton(): ReactElement {
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={`portfolio-skeleton-${index}`} className="space-y-2">
+          <article key={`portfolio-skeleton-${index}`} className="marketplace-depth-card space-y-2 rounded-2xl p-5">
             <div className="h-4 w-28 animate-pulse rounded bg-white/10" />
             <div className="h-8 w-20 animate-pulse rounded bg-white/10" />
             <div className="h-3 w-32 animate-pulse rounded bg-white/10" />
-          </Card>
+          </article>
         ))}
       </div>
-      <Card className="h-44 animate-pulse bg-white/5">
+      <article className="marketplace-depth-card h-44 animate-pulse rounded-2xl p-5">
         <span className="sr-only">Loading portfolio positions</span>
-      </Card>
+      </article>
     </div>
   );
 }
@@ -178,7 +178,7 @@ function WalletRequiredState({ t }: { t: TranslateFn }): ReactElement {
 function EmptyState({ hasFilters, t }: { hasFilters: boolean; t: TranslateFn }): ReactElement {
   if (hasFilters) {
     return (
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-white">{t({ en: "No results", es: "Sin resultados", pt: "Sem resultados" })}</h2>
         <p className="text-sm text-white/70">
           {t({
@@ -187,12 +187,12 @@ function EmptyState({ hasFilters, t }: { hasFilters: boolean; t: TranslateFn }):
             pt: "Nenhuma posicao de portfolio corresponde a esta busca."
           })}
         </p>
-      </Card>
+      </article>
     );
   }
 
   return (
-    <Card className="space-y-3 border-dashed">
+    <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
       <h2 className="text-lg font-semibold text-white">
         {t({ en: "No BRIDS portfolio positions yet", es: "Aun no hay posiciones BRIDS en portfolio", pt: "Ainda nao ha posicoes BRIDS no portfolio" })}
       </h2>
@@ -208,7 +208,7 @@ function EmptyState({ hasFilters, t }: { hasFilters: boolean; t: TranslateFn }):
           {t({ en: "Explore marketplace", es: "Explorar marketplace", pt: "Explorar marketplace" })}
         </Button>
       </Link>
-    </Card>
+    </article>
   );
 }
 
@@ -231,28 +231,28 @@ function StatusBanner({ portfolio, t }: { portfolio: InvestorPortfolio; t: Trans
 function SummaryCards({ portfolio, t }: { portfolio: InvestorPortfolio; t: TranslateFn }): ReactElement {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <Card className="space-y-1">
+      <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
         <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Positions", es: "Posiciones", pt: "Posicoes" })}</p>
         <p className="text-2xl font-semibold text-white">{portfolio.summary.positionCount}</p>
         <p className="text-xs text-white/55">{t({ en: "Grouped by collection", es: "Agrupadas por collection", pt: "Agrupadas por collection" })}</p>
-      </Card>
-      <Card className="space-y-1">
+      </article>
+      <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
         <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Total NFTs", es: "NFTs totales", pt: "NFTs totais" })}</p>
         <p className="text-2xl font-semibold text-white">{portfolio.summary.totalOwnedQuantity}</p>
         <p className="text-xs text-white/55">{t({ en: "Current wallet inventory", es: "Inventario actual de wallet", pt: "Inventario atual da wallet" })}</p>
-      </Card>
-      <Card className="space-y-1">
+      </article>
+      <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
         <p className="text-xs uppercase tracking-[0.12em] text-white/60">{t({ en: "Known purchase price", es: "Precio de compra conocido", pt: "Preco de compra conhecido" })}</p>
         <p className="text-2xl font-semibold text-white">{formatUsd(portfolio.summary.knownPurchasePriceUsd, t)}</p>
         <p className="text-xs text-white/55">{t({ en: "Marketplace listing basis", es: "Base listing marketplace", pt: "Base listing marketplace" })}</p>
-      </Card>
+      </article>
     </div>
   );
 }
 
 function PositionCard({ position, t }: { position: InvestorPortfolioPosition; t: TranslateFn }): ReactElement {
   return (
-    <Card data-testid="portfolio-position-card" className="min-w-0 overflow-hidden p-0">
+    <article data-testid="portfolio-position-card" className="marketplace-depth-card min-w-0 overflow-hidden rounded-2xl p-0">
       {position.imageUrl ? (
         <div className="relative aspect-[16/9] overflow-hidden border-b border-white/10 bg-slate-900/60">
           <Image
@@ -300,7 +300,7 @@ function PositionCard({ position, t }: { position: InvestorPortfolioPosition; t:
           </div>
         </dl>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+        <div className="marketplace-depth-card rounded-2xl p-4 text-xs text-white/70">
           {t({ en: "Stake state", es: "Estado stake", pt: "Estado stake" })}:{" "}
           {position.statusCounts.readyToStake} {t({ en: "ready to stake", es: "listos para stake", pt: "prontos para stake" })},{" "}
           {position.statusCounts.readyToUnstake} {t({ en: "ready to unstake", es: "listos para unstake", pt: "prontos para unstake" })},{" "}
@@ -321,7 +321,7 @@ function PositionCard({ position, t }: { position: InvestorPortfolioPosition; t:
           </div>
         ) : null}
       </div>
-    </Card>
+    </article>
   );
 }
 
@@ -395,7 +395,7 @@ export function PortfolioModule(): ReactElement {
       <StatusBanner portfolio={portfolio} t={t} />
       <SummaryCards portfolio={portfolio} t={t} />
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "Collection-level positions", es: "Posiciones por collection", pt: "Posicoes por collection" })}
         </h2>
@@ -412,7 +412,7 @@ export function PortfolioModule(): ReactElement {
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
         />
-      </Card>
+      </article>
 
       {filteredPositions.length === 0 ? (
         <EmptyState hasFilters={hasFilters} t={t} />

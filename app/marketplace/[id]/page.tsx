@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { createPageMetadata } from "@/lib/seo";
@@ -43,7 +43,7 @@ export default async function MarketplaceDetailPage({ params }: MarketplaceDetai
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
-          <WalletModal />
+          <MainTopNavigationModal />
         </Suspense>
 
         <div className="mb-4">

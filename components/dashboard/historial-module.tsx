@@ -162,27 +162,27 @@ export function HistorialModule(): ReactElement {
 
   if (loading) {
     return (
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <div className="h-5 w-44 animate-pulse rounded bg-white/10" />
         <div className="h-24 animate-pulse rounded bg-white/10" />
-      </Card>
+      </article>
     );
   }
 
   if (error) {
     return (
-      <Card className="space-y-2 border-rose-400/30 bg-rose-500/5">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-rose-400/30 bg-rose-500/5">
         <h2 className="text-lg font-semibold text-rose-100">
           {t({ en: "History unavailable", es: "Historial no disponible", pt: "Historico indisponivel" })}
         </h2>
         <p className="text-sm text-rose-100">{error}</p>
-      </Card>
+      </article>
     );
   }
 
   if (events.length === 0) {
     return (
-      <Card className="space-y-2 border-dashed">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5 border-dashed">
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "No recent stake activity", es: "Sin actividad reciente de stake", pt: "Sem atividade recente de stake" })}
         </h2>
@@ -193,13 +193,13 @@ export function HistorialModule(): ReactElement {
             pt: "Voce ainda nao tem eventos de stake validados ou pendentes no historico do perfil."
           })}
         </p>
-      </Card>
+      </article>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card space-y-2 rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-white">{t({ en: "Stake history", es: "Historial de stake", pt: "Historico de stake" })}</h2>
         <p className="text-sm text-white/75">
           {t({
@@ -208,11 +208,11 @@ export function HistorialModule(): ReactElement {
             pt: "Audite eventos de stake e unstake persistidos para o seu perfil a partir de observacoes blockchain validadas canonicamente."
           })}
         </p>
-      </Card>
+      </article>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <p className="text-sm font-medium text-white">{t({ en: "Point chart", es: "Grafico de puntos", pt: "Grafico de pontos" })}</p>
-        <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
+        <div className="marketplace-depth-card rounded-2xl p-4">
           <svg aria-label={t({ en: "Stake activity chart", es: "Grafico de actividad de stake", pt: "Grafico de atividade de stake" })} className="h-60 w-full" viewBox="0 0 100 80">
             <line stroke="#334155" strokeWidth="0.4" x1="8" x2="92" y1="70" y2="70" />
             <line stroke="#334155" strokeWidth="0.4" x1="8" x2="8" y1="10" y2="70" />
@@ -237,13 +237,13 @@ export function HistorialModule(): ReactElement {
             })}
           </svg>
         </div>
-      </Card>
+      </article>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <p className="text-sm font-medium text-white">{t({ en: "Stake timeline", es: "Timeline de stake", pt: "Timeline de stake" })}</p>
         <ul className="space-y-2">
           {events.map((event) => (
-            <li key={event.id} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
+            <li key={event.id} className="marketplace-depth-card rounded-2xl px-4 py-3 text-sm">
               <p className="font-medium text-white">{event.propertyTitle}</p>
               <p className="text-white/70">
                 {typeLabel(event.productAction, t)} · {statusLabel(event.status, t)} · {toShortSignature(event.txSignature)}
@@ -251,9 +251,9 @@ export function HistorialModule(): ReactElement {
             </li>
           ))}
         </ul>
-      </Card>
+      </article>
 
-      <Card className="space-y-3">
+      <article className="marketplace-depth-card space-y-3 rounded-2xl p-5">
         <p className="text-sm font-medium text-white">{t({ en: "Simple event table", es: "Tabla simple por evento", pt: "Tabela simples por evento" })}</p>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -277,7 +277,7 @@ export function HistorialModule(): ReactElement {
             </tbody>
           </table>
         </div>
-      </Card>
+      </article>
     </div>
   );
 }

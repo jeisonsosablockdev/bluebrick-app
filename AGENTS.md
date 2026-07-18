@@ -77,13 +77,14 @@
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation, fetched account state, no simulation-only proof
 - Final `reviewer` pass finds no unresolved blocking issues
 
-## 🚫 MANDATORY BOOTSTRAP SEQUENCE
+## 🚫 MANDATORY BOOTSTRAP SEQUENCE / PREFLIGHT
 
-**BEFORE any planning or implementation:**
+**When the user requests to "prepare preflight" or start a new task/SPEC, you MUST execute these steps in order:**
 
-1. **ALWAYS** run `pnpm task:init` (or `bash scripts/agent-bootstrap.sh`)
-2. **ALWAYS** read the matching `.codex/workflows/*.md` for detected scope
-3. **ALWAYS** verify preconditions in `AGENTS.md` Entry Rules
-4. **NEVER** skip to implementation without planner → workflow activation
+1. **Verify Previous SPEC Completion**: Ask if the current SPEC is fully finished. If yes, execute the final commit, run full validation (`npm run validate`), and merge the current SPEC branch into its parent `feature/*` branch.
+2. **Branch Creation**: Create the new `SPEC/*` branch strictly originating from the `feature/*` branch. 
+3. **Linear Context Fetch**: Fetch the issue information from Linear (via MCP). If access to Linear fails for any reason, **report the reason immediately** to the developer and propose a fix to regain access before creating the slug.
+4. **Summary & Wait**: Give a brief summary of what the new SPEC entails, ensure the branches are prepped, resolve any immediate conflicts, report the current state, and **HALT**. Wait for developer instructions.
+   - *CRITICAL*: Do NOT generate or output an implementation plan (either in chat or as a file) unless the developer explicitly requests one. Antigravity will auto-execute file plans, so only create plans on direct demand.
 
 **If you bypass this, STOP and restart from step 1.**

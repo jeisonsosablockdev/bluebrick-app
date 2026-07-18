@@ -295,7 +295,7 @@ function adapterSupportsMessageSigning(adapter: unknown): adapter is MessageSign
   return typeof (adapter as { signMessage?: unknown } | null)?.signMessage === "function";
 }
 
-export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalProps) {
+export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalProps) {
   const { locale, t } = useI18n();
   const { wallet, wallets, publicKey, connected, connecting, disconnecting, connect, disconnect, select, signMessage } = useWallet();
   const pathname = usePathname();
@@ -1240,7 +1240,7 @@ export function WalletModal({ initialAuth = ANONYMOUS_AUTH_STATE }: WalletModalP
 
   return (
     <>
-      <header className="sticky top-3 z-40 mb-5">
+      <header className="sticky top-3 z-40 mb-5 w-full max-w-5xl mx-auto px-6 lg:px-12">
         <div className="landing-header-surface px-3 py-3 md:px-4">
           <div className="pointer-events-none absolute -left-8 top-0 h-24 w-24 rounded-full bg-cyan-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-fuchsia-300/20 blur-3xl" />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { TransparencyContent } from "@/app/transparencia/client";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { createPageMetadata } from "@/lib/seo";
@@ -20,7 +20,7 @@ export default function TransparencyPage() {
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
-          <WalletModal />
+          <MainTopNavigationModal />
         </Suspense>
       </WalletRuntimeProvider>
       <TransparencyContent />

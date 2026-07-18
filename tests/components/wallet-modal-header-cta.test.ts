@@ -136,10 +136,10 @@ vi.mock("@/lib/auth-sync", () => ({
 }));
 
 vi.mock("@/lib/solana", () => ({
-  getWalletModalAutoClose: vi.fn(() => false)
+  getMainTopNavigationModalAutoClose: vi.fn(() => false)
 }));
 
-import { WalletModal } from "@/components/WalletModal";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import type { AuthMeResponse } from "@/lib/auth-client";
 import { WALLET_MODAL_OPEN_EVENT } from "@/lib/auth-ui-events";
 
@@ -148,7 +148,7 @@ type RenderHandle = {
   root: Root;
 };
 
-function renderWalletModal(initialAuth: AuthMeResponse = {
+function renderMainTopNavigationModal(initialAuth: AuthMeResponse = {
   authenticated: false,
   federatedAvailable: true,
   pubkey: null
@@ -159,7 +159,7 @@ function renderWalletModal(initialAuth: AuthMeResponse = {
 
   act(() => {
     root.render(
-      createElement(WalletModal, {
+      createElement(MainTopNavigationModal, {
         initialAuth
       })
     );
@@ -235,7 +235,7 @@ function mockAuthenticatedPhantomWalletSession(options: {
   return { disconnect, signMessage };
 }
 
-describe("components/WalletModal header CTA", () => {
+describe("components/MainTopNavigationModal header CTA", () => {
   beforeEach(() => {
     navigationMocks.pathname = "/";
     navigationMocks.searchParams = new URLSearchParams();
@@ -320,7 +320,7 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("renders the ingresar CTA with a wallet icon", async () => {
-    const { container, root } = renderWalletModal();
+    const { container, root } = renderMainTopNavigationModal();
 
     await act(async () => {
       await Promise.resolve();
@@ -338,7 +338,7 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("shows direct Mail and Wallet entry actions by default", async () => {
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -404,7 +404,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage: undefined
     });
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -461,7 +461,7 @@ describe("components/WalletModal header CTA", () => {
       isNewUser: false
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -525,7 +525,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage: undefined
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -559,7 +559,7 @@ describe("components/WalletModal header CTA", () => {
 
   it("renders the open dialog outside the page container and focuses without scrolling the page", async () => {
     const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -593,7 +593,7 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("keeps the referral input hidden until the user asks for it", async () => {
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -641,7 +641,7 @@ describe("components/WalletModal header CTA", () => {
       role: "user"
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: true,
       pubkey: "Wallet11111111111111111111111111111111111",
       role: "user"
@@ -700,7 +700,7 @@ describe("components/WalletModal header CTA", () => {
       role: "admin"
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: true,
       accountAuthenticated: true,
       walletAuthenticated: true,
@@ -774,7 +774,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -831,7 +831,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage
     });
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -904,7 +904,7 @@ describe("components/WalletModal header CTA", () => {
       return new Promise(() => undefined);
     });
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -981,7 +981,7 @@ describe("components/WalletModal header CTA", () => {
       role: "user"
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: true,
       accountAuthenticated: true,
       walletAuthenticated: true,
@@ -1066,7 +1066,7 @@ describe("components/WalletModal header CTA", () => {
       role: "user"
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: true,
       accountAuthenticated: true,
       walletAuthenticated: true,
@@ -1109,7 +1109,7 @@ describe("components/WalletModal header CTA", () => {
   it("disconnects the wallet adapter during sign out when an adapter public key is present", async () => {
     const { disconnect } = mockAuthenticatedPhantomWalletSession({ connected: false });
 
-    const { container, root } = renderWalletModal(createWalletAuthSession());
+    const { container, root } = renderMainTopNavigationModal(createWalletAuthSession());
 
     await act(async () => {
       await Promise.resolve();
@@ -1148,7 +1148,7 @@ describe("components/WalletModal header CTA", () => {
     navigationMocks.pathname = "/admin/dashboard";
     const { disconnect } = mockAuthenticatedPhantomWalletSession({ role: "admin" });
 
-    const { container, root } = renderWalletModal(createWalletAuthSession({ role: "admin" }));
+    const { container, root } = renderMainTopNavigationModal(createWalletAuthSession({ role: "admin" }));
 
     await act(async () => {
       await Promise.resolve();
@@ -1209,7 +1209,7 @@ describe("components/WalletModal header CTA", () => {
       signMessage
     });
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -1255,7 +1255,7 @@ describe("components/WalletModal header CTA", () => {
       pubkey: null
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: false,
       pubkey: null
@@ -1287,7 +1287,7 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("does not show disconnect or copy address when there is no active session or wallet", async () => {
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -1336,7 +1336,7 @@ describe("components/WalletModal header CTA", () => {
     });
     referralStateMocks.deriveReferralAttributionSource.mockReturnValue("manual");
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       accountAuthenticated: true,
@@ -1376,7 +1376,7 @@ describe("components/WalletModal header CTA", () => {
     });
     referralStateMocks.deriveReferralAttributionSource.mockReturnValue("manual");
 
-    const { root } = renderWalletModal({
+    const { root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       accountAuthenticated: true,
@@ -1398,7 +1398,7 @@ describe("components/WalletModal header CTA", () => {
 
     act(() => {
       root.render(
-        createElement(WalletModal, {
+        createElement(MainTopNavigationModal, {
           initialAuth: {
             authenticated: false,
             federatedAvailable: true,
@@ -1430,7 +1430,7 @@ describe("components/WalletModal header CTA", () => {
   it("opens the post-auth decision modal after returning from federated login without a wallet", async () => {
     navigationMocks.searchParams = new URLSearchParams("postAuthDecision=1");
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       accountAuthenticated: true,
@@ -1456,7 +1456,7 @@ describe("components/WalletModal header CTA", () => {
   });
 
   it("opens directly in wallet mode when triggered externally from profile support", async () => {
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: false,
       federatedAvailable: true,
       pubkey: null
@@ -1498,7 +1498,7 @@ describe("components/WalletModal header CTA", () => {
       role: "admin"
     });
 
-    const { container, root } = renderWalletModal({
+    const { container, root } = renderMainTopNavigationModal({
       authenticated: true,
       accountAuthenticated: true,
       walletAuthenticated: true,

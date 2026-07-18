@@ -264,7 +264,7 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
           : null;
 
   return (
-    <Card className="overflow-hidden border-white/12 bg-[linear-gradient(160deg,rgba(8,18,31,0.94),rgba(5,12,23,0.98))] p-0 shadow-[0_18px_50px_rgba(3,8,18,0.34)]">
+    <article className="marketplace-depth-card no-hover-lift overflow-hidden rounded-2xl p-0 shadow-[0_18px_50px_rgba(3,8,18,0.34)]">
       <div className="border-b border-white/10 px-4 pb-3 pt-4 sm:px-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-200/88">
           {t({ en: "Installability / Push readiness", es: "Instalabilidad / Preparacion push", pt: "Instalabilidade / Preparacao push" })}
@@ -279,7 +279,7 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
       </div>
 
       <div className="grid gap-3 px-4 py-4 sm:px-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-black/22 p-3">
+        <div className="marketplace-depth-card rounded-2xl p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
             {t({ en: "Install shell", es: "Shell instalable", pt: "Shell instalavel" })}
           </p>
@@ -288,7 +288,7 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/22 p-3">
+        <div className="marketplace-depth-card rounded-2xl p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">
             {t({ en: "Notification lane", es: "Canal de notificaciones", pt: "Canal de notificacoes" })}
           </p>
@@ -424,6 +424,6 @@ export function PwaCapabilityCard({ audience }: PwaCapabilityCardProps): ReactEl
           <p className="text-sm text-rose-100">{errorMessage}</p>
         </div>
       ) : null}
-    </Card>
+    </article>
   );
 }

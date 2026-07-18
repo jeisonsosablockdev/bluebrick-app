@@ -204,13 +204,13 @@ function onboardingRewardBadgeClass(status: OnboardingRewardSnapshot["status"]):
 function LoadingState(): ReactElement {
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <article className="marketplace-depth-card no-hover-lift space-y-2 rounded-2xl p-5">
         <div className="h-5 w-48 animate-pulse rounded bg-white/10" />
         <div className="h-4 w-full animate-pulse rounded bg-white/10" />
-      </Card>
-      <Card className="space-y-2">
+      </article>
+      <article className="marketplace-depth-card no-hover-lift space-y-2 rounded-2xl p-5">
         <div className="h-28 w-full animate-pulse rounded bg-white/10" />
-      </Card>
+      </article>
     </div>
   );
 }
@@ -310,7 +310,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(!profile?.firstName || !profile?.country || !profile?.email);
 
   const [isStartingKyc, setIsStartingKyc] = useState(false);
   const [kycError, setKycError] = useState<string | null>(null);
@@ -481,6 +481,20 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
     setIsSaving(true);
 
     try {
+      let submitPhone = phone.trim();
+      // If the phone is just the country code, treat it as empty
+      if (submitPhone.startsWith("+")) {
+        const justNumbers = submitPhone.replace(/[^\d]/g, "");
+        if (justNumbers.length <= 4) {
+          // It's likely just a country code (e.g. +1, +57) with no actual number
+          // But to be safe, let's strictly check against COUNTRIES
+          const matchedCountry = COUNTRIES.find((c) => submitPhone.startsWith(c.dialCode));
+          if (matchedCountry && submitPhone === matchedCountry.dialCode) {
+            submitPhone = "";
+          }
+        }
+      }
+
       const response = await fetch("/api/protected/profile", {
         method: "PUT",
         headers: {
@@ -496,7 +510,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           stateProvince,
           email,
           address,
-          phone
+          phone: submitPhone
         })
       });
 
@@ -605,19 +619,19 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
 
   if (loadError || !profile) {
     return (
-      <Card className="space-y-3 border-rose-500/30 bg-rose-500/10">
+      <article className="marketplace-depth-card no-hover-lift space-y-3 rounded-2xl p-5 border-rose-500/30 bg-rose-500/10">
         <h2 className="text-lg font-semibold text-white">{t({ en: "Could not load your profile", es: "No se pudo cargar tu perfil", pt: "Nao foi possivel carregar seu perfil" })}</h2>
         <p className="text-sm text-white/80">{loadError || t({ en: "Try again in a few minutes.", es: "Intenta nuevamente en unos minutos.", pt: "Tente novamente em alguns minutos." })}</p>
         <Button className="min-h-11 w-full sm:w-auto" onClick={() => window.location.reload()}>
           {t({ en: "Retry", es: "Reintentar", pt: "Tentar novamente" })}
         </Button>
-      </Card>
+      </article>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-4">
+      <article className="marketplace-depth-card no-hover-lift space-y-4 rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-1">
             <h2 className="text-lg font-semibold text-white">{t({ en: "Profile / My account", es: "Perfil / Mi cuenta", pt: "Perfil / Minha conta" })}</h2>
@@ -633,13 +647,13 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                 })}
             </p>
           </div>
-          <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/80">
+          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-100">
             {t({ en: "Wallet linked", es: "Wallet vinculada", pt: "Wallet vinculada" })}
           </span>
         </div>
 
-        <div className="space-y-2 rounded-xl border border-cyan-400/30 bg-cyan-500/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">
+        <div className="relative space-y-2 rounded-2xl bg-[linear-gradient(145deg,rgba(34,211,238,0.15)_0%,rgba(8,145,178,0.05)_100%)] p-4 sm:p-5 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)] backdrop-blur-md">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">
             {t({
               en: "Registered wallet for this profile",
               es: "Wallet registrada para este perfil",
@@ -659,215 +673,281 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
         <PwaCapabilityCard audience="wallet-profile" />
 
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-          <div className="space-y-3">
-            <label className="space-y-1 text-sm text-white/85">
-              <span>{t({ en: "Username", es: "Usuario", pt: "Usuario" })}</span>
-              <input
-                className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing
-                  ? "border border-white/15 bg-black/30 text-white focus:border-white/35"
-                  : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                maxLength={32}
-                readOnly={!isEditing}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder={t({ en: "username_123", es: "usuario_123", pt: "usuario_123" })}
-                value={username}
-              />
-              {isEditing && !profile.username.trim() && username.trim() ? (
-                <p className="text-xs text-cyan-200">
-                  {walletAccountLabel
-                    ? t({
-                      en: "Loaded from your connected wallet account label. You can edit it before saving.",
-                      es: "Cargado desde la etiqueta de cuenta de tu wallet conectada. Puedes editarlo antes de guardar.",
-                      pt: "Carregado do rotulo da conta da wallet conectada. Voce pode editar antes de salvar."
-                    })
-                    : t({
-                      en: "Suggested from connected wallet. You can edit it before saving.",
-                      es: "Sugerido desde la wallet conectada. Puedes editarlo antes de guardar.",
-                      pt: "Sugerido da wallet conectada. Voce pode editar antes de salvar."
-                    })}
-                </p>
-              ) : null}
-            </label>
+          <div className="marketplace-depth-card no-hover-lift space-y-5 rounded-2xl p-5 md:p-6">
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "Username", es: "Usuario", pt: "Usuario" })}
+                </span>
+                {isEditing ? (
+                  <>
+                    <input
+                      className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                      maxLength={32}
+                      onChange={(event) => setUsername(event.target.value)}
+                      placeholder={t({ en: "username_123", es: "usuario_123", pt: "usuario_123" })}
+                      value={username}
+                    />
+                    {!profile.username.trim() && username.trim() ? (
+                      <p className="text-xs text-cyan-200 mt-1">
+                        {walletAccountLabel
+                          ? t({
+                            en: "Loaded from your connected wallet account label. You can edit it before saving.",
+                            es: "Cargado desde la etiqueta de cuenta de tu wallet conectada. Puedes editarlo antes de guardar.",
+                            pt: "Carregado do rotulo da conta da wallet conectada. Voce pode editar antes de salvar."
+                          })
+                          : t({
+                            en: "Suggested from connected wallet. You can edit it before saving.",
+                            es: "Sugerido desde la wallet conectada. Puedes editarlo antes de guardar.",
+                            pt: "Sugerido da wallet conectada. Voce pode editar antes de salvar."
+                          })}
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">{username || "—"}</p>
+                )}
+              </div>
 
             <div id={TOUR_STEP_IDS.NAME_EMAIL} className="grid gap-3 sm:grid-cols-2 scroll-mt-28">
-              <label className="space-y-1 text-sm text-white/85">
-                <span>{t({ en: "First name", es: "Nombre", pt: "Nome" })}</span>
-                <input
-                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                  maxLength={100}
-                  readOnly={!isEditing}
-                  onChange={(event) => setFirstName(event.target.value)}
-                  placeholder={t({ en: "John", es: "Juan", pt: "Joao" })}
-                  value={firstName}
-                />
-              </label>
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "First name", es: "Nombre", pt: "Nome" })}
+                </span>
+                {isEditing ? (
+                  <input
+                    className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                    maxLength={100}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    placeholder={t({ en: "John", es: "Juan", pt: "Joao" })}
+                    value={firstName}
+                  />
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">{firstName || "—"}</p>
+                )}
+              </div>
 
-              <label className="space-y-1 text-sm text-white/85">
-                <span>{t({ en: "Last name", es: "Apellido", pt: "Sobrenome" })}</span>
-                <input
-                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                  maxLength={100}
-                  readOnly={!isEditing}
-                  onChange={(event) => setLastName(event.target.value)}
-                  placeholder={t({ en: "Doe", es: "Perez", pt: "Silva" })}
-                  value={lastName}
-                />
-              </label>
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "Last name", es: "Apellido", pt: "Sobrenome" })}
+                </span>
+                {isEditing ? (
+                  <input
+                    className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                    maxLength={100}
+                    onChange={(event) => setLastName(event.target.value)}
+                    placeholder={t({ en: "Doe", es: "Perez", pt: "Silva" })}
+                    value={lastName}
+                  />
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">{lastName || "—"}</p>
+                )}
+              </div>
             </div>
 
             <div id={TOUR_STEP_IDS.PHONE} className="grid gap-3 sm:grid-cols-2 scroll-mt-28">
-              <label className="space-y-1 text-sm text-white/85">
-                <span>{t({ en: "Email", es: "Correo electronico", pt: "E-mail" })}</span>
-                <input
-                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                  maxLength={255}
-                  type="email"
-                  readOnly={!isEditing}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="name@example.com"
-                  value={email}
-                />
-              </label>
-
-              <label className="space-y-1 text-sm text-white/85">
-                <span>{t({ en: "Phone", es: "Telefono", pt: "Telefone" })}</span>
-                <div className="flex w-full items-center">
-                  <select
-                    className={`min-h-11 w-[110px] rounded-l-xl border-r-0 px-2 text-sm outline-none transition focus:z-10 focus:ring-1 focus:ring-white/35 ${isEditing ? "border border-white/15 bg-black/30 text-white" : "border border-white/10 bg-black/20 text-white/70"}`}
-                    disabled={!isEditing}
-                    onChange={(event) => {
-                      const newCode = event.target.value;
-                      const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
-                      const numberPart = oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone.trim();
-                      setPhone(newCode + " " + numberPart);
-                    }}
-                    value={COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1"}
-                  >
-                    {COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.dialCode}>
-                        {c.dialCode} {c.code}
-                      </option>
-                    ))}
-                  </select>
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "Email", es: "Correo electronico", pt: "E-mail" })}
+                </span>
+                {isEditing ? (
                   <input
-                    className={`min-h-11 w-full rounded-r-xl px-3 text-sm outline-none transition focus:z-10 focus:ring-1 focus:ring-white/35 ${isEditing ? "border border-l-white/10 border-white/15 bg-black/30 text-white" : "border border-l-white/5 border-white/10 bg-black/20 text-white/70"}`}
-                    maxLength={30}
-                    readOnly={!isEditing}
-                    onChange={(event) => {
-                      const currentDialCode = COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1";
-                      setPhone(currentDialCode + " " + event.target.value);
-                    }}
-                    placeholder="(555) 000-0000"
-                    value={(() => {
-                      const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
-                      return oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone;
-                    })()}
+                    className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                    maxLength={255}
+                    type="email"
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="name@example.com"
+                    value={email}
                   />
-                </div>
-              </label>
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">{email || "—"}</p>
+                )}
+              </div>
+
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "Phone", es: "Telefono", pt: "Telefone" })}
+                </span>
+                {isEditing ? (
+                  <div className="flex w-full items-center gap-1.5">
+                    <select
+                      className="min-h-11 w-[110px] rounded-xl px-2 text-sm outline-none transition focus:z-10 focus:bg-black/50 bg-black/30 text-white border-none"
+                      onChange={(event) => {
+                        const newCode = event.target.value;
+                        const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
+                        const numberPart = oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone.trim();
+                        setPhone(newCode + " " + numberPart);
+                      }}
+                      value={COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1"}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.dialCode}>
+                          {c.dialCode} {c.code}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition focus:z-10 focus:bg-black/50 bg-black/30 text-white border-none"
+                      maxLength={30}
+                      onChange={(event) => {
+                        const currentDialCode = COUNTRIES.find((c) => phone.startsWith(c.dialCode))?.dialCode || "+1";
+                        setPhone(currentDialCode + " " + event.target.value);
+                      }}
+                      placeholder="(555) 000-0000"
+                      value={(() => {
+                        const oldCodeMatch = COUNTRIES.find((c) => phone.startsWith(c.dialCode));
+                        return oldCodeMatch ? phone.slice(oldCodeMatch.dialCode.length).trim() : phone;
+                      })()}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">{phone || "—"}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="space-y-1 text-sm text-white/85">
-                <span>{t({ en: "Country", es: "Pais", pt: "Pais" })}</span>
-                <select
-                  className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                  disabled={!isEditing}
-                  onChange={(event) => {
-                    const newCountry = event.target.value;
-                    setCountry(newCountry);
-                    setStateProvince("");
-                    const info = COUNTRIES.find((c) => c.code === newCountry);
-                    if (info && (!phone || phone.trim() === "")) setPhone(info.dialCode + " ");
-                  }}
-                  value={country}
-                >
-                  <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {t({ en: c.nameEn, es: c.nameEs, pt: c.namePt })}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="space-y-1 text-sm">
+                <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                  {t({ en: "Country", es: "Pais", pt: "Pais" })}
+                </span>
+                {isEditing ? (
+                  <select
+                    className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                    onChange={(event) => {
+                      const newCountry = event.target.value;
+                      setCountry(newCountry);
+                      setStateProvince("");
+                      const info = COUNTRIES.find((c) => c.code === newCountry);
+                      if (info && (!phone || phone.trim() === "")) setPhone(info.dialCode + " ");
+                    }}
+                    value={country}
+                  >
+                    <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {t({ en: c.nameEn, es: c.nameEs, pt: c.namePt })}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-white text-[15px] py-1.5">
+                    {country ? t({ en: COUNTRIES.find(c => c.code === country)?.nameEn || country, es: COUNTRIES.find(c => c.code === country)?.nameEs || country, pt: COUNTRIES.find(c => c.code === country)?.namePt || country }) : "—"}
+                  </p>
+                )}
+              </div>
 
               {(() => {
                 const selectedCountryInfo = COUNTRIES.find((c) => c.code === country);
                 if (selectedCountryInfo?.divisions) {
                   return (
-                    <label className="space-y-1 text-sm text-white/85">
-                      <span>{selectedCountryInfo.divisionLabel ? t(selectedCountryInfo.divisionLabel) : t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}</span>
-                      <select
-                        className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                        disabled={!isEditing}
-                        onChange={(event) => setStateProvince(event.target.value)}
-                        value={stateProvince}
-                      >
-                        <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
-                        {selectedCountryInfo.divisions.map((d) => (
-                          <option key={d.code} value={d.code}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <div className="space-y-1 text-sm">
+                      <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                        {selectedCountryInfo.divisionLabel ? t(selectedCountryInfo.divisionLabel) : t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}
+                      </span>
+                      {isEditing ? (
+                        <select
+                          className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                          onChange={(event) => setStateProvince(event.target.value)}
+                          value={stateProvince}
+                        >
+                          <option value="">{t({ en: "Select", es: "Seleccionar", pt: "Selecionar" })}</option>
+                          {selectedCountryInfo.divisions.map((d) => (
+                            <option key={d.code} value={d.code}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="text-white text-[15px] py-1.5">
+                          {stateProvince ? selectedCountryInfo.divisions.find(d => d.code === stateProvince)?.name || stateProvince : "—"}
+                        </p>
+                      )}
+                    </div>
                   );
                 }
                 return (
-                  <label className="space-y-1 text-sm text-white/85">
-                    <span>{t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}</span>
-                    <input
-                      className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                      maxLength={100}
-                      readOnly={!isEditing}
-                      onChange={(event) => setStateProvince(event.target.value)}
-                      placeholder={t({ en: "Optional", es: "Opcional", pt: "Opcional" })}
-                      value={stateProvince}
-                    />
-                  </label>
+                  <div className="space-y-1 text-sm">
+                    <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                      {t({ en: "State/Province", es: "Estado/Provincia", pt: "Estado/Província" })}
+                    </span>
+                    {isEditing ? (
+                      <input
+                        className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                        maxLength={100}
+                        onChange={(event) => setStateProvince(event.target.value)}
+                        placeholder={t({ en: "Optional", es: "Opcional", pt: "Opcional" })}
+                        value={stateProvince}
+                      />
+                    ) : (
+                      <p className="text-white text-[15px] py-1.5">{stateProvince || "—"}</p>
+                    )}
+                  </div>
                 );
               })()}
             </div>
 
-            <label id={TOUR_STEP_IDS.ADDRESS} className="space-y-1 text-sm text-white/85 scroll-mt-28">
-              <span>{t({ en: "Address", es: "Direccion", pt: "Endereco" })}</span>
-              <input
-                className={`min-h-11 w-full rounded-xl px-3 text-sm outline-none ring-offset-2 transition ${isEditing ? "border border-white/15 bg-black/30 text-white focus:border-white/35" : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                maxLength={500}
-                readOnly={!isEditing}
-                onChange={(event) => setAddress(event.target.value)}
-                placeholder={t({ en: "123 Street Ave.", es: "Calle 123", pt: "Rua 123" })}
-                value={address}
-              />
-            </label>
+            <div id={TOUR_STEP_IDS.ADDRESS} className="space-y-1 text-sm scroll-mt-28">
+              <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                {t({ en: "Address", es: "Direccion", pt: "Endereco" })}
+              </span>
+              {isEditing ? (
+                <input
+                  className="min-h-11 w-full rounded-xl px-3 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                  maxLength={500}
+                  onChange={(event) => setAddress(event.target.value)}
+                  placeholder={t({ en: "123 Street Ave.", es: "Calle 123", pt: "Rua 123" })}
+                  value={address}
+                />
+              ) : (
+                <p className="text-white text-[15px] py-1.5">{address || "—"}</p>
+              )}
+            </div>
 
-            <label id={TOUR_STEP_IDS.BIO} className="space-y-1 text-sm text-white/85 scroll-mt-28">
-              <span>{t({ en: "Bio", es: "Bio", pt: "Bio" })}</span>
-              <textarea
-                className={`min-h-24 w-full rounded-xl px-3 py-2 text-sm outline-none ring-offset-2 transition ${isEditing
-                  ? "border border-white/15 bg-black/30 text-white focus:border-white/35"
-                  : "border border-white/10 bg-black/20 text-white/70 focus:border-white/10"}`}
-                maxLength={280}
-                readOnly={!isEditing}
-                onChange={(event) => setBio(event.target.value)}
-                placeholder={t({ en: "Tell the community who you are.", es: "Cuentale a la comunidad quien eres.", pt: "Conte para a comunidade quem voce e." })}
-                value={bio}
-              />
-            </label>
+            <div id={TOUR_STEP_IDS.BIO} className="space-y-1 text-sm scroll-mt-28">
+              <span className={isEditing ? "text-white/85" : "text-cyan-300 font-medium"}>
+                {t({ en: "Bio", es: "Bio", pt: "Bio" })}
+              </span>
+              {isEditing ? (
+                <textarea
+                  className="min-h-24 w-full rounded-xl px-3 py-2 text-sm outline-none transition bg-black/30 text-white focus:bg-black/50 border-none"
+                  maxLength={280}
+                  onChange={(event) => setBio(event.target.value)}
+                  placeholder={t({ en: "Tell the community who you are.", es: "Cuentale a la comunidad quien eres.", pt: "Conte para a comunidade quem voce e." })}
+                  value={bio}
+                />
+              ) : (
+                <p className="text-white text-[15px] py-1.5 whitespace-pre-wrap">{bio || "—"}</p>
+              )}
+            </div>
           </div>
 
-          <div className="glass-surface w-full space-y-3 bg-transparent p-4 text-center md:w-[260px] md:justify-self-end">
+          <div className="marketplace-depth-card no-hover-lift w-full space-y-3 rounded-2xl p-4 text-center md:w-[260px] md:justify-self-end">
             <div className="flex items-center justify-center">
-              <div className="h-28 w-28 overflow-hidden rounded-2xl border border-white/20 bg-black/35">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt={t({ en: "Profile avatar preview", es: "Vista previa del avatar", pt: "Pre-visualizacao do avatar" })}
-                  className="h-full w-full object-cover"
-                  onError={(event) => {
-                    event.currentTarget.src = "/avatars/default-user.svg";
-                  }}
-                  src={selectedAvatarPreviewUrl}
-                />
+              <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-cyan-400 to-violet-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-14 w-14 text-white"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                {selectedAvatarPreviewUrl && selectedAvatarPreviewUrl !== "/avatars/default-user.svg" && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    alt={t({ en: "Profile avatar preview", es: "Vista previa del avatar", pt: "Pre-visualizacao do avatar" })}
+                    className="absolute inset-0 h-full w-full bg-slate-900 object-cover"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                    src={selectedAvatarPreviewUrl}
+                  />
+                )}
               </div>
             </div>
 
@@ -987,10 +1067,10 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
             </Button>
           )}
         </div>
-      </Card>
+      </article>
 
       {profile.onboardingReward ? (
-        <Card className="space-y-3 border-emerald-400/25 bg-emerald-500/8">
+        <article className="marketplace-depth-card no-hover-lift space-y-3 rounded-2xl p-5 border-emerald-400/25 bg-emerald-500/8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
@@ -1036,22 +1116,22 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card no-hover-lift rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Status", es: "Estado", pt: "Status" })}</p>
               <p className="mt-1 text-sm font-medium text-white">{t(ONBOARDING_REWARD_STATUS_LABELS[profile.onboardingReward.status])}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card no-hover-lift rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Amount", es: "Monto", pt: "Valor" })}</p>
               <p className="mt-1 text-sm font-medium text-white">{formatUsdByLocale(profile.onboardingReward.rewardAmountUsdSnapshot, locale)}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card no-hover-lift rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Window", es: "Ventana", pt: "Janela" })}</p>
               <p className="mt-1 text-sm font-medium text-white">
                 {formatOnboardingRewardRemainingWindow(profile.onboardingReward.remainingSeconds, locale)
                   ?? t({ en: "Closed", es: "Cerrada", pt: "Encerrada" })}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="marketplace-depth-card no-hover-lift rounded-2xl p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-white/55">{t({ en: "Usage", es: "Uso", pt: "Uso" })}</p>
               <p className="mt-1 text-sm font-medium text-white">
                 {profile.onboardingReward.consumedAt
@@ -1062,10 +1142,10 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
               </p>
             </div>
           </div>
-        </Card>
+        </article>
       ) : null}
 
-      <Card id={TOUR_STEP_IDS.KYC} className="space-y-3 scroll-mt-28">
+      <article id={TOUR_STEP_IDS.KYC} className="marketplace-depth-card no-hover-lift space-y-3 rounded-2xl p-5 scroll-mt-28">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold text-white">{t({ en: "Compliance", es: "Cumplimiento", pt: "Compliance" })}</h3>
           <div className="flex flex-wrap gap-2">
@@ -1099,7 +1179,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
                 : t({ en: "Already verified", es: "Ya verificado", pt: "Ja verificado" })}
           </Button>
         </div>
-      </Card>
+      </article>
     </div>
   );
 }

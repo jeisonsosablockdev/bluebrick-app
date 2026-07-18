@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/i18n/locale-provider";
 import type { ListingStatus } from "@/lib/property-service";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 type MarketplaceFiltersProps = {
   currentFilters: {
@@ -76,31 +77,31 @@ export function MarketplaceFilters({ currentFilters, cityOptions }: MarketplaceF
           className="marketplace-brand-pill h-[46px] rounded-[1.35rem]"
         />
 
-        <select
+        <Select
           aria-label={t({ en: "Filter by city", es: "Filtrar por ciudad", pt: "Filtrar por cidade" })}
           value={city}
-          onChange={(event) => setCity(event.target.value)}
-          className="glass-control marketplace-brand-pill h-[46px] w-full rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
-        >
-          <option value="">{t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" })}</option>
-          {cityOptions.map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setCity(val)}
+          className="glass-control marketplace-brand-pill h-[46px] rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
+          placeholder={t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" })}
+          options={[
+            { label: t({ en: "All cities", es: "Todas las ciudades", pt: "Todas as cidades" }), value: "" },
+            ...cityOptions.map((c) => ({ label: c, value: c }))
+          ]}
+        />
 
-        <select
+        <Select
           aria-label={t({ en: "Filter by status", es: "Filtrar por estado", pt: "Filtrar por status" })}
           value={status}
-          onChange={(event) => setStatus(event.target.value as ListingStatus | "")}
-          className="glass-control marketplace-brand-pill h-[46px] w-full rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
-        >
-          <option value="">{t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" })}</option>
-          <option value="active">{t({ en: "Active", es: "Activo", pt: "Ativo" })}</option>
-          <option value="funding">{t({ en: "Funding", es: "Funding", pt: "Captação" })}</option>
-          <option value="sold-out">{t({ en: "Sold out", es: "Agotado", pt: "Esgotado" })}</option>
-        </select>
+          onChange={(val) => setStatus(val as ListingStatus | "")}
+          className="glass-control marketplace-brand-pill h-[46px] rounded-[1.35rem] px-4 text-sm text-slate-100 outline-none"
+          placeholder={t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" })}
+          options={[
+            { label: t({ en: "All statuses", es: "Todos los estados", pt: "Todos os status" }), value: "" },
+            { label: t({ en: "Active", es: "Activo", pt: "Ativo" }), value: "active" },
+            { label: t({ en: "Funding", es: "Funding", pt: "Captação" }), value: "funding" },
+            { label: t({ en: "Sold out", es: "Agotado", pt: "Esgotado" }), value: "sold-out" }
+          ]}
+        />
 
         <Input
           aria-label={t({ en: "Minimum ROI", es: "ROI minimo", pt: "ROI minimo" })}

@@ -836,3 +836,4 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - same server-side wallet lookup and admin role derivation before deploy prepare/submit
   - no new session token shape, refresh rule, upload token rule, or browser-owned authority state
 - The browser may echo `deployId` during submit for diagnostics, but the server still validates the signed transaction payer against the authenticated admin pubkey and keeps snapshot/Create Asset decisions server-owned.
+<!-- Updated UI styles -->
