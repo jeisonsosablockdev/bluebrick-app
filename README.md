@@ -144,8 +144,8 @@ This repository includes a reproducible Nix development shell:
 
 - Enter shell: `nix develop`
 - If flakes are not enabled globally yet: `nix --extra-experimental-features 'nix-command flakes' develop`
-- Install dependencies: `npm ci`
-- Run baseline validation: `npm run validate`
+- Install dependencies: `pnpm install`
+- Run baseline validation: `pnpm validate`
 
 Toolchain governance for maintenance/update cadence is defined in:
 
@@ -153,20 +153,20 @@ Toolchain governance for maintenance/update cadence is defined in:
 
 ## Testing
 
-- `npm test`: run all unit tests with Vitest.
-- `npm run test:watch`: run tests in watch mode.
-- `npm run test:coverage`: run tests with coverage report.
-- `npm run preflight:start`: run an initial workspace preflight that reviews branches, suggests next actions, checks package/lock drift, and summarizes `AGENTS.md` guidance without cleaning branches automatically.
-- `npm run pr:ready`: run local PR governance preflight (`validate` + required docs + commit convention + PR-size + branch-age checks).
+- `pnpm test`: run all unit tests with Vitest.
+- `pnpm test:watch`: run tests in watch mode.
+- `pnpm test:coverage`: run tests with coverage report.
+- `pnpm preflight:start`: run an initial workspace preflight that reviews branches, suggests next actions, checks package/lock drift, and summarizes `AGENTS.md` guidance without cleaning branches automatically.
+- `pnpm pr:ready`: run local PR governance preflight (`validate` + required docs + commit convention + PR-size + branch-age checks).
   - Includes feature-note enforcement: qualifying feature/fix/refactor/nft product changes must update `knowledge/features/*.md`.
-- `npm run e2e:install`: install Playwright Chromium (one-time setup).
-- `npm run e2e:playwright`: run Playwright smoke gate.
-- `npm run e2e:synpress`: build Synpress Phantom cache and run wallet E2E gate.
-- `npm run e2e:synpress:user`: run Synpress gate with non-admin wallet profile.
-- `npm run e2e:synpress:admin`: run Synpress gate with admin wallet profile.
-- `npm run e2e:roles`: validate `/admin` access control with SIWS signatures from local admin/non-admin keypairs.
-- `npm run e2e:evidence`: capture responsive critical-path evidence (320/375/768/1024) and build `test-results/evidence-index.json`.
-- `npm run e2e`: run Playwright + Synpress gates in sequence.
+- `pnpm e2e:install`: install Playwright Chromium (one-time setup).
+- `pnpm e2e:playwright`: run Playwright smoke gate.
+- `pnpm e2e:synpress`: build Synpress Phantom cache and run wallet E2E gate.
+- `pnpm e2e:synpress:user`: run Synpress gate with non-admin wallet profile.
+- `pnpm e2e:synpress:admin`: run Synpress gate with admin wallet profile.
+- `pnpm e2e:roles`: validate `/admin` access control with SIWS signatures from local admin/non-admin keypairs.
+- `pnpm e2e:evidence`: capture responsive critical-path evidence (320/375/768/1024) and build `test-results/evidence-index.json`.
+- `pnpm e2e`: run Playwright + Synpress gates in sequence.
 
 E2E env vars:
 
@@ -207,25 +207,25 @@ Promotion order:
 
 ## Task Bootstrap
 
-Use `npm run task:init` to start a new task the canonical way.
+Use `pnpm task:init` to start a new task the canonical way.
 
 - If the brief is vague or you want the Socratic clarification pass with `explain-like-socrates`, run:
-  - `npm run task:init -- --ask`
+  - `pnpm task:init -- --ask`
 - If you already know the branch shape, pass the `git-start.sh` arguments through:
-  - `npm run task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`
+  - `pnpm task:init -- feature shared single-issue-slice-planning --mode integration --issue BRI-149`
 
 `task:init` runs the preflight first, then either asks for the missing task shape or delegates straight to `git-start.sh`.
 
 Quick start:
 
 - `git checkout develop && git pull origin develop`
-- `npm run task:init -- --ask`
+- `pnpm task:init -- --ask`
 
 ## RFC Workflow (Epics)
 
 Start every epic with the RFC scaffold command:
 
-- `npm run rfc:new -- --epic 12 --slug staking`
+- `pnpm rfc:new -- --epic 12 --slug staking`
 
 This creates:
 

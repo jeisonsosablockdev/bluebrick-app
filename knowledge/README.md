@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 651 |
+| Archived | 654 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 649 |
+| Archived status | 652 |
 
 ## Inbox
 
@@ -99,6 +99,7 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | rbac | archived | none | [RBAC Model](knowledge/architecture/rbac.md) | n/a |
 | rotation-spec | archived | none | [Rotation Spec](knowledge/architecture/rotation-spec.md) | n/a |
 | session-model | archived | none | [Session Model](knowledge/architecture/session-model.md) | n/a |
+| solana-stack | archived | none | [solana-stack](knowledge/architecture/solana-stack.md) | n/a |
 | stake-audit | archived | none | [Stake Audit](knowledge/architecture/stake-audit.md) | n/a |
 | state-machine | archived | none | [State Machine](knowledge/architecture/state-machine.md) | n/a |
 | threat-model | archived | none | [Threat Model](knowledge/architecture/threat-model.md) | n/a |
@@ -323,6 +324,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-redirect-first-connection | archived | none | [feature-redirect-first-connection](knowledge/features/feature-redirect-first-connection.md) | n/a |
 | feature-shared-agent-system-knowledge-root-implementation | archived | none | [Shared Agent System Knowledge Root Implementation](knowledge/features/feature-shared-agent-system-knowledge-root-implementation.md) | n/a |
 | feature-shared-agent-system-knowledge-root | archived | none | [Shared Agent System Knowledge Root](knowledge/features/feature-shared-agent-system-knowledge-root.md) | n/a |
+| feature-shared-agents-drifting-bri-181-implementation | archived | none | [feature-shared-agents-drifting-bri-181-implementation](knowledge/features/feature-shared-agents-drifting-bri-181-implementation.md) | n/a |
+| feature-shared-agents-drifting-bri-181 | archived | none | [feature-shared-agents-drifting-bri-181](knowledge/features/feature-shared-agents-drifting-bri-181.md) | n/a |
 | feature-shared-agents-orchestration-enforcement-bri-157 | archived | none | [feature-shared-agents-orchestration-enforcement-bri-157](knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md) | n/a |
 | feature-shared-cleanup-marketplace-3d-visual-docs-implementation | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs-implementation](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md) | n/a |
 | feature-shared-cleanup-marketplace-3d-visual-docs | archived | none | [feature-shared-cleanup-marketplace-3d-visual-docs](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md) | n/a |

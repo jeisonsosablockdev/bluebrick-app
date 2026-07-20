@@ -19,9 +19,9 @@
 | 4 | QA | Run targeted tests via `run_command`. |
 | 5 | Clean Code Pass | Use `grep_search` to audit for remaining debt (naming, coupling). |
 | 6 | Iteration | Mark slice as `[x]` in `task.md`. Start next slice. |
-| 7 | Final Audit | Ensure `npm run validate` passes and write final `walkthrough.md`. |
+| 7 | Final Audit | Ensure `pnpm validate` passes and write final `walkthrough.md`. |
 
 ## Required Evidence in Walkthrough
 - Slice boundaries and test validations
-- Explicit `npm run validate` success
+- Explicit `pnpm validate` success
 - Clean-code findings explicitly documented

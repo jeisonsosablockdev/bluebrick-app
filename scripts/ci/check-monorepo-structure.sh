@@ -29,7 +29,6 @@ node_modules
 .git
 .github
 .agents
-.codex
 .cursor
 .keys
 .vercel

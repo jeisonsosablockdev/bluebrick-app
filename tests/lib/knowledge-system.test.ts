@@ -85,14 +85,14 @@ describe("knowledge system", () => {
     await mkdir(path.join(repoDir, "knowledge", "governance"), { recursive: true });
     await mkdir(path.join(repoDir, "knowledge", "guides"), { recursive: true });
     await mkdir(path.join(repoDir, "knowledge", "rfcs", "templates"), { recursive: true });
-    await mkdir(path.join(repoDir, ".codex", "agents"), { recursive: true });
+    await mkdir(path.join(repoDir, ".agents", "agents"), { recursive: true });
     await mkdir(path.join(repoDir, ".github", "workflows"), { recursive: true });
     await mkdir(path.join(repoDir, "scripts", "ci"), { recursive: true });
 
     await writeFile(path.join(repoDir, "AGENTS.md"), "summary without references\n", "utf8");
     await writeFile(
-      path.join(repoDir, ".codex", "agents", "docs.toml"),
-      'system_prompt = "docs without Socratic skill"\n',
+      path.join(repoDir, ".agents", "agents", "docs.yaml"),
+      'system_prompt: "docs without Socratic skill"\n',
       "utf8"
     );
     await writeFile(
