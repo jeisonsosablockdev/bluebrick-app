@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  InvalidStateTransitionError
+  InvalidStateTransitionError,
+  transitionDistributionRunState
 } from "@/lib/distribution/state-machine";
 
 describe("lib/distribution/state-machine", () => {
@@ -9,5 +10,7 @@ describe("lib/distribution/state-machine", () => {
     const error = new InvalidStateTransitionError("draft", "APPROVE_DISPERSION");
     expect(error.code).toBe("INVALID_STATE_TRANSITION");
     expect(error.message).toBe("Cannot execute action APPROVE_DISPERSION from status draft.");
+    expect(error.name).toBe("InvalidStateTransitionError");
   });
 });
+
