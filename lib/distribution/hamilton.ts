@@ -91,7 +91,7 @@ export function calculateHamiltonAllocation(input: {
       return timeA - timeB;
     }
 
-    return a.walletPublicKey.localeCompare(b.walletPublicKey);
+    return a.walletPublicKey.localeCompare(b.walletPublicKey, "en");
   });
 
   // Distribute 1 minor unit to top `remainderToDistribute` wallets
