@@ -27,7 +27,7 @@
 | 4 | Implement | Wait for `solana` subagent to send implementation PR/diff via `send_message` or write to file. |
 | 5 | Sync docs | Update `knowledge/devnet-proof.md` using `write_to_file`. |
 | 6 | Execute devnet flow | Use `run_command` to execute tests. Use `schedule` if it takes > 10s. |
-| 7 | Run QA | Spawn `qa` subagent to run `npm run validate`. |
+| 7 | Run QA | Spawn `qa` subagent to run `pnpm validate`. |
 | 8 | Review | Perform a clean-code audit and log unresolved findings in `walkthrough.md`. |
 
 ## Required Evidence in Walkthrough

@@ -38,6 +38,24 @@ knowledge/
 └── security/                   # Security audits, threat models, compliance
 ```
 
+## Knowledge Graph (Graphify)
+
+The BRIDS repository graph is indexed in `.agents/graph.json` mapping modules, governance policies, features, and fixes:
+
+```mermaid
+graph TD
+  AGENTS["AGENTS.md (Unified Rules)"]
+  AGENTS --> MOD_APP["/app"]
+  AGENTS --> MOD_PROGRAMS["/programs"]
+  AGENTS --> MOD_COMPONENTS["/components"]
+  AGENTS --> MOD_LIB["/lib"]
+  AGENTS --> MOD_SCRIPTS["/scripts"]
+  AGENTS --> MOD_DB["/db"]
+  AGENTS -.-> DOC_GOV["governance/documentation-policy.md"]
+  AGENTS -.-> DOC_MONO["governance/git-monorepo-policy.md"]
+  AGENTS -.-> DOC_SEC["governance/security-quality-policy.md"]
+```
+
 ## Quick Navigation
 
 ### Governance

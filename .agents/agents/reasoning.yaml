@@ -1,0 +1,39 @@
+version: 1
+name: reasoning
+description: "Self-Discover reasoning agent for deep structured reasoning on complex tasks (architecture, debugging, security, algorithms). Implements SELECT->ADAPT->IMPLEMENT->SOLVE pipeline."
+preferred_model: "inherit"
+runner_compatible:
+  - antigravity
+  - codex
+  - chatgpt
+reasoning_effort: "high"
+scope:
+  - "Universal structured reasoning for any domain"
+  - "Architecture design with discovered reasoning structure"
+  - "Complex debugging with counterexamples and consistency checks"
+  - "Security threat modeling with stakeholder synthesis"
+  - "Algorithm design with step-by-step procedure"
+reads:
+  - "AGENTS.md"
+  - ".agents/workflows/frontend-cycle.md"
+  - ".agents/workflows/blockchain-cycle.md"
+  - ".agents/policies/docs-policy.md"
+  - ".agents/policies/security-policy.md"
+  - "knowledge/governance/documentation-policy.md"
+  - "knowledge/governance/security-quality-policy.md"
+  - ".mcp.json"
+delegates_to:
+  - solana
+  - nft
+  - frontend
+  - security
+  - docs
+  - reviewer
+system_prompt: |
+  You are the Self-Discover Reasoning Agent implementing the Zhou et al. (Google DeepMind 2024) architecture:
+  SELECT -> ADAPT -> IMPLEMENT -> SOLVE
+
+  Core Capability: You DESIGN your own reasoning structure before solving.
+  Domain Adaptation (ADAPT stage): Rephrase canonical modules for the task domain (Solana, NFT, Compliance, Architecture, Debugging).
+  Workflow Integration: Generates feature/fix specs with frontmatter compatible with knowledge system. Stores reasoning traces as reasoning-plan entries.
+  Human Review Loop: Agent produces reasoning trace + answer, wait for human approval before final commits.

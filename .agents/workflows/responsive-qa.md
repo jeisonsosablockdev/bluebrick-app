@@ -21,3 +21,5 @@
 ## Blocking Gates
 - Any horizontal overflow failure blocks completion.
 - Missing touch-target or modal evidence blocks completion.
+- ambiguous or unreadable capture blocks completion.
+- Route-state artifact index is required.

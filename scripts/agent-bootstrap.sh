@@ -36,16 +36,16 @@ detect_scope() {
   if echo "$changed_files" | grep -qE '^(scripts/db-|lib/db|db/)'; then
     workflow="${workflow:-db}"
   fi
-  if echo "$changed_files" | grep -qE '^(\.codex|knowledge/governance|AGENTS\.md)'; then
+  if echo "$changed_files" | grep -qE '^(\.agents|knowledge/governance|AGENTS\.md)'; then
     workflow="${workflow:-refactor-cycle}"
   fi
   
   if [[ -n "$workflow" ]]; then
-    echo "📋 Matching workflow: .codex/workflows/${workflow}.md"
-    if [[ -f ".codex/workflows/${workflow}.md" ]]; then
+    echo "📋 Matching workflow: .agents/workflows/${workflow}.md"
+    if [[ -f ".agents/workflows/${workflow}.md" ]]; then
       echo "   ✅ Workflow exists"
-      # Show first 20 lines as summary
-      head -30 ".codex/workflows/${workflow}.md"
+      # Show first 30 lines as summary
+      head -30 ".agents/workflows/${workflow}.md"
     else
       echo "   ❌ Workflow NOT FOUND"
     fi

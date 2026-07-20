@@ -11,8 +11,8 @@
 ## Antigravity Execution Constraints
 - Start with targeted tests first; untested implementation is not complete.
 - When the work uses the artifact-driven SPEC model, define the test-plan-first contract in the `implementation_plan.md` artifact before executing.
-- `npm run validate` is mandatory before completion. Execute it via `run_command`. If it takes too long, set a lower `WaitMsBeforeAsync` to send it to the background.
-- Database schema or persistence changes require `npm run validate:db`; pending tracked migrations block completion.
+- `pnpm validate` is mandatory before completion. Execute it via `run_command`. If it takes too long, set a lower `WaitMsBeforeAsync` to send it to the background.
+- Database schema or persistence changes require `pnpm validate:db`; pending tracked migrations block completion.
 - Frontend and auth critical paths require Playwright coverage. Use Chrome DevTools MCP or run standard playwright commands.
 - Wallet-connected or extension-dependent auth paths require Synpress coverage.
 - Browser-critical flows require artifact capture plus responsive coverage at 320, 375, 768, and 1024 widths.

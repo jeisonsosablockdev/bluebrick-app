@@ -46,6 +46,7 @@
     "validate:docs-governance": "bash ./scripts/ci/validate-doc-governance.sh",
     "preflight:start": "bash ./scripts/ci/preflight-start.sh",
     "task:init": "bash ./scripts/task-init.sh",
+    "graphify:sync": "node ./scripts/graphify-sync.js",
     "knowledge:scan": "tsx ./scripts/knowledge/scan-recent-changes.ts",
     "knowledge:index": "tsx ./scripts/knowledge/build-knowledge-index.ts",
     "knowledge:drift": "tsx ./scripts/knowledge/detect-governance-drift.ts",

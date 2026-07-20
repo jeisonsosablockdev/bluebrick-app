@@ -44,10 +44,10 @@
 
             echo "[nix] devShell ready"
             echo "[nix] Node: $(node --version)"
-            echo "[nix] npm: $(npm --version)"
+            echo "[nix] pnpm: $(pnpm --version)"
             echo "[nix] Solana: $(solana --version)"
             echo "[nix] Rustup: $(rustup --version | head -n 1)"
-            echo "[nix] Run: npm ci && npm run validate"
+            echo "[nix] Run: pnpm install && pnpm validate"
           '';
         };
       });

@@ -72,7 +72,7 @@ export async function buildGovernanceDriftReport(rootDir: string): Promise<Drift
     docsCheckerSource
   ] = await Promise.all([
     readRepoFile(rootDir, "AGENTS.md"),
-    readRepoFile(rootDir, ".codex/agents/docs.toml"),
+    readRepoFile(rootDir, ".agents/agents/docs.yaml"),
     readRepoFile(rootDir, "knowledge/governance/documentation-policy.md"),
     readRepoFile(rootDir, "knowledge/governance/git-monorepo-policy.md"),
     readRepoFile(rootDir, "knowledge/guides/gitflow-pr-structure.md"),
