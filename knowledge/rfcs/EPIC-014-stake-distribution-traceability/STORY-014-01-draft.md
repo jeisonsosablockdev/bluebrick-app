@@ -86,8 +86,8 @@
 - **Archival node required**: all RPC endpoints must be archival (full ledger retention from genesis); validated via `minimumLedgerSlot` check
 - Record: context_slot, RPC endpoint, timestamp, asset owner, collection, approved CM origin, project id, `FreezeDelegate` presence, `authority.type == Owner`, and `frozen` state.
 - Staleness guard: max_slot_lag = 100 slots, max_age = 5000ms
-- Multi-provider convergence: Helius Archive primary, Alchemy Archive secondary, self-hosted archival fallback
-- Block reasons: `rpc_stale`, `provider_divergence`, `history_incomplete`, `evidence_parse_mismatch`, `non_archival_node`
+- Multi-provider convergence: Helius Archive primary, Alchemy Archive secondary
+- Block reasons: `rpc_stale`, `provider_divergence`, `history_incomplete`, `evidence_parse_mismatch`, `non_archival_node`, `dual_provider_gap`
 
 ### State Machines
 
@@ -126,7 +126,7 @@
   1. **Early Investor Dilution as Reward Mechanism:** La dilución de inversores iniciales es intencional y planificada como mecanismo de recompensa para early investors. No se puede inyectar más capital (el negocio no da para más). Esta dilución es totalmente esperada y aceptada. **Resolución:** Documentado explícitamente en Anti-Dilution Guards; mint authority congelada al inicio del proyecto.
   2. **Single Transfer Dispersion via Squads v4 Batch:** Squads v4 soporta batch transfers en una sola vault transaction con múltiples legs (`sol:<recipient>:<lamports>` y `<mint>:<recipient>:<amount>`). **Resolución:** Squads Treasury Layer actualizado para usar `initiate_batch_transfer` con múltiples legs en un solo proposal.
   3. **restricted_aml/suspended Users Blocked + TTL 12 Months:** Usuarios en estado `restricted_aml` o `suspended` no deben llegar al punto de claim. Si no pasan AML, no reciben transacción. TTL 12 meses para fondos en `compliance_hold` con auto-clawback a treasury. **Resolución:** Claim gate bloquea estos estados; Claim Lifecycle incluye `compliance_hold_expired` → `clawback_to_treasury` a los 12 meses.
-  4. **Archival Nodes Mandatory:** Proyectos pueden durar más de 12 meses. Reconstrucción histórica requiere nodos archival con retención completa de ledger. **Resolución:** RPC Finalization Protocol requiere nodos archival; validación via `minimumLedgerSlot`; proveedores: Helius Archive, Alchemy Archive, self-hosted.
+  4. **Archival Nodes Mandatory:** Proyectos pueden durar más de 12 meses. Reconstrucción histórica requiere nodos archival con retención completa de ledger. **Resolución:** RPC Finalization Protocol requiere nodos archival; validación via `minimumLedgerSlot`; proveedores: Helius Archive, Alchemy Archive.
   5. **Metaplex Core Plugin Verification:** "Stake/Unstake" relies on `FreezeDelegate`. If the marketplace mint flow does not install the `FreezeDelegate` with `Owner` authority on the asset, the user cannot freeze it. The system must not assume collection-level `PermanentFreezeDelegate` equals user-level stake capability. **Resolución:** Explicitly verify `FreezeDelegate` with `Owner` authority in both the Stake/Unstake Event Layer and the Final Calculation RPC evidence.
 - Blocking concerns:
   - Políticas de mint authority freeze, Squads batch transfer CU limits, compliance TTL/clawback, proveedores archival, y la instalación obligatoria del `FreezeDelegate` (Owner) durante el marketplace mint deben definirse antes de implementar APIs.

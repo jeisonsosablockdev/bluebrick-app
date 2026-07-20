@@ -80,7 +80,7 @@ Phase 3 — Treasury & Claims (STORY-014-04)
   - Metaplex Core for freeze/thaw semantics
   - KYC/AML pipeline for compliance snapshots
 - Mitigations:
-  - Multi-provider RPC convergence (Helius primary, Alchemy secondary, public fallback) **all must be archival nodes**
+  - Multi-provider convergence: Helius Archive primary, Alchemy Archive secondary. If both providers report gaps for the same slot range, the distribution run transitions to `BLOCKED` with reason `dual_provider_gap` and requires committee manual review before proceeding.
   - minContextSlot checkpoint guard for RPC freshness
   - claim_fee_policies versioned and locked at Final Calculation
   - Withheld allocation bucket for non-verified wallets (future design)
@@ -99,7 +99,7 @@ Phase 3 — Treasury & Claims (STORY-014-04)
 - [ ] Provenance backfill automation vs 3-month manual window
 - [ ] Secondary marketplace transfer handling for earning interval splits
 - [x] What is the TTL (Time-To-Live) for funds locked due to post-calculation `compliance_hold`? **(Resolved: 12 months, auto-clawback to per-project `TreasuryClawbackReserve`)**
-- [x] Archival node provider selection: Helius Archive, Alchemy Archive, or self-hosted? **(Resolved: multi-provider convergence, all three)**
+- [x] Archival node provider selection: Helius Archive, Alchemy Archive, or self-hosted? **(Resolved: Helius Archive primary + Alchemy Archive secondary; no self-hosted nodes. Dual-provider gap → run BLOCKED + committee review)**
 - [x] Squads v4 batch transfer compute unit limits for large payout batches (N recipients)? **(Resolved: `MAX_LEGS_PER_BATCH = 20` per Squads proposal; large distributions produce multiple sequential proposals)**
 - [x] Integer overflow risk in monetary arithmetic? **(Resolved: `BigInt` mandate for all intermediate products)**
 - [x] Zero pool time weight (nobody staked)? **(Resolved: run transitions to `BLOCKED` with `no_eligible_participation`)**

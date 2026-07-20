@@ -54,7 +54,7 @@ ProjectCandyMachineSource
   indexes: [candyMachineAddress]
 
 ArchivalRpcEndpoint
-  id, name (unique: helius-archive|alchemy-archive|self-hosted), url, provider
+  id, name (unique: helius-archive|alchemy-archive), url, provider
   isPrimary, isActive, minLedgerSlot?, lastCheckedAt?
 ```
 

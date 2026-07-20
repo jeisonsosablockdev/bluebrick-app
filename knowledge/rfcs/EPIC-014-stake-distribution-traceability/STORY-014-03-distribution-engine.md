@@ -81,7 +81,7 @@ SNAPSHOT_CONFIG = {
   availableTreasuryEarningsMinor,
   distributionPoolAmountMinor,
   poolCompositionBasis: "equal_eligible_nft_count",
-  archivalEndpoints: ["helius-archive", "alchemy-archive", "self-hosted"]
+  archivalEndpoints: ["helius-archive", "alchemy-archive"]
 }
 ```
 
