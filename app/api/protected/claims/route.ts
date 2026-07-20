@@ -17,7 +17,7 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = await resolveAppAuthContext();
-  if (!auth.authenticated || !auth.walletPublicKey) {
+  if (!auth.walletAuthenticated || !auth.walletPublicKey) {
     return NextResponse.json({ error: "Wallet authentication required." }, { status: 401 });
   }
 

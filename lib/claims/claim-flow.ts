@@ -15,8 +15,7 @@ import { withDbClient } from "@/lib/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import {
   resolveActiveFeePolicy,
-  calculateClaimFee,
-  type ClaimFeeCalculationResult
+  calculateClaimFee
 } from "@/lib/claims/fee-policy";
 import { verifySiwsSignature } from "@/lib/siws";
 
@@ -109,6 +108,19 @@ export class ClaimFlowError extends Error {
 }
 
 /**
+ * Computes a deterministic 32-bit integer key for PostgreSQL advisory locking per (wallet, run).
+ */
+function lockKeyFor(walletPublicKey: string, runId: string): number {
+  const str = `${walletPublicKey}:${runId}`;
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash | 0;
+}
+
+/**
  * Creates a locked claim quote for a user wallet and distribution run.
  */
 export async function createClaimQuote(input: {
@@ -120,9 +132,7 @@ export async function createClaimQuote(input: {
 
   return withDbClient(async (client) => {
     // Acquire PostgreSQL advisory lock per (wallet, run)
-    const lockKey = Math.abs(
-      (walletPublicKey + runId).split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    );
+    const lockKey = lockKeyFor(walletPublicKey, runId);
     await client.query(`SELECT pg_advisory_xact_lock($1)`, [lockKey]);
 
     // Check if an active claim already exists
@@ -134,7 +144,15 @@ export async function createClaimQuote(input: {
     );
 
     if (existing.length > 0) {
-      return mapClaimRow(existing[0]!);
+      const existingClaim = existing[0]!;
+      if (new Date(existingClaim.quote_expires_at).getTime() < Date.now()) {
+        await client.query(
+          `UPDATE distribution_claims SET status = 'expired', updated_at = NOW() WHERE id = $1`,
+          [existingClaim.id]
+        );
+      } else {
+        return mapClaimRow(existingClaim);
+      }
     }
 
     // Fetch distribution item
@@ -199,12 +217,13 @@ export async function createClaimQuote(input: {
          claim_fee_policy_id, claim_fee_policy_version, status,
          quote_expires_at, compliance_hold_at
        ) VALUES (
-         $1, $2, $3, $4, $4, $5, $6, $7, $8, $9, $10, $11, $12
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
        ) RETURNING *`,
       [
         claimId,
         runId,
         item.id,
+        walletPublicKey,
         walletPublicKey,
         grossAmountMinor.toString(),
         feeResult.feeAmountMinor.toString(),
@@ -257,6 +276,13 @@ export async function confirmClaimQuote(input: {
       throw new ClaimFlowError("QUOTE_EXPIRED", "Claim quote has expired (48-hour TTL exceeded).");
     }
 
+    if (claim.status !== "quote_created") {
+      throw new ClaimFlowError(
+        "INVALID_CLAIM_STATUS",
+        `Claim quote cannot be confirmed from status '${claim.status}'.`
+      );
+    }
+
     const { rows: updated } = await client.query<DistributionClaimRow>(
       `UPDATE distribution_claims
        SET status = 'approved_for_dispersion', confirmed_at = NOW(), updated_at = NOW()
@@ -295,6 +321,23 @@ export async function submitPayoutOverride(input: {
   }
 
   return withDbClient(async (client) => {
+    const { rows: existingRows } = await client.query<DistributionClaimRow>(
+      `SELECT * FROM distribution_claims WHERE id = $1 AND wallet_public_key = $2 FOR UPDATE`,
+      [claimId, walletPublicKey]
+    );
+
+    if (existingRows.length === 0) {
+      throw new ClaimFlowError("CLAIM_NOT_FOUND", `Claim quote not found: ${claimId}`);
+    }
+
+    const claim = existingRows[0]!;
+    if (["executed", "failed", "expired", "clawback_to_treasury"].includes(claim.status)) {
+      throw new ClaimFlowError(
+        "INVALID_CLAIM_STATUS",
+        `Payout wallet override cannot be applied to claim with status '${claim.status}'.`
+      );
+    }
+
     const { rows } = await client.query<DistributionClaimRow>(
       `UPDATE distribution_claims
        SET payout_wallet = $1,
@@ -316,10 +359,7 @@ export async function submitPayoutOverride(input: {
       ]
     );
 
-    if (rows.length === 0) {
-      throw new ClaimFlowError("CLAIM_NOT_FOUND", `Claim quote not found: ${claimId}`);
-    }
-
     return mapClaimRow(rows[0]!);
   });
 }
+

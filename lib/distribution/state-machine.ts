@@ -80,12 +80,12 @@ export async function transitionDistributionRunState(input: {
       throw new Error(`DistributionRun not found: ${runId}`);
     }
 
-    const currentStatus = rows[0]!.status;
-    const allowedActions = VALID_TRANSITIONS[currentStatus] ?? {};
+    const oldStatus = rows[0]!.status;
+    const allowedActions = VALID_TRANSITIONS[oldStatus] ?? {};
     const nextStatus = allowedActions[action];
 
     if (!nextStatus) {
-      throw new InvalidStateTransitionError(currentStatus, action);
+      throw new InvalidStateTransitionError(oldStatus, action);
     }
 
     await client.query(
@@ -118,6 +118,6 @@ export async function transitionDistributionRunState(input: {
       ]
     );
 
-    return { oldStatus: currentStatus, newStatus: nextStatus };
+    return { oldStatus, newStatus: nextStatus };
   });
 }

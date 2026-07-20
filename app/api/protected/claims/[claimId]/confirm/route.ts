@@ -20,7 +20,7 @@ export async function POST(
   context: { params: Promise<{ claimId: string }> }
 ): Promise<NextResponse> {
   const auth = await resolveAppAuthContext();
-  if (!auth.authenticated || !auth.walletPublicKey) {
+  if (!auth.walletAuthenticated || !auth.walletPublicKey) {
     return NextResponse.json({ error: "Wallet authentication required." }, { status: 401 });
   }
 

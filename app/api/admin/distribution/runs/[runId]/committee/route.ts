@@ -65,7 +65,7 @@ export async function POST(
     const transition = await transitionDistributionRunState({
       runId,
       action: smAction,
-      actorId: role.walletPublicKey ?? "admin",
+      actorId: role.pubkey ?? "admin",
       payload: {
         reason: body.reason ?? null,
         evidence: body.evidence ?? null

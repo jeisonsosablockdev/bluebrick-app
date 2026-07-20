@@ -1,3 +1,8 @@
+import { address, getAddressEncoder } from "@solana/kit";
+import nacl from "tweetnacl";
+
+const addressEncoder = getAddressEncoder();
+
 export type SiwsPayload = {
   domain: string;
   publicKey: string;
@@ -45,4 +50,40 @@ function parseLabeledLine(line: string, prefix: string): string | null {
   const value = line.slice(prefix.length).trim();
   return value.length > 0 ? value : null;
 }
+
+export function verifySiwsSignature(input: {
+  message: string;
+  signature: string;
+  publicKey: string;
+}): boolean {
+  const parsed = parseSiwsMessage(input.message);
+  if (!parsed || parsed.publicKey !== input.publicKey) {
+    return false;
+  }
+
+  try {
+    const messageBytes = new TextEncoder().encode(input.message);
+    const walletAddress = address(input.publicKey);
+    const walletPublicKeyBytes = Uint8Array.from(addressEncoder.encode(walletAddress));
+
+    let signatureBytes: Uint8Array;
+    try {
+      signatureBytes = Uint8Array.from(Buffer.from(input.signature, "base64"));
+      if (signatureBytes.length !== 64) {
+        signatureBytes = Uint8Array.from(Buffer.from(input.signature, "hex"));
+      }
+    } catch {
+      return false;
+    }
+
+    if (signatureBytes.length !== 64) {
+      return false;
+    }
+
+    return nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKeyBytes);
+  } catch {
+    return false;
+  }
+}
+
 
