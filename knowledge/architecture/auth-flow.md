@@ -14,6 +14,11 @@ Last Updated: 2026-07-22
 ## BRI-182 4-Layer Architecture Alignment
 - Re-located auth state stores to Layer 2 (`/lib/state/auth-store.ts`, `/lib/state/auth-state.ts`) and updated all API routes in `/app/api/auth/` to import from canonical 4-layer paths.
 
+## EPIC-014 Archival & Provenance Admin Auth Boundary
+- Admin endpoints `/api/admin/archival/health` and `/api/admin/provenance/backfill` require authenticated admin sessions resolved via `getRequestRole(request)`.
+- If unauthenticated or role is not `admin`, the routes return HTTP 401 Unauthorized.
+- No client-provided credentials or nonces are trusted; authority is strictly server-enforced via session.
+
 ## BRI-178 Initial Loading Screen Auth Boundary
 - The initial loading screen (splash screen) does not introduce any new authentication cookies, tokens, or roles.
 - It displays the splash screen animations using client-side Motion 12 and transitions to the main landing page.
