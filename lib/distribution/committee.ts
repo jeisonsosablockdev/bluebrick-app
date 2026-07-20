@@ -106,7 +106,7 @@ export async function generateDispersionPackage(runId: string): Promise<Dispersi
         eligibilityStartAt: new Date(run.eligibility_start_at).toISOString(),
         eligibilityEndAt: new Date(run.eligibility_end_at).toISOString(),
         snapshotAt: new Date(run.snapshot_at).toISOString(),
-        poolAmountMinor: BigInt(run.distribution_pool_amount_minor),
+        poolAmountMinor: BigInt(run.distribution_pool_amount_minor ?? 0),
         status: run.status
       },
       totals: {
@@ -118,7 +118,7 @@ export async function generateDispersionPackage(runId: string): Promise<Dispersi
       items,
       rpcEvidence: {
         commitment: run.final_rpc_commitment ?? "finalized",
-        contextSlot: run.final_rpc_context_slot !== null ? Number(run.final_rpc_context_slot) : null,
+        contextSlot: run.final_rpc_context_slot != null ? Number(run.final_rpc_context_slot) : null,
         snapshotAt: new Date(run.snapshot_at).toISOString()
       }
     };
