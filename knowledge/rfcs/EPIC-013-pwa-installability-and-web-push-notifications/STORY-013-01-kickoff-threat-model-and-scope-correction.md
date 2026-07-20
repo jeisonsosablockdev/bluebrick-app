@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 013 01 Kickoff Threat Model And Scope Correction
+description: STORY- 013 01 Kickoff Threat Model And Scope Correction - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-01-kickoff-threat-model-and-scope-correction.md
+---
+
 # STORY-013-01-kickoff-threat-model-and-scope-correction
 
 ## Metadata

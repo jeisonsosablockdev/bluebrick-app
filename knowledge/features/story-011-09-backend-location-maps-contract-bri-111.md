@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 09 Backend Location Maps Contract BRI- 111
+description: STORY- 011 09 Backend Location Maps Contract BRI- 111 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-09-backend-location-maps-contract-bri-111.md
+---
+
 # STORY-011-09 / BRI-111
 
 ## Summary

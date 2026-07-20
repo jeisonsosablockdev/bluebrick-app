@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Assets Owner Freeze Mint Flow
+description: Fix Admin Assets Owner Freeze Mint Flow - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md
+---
+
 # BRI-170 - Fix del mint marketplace para owner freeze
 
 ## Espanol

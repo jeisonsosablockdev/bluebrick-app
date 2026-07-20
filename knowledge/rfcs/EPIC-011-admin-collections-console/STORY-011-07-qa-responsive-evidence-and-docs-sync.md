@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 07 Qa Responsive Evidence And Docs Sync
+description: STORY- 011 07 Qa Responsive Evidence And Docs Sync - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-011-admin-collections-console/STORY-011-07-qa-responsive-evidence-and-docs-sync.md
+---
+
 # STORY-011-07-qa-responsive-evidence-and-docs-sync
 
 ## Metadata

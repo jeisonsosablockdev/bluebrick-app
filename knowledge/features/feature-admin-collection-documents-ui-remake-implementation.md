@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Admin Collection Documents Ui Remake Implementation
+description: Feature Admin Collection Documents Ui Remake Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-admin-collection-documents-ui-remake-implementation.md
+---
+
 # Implementation: Admin collection documents UI remake
 
 ## Resolution Strategy

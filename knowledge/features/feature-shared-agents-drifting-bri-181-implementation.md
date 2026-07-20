@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Agents Drifting BRI- 181 Implementation
+description: Feature Shared Agents Drifting BRI- 181 Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-agents-drifting-bri-181-implementation.md
+---
+
 # Solution Artifact: Solución problemas de drifting y orquestación en agentes (BRI-181) - Implementation Plan
 
 Este documento describe la solución técnica y el plan de implementación para migrar todas las definiciones de subagentes especialistas, unificar las configuraciones y eliminar el directorio heredado `.codex/`.

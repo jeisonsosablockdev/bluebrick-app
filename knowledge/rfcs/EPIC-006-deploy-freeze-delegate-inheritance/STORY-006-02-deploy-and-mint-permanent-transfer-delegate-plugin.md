@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 006 02 Deploy And Mint Permanent Transfer Delegate Plugin
+description: STORY- 006 02 Deploy And Mint Permanent Transfer Delegate Plugin - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin.md
+---
+
 # STORY-006-02-deploy-and-mint-permanent-transfer-delegate-plugin
 
 ## Metadata

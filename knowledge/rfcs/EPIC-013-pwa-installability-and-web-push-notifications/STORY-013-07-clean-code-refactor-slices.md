@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 013 07 Clean Code Refactor Slices
+description: STORY- 013 07 Clean Code Refactor Slices - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-07-clean-code-refactor-slices.md
+---
+
 # STORY-013-07-clean-code-refactor-slices
 
 ## Metadata

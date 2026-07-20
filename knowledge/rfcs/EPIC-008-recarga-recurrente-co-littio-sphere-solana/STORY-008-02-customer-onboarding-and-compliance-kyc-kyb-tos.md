@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 02 Customer Onboarding And Compliance Kyc Kyb Tos
+description: STORY- 008 02 Customer Onboarding And Compliance Kyc Kyb Tos - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-02-customer-onboarding-and-compliance-kyc-kyb-tos.md
+---
+
 # STORY-008-02-customer-onboarding-and-compliance-kyc-kyb-tos
 
 ## Metadata

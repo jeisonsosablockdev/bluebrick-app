@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 004 06 Staff Review And Verdict
+description: STORY- 004 06 Staff Review And Verdict - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-004-user-profile-kyc-aml/STORY-004-06-staff-review-and-verdict.md
+---
+
 # STORY-004-06-staff-review-and-verdict
 
 ## Metadata

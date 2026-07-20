@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 014 04 Treasury Claims
+description: STORY- 014 04 Treasury Claims - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md
+---
+
 # STORY-014-04-treasury-claims
 
 ## Metadata

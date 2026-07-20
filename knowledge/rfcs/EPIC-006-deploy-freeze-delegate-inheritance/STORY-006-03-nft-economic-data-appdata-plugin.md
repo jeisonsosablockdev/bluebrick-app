@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 006 03 Nft Economic Data Appdata Plugin
+description: STORY- 006 03 Nft Economic Data Appdata Plugin - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-03-nft-economic-data-appdata-plugin.md
+---
+
 # STORY-006-03-nft-economic-data-appdata-plugin
 
 ## Metadata

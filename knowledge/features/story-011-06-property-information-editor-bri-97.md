@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 06 Property Information Editor BRI- 97
+description: STORY- 011 06 Property Information Editor BRI- 97 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-06-property-information-editor-bri-97.md
+---
+
 # STORY-011-06 / BRI-97 Property Information Editor
 
 ## What changed

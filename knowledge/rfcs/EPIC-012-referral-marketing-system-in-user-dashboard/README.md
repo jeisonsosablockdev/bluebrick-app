@@ -1,3 +1,12 @@
+---
+type: RFC
+title: README
+description: README - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-012-referral-marketing-system-in-user-dashboard/README.md
+---
+
 # EPIC-012-referral-marketing-system-in-user-dashboard
 
 ## Metadata

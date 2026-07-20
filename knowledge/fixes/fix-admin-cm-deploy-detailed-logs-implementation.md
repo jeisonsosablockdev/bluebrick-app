@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Cm Deploy Detailed Logs Implementation
+description: Fix Admin Cm Deploy Detailed Logs Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-cm-deploy-detailed-logs-implementation.md
+---
+
 # Implementation: Admin Candy Machine deploy detailed logs
 
 ## Resolution

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 009 41 Integracion Airwallex Carrito
+description: STORY- 009 41 Integracion Airwallex Carrito - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-009-integracion-pasarela-de-pagos-web-2/STORY-009-41-integracion-airwallex-carrito.md
+---
+
 # STORY-009-41-integracion-airwallex-carrito
 
 ## Metadata

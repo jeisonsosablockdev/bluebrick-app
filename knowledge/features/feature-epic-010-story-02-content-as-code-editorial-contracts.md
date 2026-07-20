@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts
+description: Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-02-content-as-code-editorial-contracts.md
+---
+
 # Feature: EPIC-010 STORY-010-02 Content as Code and Editorial Contracts
 
 ## Summary

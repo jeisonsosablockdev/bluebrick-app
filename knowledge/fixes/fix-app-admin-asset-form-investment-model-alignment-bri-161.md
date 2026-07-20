@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix App Admin Asset Form Investment Model Alignment BRI- 161
+description: Fix App Admin Asset Form Investment Model Alignment BRI- 161 - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161.md
+---
+
 # Fix: Admin Asset Form Investment Model Alignment (BRI-161)
 
 ## Problem

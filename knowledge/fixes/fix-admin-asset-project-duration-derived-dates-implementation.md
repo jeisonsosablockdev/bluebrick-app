@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Asset Project Duration Derived Dates Implementation
+description: Fix Admin Asset Project Duration Derived Dates Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-asset-project-duration-derived-dates-implementation.md
+---
+
 # Implementation: `/admin/assets/new` project duration from construction dates
 
 ## Español

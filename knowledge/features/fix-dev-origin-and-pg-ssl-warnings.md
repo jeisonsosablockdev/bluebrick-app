@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Dev Origin And Pg Ssl Warnings
+description: Fix Dev Origin And Pg Ssl Warnings - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-dev-origin-and-pg-ssl-warnings.md
+---
+
 # Fix Dev Origin And PG SSL Warnings
 
 ## Scope

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 07 Responsive Qa Evidence Pack BRI- 103
+description: STORY- 011 07 Responsive Qa Evidence Pack BRI- 103 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-07-responsive-qa-evidence-pack-bri-103.md
+---
+
 # STORY-011-07 / BRI-103 Responsive QA Evidence Pack
 
 ## Scope

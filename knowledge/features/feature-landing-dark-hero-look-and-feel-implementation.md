@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Landing Dark Hero Look And Feel Implementation
+description: Feature Landing Dark Hero Look And Feel Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md
+---
+
 # Implementation Plan: Landing Dark Hero Look And Feel
 
 ## VERSION ESPAÑOL

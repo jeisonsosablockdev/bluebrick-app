@@ -1,3 +1,12 @@
+---
+type: Guide
+title: Operability Observability Security Deploy
+description: Operability Observability Security Deploy - migrated from knowledge/
+tags: [guides]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/guides/operability-observability-security-deploy.md
+---
+
 # Operability Baseline (Story 010-10)
 
 ## Objective

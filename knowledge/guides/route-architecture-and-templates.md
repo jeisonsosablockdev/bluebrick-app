@@ -1,3 +1,12 @@
+---
+type: Guide
+title: Route Architecture And Templates
+description: Route Architecture And Templates - migrated from knowledge/
+tags: [guides]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/guides/route-architecture-and-templates.md
+---
+
 # Route Architecture and Reusable Templates
 
 ## Objective

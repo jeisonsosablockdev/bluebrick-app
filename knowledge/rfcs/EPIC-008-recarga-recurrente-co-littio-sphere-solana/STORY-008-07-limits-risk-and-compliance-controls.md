@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 008 07 Limits Risk And Compliance Controls
+description: STORY- 008 07 Limits Risk And Compliance Controls - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-008-recarga-recurrente-co-littio-sphere-solana/STORY-008-07-limits-risk-and-compliance-controls.md
+---
+
 # STORY-008-07-limits-risk-and-compliance-controls
 
 ## Metadata

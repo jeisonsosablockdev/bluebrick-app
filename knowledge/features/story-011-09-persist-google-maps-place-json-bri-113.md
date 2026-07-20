@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 09 Persist Google Maps Place Json BRI- 113
+description: STORY- 011 09 Persist Google Maps Place Json BRI- 113 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-09-persist-google-maps-place-json-bri-113.md
+---
+
 # STORY-011-09 / BRI-113
 
 ## Summary

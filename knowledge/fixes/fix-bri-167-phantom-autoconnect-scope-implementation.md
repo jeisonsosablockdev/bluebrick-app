@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix BRI- 167 Phantom Autoconnect Scope Implementation
+description: Fix BRI- 167 Phantom Autoconnect Scope Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md
+---
+
 # Implementation: BRI-167 Phantom autoConnect scope
 
 ## Status

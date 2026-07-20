@@ -1,3 +1,12 @@
+---
+type: Policy
+title: Iconography Rules
+description: Iconography Rules - migrated from knowledge/
+tags: [governance]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/governance/iconography-rules.md
+---
+
 # Iconography Rules & Governance
 
 This document establishes the canonical design rules for iconography used across BRIDS public and private surfaces. Following the shift away from emojis and generic flat icons (SPEC 02), we enforce a custom minimalist SVG approach that aligns with our Glassmorphism and Dark Mode identity.

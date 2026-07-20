@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Spec And Branching Governance
+description: Feature Shared Spec And Branching Governance - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-spec-and-branching-governance.md
+---
+
 # BRI-179 - Update transversal SPEC and Branching Governance
 
 ---

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 03 Route Architecture Templates
+description: Feature EPIC- 010 STORY- 03 Route Architecture Templates - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-03-route-architecture-templates.md
+---
+
 # Feature: EPIC-010 STORY-010-03 Route Architecture and Reusable Templates
 
 ## Summary

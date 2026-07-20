@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 014 02 Core Infrastructure
+description: STORY- 014 02 Core Infrastructure - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-02-core-infrastructure.md
+---
+
 # STORY-014-02-core-infrastructure
 
 ## Metadata

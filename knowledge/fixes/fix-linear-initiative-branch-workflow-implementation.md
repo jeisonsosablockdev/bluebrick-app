@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Linear Initiative Branch Workflow Implementation
+description: Fix Linear Initiative Branch Workflow Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-linear-initiative-branch-workflow-implementation.md
+---
+
 # Fix Implementation: Linear Initiative Branch Workflow
 
 Last Updated: 2026-05-30 UTC

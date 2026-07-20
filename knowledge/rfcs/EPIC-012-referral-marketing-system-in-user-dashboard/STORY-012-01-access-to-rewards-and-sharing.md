@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 012 01 Access To Rewards And Sharing
+description: STORY- 012 01 Access To Rewards And Sharing - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-012-referral-marketing-system-in-user-dashboard/STORY-012-01-access-to-rewards-and-sharing.md
+---
+
 # STORY-012-01-access-to-rewards-and-sharing
 
 ## Metadata

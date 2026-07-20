@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Jaysosa BRI- 178 Initial Loading Design
+description: Feature Jaysosa BRI- 178 Initial Loading Design - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md
+---
+
 # Problem Artifact: Initial Loading Screen Design
 
 ## What problem exists

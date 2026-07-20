@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 004 05 Compliance Dashboard And Audit
+description: STORY- 004 05 Compliance Dashboard And Audit - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-004-user-profile-kyc-aml/STORY-004-05-compliance-dashboard-and-audit.md
+---
+
 # STORY-004-05-compliance-dashboard-and-audit
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Cleanup Monorepo Structure Implementation
+description: Feature Shared Cleanup Monorepo Structure Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-cleanup-monorepo-structure-implementation.md
+---
+
 # Implementation Spec: Cleanup Monorepo Structure & Migration to pnpm
 
 ## Clean-Code Design Contract

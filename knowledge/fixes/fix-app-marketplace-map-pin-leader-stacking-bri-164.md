@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix App Marketplace Map Pin Leader Stacking BRI- 164
+description: Fix App Marketplace Map Pin Leader Stacking BRI- 164 - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164.md
+---
+
 # Fix: Marketplace map pin leader stacking
 
 ## Linear

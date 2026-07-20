@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 08 Base Blockchain Addresses Aggregation BRI- 104
+description: STORY- 011 08 Base Blockchain Addresses Aggregation BRI- 104 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-08-base-blockchain-addresses-aggregation-bri-104.md
+---
+
 # STORY-011-08 Base Blockchain Addresses Aggregation (`BRI-104`)
 
 ## Summary

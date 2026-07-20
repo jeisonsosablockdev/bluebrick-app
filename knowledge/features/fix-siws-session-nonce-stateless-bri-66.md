@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Siws Session Nonce Stateless BRI- 66
+description: Fix Siws Session Nonce Stateless BRI- 66 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-siws-session-nonce-stateless-bri-66.md
+---
+
 # fix-siws-session-nonce-stateless-bri-66
 
 ## Context

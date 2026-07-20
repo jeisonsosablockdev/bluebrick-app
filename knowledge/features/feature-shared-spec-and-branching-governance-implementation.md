@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Spec And Branching Governance Implementation
+description: Feature Shared Spec And Branching Governance Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-spec-and-branching-governance-implementation.md
+---
+
 # Solution Artifact: spec-and-branching-governance Implementation
 
 ## How the work will be resolved

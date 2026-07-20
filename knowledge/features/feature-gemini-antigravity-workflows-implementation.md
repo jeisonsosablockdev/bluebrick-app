@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Gemini Antigravity Workflows Implementation
+description: Feature Gemini Antigravity Workflows Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-gemini-antigravity-workflows-implementation.md
+---
+
 # Solution Artifact: Gemini & Antigravity Workflows Implementation
 
 ## How the work will be resolved

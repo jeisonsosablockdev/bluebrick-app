@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Remove Ui States BRI- 63
+description: Fix App Remove Ui States BRI- 63 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-app-remove-ui-states-bri-63.md
+---
+
 # Fix: Remove UI States section from landing (BRI-63)
 
 ## Summary

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 06 Collection Detail Editor Ui
+description: STORY- 011 06 Collection Detail Editor Ui - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-011-admin-collections-console/STORY-011-06-collection-detail-editor-ui.md
+---
+
 # STORY-011-06-collection-detail-editor-ui
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Agents Orchestation Implementation
+description: Fix Agents Orchestation Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-agents-orchestation-implementation.md
+---
+
 # Fix: Agents Orchestation Implementation
 
 Last Updated: 2026-06-07 UTC

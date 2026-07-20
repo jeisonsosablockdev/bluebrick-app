@@ -1,3 +1,12 @@
+---
+type: Document
+title: README
+description: README - migrated from knowledge/
+tags: [assets]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/assets/mapbox/README.md
+---
+
 # BRIDS Marketplace Mapbox Style
 
 ## Artifact

@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix BRI- 178 Splash Performance Implementation
+description: Fix BRI- 178 Splash Performance Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-bri-178-splash-performance-implementation.md
+---
+
 # FIX IMPLEMENTATION: Splash Screen Performance (BRI-178)
 
 ## 1. Goal

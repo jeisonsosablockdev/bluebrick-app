@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 013 08 User Push Opt In Enrollment
+description: STORY- 013 08 User Push Opt In Enrollment - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-08-user-push-opt-in-enrollment.md
+---
+
 # STORY-013-08-user-push-opt-in-enrollment
 
 ## Metadata

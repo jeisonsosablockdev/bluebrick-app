@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Footer Links BRI- 153
+description: Fix App Footer Links BRI- 153 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-app-footer-links-bri-153.md
+---
+
 # fix(app): connect footer links to live destinations (BRI-153 / s04)
 
 ## Summary

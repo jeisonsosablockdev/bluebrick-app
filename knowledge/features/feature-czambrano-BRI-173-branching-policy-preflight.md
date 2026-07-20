@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Czambrano BRI- 173 Branching Policy Preflight
+description: Feature Czambrano BRI- 173 Branching Policy Preflight - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md
+---
+
 # BRI-173 - Branching Policy and Preflight Protocol Architecture
 
 ## Human Brief

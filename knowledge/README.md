@@ -1,3 +1,12 @@
+---
+type: Document
+title: README
+description: README - migrated from knowledge/
+tags: [README.md]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/README.md
+---
+
 # Knowledge Inbox
 
 This directory is the shared capture-and-promotion layer for reusable workflow knowledge.
