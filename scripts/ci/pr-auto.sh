@@ -3,11 +3,22 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+PR_RUN_FILE="${ROOT_DIR}/.agents/pr_last_run.json"
 
 BRANCH="$(git branch --show-current)"
 TITLE="$(git log -1 --format=%s)"
+CURRENT_SHA="$(git rev-parse HEAD)"
 
 echo "== Executing Automated Post-Acceptance PR Workflow =="
+
+# Single-Trigger Idempotency Guard check
+if [[ -f "${PR_RUN_FILE}" ]]; then
+  LAST_SHA="$(node -e "try{const p=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));process.stdout.write(p.last_sha||'');}catch(e){}" "${PR_RUN_FILE}")"
+  if [[ "${LAST_SHA}" == "${CURRENT_SHA}" ]]; then
+    echo "ℹ️ PR auto workflow already executed for current commit SHA (${CURRENT_SHA:0:7}). Skipping duplicate run."
+    exit 0
+  fi
+fi
 
 # 1. Generate compliant PR body
 bash "${SCRIPT_DIR}/generate-pr-body.sh" "${ROOT_DIR}/pr-body.md"
@@ -43,5 +54,14 @@ bash "${SCRIPT_DIR}/pr-open.sh" \
   --type "${TYPE_LABEL}" \
   --risk "${RISK_LABEL}" \
   --validate-mode full
+
+# Record single-trigger completion
+cat <<EOF > "${PR_RUN_FILE}"
+{
+  "last_sha": "${CURRENT_SHA}",
+  "branch": "${BRANCH}",
+  "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+}
+EOF
 
 echo "✅ Automated Post-Acceptance PR Workflow completed successfully!"
