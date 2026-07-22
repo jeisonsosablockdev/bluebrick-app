@@ -129,32 +129,24 @@ report_hooks_enforcement() {
   echo "- Subagent Enforcement (via .agents/hooks.json):"
   if [[ -f "${hooks_file}" ]]; then
     echo "  - Lifecycle hooks: active (.agents/hooks.json)"
-    case "${scope}" in
-      solana)
-        echo "  - Enforced Primary Subagent: solana"
-        echo "  - Supporting Subagents: architect, security"
-        ;;
-      app)
-        echo "  - Enforced Primary Subagent: frontend"
-        echo "  - Supporting Subagents: state, architect"
-        ;;
-      api)
-        echo "  - Enforced Primary Subagent: api"
-        echo "  - Supporting Subagents: security, db"
-        ;;
-      db)
-        echo "  - Enforced Primary Subagent: db"
-        echo "  - Supporting Subagents: qa, docs"
-        ;;
-      nft)
-        echo "  - Enforced Primary Subagent: nft"
-        echo "  - Supporting Subagents: solana, architect"
-        ;;
-      *)
-        echo "  - Enforced Primary Subagent: architect"
-        echo "  - Supporting Subagents: reviewer, docs"
-        ;;
-    esac
+    if command -v node &> /dev/null; then
+      node -e '
+        const fs = require("fs");
+        try {
+          const config = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+          const scope = process.argv[2];
+          const binding = config.domain_subagent_bindings[scope] || config.domain_subagent_bindings["shared"];
+          if (binding) {
+            console.log(`  - Enforced Primary Subagent: ${binding.primary}`);
+            console.log(`  - Supporting Subagents: ${binding.supporting.join(", ")}`);
+          }
+        } catch (e) {
+          console.log("  - Warning: Could not parse .agents/hooks.json");
+        }
+      ' "${hooks_file}" "${scope}"
+    else
+      echo "  - Enforced Scope: ${scope}"
+    fi
   else
     echo "  - Warning: .agents/hooks.json not found."
   fi
