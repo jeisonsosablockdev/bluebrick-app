@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "description": "Lifecycle hooks and subagent enforcement configuration for Brids monorepo",
+  "lifecycle_hooks": {
+    "pre_branch": {
+      "enforce_subagents": ["architect"],
+      "description": "Validates monorepo structural compliance and branch naming conventions before branch creation"
+    },
+    "post_init": {
+      "enforce_subagents": ["planner", "docs"],
+      "description": "Verifies that the dual governing artifact pair exists and is populated before writing implementation code"
+    },
+    "pre_commit": {
+      "enforce_subagents": ["architect", "reviewer"],
+      "description": "Verifies 3-layer architecture, forbidden patterns (@solana/web3.js v1, class, new Connection), and monorepo clean root"
+    },
+    "preflight": {
+      "enforce_subagents": ["qa", "reviewer"],
+      "description": "Runs automated validation suite (pnpm validate) and clean-code audit pass"
+    }
+  },
+  "domain_subagent_bindings": {
+    "solana": {
+      "primary": "solana",
+      "supporting": ["architect", "security"]
+    },
+    "app": {
+      "primary": "frontend",
+      "supporting": ["state", "architect"]
+    },
+    "api": {
+      "primary": "api",
+      "supporting": ["security", "db"]
+    },
+    "db": {
+      "primary": "db",
+      "supporting": ["qa", "docs"]
+    },
+    "nft": {
+      "primary": "nft",
+      "supporting": ["solana", "architect"]
+    },
+    "shared": {
+      "primary": "architect",
+      "supporting": ["reviewer", "docs"]
+    }
+  },
+  "enforcement_rules": {
+    "strict_mode": true,
+    "block_on_unassigned_subagent": true,
+    "prohibit_direct_web3_v1": true,
+    "require_dual_governing_artifact": true
+  }
+}
