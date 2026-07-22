@@ -77,6 +77,7 @@
   6. **CODE GREEN**: Assigned specialist subagent implements production code.
   7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff and `pnpm validate` passes cleanly.
   8. **🛑 HUMAN MERGE ACCEPTANCE**: Stop & wait for explicit user authorization BEFORE merging to `develop`.
+- **Automatic Post-Human Acceptance PR Execution**: Upon receiving explicit Human Acceptance, the agent MUST automatically run `pnpm pr:auto` (`scripts/ci/pr-auto.sh`) to generate `pr-body.md`, infer labels (`scope:*`, `type:*`, `risk:*`), push the branch, open/update the PR, and apply GitHub labels via `gh api`.
 
 
 ## Definition of Done

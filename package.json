@@ -54,6 +54,7 @@
     "pr:ready": "bash ./scripts/ci/pr-ready.sh",
     "pr:metadata": "bash ./scripts/ci/pr-metadata-lint.sh",
     "pr:open": "bash ./scripts/ci/pr-open.sh",
+    "pr:auto": "bash ./scripts/ci/pr-auto.sh",
     "e2e:install": "playwright install chromium",
     "e2e:playwright": "playwright test --project=playwright-smoke",
     "e2e:synpress:cache": "node ./scripts/synpress-prepare-phantom-extension.js && synpress --phantom --headless e2e/wallet-setup",
