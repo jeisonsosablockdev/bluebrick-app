@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AdminCollectionBlockchainAddressCard } from "@/components/admin/admin-collection-blockchain-address-card";
-import { getSolscanAccountUrl } from "@/lib/solana";
+import { getSolscanAccountUrl } from "@/lib/infrastructure/solana";
 
 type RenderHandle = {
   container: HTMLDivElement;

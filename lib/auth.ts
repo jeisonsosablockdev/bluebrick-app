@@ -19,7 +19,7 @@ import {
   readWalletLinkContext,
   readNonceFromToken,
   revokeSession
-} from "@/lib/auth-store";
+} from "@/lib/state/auth-store";
 import { parseSiwsMessage } from "@/lib/siws";
 
 const AUTH_COOKIE_NAME = "siws_session";

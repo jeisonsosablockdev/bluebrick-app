@@ -7,9 +7,9 @@ import {
   getBatchSignatures,
   isMintOrchestratorError,
   reconcileMintJobSignatures
-} from "@/lib/mint-orchestrator-store";
+} from "@/lib/state/mint-orchestrator-store";
 import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 
 type RouteParams = {
   params: Promise<{

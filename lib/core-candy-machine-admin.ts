@@ -18,7 +18,7 @@ import {
 } from "@/lib/core-candy-machine-naming";
 import { recordOperabilityLog } from "@/lib/observability";
 import { createPurchaseThirdPartySigner, getPurchaseThirdPartySignerAddress } from "@/lib/purchase-third-party-signer";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createKitRpcConnection,

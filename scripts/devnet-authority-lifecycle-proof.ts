@@ -14,7 +14,7 @@ import {
   submitAuthorityLifecycleSignedTransactions
 } from "@/lib/core-authority-lifecycle";
 import { withDbClient } from "@/lib/db/pool";
-import { getSolanaRpcUrl, METAPLEX_CORE_PROGRAM_ID } from "@/lib/solana";
+import { getSolanaRpcUrl, METAPLEX_CORE_PROGRAM_ID } from "@/lib/infrastructure/solana";
 
 type EnvSource = ".env" | ".env.local";
 

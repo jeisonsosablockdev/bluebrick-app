@@ -10,7 +10,7 @@ import {
   deserializeLegacyVersionedTransaction,
   serializeLegacyVersionedTransaction
 } from "@/lib/solana-kit/compat/web3-transactions";
-import { getSolscanTransactionUrl } from "@/lib/solana";
+import { getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
 
 type PurchaseCtaProps = {
   propertyId: string;

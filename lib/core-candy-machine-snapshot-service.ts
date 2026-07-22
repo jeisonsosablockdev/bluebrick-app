@@ -8,7 +8,7 @@ import {
 import { mplCore } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
 
-import { DasClient } from "@/lib/das-client";
+import { DasClient } from "@/lib/infrastructure/das-client";
 import {
   type MintJobSnapshotStatus,
   type SnapshotProofConfirmationStatus,
@@ -17,7 +17,7 @@ import {
   upsertMintJobFromSnapshot
 } from "@/lib/core-candy-machine-snapshot-repository";
 import { readBoundedIntegerEnv } from "@/lib/runtime-config";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   createKitRpcConnection,
   getSignatureStatusWithKitRpc,

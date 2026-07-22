@@ -4,7 +4,7 @@ import {
   createAirwallexPaymentIntent,
   type AirwallexRuntimeMode,
   retrieveAirwallexPaymentIntent
-} from "@/lib/airwallex-client";
+} from "@/lib/infrastructure/airwallex-client";
 import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
 import {
   ensureNonNegativeAmount,

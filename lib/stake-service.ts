@@ -3,7 +3,7 @@ import { createNoopSigner, publicKey, signerIdentity } from "@metaplex-foundatio
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 
 import { withDbClient } from "@/lib/db/pool";
-import { DasClient } from "@/lib/das-client";
+import { DasClient } from "@/lib/infrastructure/das-client";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createLegacyConnection,
@@ -16,7 +16,7 @@ import {
   serializeLegacyVersionedMessage
 } from "@/lib/solana-kit/compat/web3-transactions";
 import { generateUuidV7 } from "@/lib/uuid-v7";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   createStakeActionAttempt,
   getStakeActionAttemptById,

@@ -9,7 +9,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/session-
 
 # Session Model
 
-Last Updated: 2026-06-06
+Last Updated: 2026-07-22
+
+## BRI-182 4-Layer Architecture Alignment
+- Re-located auth session state store to Layer 2 (`/lib/state/auth-store.ts`) and updated all session route imports to canonical 4-layer paths.
 
 ## BRI-178 Initial Loading Screen Session Boundary
 - The initial loading screen (splash screen) does not introduce any new session cookie, nonce, browser token, or account-only authority.
