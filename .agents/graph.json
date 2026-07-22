@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T01:35:35.063Z",
+  "generatedAt": "2026-07-22T04:31:56.176Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -1494,6 +1494,30 @@
       "type": "feature",
       "label": "feature-jaysosa-BRI-178-initial-loading-design",
       "path": "knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md"
     },
     {
       "id": "knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md",
