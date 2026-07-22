@@ -171,7 +171,7 @@ fi
 
 echo
 echo "Linear status"
-pnpm linear:issue-review
+pnpm linear:issue-review || echo "ℹ️ Linear status sync skipped or unconfigured."
 
 LABEL_ARGS=(-f "labels[]=${SCOPE_LABEL}" -f "labels[]=${TYPE_LABEL}" -f "labels[]=${RISK_LABEL}")
 if [[ "$SIZE_EXEMPT" == "1" ]]; then
