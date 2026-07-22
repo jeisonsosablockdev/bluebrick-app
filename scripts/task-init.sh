@@ -118,6 +118,46 @@ print_hint() {
   if [[ "${BRANCH_MODE}" == "parent" || "${BRANCH_MODE}" == "spec" ]]; then
     echo "- Multi-SPEC reminder: create one SPEC at a time and keep the parent work branch stable."
   fi
+
+  report_hooks_enforcement "${BRANCH_SCOPE:-shared}"
+}
+
+report_hooks_enforcement() {
+  local scope="${1:-shared}"
+  local hooks_file="${SCRIPT_DIR}/../.agents/hooks.json"
+
+  echo "- Subagent Enforcement (via .agents/hooks.json):"
+  if [[ -f "${hooks_file}" ]]; then
+    echo "  - Lifecycle hooks: active (.agents/hooks.json)"
+    case "${scope}" in
+      solana)
+        echo "  - Enforced Primary Subagent: solana"
+        echo "  - Supporting Subagents: architect, security"
+        ;;
+      app)
+        echo "  - Enforced Primary Subagent: frontend"
+        echo "  - Supporting Subagents: state, architect"
+        ;;
+      api)
+        echo "  - Enforced Primary Subagent: api"
+        echo "  - Supporting Subagents: security, db"
+        ;;
+      db)
+        echo "  - Enforced Primary Subagent: db"
+        echo "  - Supporting Subagents: qa, docs"
+        ;;
+      nft)
+        echo "  - Enforced Primary Subagent: nft"
+        echo "  - Supporting Subagents: solana, architect"
+        ;;
+      *)
+        echo "  - Enforced Primary Subagent: architect"
+        echo "  - Supporting Subagents: reviewer, docs"
+        ;;
+    esac
+  else
+    echo "  - Warning: .agents/hooks.json not found."
+  fi
 }
 
 POSITIONAL=()
