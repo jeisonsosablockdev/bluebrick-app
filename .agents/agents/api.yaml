@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "Next.js App Router API Routes (/app/api)"
   - "Backend services and third-party SDK integrations (/lib/api, /lib/services)"

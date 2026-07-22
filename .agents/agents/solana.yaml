@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "Solana and Anchor runtime behavior"
   - "devnet execution proof"

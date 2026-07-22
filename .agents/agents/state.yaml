@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "Client state stores (/lib/state, /lib/store, /lib/hooks)"
   - "Server state caching and React Query query keys"

@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "clean-code audit"
   - "governance validation"

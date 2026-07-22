@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "Next.js App Router changes"
   - "SSR-first UI composition"

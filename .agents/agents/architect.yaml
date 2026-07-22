@@ -6,6 +6,7 @@ runner_compatible:
   - antigravity
   - codex
   - chatgpt
+  - claude
 scope:
   - "monorepo root directory structure enforcement"
   - "4-layered architecture boundary enforcement (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure)"
