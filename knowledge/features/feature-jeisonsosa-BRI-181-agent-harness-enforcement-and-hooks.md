@@ -1,32 +1,36 @@
 ---
 type: Feature Spec
-title: Harness System Enhancement & Subagent Enforcement (BRI-181)
-description: Creación de hooks.json, integración con task-init.sh, reemplazo de structure.yaml por architect.yaml y adición de subagentes atómicos api, db y state.
-tags: [governance, agents, harness, bri-181]
-timestamp: 2026-07-21T22:06:55Z
+title: Harness System Enhancement, Subagent Enforcement & 4-Layer Standard Architecture (BRI-181)
+description: Creación de hooks.json, integración con task-init.sh, adición de subagentes atómicos (api, db, state) y formalización de la Arquitectura Estándar en 4 Capas para Solana & Next.js.
+tags: [governance, agents, harness, layered-architecture, bri-181]
+timestamp: 2026-07-21T22:25:55Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/refactor/jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks/knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md
 ---
 
-# Problem Artifact: Harness System Enhancement & Subagent Enforcement (BRI-181)
+# Problem Artifact: Harness System Enhancement & 4-Layer Standard Architecture (BRI-181)
 
 ## What problem exists
-El sistema de harness de agentes carece de un mecanismo declarativo (`hooks.json`) que obligue y restrinja el uso de subagentes especializados durante las fases del ciclo de vida del desarrollo (bootstrap con `task-init.sh`, preflight, pre-commit, validación). Adicionalmente, existían configuraciones obsoletas (`.cursor/`, `replit.nix`, `.agents/agents/structure.yaml`), falta de granularidad atómica para dominios de API, Base de Datos y Estado Cliente, y la necesidad de formalizar las reglas del guardián de arquitectura Web3 de 3 capas (`architect.yaml`).
+1. El sistema de harness de agentes carecía de un mecanismo declarativo (`hooks.json`) para obligar el uso de subagentes especializados durante las fases del ciclo de vida del desarrollo.
+2. Existían configuraciones obsoletas (`.cursor/`, `replit.nix`, `structure.yaml`).
+3. Faltaba la formalización explícita de la **Arquitectura Estándar en 4 Capas** para dApps de Solana y Next.js App Router (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure/DB & RPC).
 
 ## Why it matters
-Para prevenir el *drifting* cognitivo de los modelos de IA, asegurar la separación estricta de capas monorepo (Presentation, Consumption, Pipelines) e impedir la contaminación de código o el uso de patrones prohibidos (`@solana/web3.js` v1, `new Connection()`, sintaxis imperativa), es indispensable contar con un harness automatizado de gobernanza que fuerce la sub-orquestación de agentes especialistas desde `task-init.sh`.
+Para prevenir el *drifting* cognitivo de los modelos de IA y asegurar la separación estricta de capas monorepo, es indispensable contar con la **Arquitectura Estándar en 4 Capas** que mapee 1:1 con nuestros subagentes atómicos (`frontend`, `state`, `solana`/`architect`, `db`/`api`) y prohíba patrones obsoletos (`@solana/web3.js` v1, `new Connection()`, sintaxis imperativa).
 
 ## What outcome is expected
-1. Eliminación de carpetas y archivos obsoletos (`.cursor/`, `replit.nix`).
-2. Reemplazo del subagente `structure.yaml` por `architect.yaml` (`web3-layered-architect-guardian`), haciendo valer la arquitectura de 3 capas funcionales y la suite moderna `@solana/kit` / `@solana/react-hooks`.
+1. Eliminación de artefactos obsoletos (`.cursor/`, `replit.nix`).
+2. Actualización del subagente `architect.yaml` (`web3-layered-architect-guardian`) para formalizar las **4 Capas Estándar**:
+   - **Presentation Layer**: UI pura (`/app`, `/components`).
+   - **Application / Consumption Layer**: Hooks reactivos y estado (`/lib/hooks`, `/lib/state`).
+   - **Domain / Pipelines Layer**: Lógica de negocio y transacciones `@solana/kit` (`/lib/pipelines`).
+   - **Infrastructure Layer**: RPC, indexadores, PostgreSQL y servicios externos (`/lib/db`, `/lib/api`, `/lib/solana/rpc`, `/db`).
 3. Creación de subagentes atómicos: `api.yaml`, `db.yaml` y `state.yaml` en `.agents/agents/`.
-4. Creación de `.agents/hooks.json` para definir eventos del ciclo de vida y bindings de subagentes requeridos.
-5. Actualización de `scripts/task-init.sh` para validar y ejecutar el enforcement de subagentes desde `.agents/hooks.json`.
+4. Creación de `.agents/hooks.json` para orquestación del ciclo de vida y bindings por dominio.
+5. Integración de `.agents/hooks.json` en `scripts/task-init.sh`.
 6. Sincronización de políticas globales en `AGENTS.md`.
 
 ## What gaps exist today
-- `task-init.sh` no validaba la delegación de subagentes contra un archivo `.agents/hooks.json`.
-- Faltaban subagentes especializados para los dominios de APIs, DB y Estado Cliente.
-- `structure.yaml` no reflejaba el guardián arquitectónico en 3 capas declarativo de `@solana/kit`.
+- `architect.yaml` definía 3 capas agregadas; debe reflejar la **Arquitectura Estándar en 4 Capas** de Solana para dar ownership determinista a cada subagente.
 
 ## What questions remain open
-- Ninguna. Las decisiones de diseño de la entrevista Socrática fueron validadas e incorporadas.
+- Ninguna. La formalización en 4 capas fue consensuada en la entrevista Socrática.
