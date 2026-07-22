@@ -51,7 +51,7 @@
 
 ## Agent Specialists (`.agents/agents/*.yaml`)
 - `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
-- `architect`: Monorepo root directory structure guardian and strict Layered Functional Web3 Architect (3-Layer Presentation/Consumption/Pipelines separation, `@solana/kit` enforcement, zero legacy web3.js v1).
+- `architect`: Monorepo root directory structure guardian and strict 4-Layered Functional Web3 Architect for Solana & Next.js (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure separation, `@solana/kit` enforcement, zero legacy web3.js v1).
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
 - `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, and third-party integrations (Resend, Brevo, QStash, Pinata, GCS).

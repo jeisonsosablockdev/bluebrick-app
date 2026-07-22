@@ -1,32 +1,34 @@
 ---
 type: Feature Spec
-title: Harness System Enhancement & Subagent Enforcement (BRI-181)
-description: Creación de hooks.json, integración con task-init.sh, reemplazo de structure.yaml por architect.yaml y adición de subagentes atómicos api, db y state.
-tags: [governance, agents, harness, bri-181]
-timestamp: 2026-07-21T22:06:55Z
+title: Harness System Enhancement, Subagent Enforcement, 4-Layer Architecture & Clean-Code Decoupling (BRI-181)
+description: Creación de hooks.json, integración con task-init.sh, adición de subagentes atómicos, formalización de la Arquitectura Estándar en 4 Capas y auditoría de desacoplamiento Clean Code.
+tags: [governance, agents, harness, layered-architecture, clean-code, bri-181]
+timestamp: 2026-07-21T22:27:55Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/refactor/jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks/knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md
 ---
 
-# Problem Artifact: Harness System Enhancement & Subagent Enforcement (BRI-181)
+# Problem Artifact: Harness System Enhancement & 4-Layer Clean-Code Architecture (BRI-181)
 
 ## What problem exists
-El sistema de harness de agentes carece de un mecanismo declarativo (`hooks.json`) que obligue y restrinja el uso de subagentes especializados durante las fases del ciclo de vida del desarrollo (bootstrap con `task-init.sh`, preflight, pre-commit, validación). Adicionalmente, existían configuraciones obsoletas (`.cursor/`, `replit.nix`, `.agents/agents/structure.yaml`), falta de granularidad atómica para dominios de API, Base de Datos y Estado Cliente, y la necesidad de formalizar las reglas del guardián de arquitectura Web3 de 3 capas (`architect.yaml`).
+1. El sistema de harness carecía de enforcement declarativo (`hooks.json`) y subagentes atómicos por dominio (`api`, `db`, `state`).
+2. Existían configuraciones obsoletas (`.cursor/`, `replit.nix`, `structure.yaml`).
+3. Faltaba formalizar la **Arquitectura Estándar en 4 Capas** para dApps de Solana y Next.js App Router (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure).
+4. Riesgo de acoplamiento de responsabilidades entre agentes tras incorporar las nuevas definiciones y hooks.
 
 ## Why it matters
-Para prevenir el *drifting* cognitivo de los modelos de IA, asegurar la separación estricta de capas monorepo (Presentation, Consumption, Pipelines) e impedir la contaminación de código o el uso de patrones prohibidos (`@solana/web3.js` v1, `new Connection()`, sintaxis imperativa), es indispensable contar con un harness automatizado de gobernanza que fuerce la sub-orquestación de agentes especialistas desde `task-init.sh`.
+Para mantener un monorepo limpio y altamente mantenible para agentes de IA, debemos prevenir el acoplamiento directo entre roles de agentes y asegurar que cada especialista mantenga una responsabilidad única (Single Responsibility Principle) con fronteras desacopladas sin interferencias ni duplicación.
 
 ## What outcome is expected
-1. Eliminación de carpetas y archivos obsoletos (`.cursor/`, `replit.nix`).
-2. Reemplazo del subagente `structure.yaml` por `architect.yaml` (`web3-layered-architect-guardian`), haciendo valer la arquitectura de 3 capas funcionales y la suite moderna `@solana/kit` / `@solana/react-hooks`.
+1. Eliminación de artefactos obsoletos (`.cursor/`, `replit.nix`).
+2. Actualización de `architect.yaml` para formalizar las **4 Capas Estándar** de Solana & Next.js App Router.
 3. Creación de subagentes atómicos: `api.yaml`, `db.yaml` y `state.yaml` en `.agents/agents/`.
-4. Creación de `.agents/hooks.json` para definir eventos del ciclo de vida y bindings de subagentes requeridos.
-5. Actualización de `scripts/task-init.sh` para validar y ejecutar el enforcement de subagentes desde `.agents/hooks.json`.
+4. Creación de `.agents/hooks.json` para orquestación del ciclo de vida y bindings por dominio.
+5. Integración de `.agents/hooks.json` en `scripts/task-init.sh`.
 6. Sincronización de políticas globales en `AGENTS.md`.
+7. Auditoría y refactorización Clean Code (`code-refactoring-refactor-clean`) para evitar acoplamiento entre subagentes y garantizar responsabilidades aisladas.
 
 ## What gaps exist today
-- `task-init.sh` no validaba la delegación de subagentes contra un archivo `.agents/hooks.json`.
-- Faltaban subagentes especializados para los dominios de APIs, DB y Estado Cliente.
-- `structure.yaml` no reflejaba el guardián arquitectónico en 3 capas declarativo de `@solana/kit`.
+- Faltaba la SPEC-5 dedicada a la auditoría de desacoplamiento Clean Code para garantizar que los nuevos subagentes no introduzcan acoplamiento ni superposición de paths.
 
 ## What questions remain open
-- Ninguna. Las decisiones de diseño de la entrevista Socrática fueron validadas e incorporadas.
+- Ninguna. La inclusión de SPEC-5 Clean Code desacoplada fue formalizada.
