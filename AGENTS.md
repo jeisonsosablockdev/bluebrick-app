@@ -68,6 +68,15 @@
 - **Double-Gatekeeper Protocol**:
   1. **Gate 1 (Pre-Implementation Architecture Review)**: `architect` must inspect and approve the projected 4-layer file paths and imports in the Solution Spec before writing code.
   2. **Gate 2 (Post-Implementation Diff Audit)**: `architect` audits the written diff, enforcing strict layer isolation, zero forbidden patterns (`@solana/web3.js` v1, `class`, `new Connection()`), and clean monorepo root.
+- **Idempotent 8-Phase Task Lifecycle & Dual Human Gates**:
+  1. **BOOTSTRAP**: `./scripts/task-init.sh` initializes branch and state tracker `.agents/active_task_state.json`.
+  2. **DOCS FILLED**: Populate governing dual artifacts without placeholders (`<!-- Describir... -->`).
+  3. **ARCHITECT GATE 1**: `architect` approves 4-layer architecture design in Solution Spec.
+  4. **🛑 HUMAN DESIGN APPROVAL**: Stop & wait for explicit user approval of design BEFORE writing code.
+  5. **TESTS RED**: Write unit tests first before writing production implementation.
+  6. **CODE GREEN**: Assigned specialist subagent implements production code.
+  7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff and `pnpm validate` passes cleanly.
+  8. **🛑 HUMAN MERGE ACCEPTANCE**: Stop & wait for explicit user authorization BEFORE merging to `develop`.
 
 
 ## Definition of Done
