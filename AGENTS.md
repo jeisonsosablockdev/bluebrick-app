@@ -51,14 +51,21 @@
 
 ## Agent Specialists (`.agents/agents/*.yaml`)
 - `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
+- `architect`: Monorepo root directory structure guardian and strict Layered Functional Web3 Architect (3-Layer Presentation/Consumption/Pipelines separation, `@solana/kit` enforcement, zero legacy web3.js v1).
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
+- `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, and third-party integrations (Resend, Brevo, QStash, Pinata, GCS).
+- `db`: Database schemas, migrations, query performance, and persistence repositories.
+- `state`: Client and global state management (Zustand, React Query/TanStack Query).
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
 - `docs`: canonical knowledge sync, feature/fix artifacts, RFC traceability, migration notes.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
-- `structure`: monorepo root directory structure, whitelist enforcement, and package boundary guardian.
+
+## Harness & Lifecycle Enforcement (`.agents/hooks.json`)
+- Development lifecycle events (`pre_branch`, `post_init`, `pre_commit`, `preflight`) and domain scopes (`solana`, `app`, `api`, `db`, `nft`, `shared`) automatically enforce subagent delegation per `.agents/hooks.json` via `task-init.sh`.
+
 
 ## Definition of Done
 - `pnpm validate`

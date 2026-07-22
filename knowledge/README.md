@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 654 |
+| Archived | 656 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 652 |
+| Archived status | 654 |
 
 ## Inbox
 
@@ -316,6 +316,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-gemini-antigravity-workflows | archived | none | [feature-gemini-antigravity-workflows](knowledge/features/feature-gemini-antigravity-workflows.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design-implementation | archived | none | [feature-jaysosa-BRI-178-initial-loading-design-implementation](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design | archived | none | [feature-jaysosa-BRI-178-initial-loading-design](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
+| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & Subagent Enforcement Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks | archived | none | [Harness System Enhancement & Subagent Enforcement (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md) | n/a |
 | feature-landing-dark-hero-look-and-feel-implementation | archived | none | [feature-landing-dark-hero-look-and-feel-implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
 | feature-landing-dark-hero-look-and-feel | archived | none | [feature-landing-dark-hero-look-and-feel](knowledge/features/feature-landing-dark-hero-look-and-feel.md) | n/a |
 | feature-nft-authority-lifecycle-rotation-revocation | archived | none | [feature-nft-authority-lifecycle-rotation-revocation](knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |
