@@ -14,7 +14,7 @@ import {
   type StakeActionAttemptRecord
 } from "@/lib/stake-attempts-repository";
 import { upsertStakeProfileEvent } from "@/lib/stake-profile-events-repository";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 
 export type StakeWebhookProcessResult = {
   received: number;

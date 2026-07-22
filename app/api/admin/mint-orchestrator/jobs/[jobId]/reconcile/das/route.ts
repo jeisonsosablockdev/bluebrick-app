@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { DasClient, isDasClientError } from "@/lib/das-client";
+import { DasClient, isDasClientError } from "@/lib/infrastructure/das-client";
 import {
   calculateMintJobProgress,
   getMintJob,
@@ -9,7 +9,7 @@ import {
   reconcileMintJobSignatures,
   type MintItemRecord,
   type MintJobRecord
-} from "@/lib/mint-orchestrator-store";
+} from "@/lib/state/mint-orchestrator-store";
 import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 
 type RouteParams = {

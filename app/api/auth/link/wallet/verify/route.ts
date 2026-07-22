@@ -9,7 +9,7 @@ import {
 import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository";
 import { promoteReferralIntentForAccountWallet } from "@/lib/referrals/repository";
 import { getRoleForWallet } from "@/lib/rbac";
-import { consumeNonce } from "@/lib/auth-store";
+import { consumeNonce } from "@/lib/state/auth-store";
 import {
   clearWalletLinkContextCookie,
   getRequestHost,

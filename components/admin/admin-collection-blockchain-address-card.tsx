@@ -3,7 +3,7 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
 
-import { getSolscanAccountUrl } from "@/lib/solana";
+import { getSolscanAccountUrl } from "@/lib/infrastructure/solana";
 
 export function AdminCollectionBlockchainAddressCard({
   label,

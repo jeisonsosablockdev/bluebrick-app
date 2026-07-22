@@ -3,7 +3,7 @@ import { createNoopSigner, generateSigner, publicKey, signerIdentity, type Trans
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 
 import { parseCollectionName } from "@/lib/admin/asset-compatibility-validation";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,
   createKitRpcConnection,

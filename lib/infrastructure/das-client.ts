@@ -1,4 +1,4 @@
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 
 const FORBIDDEN_RPC_MARKERS = ["mainnet", "testnet", "localnet", "localhost", "127.0.0.1"];
 

@@ -24,7 +24,7 @@ import {
   type MarketplacePropertyRealtimeSyncStatus
 } from "@/lib/marketplace/property-sync-status";
 import { recordOperabilityLog } from "@/lib/observability";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   listPropertyDetailsSnapshot,
   PropertyRpcError,

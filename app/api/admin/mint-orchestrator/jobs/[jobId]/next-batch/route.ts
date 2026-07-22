@@ -5,7 +5,7 @@ import {
   calculateMintJobProgress,
   isMintOrchestratorError,
   prepareNextMintBatch
-} from "@/lib/mint-orchestrator-store";
+} from "@/lib/state/mint-orchestrator-store";
 import { syncMintOrchestratorSnapshot } from "@/lib/mint-jobs/snapshot";
 
 type RouteParams = {

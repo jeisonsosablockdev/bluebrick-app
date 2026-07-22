@@ -9,7 +9,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/auth-flo
 
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-06-06
+Last Updated: 2026-07-22
+
+## BRI-182 4-Layer Architecture Alignment
+- Re-located auth state stores to Layer 2 (`/lib/state/auth-store.ts`, `/lib/state/auth-state.ts`) and updated all API routes in `/app/api/auth/` to import from canonical 4-layer paths.
 
 ## BRI-178 Initial Loading Screen Auth Boundary
 - The initial loading screen (splash screen) does not introduce any new authentication cookies, tokens, or roles.

@@ -19,7 +19,7 @@ import { Connection, PublicKey as Web3PublicKey, VersionedTransaction } from "@s
 import type { PoolClient } from "pg";
 
 import { withDbClient } from "@/lib/db/pool";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 
 const MAX_SIGNED_TRANSACTIONS = 5;
 const SIGNATURE_CONFIRM_TIMEOUT_MS = 180_000;

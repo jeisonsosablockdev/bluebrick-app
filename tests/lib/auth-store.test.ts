@@ -14,7 +14,7 @@ import {
   readFederatedLinkContext,
   readWalletLinkContext,
   revokeSession
-} from "@/lib/auth-store";
+} from "@/lib/state/auth-store";
 
 describe("lib/auth-store", () => {
   it("issues nonces that can be consumed once", () => {

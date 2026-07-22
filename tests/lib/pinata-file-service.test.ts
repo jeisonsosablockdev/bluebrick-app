@@ -7,7 +7,7 @@ import {
   pinFileFromUrlToPinata,
   resolveImageForPinata,
   pinJsonToPinata
-} from "@/lib/pinata-file-service";
+} from "@/lib/infrastructure/pinata-file-service";
 
 const ORIGINAL_PINATA_JWT = process.env.PINATA_JWT;
 const ORIGINAL_GATEWAY = process.env.PINATA_GATEWAY_BASE_URL;
