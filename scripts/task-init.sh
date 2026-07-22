@@ -118,6 +118,38 @@ print_hint() {
   if [[ "${BRANCH_MODE}" == "parent" || "${BRANCH_MODE}" == "spec" ]]; then
     echo "- Multi-SPEC reminder: create one SPEC at a time and keep the parent work branch stable."
   fi
+
+  report_hooks_enforcement "${BRANCH_SCOPE:-shared}"
+}
+
+report_hooks_enforcement() {
+  local scope="${1:-shared}"
+  local hooks_file="${SCRIPT_DIR}/../.agents/hooks.json"
+
+  echo "- Subagent Enforcement (via .agents/hooks.json):"
+  if [[ -f "${hooks_file}" ]]; then
+    echo "  - Lifecycle hooks: active (.agents/hooks.json)"
+    if command -v node &> /dev/null; then
+      node -e '
+        const fs = require("fs");
+        try {
+          const config = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+          const scope = process.argv[2];
+          const binding = config.domain_subagent_bindings[scope] || config.domain_subagent_bindings["shared"];
+          if (binding) {
+            console.log(`  - Enforced Primary Subagent: ${binding.primary}`);
+            console.log(`  - Supporting Subagents: ${binding.supporting.join(", ")}`);
+          }
+        } catch (e) {
+          console.log("  - Warning: Could not parse .agents/hooks.json");
+        }
+      ' "${hooks_file}" "${scope}"
+    else
+      echo "  - Enforced Scope: ${scope}"
+    fi
+  else
+    echo "  - Warning: .agents/hooks.json not found."
+  fi
 }
 
 POSITIONAL=()

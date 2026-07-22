@@ -51,14 +51,34 @@
 
 ## Agent Specialists (`.agents/agents/*.yaml`)
 - `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
+- `architect`: Monorepo root directory structure guardian and strict 4-Layered Functional Web3 Architect for Solana & Next.js (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure separation, `@solana/kit` enforcement, zero legacy web3.js v1).
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
+- `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, and third-party integrations (Resend, Brevo, QStash, Pinata, GCS).
+- `db`: Database schemas, migrations, query performance, and persistence repositories.
+- `state`: Client and global state management (Zustand, React Query/TanStack Query).
 - `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
 - `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
 - `docs`: canonical knowledge sync, feature/fix artifacts, RFC traceability, migration notes.
 - `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
 - `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
-- `structure`: monorepo root directory structure, whitelist enforcement, and package boundary guardian.
+
+## Harness & Lifecycle Enforcement (`.agents/hooks.json`)
+- Development lifecycle events (`pre_branch`, `post_init`, `pre_commit`, `preflight`) and domain scopes (`solana`, `app`, `api`, `db`, `nft`, `shared`) automatically enforce subagent delegation per `.agents/hooks.json` via `task-init.sh`.
+- **Double-Gatekeeper Protocol**:
+  1. **Gate 1 (Pre-Implementation Architecture Review)**: `architect` must inspect and approve the projected 4-layer file paths and imports in the Solution Spec before writing code.
+  2. **Gate 2 (Post-Implementation Diff Audit)**: `architect` audits the written diff, enforcing strict layer isolation, zero forbidden patterns (`@solana/web3.js` v1, `class`, `new Connection()`), and clean monorepo root.
+- **Idempotent 8-Phase Task Lifecycle & Dual Human Gates**:
+  1. **BOOTSTRAP**: `./scripts/task-init.sh` initializes branch and state tracker `.agents/active_task_state.json`.
+  2. **DOCS FILLED**: Populate governing dual artifacts without placeholders (`<!-- Describir... -->`).
+  3. **ARCHITECT GATE 1**: `architect` approves 4-layer architecture design in Solution Spec.
+  4. **🛑 HUMAN DESIGN APPROVAL**: Stop & wait for explicit user approval of design BEFORE writing code.
+  5. **TESTS RED**: Write unit tests first before writing production implementation.
+  6. **CODE GREEN**: Assigned specialist subagent implements production code.
+  7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff and `pnpm validate` passes cleanly.
+  8. **🛑 HUMAN MERGE ACCEPTANCE**: Stop & wait for explicit user authorization BEFORE merging to `develop`.
+- **Automatic Post-Human Acceptance PR Execution**: Upon receiving explicit Human Acceptance, the agent MUST automatically run `pnpm pr:auto` (`scripts/ci/pr-auto.sh`) to generate `pr-body.md`, infer labels (`scope:*`, `type:*`, `risk:*`), push the branch, open/update the PR, and apply GitHub labels via `gh api`.
+
 
 ## Definition of Done
 - `pnpm validate`
