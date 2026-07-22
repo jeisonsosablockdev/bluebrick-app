@@ -40,7 +40,7 @@
   "patterns": {
     "featureFlag": "feature[- ]flag",
     "humanAcceptanceApproved": "##\\s*human acceptance[\\s\\S]*status:\\s*approved",
-    "commitMessage": "^(feat|fix|docs|chore|refactor|security|nft|test|ci)\\((app|program|shared|docs|infra|security|nft|spec|harness|governance|pr)\\): .+"
+    "commitMessage": "^(feat|fix|docs|chore|refactor|security|nft|test|ci)\\((app|program|shared|docs|infra|security|nft|spec|harness|governance|pr|architect|agents)\\): .+"
   },
   "canonicalCommands": {
     "preflight": "npm run pr:ready",
