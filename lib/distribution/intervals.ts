@@ -12,7 +12,7 @@
  */
 
 import { createArchivalRpcClient } from "@/lib/archival/archival-rpc-client";
-import { METAPLEX_CORE_PROGRAM_ID } from "@/lib/solana";
+import { METAPLEX_CORE_PROGRAM_ID } from "@/lib/infrastructure/solana";
 
 export type ReconstructedInterval = {
   assetAddress: string;

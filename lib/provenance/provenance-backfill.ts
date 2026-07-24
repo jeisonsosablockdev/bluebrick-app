@@ -10,7 +10,7 @@
  * - Assets with status "needs_review" are mathematically excluded from Final Calculation
  */
 
-import { DasClient } from "@/lib/das-client";
+import { DasClient } from "@/lib/infrastructure/das-client";
 import { createArchivalRpcClient } from "@/lib/archival/archival-rpc-client";
 import {
   getProjectCandyMachineSource,
