@@ -297,6 +297,98 @@ if [[ "${ASK_MODE}" == "ask" ]]; then
 
   if [[ "${BRANCH_MODE}" == "parent" || "${BRANCH_MODE}" == "spec" ]]; then
     ISSUE_KEY="$(normalize_issue_key "${ISSUE_KEY}")"
+
+    # Capa 2: Validar handle del desarrollador en modo interactivo
+    HOOKS_FILE_PATH="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.agents/hooks.json"
+    if [[ -f "${HOOKS_FILE_PATH}" ]]; then
+      VALID_DEV="$(node -e '
+        const fs = require("fs");
+        try {
+          const hooks = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+          const allowed = hooks.enforcement_rules?.allowed_developer_handles || ["jaymusicmachine", "jeisonsosa"];
+          const owner = process.argv[2].toLowerCase();
+          if (allowed.includes(owner)) {
+            console.log("true");
+          } else {
+            console.log("false");
+          }
+        } catch (e) {
+          console.log("false");
+        }
+      ' "${HOOKS_FILE_PATH}" "${OWNER}")"
+
+      if [[ "${VALID_DEV}" != "true" ]]; then
+        echo "❌ ERROR DE GOBERNANZA: El handle de desarrollador '\''${OWNER}'\'' no está permitido."
+        echo "Los handles permitidos configurados en hooks.json son: [jaymusicmachine, jeisonsosa]."
+        exit 1
+      fi
+    fi
+
+    # Capa 2: Validar existencia del issue key en Linear en modo interactivo
+    if [[ -n "${LINEAR_API_KEY:-}" ]]; then
+      echo "🔍 Validando existencia de issue ${ISSUE_KEY} en Linear..."
+      ISSUE_EXISTS="$(node -e '
+        const https = require("https");
+        const apiKey = process.env.LINEAR_API_KEY;
+        const issueKey = process.argv[1];
+
+        const query = `
+          query CheckIssue($id: String!) {
+            issue(id: $id) {
+              id
+              identifier
+              title
+            }
+          }
+        `;
+
+        const req = https.request("https://api.linear.app/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": apiKey
+          }
+        }, (res) => {
+          let data = "";
+          res.on("data", (chunk) => data += chunk);
+          res.on("end", () => {
+            try {
+              const payload = JSON.parse(data);
+              if (payload.data && payload.data.issue) {
+                console.log("true");
+              } else {
+                console.log("false");
+              }
+            } catch (e) {
+              console.log("error");
+            }
+            process.exit(0);
+          });
+        });
+
+        req.setTimeout(5000, () => {
+          req.destroy();
+          console.log("error");
+          process.exit(0);
+        });
+
+        req.on("error", () => {
+          console.log("error");
+          process.exit(0);
+        });
+        req.write(JSON.stringify({ query, variables: { id: issueKey } }));
+        req.end();
+      ' "${ISSUE_KEY}")"
+
+      if [[ "${ISSUE_EXISTS}" == "false" ]]; then
+        echo "❌ ERROR DE GOBERNANZA: El issue key '\''${ISSUE_KEY}'\'' no existe en la organización de Linear."
+        exit 1
+      elif [[ "${ISSUE_EXISTS}" == "error" ]]; then
+        echo "⚠️ Warning: No se pudo conectar a Linear para validar el issue. Continuando..."
+      else
+        echo "✓ Issue ${ISSUE_KEY} confirmado en Linear."
+      fi
+    fi
   fi
 
   print_hint "${BRANCH_TYPE}" "${BRANCH_NAME}" "${OWNER}" "${ISSUE_KEY}"

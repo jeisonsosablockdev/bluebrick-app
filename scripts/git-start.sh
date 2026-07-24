@@ -232,6 +232,102 @@ else
   BRANCH="SPEC/${NORMALIZED_OWNER}-${NORMALIZED_ISSUE}-${NAME_SLUG}"
 fi
 
+if [[ "${MODE}" == "parent" || "${MODE}" == "spec" ]]; then
+  # Capa 2: Validar handle del desarrollador
+  HOOKS_FILE_PATH="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.agents/hooks.json"
+  if [[ -f "${HOOKS_FILE_PATH}" ]]; then
+    VALID_DEV="$(node -e '
+      const fs = require("fs");
+      try {
+        const hooks = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+        const allowed = hooks.enforcement_rules?.allowed_developer_handles || ["jaymusicmachine", "jeisonsosa"];
+        const owner = process.argv[2].toLowerCase();
+        if (allowed.includes(owner)) {
+          console.log("true");
+        } else {
+          console.log("false");
+        }
+      } catch (e) {
+        console.log("false");
+      }
+    ' "${HOOKS_FILE_PATH}" "${NORMALIZED_OWNER}")"
+
+    if [[ "${VALID_DEV}" != "true" ]]; then
+      echo "❌ ERROR DE GOBERNANZA: El handle de desarrollador '\''${OWNER}'\'' no está permitido."
+      echo "Los handles permitidos configurados en hooks.json son: [jaymusicmachine, jeisonsosa]."
+      exit 1
+    fi
+  fi
+
+  # Capa 2: Validar existencia del issue key en Linear
+  if [[ -n "${LINEAR_API_KEY:-}" ]]; then
+    echo "🔍 Validando existencia de issue ${NORMALIZED_ISSUE} en Linear..."
+    ISSUE_EXISTS="$(node -e '
+      const https = require("https");
+      const apiKey = process.env.LINEAR_API_KEY;
+      const issueKey = process.argv[1];
+
+      const query = `
+        query CheckIssue($id: String!) {
+          issue(id: $id) {
+            id
+            identifier
+            title
+          }
+        }
+      `;
+
+      const req = https.request("https://api.linear.app/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": apiKey
+        }
+      }, (res) => {
+        let data = "";
+        res.on("data", (chunk) => data += chunk);
+        res.on("end", () => {
+          try {
+            const payload = JSON.parse(data);
+            if (payload.data && payload.data.issue) {
+              console.log("true");
+            } else {
+              console.log("false");
+            }
+          } catch (e) {
+            console.log("error");
+          }
+          process.exit(0);
+        });
+      });
+
+      req.setTimeout(5000, () => {
+        req.destroy();
+        console.log("error");
+        process.exit(0);
+      });
+
+      req.on("error", () => {
+        console.log("error");
+        process.exit(0);
+      });
+      req.write(JSON.stringify({ query, variables: { id: issueKey } }));
+      req.end();
+    ' "${NORMALIZED_ISSUE}")"
+
+    if [[ "${ISSUE_EXISTS}" == "false" ]]; then
+      echo "❌ ERROR DE GOBERNANZA: El issue key '\''${NORMALIZED_ISSUE}'\'' no existe en la organización de Linear."
+      exit 1
+    elif [[ "${ISSUE_EXISTS}" == "error" ]]; then
+      echo "⚠️ Warning: No se pudo conectar a Linear para validar el issue. Continuando..."
+    else
+      echo "✓ Issue ${NORMALIZED_ISSUE} confirmado en Linear."
+    fi
+  else
+    echo "⚠️ Warning: LINEAR_API_KEY no está configurado. Omitiendo validación estricta de issue en Linear."
+  fi
+fi
+
 git status --porcelain >/dev/null
 ensure_base_branch_available "${BASE_BRANCH}"
 
@@ -239,6 +335,28 @@ git checkout -b "${BRANCH}"
 if [[ "${MODE}" == "parent" || "${MODE}" == "spec" ]]; then
   git config "branch.${BRANCH}.linearIssueKey" "${NORMALIZED_ISSUE}"
   git config "branch.${BRANCH}.linearIssueType" "${TYPE}"
+
+  # Capa 1: Inicialización automática del Motor de Estado de la Tarea (PHASE_1_BOOTSTRAP)
+  STATE_FILE_PATH="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.agents/active_task_state.json"
+  mkdir -p "$(dirname "${STATE_FILE_PATH}")"
+  cat <<EOF > "${STATE_FILE_PATH}"
+{
+  "version": "1.0.0",
+  "task_id": "${NORMALIZED_ISSUE}",
+  "branch": "${BRANCH}",
+  "current_phase": "PHASE_1_BOOTSTRAP",
+  "phases": {
+    "PHASE_1_BOOTSTRAP": { "completed": true },
+    "PHASE_2_DOCS_FILLED": { "completed": false },
+    "PHASE_3_ARCHITECT_GATE1": { "completed": false },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": false },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
+  }
+}
+EOF
 fi
 if [[ "${MODE}" == "spec" ]]; then
   git config "branch.${BRANCH}.parentWorkBranch" "${BASE_BRANCH}"
