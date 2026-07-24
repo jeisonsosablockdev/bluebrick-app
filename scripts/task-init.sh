@@ -249,6 +249,11 @@ if [[ "${FETCH_REMOTE}" == "1" ]]; then
 fi
 bash "${SCRIPT_DIR}/ci/preflight-start.sh" "${PREFLIGHT_ARGS[@]}"
 
+if [[ -f "${SCRIPT_DIR}/graphify-sync.js" ]]; then
+  echo "- Graphify: Sincronizando grafo de conocimiento (.agents/graph.json)..."
+  node "${SCRIPT_DIR}/graphify-sync.js" || echo "⚠️ Warning: Graphify sync encountered an issue, proceeding..."
+fi
+
 if [[ "${ASK_MODE}" == "ask" ]]; then
   echo
   echo "Before we branch, let us make the shape of the work plain."

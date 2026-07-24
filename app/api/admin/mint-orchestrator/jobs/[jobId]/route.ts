@@ -5,7 +5,7 @@ import {
   calculateMintJobProgress,
   getMintJob,
   isMintOrchestratorError
-} from "@/lib/mint-orchestrator-store";
+} from "@/lib/state/mint-orchestrator-store";
 
 type RouteParams = {
   params: Promise<{

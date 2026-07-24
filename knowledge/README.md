@@ -21,20 +21,20 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-06-16T00:00:00.000Z
+Last Generated: 2026-07-22T00:00:00.000Z
 
 ## Snapshot
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 9 |
+| Observations | 10 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 664 |
-| Observed status | 18 |
+| Archived | 676 |
+| Observed status | 19 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 662 |
+| Archived status | 674 |
 
 ## Inbox
 
@@ -49,6 +49,7 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | KNOW-2026-06-004 | observed | guide | [Stake, distribution, treasury, claim, and traceability draft](knowledge/inbox/2026-06/KNOW-2026-06-004-stake-distribution-traceability-draft.md) | BRI-5, BRI-6, BRI-7, BRI-8 |
 | KNOW-2026-06-005 | observed | guide | [Candy Machine deploy iteration 2026-06-11](knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md) | BRI-173 |
 | KNOW-2026-06-006 | observed | guide | [Candy Machine deploy iteration 2026-06-16 (SPEC05 rebase)](knowledge/inbox/2026-06/KNOW-2026-06-006-candy-machine-deploy-iteration-scope05-rebase.md) | BRI-168 |
+| KNOW-2026-07-001 | observed | guide | [Candy Machine deploy iteration 2026-07-22 BRI-182](knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md) | BRI-182 |
 
 ## Promotion Proposals
 
@@ -314,18 +315,29 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-flujo-gitflow-pr-structure-improvement-01-bri-62 | archived | none | [feature-flujo-gitflow-pr-structure-improvement-01-bri-62](knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md) | n/a |
 | feature-gemini-antigravity-workflows-implementation | archived | none | [feature-gemini-antigravity-workflows-implementation](knowledge/features/feature-gemini-antigravity-workflows-implementation.md) | n/a |
 | feature-gemini-antigravity-workflows | archived | none | [feature-gemini-antigravity-workflows](knowledge/features/feature-gemini-antigravity-workflows.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance-implementation | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance-implementation](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design-implementation | archived | none | [feature-jaysosa-BRI-178-initial-loading-design-implementation](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design | archived | none | [feature-jaysosa-BRI-178-initial-loading-design](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
 | feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & 4-Layer Architecture Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks | archived | none | [Harness System Enhancement, 4-Layer Architecture, Idempotent Lifecycle & Single-Trigger PR Guard (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md) | n/a |
 | feature-jeisonsosa-BRI-181-canonical-templates-implementation | archived | none | [Plantillas Canónicas para OKF y Linear Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-canonical-templates | archived | none | [Plantillas Canónicas para OKF y Linear (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates.md) | n/a |
+| feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-graphify-agent-enforcement | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md) | n/a |
 | feature-jeisonsosa-BRI-181-solution-template-redesign-implementation | archived | none | [Rediseño del Solution Spec Template Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-solution-template-redesign-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-solution-template-redesign | archived | none | [Rediseño del Solution Spec Template (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-solution-template-redesign.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation | archived | none | [task-init.sh reinforcement workflow Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement | archived | none | [task-init.sh reinforcement workflow (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement.md) | n/a |
 | feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md) | n/a |
+| feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation](knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-alineacion-politicas-architect | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect](knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md) | n/a |
 | feature-landing-dark-hero-look-and-feel-implementation | archived | none | [feature-landing-dark-hero-look-and-feel-implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
 | feature-landing-dark-hero-look-and-feel | archived | none | [feature-landing-dark-hero-look-and-feel](knowledge/features/feature-landing-dark-hero-look-and-feel.md) | n/a |
 | feature-nft-authority-lifecycle-rotation-revocation | archived | none | [feature-nft-authority-lifecycle-rotation-revocation](knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |
@@ -581,6 +593,7 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | git-monorepo-policy | archived | none | [git-monorepo-policy](knowledge/governance/git-monorepo-policy.md) | n/a |
 | iconography-rules | archived | none | [iconography-rules](knowledge/governance/iconography-rules.md) | n/a |
 | index | archived | none | [index](knowledge/governance/index.md) | n/a |
+| licenses-report | archived | none | [licenses-report](knowledge/governance/licenses-report.md) | n/a |
 | nft-policy | archived | none | [nft-policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
 | security-quality-policy | archived | none | [security-quality-policy](knowledge/governance/security-quality-policy.md) | n/a |

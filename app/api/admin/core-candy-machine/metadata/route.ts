@@ -9,7 +9,7 @@ import {
   isPinataConfigured,
   isPinataFileServiceError,
   resolveImageForPinata
-} from "@/lib/pinata-file-service";
+} from "@/lib/infrastructure/pinata-file-service";
 
 type MetadataBody = {
   collectionName?: unknown;

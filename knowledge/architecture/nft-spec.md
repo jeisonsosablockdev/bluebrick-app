@@ -87,6 +87,10 @@ Logs must not include full serialized transaction payloads, private keys, cookie
 
 ## Codex Orchestration Baseline Compatibility
 - No NFT product behavior, authority rule, metadata contract, royalty rule, or devnet acceptance contract changed in this refactor.
+
+## BRI-182 Monorepo 4-Layer Refactor
+- Infrastructure and state files for Solana clients (`lib/infrastructure/solana.ts`) and mint store (`lib/state/mint-orchestrator-store.ts`) were re-organized under canonical 4-layer directories with backward-compatible facades in `/lib/`.
+- No NFT authority, metadata, or mint contracts were altered.
 - The protected NFT avatar route keeps the same server-side contract:
   - wallet authentication remains mandatory
   - DAS failures still surface through the route error contract

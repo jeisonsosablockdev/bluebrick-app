@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { recordMintWebhookEvent } from "@/lib/mint-orchestrator-store";
+import { recordMintWebhookEvent } from "@/lib/state/mint-orchestrator-store";
 
 export async function POST(request: NextRequest) {
   // 1. Validar el secreto de Helius (Mitigación de "Forged webhook request" en threat-model)

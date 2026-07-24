@@ -42,7 +42,7 @@ import {
   parseAuthSyncPayloadFromUnknown
 } from "@/lib/auth-sync";
 import { getAuthLinkStatusContent, parseAuthLinkStatus } from "@/lib/auth-link-status";
-import { getWalletModalAutoClose } from "@/lib/solana";
+import { getWalletModalAutoClose } from "@/lib/infrastructure/solana";
 import {
   formatOnboardingRewardDeadlineLabel,
 } from "@/lib/onboarding-reward-copy";
@@ -51,7 +51,7 @@ import {
   ONBOARDING_REWARD_EXPLORE_HREF
 } from "@/lib/onboarding-reward-navigation";
 import { WALLET_MODAL_OPEN_EVENT, type WalletModalOpenDetail } from "@/lib/auth-ui-events";
-import { areAuthMeResponsesEquivalent } from "@/lib/auth-state";
+import { areAuthMeResponsesEquivalent } from "@/lib/state/auth-state";
 import { shouldUseReducedMotion } from "@/lib/motion";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
 import { createPostAuthFallbackReward, resolvePostAuthDecision, type PostAuthOnboardingReward } from "@/lib/post-auth-decision";

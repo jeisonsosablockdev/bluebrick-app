@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { DasClient, isDasClientError } from "@/lib/das-client";
+import { DasClient, isDasClientError } from "@/lib/infrastructure/das-client";
 
 type AvatarNftItem = {
   assetId: string;

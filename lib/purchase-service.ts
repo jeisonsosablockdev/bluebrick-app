@@ -36,7 +36,7 @@ import {
 import { withDbClient } from "@/lib/db/pool";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { createPurchaseThirdPartySigner } from "@/lib/purchase-third-party-signer";
-import { getSolanaRpcUrl } from "@/lib/solana";
+import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,

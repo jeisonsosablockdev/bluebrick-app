@@ -54,6 +54,14 @@ for entry in "$REPO_ROOT"/*/  "$REPO_ROOT"/.*/ ; do
   fi
 done
 
+# Check forbidden orphan root files
+FORBIDDEN_FILES=("PR_BODY.md" "pr-body.md" "linear_metadata.json")
+for forbidden in "${FORBIDDEN_FILES[@]}"; do
+  if [ -f "$REPO_ROOT/$forbidden" ]; then
+    VIOLATIONS+=("file: $forbidden")
+  fi
+done
+
 if [[ ${#VIOLATIONS[@]} -eq 0 ]]; then
   echo "✅ Monorepo structure check passed. No unauthorized top-level directories found."
   exit 0

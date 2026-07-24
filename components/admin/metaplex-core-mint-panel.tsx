@@ -6,7 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { METAPLEX_CORE_PROGRAM_ID, getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/solana";
+import { METAPLEX_CORE_PROGRAM_ID, getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
 import {
   deserializeLegacyVersionedTransaction,
   serializeLegacyVersionedTransaction

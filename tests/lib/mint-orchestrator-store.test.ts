@@ -11,7 +11,7 @@ import {
   prepareNextMintBatch,
   reconcileMintJobSignatures,
   submitMintBatch
-} from "@/lib/mint-orchestrator-store";
+} from "@/lib/state/mint-orchestrator-store";
 
 function createTestJob(totalItems = 3, batchSize = 2) {
   return createMintJob({

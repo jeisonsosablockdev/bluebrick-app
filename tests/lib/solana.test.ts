@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { getSolanaRpcUrl, getWalletModalAutoClose } from "@/lib/solana";
+import { getSolanaRpcUrl, getWalletModalAutoClose } from "@/lib/infrastructure/solana";
 
 const originalServerRpc = process.env.SOLANA_RPC_URL;
 const originalRpc = process.env.NEXT_PUBLIC_SOLANA_RPC;

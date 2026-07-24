@@ -53,6 +53,7 @@ bash "${SCRIPT_DIR}/pr-open.sh" \
   --scope "${SCOPE_LABEL}" \
   --type "${TYPE_LABEL}" \
   --risk "${RISK_LABEL}" \
+  --draft 0 \
   --validate-mode full
 
 # Record single-trigger completion
