@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 662 |
+| Archived | 664 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 660 |
+| Archived status | 662 |
 
 ## Inbox
 
@@ -324,6 +324,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-jeisonsosa-BRI-181-solution-template-redesign | archived | none | [Rediseño del Solution Spec Template (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-solution-template-redesign.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation | archived | none | [task-init.sh reinforcement workflow Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement | archived | none | [task-init.sh reinforcement workflow (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement.md) | n/a |
+| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md) | n/a |
 | feature-landing-dark-hero-look-and-feel-implementation | archived | none | [feature-landing-dark-hero-look-and-feel-implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
 | feature-landing-dark-hero-look-and-feel | archived | none | [feature-landing-dark-hero-look-and-feel](knowledge/features/feature-landing-dark-hero-look-and-feel.md) | n/a |
 | feature-nft-authority-lifecycle-rotation-revocation | archived | none | [feature-nft-authority-lifecycle-rotation-revocation](knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |

@@ -33,7 +33,7 @@
 - For new fixes, require:
   - `knowledge/fixes/fix-<slug>.md`
   - `knowledge/fixes/fix-<slug>-implementation.md`
-- For multi-SPEC work, require the first SPEC before delivery SPECs.
+- For multi-SPEC work, require the first SPEC before delivery SPECs. La primera SPEC debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED) y la última SPEC debe estar dedicada estrictamente a Limpieza y Refactorización (Clean Code Audit / refactor-clean).
 - Load only the matching `.agents/workflows/*.md` and `.agents/policies/*.md`.
 
 ## Workflow Routing
