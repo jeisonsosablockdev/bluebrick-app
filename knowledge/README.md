@@ -30,11 +30,11 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | Observations | 10 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 665 |
+| Archived | 668 |
 | Observed status | 19 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 663 |
+| Archived status | 666 |
 
 ## Inbox
 
@@ -315,6 +315,8 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-flujo-gitflow-pr-structure-improvement-01-bri-62 | archived | none | [feature-flujo-gitflow-pr-structure-improvement-01-bri-62](knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md) | n/a |
 | feature-gemini-antigravity-workflows-implementation | archived | none | [feature-gemini-antigravity-workflows-implementation](knowledge/features/feature-gemini-antigravity-workflows-implementation.md) | n/a |
 | feature-gemini-antigravity-workflows | archived | none | [feature-gemini-antigravity-workflows](knowledge/features/feature-gemini-antigravity-workflows.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance-implementation | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance-implementation](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design-implementation | archived | none | [feature-jaysosa-BRI-178-initial-loading-design-implementation](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md) | n/a |
 | feature-jaysosa-BRI-178-initial-loading-design | archived | none | [feature-jaysosa-BRI-178-initial-loading-design](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
 | feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & 4-Layer Architecture Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
@@ -583,6 +585,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | git-monorepo-policy | archived | none | [git-monorepo-policy](knowledge/governance/git-monorepo-policy.md) | n/a |
 | iconography-rules | archived | none | [iconography-rules](knowledge/governance/iconography-rules.md) | n/a |
 | index | archived | none | [index](knowledge/governance/index.md) | n/a |
+| licenses-report | archived | none | [licenses-report](knowledge/governance/licenses-report.md) | n/a |
 | nft-policy | archived | none | [nft-policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
 | security-quality-policy | archived | none | [security-quality-policy](knowledge/governance/security-quality-policy.md) | n/a |
