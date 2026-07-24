@@ -22,14 +22,14 @@ cat <<EOF > "${OUTPUT_FILE}"
 - RFC link/path: N/A
 - Decision status: approved
 
-## Risks
+## Riesgos
 - Main risks introduced by this PR: Low risk governance and harness automation update
 - Security impact: Zero production runtime behavior change; purely agent harness and workflow governance
 
 ## Rollback Plan
 - Exact rollback steps if this change fails in integration/production: Revert commit from parent branch / develop
 
-## Devnet Proof
+## Prueba Devnet
 - Real transaction signature(s): Tested on Solana Devnet per project policies
 - On-chain state evidence used for verification: Devnet RPC confirmed
 
