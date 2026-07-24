@@ -1,19 +1,40 @@
 # Solution Spec: ${NAME} Implementation
 
-## How the work will be resolved
-<!-- Describe el plan técnico y arquitectónico paso a paso. Indica qué capas se modificarán (Presentación, Aplicación, Dominio, Infraestructura) y cómo se estructurará la lógica. -->
+## 1. Governance & Agent Assignment
+- **Initiative Planner**: `planner`
+- **Lead Implementation Specialist**: `[frontend | solana | db | api | state | nft]`
+- **Architect Gatekeeper**: `architect` (Gate 1 & Gate 2)
+- **Quality & Review**: `qa` & `reviewer`
+- **Security Auditor**: `security` (where applicable)
 
-## What slices and branches will be used
-<!-- Detalla las rebanadas de desarrollo (slices) en las que se dividirá el trabajo y los nombres de las ramas SPEC correspondientes. -->
+## 2. Solution Overview & 4-Layer Architecture
+<!-- Describe la arquitectura del cambio separada por las 4 capas funcionales:
+     1. Presentation Layer (app, components)
+     2. Application/Consumption Layer (queries, mutations, hooks)
+     3. Domain/Pipelines/Services Layer (business logic, validations, adapters)
+     4. Infrastructure Layer (db repositories, Solana kit, external APIs) -->
 
-## What tests go first
-<!-- Describe las pruebas unitarias o de integración que se escribirán en la fase RED antes de implementar el código de producción. -->
+## 3. Atomic Slices & Logical Sequence
+<!-- Desglose cronológico y atómico de SPECs. Cada SPEC debe ser autocontenida y secuencial. -->
+- **SPEC-1**: [Título de la SPEC] (Rama: `SPEC/${OWNER}-${ISSUE}-s01-planning`)
+- **SPEC-2**: [Título de la SPEC] (Rama: `SPEC/${OWNER}-${ISSUE}-s02-...`)
 
-## What tooling is required
-<!-- Lista las herramientas, MCP servers, o utilidades necesarias para la implementación (e.g. solana-mcp-server, chrome-devtools-mcp). -->
+## 4. TDD (Test-Driven Development) Strategy
+<!-- Detalla el plan de pruebas que se creará ANTES de implementar el código (Fase RED). -->
+### Unit/Integration Tests (Fase RED)
+- **Test File Path**: `tests/...`
+- **Command**: `pnpm test ...`
+- **Assertion Goals**: <!-- Qué se validará en las pruebas en fallo -->
 
-## What gates must pass
-<!-- Lista las validaciones obligatorias que deben pasar (e.g. pnpm validate, pruebas específicas, validación de base de datos). -->
+## 5. Local Definition of Done (DoD)
+<!-- Criterios específicos para considerar esta tarea finalizada. -->
+- [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.
+- [ ] La suite de pruebas de regresión pasa al 100% (verde).
+- [ ] `pnpm validate` se ejecuta con 0 errores y 0 warnings.
+- [ ] La documentación de arquitectura local y de base de datos está actualizada.
+- [ ] Aprobación explícita del humano registrada.
 
-## What will be synchronized to Linear
-<!-- Detalla qué información, comentarios o actualizaciones de estado se registrarán en el issue de Linear correspondiente. -->
+## 6. Spec Artifact Traceability
+- **Problem Spec**: [feature-${DOC_SLUG}.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/features/feature-${DOC_SLUG}.md)
+- **Solution Spec**: [feature-${DOC_SLUG}-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/features/feature-${DOC_SLUG}-implementation.md)
+- **Linear Issue**: [Linear Ticket #${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
