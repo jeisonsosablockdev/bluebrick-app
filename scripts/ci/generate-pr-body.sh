@@ -14,6 +14,7 @@ cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 - Implementation of task ${BRANCH}
 - Title: ${TITLE}
+- Feature-flag strategy: N/A (governance harness and documentation templates update)
 
 ## Issue
 - Issue link/id: BRI-181
