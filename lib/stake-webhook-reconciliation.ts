@@ -15,6 +15,7 @@ import {
 } from "@/lib/stake-attempts-repository";
 import { upsertStakeProfileEvent } from "@/lib/stake-profile-events-repository";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
+import { createArchivalRpcClient } from "@/lib/archival/archival-rpc-client";
 
 export type StakeWebhookProcessResult = {
   received: number;
@@ -208,8 +209,18 @@ function reconciliationResult(
 }
 
 async function fetchCanonicalStakeTransaction(signature: string): Promise<CanonicalStakeTransaction | null> {
-  const connection = createLegacyConnection(getSolanaRpcUrl(), "confirmed");
-  return getLegacyTransactionBySignature(connection, signature, "confirmed");
+  if (process.env.HELIUS_API_KEY && process.env.ALCHEMY_API_KEY) {
+    try {
+      const archival = createArchivalRpcClient();
+      const result = await archival.getTransaction(signature);
+      return result.tx as CanonicalStakeTransaction;
+    } catch {
+      // Fallback to legacy connection if archival fails or isn't reachable
+    }
+  }
+
+  const connection = createLegacyConnection(getSolanaRpcUrl(), "finalized");
+  return getLegacyTransactionBySignature(connection, signature, "finalized");
 }
 
 async function markCanonicalReconciliationPending(

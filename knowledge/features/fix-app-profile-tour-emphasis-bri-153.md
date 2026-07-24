@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Profile Tour Emphasis BRI- 153
+description: Fix App Profile Tour Emphasis BRI- 153 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-app-profile-tour-emphasis-bri-153.md
+---
+
 # fix(app): profile quick tour emphasis copy (BRI-153 / s02)
 
 ## Summary

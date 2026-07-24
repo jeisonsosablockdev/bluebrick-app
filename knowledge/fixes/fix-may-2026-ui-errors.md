@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix May 2026 Ui Errors
+description: Fix May 2026 Ui Errors - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-may-2026-ui-errors.md
+---
+
 # Fix: May 2026 UI Errors (BRI-166)
 
 ## Problem

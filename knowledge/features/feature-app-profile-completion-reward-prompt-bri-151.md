@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Profile Completion Reward Prompt BRI- 151
+description: Feature App Profile Completion Reward Prompt BRI- 151 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-app-profile-completion-reward-prompt-bri-151.md
+---
+
 Last Updated: 2026-05-06
 
 # Feature: App Profile Completion Reward Prompt (`BRI-151`)

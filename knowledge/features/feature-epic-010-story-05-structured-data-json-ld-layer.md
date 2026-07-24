@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 05 Structured Data Json Ld Layer
+description: Feature EPIC- 010 STORY- 05 Structured Data Json Ld Layer - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-05-structured-data-json-ld-layer.md
+---
+
 # Feature: EPIC-010 STORY-010-05 Structured Data JSON-LD Layer
 
 ## Summary

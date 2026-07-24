@@ -8,6 +8,7 @@ export type StakeProfileValidationStatus = "pending" | "validated" | "reconcile_
 export type StakeProfileEventRecord = {
   id: string;
   webhookEventId: string | null;
+  provenanceId?: string | null;
   assetAddress: string;
   ownerWallet: string;
   collectionAddress: string;
@@ -30,6 +31,7 @@ export type StakeProfileEventRecord = {
 type StakeProfileEventRow = {
   id: string;
   webhook_event_id: string | null;
+  provenance_id?: string | null;
   asset_address: string;
   owner_wallet: string;
   collection_address: string;
@@ -51,6 +53,7 @@ type StakeProfileEventRow = {
 
 type UpsertStakeProfileEventInput = {
   webhookEventId?: string | null;
+  provenanceId?: string | null;
   assetAddress: string;
   ownerWallet: string;
   collectionAddress: string;
@@ -103,6 +106,7 @@ function mapRow(row: StakeProfileEventRow): StakeProfileEventRecord {
   return {
     id: row.id,
     webhookEventId: row.webhook_event_id,
+    provenanceId: row.provenance_id ?? null,
     assetAddress: row.asset_address,
     ownerWallet: row.owner_wallet,
     collectionAddress: row.collection_address,
@@ -148,6 +152,7 @@ export async function upsertStakeProfileEvent(input: UpsertStakeProfileEventInpu
     const record: StakeProfileEventRecord = {
       id: existing?.id ?? randomUUID(),
       webhookEventId: input.webhookEventId ?? existing?.webhookEventId ?? null,
+      provenanceId: input.provenanceId ?? existing?.provenanceId ?? null,
       assetAddress,
       ownerWallet,
       collectionAddress,
@@ -175,6 +180,7 @@ export async function upsertStakeProfileEvent(input: UpsertStakeProfileEventInpu
       `INSERT INTO user_profile_stake_events (
          id,
          webhook_event_id,
+         provenance_id,
          asset_address,
          owner_wallet,
          collection_address,
@@ -192,10 +198,11 @@ export async function upsertStakeProfileEvent(input: UpsertStakeProfileEventInpu
          validation_status,
          validation_error
        ) VALUES (
-         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'America/Bogota', $14, $15, $16, $17
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'America/Bogota', $15, $16, $17, $18
        )
        ON CONFLICT (tx_signature, asset_address, blockchain_action, instruction_index) DO UPDATE
        SET webhook_event_id = COALESCE(EXCLUDED.webhook_event_id, user_profile_stake_events.webhook_event_id),
+           provenance_id = COALESCE(EXCLUDED.provenance_id, user_profile_stake_events.provenance_id),
            slot = COALESCE(EXCLUDED.slot, user_profile_stake_events.slot),
            block_time = COALESCE(EXCLUDED.block_time, user_profile_stake_events.block_time),
            observed_at = EXCLUDED.observed_at,
@@ -205,6 +212,7 @@ export async function upsertStakeProfileEvent(input: UpsertStakeProfileEventInpu
       [
         randomUUID(),
         input.webhookEventId ?? null,
+        input.provenanceId ?? null,
         assetAddress,
         ownerWallet,
         collectionAddress,

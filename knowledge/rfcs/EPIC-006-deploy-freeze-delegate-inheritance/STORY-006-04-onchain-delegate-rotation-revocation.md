@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 006 04 Onchain Delegate Rotation Revocation
+description: STORY- 006 04 Onchain Delegate Rotation Revocation - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/STORY-006-04-onchain-delegate-rotation-revocation.md
+---
+
 # STORY-006-04-onchain-delegate-rotation-revocation
 
 ## Metadata

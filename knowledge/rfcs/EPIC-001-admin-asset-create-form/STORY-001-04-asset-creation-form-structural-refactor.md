@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 001 04 Asset Creation Form Structural Refactor
+description: STORY- 001 04 Asset Creation Form Structural Refactor - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-001-admin-asset-create-form/STORY-001-04-asset-creation-form-structural-refactor.md
+---
+
 # STORY-001-04-asset-creation-form-structural-refactor
 
 ## Metadata

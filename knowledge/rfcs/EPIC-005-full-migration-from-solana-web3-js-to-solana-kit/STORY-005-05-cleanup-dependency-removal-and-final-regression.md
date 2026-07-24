@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 005 05 Cleanup Dependency Removal And Final Regression
+description: STORY- 005 05 Cleanup Dependency Removal And Final Regression - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/STORY-005-05-cleanup-dependency-removal-and-final-regression.md
+---
+
 # STORY-005-05-cleanup-dependency-removal-and-final-regression
 
 ## Metadata

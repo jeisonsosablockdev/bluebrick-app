@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 013 06 Qa Rollout Observability And Kill Switch
+description: STORY- 013 06 Qa Rollout Observability And Kill Switch - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/STORY-013-06-qa-rollout-observability-and-kill-switch.md
+---
+
 # STORY-013-06-qa-rollout-observability-and-kill-switch
 
 ## Metadata

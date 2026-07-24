@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Collections Document Upload
+description: Fix Admin Collections Document Upload - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-collections-document-upload.md
+---
+
 # Fix: Admin collections document upload
 
 ## Problem

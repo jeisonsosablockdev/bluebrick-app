@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix BRI- 170 Stake Mobile Card Overflow Implementation
+description: Fix BRI- 170 Stake Mobile Card Overflow Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-bri-170-stake-mobile-card-overflow-implementation.md
+---
+
 # implementation(fix): BRI-170 Stake mobile card overflow
 
 ## Espanol

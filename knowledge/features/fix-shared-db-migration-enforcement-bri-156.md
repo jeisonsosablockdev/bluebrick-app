@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Shared Db Migration Enforcement BRI- 156
+description: Fix Shared Db Migration Enforcement BRI- 156 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-shared-db-migration-enforcement-bri-156.md
+---
+
 # Fix Shared DB Migration Enforcement (`BRI-156`)
 
 ## Summary

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix App Feature Icons And Copy
+description: Fix App Feature Icons And Copy - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-app-feature-icons-and-copy.md
+---
+
 # Feature Note: Feature Cards Icons + Copy Tweak
 
 ## Objective

@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158
+description: Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md
+---
+
 # Fix: BRI-158 Public SEO + Core Web Vitals + Vercel Performance
 
 Last Updated: 2026-05-19 UTC

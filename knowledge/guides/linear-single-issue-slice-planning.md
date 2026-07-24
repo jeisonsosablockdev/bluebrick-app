@@ -1,3 +1,12 @@
+---
+type: Guide
+title: Linear Single Issue Slice Planning
+description: Linear Single Issue Slice Planning - migrated from knowledge/
+tags: [guides]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/guides/linear-single-issue-slice-planning.md
+---
+
 # Linear Single-Issue Feature + SPEC Planning
 
 ## Purpose

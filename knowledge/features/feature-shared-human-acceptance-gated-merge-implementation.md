@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Human Acceptance Gated Merge Implementation
+description: Feature Shared Human Acceptance Gated Merge Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md
+---
+
 # Human Acceptance Gated Merge Implementation
 
 ## Decision Summary

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Czambrano BRI- 180 App Ui Improvements Implementation
+description: Feature Czambrano BRI- 180 App Ui Improvements Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-czambrano-bri-180-app-ui-improvements-implementation.md
+---
+
 # Implementación: UI Improvements & Scroll Motion Experience
 
 ## Contexto

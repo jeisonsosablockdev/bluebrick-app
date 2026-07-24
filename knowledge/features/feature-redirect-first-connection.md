@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Redirect First Connection
+description: Feature Redirect First Connection - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-redirect-first-connection.md
+---
+
 # Redirect on First Wallet Connection
 
 El objetivo de este feature es interceptar el flujo de autenticación justo después de que el usuario firme exitosamente el mensaje SIWS, para redirigirlo automáticamente a `/protected/perfil` si la cuenta está incompleta.

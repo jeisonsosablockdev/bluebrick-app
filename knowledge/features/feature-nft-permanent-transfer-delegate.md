@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Nft Permanent Transfer Delegate
+description: Feature Nft Permanent Transfer Delegate - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-nft-permanent-transfer-delegate.md
+---
+
 # Feature: Permanent Transfer Delegate en deploy de collection Core
 
 ## Resumen

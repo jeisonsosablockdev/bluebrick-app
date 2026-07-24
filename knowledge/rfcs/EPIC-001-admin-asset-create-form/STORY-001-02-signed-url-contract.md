@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 001 02 Signed Url Contract
+description: STORY- 001 02 Signed Url Contract - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-001-admin-asset-create-form/STORY-001-02-signed-url-contract.md
+---
+
 # STORY-001-02-signed-url-contract
 
 ## Metadata

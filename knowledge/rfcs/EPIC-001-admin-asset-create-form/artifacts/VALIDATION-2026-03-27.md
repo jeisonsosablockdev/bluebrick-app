@@ -1,3 +1,12 @@
+---
+type: RFC
+title: VALIDATION 2026 03 27
+description: VALIDATION 2026 03 27 - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/VALIDATION-2026-03-27.md
+---
+
 # EPIC-001 / STORY-001-04 Validation Evidence (2026-03-27)
 
 ## Run Metadata

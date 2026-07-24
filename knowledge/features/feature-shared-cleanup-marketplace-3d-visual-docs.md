@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Cleanup Marketplace 3d Visual Docs
+description: Feature Shared Cleanup Marketplace 3d Visual Docs - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md
+---
+
 # Problem Artifact: cleanup-marketplace-3d-visual-docs
 
 ## What problem exists

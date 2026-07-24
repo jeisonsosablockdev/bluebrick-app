@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Fix Shared Github Actions Node24
+description: Fix Shared Github Actions Node24 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/fix-shared-github-actions-node24.md
+---
+
 # Feature Note: fix-shared-github-actions-node24
 
 ## Summary

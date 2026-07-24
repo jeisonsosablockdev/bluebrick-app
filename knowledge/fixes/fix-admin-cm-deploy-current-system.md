@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Cm Deploy Current System
+description: Fix Admin Cm Deploy Current System - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-cm-deploy-current-system.md
+---
+
 # Fix: Admin Candy Machine deploy current system
 
 ## Problem

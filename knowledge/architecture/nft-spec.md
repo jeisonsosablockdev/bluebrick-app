@@ -17,6 +17,12 @@ Last Updated: 2026-06-07
 
 Logs must not include full serialized transaction payloads, private keys, cookies, request bodies, wallet secrets, or authority decisions sourced only from the client. Client-provided `deployId` is only a correlation value for logs; snapshot verification and Create Asset gating remain server-owned and RPC-backed.
 
+## EPIC-014 Mint Provenance & Archival RPC Integration
+- Candy Machine is the sole financial scope for yield distribution runs; collection membership is supporting context only.
+- `asset_project_origins` links each eligible asset to its approved Candy Machine mint transaction evidence on-chain.
+- Archival RPC nodes (Helius Archive primary + Alchemy Archive secondary) are mandatory for historical mint and freeze interval reconstruction.
+- Assets lacking verified mint transactions are marked `needs_review` and mathematically excluded from distribution calculations.
+
 ## BRI-170 Marketplace Owner-Freeze Mint Contract
 - `/admin/assets/new` creates/configures collections and Candy Machines; it does not mint final user-owned NFTs.
 - `/marketplace/[id]` is the canonical user mint surface for BRIDS NFT purchases.

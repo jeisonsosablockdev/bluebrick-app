@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 04 Collections Api And Ownership Enforcement
+description: STORY- 011 04 Collections Api And Ownership Enforcement - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-011-admin-collections-console/STORY-011-04-collections-api-and-ownership-enforcement.md
+---
+
 # STORY-011-04-collections-api-and-ownership-enforcement
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Referral Marketing System BRI- 16
+description: Feature Shared Referral Marketing System BRI- 16 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-referral-marketing-system-bri-16.md
+---
+
 # Feature: Shared Referral Marketing System (`BRI-16`)
 
 ## Slice `S01` - Wallet-First Referral Schema Alignment

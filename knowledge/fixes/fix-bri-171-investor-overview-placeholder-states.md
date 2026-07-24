@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix BRI- 171 Investor Overview Placeholder States
+description: Fix BRI- 171 Investor Overview Placeholder States - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-bri-171-investor-overview-placeholder-states.md
+---
+
 # Fix BRI-171 Investor Overview Placeholder States
 
 ## Problema

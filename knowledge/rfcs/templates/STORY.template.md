@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY-.Template
+description: STORY-.Template - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/templates/STORY.template.md
+---
+
 # STORY-<id>-<slug>
 
 ## Metadata

@@ -1,3 +1,12 @@
+---
+type: Policy
+title: Git Monorepo Policy
+description: Git Monorepo Policy - migrated from knowledge/
+tags: [governance]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/governance/git-monorepo-policy.md
+---
+
 🌿 GIT GOVERNANCE + MONOREPO POLICY
 
 (MANDATORY – NON-NEGOTIABLE)

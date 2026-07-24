@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Adminassetsnew BRI- 165 Implementation
+description: Fix Adminassetsnew BRI- 165 Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-adminassetsnew-bri-165-implementation.md
+---
+
 # Implementation: `/admin/assets/new` regressions (BRI-165)
 
 ## Resolution Strategy

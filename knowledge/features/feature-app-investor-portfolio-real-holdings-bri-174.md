@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Investor Portfolio Real Holdings BRI- 174
+description: Feature App Investor Portfolio Real Holdings BRI- 174 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174.md
+---
+
 # Feature BRI-174: Investor Portfolio With Real Collection-Level Holdings
 
 ## Espanol

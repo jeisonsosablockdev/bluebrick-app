@@ -1,3 +1,12 @@
+---
+type: Policy
+title: Nft Policy
+description: Nft Policy - migrated from knowledge/
+tags: [governance]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/governance/nft-policy.md
+---
+
 🟠 NFT EXTENSION POLICY (SOLANA)
 
 When building NFTs on Solana:

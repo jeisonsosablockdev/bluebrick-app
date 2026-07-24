@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Admin Collections Ui Reorganization BRI- 169 Implementation
+description: Fix Admin Collections Ui Reorganization BRI- 169 Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169-implementation.md
+---
+
 # Implementation: Admin Collections UI Reorganization (BRI-169)
 
 ## Status

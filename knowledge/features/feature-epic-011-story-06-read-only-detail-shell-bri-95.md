@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 011 STORY- 06 Read Only Detail Shell BRI- 95
+description: Feature EPIC- 011 STORY- 06 Read Only Detail Shell BRI- 95 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-011-story-06-read-only-detail-shell-bri-95.md
+---
+
 # EPIC-011 Story 06: Read-Only Detail Shell
 
 ## Summary

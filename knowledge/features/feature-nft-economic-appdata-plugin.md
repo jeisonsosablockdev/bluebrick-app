@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Nft Economic Appdata Plugin
+description: Feature Nft Economic Appdata Plugin - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-nft-economic-appdata-plugin.md
+---
+
 # Feature: Economic AppData Plugin en NFTs Core (STORY-006-03)
 
 ## Resumen

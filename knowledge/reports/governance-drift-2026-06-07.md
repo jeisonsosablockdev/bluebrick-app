@@ -1,3 +1,12 @@
+---
+type: Document
+title: Governance Drift 2026 06 07
+description: Governance Drift 2026 06 07 - migrated from knowledge/
+tags: [reports]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/reports/governance-drift-2026-06-07.md
+---
+
 # Governance Drift Report
 
 Generated: 2026-06-07T05:49:42.156Z

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 001 04 Phase1 Inventory
+description: STORY- 001 04 Phase1 Inventory - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase1-inventory.md
+---
+
 # STORY-001-04 Phase 1 Inventory (Peer-Review Artifact)
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Pr Governance Flow Flexibility
+description: Feature Shared Pr Governance Flow Flexibility - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-pr-governance-flow-flexibility.md
+---
+
 # Feature Note: shared-pr-governance-flow-flexibility
 
 ## Summary

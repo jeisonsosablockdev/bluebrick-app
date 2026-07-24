@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: STORY- 011 06 Documents Editor BRI- 99
+description: STORY- 011 06 Documents Editor BRI- 99 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/story-011-06-documents-editor-bri-99.md
+---
+
 # STORY-011-06 / BRI-99 / Documents Editor
 
 ## Summary

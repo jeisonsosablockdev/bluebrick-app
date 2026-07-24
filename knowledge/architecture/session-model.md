@@ -14,6 +14,11 @@ Last Updated: 2026-07-22
 ## BRI-182 4-Layer Architecture Alignment
 - Re-located auth session state store to Layer 2 (`/lib/state/auth-store.ts`) and updated all session route imports to canonical 4-layer paths.
 
+## EPIC-014 Archival & Provenance Session Boundary
+- Admin routes `/api/admin/archival/health` and `/api/admin/provenance/backfill` use `getRequestRole` for admin role verification.
+- Unauthenticated or non-admin sessions are rejected with HTTP 401.
+- No session state or cookies are mutated during health checks or backfill jobs.
+
 ## BRI-178 Initial Loading Screen Session Boundary
 - The initial loading screen (splash screen) does not introduce any new session cookie, nonce, browser token, or account-only authority.
 - The browser local storage reads the `brids-ui-theme` key to prevent flash-of-unstyled-content but does not store any auth or session credentials.

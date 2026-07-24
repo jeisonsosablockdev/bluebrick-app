@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 11 Location Form Contract And Persistence Parity
+description: STORY- 011 11 Location Form Contract And Persistence Parity - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-011-admin-collections-console/STORY-011-11-location-form-contract-and-persistence-parity.md
+---
+
 # STORY-011-11-location-form-contract-and-persistence-parity
 
 ## Metadata

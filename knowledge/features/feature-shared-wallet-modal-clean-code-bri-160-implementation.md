@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Wallet Modal Clean Code BRI- 160 Implementation
+description: Feature Shared Wallet Modal Clean Code BRI- 160 Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md
+---
+
 # implementation(shared): WalletModal clean-code refactor
 
 ## Status

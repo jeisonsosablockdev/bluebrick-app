@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 003 04 Quantity Foundation And Multi Quantity Rollout
+description: STORY- 003 04 Quantity Foundation And Multi Quantity Rollout - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-003-nft-store-purchase-flow/STORY-003-04-quantity-foundation-and-multi-quantity-rollout.md
+---
+
 # STORY-003-04-quantity-foundation-and-multi-quantity-rollout
 
 ## Metadata

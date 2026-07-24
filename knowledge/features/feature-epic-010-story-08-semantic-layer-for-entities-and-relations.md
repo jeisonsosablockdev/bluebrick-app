@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 08 Semantic Layer For Entities And Relations
+description: Feature EPIC- 010 STORY- 08 Semantic Layer For Entities And Relations - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-08-semantic-layer-for-entities-and-relations.md
+---
+
 # Feature Note: EPIC-010 STORY-08 Semantic Layer for Entities and Relations
 
 ## Scope

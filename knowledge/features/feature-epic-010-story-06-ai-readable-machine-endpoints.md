@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 06 Ai Readable Machine Endpoints
+description: Feature EPIC- 010 STORY- 06 Ai Readable Machine Endpoints - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-06-ai-readable-machine-endpoints.md
+---
+
 # Feature: EPIC-010 STORY-010-06 AI Readable and Machine Endpoints
 
 ## Summary

@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 010 07 Content Pipeline And Serialization
+description: STORY- 010 07 Content Pipeline And Serialization - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-010-ai-discovery-infrastructure-and-seo-for-brids/STORY-010-07-content-pipeline-and-serialization.md
+---
+
 # STORY-010-07-content-pipeline-and-serialization
 
 ## Metadata

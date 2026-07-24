@@ -1,3 +1,12 @@
+---
+type: RFC
+title: README
+description: README - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-006-deploy-freeze-delegate-inheritance/README.md
+---
+
 # EPIC-006-deploy-freeze-delegate-inheritance
 
 ## Metadata

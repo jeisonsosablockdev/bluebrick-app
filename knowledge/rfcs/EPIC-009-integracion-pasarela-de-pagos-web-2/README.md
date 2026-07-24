@@ -1,3 +1,12 @@
+---
+type: RFC
+title: README
+description: README - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-009-integracion-pasarela-de-pagos-web-2/README.md
+---
+
 # EPIC-009-integracion-pasarela-de-pagos-web-2
 
 ## Metadata

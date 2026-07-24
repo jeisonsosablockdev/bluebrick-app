@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation
+description: Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md
+---
+
 # implementation(feature): BRI-171 Investor Dashboard Overview with real data
 
 ## ES

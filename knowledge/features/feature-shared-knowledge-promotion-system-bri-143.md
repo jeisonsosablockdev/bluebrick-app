@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Shared Knowledge Promotion System BRI- 143
+description: Feature Shared Knowledge Promotion System BRI- 143 - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-shared-knowledge-promotion-system-bri-143.md
+---
+
 # Feature Note: shared-knowledge-promotion-system (BRI-143)
 
 Introduce a concrete shared system so development knowledge can accumulate with promotion gates instead of remaining scattered across feature notes, RFCs, and ad-hoc memory.

@@ -1,3 +1,12 @@
+---
+type: Fix Spec
+title: Fix Login Modal Issue Implementation
+description: Fix Login Modal Issue Implementation - migrated from knowledge/
+tags: [fixes]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/fix-login-modal-issue-implementation.md
+---
+
 # Implementation: Login modal viewport anchoring and auth state clarity
 
 ## Status

@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature EPIC- 010 STORY- 07 Content Pipeline Serialization
+description: Feature EPIC- 010 STORY- 07 Content Pipeline Serialization - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-epic-010-story-07-content-pipeline-serialization.md
+---
+
 # Feature: EPIC-010 STORY-010-07 Content Pipeline and Serialization
 
 ## Summary

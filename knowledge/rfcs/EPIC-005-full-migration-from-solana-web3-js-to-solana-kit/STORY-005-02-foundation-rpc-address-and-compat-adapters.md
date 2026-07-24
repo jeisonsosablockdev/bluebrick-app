@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 005 02 Foundation Rpc Address And Compat Adapters
+description: STORY- 005 02 Foundation Rpc Address And Compat Adapters - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-005-full-migration-from-solana-web3-js-to-solana-kit/STORY-005-02-foundation-rpc-address-and-compat-adapters.md
+---
+
 # STORY-005-02-foundation-rpc-address-and-compat-adapters
 
 ## Metadata

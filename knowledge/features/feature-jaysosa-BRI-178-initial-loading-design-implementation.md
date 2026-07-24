@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature Jaysosa BRI- 178 Initial Loading Design Implementation
+description: Feature Jaysosa BRI- 178 Initial Loading Design Implementation - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md
+---
+
 # Solution Artifact: Initial Loading Screen Design Implementation
 
 This document outlines the step-by-step engineering plan for implementing the premium initial loading screen under the issue key `BRI-178` and developer handle `jaysosa`.

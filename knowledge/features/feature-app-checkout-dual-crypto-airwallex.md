@@ -1,3 +1,12 @@
+---
+type: Feature Spec
+title: Feature App Checkout Dual Crypto Airwallex
+description: Feature App Checkout Dual Crypto Airwallex - migrated from knowledge/
+tags: [features]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/feature-app-checkout-dual-crypto-airwallex.md
+---
+
 # Feature: Checkout Dual Crypto + Airwallex (BRI-42)
 
 ## Summary

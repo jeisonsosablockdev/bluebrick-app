@@ -1,3 +1,12 @@
+---
+type: RFC
+title: STORY- 011 08 Blockchain Readonly Panel
+description: STORY- 011 08 Blockchain Readonly Panel - migrated from knowledge/
+tags: [rfcs]
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-011-admin-collections-console/STORY-011-08-blockchain-readonly-panel.md
+---
+
 # STORY-011-08-blockchain-readonly-panel
 
 ## Metadata
