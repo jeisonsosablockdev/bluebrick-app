@@ -91,6 +91,13 @@
 
 ## 🚫 MANDATORY BOOTSTRAP SEQUENCE / PREFLIGHT
 
+> **REGLA DE BLOQUEO DE CÓDIGO (NON-NEGOTIABLE):**
+> El agente TIENE PROHIBIDO crear/modificar archivos de código (`.ts`, `.tsx`, `.rs`), ejecutar `replace_file_content` o realizar cualquier implementación de lógica hasta haber completado secuencialmente:
+> 1. Confirmar `developer_handle` e `issue_id` con el usuario o Linear MCP.
+> 2. Ejecutar `./scripts/task-init.sh`.
+> 3. Crear y poblar los artefactos duales en `knowledge/features/` o `knowledge/fixes/` sin placeholders.
+> 4. Sincronizar el 'Human Brief' en Linear vía MCP.
+
 **When the user requests to "prepare preflight" or start a new task/SPEC, you MUST execute these steps in order:**
 
 1. **Verify Previous SPEC Completion**: Ask if the current SPEC is fully finished. If yes, execute final commit, run full validation (`pnpm validate`), and merge current SPEC branch into its parent `feature/*` branch.
