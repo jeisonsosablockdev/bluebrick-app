@@ -62,6 +62,8 @@
     "block_on_unassigned_subagent": true,
     "prohibit_direct_web3_v1": true,
     "require_dual_governing_artifact": true,
-    "require_double_gatekeeper_architect_approval": true
+    "require_double_gatekeeper_architect_approval": true,
+    "allowed_developer_handles": ["jaymusicmachine", "jeisonsosa"],
+    "require_linear_issue_exists": true
   }
 }
