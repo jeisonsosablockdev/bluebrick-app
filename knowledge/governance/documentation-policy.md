@@ -126,6 +126,8 @@ Decision-complete rule:
 
 SPEC rule:
 	•	For multi-SPEC initiatives, the first SPEC is mandatory and comes before delivery SPECs.
+	•	La primera SPEC de la iniciativa debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED).
+	•	La última SPEC de la iniciativa debe estar dedicada estrictamente a limpieza y refactorización (Clean Code Audit / refactor-clean).
 	•	The first SPEC owns the artifact pair, the atomic SPEC map, the test-plan-first contract, and RFC creation or update when RFC applies.
 
 Linear sync rule:
