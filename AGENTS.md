@@ -33,7 +33,7 @@
 - For new fixes, require:
   - `knowledge/fixes/fix-<slug>.md`
   - `knowledge/fixes/fix-<slug>-implementation.md`
-- For multi-SPEC work, require the first SPEC before delivery SPECs.
+- For multi-SPEC work, require the first SPEC before delivery SPECs. La primera SPEC debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED) y la última SPEC debe estar dedicada estrictamente a Limpieza y Refactorización (Clean Code Audit / refactor-clean).
 - Load only the matching `.agents/workflows/*.md` and `.agents/policies/*.md`.
 
 ## Workflow Routing
@@ -90,6 +90,13 @@
 - Blockchain/NFT acceptance: devnet only, real transactions, real signatures, on-chain confirmation
 
 ## 🚫 MANDATORY BOOTSTRAP SEQUENCE / PREFLIGHT
+
+> **REGLA DE BLOQUEO DE CÓDIGO (NON-NEGOTIABLE):**
+> El agente TIENE PROHIBIDO crear/modificar archivos de código (`.ts`, `.tsx`, `.rs`), ejecutar `replace_file_content` o realizar cualquier implementación de lógica hasta haber completado secuencialmente:
+> 1. Confirmar `developer_handle` e `issue_id` con el usuario o Linear MCP.
+> 2. Ejecutar `./scripts/task-init.sh`.
+> 3. Crear y poblar los artefactos duales en `knowledge/features/` o `knowledge/fixes/` sin placeholders.
+> 4. Sincronizar el 'Human Brief' en Linear vía MCP.
 
 **When the user requests to "prepare preflight" or start a new task/SPEC, you MUST execute these steps in order:**
 

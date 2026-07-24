@@ -22,14 +22,7 @@ Transversal Development Policy
 
 	•	**Developer Identity & Ownership:** Confirmar siempre con qué desarrollador del proyecto se está trabajando antes de crear, actualizar o sincronizar contenido en Linear. Antes de ejecutar protocolos de inicio de desarrollo o cualquier línea de código, el desarrollador asignado (`czambrano` o `Jeison Sosa`) debe estar declarado explícitamente en el bloque de `Ownership` del issue de Linear y en el artefacto local. **REGLA PARA AGENTES**: Cada vez que se vaya a crear un nuevo issue, el agente DEBE preguntar obligatoriamente al usuario: 1) a quién va asignado, 2) qué tipo de feature es, 3) qué prioridad tiene, y 4) qué etiqueta/label le corresponde (Improvement, feature, bug, documentation). Toda esta información de asignación, etiquetas y prioridad DEBE ser inyectada directamente en los metadatos del ticket en Linear utilizando la API (GraphQL), no basta con dejarlo solo en la descripción de Markdown.
 	•	**Task Creation Lifecycle:** El proceso de creación de tareas se considera finalizado ÚNICAMENTE cuando: 1) La documentación (Human Brief) existe en el artefacto local. 2) La documentación está sincronizada en Linear y cumple con las políticas de gobernanza, estando aprobada por el developer a cargo. 3) Se ha creado la rama principal correspondiente usando el Issue ID de Linear.
-	•	**Linear as Source of Truth & Mandatory Template:** Usar Linear como fuente principal para issues, objetivos, SPECS y criterios de aceptación. TODO issue en Linear y su correspondiente artefacto Markdown debe seguir OBLIGATORIAMENTE la siguiente plantilla estructural (conocida como "Human Brief"):
-		- **Ownership** (Issue ID, Developer, Team, Feature Type, Priority, Label)
-		- **Objective**
-		- **Scope**
-		- **Non-goals**
-		- **Acceptance Criteria**
-		- **Risks**
-		- **Open Questions**
+	•	**Linear as Source of Truth & Mandatory Template:** Usar Linear como fuente principal para issues, objetivos, SPECS y criterios de aceptación. TODO issue en Linear y su correspondiente artefacto Markdown debe seguir OBLIGATORIAMENTE la estructura bilingüe oficial en [linear-brief-template.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/templates/linear-brief-template.md) (conocida como "Human Brief").
 	•	**SPEC Tracking:** Evitar que los SPECS principales vivan en comentarios sueltos de Linear; deben ser parte del cuerpo principal del issue o de documentos dedicados.
 	•	**Bilingual Standard & Quality:** Toda documentación bilingüe debe estructurarse con `VERSION ESPAÑOL` primero y `ENGLISH VERSION` después. Se exige el uso correcto de tildes, puntuación y ortografía en toda documentación escrita en español.
 
@@ -108,6 +101,10 @@ For fix, bugfix, and hotfix initiatives, the required artifact pair is:
 	•	Problem artifact: `/docs/fixes/fix-<slug>.md`
 	•	Solution artifact: `/docs/fixes/fix-<slug>-implementation.md`
 
+Problem/Solution templates are located at:
+- [problem-spec-template.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/templates/problem-spec-template.md)
+- [solution-spec-template.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/templates/solution-spec-template.md)
+
 Problem artifact must answer:
 	•	What problem exists
 	•	Why it matters
@@ -129,6 +126,8 @@ Decision-complete rule:
 
 SPEC rule:
 	•	For multi-SPEC initiatives, the first SPEC is mandatory and comes before delivery SPECs.
+	•	La primera SPEC de la iniciativa debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED).
+	•	La última SPEC de la iniciativa debe estar dedicada estrictamente a limpieza y refactorización (Clean Code Audit / refactor-clean).
 	•	The first SPEC owns the artifact pair, the atomic SPEC map, the test-plan-first contract, and RFC creation or update when RFC applies.
 
 Linear sync rule:
