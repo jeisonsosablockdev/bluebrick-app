@@ -17,3 +17,5 @@ test-results
 next-env.d.ts
 /artifacts/
 opencode.json
+.agents/pr_last_run.json
+

@@ -30,11 +30,11 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | Observations | 9 |
 | Proposals | 3 |
 | Reports | 4 |
-| Archived | 658 |
+| Archived | 660 |
 | Observed status | 18 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 656 |
+| Archived status | 658 |
 
 ## Inbox
 
@@ -318,6 +318,8 @@ Last Generated: 2026-06-16T00:00:00.000Z
 | feature-jaysosa-BRI-178-initial-loading-design | archived | none | [feature-jaysosa-BRI-178-initial-loading-design](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
 | feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & 4-Layer Architecture Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks | archived | none | [Harness System Enhancement, 4-Layer Architecture, Idempotent Lifecycle & Single-Trigger PR Guard (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md) | n/a |
+| feature-jeisonsosa-BRI-181-canonical-templates-implementation | archived | none | [Plantillas Canónicas para OKF y Linear Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-canonical-templates | archived | none | [Plantillas Canónicas para OKF y Linear (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation | archived | none | [task-init.sh reinforcement workflow Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-181-task-init-reinforcement | archived | none | [task-init.sh reinforcement workflow (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement.md) | n/a |
 | feature-landing-dark-hero-look-and-feel-implementation | archived | none | [feature-landing-dark-hero-look-and-feel-implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |

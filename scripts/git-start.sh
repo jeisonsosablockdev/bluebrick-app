@@ -375,17 +375,37 @@ if [[ "${MODE}" == "parent" || "${MODE}" == "single" ]]; then
 fi
 
 if [[ -n "${DOC_SLUG}" ]]; then
-  if [[ "${TYPE}" =~ ^(feature|security|nft|refactor|epic)$ ]]; then
-    PROBLEM_FILE="knowledge/features/feature-${DOC_SLUG}.md"
-    SOLUTION_FILE="knowledge/features/feature-${DOC_SLUG}-implementation.md"
-    
-    mkdir -p knowledge/features
-    
-    if [[ ! -f "${PROBLEM_FILE}" ]]; then
-      cat <<EOF > "${PROBLEM_FILE}"
-# Problem Artifact: ${NAME}
+  TEMPLATE_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/knowledge/templates"
+  PROBLEM_TEMPLATE="${TEMPLATE_DIR}/problem-spec-template.md"
+  SOLUTION_TEMPLATE="${TEMPLATE_DIR}/solution-spec-template.md"
 
-## What problem exists
+  write_template() {
+    local template_path="$1"
+    local output_path="$2"
+    local fallback_title="$3"
+    local fallback_body="$4"
+    
+    if [[ -f "${template_path}" ]]; then
+      node -e '
+        const fs = require("fs");
+        try {
+          let content = fs.readFileSync(process.argv[1], "utf8");
+          content = content.replace(/\$\{NAME\}/g, process.argv[3]);
+          fs.writeFileSync(process.argv[2], content, "utf8");
+        } catch (e) {
+          process.exit(1);
+        }
+      ' "${template_path}" "${output_path}" "${NAME}"
+    else
+      cat <<EOF > "${output_path}"
+# ${fallback_title}: ${NAME}
+
+${fallback_body}
+EOF
+    fi
+  }
+
+  PROBLEM_FALLBACK_BODY="## What problem exists
 <!-- Describir el problema o cambio que se está resolviendo -->
 
 ## Why it matters
@@ -398,16 +418,9 @@ if [[ -n "${DOC_SLUG}" ]]; then
 <!-- Qué vacíos o limitaciones existen actualmente en el sistema -->
 
 ## What questions remain open
-<!-- Qué preguntas o decisiones quedan abiertas -->
-EOF
-      echo "📝 Creado archivo de problema: ${PROBLEM_FILE}"
-    fi
+<!-- Qué preguntas o decisiones quedan abiertas -->"
 
-    if [[ ! -f "${SOLUTION_FILE}" ]]; then
-      cat <<EOF > "${SOLUTION_FILE}"
-# Solution Artifact: ${NAME} Implementation
-
-## How the work will be resolved
+  SOLUTION_FALLBACK_BODY="## How the work will be resolved
 <!-- Cómo se resolverá el trabajo (paso a paso o arquitectura general) -->
 
 ## What slices and branches will be used
@@ -423,8 +436,21 @@ EOF
 <!-- Qué validaciones o compuertas deben aprobarse -->
 
 ## What will be synchronized to Linear
-<!-- Qué información se sincronizará con Linear -->
-EOF
+<!-- Qué información se sincronizará con Linear -->"
+
+  if [[ "${TYPE}" =~ ^(feature|security|nft|refactor|epic)$ ]]; then
+    PROBLEM_FILE="knowledge/features/feature-${DOC_SLUG}.md"
+    SOLUTION_FILE="knowledge/features/feature-${DOC_SLUG}-implementation.md"
+    
+    mkdir -p knowledge/features
+    
+    if [[ ! -f "${PROBLEM_FILE}" ]]; then
+      write_template "${PROBLEM_TEMPLATE}" "${PROBLEM_FILE}" "Problem Spec" "${PROBLEM_FALLBACK_BODY}"
+      echo "📝 Creado archivo de problema: ${PROBLEM_FILE}"
+    fi
+
+    if [[ ! -f "${SOLUTION_FILE}" ]]; then
+      write_template "${SOLUTION_TEMPLATE}" "${SOLUTION_FILE}" "Solution Spec" "${SOLUTION_FALLBACK_BODY}"
       echo "📝 Creado archivo de solución: ${SOLUTION_FILE}"
     fi
   elif [[ "${TYPE}" =~ ^(fix|bugfix|hotfix)$ ]]; then
@@ -434,49 +460,12 @@ EOF
     mkdir -p knowledge/fixes
     
     if [[ ! -f "${PROBLEM_FILE}" ]]; then
-      cat <<EOF > "${PROBLEM_FILE}"
-# Problem Artifact: ${NAME}
-
-## What problem exists
-<!-- Describir el problema o cambio que se está resolviendo -->
-
-## Why it matters
-<!-- Por qué es importante resolverlo y cuál es el impacto -->
-
-## What outcome is expected
-<!-- Qué resultado se espera para considerar esto como terminado -->
-
-## What gaps exist today
-<!-- Qué vacíos o limitaciones existen actualmente en el sistema -->
-
-## What questions remain open
-<!-- Qué preguntas o decisiones quedan abiertas -->
-EOF
+      write_template "${PROBLEM_TEMPLATE}" "${PROBLEM_FILE}" "Problem Spec" "${PROBLEM_FALLBACK_BODY}"
       echo "📝 Creado archivo de problema: ${PROBLEM_FILE}"
     fi
 
     if [[ ! -f "${SOLUTION_FILE}" ]]; then
-      cat <<EOF > "${SOLUTION_FILE}"
-# Solution Artifact: ${NAME} Implementation
-
-## How the work will be resolved
-<!-- Cómo se resolverá el trabajo (paso a paso o arquitectura general) -->
-
-## What slices and branches will be used
-<!-- Qué rebanadas y ramas se utilizarán -->
-
-## What tests go first
-<!-- Qué pruebas se escribirán primero (fase RED) -->
-
-## What tooling is required
-<!-- Qué herramientas o MCP servers se requieren -->
-
-## What gates must pass
-<!-- Qué validaciones o compuertas deben aprobarse -->
-
-## What will be synchronized to Linear
-<!-- Qué información se sincronizará con Linear -->
-EOF
+      write_template "${SOLUTION_TEMPLATE}" "${SOLUTION_FILE}" "Solution Spec" "${SOLUTION_FALLBACK_BODY}"
       echo "📝 Creado archivo de solución: ${SOLUTION_FILE}"
     fi
   fi
