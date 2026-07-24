@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T04:55:26.283Z",
+  "generatedAt": "2026-07-24T03:38:33.333Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -1518,6 +1518,48 @@
       "type": "feature",
       "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement",
       "path": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md"
     },
     {
       "id": "knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md",
@@ -3204,6 +3246,12 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/inbox/2026-06/index.md"
+    },
+    {
+      "id": "knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md",
+      "type": "governance",
+      "label": "candy-machine-deploy-iteration-2026-07-22-bri-182",
+      "path": "knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md"
     },
     {
       "id": "knowledge/index.md",

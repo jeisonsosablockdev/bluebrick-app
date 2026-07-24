@@ -27,6 +27,11 @@ if grep -rn --include="*.ts" --include="*.tsx" 'from "pg"' "$REPO_ROOT/app" "$RE
   VIOLATIONS+=("Layer 1 (Presentation) contains forbidden direct DB imports ('pg')")
 fi
 
+# 3. Enforce license compliance policy
+if ! pnpm check:licenses >/dev/null 2>&1; then
+  VIOLATIONS+=("License policy violation: Disallowed or contaminating copyleft package detected")
+fi
+
 if [[ ${#VIOLATIONS[@]} -eq 0 ]]; then
   echo "✅ 4-Layer architecture governance check passed."
   exit 0
