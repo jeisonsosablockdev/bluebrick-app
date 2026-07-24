@@ -158,7 +158,11 @@ PR_URL="$(echo "$PR_INFO" | node -e "let s='';process.stdin.on('data',d=>s+=d).o
 
 if [[ -n "$PR_NUMBER" ]]; then
   echo "ℹ️ Existing PR detected: #${PR_NUMBER}. Updating PR body and title..."
-  gh pr edit "$PR_NUMBER" --repo "$OWNER_REPO" --title "$TITLE" --body-file "$BODY_FILE" >/dev/null
+  # Use gh api (REST) to avoid GraphQL Projects (classic) deprecation error
+  gh api "repos/${OWNER_REPO}/pulls/${PR_NUMBER}" \
+    -X PATCH \
+    -f title="${TITLE}" \
+    -f body="$(cat "${BODY_FILE}")" >/dev/null
 else
   CREATE_ARGS=(--repo "$OWNER_REPO" --base "$BASE_REF" --head "$CURRENT_BRANCH" --title "$TITLE" --body-file "$BODY_FILE")
   if [[ "$DRAFT" == "1" ]]; then
