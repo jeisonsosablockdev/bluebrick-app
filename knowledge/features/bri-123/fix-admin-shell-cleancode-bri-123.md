@@ -3,8 +3,8 @@ type: Feature Spec
 title: Fix Admin Shell Cleancode BRI- 123
 description: Fix Admin Shell Cleancode BRI- 123 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-admin-shell-cleancode-bri-123.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-123/fix-admin-shell-cleancode-bri-123.md
 ---
 
 # BRI-123 - Clean-code refactor for admin shell and collections detail components

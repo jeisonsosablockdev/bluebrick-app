@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix App Marketplace Map Update Depth BRI- 164
 description: Fix App Marketplace Map Update Depth BRI- 164 - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-map-update-depth-bri-164.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/bri-164/fix-app-marketplace-map-update-depth-bri-164.md
 ---
 
 # Fix: Marketplace map update-depth deployment error
@@ -22,12 +22,11 @@ React documents error #185 as a maximum update-depth failure, which means a comp
 ## Root Cause
 The marketplace Mapbox client is controlled through `viewState`. When `react-map-gl` reports a move event that is equivalent to the current camera, `useMarketplaceMapViewState` still schedules a new `movedViewState`.
 
-That can create a production loop:
-- controlled `viewState` renders
-- Mapbox reports `onMove`
-- `applyMapMove` writes equivalent state
-- React renders again
-- Mapbox reports the same move again
+This occurs due to two reasons:
+1. **Object Reference Equality on Padding**: The `padding` property comparison inside `areViewStatesEqual` (`left.padding === right.padding`) was comparing references. Mapbox passes new padding objects during movement, which broke the equality check even if the values were identical.
+2. **Recreated Camera View State**: The `cameraViewState` object was computed on every render, preventing `areViewStatesEqual` from correctly bailing out since a new object reference was always returned.
+
+This created an infinite update loop under React production builds, resulting in React Error #185.
 
 ## Solution
 Guard `applyMapMove` so equivalent camera states do not write React state.

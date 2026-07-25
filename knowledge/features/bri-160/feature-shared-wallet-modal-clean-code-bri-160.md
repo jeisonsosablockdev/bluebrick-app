@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Shared Wallet Modal Clean Code BRI- 160
 description: Feature Shared Wallet Modal Clean Code BRI- 160 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-wallet-modal-clean-code-bri-160.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-160/feature-shared-wallet-modal-clean-code-bri-160.md
 ---
 
 # BRI-160 - Clean-code refactor for WalletModal auth entry orchestration

@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix Stake Unstake Release Visibility
 description: Fix Stake Unstake Release Visibility - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-stake-unstake-release-visibility.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/other/fix-stake-unstake-release-visibility.md
 ---
 
 # Fix - Stake / Unstake release visibility

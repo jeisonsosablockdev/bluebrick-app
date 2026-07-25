@@ -1,14 +1,16 @@
 ---
 type: Fix Index
-title: BRI-167 Phantom Autoconnect Scope
-description: Fixes for Phantom wallet autoconnect scope
-tags: [fix, bri-167, phantom, wallet, autoconnect, auth]
-timestamp: 2026-06-16T00:00:00Z
+title: bri-167
+description: Fix files for bri-167
+tags: [fix, bri-167]
+timestamp: 2026-07-24T00:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/fixes/bri-167
 ---
 
-# BRI-167 Phantom Autoconnect Scope
+# bri-167
 
 ## Files
-* [Problem](fix-bri-167-phantom-autoconnect-scope.md)
-* [Implementation](fix-bri-167-phantom-autoconnect-scope-implementation.md)
+* [fix-bri-167-phantom-autoconnect-scope-implementation](fix-bri-167-phantom-autoconnect-scope-implementation.md)
+* [fix-bri-167-phantom-autoconnect-scope](fix-bri-167-phantom-autoconnect-scope.md)
+* [fix-login-modal-issue-implementation](fix-login-modal-issue-implementation.md)
+* [fix-login-modal-issue](fix-login-modal-issue.md)

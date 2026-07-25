@@ -3,8 +3,8 @@ type: Feature Spec
 title: Fix App Favicon BRI- 67
 description: Fix App Favicon BRI- 67 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-favicon-bri-67.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-63/fix-app-favicon-bri-67.md
 ---
 
 # BRI-67 — Favicon del website con `B.svg`

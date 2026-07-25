@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Flujo Gitflow Pr Structure BRI- 61
 description: Feature Flujo Gitflow Pr Structure BRI- 61 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-flujo-gitflow-pr-structure-bri-61.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-61/feature-flujo-gitflow-pr-structure-bri-61.md
 ---
 
 # Feature: Flujo Gitflow PR Structure (BRI-61)

@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature App Wide Motion 12 Ux Polish BRI- 163
 description: Feature App Wide Motion 12 Ux Polish BRI- 163 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-wide-motion-12-ux-polish-bri-163.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-163/feature-app-wide-motion-12-ux-polish-bri-163.md
 ---
 
 # Feature Note: App-wide Motion 12 UX Polish (BRI-163)

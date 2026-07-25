@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation
 description: Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-5/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md
 ---
 
 # implementation(feature): Stake / Unstake UI con persistencia segura derivada desde Helius

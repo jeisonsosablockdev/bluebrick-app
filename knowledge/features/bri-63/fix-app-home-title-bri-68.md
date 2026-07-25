@@ -3,8 +3,8 @@ type: Feature Spec
 title: Fix App Home Title BRI- 68
 description: Fix App Home Title BRI- 68 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-home-title-bri-68.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-63/fix-app-home-title-bri-68.md
 ---
 
 # BRI-68 — Home title explícito `Home | BRIDS`

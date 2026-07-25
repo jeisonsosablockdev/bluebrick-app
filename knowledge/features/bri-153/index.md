@@ -3,7 +3,7 @@ type: Feature Index
 title: bri-153
 description: Feature files for bri-153
 tags: [feature, bri-153]
-timestamp: 2026-06-16T00:00:00Z
+timestamp: 2026-07-24T00:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/features/bri-153
 ---
 

@@ -30,11 +30,11 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | Observations | 10 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 684 |
+| Archived | 518 |
 | Observed status | 20 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 682 |
+| Archived status | 516 |
 
 ## Inbox
 
@@ -187,10 +187,15 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck | archived | none | [Feature App Create A Marketplace 3d Visual BRI- 164 S43 Web Vitals Recheck](knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-s43-web-vitals-recheck.md) | n/a |
 | feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan | archived | none | [Feature App Create A Marketplace 3d Visual BRI- 164 S44 Security Audit Plan](knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164-s44-security-audit-plan.md) | n/a |
 | feature-app-create-a-marketplace-3d-visual-bri-164 | archived | none | [Feature App Create A Marketplace 3d Visual BRI- 164](knowledge/features/bri-164-marketplace-3d-visual/feature-app-create-a-marketplace-3d-visual-bri-164.md) | n/a |
-| index | archived | none | [BRI-164 Marketplace 3D Visual](knowledge/features/bri-164-marketplace-3d-visual/index.md) | n/a |
+| index | archived | none | [bri-164-marketplace-3d-visual](knowledge/features/bri-164-marketplace-3d-visual/index.md) | n/a |
 | feature-app-marketplace-detail-media-carousel-bri-164-implementation | archived | none | [Feature App Marketplace Detail Media Carousel BRI- 164 Implementation](knowledge/features/bri-164-media-carousel/feature-app-marketplace-detail-media-carousel-bri-164-implementation.md) | n/a |
 | feature-app-marketplace-detail-media-carousel-bri-164 | archived | none | [Feature App Marketplace Detail Media Carousel BRI- 164](knowledge/features/bri-164-media-carousel/feature-app-marketplace-detail-media-carousel-bri-164.md) | n/a |
 | index | archived | none | [bri-164-media-carousel](knowledge/features/bri-164-media-carousel/index.md) | n/a |
+| feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation | archived | none | [Feature Czambrano BRI- 168 Ui Ux Fixes And Improvements Implementation](knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md) | n/a |
+| feature-czambrano-bri-168-ui-ux-fixes-and-improvements | archived | none | [Feature Czambrano BRI- 168 Ui Ux Fixes And Improvements](knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md) | n/a |
+| feature-landing-dark-hero-look-and-feel-implementation | archived | none | [Feature Landing Dark Hero Look And Feel Implementation](knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
+| feature-landing-dark-hero-look-and-feel | archived | none | [Feature Landing Dark Hero Look And Feel](knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel.md) | n/a |
+| index | archived | none | [bri-168](knowledge/features/bri-168/index.md) | n/a |
 | feature-app-investor-dashboard-overview-real-data-bri-171-implementation | archived | none | [Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation](knowledge/features/bri-171/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md) | n/a |
 | feature-app-investor-dashboard-overview-real-data-bri-171 | archived | none | [Feature App Investor Dashboard Overview Real Data BRI- 171](knowledge/features/bri-171/feature-app-investor-dashboard-overview-real-data-bri-171.md) | n/a |
 | index | archived | none | [bri-171](knowledge/features/bri-171/index.md) | n/a |
@@ -200,9 +205,44 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-app-investor-portfolio-real-holdings-bri-174-implementation | archived | none | [Feature App Investor Portfolio Real Holdings BRI- 174 Implementation](knowledge/features/bri-174/feature-app-investor-portfolio-real-holdings-bri-174-implementation.md) | n/a |
 | feature-app-investor-portfolio-real-holdings-bri-174 | archived | none | [Feature App Investor Portfolio Real Holdings BRI- 174](knowledge/features/bri-174/feature-app-investor-portfolio-real-holdings-bri-174.md) | n/a |
 | index | archived | none | [bri-174](knowledge/features/bri-174/index.md) | n/a |
-| feature-business-logic-reasoner-bri-177-implementation | archived | none | [Feature Business Logic Reasoner BRI- 177 Implementation](knowledge/features/bri-177/feature-business-logic-reasoner-bri-177-implementation.md) | n/a |
-| feature-business-logic-reasoner-bri-177 | archived | none | [Feature Business Logic Reasoner BRI- 177](knowledge/features/bri-177/feature-business-logic-reasoner-bri-177.md) | n/a |
+| feature-business-logic-reasoner-bri-177-implementation | observed | guide | [Business Logic Reasoner - Implementation Plan](knowledge/features/bri-177/feature-business-logic-reasoner-bri-177-implementation.md) | BRI-177 |
+| feature-business-logic-reasoner-bri-177 | observed | guide | [Business Logic Reasoner - Self-Discover Agent](knowledge/features/bri-177/feature-business-logic-reasoner-bri-177.md) | BRI-177 |
 | index | archived | none | [bri-177](knowledge/features/bri-177/index.md) | n/a |
+| feature-jaysosa-BRI-178-initial-loading-design-implementation | archived | none | [Feature Jaysosa BRI- 178 Initial Loading Design Implementation](knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design-implementation.md) | n/a |
+| feature-jaysosa-BRI-178-initial-loading-design | archived | none | [Feature Jaysosa BRI- 178 Initial Loading Design](knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
+| index | archived | none | [bri-178](knowledge/features/bri-178/index.md) | n/a |
+| feature-shared-spec-and-branching-governance-implementation | archived | none | [Feature Shared Spec And Branching Governance Implementation](knowledge/features/bri-179/feature-shared-spec-and-branching-governance-implementation.md) | n/a |
+| feature-shared-spec-and-branching-governance | archived | none | [Feature Shared Spec And Branching Governance](knowledge/features/bri-179/feature-shared-spec-and-branching-governance.md) | n/a |
+| index | archived | none | [bri-179](knowledge/features/bri-179/index.md) | n/a |
+| feature-czambrano-bri-180-app-ui-improvements-implementation | archived | none | [Feature Czambrano BRI- 180 App Ui Improvements Implementation](knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements-implementation.md) | n/a |
+| feature-czambrano-bri-180-app-ui-improvements | archived | none | [Feature Czambrano BRI- 180 App Ui Improvements](knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements.md) | n/a |
+| index | archived | none | [bri-180](knowledge/features/bri-180/index.md) | n/a |
+| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & 4-Layer Architecture Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks | archived | none | [Harness System Enhancement, 4-Layer Architecture, Idempotent Lifecycle & Single-Trigger PR Guard (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md) | n/a |
+| feature-jeisonsosa-BRI-181-canonical-templates-implementation | archived | none | [Plantillas Canónicas para OKF y Linear Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-canonical-templates | archived | none | [Plantillas Canónicas para OKF y Linear (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates.md) | n/a |
+| feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-graphify-agent-enforcement | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md) | n/a |
+| feature-jeisonsosa-BRI-181-solution-template-redesign-implementation | archived | none | [Rediseño del Solution Spec Template Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-solution-template-redesign | archived | none | [Rediseño del Solution Spec Template (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign.md) | n/a |
+| feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation | archived | none | [task-init.sh reinforcement workflow Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-task-init-reinforcement | archived | none | [task-init.sh reinforcement workflow (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement.md) | n/a |
+| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último Implementation (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último (BRI-181)](knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md) | n/a |
+| feature-shared-agents-drifting-bri-181-implementation | archived | none | [Feature Shared Agents Drifting BRI- 181 Implementation](knowledge/features/bri-181/feature-shared-agents-drifting-bri-181-implementation.md) | n/a |
+| feature-shared-agents-drifting-bri-181 | archived | none | [Feature Shared Agents Drifting BRI- 181](knowledge/features/bri-181/feature-shared-agents-drifting-bri-181.md) | n/a |
+| index | archived | none | [bri-181](knowledge/features/bri-181/index.md) | n/a |
+| feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-alineacion-politicas-architect | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation](knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md) | n/a |
+| index | archived | none | [bri-182](knowledge/features/bri-182/index.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance-implementation | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance-implementation](knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-183-license-compliance | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance](knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance.md) | n/a |
+| index | archived | none | [bri-183](knowledge/features/bri-183/index.md) | n/a |
 | feature-app-home-copy-bri-39 | archived | none | [Feature App Home Copy BRI- 39](knowledge/features/bri-39/feature-app-home-copy-bri-39.md) | n/a |
 | index | archived | none | [bri-39](knowledge/features/bri-39/index.md) | n/a |
 | feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation | archived | none | [Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation](knowledge/features/bri-5/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md) | n/a |
@@ -223,6 +263,10 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | fix-marketplace-remove-hardcoded-fallback-bri-64 | archived | none | [Fix Marketplace Remove Hardcoded Fallback BRI- 64](knowledge/features/bri-63/fix-marketplace-remove-hardcoded-fallback-bri-64.md) | n/a |
 | fix-siws-session-nonce-stateless-bri-66 | archived | none | [Fix Siws Session Nonce Stateless BRI- 66](knowledge/features/bri-63/fix-siws-session-nonce-stateless-bri-66.md) | n/a |
 | index | archived | none | [bri-63](knowledge/features/bri-63/index.md) | n/a |
+| feature-stake-distribution-traceability-epic-014-implementation | archived | none | [Feature Stake Distribution Traceability EPIC- 014 Implementation](knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014-implementation.md) | n/a |
+| feature-stake-distribution-traceability-epic-014 | archived | none | [Feature Stake Distribution Traceability EPIC- 014](knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014.md) | n/a |
+| index | archived | none | [bri-7](knowledge/features/bri-7/index.md) | n/a |
+| rfc-epic-014 | archived | none | [Rfc EPIC- 014](knowledge/features/bri-7/rfc-epic-014.md) | n/a |
 | index | archived | none | [Epic 003 - NFT Store Purchase Flow](knowledge/features/epic-003/index.md) | n/a |
 | feature-epic-010-story-01-foundation-layered-architecture | archived | none | [Feature EPIC- 010 STORY- 01 Foundation Layered Architecture](knowledge/features/epic-010/feature-epic-010-story-01-foundation-layered-architecture.md) | n/a |
 | feature-epic-010-story-02-content-as-code-editorial-contracts | archived | none | [Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts](knowledge/features/epic-010/feature-epic-010-story-02-content-as-code-editorial-contracts.md) | n/a |
@@ -234,7 +278,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-epic-010-story-08-semantic-layer-for-entities-and-relations | archived | none | [Feature EPIC- 010 STORY- 08 Semantic Layer For Entities And Relations](knowledge/features/epic-010/feature-epic-010-story-08-semantic-layer-for-entities-and-relations.md) | n/a |
 | feature-epic-010-story-09-feeds-exports-internal-search-readiness | archived | none | [Feature EPIC- 010 STORY- 09 Feeds Exports Internal Search Readiness](knowledge/features/epic-010/feature-epic-010-story-09-feeds-exports-internal-search-readiness.md) | n/a |
 | feature-epic-010-story-10-observability-security-performance-deploy-docs | archived | none | [Feature EPIC- 010 STORY- 10 Observability Security Performance Deploy Docs](knowledge/features/epic-010/feature-epic-010-story-10-observability-security-performance-deploy-docs.md) | n/a |
-| index | archived | none | [Epic 010 - AI Discovery Infrastructure](knowledge/features/epic-010/index.md) | n/a |
+| index | archived | none | [epic-010](knowledge/features/epic-010/index.md) | n/a |
 | feature-epic-011-story-02-admin-collections-read-model | archived | none | [Feature EPIC- 011 STORY- 02 Admin Collections Read Model](knowledge/features/epic-011/feature-epic-011-story-02-admin-collections-read-model.md) | n/a |
 | feature-epic-011-story-03-collection-content-persistence | archived | none | [Feature EPIC- 011 STORY- 03 Collection Content Persistence](knowledge/features/epic-011/feature-epic-011-story-03-collection-content-persistence.md) | n/a |
 | feature-epic-011-story-04-collections-api-ownership | archived | none | [Feature EPIC- 011 STORY- 04 Collections Api Ownership](knowledge/features/epic-011/feature-epic-011-story-04-collections-api-ownership.md) | n/a |
@@ -242,7 +286,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-epic-011-story-05-empty-loading-error-states-bri-92 | archived | none | [Feature EPIC- 011 STORY- 05 Empty Loading Error States BRI- 92](knowledge/features/epic-011/feature-epic-011-story-05-empty-loading-error-states-bri-92.md) | n/a |
 | feature-epic-011-story-05-navigation-to-detail-view-bri-94 | archived | none | [Feature EPIC- 011 STORY- 05 Navigation To Detail View BRI- 94](knowledge/features/epic-011/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md) | n/a |
 | feature-epic-011-story-06-read-only-detail-shell-bri-95 | archived | none | [Feature EPIC- 011 STORY- 06 Read Only Detail Shell BRI- 95](knowledge/features/epic-011/feature-epic-011-story-06-read-only-detail-shell-bri-95.md) | n/a |
-| index | archived | none | [Epic 011 - Admin Collections Console](knowledge/features/epic-011/index.md) | n/a |
+| index | archived | none | [epic-011](knowledge/features/epic-011/index.md) | n/a |
 | story-011-06-documents-editor-bri-99 | archived | none | [STORY- 011 06 Documents Editor BRI- 99](knowledge/features/epic-011/story-011-06-documents-editor-bri-99.md) | n/a |
 | story-011-06-gallery-tabs-shell-bri-98 | archived | none | [STORY- 011 06 Gallery Tabs Shell BRI- 98](knowledge/features/epic-011/story-011-06-gallery-tabs-shell-bri-98.md) | n/a |
 | story-011-06-property-information-editor-bri-97 | archived | none | [STORY- 011 06 Property Information Editor BRI- 97](knowledge/features/epic-011/story-011-06-property-information-editor-bri-97.md) | n/a |
@@ -264,142 +308,6 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | story-011-09-persist-google-maps-place-json-bri-113 | archived | none | [STORY- 011 09 Persist Google Maps Place Json BRI- 113](knowledge/features/epic-011/story-011-09-persist-google-maps-place-json-bri-113.md) | n/a |
 | story-011-10-collections-health-and-manual-review-queue-bri-79 | archived | none | [STORY- 011 10 Collections Health And Manual Review Queue BRI- 79](knowledge/features/epic-011/story-011-10-collections-health-and-manual-review-queue-bri-79.md) | n/a |
 | story-011-11-location-form-contract-and-persistence-parity-bri-124 | archived | none | [STORY- 011 11 Location Form Contract And Persistence Parity BRI- 124](knowledge/features/epic-011/story-011-11-location-form-contract-and-persistence-parity-bri-124.md) | n/a |
-| feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
-| feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/feature-admin-collection-documents-ui-remake.md) | n/a |
-| feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
-| feature-app-home-copy-bri-39 | archived | none | [Feature App Home Copy BRI- 39](knowledge/features/feature-app-home-copy-bri-39.md) | n/a |
-| feature-app-image-storage-blob-pinata | archived | none | [Feature App Image Storage Blob Pinata](knowledge/features/feature-app-image-storage-blob-pinata.md) | n/a |
-| feature-app-investor-dashboard-overview-real-data-bri-171-implementation | archived | none | [Feature App Investor Dashboard Overview Real Data BRI- 171 Implementation](knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md) | n/a |
-| feature-app-investor-dashboard-overview-real-data-bri-171 | archived | none | [Feature App Investor Dashboard Overview Real Data BRI- 171](knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md) | n/a |
-| feature-app-investor-portfolio-real-holdings-bri-174-implementation | archived | none | [Feature App Investor Portfolio Real Holdings BRI- 174 Implementation](knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174-implementation.md) | n/a |
-| feature-app-investor-portfolio-real-holdings-bri-174 | archived | none | [Feature App Investor Portfolio Real Holdings BRI- 174](knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174.md) | n/a |
-| feature-app-marketplace-detail-media-carousel-bri-164-implementation | archived | none | [Feature App Marketplace Detail Media Carousel BRI- 164 Implementation](knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164-implementation.md) | n/a |
-| feature-app-marketplace-detail-media-carousel-bri-164 | archived | none | [Feature App Marketplace Detail Media Carousel BRI- 164](knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164.md) | n/a |
-| feature-app-mobile-pill-phantom | archived | none | [Feature App Mobile Pill Phantom](knowledge/features/feature-app-mobile-pill-phantom.md) | n/a |
-| feature-app-profile-completion-reward-prompt-bri-151 | archived | none | [Feature App Profile Completion Reward Prompt BRI- 151](knowledge/features/feature-app-profile-completion-reward-prompt-bri-151.md) | n/a |
-| feature-app-quick-tour | archived | none | [Feature App Quick Tour](knowledge/features/feature-app-quick-tour.md) | n/a |
-| feature-app-startup-splash-screen-bri-121 | archived | none | [Feature App Startup Splash Screen BRI- 121](knowledge/features/feature-app-startup-splash-screen-bri-121.md) | n/a |
-| feature-app-transparency | archived | none | [Feature App Transparency](knowledge/features/feature-app-transparency.md) | n/a |
-| feature-app-wallet-connection-solanakit-bri-12 | archived | none | [Feature App Wallet Connection Solanakit BRI- 12](knowledge/features/feature-app-wallet-connection-solanakit-bri-12.md) | n/a |
-| feature-app-wide-motion-12-ux-polish-bri-163-implementation | archived | none | [Feature App Wide Motion 12 Ux Polish BRI- 163 Implementation](knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163-implementation.md) | n/a |
-| feature-app-wide-motion-12-ux-polish-bri-163 | archived | none | [Feature App Wide Motion 12 Ux Polish BRI- 163](knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163.md) | n/a |
-| feature-business-logic-reasoner-bri-177-implementation | observed | guide | [Business Logic Reasoner - Implementation Plan](knowledge/features/feature-business-logic-reasoner-bri-177-implementation.md) | BRI-177 |
-| feature-business-logic-reasoner-bri-177 | observed | guide | [Business Logic Reasoner - Self-Discover Agent](knowledge/features/feature-business-logic-reasoner-bri-177.md) | BRI-177 |
-| feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation | archived | none | [Feature Contextual Hints Admin Assets New Exclude Location BRI- 10 Implementation](knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation.md) | n/a |
-| feature-contextual-hints-admin-assets-new-exclude-location-bri-10 | archived | none | [Feature Contextual Hints Admin Assets New Exclude Location BRI- 10](knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10.md) | n/a |
-| feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation | archived | none | [Feature Czambrano BRI- 168 Ui Ux Fixes And Improvements Implementation](knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md) | n/a |
-| feature-czambrano-bri-168-ui-ux-fixes-and-improvements | archived | none | [Feature Czambrano BRI- 168 Ui Ux Fixes And Improvements](knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md) | n/a |
-| feature-czambrano-BRI-173-branching-policy-preflight-implementation | archived | none | [Feature Czambrano BRI- 173 Branching Policy Preflight Implementation](knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md) | n/a |
-| feature-czambrano-BRI-173-branching-policy-preflight | archived | none | [Feature Czambrano BRI- 173 Branching Policy Preflight](knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md) | n/a |
-| feature-czambrano-bri-180-app-ui-improvements-implementation | archived | none | [Feature Czambrano BRI- 180 App Ui Improvements Implementation](knowledge/features/feature-czambrano-bri-180-app-ui-improvements-implementation.md) | n/a |
-| feature-czambrano-bri-180-app-ui-improvements | archived | none | [Feature Czambrano BRI- 180 App Ui Improvements](knowledge/features/feature-czambrano-bri-180-app-ui-improvements.md) | n/a |
-| feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation | archived | none | [Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5 Implementation](knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md) | n/a |
-| feature-discovery-brief-anchor-notary-and-freeze-control-bri-5 | archived | none | [Feature Discovery BRI-ef Anchor Notary And Freeze Control BRI- 5](knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md) | n/a |
-| feature-epic-010-story-01-foundation-layered-architecture | archived | none | [Feature EPIC- 010 STORY- 01 Foundation Layered Architecture](knowledge/features/feature-epic-010-story-01-foundation-layered-architecture.md) | n/a |
-| feature-epic-010-story-02-content-as-code-editorial-contracts | archived | none | [Feature EPIC- 010 STORY- 02 Content As Code Editorial Contracts](knowledge/features/feature-epic-010-story-02-content-as-code-editorial-contracts.md) | n/a |
-| feature-epic-010-story-03-route-architecture-templates | archived | none | [Feature EPIC- 010 STORY- 03 Route Architecture Templates](knowledge/features/feature-epic-010-story-03-route-architecture-templates.md) | n/a |
-| feature-epic-010-story-04-technical-seo-infrastructure | archived | none | [Feature EPIC- 010 STORY- 04 Technical Seo Infrastructure](knowledge/features/feature-epic-010-story-04-technical-seo-infrastructure.md) | n/a |
-| feature-epic-010-story-05-structured-data-json-ld-layer | archived | none | [Feature EPIC- 010 STORY- 05 Structured Data Json Ld Layer](knowledge/features/feature-epic-010-story-05-structured-data-json-ld-layer.md) | n/a |
-| feature-epic-010-story-06-ai-readable-machine-endpoints | archived | none | [Feature EPIC- 010 STORY- 06 Ai Readable Machine Endpoints](knowledge/features/feature-epic-010-story-06-ai-readable-machine-endpoints.md) | n/a |
-| feature-epic-010-story-07-content-pipeline-serialization | archived | none | [Feature EPIC- 010 STORY- 07 Content Pipeline Serialization](knowledge/features/feature-epic-010-story-07-content-pipeline-serialization.md) | n/a |
-| feature-epic-010-story-08-semantic-layer-for-entities-and-relations | archived | none | [Feature EPIC- 010 STORY- 08 Semantic Layer For Entities And Relations](knowledge/features/feature-epic-010-story-08-semantic-layer-for-entities-and-relations.md) | n/a |
-| feature-epic-010-story-09-feeds-exports-internal-search-readiness | archived | none | [Feature EPIC- 010 STORY- 09 Feeds Exports Internal Search Readiness](knowledge/features/feature-epic-010-story-09-feeds-exports-internal-search-readiness.md) | n/a |
-| feature-epic-010-story-10-observability-security-performance-deploy-docs | archived | none | [Feature EPIC- 010 STORY- 10 Observability Security Performance Deploy Docs](knowledge/features/feature-epic-010-story-10-observability-security-performance-deploy-docs.md) | n/a |
-| feature-epic-011-story-02-admin-collections-read-model | archived | none | [Feature EPIC- 011 STORY- 02 Admin Collections Read Model](knowledge/features/feature-epic-011-story-02-admin-collections-read-model.md) | n/a |
-| feature-epic-011-story-03-collection-content-persistence | archived | none | [Feature EPIC- 011 STORY- 03 Collection Content Persistence](knowledge/features/feature-epic-011-story-03-collection-content-persistence.md) | n/a |
-| feature-epic-011-story-04-collections-api-ownership | archived | none | [Feature EPIC- 011 STORY- 04 Collections Api Ownership](knowledge/features/feature-epic-011-story-04-collections-api-ownership.md) | n/a |
-| feature-epic-011-story-05-collection-cards-ui-bri-93 | archived | none | [Feature EPIC- 011 STORY- 05 Collection Cards Ui BRI- 93](knowledge/features/feature-epic-011-story-05-collection-cards-ui-bri-93.md) | n/a |
-| feature-epic-011-story-05-empty-loading-error-states-bri-92 | archived | none | [Feature EPIC- 011 STORY- 05 Empty Loading Error States BRI- 92](knowledge/features/feature-epic-011-story-05-empty-loading-error-states-bri-92.md) | n/a |
-| feature-epic-011-story-05-navigation-to-detail-view-bri-94 | archived | none | [Feature EPIC- 011 STORY- 05 Navigation To Detail View BRI- 94](knowledge/features/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md) | n/a |
-| feature-epic-011-story-06-read-only-detail-shell-bri-95 | archived | none | [Feature EPIC- 011 STORY- 06 Read Only Detail Shell BRI- 95](knowledge/features/feature-epic-011-story-06-read-only-detail-shell-bri-95.md) | n/a |
-| feature-flujo-gitflow-pr-structure-bri-61 | archived | none | [Feature Flujo Gitflow Pr Structure BRI- 61](knowledge/features/feature-flujo-gitflow-pr-structure-bri-61.md) | n/a |
-| feature-flujo-gitflow-pr-structure-improvement-01-bri-62 | archived | none | [Feature Flujo Gitflow Pr Structure Improvement 01 BRI- 62](knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md) | n/a |
-| feature-gemini-antigravity-workflows-implementation | archived | none | [Feature Gemini Antigravity Workflows Implementation](knowledge/features/feature-gemini-antigravity-workflows-implementation.md) | n/a |
-| feature-gemini-antigravity-workflows | archived | none | [Feature Gemini Antigravity Workflows](knowledge/features/feature-gemini-antigravity-workflows.md) | n/a |
-| feature-jaymusicmachine-BRI-183-license-compliance-implementation | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance-implementation](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md) | n/a |
-| feature-jaymusicmachine-BRI-183-license-compliance | archived | none | [feature-jaymusicmachine-BRI-183-license-compliance](knowledge/features/feature-jaymusicmachine-BRI-183-license-compliance.md) | n/a |
-| feature-jaysosa-BRI-178-initial-loading-design-implementation | archived | none | [Feature Jaysosa BRI- 178 Initial Loading Design Implementation](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md) | n/a |
-| feature-jaysosa-BRI-178-initial-loading-design | archived | none | [Feature Jaysosa BRI- 178 Initial Loading Design](knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md) | n/a |
-| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation | archived | none | [Harness System Enhancement & 4-Layer Architecture Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks | archived | none | [Harness System Enhancement, 4-Layer Architecture, Idempotent Lifecycle & Single-Trigger PR Guard (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md) | n/a |
-| feature-jeisonsosa-BRI-181-canonical-templates-implementation | archived | none | [Plantillas Canónicas para OKF y Linear Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-canonical-templates | archived | none | [Plantillas Canónicas para OKF y Linear (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-canonical-templates.md) | n/a |
-| feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-graphify-agent-enforcement | archived | none | [Graphify Agent Enforcement & Task-Init Auto-Sync (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md) | n/a |
-| feature-jeisonsosa-BRI-181-solution-template-redesign-implementation | archived | none | [Rediseño del Solution Spec Template Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-solution-template-redesign-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-solution-template-redesign | archived | none | [Rediseño del Solution Spec Template (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-solution-template-redesign.md) | n/a |
-| feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation | archived | none | [task-init.sh reinforcement workflow Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-task-init-reinforcement | archived | none | [task-init.sh reinforcement workflow (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-task-init-reinforcement.md) | n/a |
-| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último Implementation (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule | archived | none | [Regla Obligatoria de Slices: TDD Primero y Refactor Clean Último (BRI-181)](knowledge/features/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md) | n/a |
-| feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation](knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-182-alineacion-politicas-architect | archived | none | [feature-jeisonsosa-BRI-182-alineacion-politicas-architect](knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md) | n/a |
-| feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md) | n/a |
-| feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation | archived | none | [feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation](knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md) | n/a |
-| feature-landing-dark-hero-look-and-feel-implementation | archived | none | [Feature Landing Dark Hero Look And Feel Implementation](knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md) | n/a |
-| feature-landing-dark-hero-look-and-feel | archived | none | [Feature Landing Dark Hero Look And Feel](knowledge/features/feature-landing-dark-hero-look-and-feel.md) | n/a |
-| feature-nft-authority-lifecycle-rotation-revocation | archived | none | [Feature Nft Authority Lifecycle Rotation Revocation](knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |
-| feature-nft-economic-appdata-plugin | archived | none | [Feature Nft Economic Appdata Plugin](knowledge/features/feature-nft-economic-appdata-plugin.md) | n/a |
-| feature-nft-permanent-transfer-delegate | archived | none | [Feature Nft Permanent Transfer Delegate](knowledge/features/feature-nft-permanent-transfer-delegate.md) | n/a |
-| feature-redirect-first-connection | archived | none | [Feature Redirect First Connection](knowledge/features/feature-redirect-first-connection.md) | n/a |
-| feature-shared-agent-system-knowledge-root-implementation | archived | none | [Shared Agent System Knowledge Root Implementation](knowledge/features/feature-shared-agent-system-knowledge-root-implementation.md) | n/a |
-| feature-shared-agent-system-knowledge-root | archived | none | [Shared Agent System Knowledge Root](knowledge/features/feature-shared-agent-system-knowledge-root.md) | n/a |
-| feature-shared-agents-drifting-bri-181-implementation | archived | none | [Feature Shared Agents Drifting BRI- 181 Implementation](knowledge/features/feature-shared-agents-drifting-bri-181-implementation.md) | n/a |
-| feature-shared-agents-drifting-bri-181 | archived | none | [Feature Shared Agents Drifting BRI- 181](knowledge/features/feature-shared-agents-drifting-bri-181.md) | n/a |
-| feature-shared-agents-orchestration-enforcement-bri-157 | archived | none | [Feature Shared Agents Orchestration Enforcement BRI- 157](knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md) | n/a |
-| feature-shared-cleanup-marketplace-3d-visual-docs-implementation | archived | none | [Feature Shared Cleanup Marketplace 3d Visual Docs Implementation](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md) | n/a |
-| feature-shared-cleanup-marketplace-3d-visual-docs | archived | none | [Feature Shared Cleanup Marketplace 3d Visual Docs](knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md) | n/a |
-| feature-shared-cleanup-monorepo-structure-implementation | archived | none | [Feature Shared Cleanup Monorepo Structure Implementation](knowledge/features/feature-shared-cleanup-monorepo-structure-implementation.md) | n/a |
-| feature-shared-cleanup-monorepo-structure | archived | none | [Feature Shared Cleanup Monorepo Structure](knowledge/features/feature-shared-cleanup-monorepo-structure.md) | n/a |
-| feature-shared-human-acceptance-gated-merge-implementation | archived | none | [Feature Shared Human Acceptance Gated Merge Implementation](knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md) | n/a |
-| feature-shared-human-acceptance-gated-merge | archived | none | [Feature Shared Human Acceptance Gated Merge](knowledge/features/feature-shared-human-acceptance-gated-merge.md) | n/a |
-| feature-shared-hybrid-auth-clean-code-bri-159-implementation | archived | none | [Feature Shared HyBRI-d Auth Clean Code BRI- 159 Implementation](knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md) | n/a |
-| feature-shared-hybrid-auth-clean-code-bri-159 | archived | none | [Feature Shared HyBRI-d Auth Clean Code BRI- 159](knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md) | n/a |
-| feature-shared-hybrid-auth-workos-wallet-bri-154 | archived | none | [Feature Shared HyBRI-d Auth Workos Wallet BRI- 154](knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md) | n/a |
-| feature-shared-knowledge-promotion-system-bri-143 | archived | none | [Feature Shared Knowledge Promotion System BRI- 143](knowledge/features/feature-shared-knowledge-promotion-system-bri-143.md) | n/a |
-| feature-shared-nix-toolchain-policy | archived | none | [Feature Shared Nix Toolchain Policy](knowledge/features/feature-shared-nix-toolchain-policy.md) | n/a |
-| feature-shared-pr-governance-flow-flexibility | archived | none | [Feature Shared Pr Governance Flow Flexibility](knowledge/features/feature-shared-pr-governance-flow-flexibility.md) | n/a |
-| feature-shared-pr-governance-metadata-race-fix | archived | none | [Feature Shared Pr Governance Metadata Race Fix](knowledge/features/feature-shared-pr-governance-metadata-race-fix.md) | n/a |
-| feature-shared-pwa-web-push-bri-157 | archived | none | [Feature Shared Pwa Web Push BRI- 157](knowledge/features/feature-shared-pwa-web-push-bri-157.md) | n/a |
-| feature-shared-referral-marketing-system-bri-16 | archived | none | [Feature Shared Referral Marketing System BRI- 16](knowledge/features/feature-shared-referral-marketing-system-bri-16.md) | n/a |
-| feature-shared-single-issue-slice-planning-bri-149 | archived | none | [Feature Shared Single Issue Slice Planning BRI- 149](knowledge/features/feature-shared-single-issue-slice-planning-bri-149.md) | n/a |
-| feature-shared-spec-and-branching-governance-implementation | archived | none | [Feature Shared Spec And Branching Governance Implementation](knowledge/features/feature-shared-spec-and-branching-governance-implementation.md) | n/a |
-| feature-shared-spec-and-branching-governance | archived | none | [Feature Shared Spec And Branching Governance](knowledge/features/feature-shared-spec-and-branching-governance.md) | n/a |
-| feature-shared-wallet-modal-clean-code-bri-160-implementation | archived | none | [Feature Shared Wallet Modal Clean Code BRI- 160 Implementation](knowledge/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md) | n/a |
-| feature-shared-wallet-modal-clean-code-bri-160 | archived | none | [Feature Shared Wallet Modal Clean Code BRI- 160](knowledge/features/feature-shared-wallet-modal-clean-code-bri-160.md) | n/a |
-| feature-solana-dev-skill-implementation | archived | none | [Implementation plan for solana-dev skill in-repo installation](knowledge/features/feature-solana-dev-skill-implementation.md) | n/a |
-| feature-solana-dev-skill | archived | none | [Add solana-dev skill to .agents/skills for canonical in-repo access](knowledge/features/feature-solana-dev-skill.md) | n/a |
-| feature-stake-distribution-traceability-epic-014-implementation | archived | none | [Feature Stake Distribution Traceability EPIC- 014 Implementation](knowledge/features/feature-stake-distribution-traceability-epic-014-implementation.md) | n/a |
-| feature-stake-distribution-traceability-epic-014 | archived | none | [Feature Stake Distribution Traceability EPIC- 014](knowledge/features/feature-stake-distribution-traceability-epic-014.md) | n/a |
-| feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation | archived | none | [Feature Stake Event Reconciliation Distribution Preparation BRI- 6 Implementation](knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation.md) | n/a |
-| feature-stake-event-reconciliation-distribution-preparation-bri-6 | archived | none | [Feature Stake Event Reconciliation Distribution Preparation BRI- 6](knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md) | n/a |
-| fix-admin-shell-cleancode-bri-123 | archived | none | [Fix Admin Shell Cleancode BRI- 123](knowledge/features/fix-admin-shell-cleancode-bri-123.md) | n/a |
-| fix-app-favicon-bri-67 | archived | none | [Fix App Favicon BRI- 67](knowledge/features/fix-app-favicon-bri-67.md) | n/a |
-| fix-app-feature-icons-and-copy | archived | none | [Fix App Feature Icons And Copy](knowledge/features/fix-app-feature-icons-and-copy.md) | n/a |
-| fix-app-footer-links-bri-153 | archived | none | [Fix App Footer Links BRI- 153](knowledge/features/fix-app-footer-links-bri-153.md) | n/a |
-| fix-app-hide-release-modules-bri-152 | archived | none | [Fix App Hide Release Modules BRI- 152](knowledge/features/fix-app-hide-release-modules-bri-152.md) | n/a |
-| fix-app-home-title-bri-68 | archived | none | [Fix App Home Title BRI- 68](knowledge/features/fix-app-home-title-bri-68.md) | n/a |
-| fix-app-marketplace-release-placeholder-graphs-bri-153 | archived | none | [Fix App Marketplace Release Placeholder Graphs BRI- 153](knowledge/features/fix-app-marketplace-release-placeholder-graphs-bri-153.md) | n/a |
-| fix-app-profile-tour-emphasis-bri-153 | archived | none | [Fix App Profile Tour Emphasis BRI- 153](knowledge/features/fix-app-profile-tour-emphasis-bri-153.md) | n/a |
-| fix-app-remove-ui-states-bri-63 | archived | none | [Fix App Remove Ui States BRI- 63](knowledge/features/fix-app-remove-ui-states-bri-63.md) | n/a |
-| fix-app-suspend-airwallex-checkout | archived | none | [Fix App Suspend Airwallex Checkout](knowledge/features/fix-app-suspend-airwallex-checkout.md) | n/a |
-| fix-app-wallet-ingresar-cta-bri-153 | archived | none | [Fix App Wallet Ingresar Cta BRI- 153](knowledge/features/fix-app-wallet-ingresar-cta-bri-153.md) | n/a |
-| fix-dev-origin-and-pg-ssl-warnings | archived | none | [Fix Dev Origin And Pg Ssl Warnings](knowledge/features/fix-dev-origin-and-pg-ssl-warnings.md) | n/a |
-| fix-google-maps-embed-preview | archived | none | [Fix Google Maps Embed Preview](knowledge/features/fix-google-maps-embed-preview.md) | n/a |
-| fix-landing-featured-properties-db-source-bri-65 | archived | none | [Fix Landing Featured Properties Db Source BRI- 65](knowledge/features/fix-landing-featured-properties-db-source-bri-65.md) | n/a |
-| fix-landing-featured-properties-source-bri-65 | archived | none | [Fix Landing Featured Properties Source BRI- 65](knowledge/features/fix-landing-featured-properties-source-bri-65.md) | n/a |
-| fix-marketplace-remove-hardcoded-fallback-bri-64 | archived | none | [Fix Marketplace Remove Hardcoded Fallback BRI- 64](knowledge/features/fix-marketplace-remove-hardcoded-fallback-bri-64.md) | n/a |
-| fix-next-proxy-convention-bri-144 | archived | none | [Fix Next Proxy Convention BRI- 144](knowledge/features/fix-next-proxy-convention-bri-144.md) | n/a |
-| fix-shared-db-migration-enforcement-bri-156 | archived | none | [Fix Shared Db Migration Enforcement BRI- 156](knowledge/features/fix-shared-db-migration-enforcement-bri-156.md) | n/a |
-| fix-shared-github-actions-node24 | archived | none | [Fix Shared Github Actions Node24](knowledge/features/fix-shared-github-actions-node24.md) | n/a |
-| fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune | archived | none | [Fix Shared Npm Deprecation Cleanup Initial Wallet Bundle Prune](knowledge/features/fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune.md) | n/a |
-| fix-shared-pr-policy-lite-and-log-noise | archived | none | [Fix Shared Pr Policy Lite And Log Noise](knowledge/features/fix-shared-pr-policy-lite-and-log-noise.md) | n/a |
-| fix-shared-pr-workflow-noise-reduction | archived | none | [Fix Shared Pr Workflow Noise Reduction](knowledge/features/fix-shared-pr-workflow-noise-reduction.md) | n/a |
-| fix-siws-session-nonce-stateless-bri-66 | archived | none | [Fix Siws Session Nonce Stateless BRI- 66](knowledge/features/fix-siws-session-nonce-stateless-bri-66.md) | n/a |
-| index | archived | none | [Features](knowledge/features/index.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -407,15 +315,23 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-app-mobile-pill-phantom | archived | none | [Feature App Mobile Pill Phantom](knowledge/features/other/feature-app-mobile-pill-phantom.md) | n/a |
 | feature-app-quick-tour | archived | none | [Feature App Quick Tour](knowledge/features/other/feature-app-quick-tour.md) | n/a |
 | feature-app-transparency | archived | none | [Feature App Transparency](knowledge/features/other/feature-app-transparency.md) | n/a |
+| feature-gemini-antigravity-workflows-implementation | archived | none | [Feature Gemini Antigravity Workflows Implementation](knowledge/features/other/feature-gemini-antigravity-workflows-implementation.md) | n/a |
+| feature-gemini-antigravity-workflows | archived | none | [Feature Gemini Antigravity Workflows](knowledge/features/other/feature-gemini-antigravity-workflows.md) | n/a |
 | feature-nft-authority-lifecycle-rotation-revocation | archived | none | [Feature Nft Authority Lifecycle Rotation Revocation](knowledge/features/other/feature-nft-authority-lifecycle-rotation-revocation.md) | n/a |
 | feature-nft-economic-appdata-plugin | archived | none | [Feature Nft Economic Appdata Plugin](knowledge/features/other/feature-nft-economic-appdata-plugin.md) | n/a |
 | feature-nft-permanent-transfer-delegate | archived | none | [Feature Nft Permanent Transfer Delegate](knowledge/features/other/feature-nft-permanent-transfer-delegate.md) | n/a |
 | feature-redirect-first-connection | archived | none | [Feature Redirect First Connection](knowledge/features/other/feature-redirect-first-connection.md) | n/a |
+| feature-shared-agent-system-knowledge-root-implementation | archived | none | [Shared Agent System Knowledge Root Implementation](knowledge/features/other/feature-shared-agent-system-knowledge-root-implementation.md) | n/a |
+| feature-shared-agent-system-knowledge-root | archived | none | [Shared Agent System Knowledge Root](knowledge/features/other/feature-shared-agent-system-knowledge-root.md) | n/a |
+| feature-shared-cleanup-marketplace-3d-visual-docs-implementation | archived | none | [Feature Shared Cleanup Marketplace 3d Visual Docs Implementation](knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md) | n/a |
+| feature-shared-cleanup-marketplace-3d-visual-docs | archived | none | [Feature Shared Cleanup Marketplace 3d Visual Docs](knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs.md) | n/a |
+| feature-shared-cleanup-monorepo-structure-implementation | archived | none | [Feature Shared Cleanup Monorepo Structure Implementation](knowledge/features/other/feature-shared-cleanup-monorepo-structure-implementation.md) | n/a |
+| feature-shared-cleanup-monorepo-structure | archived | none | [Feature Shared Cleanup Monorepo Structure](knowledge/features/other/feature-shared-cleanup-monorepo-structure.md) | n/a |
 | feature-shared-nix-toolchain-policy | archived | none | [Feature Shared Nix Toolchain Policy](knowledge/features/other/feature-shared-nix-toolchain-policy.md) | n/a |
 | feature-shared-pr-governance-flow-flexibility | archived | none | [Feature Shared Pr Governance Flow Flexibility](knowledge/features/other/feature-shared-pr-governance-flow-flexibility.md) | n/a |
 | feature-shared-pr-governance-metadata-race-fix | archived | none | [Feature Shared Pr Governance Metadata Race Fix](knowledge/features/other/feature-shared-pr-governance-metadata-race-fix.md) | n/a |
-| feature-solana-dev-skill-implementation | archived | none | [Feature Solana Dev Skill Implementation](knowledge/features/other/feature-solana-dev-skill-implementation.md) | n/a |
-| feature-solana-dev-skill | archived | none | [Feature Solana Dev Skill](knowledge/features/other/feature-solana-dev-skill.md) | n/a |
+| feature-solana-dev-skill-implementation | archived | none | [Implementation plan for solana-dev skill in-repo installation](knowledge/features/other/feature-solana-dev-skill-implementation.md) | n/a |
+| feature-solana-dev-skill | archived | none | [Add solana-dev skill to .agents/skills for canonical in-repo access](knowledge/features/other/feature-solana-dev-skill.md) | n/a |
 | fix-app-feature-icons-and-copy | archived | none | [Fix App Feature Icons And Copy](knowledge/features/other/fix-app-feature-icons-and-copy.md) | n/a |
 | fix-app-suspend-airwallex-checkout | archived | none | [Fix App Suspend Airwallex Checkout](knowledge/features/other/fix-app-suspend-airwallex-checkout.md) | n/a |
 | fix-dev-origin-and-pg-ssl-warnings | archived | none | [Fix Dev Origin And Pg Ssl Warnings](knowledge/features/other/fix-dev-origin-and-pg-ssl-warnings.md) | n/a |
@@ -424,42 +340,25 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune | archived | none | [Fix Shared Npm Deprecation Cleanup Initial Wallet Bundle Prune](knowledge/features/other/fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune.md) | n/a |
 | fix-shared-pr-policy-lite-and-log-noise | archived | none | [Fix Shared Pr Policy Lite And Log Noise](knowledge/features/other/fix-shared-pr-policy-lite-and-log-noise.md) | n/a |
 | fix-shared-pr-workflow-noise-reduction | archived | none | [Fix Shared Pr Workflow Noise Reduction](knowledge/features/other/fix-shared-pr-workflow-noise-reduction.md) | n/a |
-| index | archived | none | [Other Features](knowledge/features/other/index.md) | n/a |
+| index | archived | none | [other](knowledge/features/other/index.md) | n/a |
 | refactor-shared-brids-technical-rename | archived | none | [Refactor Shared BRI-ds Technical Rename](knowledge/features/other/refactor-shared-brids-technical-rename.md) | n/a |
 | refactor-shared-codex-orchestration-architecture | archived | none | [Refactor Shared Codex Orchestration Architecture](knowledge/features/other/refactor-shared-codex-orchestration-architecture.md) | n/a |
 | refactor-terminology | archived | none | [Refactor Terminology](knowledge/features/other/refactor-terminology.md) | n/a |
-| rfc-epic-014 | archived | none | [Rfc EPIC- 014](knowledge/features/other/rfc-epic-014.md) | n/a |
-| refactor-shared-brids-technical-rename | archived | none | [Refactor Shared BRI-ds Technical Rename](knowledge/features/refactor-shared-brids-technical-rename.md) | n/a |
-| refactor-shared-codex-orchestration-architecture | archived | none | [Refactor Shared Codex Orchestration Architecture](knowledge/features/refactor-shared-codex-orchestration-architecture.md) | n/a |
-| refactor-terminology | archived | none | [Refactor Terminology](knowledge/features/refactor-terminology.md) | n/a |
-| rfc-epic-014 | archived | none | [Rfc EPIC- 014](knowledge/features/rfc-epic-014.md) | n/a |
-| story-011-06-documents-editor-bri-99 | archived | none | [STORY- 011 06 Documents Editor BRI- 99](knowledge/features/story-011-06-documents-editor-bri-99.md) | n/a |
-| story-011-06-gallery-tabs-shell-bri-98 | archived | none | [STORY- 011 06 Gallery Tabs Shell BRI- 98](knowledge/features/story-011-06-gallery-tabs-shell-bri-98.md) | n/a |
-| story-011-06-property-information-editor-bri-97 | archived | none | [STORY- 011 06 Property Information Editor BRI- 97](knowledge/features/story-011-06-property-information-editor-bri-97.md) | n/a |
-| story-011-06-summary-editor-bri-96 | archived | none | [STORY- 011 06 Summary Editor BRI- 96](knowledge/features/story-011-06-summary-editor-bri-96.md) | n/a |
-| story-011-07-api-integration-regression-bri-100 | archived | none | [STORY- 011 07 Api Integration Regression BRI- 100](knowledge/features/story-011-07-api-integration-regression-bri-100.md) | n/a |
-| story-011-07-docs-sync-and-rfc-traceability-bri-102 | archived | none | [STORY- 011 07 Docs Sync And Rfc Traceability BRI- 102](knowledge/features/story-011-07-docs-sync-and-rfc-traceability-bri-102.md) | n/a |
-| story-011-07-playwright-admin-collections-flow-bri-101 | archived | none | [STORY- 011 07 Playwright Admin Collections Flow BRI- 101](knowledge/features/story-011-07-playwright-admin-collections-flow-bri-101.md) | n/a |
-| story-011-07-responsive-qa-evidence-pack-bri-103 | archived | none | [STORY- 011 07 Responsive Qa Evidence Pack BRI- 103](knowledge/features/story-011-07-responsive-qa-evidence-pack-bri-103.md) | n/a |
-| story-011-08-appdata-plugin-fields-aggregation-bri-107 | archived | none | [STORY- 011 08 Appdata Plugin Fields Aggregation BRI- 107](knowledge/features/story-011-08-appdata-plugin-fields-aggregation-bri-107.md) | n/a |
-| story-011-08-authorities-aggregation-bri-105 | archived | none | [STORY- 011 08 Authorities Aggregation BRI- 105](knowledge/features/story-011-08-authorities-aggregation-bri-105.md) | n/a |
-| story-011-08-base-blockchain-addresses-aggregation-bri-104 | archived | none | [STORY- 011 08 Base Blockchain Addresses Aggregation BRI- 104](knowledge/features/story-011-08-base-blockchain-addresses-aggregation-bri-104.md) | n/a |
-| story-011-08-copy-link-interactions-and-tests-bri-109 | archived | none | [STORY- 011 08 Copy Link Interactions And Tests BRI- 109](knowledge/features/story-011-08-copy-link-interactions-and-tests-bri-109.md) | n/a |
-| story-011-08-guard-fields-aggregation-bri-106 | archived | none | [STORY- 011 08 Guard Fields Aggregation BRI- 106](knowledge/features/story-011-08-guard-fields-aggregation-bri-106.md) | n/a |
-| story-011-08-read-only-blockchain-panel-ui-bri-108 | archived | none | [STORY- 011 08 Read Only Blockchain Panel Ui BRI- 108](knowledge/features/story-011-08-read-only-blockchain-panel-ui-bri-108.md) | n/a |
-| story-011-09-address-autocomplete-bri-112 | archived | none | [STORY- 011 09 Address Autocomplete BRI- 112](knowledge/features/story-011-09-address-autocomplete-bri-112.md) | n/a |
-| story-011-09-backend-location-maps-contract-bri-111 | archived | none | [STORY- 011 09 Backend Location Maps Contract BRI- 111](knowledge/features/story-011-09-backend-location-maps-contract-bri-111.md) | n/a |
-| story-011-09-current-address-and-outbound-maps-cta-bri-110 | archived | none | [STORY- 011 09 Current Address And Outbound Maps Cta BRI- 110](knowledge/features/story-011-09-current-address-and-outbound-maps-cta-bri-110.md) | n/a |
-| story-011-09-manual-save-cancel-integration-and-qa-bri-114 | archived | none | [STORY- 011 09 Manual Save Cancel Integration And Qa BRI- 114](knowledge/features/story-011-09-manual-save-cancel-integration-and-qa-bri-114.md) | n/a |
-| story-011-09-persist-google-maps-place-json-bri-113 | archived | none | [STORY- 011 09 Persist Google Maps Place Json BRI- 113](knowledge/features/story-011-09-persist-google-maps-place-json-bri-113.md) | n/a |
-| story-011-10-collections-health-and-manual-review-queue-bri-79 | archived | none | [STORY- 011 10 Collections Health And Manual Review Queue BRI- 79](knowledge/features/story-011-10-collections-health-and-manual-review-queue-bri-79.md) | n/a |
-| story-011-11-location-form-contract-and-persistence-parity-bri-124 | archived | none | [STORY- 011 11 Location Form Contract And Persistence Parity BRI- 124](knowledge/features/story-011-11-location-form-contract-and-persistence-parity-bri-124.md) | n/a |
+| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation](knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md) | n/a |
+| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation](knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md) | n/a |
+| index | archived | none | [bri-154](knowledge/fixes/bri-154/index.md) | n/a |
+| fix-agents-orchestation-implementation | archived | none | [Fix Agents Orchestation Implementation](knowledge/fixes/bri-157/fix-agents-orchestation-implementation.md) | n/a |
+| fix-agents-orchestation | archived | none | [Fix Agents Orchestation](knowledge/fixes/bri-157/fix-agents-orchestation.md) | n/a |
+| index | archived | none | [bri-157](knowledge/fixes/bri-157/index.md) | n/a |
 | fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation | archived | none | [Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 Implementation](knowledge/fixes/bri-158/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md) | n/a |
 | fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158 | archived | none | [Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158](knowledge/fixes/bri-158/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md) | n/a |
-| index | archived | none | [BRI-158 Public SEO Core Web Vitals Vercel Hardening](knowledge/fixes/bri-158/index.md) | n/a |
+| index | archived | none | [bri-158](knowledge/fixes/bri-158/index.md) | n/a |
+| fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161 Implementation](knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md) | n/a |
+| fix-app-admin-asset-form-investment-model-alignment-bri-161 | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161](knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161.md) | n/a |
+| index | archived | none | [bri-161](knowledge/fixes/bri-161/index.md) | n/a |
 | fix-single-project-vercel-alias-flow-bri-162-implementation | archived | none | [Fix Single Project Vercel Alias Flow BRI- 162 Implementation](knowledge/fixes/bri-162/fix-single-project-vercel-alias-flow-bri-162-implementation.md) | n/a |
 | fix-single-project-vercel-alias-flow-bri-162 | archived | none | [Fix Single Project Vercel Alias Flow BRI- 162](knowledge/fixes/bri-162/fix-single-project-vercel-alias-flow-bri-162.md) | n/a |
-| index | archived | none | [BRI-162 Single Project Vercel Alias Flow](knowledge/fixes/bri-162/index.md) | n/a |
+| index | archived | none | [bri-162](knowledge/fixes/bri-162/index.md) | n/a |
 | fix-app-marketplace-detail-google-maps-bri-164-implementation | archived | none | [Fix App Marketplace Detail Google Maps BRI- 164 Implementation](knowledge/fixes/bri-164/fix-app-marketplace-detail-google-maps-bri-164-implementation.md) | n/a |
 | fix-app-marketplace-detail-google-maps-bri-164 | archived | none | [Fix App Marketplace Detail Google Maps BRI- 164](knowledge/fixes/bri-164/fix-app-marketplace-detail-google-maps-bri-164.md) | n/a |
 | fix-app-marketplace-detail-modal-scroll-bri-164-implementation | archived | none | [Fix App Marketplace Detail Modal Scroll BRI- 164 Implementation](knowledge/fixes/bri-164/fix-app-marketplace-detail-modal-scroll-bri-164-implementation.md) | n/a |
@@ -474,123 +373,58 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | fix-app-marketplace-map-update-depth-bri-164 | archived | none | [Fix App Marketplace Map Update Depth BRI- 164](knowledge/fixes/bri-164/fix-app-marketplace-map-update-depth-bri-164.md) | n/a |
 | fix-app-marketplace-side-pin-compact-bri-164-implementation | archived | none | [Fix App Marketplace Side Pin Compact BRI- 164 Implementation](knowledge/fixes/bri-164/fix-app-marketplace-side-pin-compact-bri-164-implementation.md) | n/a |
 | fix-app-marketplace-side-pin-compact-bri-164 | archived | none | [Fix App Marketplace Side Pin Compact BRI- 164](knowledge/fixes/bri-164/fix-app-marketplace-side-pin-compact-bri-164.md) | n/a |
-| index | archived | none | [BRI-164 Marketplace Fixes](knowledge/fixes/bri-164/index.md) | n/a |
+| index | archived | none | [bri-164](knowledge/fixes/bri-164/index.md) | n/a |
 | fix-adminassetsnew-bri-165-implementation | archived | none | [Fix Adminassetsnew BRI- 165 Implementation](knowledge/fixes/bri-165/fix-adminassetsnew-bri-165-implementation.md) | n/a |
 | fix-adminassetsnew-bri-165 | archived | none | [Fix Adminassetsnew BRI- 165](knowledge/fixes/bri-165/fix-adminassetsnew-bri-165.md) | n/a |
-| index | archived | none | [BRI-165 AdminAssetsNew Fixes](knowledge/fixes/bri-165/index.md) | n/a |
+| index | archived | none | [bri-165](knowledge/fixes/bri-165/index.md) | n/a |
+| fix-may-2026-ui-errors-implementation | archived | none | [Fix May 2026 Ui Errors Implementation](knowledge/fixes/bri-166/fix-may-2026-ui-errors-implementation.md) | n/a |
+| fix-may-2026-ui-errors | archived | none | [Fix May 2026 Ui Errors](knowledge/fixes/bri-166/fix-may-2026-ui-errors.md) | n/a |
+| index | archived | none | [bri-166](knowledge/fixes/bri-166/index.md) | n/a |
 | fix-bri-167-phantom-autoconnect-scope-implementation | archived | none | [Fix BRI- 167 Phantom Autoconnect Scope Implementation](knowledge/fixes/bri-167/fix-bri-167-phantom-autoconnect-scope-implementation.md) | n/a |
 | fix-bri-167-phantom-autoconnect-scope | archived | none | [Fix BRI- 167 Phantom Autoconnect Scope](knowledge/fixes/bri-167/fix-bri-167-phantom-autoconnect-scope.md) | n/a |
-| index | archived | none | [BRI-167 Phantom Autoconnect Scope](knowledge/fixes/bri-167/index.md) | n/a |
+| fix-login-modal-issue-implementation | archived | none | [Fix Login Modal Issue Implementation](knowledge/fixes/bri-167/fix-login-modal-issue-implementation.md) | n/a |
+| fix-login-modal-issue | archived | none | [Fix Login Modal Issue](knowledge/fixes/bri-167/fix-login-modal-issue.md) | n/a |
+| index | archived | none | [bri-167](knowledge/fixes/bri-167/index.md) | n/a |
 | fix-admin-collections-ui-reorganization-bri-169-implementation | archived | none | [Fix Admin Collections Ui Reorganization BRI- 169 Implementation](knowledge/fixes/bri-169/fix-admin-collections-ui-reorganization-bri-169-implementation.md) | n/a |
 | fix-admin-collections-ui-reorganization-bri-169 | archived | none | [Fix Admin Collections Ui Reorganization BRI- 169](knowledge/fixes/bri-169/fix-admin-collections-ui-reorganization-bri-169.md) | n/a |
-| index | archived | none | [BRI-169 Admin Collections UI Reorganization](knowledge/fixes/bri-169/index.md) | n/a |
+| index | archived | none | [bri-169](knowledge/fixes/bri-169/index.md) | n/a |
+| fix-admin-assets-owner-freeze-mint-flow-implementation | archived | none | [Fix Admin Assets Owner Freeze Mint Flow Implementation](knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow-implementation.md) | n/a |
+| fix-admin-assets-owner-freeze-mint-flow | archived | none | [Fix Admin Assets Owner Freeze Mint Flow](knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow.md) | n/a |
 | fix-bri-170-stake-blockhash-expiry-retry-implementation | archived | none | [Fix BRI- 170 Stake Blockhash Expiry Retry Implementation](knowledge/fixes/bri-170/fix-bri-170-stake-blockhash-expiry-retry-implementation.md) | n/a |
 | fix-bri-170-stake-blockhash-expiry-retry | archived | none | [Fix BRI- 170 Stake Blockhash Expiry Retry](knowledge/fixes/bri-170/fix-bri-170-stake-blockhash-expiry-retry.md) | n/a |
 | fix-bri-170-stake-mobile-card-overflow-implementation | archived | none | [Fix BRI- 170 Stake Mobile Card Overflow Implementation](knowledge/fixes/bri-170/fix-bri-170-stake-mobile-card-overflow-implementation.md) | n/a |
 | fix-bri-170-stake-mobile-card-overflow | archived | none | [Fix BRI- 170 Stake Mobile Card Overflow](knowledge/fixes/bri-170/fix-bri-170-stake-mobile-card-overflow.md) | n/a |
 | fix-bri-170-stake-sync-feedback-implementation | archived | none | [Fix BRI- 170 Stake Sync Feedback Implementation](knowledge/fixes/bri-170/fix-bri-170-stake-sync-feedback-implementation.md) | n/a |
 | fix-bri-170-stake-sync-feedback | archived | none | [Fix BRI- 170 Stake Sync Feedback](knowledge/fixes/bri-170/fix-bri-170-stake-sync-feedback.md) | n/a |
-| index | archived | none | [BRI-170 Stake Fixes](knowledge/fixes/bri-170/index.md) | n/a |
+| index | archived | none | [bri-170](knowledge/fixes/bri-170/index.md) | n/a |
 | fix-bri-171-investor-overview-placeholder-states-implementation | archived | none | [Fix BRI- 171 Investor Overview Placeholder States Implementation](knowledge/fixes/bri-171/fix-bri-171-investor-overview-placeholder-states-implementation.md) | n/a |
 | fix-bri-171-investor-overview-placeholder-states | archived | none | [Fix BRI- 171 Investor Overview Placeholder States](knowledge/fixes/bri-171/fix-bri-171-investor-overview-placeholder-states.md) | n/a |
-| index | archived | none | [BRI-171 Investor Overview Placeholder States](knowledge/fixes/bri-171/index.md) | n/a |
+| index | archived | none | [bri-171](knowledge/fixes/bri-171/index.md) | n/a |
+| fix-admin-cm-deploy-current-system-implementation | archived | none | [Fix Admin Cm Deploy Current System Implementation](knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system-implementation.md) | n/a |
+| fix-admin-cm-deploy-current-system | archived | none | [Fix Admin Cm Deploy Current System](knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system.md) | n/a |
+| index | archived | none | [bri-176](knowledge/fixes/bri-176/index.md) | n/a |
+| fix-bri-178-splash-performance-implementation | archived | none | [Fix BRI- 178 Splash Performance Implementation](knowledge/fixes/bri-178/fix-bri-178-splash-performance-implementation.md) | n/a |
+| fix-bri-178-splash-performance | archived | none | [Fix BRI- 178 Splash Performance](knowledge/fixes/bri-178/fix-bri-178-splash-performance.md) | n/a |
+| index | archived | none | [bri-178](knowledge/fixes/bri-178/index.md) | n/a |
 | fix-bri-6-admin-distributions-production-visibility-implementation | archived | none | [Fix BRI- 6 Admin Distributions Production Visibility Implementation](knowledge/fixes/bri-6/fix-bri-6-admin-distributions-production-visibility-implementation.md) | n/a |
 | fix-bri-6-admin-distributions-production-visibility | archived | none | [Fix BRI- 6 Admin Distributions Production Visibility](knowledge/fixes/bri-6/fix-bri-6-admin-distributions-production-visibility.md) | n/a |
-| index | archived | none | [BRI-6 Admin Distributions Production Visibility](knowledge/fixes/bri-6/index.md) | n/a |
-| fix-admin-asset-project-duration-derived-dates-implementation | archived | none | [Fix Admin Asset Project Duration Derived Dates Implementation](knowledge/fixes/fix-admin-asset-project-duration-derived-dates-implementation.md) | n/a |
-| fix-admin-asset-project-duration-derived-dates | archived | none | [Fix Admin Asset Project Duration Derived Dates](knowledge/fixes/fix-admin-asset-project-duration-derived-dates.md) | n/a |
-| fix-admin-assets-owner-freeze-mint-flow-implementation | archived | none | [Fix Admin Assets Owner Freeze Mint Flow Implementation](knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md) | n/a |
-| fix-admin-assets-owner-freeze-mint-flow | archived | none | [Fix Admin Assets Owner Freeze Mint Flow](knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md) | n/a |
-| fix-admin-cm-deploy-current-system-implementation | archived | none | [Fix Admin Cm Deploy Current System Implementation](knowledge/fixes/fix-admin-cm-deploy-current-system-implementation.md) | n/a |
-| fix-admin-cm-deploy-current-system | archived | none | [Fix Admin Cm Deploy Current System](knowledge/fixes/fix-admin-cm-deploy-current-system.md) | n/a |
-| fix-admin-cm-deploy-detailed-logs-implementation | archived | none | [Fix Admin Cm Deploy Detailed Logs Implementation](knowledge/fixes/fix-admin-cm-deploy-detailed-logs-implementation.md) | n/a |
-| fix-admin-cm-deploy-detailed-logs | archived | none | [Fix Admin Cm Deploy Detailed Logs](knowledge/fixes/fix-admin-cm-deploy-detailed-logs.md) | n/a |
-| fix-admin-collections-document-upload-implementation | archived | none | [Fix Admin Collections Document Upload Implementation](knowledge/fixes/fix-admin-collections-document-upload-implementation.md) | n/a |
-| fix-admin-collections-document-upload | archived | none | [Fix Admin Collections Document Upload](knowledge/fixes/fix-admin-collections-document-upload.md) | n/a |
-| fix-admin-collections-ui-reorganization-bri-169-implementation | archived | none | [Fix Admin Collections Ui Reorganization BRI- 169 Implementation](knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169-implementation.md) | n/a |
-| fix-admin-collections-ui-reorganization-bri-169 | archived | none | [Fix Admin Collections Ui Reorganization BRI- 169](knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169.md) | n/a |
-| fix-adminassetsnew-bri-165-implementation | archived | none | [Fix Adminassetsnew BRI- 165 Implementation](knowledge/fixes/fix-adminassetsnew-bri-165-implementation.md) | n/a |
-| fix-adminassetsnew-bri-165 | archived | none | [Fix Adminassetsnew BRI- 165](knowledge/fixes/fix-adminassetsnew-bri-165.md) | n/a |
-| fix-agents-orchestation-implementation | archived | none | [Fix Agents Orchestation Implementation](knowledge/fixes/fix-agents-orchestation-implementation.md) | n/a |
-| fix-agents-orchestation | archived | none | [Fix Agents Orchestation](knowledge/fixes/fix-agents-orchestation.md) | n/a |
-| fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161 Implementation](knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md) | n/a |
-| fix-app-admin-asset-form-investment-model-alignment-bri-161 | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161](knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161.md) | n/a |
-| fix-app-marketplace-detail-google-maps-bri-164-implementation | archived | none | [Fix App Marketplace Detail Google Maps BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-detail-google-maps-bri-164 | archived | none | [Fix App Marketplace Detail Google Maps BRI- 164](knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md) | n/a |
-| fix-app-marketplace-detail-modal-scroll-bri-164-implementation | archived | none | [Fix App Marketplace Detail Modal Scroll BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-detail-modal-scroll-bri-164 | archived | none | [Fix App Marketplace Detail Modal Scroll BRI- 164](knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164.md) | n/a |
-| fix-app-marketplace-disable-auto-camera-orbit-bri-164-implementation | archived | none | [Fix App Marketplace Disable Auto Camera Orbit BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-disable-auto-camera-orbit-bri-164 | archived | none | [Fix App Marketplace Disable Auto Camera Orbit BRI- 164](knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164.md) | n/a |
-| fix-app-marketplace-map-pin-contrast-bri-164-implementation | archived | none | [Fix App Marketplace Map Pin Contrast BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-map-pin-contrast-bri-164 | archived | none | [Fix App Marketplace Map Pin Contrast BRI- 164](knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164.md) | n/a |
-| fix-app-marketplace-map-pin-leader-stacking-bri-164-implementation | archived | none | [Fix App Marketplace Map Pin Leader Stacking BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-map-pin-leader-stacking-bri-164 | archived | none | [Fix App Marketplace Map Pin Leader Stacking BRI- 164](knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164.md) | n/a |
-| fix-app-marketplace-map-update-depth-bri-164-implementation | archived | none | [Fix App Marketplace Map Update Depth BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-map-update-depth-bri-164 | archived | none | [Fix App Marketplace Map Update Depth BRI- 164](knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164.md) | n/a |
-| fix-app-marketplace-side-pin-compact-bri-164-implementation | archived | none | [Fix App Marketplace Side Pin Compact BRI- 164 Implementation](knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164-implementation.md) | n/a |
-| fix-app-marketplace-side-pin-compact-bri-164 | archived | none | [Fix App Marketplace Side Pin Compact BRI- 164](knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164.md) | n/a |
-| fix-bri-167-phantom-autoconnect-scope-implementation | archived | none | [Fix BRI- 167 Phantom Autoconnect Scope Implementation](knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md) | n/a |
-| fix-bri-167-phantom-autoconnect-scope | archived | none | [Fix BRI- 167 Phantom Autoconnect Scope](knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md) | n/a |
-| fix-bri-170-stake-blockhash-expiry-retry-implementation | archived | none | [Fix BRI- 170 Stake Blockhash Expiry Retry Implementation](knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry-implementation.md) | n/a |
-| fix-bri-170-stake-blockhash-expiry-retry | archived | none | [Fix BRI- 170 Stake Blockhash Expiry Retry](knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry.md) | n/a |
-| fix-bri-170-stake-mobile-card-overflow-implementation | archived | none | [Fix BRI- 170 Stake Mobile Card Overflow Implementation](knowledge/fixes/fix-bri-170-stake-mobile-card-overflow-implementation.md) | n/a |
-| fix-bri-170-stake-mobile-card-overflow | archived | none | [Fix BRI- 170 Stake Mobile Card Overflow](knowledge/fixes/fix-bri-170-stake-mobile-card-overflow.md) | n/a |
-| fix-bri-170-stake-sync-feedback-implementation | archived | none | [Fix BRI- 170 Stake Sync Feedback Implementation](knowledge/fixes/fix-bri-170-stake-sync-feedback-implementation.md) | n/a |
-| fix-bri-170-stake-sync-feedback | archived | none | [Fix BRI- 170 Stake Sync Feedback](knowledge/fixes/fix-bri-170-stake-sync-feedback.md) | n/a |
-| fix-bri-171-investor-overview-placeholder-states-implementation | archived | none | [Fix BRI- 171 Investor Overview Placeholder States Implementation](knowledge/fixes/fix-bri-171-investor-overview-placeholder-states-implementation.md) | n/a |
-| fix-bri-171-investor-overview-placeholder-states | archived | none | [Fix BRI- 171 Investor Overview Placeholder States](knowledge/fixes/fix-bri-171-investor-overview-placeholder-states.md) | n/a |
-| fix-bri-178-splash-performance-implementation | archived | none | [Fix BRI- 178 Splash Performance Implementation](knowledge/fixes/fix-bri-178-splash-performance-implementation.md) | n/a |
-| fix-bri-178-splash-performance | archived | none | [Fix BRI- 178 Splash Performance](knowledge/fixes/fix-bri-178-splash-performance.md) | n/a |
-| fix-bri-6-admin-distributions-production-visibility-implementation | archived | none | [Fix BRI- 6 Admin Distributions Production Visibility Implementation](knowledge/fixes/fix-bri-6-admin-distributions-production-visibility-implementation.md) | n/a |
-| fix-bri-6-admin-distributions-production-visibility | archived | none | [Fix BRI- 6 Admin Distributions Production Visibility](knowledge/fixes/fix-bri-6-admin-distributions-production-visibility.md) | n/a |
-| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation](knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md) | n/a |
-| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation](knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md) | n/a |
-| fix-linear-initiative-branch-workflow-implementation | archived | none | [Fix Linear Initiative Branch Workflow Implementation](knowledge/fixes/fix-linear-initiative-branch-workflow-implementation.md) | n/a |
-| fix-linear-initiative-branch-workflow | archived | none | [Fix Linear Initiative Branch Workflow](knowledge/fixes/fix-linear-initiative-branch-workflow.md) | n/a |
-| fix-login-modal-issue-implementation | archived | none | [Fix Login Modal Issue Implementation](knowledge/fixes/fix-login-modal-issue-implementation.md) | n/a |
-| fix-login-modal-issue | archived | none | [Fix Login Modal Issue](knowledge/fixes/fix-login-modal-issue.md) | n/a |
-| fix-may-2026-ui-errors-implementation | archived | none | [Fix May 2026 Ui Errors Implementation](knowledge/fixes/fix-may-2026-ui-errors-implementation.md) | n/a |
-| fix-may-2026-ui-errors | archived | none | [Fix May 2026 Ui Errors](knowledge/fixes/fix-may-2026-ui-errors.md) | n/a |
-| fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation | archived | none | [Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158 Implementation](knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md) | n/a |
-| fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158 | archived | none | [Fix Public Seo Core Web Vitals And Vercel Performance Hardening BRI- 158](knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md) | n/a |
-| fix-single-project-vercel-alias-flow-bri-162-implementation | archived | none | [Fix Single Project Vercel Alias Flow BRI- 162 Implementation](knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md) | n/a |
-| fix-single-project-vercel-alias-flow-bri-162 | archived | none | [Fix Single Project Vercel Alias Flow BRI- 162](knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162.md) | n/a |
-| fix-stake-submit-signed-message-blockhash-tolerance-implementation | archived | none | [Fix Stake Submit Signed Message Blockhash Tolerance Implementation](knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md) | n/a |
-| fix-stake-submit-signed-message-blockhash-tolerance | archived | none | [Fix Stake Submit Signed Message Blockhash Tolerance](knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance.md) | n/a |
-| fix-stake-unstake-release-visibility-implementation | archived | none | [Fix Stake Unstake Release Visibility Implementation](knowledge/fixes/fix-stake-unstake-release-visibility-implementation.md) | n/a |
-| fix-stake-unstake-release-visibility | archived | none | [Fix Stake Unstake Release Visibility](knowledge/fixes/fix-stake-unstake-release-visibility.md) | n/a |
-| fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance Implementation](knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md) | n/a |
-| fix-test-suite-drift-marketplace-i18n-and-pr-governance | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance](knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md) | n/a |
+| index | archived | none | [bri-6](knowledge/fixes/bri-6/index.md) | n/a |
 | index | archived | none | [Fixes](knowledge/fixes/index.md) | n/a |
 | fix-admin-asset-project-duration-derived-dates-implementation | archived | none | [Fix Admin Asset Project Duration Derived Dates Implementation](knowledge/fixes/other/fix-admin-asset-project-duration-derived-dates-implementation.md) | n/a |
 | fix-admin-asset-project-duration-derived-dates | archived | none | [Fix Admin Asset Project Duration Derived Dates](knowledge/fixes/other/fix-admin-asset-project-duration-derived-dates.md) | n/a |
-| fix-admin-assets-owner-freeze-mint-flow-implementation | archived | none | [Fix Admin Assets Owner Freeze Mint Flow Implementation](knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow-implementation.md) | n/a |
-| fix-admin-assets-owner-freeze-mint-flow | archived | none | [Fix Admin Assets Owner Freeze Mint Flow](knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow.md) | n/a |
-| fix-admin-cm-deploy-current-system-implementation | archived | none | [Fix Admin Cm Deploy Current System Implementation](knowledge/fixes/other/fix-admin-cm-deploy-current-system-implementation.md) | n/a |
-| fix-admin-cm-deploy-current-system | archived | none | [Fix Admin Cm Deploy Current System](knowledge/fixes/other/fix-admin-cm-deploy-current-system.md) | n/a |
 | fix-admin-cm-deploy-detailed-logs-implementation | archived | none | [Fix Admin Cm Deploy Detailed Logs Implementation](knowledge/fixes/other/fix-admin-cm-deploy-detailed-logs-implementation.md) | n/a |
 | fix-admin-cm-deploy-detailed-logs | archived | none | [Fix Admin Cm Deploy Detailed Logs](knowledge/fixes/other/fix-admin-cm-deploy-detailed-logs.md) | n/a |
 | fix-admin-collections-document-upload-implementation | archived | none | [Fix Admin Collections Document Upload Implementation](knowledge/fixes/other/fix-admin-collections-document-upload-implementation.md) | n/a |
 | fix-admin-collections-document-upload | archived | none | [Fix Admin Collections Document Upload](knowledge/fixes/other/fix-admin-collections-document-upload.md) | n/a |
-| fix-agents-orchestation-implementation | archived | none | [Fix Agents Orchestation Implementation](knowledge/fixes/other/fix-agents-orchestation-implementation.md) | n/a |
-| fix-agents-orchestation | archived | none | [Fix Agents Orchestation](knowledge/fixes/other/fix-agents-orchestation.md) | n/a |
-| fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161 Implementation](knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md) | n/a |
-| fix-app-admin-asset-form-investment-model-alignment-bri-161 | archived | none | [Fix App Admin Asset Form Investment Model Alignment BRI- 161](knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161.md) | n/a |
-| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation Implementation](knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md) | n/a |
-| fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation | archived | none | [Fix HyBRI-d Auth Bidirectional Linking And Safe Account Consolidation](knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md) | n/a |
 | fix-linear-initiative-branch-workflow-implementation | archived | none | [Fix Linear Initiative Branch Workflow Implementation](knowledge/fixes/other/fix-linear-initiative-branch-workflow-implementation.md) | n/a |
 | fix-linear-initiative-branch-workflow | archived | none | [Fix Linear Initiative Branch Workflow](knowledge/fixes/other/fix-linear-initiative-branch-workflow.md) | n/a |
-| fix-login-modal-issue-implementation | archived | none | [Fix Login Modal Issue Implementation](knowledge/fixes/other/fix-login-modal-issue-implementation.md) | n/a |
-| fix-login-modal-issue | archived | none | [Fix Login Modal Issue](knowledge/fixes/other/fix-login-modal-issue.md) | n/a |
-| fix-may-2026-ui-errors-implementation | archived | none | [Fix May 2026 Ui Errors Implementation](knowledge/fixes/other/fix-may-2026-ui-errors-implementation.md) | n/a |
-| fix-may-2026-ui-errors | archived | none | [Fix May 2026 Ui Errors](knowledge/fixes/other/fix-may-2026-ui-errors.md) | n/a |
 | fix-stake-submit-signed-message-blockhash-tolerance-implementation | archived | none | [Fix Stake Submit Signed Message Blockhash Tolerance Implementation](knowledge/fixes/other/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md) | n/a |
 | fix-stake-submit-signed-message-blockhash-tolerance | archived | none | [Fix Stake Submit Signed Message Blockhash Tolerance](knowledge/fixes/other/fix-stake-submit-signed-message-blockhash-tolerance.md) | n/a |
 | fix-stake-unstake-release-visibility-implementation | archived | none | [Fix Stake Unstake Release Visibility Implementation](knowledge/fixes/other/fix-stake-unstake-release-visibility-implementation.md) | n/a |
 | fix-stake-unstake-release-visibility | archived | none | [Fix Stake Unstake Release Visibility](knowledge/fixes/other/fix-stake-unstake-release-visibility.md) | n/a |
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance Implementation](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md) | n/a |
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md) | n/a |
-| index | archived | none | [Other Fixes (No Specific BRI)](knowledge/fixes/other/index.md) | n/a |
+| index | archived | none | [other](knowledge/fixes/other/index.md) | n/a |
 | documentation-policy | archived | none | [Documentation Policy](knowledge/governance/documentation-policy.md) | n/a |
 | frontend-ui-policy | archived | none | [Frontend Ui Policy](knowledge/governance/frontend-ui-policy.md) | n/a |
 | git-monorepo-policy | archived | none | [Git Monorepo Policy](knowledge/governance/git-monorepo-policy.md) | n/a |

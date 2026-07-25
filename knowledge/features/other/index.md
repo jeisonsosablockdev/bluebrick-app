@@ -1,13 +1,13 @@
 ---
 type: Feature Index
-title: Other Features
-description: Features not associated with a specific BRI
+title: other
+description: Feature files for other
 tags: [feature, other]
-timestamp: 2026-06-16T00:00:00Z
+timestamp: 2026-07-24T00:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/features/other
 ---
 
-# Other Features
+# other
 
 ## Files
 * [feature-admin-collection-documents-ui-remake-implementation](feature-admin-collection-documents-ui-remake-implementation.md)
@@ -17,10 +17,18 @@ resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/fea
 * [feature-app-mobile-pill-phantom](feature-app-mobile-pill-phantom.md)
 * [feature-app-quick-tour](feature-app-quick-tour.md)
 * [feature-app-transparency](feature-app-transparency.md)
+* [feature-gemini-antigravity-workflows-implementation](feature-gemini-antigravity-workflows-implementation.md)
+* [feature-gemini-antigravity-workflows](feature-gemini-antigravity-workflows.md)
 * [feature-nft-authority-lifecycle-rotation-revocation](feature-nft-authority-lifecycle-rotation-revocation.md)
 * [feature-nft-economic-appdata-plugin](feature-nft-economic-appdata-plugin.md)
 * [feature-nft-permanent-transfer-delegate](feature-nft-permanent-transfer-delegate.md)
 * [feature-redirect-first-connection](feature-redirect-first-connection.md)
+* [feature-shared-agent-system-knowledge-root-implementation](feature-shared-agent-system-knowledge-root-implementation.md)
+* [feature-shared-agent-system-knowledge-root](feature-shared-agent-system-knowledge-root.md)
+* [feature-shared-cleanup-marketplace-3d-visual-docs-implementation](feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md)
+* [feature-shared-cleanup-marketplace-3d-visual-docs](feature-shared-cleanup-marketplace-3d-visual-docs.md)
+* [feature-shared-cleanup-monorepo-structure-implementation](feature-shared-cleanup-monorepo-structure-implementation.md)
+* [feature-shared-cleanup-monorepo-structure](feature-shared-cleanup-monorepo-structure.md)
 * [feature-shared-nix-toolchain-policy](feature-shared-nix-toolchain-policy.md)
 * [feature-shared-pr-governance-flow-flexibility](feature-shared-pr-governance-flow-flexibility.md)
 * [feature-shared-pr-governance-metadata-race-fix](feature-shared-pr-governance-metadata-race-fix.md)
@@ -37,4 +45,3 @@ resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/fea
 * [refactor-shared-brids-technical-rename](refactor-shared-brids-technical-rename.md)
 * [refactor-shared-codex-orchestration-architecture](refactor-shared-codex-orchestration-architecture.md)
 * [refactor-terminology](refactor-terminology.md)
-* [rfc-epic-014](rfc-epic-014.md)

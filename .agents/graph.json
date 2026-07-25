@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T03:38:33.333Z",
+  "generatedAt": "2026-07-25T01:54:18.306Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -734,6 +734,36 @@
       "path": "knowledge/features/bri-164-media-carousel/index.md"
     },
     {
+      "id": "knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md",
+      "type": "feature",
+      "label": "feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation",
+      "path": "knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md",
+      "type": "feature",
+      "label": "feature-czambrano-bri-168-ui-ux-fixes-and-improvements",
+      "path": "knowledge/features/bri-168/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md"
+    },
+    {
+      "id": "knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel-implementation.md",
+      "type": "feature",
+      "label": "feature-landing-dark-hero-look-and-feel-implementation",
+      "path": "knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel.md",
+      "type": "feature",
+      "label": "feature-landing-dark-hero-look-and-feel",
+      "path": "knowledge/features/bri-168/feature-landing-dark-hero-look-and-feel.md"
+    },
+    {
+      "id": "knowledge/features/bri-168/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-168/index.md"
+    },
+    {
       "id": "knowledge/features/bri-171/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md",
       "type": "feature",
       "label": "feature-app-investor-dashboard-overview-real-data-bri-171-implementation",
@@ -804,6 +834,216 @@
       "type": "feature",
       "label": "index",
       "path": "knowledge/features/bri-177/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design-implementation.md",
+      "type": "feature",
+      "label": "feature-jaysosa-BRI-178-initial-loading-design-implementation",
+      "path": "knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design.md",
+      "type": "feature",
+      "label": "feature-jaysosa-BRI-178-initial-loading-design",
+      "path": "knowledge/features/bri-178/feature-jaysosa-BRI-178-initial-loading-design.md"
+    },
+    {
+      "id": "knowledge/features/bri-178/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-178/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-179/feature-shared-spec-and-branching-governance-implementation.md",
+      "type": "feature",
+      "label": "feature-shared-spec-and-branching-governance-implementation",
+      "path": "knowledge/features/bri-179/feature-shared-spec-and-branching-governance-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-179/feature-shared-spec-and-branching-governance.md",
+      "type": "feature",
+      "label": "feature-shared-spec-and-branching-governance",
+      "path": "knowledge/features/bri-179/feature-shared-spec-and-branching-governance.md"
+    },
+    {
+      "id": "knowledge/features/bri-179/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-179/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements-implementation.md",
+      "type": "feature",
+      "label": "feature-czambrano-bri-180-app-ui-improvements-implementation",
+      "path": "knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements.md",
+      "type": "feature",
+      "label": "feature-czambrano-bri-180-app-ui-improvements",
+      "path": "knowledge/features/bri-180/feature-czambrano-bri-180-app-ui-improvements.md"
+    },
+    {
+      "id": "knowledge/features/bri-180/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-180/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-canonical-templates-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-canonical-templates",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-canonical-templates.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-solution-template-redesign-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-solution-template-redesign",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-solution-template-redesign.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-task-init-reinforcement",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-task-init-reinforcement.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule",
+      "path": "knowledge/features/bri-181/feature-jeisonsosa-BRI-181-tdd-and-clean-specs-rule.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-shared-agents-drifting-bri-181-implementation.md",
+      "type": "feature",
+      "label": "feature-shared-agents-drifting-bri-181-implementation",
+      "path": "knowledge/features/bri-181/feature-shared-agents-drifting-bri-181-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/feature-shared-agents-drifting-bri-181.md",
+      "type": "feature",
+      "label": "feature-shared-agents-drifting-bri-181",
+      "path": "knowledge/features/bri-181/feature-shared-agents-drifting-bri-181.md"
+    },
+    {
+      "id": "knowledge/features/bri-181/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-181/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation",
+      "path": "knowledge/features/bri-182/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-182/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-182/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-183-license-compliance-implementation",
+      "path": "knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-183-license-compliance",
+      "path": "knowledge/features/bri-183/feature-jaymusicmachine-BRI-183-license-compliance.md"
+    },
+    {
+      "id": "knowledge/features/bri-183/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-183/index.md"
     },
     {
       "id": "knowledge/features/bri-39/feature-app-home-copy-bri-39.md",
@@ -924,6 +1164,30 @@
       "type": "feature",
       "label": "index",
       "path": "knowledge/features/bri-63/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014-implementation.md",
+      "type": "feature",
+      "label": "feature-stake-distribution-traceability-epic-014-implementation",
+      "path": "knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014-implementation.md"
+    },
+    {
+      "id": "knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014.md",
+      "type": "feature",
+      "label": "feature-stake-distribution-traceability-epic-014",
+      "path": "knowledge/features/bri-7/feature-stake-distribution-traceability-epic-014.md"
+    },
+    {
+      "id": "knowledge/features/bri-7/index.md",
+      "type": "feature",
+      "label": "index",
+      "path": "knowledge/features/bri-7/index.md"
+    },
+    {
+      "id": "knowledge/features/bri-7/rfc-epic-014.md",
+      "type": "feature",
+      "label": "rfc-epic-014",
+      "path": "knowledge/features/bri-7/rfc-epic-014.md"
     },
     {
       "id": "knowledge/features/epic-003/index.md",
@@ -1172,750 +1436,6 @@
       "path": "knowledge/features/epic-011/story-011-11-location-form-contract-and-persistence-parity-bri-124.md"
     },
     {
-      "id": "knowledge/features/feature-admin-collection-documents-ui-remake-implementation.md",
-      "type": "feature",
-      "label": "feature-admin-collection-documents-ui-remake-implementation",
-      "path": "knowledge/features/feature-admin-collection-documents-ui-remake-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-admin-collection-documents-ui-remake.md",
-      "type": "feature",
-      "label": "feature-admin-collection-documents-ui-remake",
-      "path": "knowledge/features/feature-admin-collection-documents-ui-remake.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-checkout-dual-crypto-airwallex.md",
-      "type": "feature",
-      "label": "feature-app-checkout-dual-crypto-airwallex",
-      "path": "knowledge/features/feature-app-checkout-dual-crypto-airwallex.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-home-copy-bri-39.md",
-      "type": "feature",
-      "label": "feature-app-home-copy-bri-39",
-      "path": "knowledge/features/feature-app-home-copy-bri-39.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-image-storage-blob-pinata.md",
-      "type": "feature",
-      "label": "feature-app-image-storage-blob-pinata",
-      "path": "knowledge/features/feature-app-image-storage-blob-pinata.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md",
-      "type": "feature",
-      "label": "feature-app-investor-dashboard-overview-real-data-bri-171-implementation",
-      "path": "knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md",
-      "type": "feature",
-      "label": "feature-app-investor-dashboard-overview-real-data-bri-171",
-      "path": "knowledge/features/feature-app-investor-dashboard-overview-real-data-bri-171.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174-implementation.md",
-      "type": "feature",
-      "label": "feature-app-investor-portfolio-real-holdings-bri-174-implementation",
-      "path": "knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174.md",
-      "type": "feature",
-      "label": "feature-app-investor-portfolio-real-holdings-bri-174",
-      "path": "knowledge/features/feature-app-investor-portfolio-real-holdings-bri-174.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164-implementation.md",
-      "type": "feature",
-      "label": "feature-app-marketplace-detail-media-carousel-bri-164-implementation",
-      "path": "knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164.md",
-      "type": "feature",
-      "label": "feature-app-marketplace-detail-media-carousel-bri-164",
-      "path": "knowledge/features/feature-app-marketplace-detail-media-carousel-bri-164.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-mobile-pill-phantom.md",
-      "type": "feature",
-      "label": "feature-app-mobile-pill-phantom",
-      "path": "knowledge/features/feature-app-mobile-pill-phantom.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-profile-completion-reward-prompt-bri-151.md",
-      "type": "feature",
-      "label": "feature-app-profile-completion-reward-prompt-bri-151",
-      "path": "knowledge/features/feature-app-profile-completion-reward-prompt-bri-151.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-quick-tour.md",
-      "type": "feature",
-      "label": "feature-app-quick-tour",
-      "path": "knowledge/features/feature-app-quick-tour.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-startup-splash-screen-bri-121.md",
-      "type": "feature",
-      "label": "feature-app-startup-splash-screen-bri-121",
-      "path": "knowledge/features/feature-app-startup-splash-screen-bri-121.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-transparency.md",
-      "type": "feature",
-      "label": "feature-app-transparency",
-      "path": "knowledge/features/feature-app-transparency.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-wallet-connection-solanakit-bri-12.md",
-      "type": "feature",
-      "label": "feature-app-wallet-connection-solanakit-bri-12",
-      "path": "knowledge/features/feature-app-wallet-connection-solanakit-bri-12.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163-implementation.md",
-      "type": "feature",
-      "label": "feature-app-wide-motion-12-ux-polish-bri-163-implementation",
-      "path": "knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163.md",
-      "type": "feature",
-      "label": "feature-app-wide-motion-12-ux-polish-bri-163",
-      "path": "knowledge/features/feature-app-wide-motion-12-ux-polish-bri-163.md"
-    },
-    {
-      "id": "knowledge/features/feature-business-logic-reasoner-bri-177-implementation.md",
-      "type": "feature",
-      "label": "feature-business-logic-reasoner-bri-177-implementation",
-      "path": "knowledge/features/feature-business-logic-reasoner-bri-177-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-business-logic-reasoner-bri-177.md",
-      "type": "feature",
-      "label": "feature-business-logic-reasoner-bri-177",
-      "path": "knowledge/features/feature-business-logic-reasoner-bri-177.md"
-    },
-    {
-      "id": "knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation.md",
-      "type": "feature",
-      "label": "feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation",
-      "path": "knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10.md",
-      "type": "feature",
-      "label": "feature-contextual-hints-admin-assets-new-exclude-location-bri-10",
-      "path": "knowledge/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md",
-      "type": "feature",
-      "label": "feature-czambrano-BRI-173-branching-policy-preflight-implementation",
-      "path": "knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md",
-      "type": "feature",
-      "label": "feature-czambrano-BRI-173-branching-policy-preflight",
-      "path": "knowledge/features/feature-czambrano-BRI-173-branching-policy-preflight.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md",
-      "type": "feature",
-      "label": "feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation",
-      "path": "knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md",
-      "type": "feature",
-      "label": "feature-czambrano-bri-168-ui-ux-fixes-and-improvements",
-      "path": "knowledge/features/feature-czambrano-bri-168-ui-ux-fixes-and-improvements.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-bri-180-app-ui-improvements-implementation.md",
-      "type": "feature",
-      "label": "feature-czambrano-bri-180-app-ui-improvements-implementation",
-      "path": "knowledge/features/feature-czambrano-bri-180-app-ui-improvements-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-czambrano-bri-180-app-ui-improvements.md",
-      "type": "feature",
-      "label": "feature-czambrano-bri-180-app-ui-improvements",
-      "path": "knowledge/features/feature-czambrano-bri-180-app-ui-improvements.md"
-    },
-    {
-      "id": "knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md",
-      "type": "feature",
-      "label": "feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation",
-      "path": "knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md",
-      "type": "feature",
-      "label": "feature-discovery-brief-anchor-notary-and-freeze-control-bri-5",
-      "path": "knowledge/features/feature-discovery-brief-anchor-notary-and-freeze-control-bri-5.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-01-foundation-layered-architecture.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-01-foundation-layered-architecture",
-      "path": "knowledge/features/feature-epic-010-story-01-foundation-layered-architecture.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-02-content-as-code-editorial-contracts.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-02-content-as-code-editorial-contracts",
-      "path": "knowledge/features/feature-epic-010-story-02-content-as-code-editorial-contracts.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-03-route-architecture-templates.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-03-route-architecture-templates",
-      "path": "knowledge/features/feature-epic-010-story-03-route-architecture-templates.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-04-technical-seo-infrastructure.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-04-technical-seo-infrastructure",
-      "path": "knowledge/features/feature-epic-010-story-04-technical-seo-infrastructure.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-05-structured-data-json-ld-layer.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-05-structured-data-json-ld-layer",
-      "path": "knowledge/features/feature-epic-010-story-05-structured-data-json-ld-layer.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-06-ai-readable-machine-endpoints.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-06-ai-readable-machine-endpoints",
-      "path": "knowledge/features/feature-epic-010-story-06-ai-readable-machine-endpoints.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-07-content-pipeline-serialization.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-07-content-pipeline-serialization",
-      "path": "knowledge/features/feature-epic-010-story-07-content-pipeline-serialization.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-08-semantic-layer-for-entities-and-relations.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-08-semantic-layer-for-entities-and-relations",
-      "path": "knowledge/features/feature-epic-010-story-08-semantic-layer-for-entities-and-relations.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-09-feeds-exports-internal-search-readiness.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-09-feeds-exports-internal-search-readiness",
-      "path": "knowledge/features/feature-epic-010-story-09-feeds-exports-internal-search-readiness.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-010-story-10-observability-security-performance-deploy-docs.md",
-      "type": "feature",
-      "label": "feature-epic-010-story-10-observability-security-performance-deploy-docs",
-      "path": "knowledge/features/feature-epic-010-story-10-observability-security-performance-deploy-docs.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-02-admin-collections-read-model.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-02-admin-collections-read-model",
-      "path": "knowledge/features/feature-epic-011-story-02-admin-collections-read-model.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-03-collection-content-persistence.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-03-collection-content-persistence",
-      "path": "knowledge/features/feature-epic-011-story-03-collection-content-persistence.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-04-collections-api-ownership.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-04-collections-api-ownership",
-      "path": "knowledge/features/feature-epic-011-story-04-collections-api-ownership.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-05-collection-cards-ui-bri-93.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-05-collection-cards-ui-bri-93",
-      "path": "knowledge/features/feature-epic-011-story-05-collection-cards-ui-bri-93.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-05-empty-loading-error-states-bri-92.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-05-empty-loading-error-states-bri-92",
-      "path": "knowledge/features/feature-epic-011-story-05-empty-loading-error-states-bri-92.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-05-navigation-to-detail-view-bri-94",
-      "path": "knowledge/features/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md"
-    },
-    {
-      "id": "knowledge/features/feature-epic-011-story-06-read-only-detail-shell-bri-95.md",
-      "type": "feature",
-      "label": "feature-epic-011-story-06-read-only-detail-shell-bri-95",
-      "path": "knowledge/features/feature-epic-011-story-06-read-only-detail-shell-bri-95.md"
-    },
-    {
-      "id": "knowledge/features/feature-flujo-gitflow-pr-structure-bri-61.md",
-      "type": "feature",
-      "label": "feature-flujo-gitflow-pr-structure-bri-61",
-      "path": "knowledge/features/feature-flujo-gitflow-pr-structure-bri-61.md"
-    },
-    {
-      "id": "knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md",
-      "type": "feature",
-      "label": "feature-flujo-gitflow-pr-structure-improvement-01-bri-62",
-      "path": "knowledge/features/feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md"
-    },
-    {
-      "id": "knowledge/features/feature-gemini-antigravity-workflows-implementation.md",
-      "type": "feature",
-      "label": "feature-gemini-antigravity-workflows-implementation",
-      "path": "knowledge/features/feature-gemini-antigravity-workflows-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-gemini-antigravity-workflows.md",
-      "type": "feature",
-      "label": "feature-gemini-antigravity-workflows",
-      "path": "knowledge/features/feature-gemini-antigravity-workflows.md"
-    },
-    {
-      "id": "knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md",
-      "type": "feature",
-      "label": "feature-jaysosa-BRI-178-initial-loading-design-implementation",
-      "path": "knowledge/features/feature-jaysosa-BRI-178-initial-loading-design-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md",
-      "type": "feature",
-      "label": "feature-jaysosa-BRI-178-initial-loading-design",
-      "path": "knowledge/features/feature-jaysosa-BRI-178-initial-loading-design.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-181-graphify-agent-enforcement",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-181-graphify-agent-enforcement.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-alineacion-politicas-architect",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-alineacion-politicas-architect.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec01-tdd-baseline-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec02-root-hygiene-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec03-lib-4layer-restructure-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec04-clean-code-audit-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md",
-      "type": "feature",
-      "label": "feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation",
-      "path": "knowledge/features/feature-jeisonsosa-BRI-182-spec05-architecture-ci-governance-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md",
-      "type": "feature",
-      "label": "feature-landing-dark-hero-look-and-feel-implementation",
-      "path": "knowledge/features/feature-landing-dark-hero-look-and-feel-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-landing-dark-hero-look-and-feel.md",
-      "type": "feature",
-      "label": "feature-landing-dark-hero-look-and-feel",
-      "path": "knowledge/features/feature-landing-dark-hero-look-and-feel.md"
-    },
-    {
-      "id": "knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md",
-      "type": "feature",
-      "label": "feature-nft-authority-lifecycle-rotation-revocation",
-      "path": "knowledge/features/feature-nft-authority-lifecycle-rotation-revocation.md"
-    },
-    {
-      "id": "knowledge/features/feature-nft-economic-appdata-plugin.md",
-      "type": "feature",
-      "label": "feature-nft-economic-appdata-plugin",
-      "path": "knowledge/features/feature-nft-economic-appdata-plugin.md"
-    },
-    {
-      "id": "knowledge/features/feature-nft-permanent-transfer-delegate.md",
-      "type": "feature",
-      "label": "feature-nft-permanent-transfer-delegate",
-      "path": "knowledge/features/feature-nft-permanent-transfer-delegate.md"
-    },
-    {
-      "id": "knowledge/features/feature-redirect-first-connection.md",
-      "type": "feature",
-      "label": "feature-redirect-first-connection",
-      "path": "knowledge/features/feature-redirect-first-connection.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-agent-system-knowledge-root-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-agent-system-knowledge-root-implementation",
-      "path": "knowledge/features/feature-shared-agent-system-knowledge-root-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-agent-system-knowledge-root.md",
-      "type": "feature",
-      "label": "feature-shared-agent-system-knowledge-root",
-      "path": "knowledge/features/feature-shared-agent-system-knowledge-root.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-agents-drifting-bri-181-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-agents-drifting-bri-181-implementation",
-      "path": "knowledge/features/feature-shared-agents-drifting-bri-181-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-agents-drifting-bri-181.md",
-      "type": "feature",
-      "label": "feature-shared-agents-drifting-bri-181",
-      "path": "knowledge/features/feature-shared-agents-drifting-bri-181.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md",
-      "type": "feature",
-      "label": "feature-shared-agents-orchestration-enforcement-bri-157",
-      "path": "knowledge/features/feature-shared-agents-orchestration-enforcement-bri-157.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-cleanup-marketplace-3d-visual-docs-implementation",
-      "path": "knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md",
-      "type": "feature",
-      "label": "feature-shared-cleanup-marketplace-3d-visual-docs",
-      "path": "knowledge/features/feature-shared-cleanup-marketplace-3d-visual-docs.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-cleanup-monorepo-structure-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-cleanup-monorepo-structure-implementation",
-      "path": "knowledge/features/feature-shared-cleanup-monorepo-structure-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-cleanup-monorepo-structure.md",
-      "type": "feature",
-      "label": "feature-shared-cleanup-monorepo-structure",
-      "path": "knowledge/features/feature-shared-cleanup-monorepo-structure.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-human-acceptance-gated-merge-implementation",
-      "path": "knowledge/features/feature-shared-human-acceptance-gated-merge-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-human-acceptance-gated-merge.md",
-      "type": "feature",
-      "label": "feature-shared-human-acceptance-gated-merge",
-      "path": "knowledge/features/feature-shared-human-acceptance-gated-merge.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-hybrid-auth-clean-code-bri-159-implementation",
-      "path": "knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md",
-      "type": "feature",
-      "label": "feature-shared-hybrid-auth-clean-code-bri-159",
-      "path": "knowledge/features/feature-shared-hybrid-auth-clean-code-bri-159.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md",
-      "type": "feature",
-      "label": "feature-shared-hybrid-auth-workos-wallet-bri-154",
-      "path": "knowledge/features/feature-shared-hybrid-auth-workos-wallet-bri-154.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-knowledge-promotion-system-bri-143.md",
-      "type": "feature",
-      "label": "feature-shared-knowledge-promotion-system-bri-143",
-      "path": "knowledge/features/feature-shared-knowledge-promotion-system-bri-143.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-nix-toolchain-policy.md",
-      "type": "feature",
-      "label": "feature-shared-nix-toolchain-policy",
-      "path": "knowledge/features/feature-shared-nix-toolchain-policy.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-pr-governance-flow-flexibility.md",
-      "type": "feature",
-      "label": "feature-shared-pr-governance-flow-flexibility",
-      "path": "knowledge/features/feature-shared-pr-governance-flow-flexibility.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-pr-governance-metadata-race-fix.md",
-      "type": "feature",
-      "label": "feature-shared-pr-governance-metadata-race-fix",
-      "path": "knowledge/features/feature-shared-pr-governance-metadata-race-fix.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-pwa-web-push-bri-157.md",
-      "type": "feature",
-      "label": "feature-shared-pwa-web-push-bri-157",
-      "path": "knowledge/features/feature-shared-pwa-web-push-bri-157.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-referral-marketing-system-bri-16.md",
-      "type": "feature",
-      "label": "feature-shared-referral-marketing-system-bri-16",
-      "path": "knowledge/features/feature-shared-referral-marketing-system-bri-16.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-single-issue-slice-planning-bri-149.md",
-      "type": "feature",
-      "label": "feature-shared-single-issue-slice-planning-bri-149",
-      "path": "knowledge/features/feature-shared-single-issue-slice-planning-bri-149.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-spec-and-branching-governance-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-spec-and-branching-governance-implementation",
-      "path": "knowledge/features/feature-shared-spec-and-branching-governance-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-spec-and-branching-governance.md",
-      "type": "feature",
-      "label": "feature-shared-spec-and-branching-governance",
-      "path": "knowledge/features/feature-shared-spec-and-branching-governance.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md",
-      "type": "feature",
-      "label": "feature-shared-wallet-modal-clean-code-bri-160-implementation",
-      "path": "knowledge/features/feature-shared-wallet-modal-clean-code-bri-160-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-shared-wallet-modal-clean-code-bri-160.md",
-      "type": "feature",
-      "label": "feature-shared-wallet-modal-clean-code-bri-160",
-      "path": "knowledge/features/feature-shared-wallet-modal-clean-code-bri-160.md"
-    },
-    {
-      "id": "knowledge/features/feature-solana-dev-skill-implementation.md",
-      "type": "feature",
-      "label": "feature-solana-dev-skill-implementation",
-      "path": "knowledge/features/feature-solana-dev-skill-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-solana-dev-skill.md",
-      "type": "feature",
-      "label": "feature-solana-dev-skill",
-      "path": "knowledge/features/feature-solana-dev-skill.md"
-    },
-    {
-      "id": "knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation.md",
-      "type": "feature",
-      "label": "feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation",
-      "path": "knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6-implementation.md"
-    },
-    {
-      "id": "knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md",
-      "type": "feature",
-      "label": "feature-stake-event-reconciliation-distribution-preparation-bri-6",
-      "path": "knowledge/features/feature-stake-event-reconciliation-distribution-preparation-bri-6.md"
-    },
-    {
-      "id": "knowledge/features/fix-admin-shell-cleancode-bri-123.md",
-      "type": "feature",
-      "label": "fix-admin-shell-cleancode-bri-123",
-      "path": "knowledge/features/fix-admin-shell-cleancode-bri-123.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-favicon-bri-67.md",
-      "type": "feature",
-      "label": "fix-app-favicon-bri-67",
-      "path": "knowledge/features/fix-app-favicon-bri-67.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-feature-icons-and-copy.md",
-      "type": "feature",
-      "label": "fix-app-feature-icons-and-copy",
-      "path": "knowledge/features/fix-app-feature-icons-and-copy.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-footer-links-bri-153.md",
-      "type": "feature",
-      "label": "fix-app-footer-links-bri-153",
-      "path": "knowledge/features/fix-app-footer-links-bri-153.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-hide-release-modules-bri-152.md",
-      "type": "feature",
-      "label": "fix-app-hide-release-modules-bri-152",
-      "path": "knowledge/features/fix-app-hide-release-modules-bri-152.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-home-title-bri-68.md",
-      "type": "feature",
-      "label": "fix-app-home-title-bri-68",
-      "path": "knowledge/features/fix-app-home-title-bri-68.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-marketplace-release-placeholder-graphs-bri-153.md",
-      "type": "feature",
-      "label": "fix-app-marketplace-release-placeholder-graphs-bri-153",
-      "path": "knowledge/features/fix-app-marketplace-release-placeholder-graphs-bri-153.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-profile-tour-emphasis-bri-153.md",
-      "type": "feature",
-      "label": "fix-app-profile-tour-emphasis-bri-153",
-      "path": "knowledge/features/fix-app-profile-tour-emphasis-bri-153.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-remove-ui-states-bri-63.md",
-      "type": "feature",
-      "label": "fix-app-remove-ui-states-bri-63",
-      "path": "knowledge/features/fix-app-remove-ui-states-bri-63.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-suspend-airwallex-checkout.md",
-      "type": "feature",
-      "label": "fix-app-suspend-airwallex-checkout",
-      "path": "knowledge/features/fix-app-suspend-airwallex-checkout.md"
-    },
-    {
-      "id": "knowledge/features/fix-app-wallet-ingresar-cta-bri-153.md",
-      "type": "feature",
-      "label": "fix-app-wallet-ingresar-cta-bri-153",
-      "path": "knowledge/features/fix-app-wallet-ingresar-cta-bri-153.md"
-    },
-    {
-      "id": "knowledge/features/fix-dev-origin-and-pg-ssl-warnings.md",
-      "type": "feature",
-      "label": "fix-dev-origin-and-pg-ssl-warnings",
-      "path": "knowledge/features/fix-dev-origin-and-pg-ssl-warnings.md"
-    },
-    {
-      "id": "knowledge/features/fix-google-maps-embed-preview.md",
-      "type": "feature",
-      "label": "fix-google-maps-embed-preview",
-      "path": "knowledge/features/fix-google-maps-embed-preview.md"
-    },
-    {
-      "id": "knowledge/features/fix-landing-featured-properties-db-source-bri-65.md",
-      "type": "feature",
-      "label": "fix-landing-featured-properties-db-source-bri-65",
-      "path": "knowledge/features/fix-landing-featured-properties-db-source-bri-65.md"
-    },
-    {
-      "id": "knowledge/features/fix-landing-featured-properties-source-bri-65.md",
-      "type": "feature",
-      "label": "fix-landing-featured-properties-source-bri-65",
-      "path": "knowledge/features/fix-landing-featured-properties-source-bri-65.md"
-    },
-    {
-      "id": "knowledge/features/fix-marketplace-remove-hardcoded-fallback-bri-64.md",
-      "type": "feature",
-      "label": "fix-marketplace-remove-hardcoded-fallback-bri-64",
-      "path": "knowledge/features/fix-marketplace-remove-hardcoded-fallback-bri-64.md"
-    },
-    {
-      "id": "knowledge/features/fix-next-proxy-convention-bri-144.md",
-      "type": "feature",
-      "label": "fix-next-proxy-convention-bri-144",
-      "path": "knowledge/features/fix-next-proxy-convention-bri-144.md"
-    },
-    {
-      "id": "knowledge/features/fix-shared-db-migration-enforcement-bri-156.md",
-      "type": "feature",
-      "label": "fix-shared-db-migration-enforcement-bri-156",
-      "path": "knowledge/features/fix-shared-db-migration-enforcement-bri-156.md"
-    },
-    {
-      "id": "knowledge/features/fix-shared-github-actions-node24.md",
-      "type": "feature",
-      "label": "fix-shared-github-actions-node24",
-      "path": "knowledge/features/fix-shared-github-actions-node24.md"
-    },
-    {
-      "id": "knowledge/features/fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune.md",
-      "type": "feature",
-      "label": "fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune",
-      "path": "knowledge/features/fix-shared-npm-deprecation-cleanup-initial-wallet-bundle-prune.md"
-    },
-    {
-      "id": "knowledge/features/fix-shared-pr-policy-lite-and-log-noise.md",
-      "type": "feature",
-      "label": "fix-shared-pr-policy-lite-and-log-noise",
-      "path": "knowledge/features/fix-shared-pr-policy-lite-and-log-noise.md"
-    },
-    {
-      "id": "knowledge/features/fix-shared-pr-workflow-noise-reduction.md",
-      "type": "feature",
-      "label": "fix-shared-pr-workflow-noise-reduction",
-      "path": "knowledge/features/fix-shared-pr-workflow-noise-reduction.md"
-    },
-    {
-      "id": "knowledge/features/fix-siws-session-nonce-stateless-bri-66.md",
-      "type": "feature",
-      "label": "fix-siws-session-nonce-stateless-bri-66",
-      "path": "knowledge/features/fix-siws-session-nonce-stateless-bri-66.md"
-    },
-    {
-      "id": "knowledge/features/index.md",
-      "type": "feature",
-      "label": "index",
-      "path": "knowledge/features/index.md"
-    },
-    {
       "id": "knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md",
       "type": "feature",
       "label": "feature-admin-collection-documents-ui-remake-implementation",
@@ -1958,6 +1478,18 @@
       "path": "knowledge/features/other/feature-app-transparency.md"
     },
     {
+      "id": "knowledge/features/other/feature-gemini-antigravity-workflows-implementation.md",
+      "type": "feature",
+      "label": "feature-gemini-antigravity-workflows-implementation",
+      "path": "knowledge/features/other/feature-gemini-antigravity-workflows-implementation.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-gemini-antigravity-workflows.md",
+      "type": "feature",
+      "label": "feature-gemini-antigravity-workflows",
+      "path": "knowledge/features/other/feature-gemini-antigravity-workflows.md"
+    },
+    {
       "id": "knowledge/features/other/feature-nft-authority-lifecycle-rotation-revocation.md",
       "type": "feature",
       "label": "feature-nft-authority-lifecycle-rotation-revocation",
@@ -1980,6 +1512,42 @@
       "type": "feature",
       "label": "feature-redirect-first-connection",
       "path": "knowledge/features/other/feature-redirect-first-connection.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-agent-system-knowledge-root-implementation.md",
+      "type": "feature",
+      "label": "feature-shared-agent-system-knowledge-root-implementation",
+      "path": "knowledge/features/other/feature-shared-agent-system-knowledge-root-implementation.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-agent-system-knowledge-root.md",
+      "type": "feature",
+      "label": "feature-shared-agent-system-knowledge-root",
+      "path": "knowledge/features/other/feature-shared-agent-system-knowledge-root.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md",
+      "type": "feature",
+      "label": "feature-shared-cleanup-marketplace-3d-visual-docs-implementation",
+      "path": "knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs-implementation.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs.md",
+      "type": "feature",
+      "label": "feature-shared-cleanup-marketplace-3d-visual-docs",
+      "path": "knowledge/features/other/feature-shared-cleanup-marketplace-3d-visual-docs.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-cleanup-monorepo-structure-implementation.md",
+      "type": "feature",
+      "label": "feature-shared-cleanup-monorepo-structure-implementation",
+      "path": "knowledge/features/other/feature-shared-cleanup-monorepo-structure-implementation.md"
+    },
+    {
+      "id": "knowledge/features/other/feature-shared-cleanup-monorepo-structure.md",
+      "type": "feature",
+      "label": "feature-shared-cleanup-monorepo-structure",
+      "path": "knowledge/features/other/feature-shared-cleanup-monorepo-structure.md"
     },
     {
       "id": "knowledge/features/other/feature-shared-nix-toolchain-policy.md",
@@ -2084,160 +1652,40 @@
       "path": "knowledge/features/other/refactor-terminology.md"
     },
     {
-      "id": "knowledge/features/other/rfc-epic-014.md",
-      "type": "feature",
-      "label": "rfc-epic-014",
-      "path": "knowledge/features/other/rfc-epic-014.md"
+      "id": "knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md",
+      "type": "fix",
+      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation",
+      "path": "knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md"
     },
     {
-      "id": "knowledge/features/refactor-shared-brids-technical-rename.md",
-      "type": "feature",
-      "label": "refactor-shared-brids-technical-rename",
-      "path": "knowledge/features/refactor-shared-brids-technical-rename.md"
+      "id": "knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md",
+      "type": "fix",
+      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation",
+      "path": "knowledge/fixes/bri-154/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md"
     },
     {
-      "id": "knowledge/features/refactor-shared-codex-orchestration-architecture.md",
-      "type": "feature",
-      "label": "refactor-shared-codex-orchestration-architecture",
-      "path": "knowledge/features/refactor-shared-codex-orchestration-architecture.md"
+      "id": "knowledge/fixes/bri-154/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-154/index.md"
     },
     {
-      "id": "knowledge/features/refactor-terminology.md",
-      "type": "feature",
-      "label": "refactor-terminology",
-      "path": "knowledge/features/refactor-terminology.md"
+      "id": "knowledge/fixes/bri-157/fix-agents-orchestation-implementation.md",
+      "type": "fix",
+      "label": "fix-agents-orchestation-implementation",
+      "path": "knowledge/fixes/bri-157/fix-agents-orchestation-implementation.md"
     },
     {
-      "id": "knowledge/features/rfc-epic-014.md",
-      "type": "feature",
-      "label": "rfc-epic-014",
-      "path": "knowledge/features/rfc-epic-014.md"
+      "id": "knowledge/fixes/bri-157/fix-agents-orchestation.md",
+      "type": "fix",
+      "label": "fix-agents-orchestation",
+      "path": "knowledge/fixes/bri-157/fix-agents-orchestation.md"
     },
     {
-      "id": "knowledge/features/story-011-06-documents-editor-bri-99.md",
-      "type": "feature",
-      "label": "story-011-06-documents-editor-bri-99",
-      "path": "knowledge/features/story-011-06-documents-editor-bri-99.md"
-    },
-    {
-      "id": "knowledge/features/story-011-06-gallery-tabs-shell-bri-98.md",
-      "type": "feature",
-      "label": "story-011-06-gallery-tabs-shell-bri-98",
-      "path": "knowledge/features/story-011-06-gallery-tabs-shell-bri-98.md"
-    },
-    {
-      "id": "knowledge/features/story-011-06-property-information-editor-bri-97.md",
-      "type": "feature",
-      "label": "story-011-06-property-information-editor-bri-97",
-      "path": "knowledge/features/story-011-06-property-information-editor-bri-97.md"
-    },
-    {
-      "id": "knowledge/features/story-011-06-summary-editor-bri-96.md",
-      "type": "feature",
-      "label": "story-011-06-summary-editor-bri-96",
-      "path": "knowledge/features/story-011-06-summary-editor-bri-96.md"
-    },
-    {
-      "id": "knowledge/features/story-011-07-api-integration-regression-bri-100.md",
-      "type": "feature",
-      "label": "story-011-07-api-integration-regression-bri-100",
-      "path": "knowledge/features/story-011-07-api-integration-regression-bri-100.md"
-    },
-    {
-      "id": "knowledge/features/story-011-07-docs-sync-and-rfc-traceability-bri-102.md",
-      "type": "feature",
-      "label": "story-011-07-docs-sync-and-rfc-traceability-bri-102",
-      "path": "knowledge/features/story-011-07-docs-sync-and-rfc-traceability-bri-102.md"
-    },
-    {
-      "id": "knowledge/features/story-011-07-playwright-admin-collections-flow-bri-101.md",
-      "type": "feature",
-      "label": "story-011-07-playwright-admin-collections-flow-bri-101",
-      "path": "knowledge/features/story-011-07-playwright-admin-collections-flow-bri-101.md"
-    },
-    {
-      "id": "knowledge/features/story-011-07-responsive-qa-evidence-pack-bri-103.md",
-      "type": "feature",
-      "label": "story-011-07-responsive-qa-evidence-pack-bri-103",
-      "path": "knowledge/features/story-011-07-responsive-qa-evidence-pack-bri-103.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-appdata-plugin-fields-aggregation-bri-107.md",
-      "type": "feature",
-      "label": "story-011-08-appdata-plugin-fields-aggregation-bri-107",
-      "path": "knowledge/features/story-011-08-appdata-plugin-fields-aggregation-bri-107.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-authorities-aggregation-bri-105.md",
-      "type": "feature",
-      "label": "story-011-08-authorities-aggregation-bri-105",
-      "path": "knowledge/features/story-011-08-authorities-aggregation-bri-105.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-base-blockchain-addresses-aggregation-bri-104.md",
-      "type": "feature",
-      "label": "story-011-08-base-blockchain-addresses-aggregation-bri-104",
-      "path": "knowledge/features/story-011-08-base-blockchain-addresses-aggregation-bri-104.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-copy-link-interactions-and-tests-bri-109.md",
-      "type": "feature",
-      "label": "story-011-08-copy-link-interactions-and-tests-bri-109",
-      "path": "knowledge/features/story-011-08-copy-link-interactions-and-tests-bri-109.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-guard-fields-aggregation-bri-106.md",
-      "type": "feature",
-      "label": "story-011-08-guard-fields-aggregation-bri-106",
-      "path": "knowledge/features/story-011-08-guard-fields-aggregation-bri-106.md"
-    },
-    {
-      "id": "knowledge/features/story-011-08-read-only-blockchain-panel-ui-bri-108.md",
-      "type": "feature",
-      "label": "story-011-08-read-only-blockchain-panel-ui-bri-108",
-      "path": "knowledge/features/story-011-08-read-only-blockchain-panel-ui-bri-108.md"
-    },
-    {
-      "id": "knowledge/features/story-011-09-address-autocomplete-bri-112.md",
-      "type": "feature",
-      "label": "story-011-09-address-autocomplete-bri-112",
-      "path": "knowledge/features/story-011-09-address-autocomplete-bri-112.md"
-    },
-    {
-      "id": "knowledge/features/story-011-09-backend-location-maps-contract-bri-111.md",
-      "type": "feature",
-      "label": "story-011-09-backend-location-maps-contract-bri-111",
-      "path": "knowledge/features/story-011-09-backend-location-maps-contract-bri-111.md"
-    },
-    {
-      "id": "knowledge/features/story-011-09-current-address-and-outbound-maps-cta-bri-110.md",
-      "type": "feature",
-      "label": "story-011-09-current-address-and-outbound-maps-cta-bri-110",
-      "path": "knowledge/features/story-011-09-current-address-and-outbound-maps-cta-bri-110.md"
-    },
-    {
-      "id": "knowledge/features/story-011-09-manual-save-cancel-integration-and-qa-bri-114.md",
-      "type": "feature",
-      "label": "story-011-09-manual-save-cancel-integration-and-qa-bri-114",
-      "path": "knowledge/features/story-011-09-manual-save-cancel-integration-and-qa-bri-114.md"
-    },
-    {
-      "id": "knowledge/features/story-011-09-persist-google-maps-place-json-bri-113.md",
-      "type": "feature",
-      "label": "story-011-09-persist-google-maps-place-json-bri-113",
-      "path": "knowledge/features/story-011-09-persist-google-maps-place-json-bri-113.md"
-    },
-    {
-      "id": "knowledge/features/story-011-10-collections-health-and-manual-review-queue-bri-79.md",
-      "type": "feature",
-      "label": "story-011-10-collections-health-and-manual-review-queue-bri-79",
-      "path": "knowledge/features/story-011-10-collections-health-and-manual-review-queue-bri-79.md"
-    },
-    {
-      "id": "knowledge/features/story-011-11-location-form-contract-and-persistence-parity-bri-124.md",
-      "type": "feature",
-      "label": "story-011-11-location-form-contract-and-persistence-parity-bri-124",
-      "path": "knowledge/features/story-011-11-location-form-contract-and-persistence-parity-bri-124.md"
+      "id": "knowledge/fixes/bri-157/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-157/index.md"
     },
     {
       "id": "knowledge/fixes/bri-158/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md",
@@ -2256,6 +1704,24 @@
       "type": "fix",
       "label": "index",
       "path": "knowledge/fixes/bri-158/index.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md",
+      "type": "fix",
+      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation",
+      "path": "knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161.md",
+      "type": "fix",
+      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161",
+      "path": "knowledge/fixes/bri-161/fix-app-admin-asset-form-investment-model-alignment-bri-161.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-161/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-161/index.md"
     },
     {
       "id": "knowledge/fixes/bri-162/fix-single-project-vercel-alias-flow-bri-162-implementation.md",
@@ -2384,6 +1850,24 @@
       "path": "knowledge/fixes/bri-165/index.md"
     },
     {
+      "id": "knowledge/fixes/bri-166/fix-may-2026-ui-errors-implementation.md",
+      "type": "fix",
+      "label": "fix-may-2026-ui-errors-implementation",
+      "path": "knowledge/fixes/bri-166/fix-may-2026-ui-errors-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-166/fix-may-2026-ui-errors.md",
+      "type": "fix",
+      "label": "fix-may-2026-ui-errors",
+      "path": "knowledge/fixes/bri-166/fix-may-2026-ui-errors.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-166/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-166/index.md"
+    },
+    {
       "id": "knowledge/fixes/bri-167/fix-bri-167-phantom-autoconnect-scope-implementation.md",
       "type": "fix",
       "label": "fix-bri-167-phantom-autoconnect-scope-implementation",
@@ -2394,6 +1878,18 @@
       "type": "fix",
       "label": "fix-bri-167-phantom-autoconnect-scope",
       "path": "knowledge/fixes/bri-167/fix-bri-167-phantom-autoconnect-scope.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-167/fix-login-modal-issue-implementation.md",
+      "type": "fix",
+      "label": "fix-login-modal-issue-implementation",
+      "path": "knowledge/fixes/bri-167/fix-login-modal-issue-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-167/fix-login-modal-issue.md",
+      "type": "fix",
+      "label": "fix-login-modal-issue",
+      "path": "knowledge/fixes/bri-167/fix-login-modal-issue.md"
     },
     {
       "id": "knowledge/fixes/bri-167/index.md",
@@ -2418,6 +1914,18 @@
       "type": "fix",
       "label": "index",
       "path": "knowledge/fixes/bri-169/index.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow-implementation.md",
+      "type": "fix",
+      "label": "fix-admin-assets-owner-freeze-mint-flow-implementation",
+      "path": "knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow.md",
+      "type": "fix",
+      "label": "fix-admin-assets-owner-freeze-mint-flow",
+      "path": "knowledge/fixes/bri-170/fix-admin-assets-owner-freeze-mint-flow.md"
     },
     {
       "id": "knowledge/fixes/bri-170/fix-bri-170-stake-blockhash-expiry-retry-implementation.md",
@@ -2480,6 +1988,42 @@
       "path": "knowledge/fixes/bri-171/index.md"
     },
     {
+      "id": "knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system-implementation.md",
+      "type": "fix",
+      "label": "fix-admin-cm-deploy-current-system-implementation",
+      "path": "knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system.md",
+      "type": "fix",
+      "label": "fix-admin-cm-deploy-current-system",
+      "path": "knowledge/fixes/bri-176/fix-admin-cm-deploy-current-system.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-176/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-176/index.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-178/fix-bri-178-splash-performance-implementation.md",
+      "type": "fix",
+      "label": "fix-bri-178-splash-performance-implementation",
+      "path": "knowledge/fixes/bri-178/fix-bri-178-splash-performance-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-178/fix-bri-178-splash-performance.md",
+      "type": "fix",
+      "label": "fix-bri-178-splash-performance",
+      "path": "knowledge/fixes/bri-178/fix-bri-178-splash-performance.md"
+    },
+    {
+      "id": "knowledge/fixes/bri-178/index.md",
+      "type": "fix",
+      "label": "index",
+      "path": "knowledge/fixes/bri-178/index.md"
+    },
+    {
       "id": "knowledge/fixes/bri-6/fix-bri-6-admin-distributions-production-visibility-implementation.md",
       "type": "fix",
       "label": "fix-bri-6-admin-distributions-production-visibility-implementation",
@@ -2498,390 +2042,6 @@
       "path": "knowledge/fixes/bri-6/index.md"
     },
     {
-      "id": "knowledge/fixes/fix-admin-asset-project-duration-derived-dates-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-asset-project-duration-derived-dates-implementation",
-      "path": "knowledge/fixes/fix-admin-asset-project-duration-derived-dates-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-asset-project-duration-derived-dates.md",
-      "type": "fix",
-      "label": "fix-admin-asset-project-duration-derived-dates",
-      "path": "knowledge/fixes/fix-admin-asset-project-duration-derived-dates.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-assets-owner-freeze-mint-flow-implementation",
-      "path": "knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md",
-      "type": "fix",
-      "label": "fix-admin-assets-owner-freeze-mint-flow",
-      "path": "knowledge/fixes/fix-admin-assets-owner-freeze-mint-flow.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-cm-deploy-current-system-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-current-system-implementation",
-      "path": "knowledge/fixes/fix-admin-cm-deploy-current-system-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-cm-deploy-current-system.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-current-system",
-      "path": "knowledge/fixes/fix-admin-cm-deploy-current-system.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-cm-deploy-detailed-logs-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-detailed-logs-implementation",
-      "path": "knowledge/fixes/fix-admin-cm-deploy-detailed-logs-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-cm-deploy-detailed-logs.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-detailed-logs",
-      "path": "knowledge/fixes/fix-admin-cm-deploy-detailed-logs.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-collections-document-upload-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-collections-document-upload-implementation",
-      "path": "knowledge/fixes/fix-admin-collections-document-upload-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-collections-document-upload.md",
-      "type": "fix",
-      "label": "fix-admin-collections-document-upload",
-      "path": "knowledge/fixes/fix-admin-collections-document-upload.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-collections-ui-reorganization-bri-169-implementation",
-      "path": "knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169.md",
-      "type": "fix",
-      "label": "fix-admin-collections-ui-reorganization-bri-169",
-      "path": "knowledge/fixes/fix-admin-collections-ui-reorganization-bri-169.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-adminassetsnew-bri-165-implementation.md",
-      "type": "fix",
-      "label": "fix-adminassetsnew-bri-165-implementation",
-      "path": "knowledge/fixes/fix-adminassetsnew-bri-165-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-adminassetsnew-bri-165.md",
-      "type": "fix",
-      "label": "fix-adminassetsnew-bri-165",
-      "path": "knowledge/fixes/fix-adminassetsnew-bri-165.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-agents-orchestation-implementation.md",
-      "type": "fix",
-      "label": "fix-agents-orchestation-implementation",
-      "path": "knowledge/fixes/fix-agents-orchestation-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-agents-orchestation.md",
-      "type": "fix",
-      "label": "fix-agents-orchestation",
-      "path": "knowledge/fixes/fix-agents-orchestation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md",
-      "type": "fix",
-      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation",
-      "path": "knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161.md",
-      "type": "fix",
-      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161",
-      "path": "knowledge/fixes/fix-app-admin-asset-form-investment-model-alignment-bri-161.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-detail-google-maps-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-detail-google-maps-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-detail-google-maps-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-detail-modal-scroll-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-detail-modal-scroll-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-detail-modal-scroll-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-disable-auto-camera-orbit-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-disable-auto-camera-orbit-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-pin-contrast-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-pin-contrast-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-map-pin-contrast-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-pin-leader-stacking-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-pin-leader-stacking-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-map-pin-leader-stacking-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-update-depth-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-map-update-depth-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-map-update-depth-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164-implementation.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-side-pin-compact-bri-164-implementation",
-      "path": "knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164.md",
-      "type": "fix",
-      "label": "fix-app-marketplace-side-pin-compact-bri-164",
-      "path": "knowledge/fixes/fix-app-marketplace-side-pin-compact-bri-164.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-167-phantom-autoconnect-scope-implementation",
-      "path": "knowledge/fixes/fix-bri-167-phantom-autoconnect-scope-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md",
-      "type": "fix",
-      "label": "fix-bri-167-phantom-autoconnect-scope",
-      "path": "knowledge/fixes/fix-bri-167-phantom-autoconnect-scope.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-blockhash-expiry-retry-implementation",
-      "path": "knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-blockhash-expiry-retry",
-      "path": "knowledge/fixes/fix-bri-170-stake-blockhash-expiry-retry.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-mobile-card-overflow-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-mobile-card-overflow-implementation",
-      "path": "knowledge/fixes/fix-bri-170-stake-mobile-card-overflow-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-mobile-card-overflow.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-mobile-card-overflow",
-      "path": "knowledge/fixes/fix-bri-170-stake-mobile-card-overflow.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-sync-feedback-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-sync-feedback-implementation",
-      "path": "knowledge/fixes/fix-bri-170-stake-sync-feedback-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-170-stake-sync-feedback.md",
-      "type": "fix",
-      "label": "fix-bri-170-stake-sync-feedback",
-      "path": "knowledge/fixes/fix-bri-170-stake-sync-feedback.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-171-investor-overview-placeholder-states-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-171-investor-overview-placeholder-states-implementation",
-      "path": "knowledge/fixes/fix-bri-171-investor-overview-placeholder-states-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-171-investor-overview-placeholder-states.md",
-      "type": "fix",
-      "label": "fix-bri-171-investor-overview-placeholder-states",
-      "path": "knowledge/fixes/fix-bri-171-investor-overview-placeholder-states.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-178-splash-performance-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-178-splash-performance-implementation",
-      "path": "knowledge/fixes/fix-bri-178-splash-performance-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-178-splash-performance.md",
-      "type": "fix",
-      "label": "fix-bri-178-splash-performance",
-      "path": "knowledge/fixes/fix-bri-178-splash-performance.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-6-admin-distributions-production-visibility-implementation.md",
-      "type": "fix",
-      "label": "fix-bri-6-admin-distributions-production-visibility-implementation",
-      "path": "knowledge/fixes/fix-bri-6-admin-distributions-production-visibility-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-bri-6-admin-distributions-production-visibility.md",
-      "type": "fix",
-      "label": "fix-bri-6-admin-distributions-production-visibility",
-      "path": "knowledge/fixes/fix-bri-6-admin-distributions-production-visibility.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md",
-      "type": "fix",
-      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation",
-      "path": "knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md",
-      "type": "fix",
-      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation",
-      "path": "knowledge/fixes/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-linear-initiative-branch-workflow-implementation.md",
-      "type": "fix",
-      "label": "fix-linear-initiative-branch-workflow-implementation",
-      "path": "knowledge/fixes/fix-linear-initiative-branch-workflow-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-linear-initiative-branch-workflow.md",
-      "type": "fix",
-      "label": "fix-linear-initiative-branch-workflow",
-      "path": "knowledge/fixes/fix-linear-initiative-branch-workflow.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-login-modal-issue-implementation.md",
-      "type": "fix",
-      "label": "fix-login-modal-issue-implementation",
-      "path": "knowledge/fixes/fix-login-modal-issue-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-login-modal-issue.md",
-      "type": "fix",
-      "label": "fix-login-modal-issue",
-      "path": "knowledge/fixes/fix-login-modal-issue.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-may-2026-ui-errors-implementation.md",
-      "type": "fix",
-      "label": "fix-may-2026-ui-errors-implementation",
-      "path": "knowledge/fixes/fix-may-2026-ui-errors-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-may-2026-ui-errors.md",
-      "type": "fix",
-      "label": "fix-may-2026-ui-errors",
-      "path": "knowledge/fixes/fix-may-2026-ui-errors.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md",
-      "type": "fix",
-      "label": "fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation",
-      "path": "knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md",
-      "type": "fix",
-      "label": "fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158",
-      "path": "knowledge/fixes/fix-public-seo-core-web-vitals-and-vercel-performance-hardening-bri-158.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md",
-      "type": "fix",
-      "label": "fix-single-project-vercel-alias-flow-bri-162-implementation",
-      "path": "knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162.md",
-      "type": "fix",
-      "label": "fix-single-project-vercel-alias-flow-bri-162",
-      "path": "knowledge/fixes/fix-single-project-vercel-alias-flow-bri-162.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md",
-      "type": "fix",
-      "label": "fix-stake-submit-signed-message-blockhash-tolerance-implementation",
-      "path": "knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance.md",
-      "type": "fix",
-      "label": "fix-stake-submit-signed-message-blockhash-tolerance",
-      "path": "knowledge/fixes/fix-stake-submit-signed-message-blockhash-tolerance.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-stake-unstake-release-visibility-implementation.md",
-      "type": "fix",
-      "label": "fix-stake-unstake-release-visibility-implementation",
-      "path": "knowledge/fixes/fix-stake-unstake-release-visibility-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-stake-unstake-release-visibility.md",
-      "type": "fix",
-      "label": "fix-stake-unstake-release-visibility",
-      "path": "knowledge/fixes/fix-stake-unstake-release-visibility.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md",
-      "type": "fix",
-      "label": "fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation",
-      "path": "knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md",
-      "type": "fix",
-      "label": "fix-test-suite-drift-marketplace-i18n-and-pr-governance",
-      "path": "knowledge/fixes/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md"
-    },
-    {
       "id": "knowledge/fixes/index.md",
       "type": "fix",
       "label": "index",
@@ -2898,30 +2058,6 @@
       "type": "fix",
       "label": "fix-admin-asset-project-duration-derived-dates",
       "path": "knowledge/fixes/other/fix-admin-asset-project-duration-derived-dates.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-assets-owner-freeze-mint-flow-implementation",
-      "path": "knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow.md",
-      "type": "fix",
-      "label": "fix-admin-assets-owner-freeze-mint-flow",
-      "path": "knowledge/fixes/other/fix-admin-assets-owner-freeze-mint-flow.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-admin-cm-deploy-current-system-implementation.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-current-system-implementation",
-      "path": "knowledge/fixes/other/fix-admin-cm-deploy-current-system-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-admin-cm-deploy-current-system.md",
-      "type": "fix",
-      "label": "fix-admin-cm-deploy-current-system",
-      "path": "knowledge/fixes/other/fix-admin-cm-deploy-current-system.md"
     },
     {
       "id": "knowledge/fixes/other/fix-admin-cm-deploy-detailed-logs-implementation.md",
@@ -2948,42 +2084,6 @@
       "path": "knowledge/fixes/other/fix-admin-collections-document-upload.md"
     },
     {
-      "id": "knowledge/fixes/other/fix-agents-orchestation-implementation.md",
-      "type": "fix",
-      "label": "fix-agents-orchestation-implementation",
-      "path": "knowledge/fixes/other/fix-agents-orchestation-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-agents-orchestation.md",
-      "type": "fix",
-      "label": "fix-agents-orchestation",
-      "path": "knowledge/fixes/other/fix-agents-orchestation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md",
-      "type": "fix",
-      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation",
-      "path": "knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161.md",
-      "type": "fix",
-      "label": "fix-app-admin-asset-form-investment-model-alignment-bri-161",
-      "path": "knowledge/fixes/other/fix-app-admin-asset-form-investment-model-alignment-bri-161.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md",
-      "type": "fix",
-      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation",
-      "path": "knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md",
-      "type": "fix",
-      "label": "fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation",
-      "path": "knowledge/fixes/other/fix-hybrid-auth-bidirectional-linking-and-safe-account-consolidation.md"
-    },
-    {
       "id": "knowledge/fixes/other/fix-linear-initiative-branch-workflow-implementation.md",
       "type": "fix",
       "label": "fix-linear-initiative-branch-workflow-implementation",
@@ -2994,30 +2094,6 @@
       "type": "fix",
       "label": "fix-linear-initiative-branch-workflow",
       "path": "knowledge/fixes/other/fix-linear-initiative-branch-workflow.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-login-modal-issue-implementation.md",
-      "type": "fix",
-      "label": "fix-login-modal-issue-implementation",
-      "path": "knowledge/fixes/other/fix-login-modal-issue-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-login-modal-issue.md",
-      "type": "fix",
-      "label": "fix-login-modal-issue",
-      "path": "knowledge/fixes/other/fix-login-modal-issue.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-may-2026-ui-errors-implementation.md",
-      "type": "fix",
-      "label": "fix-may-2026-ui-errors-implementation",
-      "path": "knowledge/fixes/other/fix-may-2026-ui-errors-implementation.md"
-    },
-    {
-      "id": "knowledge/fixes/other/fix-may-2026-ui-errors.md",
-      "type": "fix",
-      "label": "fix-may-2026-ui-errors",
-      "path": "knowledge/fixes/other/fix-may-2026-ui-errors.md"
     },
     {
       "id": "knowledge/fixes/other/fix-stake-submit-signed-message-blockhash-tolerance-implementation.md",
@@ -3092,6 +2168,12 @@
       "path": "knowledge/governance/index.md"
     },
     {
+      "id": "knowledge/governance/licenses-report.md",
+      "type": "governance",
+      "label": "licenses-report",
+      "path": "knowledge/governance/licenses-report.md"
+    },
+    {
       "id": "knowledge/governance/nft-policy.md",
       "type": "governance",
       "label": "nft-policy",
@@ -3108,6 +2190,12 @@
       "type": "governance",
       "label": "security-quality-policy",
       "path": "knowledge/governance/security-quality-policy.md"
+    },
+    {
+      "id": "knowledge/guides/EPIC-014-distribution-system-sop.md",
+      "type": "governance",
+      "label": "EPIC-014-distribution-system-sop",
+      "path": "knowledge/guides/EPIC-014-distribution-system-sop.md"
     },
     {
       "id": "knowledge/guides/ai-readable-endpoints-contracts.md",
@@ -3426,6 +2514,12 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/proposals/guide/index.md"
+    },
+    {
+      "id": "knowledge/reports/BRI-181-linear-update.md",
+      "type": "governance",
+      "label": "BRI-181-linear-update",
+      "path": "knowledge/reports/BRI-181-linear-update.md"
     },
     {
       "id": "knowledge/reports/README.md",
@@ -4130,6 +3224,42 @@
       "path": "knowledge/rfcs/EPIC-013-pwa-installability-and-web-push-notifications/index.md"
     },
     {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/CRITIQUE-S01.md",
+      "type": "governance",
+      "label": "CRITIQUE-S01",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/CRITIQUE-S01.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/README.md",
+      "type": "governance",
+      "label": "README",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/README.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-01-draft.md",
+      "type": "governance",
+      "label": "STORY-014-01-draft",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-01-draft.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-02-core-infrastructure.md",
+      "type": "governance",
+      "label": "STORY-014-02-core-infrastructure",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-02-core-infrastructure.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-03-distribution-engine.md",
+      "type": "governance",
+      "label": "STORY-014-03-distribution-engine",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-03-distribution-engine.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md",
+      "type": "governance",
+      "label": "STORY-014-04-treasury-claims",
+      "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md"
+    },
+    {
       "id": "knowledge/rfcs/index.md",
       "type": "governance",
       "label": "index",
@@ -4268,10 +3398,22 @@
       "path": "knowledge/templates/index.md"
     },
     {
+      "id": "knowledge/templates/linear-brief-template.md",
+      "type": "governance",
+      "label": "linear-brief-template",
+      "path": "knowledge/templates/linear-brief-template.md"
+    },
+    {
       "id": "knowledge/templates/linear-single-issue-slices.template.md",
       "type": "governance",
       "label": "linear-single-issue-slices.template",
       "path": "knowledge/templates/linear-single-issue-slices.template.md"
+    },
+    {
+      "id": "knowledge/templates/problem-spec-template.md",
+      "type": "governance",
+      "label": "problem-spec-template",
+      "path": "knowledge/templates/problem-spec-template.md"
     },
     {
       "id": "knowledge/templates/rfcs/EPIC-README.template.md",
@@ -4290,6 +3432,12 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/templates/rfcs/index.md"
+    },
+    {
+      "id": "knowledge/templates/solution-spec-template.md",
+      "type": "governance",
+      "label": "solution-spec-template",
+      "path": "knowledge/templates/solution-spec-template.md"
     },
     {
       "id": "module:app",
@@ -4352,6 +3500,11 @@
     {
       "source": "AGENTS.md",
       "target": "knowledge/governance/index.md",
+      "relation": "governs"
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "knowledge/governance/licenses-report.md",
       "relation": "governs"
     },
     {

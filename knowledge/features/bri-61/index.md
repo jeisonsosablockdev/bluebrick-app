@@ -3,7 +3,7 @@ type: Feature Index
 title: bri-61
 description: Feature files for bri-61
 tags: [feature, bri-61]
-timestamp: 2026-06-16T00:00:00Z
+timestamp: 2026-07-24T00:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/features/bri-61
 ---
 
@@ -11,4 +11,3 @@ resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/fea
 
 ## Files
 * [feature-flujo-gitflow-pr-structure-bri-61](feature-flujo-gitflow-pr-structure-bri-61.md)
-* [feature-flujo-gitflow-pr-structure-improvement-01-bri-62](feature-flujo-gitflow-pr-structure-improvement-01-bri-62.md)

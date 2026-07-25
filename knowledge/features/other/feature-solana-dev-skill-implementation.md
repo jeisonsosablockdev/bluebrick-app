@@ -1,12 +1,13 @@
 ---
-type: Feature Spec
-title: Feature Solana Dev Skill Implementation
-description: Feature Solana Dev Skill Implementation - migrated from knowledge/
-tags: [knowledge]
-timestamp: 2026-06-16T15:15:38Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/knowledge/features/feature-solana-dev-skill-implementation.md
+id: feature-solana-dev-skill-implementation
+title: Implementation plan for solana-dev skill in-repo installation
+status: approved
+scope: tooling
+source_branch: feature/shared-solana-dev-skill
+source_feature: feature-solana-dev-skill
+created_at: 2026-06-14
+updated_at: 2026-06-14
 ---
-
 
 # Implementation: Solana Dev Skill In-Repo
 

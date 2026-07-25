@@ -3,8 +3,8 @@ type: Feature Spec
 title: STORY- 011 06 Summary Editor BRI- 96
 description: STORY- 011 06 Summary Editor BRI- 96 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/story-011-06-summary-editor-bri-96.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/epic-011/story-011-06-summary-editor-bri-96.md
 ---
 
 # STORY-011-06 / BRI-96 Summary Editor

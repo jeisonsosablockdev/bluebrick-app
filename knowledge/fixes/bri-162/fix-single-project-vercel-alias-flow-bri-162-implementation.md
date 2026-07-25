@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix Single Project Vercel Alias Flow BRI- 162 Implementation
 description: Fix Single Project Vercel Alias Flow BRI- 162 Implementation - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-single-project-vercel-alias-flow-bri-162-implementation.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/bri-162/fix-single-project-vercel-alias-flow-bri-162-implementation.md
 ---
 
 # Fix: BRI-162 Single-Project Vercel Alias Flow Implementation
