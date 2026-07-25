@@ -3,8 +3,8 @@ type: Feature Spec
 title: Fix App Wallet Ingresar Cta BRI- 153
 description: Fix App Wallet Ingresar Cta BRI- 153 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-wallet-ingresar-cta-bri-153.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-153/fix-app-wallet-ingresar-cta-bri-153.md
 ---
 
 # fix(app): wallet cta ingresar with icon (BRI-153 / s01)

@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix App Marketplace Side Pin Compact BRI- 164 Implementation
 description: Fix App Marketplace Side Pin Compact BRI- 164 Implementation - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-side-pin-compact-bri-164-implementation.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/bri-164/fix-app-marketplace-side-pin-compact-bri-164-implementation.md
 ---
 
 # Implementation: Compact marketplace side pin card

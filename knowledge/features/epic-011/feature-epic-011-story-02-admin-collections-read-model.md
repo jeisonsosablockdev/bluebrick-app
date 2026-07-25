@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature EPIC- 011 STORY- 02 Admin Collections Read Model
 description: Feature EPIC- 011 STORY- 02 Admin Collections Read Model - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-011-story-02-admin-collections-read-model.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/epic-011/feature-epic-011-story-02-admin-collections-read-model.md
 ---
 
 # EPIC-011 Story 02: Admin Collections Read Model

@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature App Home Copy BRI- 39
 description: Feature App Home Copy BRI- 39 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-home-copy-bri-39.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-39/feature-app-home-copy-bri-39.md
 ---
 
 # Feature Note: Home Copy Refresh + Transparency Mapping (BRI-39)

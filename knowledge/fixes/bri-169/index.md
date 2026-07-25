@@ -1,14 +1,14 @@
 ---
 type: Fix Index
-title: BRI-169 Admin Collections UI Reorganization
-description: Admin collections UI reorganization
-tags: [fix, bri-169, admin, collections, ui]
-timestamp: 2026-06-16T00:00:00Z
+title: bri-169
+description: Fix files for bri-169
+tags: [fix, bri-169]
+timestamp: 2026-07-24T00:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/fixes/bri-169
 ---
 
-# BRI-169 Admin Collections UI Reorganization
+# bri-169
 
 ## Files
-* [Problem](fix-admin-collections-ui-reorganization-bri-169.md)
-* [Implementation](fix-admin-collections-ui-reorganization-bri-169-implementation.md)
+* [fix-admin-collections-ui-reorganization-bri-169-implementation](fix-admin-collections-ui-reorganization-bri-169-implementation.md)
+* [fix-admin-collections-ui-reorganization-bri-169](fix-admin-collections-ui-reorganization-bri-169.md)

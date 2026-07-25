@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature App Image Storage Blob Pinata
 description: Feature App Image Storage Blob Pinata - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-image-storage-blob-pinata.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/other/feature-app-image-storage-blob-pinata.md
 ---
 
 # Feature Note: Image Upload Storage Migration (GCS -> Vercel Blob)

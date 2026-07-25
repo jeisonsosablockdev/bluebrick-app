@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix BRI- 170 Stake Sync Feedback
 description: Fix BRI- 170 Stake Sync Feedback - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-bri-170-stake-sync-feedback.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/bri-170/fix-bri-170-stake-sync-feedback.md
 ---
 
 # fix: BRI-170 Stake sync feedback and reconciliation polling

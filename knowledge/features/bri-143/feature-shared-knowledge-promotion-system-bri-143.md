@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Shared Knowledge Promotion System BRI- 143
 description: Feature Shared Knowledge Promotion System BRI- 143 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-knowledge-promotion-system-bri-143.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-143/feature-shared-knowledge-promotion-system-bri-143.md
 ---
 
 # Feature Note: shared-knowledge-promotion-system (BRI-143)

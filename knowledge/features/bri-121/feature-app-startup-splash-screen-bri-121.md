@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature App Startup Splash Screen BRI- 121
 description: Feature App Startup Splash Screen BRI- 121 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-startup-splash-screen-bri-121.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-121/feature-app-startup-splash-screen-bri-121.md
 ---
 
 # BRI-121 App Startup Splash Screen

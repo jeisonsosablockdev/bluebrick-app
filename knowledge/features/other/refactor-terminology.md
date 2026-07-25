@@ -3,8 +3,8 @@ type: Feature Spec
 title: Refactor Terminology
 description: Refactor Terminology - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/refactor-terminology.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/other/refactor-terminology.md
 ---
 
 # Feature Plan: Refactor NFT Terminology

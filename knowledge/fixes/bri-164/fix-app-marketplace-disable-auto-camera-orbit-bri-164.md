@@ -3,8 +3,8 @@ type: Fix Spec
 title: Fix App Marketplace Disable Auto Camera Orbit BRI- 164
 description: Fix App Marketplace Disable Auto Camera Orbit BRI- 164 - migrated from knowledge/
 tags: [fixes]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/fixes/fix-app-marketplace-disable-auto-camera-orbit-bri-164.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/fixes/bri-164/fix-app-marketplace-disable-auto-camera-orbit-bri-164.md
 ---
 
 # Fix: Disable marketplace automatic camera orbit

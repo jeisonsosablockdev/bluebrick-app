@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature EPIC- 011 STORY- 05 Navigation To Detail View BRI- 94
 description: Feature EPIC- 011 STORY- 05 Navigation To Detail View BRI- 94 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/epic-011/feature-epic-011-story-05-navigation-to-detail-view-bri-94.md
 ---
 
 # EPIC-011 Story 05: Navigation To Detail View

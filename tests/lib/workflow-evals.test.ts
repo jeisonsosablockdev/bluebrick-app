@@ -11,7 +11,7 @@ function read(relativePath: string): string {
 
 describe("workflow evals", () => {
   it("keeps the solution artifact decision-complete and anti-improvisation oriented", () => {
-    const source = read("knowledge/fixes/fix-agents-orchestation-implementation.md");
+    const source = read("knowledge/fixes/bri-157/fix-agents-orchestation-implementation.md");
 
     expect(source).toContain("decision-complete");
     expect(source).toContain("si falta una decisión material, no se implementa todavía");
@@ -20,7 +20,7 @@ describe("workflow evals", () => {
   });
 
   it("keeps the problem artifact explicit about spirit drift and halt-and-ask gaps", () => {
-    const source = read("knowledge/fixes/fix-agents-orchestation.md");
+    const source = read("knowledge/fixes/bri-157/fix-agents-orchestation.md");
 
     expect(source).toContain("following the letter, but not the spirit");
     expect(source).toContain("detenerse y preguntar");

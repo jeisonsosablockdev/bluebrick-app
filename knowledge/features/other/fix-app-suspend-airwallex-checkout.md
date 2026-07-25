@@ -3,8 +3,8 @@ type: Feature Spec
 title: Fix App Suspend Airwallex Checkout
 description: Fix App Suspend Airwallex Checkout - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/fix-app-suspend-airwallex-checkout.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/other/fix-app-suspend-airwallex-checkout.md
 ---
 
 # Fix: Suspend Airwallex Checkout

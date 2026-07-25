@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature EPIC- 010 STORY- 01 Foundation Layered Architecture
 description: Feature EPIC- 010 STORY- 01 Foundation Layered Architecture - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-epic-010-story-01-foundation-layered-architecture.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/epic-010/feature-epic-010-story-01-foundation-layered-architecture.md
 ---
 
 # Feature: EPIC-010 STORY-010-01 Foundation and Layered Architecture

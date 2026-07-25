@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Shared HyBRI-d Auth Clean Code BRI- 159
 description: Feature Shared HyBRI-d Auth Clean Code BRI- 159 - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-shared-hybrid-auth-clean-code-bri-159.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-159-feature-shared-hybrid-auth-clean-code/feature-shared-hybrid-auth-clean-code-bri-159.md
 ---
 
 # feature(shared): clean-code refactor for hybrid auth account consolidation flows (BRI-159)

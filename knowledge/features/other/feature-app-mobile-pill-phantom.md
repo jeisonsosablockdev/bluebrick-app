@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature App Mobile Pill Phantom
 description: Feature App Mobile Pill Phantom - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-app-mobile-pill-phantom.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/other/feature-app-mobile-pill-phantom.md
 ---
 
 # [Mobile] Pill "Abrir en Phantom" con fallback de instalacion

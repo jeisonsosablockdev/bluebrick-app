@@ -3,8 +3,8 @@ type: Feature Spec
 title: Feature Contextual Hints Admin Assets New Exclude Location BRI- 10 Implementation
 description: Feature Contextual Hints Admin Assets New Exclude Location BRI- 10 Implementation - migrated from knowledge/
 tags: [features]
-timestamp: 2026-06-16T15:03:01Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/features/feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation.md
+timestamp: 2026-07-20T04:23:56Z
+resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/features/bri-10/feature-contextual-hints-admin-assets-new-exclude-location-bri-10-implementation.md
 ---
 
 # Implementation: Contextual hints in `/admin/assets/new` excluding Location (BRI-10)
