@@ -47,17 +47,21 @@ pub struct ProjectConfigState {
 
 #### B. `update_project_dates`
 - Recibe los parámetros `new_project_start_at` y `new_project_end_at`.
-- **Restricción de Seguridad Rígida**:
+  - **Restricción de Seguridad Rígida**:
   ```rust
   #[account(
       mut,
       seeds = [b"project_config", collection_mint.key().as_ref()],
       bump = project_config.bump,
-      has_one = squads_multisig_authority @ ErrorCode::UnauthorizedAuthority
-  )]
+      // La autoridad efectiva debe ser la Vault PDA y llegar como signer de una CPI de Squads.
+      // `has_one` solo compara claves y no demuestra autorización.
+    )]
   pub project_config: Account<'info, ProjectConfigState>,
   ```
 - Si la instrucción no viene firmada por la PDA de Squads v4, la runtime de Solana revierte la transacción.
+
+### Security correction
+`update_project_dates` debe recibir la Vault PDA configurada, comprobar igualdad con el estado y `is_signer`, y validar que la invocación proviene de la CPI aprobada. La API no puede firmar como la PDA ni cambiar fechas directamente.
 
 ## Status
 - **Current status**: `draft`

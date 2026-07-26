@@ -12,7 +12,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## Metadata
 - Epic ID: `EPIC-015`
 - Title: `Squads v4 Treasury Claims & Delegated Allowance Governance`
-- Status: `in-review`
+- Status: `in-review` (implementation blocked pending Human Design Approval)
 - Owner: `jaymusicmachine`
 - Spec owner slice: `feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims`
 - Created: `2026-07-25`
@@ -20,27 +20,27 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ## Scope
 - **Problem Statement**: La simulación de firmas e interacciones con el programa Squads v4 no ejecuta transacciones reales en Solana Devnet. Además, requerir firmas manuales para 1,000 sublotes en proyectos masivos resulta inviable operacionalmente. Adicionalmente, almacenar fechas operativas del proyecto (`project_start_at` / `project_end_at`) únicamente en Postgres representa una vulnerabilidad de manipulación de datos si no se vincula a una PDA Notario On-Chain.
-- **Business Goal**: Permitir que el comité de administración apruebe las dispersiones masivas de tesorería con **1 sola firma por corrida marco**, reduciendo la carga operativa sin comprometer el control interno ni la seguridad de los inversores.
+- **Business Goal**: Permitir que el comité de administración apruebe una corrida marco mediante el umbral N-de-M configurado y ejecute sus transacciones agrupadas, reduciendo la carga operativa sin degradar el control interno.
 - **Technical Goal**:
-  1. Integrar el SDK `@sqds/multisig` para crear y ejecutar Propuestas Marco en Solana Devnet.
-  2. Implementar el motor de despacho desatendido en sublotes de 20 transferencias (`MAX_LEGS_PER_BATCH = 20`) en `lib/squads/squads-batch.ts`.
+  1. Integrar el SDK `@sqds/multisig` para crear, votar y ejecutar **Squads Batch** en Solana Devnet: un batch, una propuesta marco y una Vault Transaction por pierna de pago.
+  2. Implementar un planificador de transacciones basado en tamaño serializado, cuentas, compute units y simulación; `20` es un objetivo operativo inicial, no un límite del protocolo.
   3. Vincular la consola `/admin/distributions` con la vista nativa minimalista de multisig en `/admin/treasury/squads`.
   4. Implementar la gobernanza en 2 pasos para cambio de wallet de pago (`distribution_payout_overrides`) asociando el `case_number`.
-  5. Automatizar cronjobs de expiración (48h) y compliance (12 meses), y habilitar la cancelación de reclamaciones (`CANCELED`).
-  6. Implementar la verificación criptográfica nativa de **Árboles de Merkle (`merkleRoot`)** para asegurar la inmutabilidad de los ítems de dispersión.
-  7. Desarrollar el programa Anchor/Pinocchio para la **PDA Notario (`ProjectConfigPDA`)** en Solana Devnet y conectar la lectura directa en `distribution-engine.ts`.
+  5. Automatizar cronjobs de expiración (48h) y compliance (12 meses), con idempotencia, locking y una máquina de estados explícita; habilitar cancelación únicamente cuando no exista ejecución on-chain irreversible.
+  6. Definir si `merkleRoot` será una huella auditora o si existirá un programa de settlement que la almacene y verifique on-chain. Squads no añade por sí mismo un campo `merkleRoot` a una Vault Transaction.
+  7. Desarrollar el programa Anchor para la **PDA Notario (`ProjectConfigPDA`)** en Solana Devnet y autorizar actualizaciones mediante una CPI desde la Vault PDA de Squads; una PDA no puede ser tratada como firmante externo.
   8. Eliminar cualquier API de mutación directa en Postgres para fechas del proyecto.
 - **Out of Scope**: Despliegue en Mainnet-Beta, iframe o embeds de la aplicación web externa squads.so, y cambios en el motor de comisiones versionadas (`SPEC-S04-A`).
 
 ## Success Criteria
 - [ ] `@sqds/multisig` instalado y wrappers de transacción probados en Solana Devnet.
-- [ ] Propuesta Marco en Squads v4 creada y aprobada con 1 sola firma multisig por corrida `runId`.
-- [ ] Worker desatendido despachando sublotes de 20 transferencias y reconciliando el estado en DB (`executed`, `partially_failed`).
+- [ ] Una propuesta de Squads alcanza el umbral configurado (no “1 sola firma” salvo aprobación expresa) y contiene un batch reproducible para `runId`.
+- [ ] Worker desatendido ejecutando únicamente transacciones aprobadas, con planificador por límites reales y reconciliación idempotente en DB (`executed`, `partially_failed`, `paused`).
 - [ ] Consola `/admin/distributions` integrada redirigiendo a `/admin/treasury/squads`.
 - [ ] Tabla `distribution_payout_overrides` en estado `PENDING` previniendo dispersión hasta su aprobación con `case_number`.
 - [ ] Endpoints `/api/cron/claims-expiry` y `/api/cron/compliance-ttl` protegidos por `CRON_SECRET`.
 - [ ] Endpoint `/api/claims/[claimId]/cancel` funcional para usuarios.
-- [ ] Programa Anchor/Pinocchio para `ProjectConfigPDA` desplegado en Devnet y validado con `distribution-engine.ts`.
+- [ ] Programa Anchor para `ProjectConfigPDA` desplegado en Devnet, validado mediante CPI desde la Vault PDA y leído por `distribution-engine.ts`.
 - [ ] APIs de mutación directa de fechas eliminadas y desmanteladas en favor de `POST /api/admin/collections/[id]/date-change-request`.
 
 ## Story & Implementation Index
@@ -57,7 +57,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## Decision Log
 | Date | Story | Decision | Owner | Link |
 | --- | --- | --- | --- | --- |
-| 2026-07-25 | STORY-015-01 | Adoptar Modelo Delegated Squads Allowance (1 sola firma por corrida `runId` + despacho desatendido en sublotes de 20). | jaymusicmachine | [STORY-015-01](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md) |
+| 2026-07-25 | EPIC | Adoptar **Squads Batch + una Vault Transaction por pierna**, no Spending Limits, para los pagos de claims. `merkleRoot` es una huella auditora en esta épica; no autoriza ni liquida pagos. | jaymusicmachine | [Arquitectura y contratos](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md) |
+| 2026-07-25 | STORY-015-01 | Sustituir “1 firma y 20 fijos” por batch/proposal/execute de Squads V4, umbral N-de-M y planificación según límites reales. | jaymusicmachine | [STORY-015-01](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md) |
 | 2026-07-25 | STORY-015-02 | Diseñar vista minimalista en `/admin/treasury/squads` con toggle "Expandir Todos / Ocultar Todos", datos de staking/mint y Alerta de Auditoría de Fechas. | jaymusicmachine | [STORY-015-02](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui.md) |
 | 2026-07-25 | STORY-015-03 | Exigir vinculación obligatoria de `case_number` en solicitudes de cambio de wallet de pago. | jaymusicmachine | [STORY-015-03](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance.md) |
 | 2026-07-25 | STORY-015-04 | Alinear monitores de cronjobs al SOP de EPIC-014 y ofrecer ruta de cancelación para el usuario. | jaymusicmachine | [STORY-015-04](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation.md) |
@@ -67,11 +68,20 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ## Risks and Dependencies
 - **Risks**: Fallos de RPC en Solana Devnet durante la transmisión desatendida de sublotes.
-- **Dependencies**: Disponibilidad del programa Squads v4 en Devnet (`SQDS426qXaMuXxWrMRWsEGrmLVLknAdWRHmjF6eg582`), SDK `@sqds/multisig` y programa Anchor `project_config_notary`.
+- **Dependencies**: Disponibilidad verificada por RPC del programa Squads V4 en Devnet, SDK `@sqds/multisig` compatible con ese despliegue y programa Anchor `project_config_notary`.
 - **Mitigations**: Transacciones reintentables por sublote, marcado de ítems fallidos en DB (`partially_failed`) y verificación RPC directa de la PDA Notario On-Chain.
 
-## Open Questions
-- [ ] Ninguna. Arquitectura 100% alineada, gobernada y aprobada.
+## Open Questions / Blocking Decisions
+- [x] ~~Crear una SPEC inicial estrictamente TDD/RED y una SPEC final estrictamente clean/refactor~~: **Resuelto** — Cada una de las 7 stories incluye SPEC-01 TDD/RED y SPEC final `refactor-clean`. Ver sección 2 "SPEC Delivery Structure" en cada Implementation Spec.
+- [x] ~~Confirmar el program ID V4 realmente desplegado en Devnet~~: **Resuelto provisionalmente** — `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` respondió como cuenta de programa en Devnet mediante consulta RPC de sólo lectura. El primer SPEC debe repetir esa prueba y fallar cerrado si no coincide.
+- [x] ~~Elegir entre `merkleRoot` auditora y settlement program~~: **Resuelto** — para EPIC-015 es sólo auditoría determinista; root/proof no se usan como autorización on-chain. Un settlement program requiere una épica distinta.
+- [x] ~~Fijar el modelo de ejecución~~: **Resuelto** — sólo un miembro registrado de Squads con `Execute` puede ejecutar una propuesta aprobada; un relayer puede pagar tasas, nunca sustituir esa autoridad. Spending Limits quedan fuera del flujo de claims.
+- [ ] Completar el **Authority Manifest** real: multisig PDA, vault index/PDA, threshold, miembros y permisos, timelock, executor operativo, token program y rotación. Sin este documento firmado, ningún SPEC de implementación puede iniciar.
+- [ ] Linear no pudo consultarse porque el conector requiere reautenticación; no se debe afirmar sincronización ni aprobación allí.
+
+## Canonical Documentation Reference
+- **Squads V4 SDK & Protocol**: [`squads-v4-documentation-reference.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md) — Referencia canónica de la documentación oficial de Squads V4, incluyendo Program IDs, Account Structures, Instructions, Code Patterns y URL Index.
+- **Arquitectura y contratos transversales**: [`SOLUTION-ARCHITECTURE.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md) — decisiones de diseño obligatorias, límites de confianza y contratos que todos los SPEC deben respetar.
 
 ## Traceability
 - Issue(s): BRI-8

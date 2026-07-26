@@ -44,10 +44,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 | Vector de Ataque Potencial | Análisis de Vulnerabilidad | Mecanismo de Mitigación Criptográfica (Escudo) |
 | :--- | :--- | :--- |
-| **1. Alteración Maliciosa en Postgres DB** (Un atacante modifica una wallet o monto en la DB tras aprobar la propuesta). | **IMPOSIBLE**. | **Ancla de Merkle en Squads PDA**: En el momento de la firma multisig, la `merkleRoot` se graba inmutablemente en Solana. Si 1 solo bit cambia en Postgres, el Árbol de Merkle no coincide y Solana aborta la transacción. |
-| **2. Inyección de Sublote por Bot Ejecutor** (El worker desatendido intenta enviar un pago a su propia wallet). | **IMPOSIBLE**. | **Restricción de la Vault PDA de Squads v4**: La PDA de la Vault solo ejecuta instrucciones cuya tupla exacta `(destino, monto)` fue aprobada dentro del Batch de Squads por el comité. El bot NO TIENE AUTORIDAD para cambiar destinatarios. |
-| **3. Inyección por API Directa de Override** (Un usuario o hacker altera su wallet llamando a la API backend). | **IMPOSIBLE**. | **Verificación Dual SIWS + Voto Multisig**: Exige firma criptográfica de la wallet original (SIWS) + estado `PENDING` obligatorio + aprobación formal del comité en `/admin/compliance`. |
-| **4. Ataque de Reintegración o Duplicación (Replay Attack)**. | **IMPOSIBLE**. | **Indexación de Transacción Única e Invariable**: Squads v4 asigna un `transactionIndex` incremental de 64 bits en la PDA de la propuesta, impidiendo que una transacción sea ejecutada más de una vez. |
+| **1. Alteración en Postgres tras aprobar** | **Mitigable, no imposible** | El mensaje de Vault aprobado es inmutable; la aplicación debe comparar hash/root antes de ejecutar. Solo un programa de settlement propio puede hacer que Solana verifique proofs y aborte on-chain. |
+| **2. Inyección por bot ejecutor** | **Mitigable** | Squads ejecuta el mensaje aprobado; el bot necesita permiso `Executor`. El servicio debe validar proposal, mensaje, presupuesto y circuit breaker antes de enviar. |
+| **3. Override no autorizado** | **Mitigable** | Schema + ownership + estado PENDING + propuesta Squads ejecutada; SIWS por sí solo no sustituye gobernanza ni prueba de ejecución. |
+| **4. Replay/duplicación** | **Mitigable** | `transactionIndex` y estado on-chain impiden re-ejecutar la misma transacción; DB debe usar idempotency keys y reconciliación por firma, nunca inventar reversals. |
 
 ## Status
 - **Current status**: `draft`
