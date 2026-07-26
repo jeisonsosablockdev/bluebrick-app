@@ -22,6 +22,7 @@ System architecture documents, ADRs, and design decisions.
 ## System Design
 
 * [Solana Stack Overview](solana-stack-overview.md)
+* [Squads Treasury Security Design](squads-treasury-security-design.md)
 * [Content as Code Architecture](content-as-code-architecture.md)
 * [Route Architecture and Templates](route-architecture-templates.md)
 * [Semantic Layer for Entities](semantic-layer-entities.md)
