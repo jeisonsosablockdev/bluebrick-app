@@ -3,7 +3,7 @@ import path from 'path';
 import { createSandboxWorkspace } from '../runner/sandbox-builder';
 import { executeHarnessScript } from '../runner/script-executor';
 
-describe('06 - PR Governance & Human Acceptance Metadata', () => {
+describe('06 - PR Governance & Automated Post-Acceptance PR Workflow', () => {
   const repoRoot = path.resolve(__dirname, '../../../');
   const policyFile = path.join(repoRoot, 'knowledge/governance/pr-policy-source-of-truth.json');
 
@@ -69,6 +69,31 @@ Status: approved
       );
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('PR metadata lint passed');
+    } finally {
+      sandbox.cleanup();
+    }
+  });
+
+  test('pr-auto.sh enforces single-trigger idempotency guard using .agents/pr_last_run.json', () => {
+    const sandbox = createSandboxWorkspace('pr_auto_idempotency');
+    try {
+      sandbox.runGitCommand('git checkout -b feature/test-branch');
+      const sha = sandbox.runGitCommand('git rev-parse HEAD').trim();
+
+      // Create pr_last_run.json matching current commit SHA
+      const prRunData = JSON.stringify({
+        last_sha: sha,
+        branch: 'feature/test-branch',
+        timestamp: new Date().toISOString(),
+      });
+      sandbox.createFile('.agents/pr_last_run.json', prRunData);
+
+      const result = executeHarnessScript('scripts/ci/pr-auto.sh', [], {
+        cwd: sandbox.sandboxPath,
+        env: { ROOT_DIR: sandbox.sandboxPath },
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('already executed for current commit SHA');
     } finally {
       sandbox.cleanup();
     }
