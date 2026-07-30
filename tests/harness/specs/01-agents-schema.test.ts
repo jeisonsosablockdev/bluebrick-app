@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+import YAML from 'yaml';
 
 describe('01 - Specialist Agents YAML Schema & Tooling', () => {
   const repoRoot = path.resolve(__dirname, '../../../');
@@ -18,8 +18,8 @@ describe('01 - Specialist Agents YAML Schema & Tooling', () => {
     for (const file of files) {
       const filePath = path.join(agentsDir, file);
       const content = fs.readFileSync(filePath, 'utf-8');
-      expect(() => yaml.load(content)).not.toThrow();
-      const parsed = yaml.load(content) as Record<string, any>;
+      expect(() => YAML.parse(content)).not.toThrow();
+      const parsed = YAML.parse(content) as Record<string, any>;
       expect(parsed).toBeDefined();
       expect(parsed.name).toBeDefined();
       expect(parsed.description).toBeDefined();
