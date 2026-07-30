@@ -27,6 +27,11 @@ export function createSandboxWorkspace(testName: string): SandboxEnvironment {
     fs.writeFileSync(fullPath, content, 'utf-8');
   };
 
+  createFile('README.md', '# Initial Sandbox');
+  execSync('git add README.md', { cwd: sandboxPath, stdio: 'ignore' });
+  execSync('git commit -m "initial commit"', { cwd: sandboxPath, stdio: 'ignore' });
+  execSync('git update-ref refs/remotes/origin/develop HEAD', { cwd: sandboxPath, stdio: 'ignore' });
+
   const runGitCommand = (cmd: string): string => {
     return execSync(cmd, { cwd: sandboxPath, encoding: 'utf-8' });
   };
