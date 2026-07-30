@@ -27,6 +27,7 @@
     "mcp:linear": "tsx ./scripts/linear-mcp-server.ts",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:harness": "vitest run --config tests/harness/vitest.config.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.typecheck.json",
