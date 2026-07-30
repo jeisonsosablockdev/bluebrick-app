@@ -140,3 +140,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Proposal below threshold | Show pending approvals; disable execute |
 | User lacks permission | Hide/disable action and return 403 server-side |
 | Hydration or wallet mismatch | Deterministic server shell; client action fails closed |
+
+## 7. Supersession Contract — PayoutRun UI
+
+Desde 2026-07-26, cualquier mención a batch, legs o `transactionIndex` de payout queda sustituida por `PayoutRun` y `ClaimReceipt`. El DTO debe mostrar `treasuryPolicyPda`, attesters, `snapshotHash`, `merkleRoot`, `proposalPda`, `payoutRunPda`, `escrowAta`, `fundingSignature`, estado del run, `settledCount` y `itemCount`. La consola nunca ofrece un botón de transferencia directa: sólo puede proponer setup, mostrar/votar/ejecutar la propuesta Squads y observar receipts. Si faltan policy, dos attestationes válidas, run sellado o evidencia RPC, las acciones se deshabilitan y el estado es `unknown`/fail-closed.

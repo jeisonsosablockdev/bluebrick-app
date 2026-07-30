@@ -141,3 +141,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Concurrent approval | One version wins; other gets conflict |
 | Approved without execution proof | Remains pending |
 | Payout already executed | Override rejected; never rewrites beneficiary |
+
+## 7. Supersession Contract — Override y Snapshot
+
+Un override aprobado sólo puede ser seleccionado al construir un snapshot aún no bloqueado. `effective_wallet` queda comprometida en la leaf y en sus dos attestationes; después de `PayoutRun.seal_run` no se cambia, aunque el receipt todavía no exista. Para un run sellado se debe pausar/cancelar mediante una propuesta Squads y crear un run de reemplazo para las claims no liquidadas. Ningún endpoint de override puede escribir `payout_run_items`, proof, leaf, root o receipt.

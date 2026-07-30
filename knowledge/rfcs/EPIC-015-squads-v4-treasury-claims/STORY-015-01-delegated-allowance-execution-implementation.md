@@ -1,13 +1,16 @@
 ---
 type: ImplementationSpec
-title: STORY-015-01 Delegated Allowance Execution Implementation Spec
-description: Especificación técnica atómica de implementación SPEC-por-SPEC para el SDK de Squads v4 y el motor de despacho desatendido en sublotes de 20 transferencias.
-tags: [specs, solana, squads, batch, implementation, tdd, refactor-clean]
-timestamp: 2026-07-25T20:33:00Z
+title: STORY-015-01 Treasury Settlement Authorization Implementation Spec
+description: Especificación atómica para que Squads v4 apruebe/fondee un PayoutRun y el programa settlement verifique cada pago con Merkle proof, escrow y receipt on-chain.
+tags: [specs, solana, squads, settlement, merkle, escrow, implementation, tdd, refactor-clean]
+timestamp: 2026-07-26T14:00:00Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution-implementation.md
 ---
 
-# STORY-015-01 Delegated Allowance Execution Implementation Spec
+# STORY-015-01 Treasury Settlement Authorization Implementation Spec
+
+> [!IMPORTANT]
+> **Decisión vinculante — 2026-07-26.** Este story reemplaza el supuesto de "delegated allowance", el motor `squads-batch.ts`, el máximo de 20 transferencias y la raíz Merkle meramente auditora. Squads aprueba una única transacción de setup que crea/fondea/sella un `PayoutRun`; `payout_settlement` verifica proof, monto, destino y no-reuso en cada pago. Ningún subagente puede restaurar el modelo anterior sin un RFC aprobado que sustituya esta decisión.
 
 ## Metadata
 - Epic: `EPIC-015-squads-v4-treasury-claims`
@@ -24,13 +27,16 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - No aplica (se integra en la UI en STORY-015-02).
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/admin/batches/create-master-proposal/route.ts`**: Endpoint REST para crear la Propuesta Marco en Squads v4 asociando la corrida `runId`.
+- **`app/api/admin/payout-runs/create-proposal/route.ts`**: Construye una propuesta Squads de setup desde dos attestationes coincidentes; no envía, firma ni acepta cuentas arbitrarias del cliente.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/squads/squads-batch.ts`**: Motor desatendido que agrupa las transferencias en sublotes de máximo 20 ítems (`MAX_LEGS_PER_BATCH = 20`) y reconcilia fallos parciales (`partially_failed`).
+- **`lib/payouts/snapshot-builder.ts`**: Construye snapshot determinista y la leaf canónica; no tiene capacidad de transferir.
+- **`lib/payouts/snapshot-verifier.ts`**: Recalcula independientemente root/total/cantidad desde el snapshot bloqueado.
+- **`lib/payouts/settlement-cranker.ts`**: Sólo presenta proof de una item ya comprometida y reconcilia `ClaimReceipt`; no posee autoridad de Vault.
 
 ### Layer 4: Infrastructure Layer
 - **`lib/solana-kit/compat/squads.ts`**: Adaptador aislado para `@sqds/multisig`; el program ID y cluster se configuran y se validan por RPC, nunca se asumen desde una constante no verificada.
+- **`lib/solana-kit/compat/payout-settlement.ts`**: Adaptador de IDL/Kit para `PayoutRun`, escrow y `ClaimReceipt`; valida owner, discriminador, seeds y token program antes de decodificar.
 
 ---
 
@@ -55,17 +61,19 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `solana` (definir assertions de protocolo Squads)
 - **Objetivo**: Escribir los tests unitarios e integración en fase RED (fallo controlado) sin implementar lógica de negocio.
 - **Archivos a Crear**:
-  - `tests/lib/squads-batch.test.ts`
-  - `tests/api/create-master-proposal.test.ts`
+  - `tests/lib/payout-snapshot.test.ts`
+  - `tests/programs/payout-settlement.test.ts`
+  - `tests/api/create-payout-run-proposal.test.ts`
 - **Assertions**:
-  - Intentar despachar un lote sin `@sqds/multisig` arroja `ERR_SQUADS_NOT_INITIALIZED`.
-  - Un plan que excede el límite serializado, de cuentas o de compute units se rechaza con `ERR_TRANSACTION_BUDGET_EXCEEDED`.
-  - `createMasterProposal` retorna el `masterProposalPda` e `transactionIndex` correcto.
-  - El worker procesa las transferencias según el planificador y simulación.
+  - Dos calculadores sobre el mismo snapshot producen el mismo root, total, count y `snapshotHash`; una diferencia impide crear propuesta.
+  - Una proof alterada, recipient/ATA/monto/mint/token-program distintos o run no sellado fallan en `settle_claim`.
+  - La segunda liquidación de la misma leaf falla porque el `ClaimReceipt` PDA ya existe.
+  - La propuesta de setup contiene exactamente `initialize_run`, transfer al escrow y `seal_run`; no contiene una transferencia directa a un beneficiario.
 - **Test Commands**:
   ```bash
-  pnpm test tests/lib/squads-batch.test.ts
-  pnpm test tests/api/create-master-proposal.test.ts
+  pnpm test tests/lib/payout-snapshot.test.ts
+  pnpm test tests/programs/payout-settlement.test.ts
+  pnpm test tests/api/create-payout-run-proposal.test.ts
   ```
 - **DoD de SPEC-01**: Todos los tests compilando y fallando correctamente (RED).
 
@@ -83,31 +91,66 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ---
 
-### SPEC-03: Motor de Despacho Desatendido (squads-batch.ts)
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-03-batch-engine`
+### SPEC-03: Contrato de Snapshot y Attestation Independiente
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-03-payout-snapshot`
 - **Subagente ejecutor**: `solana`
-- **Subagentes de apoyo**: `security` (idempotencia, replay protection), `api` (integración con capa de consumo)
-- **Objetivo**: Implementar la lógica de negocio del motor desatendido: agrupación en sublotes, idempotencia `(runId, batchIndex, transactionIndex)`, reconciliación de fallos y reintento con backoff.
+- **Subagentes de apoyo**: `security` (encoding, inmovilidad e identidad de attestation), `db` (snapshot bloqueado)
+- **Responsabilidad única**: convertir claims ya elegibles y bloqueadas en el artefacto determinista que el comité aprueba. No crea propuestas, no construye transacciones, no hace RPC y no liquida pagos.
 - **Archivos a Crear/Modificar**:
-  - `lib/squads/squads-batch.ts`
-  - `lib/squads/squads-idempotency.ts`
-- **DoD de SPEC-03**: Motor desatendido procesa 100 transferencias con simulación previa, registra firma, slot y estado de confirmación por cada transacción. Tests de SPEC-01 en verde para las assertions de batch.
+  - `lib/payouts/snapshot-builder.ts`
+  - `lib/payouts/snapshot-verifier.ts`
+  - migración para `payout_snapshot_attestations`
+- **Contrato de salida**: `{runId, snapshotHash, snapshotVersion, rulesVersion, merkleRoot, totalAmountMinor, itemCount, orderedLeafHashes, expiry}` y una firma Ed25519 sobre el mensaje canónico definido en `SOLUTION-ARCHITECTURE.md`, una por cada attester. La salida es inválida si ambas attestations no coinciden byte a byte o provienen de la misma public key.
+- **DoD de SPEC-03**: tests RED de encoding, orden, root, discrepancia e inmutabilidad en verde; ningún import de Squads, RPC ni programa settlement.
 
----
-
-### SPEC-04: Endpoint API de Propuesta Marco
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-04-api-proposal`
-- **Subagente ejecutor**: `api`
-- **Subagentes de apoyo**: `solana` (instrucción on-chain), `security` (validación Zod, permisos)
-- **Objetivo**: Implementar el endpoint REST `POST /api/admin/batches/create-master-proposal` que crea `batchCreate + batchAddTransaction + proposalCreate` en Squads v4.
+### SPEC-04: Programa `payout_settlement` — Run, Escrow y Sellado
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-04-settlement-program`
+- **Subagente ejecutor**: `solana`
+- **Subagentes de apoyo**: `security` (CPI/signer/Token-2022), `architect` (Gate 1 de paths e imports)
+- **Responsabilidad única**: implementar `TreasuryPolicy`, `initialize_run` y `seal_run`. No construye snapshots, no crea propuestas y no ejecuta claims.
 - **Archivos a Crear**:
-  - `app/api/admin/batches/create-master-proposal/route.ts`
-- **DoD de SPEC-04**: Endpoint creando Propuesta Marco en Solana Devnet con validación Zod. Tests de SPEC-01 en verde para las assertions de API.
+  - `programs/payout_settlement/src/lib.rs`
+  - `programs/payout_settlement/src/state.rs`
+  - `programs/payout_settlement/src/instructions/initialize_policy.rs`
+  - `programs/payout_settlement/src/instructions/update_policy.rs`
+  - `programs/payout_settlement/src/instructions/initialize_run.rs`
+  - `programs/payout_settlement/src/instructions/seal_run.rs`
+- **DoD de SPEC-04**: sólo la Vault PDA signer puede inicializar/actualizar `TreasuryPolicy` e inicializar/sellar un run; `initialize_run` toma las public keys de la policy (nunca del request) y exige dos verificaciones Ed25519 del mensaje exacto; escrow owner/mint/token program y balance exacto se validan; run no es reinitializable ni modificable tras sellado.
 
 ---
 
-### SPEC-05: Clean Code Audit & Refactoring
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-05-refactor-clean`
+### SPEC-05: Programa `payout_settlement` — Liquidación de una Leaf
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-05-settle-claim`
+- **Subagente ejecutor**: `solana`
+- **Subagentes de apoyo**: `security` (proof, replay, cuentas token), `qa` (Mollusk/LiteSVM)
+- **Responsabilidad única**: implementar `settle_claim` y `ClaimReceipt`. No administra el lifecycle de Squads ni modifica elegibilidad.
+- **DoD de SPEC-05**: proof/leaf/ATA/mint/token program/expiry/status se validan; un receipt bloquea reuso; la transferencia sale sólo del escrow PDA y por el monto comprometido.
+
+---
+
+### SPEC-06: Propuesta Squads de Setup y Evidencia Devnet
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-06-squads-setup-proposal`
+- **Subagente ejecutor**: `api`
+- **Subagentes de apoyo**: `solana` (instrucción on-chain), `security` (validación/allowlist), `db` (idempotencia)
+- **Responsabilidad única**: construir y persistir el paquete de propuesta que contiene las tres instrucciones de setup. No calcula roots ni hace cranking.
+- **Archivos a Crear**:
+  - `app/api/admin/payout-runs/create-proposal/route.ts`
+  - `lib/payouts/squads-setup-proposal.ts`
+- **DoD de SPEC-06**: acepta sólo `runId`; resuelve el Authority Manifest server-side; exige dos attestationes coincidentes; simula y devuelve un paquete para firmar. Tras confirmación Devnet registra proposal, `PayoutRun`, escrow, signature, slot y evidencia RPC.
+
+---
+
+### SPEC-07: Cranker y Proyección de Receipts
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-07-settlement-cranker`
+- **Subagente ejecutor**: `solana`
+- **Subagentes de apoyo**: `security` (idempotencia/denegación de servicio), `db` (outbox/proyección)
+- **Responsabilidad única**: seleccionar una item ya comprometida, presentar su proof y proyectar sólo receipts confirmados. No puede regenerar snapshot, alterar leaf ni enviar pagos directos.
+- **DoD de SPEC-07**: reintentos consultan primero `ClaimReceipt`; RPC ambiguo deriva a `execution_unknown`; saldo, receipt, signature, slot y meta se verifican antes de marcar `executed`.
+
+---
+
+### SPEC-08: Clean Code Audit & Refactoring
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-08-refactor-clean`
 - **Subagente ejecutor**: `reviewer`
 - **Subagentes de apoyo**: `architect` (Gate 2 — diff audit, layer isolation), `docs` (JSDoc, knowledge sync)
 - **Objetivo**: Auditoría de código limpio según skill `code-refactoring-refactor-clean`. Verificar naming, eliminación de dead code, cumplimiento del patrón de 4 capas, duplicaciones.
@@ -127,30 +170,32 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 | SPEC | Documentación Requerida | URL / Sección |
 | --- | --- | --- |
-| SPEC-01 (TDD) | Account Structures: `Batch`, `Proposal`, `VaultTransaction` | [Protocol Accounts](https://docs.squads.so/main/protocol/accounts) §3.2–3.4 |
-| SPEC-01 (TDD) | Instructions: `batchCreate`, `batchAddTransaction`, `proposalCreate` | [Protocol Instructions](https://docs.squads.so/main/protocol/instructions) |
-| SPEC-02 (SDK) | Instalación `@sqds/multisig`, API Surface, PDA derivation | [SDK v4](https://docs.squads.so/main/development/sdk-v4) §2 |
-| SPEC-02 (SDK) | Program ID Devnet: `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` | [Program IDs](https://docs.squads.so/main/protocol/program-ids) §1 |
-| SPEC-03 (Batch Engine) | Guide: Batch Transactions — `batchCreate` + `batchAddTransaction` flow | [Batch Transactions](https://docs.squads.so/main/development/guides/batch-transactions) §6.5 |
-| SPEC-03 (Batch Engine) | Guide: Create Proposal — `vaultTransactionCreate` + `proposalCreate` | [Create Proposal](https://docs.squads.so/main/development/guides/create-proposal) §6.2 |
-| SPEC-04 (API) | Guide: Execute Proposal — `vaultTransactionExecute`, `Permission.Execute` | [Execute Proposal](https://docs.squads.so/main/development/guides/execute-proposal) §6.4 |
-| SPEC-04 (API) | Guide: Vote — `proposalApprove`, threshold model | [Vote on Proposal](https://docs.squads.so/main/development/guides/vote-on-proposal) §6.3 |
-| SPEC-04 (API) | Permissions Model: `Proposer`, `Voter`, `Executor` | [Create Multisig](https://docs.squads.so/main/development/guides/create-multisig) §5 |
+| SPEC-01 (TDD) | Contrato de `PayoutRun`, leaf y `ClaimReceipt` | `SOLUTION-ARCHITECTURE.md` §Contrato on-chain de `payout_settlement` |
+| SPEC-02 (SDK) | PDA derivation, Multisig, Proposal y Vault Transaction | [Accounts reference](https://docs.squads.so/main/development/reference/accounts) |
+| SPEC-02 (SDK) | Program ID Devnet y API de TypeScript | [TypeScript overview](https://docs.squads.so/main/development/typescript/overview) |
+| SPEC-03 (Snapshot) | Hashing, encoding, proof y modelo de amenaza | `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación |
+| SPEC-04/05 (Program) | CPI signer, Token/Token-2022 y validación de cuentas | `solana-dev` + `SOLUTION-ARCHITECTURE.md` §Contrato on-chain |
+| SPEC-06 (Proposal) | Crear/ejecutar Vault Transaction y votos | [TypeScript instructions](https://docs.squads.so/main/development/typescript/instructions) |
+| SPEC-07 (Cranker) | RPC, simulación, confirmación y cuentas no confiables | `solana-dev` §Agent safety guardrails |
 
 ---
 
 ## 5. Blocking Design Contract
-- Squads V4 modela `Multisig`, `VaultTransaction`, `Proposal` y `Batch`; una propuesta no es un "allowance" genérico y no almacena `runId` ni `merkleRoot` salvo que se incluyan en memo/instruction data.
-- El bot debe ser un miembro con permiso `Executor` o un relayer autorizado que solo ejecute propuestas `Approved`; la aprobación mantiene el umbral N-de-M y la ejecución debe estar separada del voto.
-- El presupuesto se valida antes de crear el mensaje y se reconcilia contra el mensaje on-chain, no contra Postgres. Para tokens se fijan token program, mint, ATA origen/destino y decimales.
-- Cada intento necesita idempotency key `(runId, batchIndex, transactionIndex)`, firma, slot, estado de confirmación y error. Nunca se reintenta una transacción confirmada con un mensaje nuevo.
-- Devnet debe incluir `getAccountInfo(programId)`, lectura de `Multisig`, simulación, confirmación y prueba de saldos/ATA; sin esa evidencia el story no está completo.
+- Squads V4 modela `Multisig`, `VaultTransaction` y `Proposal`; no es un allowance genérico. Su única responsabilidad de pagos en este story es aprobar y ejecutar la transacción de setup que llama al programa settlement y fondea el escrow.
+- `TreasuryPolicy` fija on-chain la Vault, mint/token-program permitidos y public keys de attestation. `PayoutRun` contiene el compromiso íntegro: policy/version, root, snapshot, reglas, total, mint, token program, Vault, expiry y escrow. Es inmutable después de `seal_run`.
+- Cada `settle_claim` debe comprobar proof, encoding, recipient wallet/ATA, mint, token program, monto, expiry, estado del run y ausencia previa de `ClaimReceipt`. No hay endpoint ni worker con facultad de saltar esas comprobaciones.
+- El servicio de cálculo no es autoridad de tesorería: se limita a producir una attestation Ed25519. Se exige segunda attestation independiente, con public key/custodia distinta, y un snapshot bloqueado; el programa valida ambas y el comité aprueba explícitamente sus hashes y total dentro de la propuesta Squads.
+- Cada intento usa `idempotency_key(runId, leafHash)`, receipt PDA, signature, slot, meta y estado de confirmación. Nunca se reintenta un settlement confirmado con un mensaje nuevo.
+- Devnet debe incluir `getAccountInfo` del programa Squads y del programa settlement, lectura de `Multisig`, simulación, confirmación, saldo de Vault/escrow/ATA y receipt PDA; sin esa evidencia el story no está completo.
 
 ## 6. Acceptance and Failure Matrix
 | Condition | Required result |
 | --- | --- |
 | Program ID no existe en Devnet | Fail closed; no crear propuestas |
 | Proposal no `Approved` | No ejecutar; mantener `awaiting_threshold` |
-| Worker pierde RPC | Reintentar lectura/confirmación con backoff; no duplicar envío |
+| Dos attestations no coinciden | No crear propuesta; conservar evidencia de la discrepancia |
+| Proof, leaf, ATA, mint o amount no coinciden | `settle_claim` revierte; el escrow no cambia |
+| Receipt ya existe | `settle_claim` revierte; no hay doble pago |
+| Worker pierde RPC | Consultar primero receipt y firma con backoff; no duplicar envío |
 | Circuit breaker activo | No crear ni ejecutar nuevos mensajes; conservar confirmados |
-| Mensaje excede presupuesto | Rechazar antes de firmar y registrar evento |
+| Setup no deja escrow con total exacto | `seal_run` revierte y la transacción atómica no deja run activo |

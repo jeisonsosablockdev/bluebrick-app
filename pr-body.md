@@ -1,6 +1,6 @@
 ## Summary
-- Implementation of task fix/clean-knowledge-duplicates
-- Title: fix(docs): reorganize knowledge files and clean duplicates
+- Implementation of task SPEC/jaymusicmachine-BRI-8-squads-v4-s01-tdd
+- Title: docs(epic-015): complete solution architecture, multi-spec breakdown and squads v4 reference
 - Feature-flag strategy: N/A (governance harness and documentation templates update)
 
 ## Issue

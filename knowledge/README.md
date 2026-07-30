@@ -30,11 +30,11 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | Observations | 11 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 533 |
+| Archived | 549 |
 | Observed status | 21 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 531 |
+| Archived status | 547 |
 
 ## Inbox
 
@@ -103,6 +103,7 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | rotation-spec | archived | none | [Rotation Spec](knowledge/architecture/rotation-spec.md) | n/a |
 | session-model | archived | none | [Session Model](knowledge/architecture/session-model.md) | n/a |
 | solana-stack | archived | none | [Solana Stack](knowledge/architecture/solana-stack.md) | n/a |
+| squads-treasury-security-design | archived | none | [Diseño de Seguridad y Modelo de Amenazas para Dispersiones de Tesorería Multisig Squads v4](knowledge/architecture/squads-treasury-security-design.md) | n/a |
 | stake-audit | archived | none | [Stake Audit](knowledge/architecture/stake-audit.md) | n/a |
 | state-machine | archived | none | [State Machine](knowledge/architecture/state-machine.md) | n/a |
 | third-party-integrations | archived | none | [Third-Party Integrations & Services Registry](knowledge/architecture/third-party-integrations.md) | n/a |
@@ -314,12 +315,12 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | feature-jaymusicmachine-BRI-184-test-suite-for-harnessing | archived | none | [feature-jaymusicmachine-BRI-184-test-suite-for-harnessing](knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
+| feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
-| feature-nextjs-ai-agents-integration-implementation | archived | none | [Feature Next.js AI Agents and DevTools MCP Implementation](knowledge/features/feature-nextjs-ai-agents-integration-implementation.md) | n/a |
-| feature-nextjs-ai-agents-integration | archived | none | [Feature Next.js AI Agents and DevTools MCP Integration](knowledge/features/feature-nextjs-ai-agents-integration.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -461,7 +462,6 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | linear-developer-identity-and-documentation-protocol | archived | none | [Linear Developer Identity And Documentation Protocol](knowledge/guides/linear-developer-identity-and-documentation-protocol.md) | n/a |
 | linear-mcp-bridge | archived | none | [Linear Mcp BRI-dge](knowledge/guides/linear-mcp-bridge.md) | n/a |
 | linear-single-issue-slice-planning | archived | none | [Linear Single Issue Slice Planning](knowledge/guides/linear-single-issue-slice-planning.md) | n/a |
-| next-devtools-mcp | archived | none | [next-devtools-mcp](knowledge/guides/next-devtools-mcp.md) | n/a |
 | operability-observability-security-deploy | archived | none | [Operability Observability Security Deploy](knowledge/guides/operability-observability-security-deploy.md) | n/a |
 | route-architecture-and-templates | archived | none | [Route Architecture And Templates](knowledge/guides/route-architecture-and-templates.md) | n/a |
 | solana-kit-migration-recipes | archived | none | [Solana Kit Migration Recipes](knowledge/guides/solana-kit-migration-recipes.md) | n/a |
@@ -591,6 +591,22 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | STORY-014-02-core-infrastructure | archived | none | [STORY- 014 02 Core Infrastructure](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-02-core-infrastructure.md) | n/a |
 | STORY-014-03-distribution-engine | archived | none | [STORY- 014 03 Distribution Engine](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-03-distribution-engine.md) | n/a |
 | STORY-014-04-treasury-claims | archived | none | [STORY- 014 04 Treasury Claims](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md) | n/a |
+| SOLUTION-ARCHITECTURE | archived | none | [EPIC-015 Decision-Complete Solution Architecture](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md) | n/a |
+| squads-v4-documentation-reference | archived | none | [Squads V4 Protocol & SDK — Canonical Documentation Reference](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md) | n/a |
+| STORY-015-01-delegated-allowance-execution-implementation | archived | none | [STORY-015-01 Treasury Settlement Authorization Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution-implementation.md) | n/a |
+| STORY-015-01-delegated-allowance-execution | archived | none | [STORY-015-01 Treasury Settlement Authorization & Squads SDK Integration](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md) | n/a |
+| STORY-015-02-admin-distributions-treasury-ui-implementation | archived | none | [STORY-015-02 Admin Distributions & Treasury Multisig UI Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui-implementation.md) | n/a |
+| STORY-015-02-admin-distributions-treasury-ui | archived | none | [STORY-015-02 Admin Distributions & Treasury Multisig UI Integration](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui.md) | n/a |
+| STORY-015-03-payout-overrides-governance-implementation | archived | none | [STORY-015-03 Payout Overrides Governance Flow Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance-implementation.md) | n/a |
+| STORY-015-03-payout-overrides-governance | archived | none | [STORY-015-03 Payout Overrides Governance Flow & Case Number Association](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance.md) | n/a |
+| STORY-015-04-cron-monitors-and-claim-cancellation-implementation | archived | none | [STORY-015-04 Cron Monitors & Claim Cancellation Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation-implementation.md) | n/a |
+| STORY-015-04-cron-monitors-and-claim-cancellation | archived | none | [STORY-015-04 Cron Monitors & User Claim Cancellation](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation.md) | n/a |
+| STORY-015-05-exception-handling-veto-and-circuit-breaker-implementation | archived | none | [STORY-015-05 Exception Handling, Veto & Circuit Breaker Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker-implementation.md) | n/a |
+| STORY-015-05-exception-handling-veto-and-circuit-breaker | archived | none | [STORY-015-05 Exception Handling, Granular Item Veto, Emergency Circuit Breaker & Paranoia Threat Model](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker.md) | n/a |
+| STORY-015-06-onchain-project-config-pda-program-implementation | archived | none | [STORY-015-06 On-Chain Project Config PDA Program Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program-implementation.md) | n/a |
+| STORY-015-06-onchain-project-config-pda-program | archived | none | [STORY-015-06 On-Chain Project Config PDA Program](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program.md) | n/a |
+| STORY-015-07-onchain-project-dates-notary-governance-implementation | archived | none | [STORY-015-07 On-Chain Project Dates Notary Governance Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance-implementation.md) | n/a |
+| STORY-015-07-onchain-project-dates-notary-governance | archived | none | [STORY-015-07 On-Chain Project Dates Notary Governance & Engine Integration](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance.md) | n/a |
 | index | archived | none | [Index](knowledge/rfcs/index.md) | n/a |
 | bri-164-marketplace-security-audit-plan | archived | none | [BRI-164 Marketplace Security Audit Plan](knowledge/security/audits/bri-164-marketplace-security-audit-plan.md) | n/a |
 | index | archived | none | [Security Audits](knowledge/security/audits/index.md) | n/a |

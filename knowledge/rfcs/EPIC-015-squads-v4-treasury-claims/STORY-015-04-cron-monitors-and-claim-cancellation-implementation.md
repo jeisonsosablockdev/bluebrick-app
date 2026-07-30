@@ -141,3 +141,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Claim already paid/on-chain | Cancellation rejected |
 | Ownership mismatch | 403; no state change |
 | Concurrent cancel/expiry | One guarded transition wins; other reports conflict |
+
+## 7. Supersession Contract — Cancelación con Settlement
+
+El cron y la ruta de cancelación consultan `ClaimReceipt` antes de mutar una claim. Un receipt confirmado vuelve la cancelación irreversiblemente inválida. Si la claim está en un `PayoutRun` sellado pero sin receipt, la ruta sólo crea una solicitud de pausa/cancelación de run; no elimina una item ni altera proof/root. Los cronjobs no pueden liberar fondos: `refund_unclaimed` exige la Vault PDA signer dentro de una propuesta Squads posterior a expiración.

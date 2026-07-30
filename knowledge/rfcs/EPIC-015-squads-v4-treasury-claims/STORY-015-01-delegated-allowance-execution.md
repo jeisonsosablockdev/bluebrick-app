@@ -1,13 +1,13 @@
 ---
 type: RFC
-title: STORY-015-01 Delegated Allowance Execution & Squads SDK Integration
-description: Especificación técnica para la integración del SDK @sqds/multisig en Solana Devnet con el modelo Delegated Allowance.
-tags: [rfcs, solana, squads, sdk, allowance]
+title: STORY-015-01 Treasury Settlement Authorization & Squads SDK Integration
+description: Especificación técnica para que Squads apruebe/fondee un payout run y un programa Solana liquide únicamente leaves verificadas.
+tags: [rfcs, solana, squads, sdk, settlement, merkle, escrow]
 timestamp: 2026-07-25T10:27:00Z
 resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md
 ---
 
-# STORY-015-01-delegated-allowance-execution
+# STORY-015-01-treasury-settlement-authorization
 
 ## Metadata
 - Epic: `EPIC-015-squads-v4-treasury-claims`
@@ -16,53 +16,54 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - Owner: `jaymusicmachine`
 - RFC owner slice: `feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims`
 - Created: `2026-07-25`
-- Last Updated: `2026-07-25`
+- Last Updated: `2026-07-26`
 
 ## Context
-- **Problem**: Las firmas de transacciones en Squads están actualmente simuladas sin interactuar con la red Devnet real. Además, firmar manualmente 1,000 sublotes por corrida es operacionalmente inviable.
+- **Problem**: Las firmas de transacciones en Squads están simuladas y el diseño previo permitía que un worker seleccionara transferencias después de una aprobación marco. Eso no prueba on-chain que un monto, destinatario y claim pertenezcan exactamente a la corrida aprobada.
 - **Why now**: Es necesario habilitar la ejecución real on-chain en Solana Devnet con una experiencia fluida para el comité.
-- **Constraints**: El límite de transacción, cuentas y compute units debe medirse por mensaje serializado y simulación; no existe un máximo protocolario fijo de 20 transferencias. Regla `@solana/kit` para RPC/cliente, con adaptador aislado para el SDK de Squads.
-- **Affected paths**: `package.json`, `lib/solana-kit/compat/squads.ts`, `lib/squads/squads-batch.ts`.
+- **Constraints**: Ningún agente recibe autoridad de Vault ni puede modificar una leaf tras el voto. Cada payout debe validarse on-chain contra una root sellada y debe ser imposible liquidarlo dos veces. Se usa `@solana/kit` en clientes/adaptadores y `@sqds/multisig` sólo en el borde de compatibilidad.
+- **Affected paths**: `package.json`, `lib/solana-kit/compat/squads.ts`, `lib/payouts/*`, `programs/payout_settlement/*`.
 
 ## Proposal
-- **Approach summary**: Instalar `@sqds/multisig`. El comité crea y aprueba **una sola Propuesta Marco** en Squads por el presupuesto total de la corrida `runId`. Una vez aprobada on-chain, el worker en `squads-batch.ts` procesa desatendidamente los sublotes de 20 en 20 usando la wallet ejecutora autorizada.
+- **Approach summary**: Dos servicios independientes calculan el mismo snapshot bloqueado. Si sus root/hash/total/count/reglas coinciden, el comité aprueba una propuesta Squads que, atómicamente, crea `PayoutRun`, transfiere el total al escrow PDA y sella el run. Un cranker no privilegiado liquida hojas individuales presentando proofs; el programa valida todo y registra un receipt PDA no reutilizable.
 - **Technical design**:
-  - `createSquadsBatch(...)`: Crea el batch, sus Vault Transactions y la Proposal con los índices globales/ internos correctos.
-  - `executeSquadsTransaction(...)`: Ejecuta solo una transacción cuyo Proposal esté `Approved` y cuyo executor tenga permiso `Executor`; el tamaño del plan lo decide el planificador.
-- **Invariante Cero-Confianza (Whitelist por Candy Machine & Umbral Multisig)**:
+  - `initialize_run + transfer_to_escrow + seal_run`: tres instrucciones dentro de una Vault Transaction Squads aprobada; `seal_run` exige que el balance de escrow coincida con el total comprometido.
+  - `settle_claim(proof, leaf)`: instrucción permissionless que sólo puede transferir al ATA/monto/mint incluidos en una leaf válida y no usada.
+- **Invariante Cero-Confianza (elegibilidad, root y umbral multisig)**:
   1. Únicamente las wallets que poseen/compraron NFTs válidos en la Candy Machine aprobada (`approved_candy_machine_address`) son elegibles por defecto en el snapshot.
   2. Ningún cambio de wallet de pago se aplica sin pasar por una solicitud en estado `PENDING` y requerir aprobación expresa en `/admin/compliance`.
-  3. Ninguna transferencia sale de la Vault a menos que la Propuesta Marco supere el umbral estricto de firmas multisig ($N$ de $M$) con Squads v4 en Solana.
-- **Alternatives considered**: Firmas manuales de 1,000 sublotes (Rechazada por inviabilidad UX). Reclamación pura del usuario por Merkle Tree (Rechazada por mayor complejidad de contratos custom en esta fase).
-- **Tradeoffs**: Requiere mantener una wallet ejecutora del bot de BRIDS con fondos suficientes para pagar los fees de gas de las transacciones.
+  3. Ningún pago sale del escrow a menos que la root haya sido sellada dentro de una propuesta Squads con umbral $N$ de $M$; ningún cranker puede alterar la leaf.
+- **Alternatives considered**: Batch con leg directa (rechazada: no verifica proof por payout); Merkle auditora (rechazada: detecta pero no evita); firmas manuales de 1,000 pagos (rechazada: inviabilidad UX).
+- **Tradeoffs**: Requiere desarrollar y auditar un programa de settlement y mantener pruebas/proofs por leaf. A cambio, elimina la autoridad de pago del agente de despacho.
 
 ## Critique
 - **Reviewer(s)**: `architect`, `solana`, `security`
 - **Critical findings**:
-  1. La wallet ejecutora autorizada solo debe poder disponer del saldo asignado expresamente a la corrida marco.
-- **Blocking concerns**: Ninguno.
+  1. La autoridad debe terminar en un escrow PDA, no en una wallet ejecutora.
+  2. La validación on-chain garantiza pertenencia al root aprobado, no la legitimidad off-chain de la claim; por eso son obligatorios snapshot bloqueado y doble attestation.
+- **Blocking concerns**: El Authority Manifest y el formato exacto de `claimId` binario deben aprobarse antes del primer SPEC de código.
 
 ## Resolution
-- **Final approach after critique**: Batch de Squads con mensaje inmutable, umbral N-de-M y reconciliación por índices/firma; `runId` es correlación de aplicación, no autoridad on-chain.
-- **Changes accepted**: Límites estrictos de presupuesto por propuesta marco.
+- **Final approach after critique**: `PayoutRun` + escrow + root/proof/receipt on-chain; `runId` se hashea para derivar la PDA, pero los parámetros de pago son la leaf canónica aprobada.
+- **Changes accepted**: Squads se limita a aprobar/fondear/sellar; el cranker carece de privilegios de tesorería.
 
 ## Decision
 - **Decision**: `rejected-and-reopened`
-- **Decision date**: `2026-07-25`
+- **Decision date**: `2026-07-26`
 - **Decision owner**: `jaymusicmachine`
-- **Approval notes**: La decisión previa queda invalidada porque confundía batch con allowance, asumía 20 transferencias y fijaba un program ID no verificado.
+- **Approval notes**: La decisión previa queda invalidada porque confundía batch con allowance, asumía 20 transferencias y dejaba una raíz auditora sin enforcement. La resolución aprobable es `payout_settlement` con escrow, proof y receipt PDA.
 
 ## Status
 - **Current status**: `in-review`
-- **Next action**: Crear suite de tests TDD en `tests/lib/squads-batch.test.ts`.
+- **Next action**: Aprobar Authority Manifest y contrato binario de leaf; crear suite TDD en `tests/lib/payout-snapshot.test.ts` y `tests/programs/payout-settlement.test.ts`.
 - **Exit criteria**:
   - [ ] Tests en verde.
-  - [ ] Transacción de prueba confirmada en Solana Devnet.
+- [ ] Setup de `PayoutRun` y settlement de una proof válida confirmados en Solana Devnet.
 
 ## Test and Validation Plan
-- **Unit tests**: `tests/lib/squads-batch.test.ts`
-- **Integration tests**: Simulación de creación y despacho de sublotes de 20 transferencias.
-- **Devnet validation**: Confirmación del hash de transacción y saldos ATA en Solana Devnet Explorer.
+- **Unit tests**: snapshot, root, proof, receipt duplicado y estado de run.
+- **Integration tests**: propuesta Squads de setup, escrow sellado, proof válida/inválida, pause/cancel y refund de no reclamados.
+- **Devnet validation**: proposal, `PayoutRun`, escrow ATA, receipt PDA, signature de settlement y saldos antes/después.
 
 ## Traceability
 - Related issue(s): BRI-8

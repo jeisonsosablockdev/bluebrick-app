@@ -128,7 +128,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ## 5. Blocking Design Contract
-- Elegir explícitamente una de dos variantes: (A) root auditora off-chain o (B) programa de settlement que almacena root y verifica proofs.
+- **Decisión cerrada:** `payout_settlement` almacena root y verifica proofs on-chain. La variante de root auditora queda prohibida.
 - Las hojas deben tener encoding canónico versionado: `claimId`, address bytes, mint, amount integer en unidades mínimas y domain separator.
 - Rechazo/cancelación sigue el modelo Squads: alcanzar el umbral requerido.
 - El circuito de emergencia es un estado compartido con compare-and-set; no revierte pagos confirmados.
@@ -142,3 +142,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Proposal approved and circuit breaker on | No further execution; confirmed legs immutable |
 | Veto after execution | Audit-only/dispute flow; never fake reversal |
 | Unauthorized reject/veto | 403 and no on-chain/DB transition |
+
+## 7. Supersession Contract — Circuit Breaker y PayoutRun
+
+El circuit breaker detiene la construcción de propuestas y el cranker antes de enviar `settle_claim`; no cambia el programa ni invalida receipts. Para detener pagos de forma autoritativa, una propuesta Squads debe invocar `pause_run` sobre el `PayoutRun`; para reanudar o cancelar, otra propuesta Vault firma la operación correspondiente. Un veto previo a `seal_run` invalida la propuesta; después de sellar, la corrección requiere pause/cancel y un run de reemplazo de las leaves sin receipt. STORY-015-05 no implementa Merkle ni escrow: esas invariantes pertenecen exclusivamente a STORY-015-01.
