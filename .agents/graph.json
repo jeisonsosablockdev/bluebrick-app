@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-30T02:42:52.478Z",
+  "generatedAt": "2026-08-01T15:03:17.389Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -1434,6 +1434,18 @@
       "type": "feature",
       "label": "story-011-11-location-form-contract-and-persistence-parity-bri-124",
       "path": "knowledge/features/epic-011/story-011-11-location-form-contract-and-persistence-parity-bri-124.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-184-test-suite-for-harnessing",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md"
     },
     {
       "id": "knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md",
