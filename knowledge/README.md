@@ -30,11 +30,11 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | Observations | 10 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 520 |
+| Archived | 523 |
 | Observed status | 20 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 518 |
+| Archived status | 521 |
 
 ## Inbox
 
@@ -310,6 +310,8 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | story-011-11-location-form-contract-and-persistence-parity-bri-124 | archived | none | [STORY- 011 11 Location Form Contract And Persistence Parity BRI- 124](knowledge/features/epic-011/story-011-11-location-form-contract-and-persistence-parity-bri-124.md) | n/a |
 | feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation | archived | none | [feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation](knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-184-test-suite-for-harnessing | archived | none | [feature-jaymusicmachine-BRI-184-test-suite-for-harnessing](knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md) | n/a |
+| feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -436,6 +438,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | nft-policy | archived | none | [Nft Policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
 | security-quality-policy | archived | none | [Security Quality Policy](knowledge/governance/security-quality-policy.md) | n/a |
+| toolchain-policy | archived | none | [Toolchain & Headless Browser Policy](knowledge/governance/toolchain-policy.md) | n/a |
 | ai-readable-endpoints-contracts | archived | none | [Ai Readable Endpoints Contracts](knowledge/guides/ai-readable-endpoints-contracts.md) | n/a |
 | codex-orchestration-architecture | archived | none | [Codex Orchestration Architecture](knowledge/guides/codex-orchestration-architecture.md) | n/a |
 | content-authoring-code-only | archived | none | [Content Authoring Code Only](knowledge/guides/content-authoring-code-only.md) | n/a |
