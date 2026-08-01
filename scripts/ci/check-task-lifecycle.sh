@@ -31,7 +31,10 @@ CHANGED_FILES="$(
   } | sort -u | grep -v '^$'
 )"
 
-CODE_CHANGES="$(echo "${CHANGED_FILES}" | grep -E '^(app/|components/|lib/|programs/|db/|scripts/|tests/|e2e/)' | grep -E -v '^(scripts/ci/check-task-lifecycle.sh|scripts/task-init.sh|scripts/git-start.sh|.agents/)' || true)"
+CODE_CHANGES=""
+if [[ -n "${CHANGED_FILES}" ]]; then
+  CODE_CHANGES="$(echo "${CHANGED_FILES}" | grep -E '^(app/|components/|lib/|programs/|db/|scripts/|tests/|e2e/)' | grep -E -v '^(scripts/ci/check-task-lifecycle.sh|scripts/task-init.sh|scripts/git-start.sh|.agents/)' || true)"
+fi
 
 if [[ -n "${CODE_CHANGES}" ]]; then
   if [[ ! -f "${STATE_FILE}" ]]; then
