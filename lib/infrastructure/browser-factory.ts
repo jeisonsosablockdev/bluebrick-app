@@ -1,4 +1,4 @@
-import { chromium, type Browser, type LaunchOptions } from 'playwright';
+import { chromium, type Browser, type LaunchOptions } from '@playwright/test';
 
 export type BrowserEngineMode = 'agent-data' | 'visual-e2e';
 

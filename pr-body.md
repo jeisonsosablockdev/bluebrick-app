@@ -1,10 +1,10 @@
 ## Summary
-- Implementation of task feature/jaymusicmachine-BRI-184-test-suite-for-harnessing
-- Title: docs(harness): mark BRI-184 active task state as completed
+- Implementation of task feature/jaymusicmachine-BRI-185-lightpanda-integration
+- Title: feat(shared): implement Lightpanda dual-engine browser factory and decision playbook (BRI-185)
 - Feature-flag strategy: N/A (governance harness and documentation templates update)
 
 ## Issue
-- Issue link/id: BRI-184
+- Issue link/id: BRI-181
 
 ## RFC
 - RFC link/path: N/A
@@ -23,12 +23,12 @@
 
 ## Human Acceptance
 - Status: approved
-- Approved by: User (jaymusicmachine / Jeison Sosa)
+- Approved by: User (Jeison Sosa)
 - Manual test evidence: Passed pnpm validate suite with 0 errors
 - Accepted residual risk: None
 
 ## Feature Note (/docs/features)
-- Path to feature note markdown file under `knowledge/features/*.md`: knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md
+- Path to feature note markdown file under `knowledge/features/*.md`: knowledge/features/feature-jeisonsosa-BRI-181-agent-harness-enforcement-and-hooks.md
 
 ## Scope Labels (Required)
 - [x] I added exactly one `scope:*` label
