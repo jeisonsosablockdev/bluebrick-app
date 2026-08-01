@@ -15,8 +15,11 @@ fi
 
 echo "✓ Declarative hooks configuration present (.agents/hooks.json)"
 
-# Capa 1: Guardia de Estado de pre-implementación de código
-committed_changed_files="$(git diff --name-only "origin/develop...HEAD" 2>/dev/null || git diff --name-only "develop...HEAD" 2>/dev/null || true)"
+CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
+committed_changed_files=""
+if [[ "${CURRENT_BRANCH}" != "develop" ]]; then
+  committed_changed_files="$(git diff --name-only "origin/develop...HEAD" 2>/dev/null || git diff --name-only "develop...HEAD" 2>/dev/null || true)"
+fi
 working_tree_changed_files="$(git diff --name-only HEAD 2>/dev/null || true)"
 untracked_changed_files="$(git ls-files --others --exclude-standard 2>/dev/null || true)"
 
