@@ -173,6 +173,10 @@ Last Updated: 2026-07-22
   - protected/admin pages still resolve session state on the server before granting access
   - browser-local locale detection and deferred modal auth refresh are presentation/bootstrap concerns only
 
+## BRI-12 Admin Mint Orchestrator Session Boundary
+- `POST /api/admin/mint-orchestrator/jobs/[jobId]/reconcile` requires an active admin session verified via `getRequestRole(request)` returning `role === "admin"`.
+- RPC queries for signature reconciliation use `@solana/kit` (`createSolanaRpc()`), maintaining identical server-authoritative RBAC controls.
+
 ## BRI-157 PWA Session Boundary Notes
 - The installability slice introduces browser-local runtime state, not a new session layer.
 - No new cookie, token, refresh path, or server authority source was added.

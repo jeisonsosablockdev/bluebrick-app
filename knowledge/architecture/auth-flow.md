@@ -183,6 +183,10 @@ Last Updated: 2026-07-22
   - `/protected/**` and `/admin/**` still derive access from server session resolution
   - moving wallet providers out of the root layout does not relax any auth, role, or cookie checks
 
+## BRI-12 Admin Mint Orchestrator & RPC Reconciliation Impact
+- Admin batch signature reconciliation route (`POST /api/admin/mint-orchestrator/jobs/[jobId]/reconcile`) migrated signature status RPC queries from legacy `@solana/web3.js` (`Connection.getSignatureStatuses`) to `@solana/kit` (`createSolanaRpc().getSignatureStatuses`).
+- Admin RBAC authority (`getRequestRole()`) remains unchanged; only admin-authenticated sessions with `role === "admin"` can invoke batch reconciliation.
+
 ## BRI-157 PWA Installability Shell
 - BRIDS now exposes a minimal installable shell through the App Router root layout:
   - `app/manifest.ts` publishes the standalone manifest and icon contract

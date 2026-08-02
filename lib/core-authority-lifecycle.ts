@@ -20,6 +20,12 @@ import type { PoolClient } from "pg";
 
 import { withDbClient } from "@/lib/db/pool";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
+import {
+  createKitRpcConnection,
+  getSignatureStatusWithKitRpc,
+  getTransactionWithKitRpc,
+  type KitRpcConnection
+} from "@/lib/solana-kit/compat/web3-transactions";
 
 const MAX_SIGNED_TRANSACTIONS = 5;
 const SIGNATURE_CONFIRM_TIMEOUT_MS = 180_000;
@@ -961,14 +967,14 @@ async function sendRawTransactionWithRetry(connection: Connection, serializedTra
   throw new Error("Could not send authority lifecycle transaction after retry attempts.");
 }
 
-async function waitForConfirmedSignature(connection: Connection, signature: string): Promise<void> {
+async function waitForConfirmedSignature(rpc: KitRpcConnection, signature: string): Promise<void> {
   const startedAt = Date.now();
   let rateLimitBackoffMs = RATE_LIMIT_BACKOFF_INITIAL_MS;
 
   while (Date.now() - startedAt < SIGNATURE_CONFIRM_TIMEOUT_MS) {
-    let statuses: Awaited<ReturnType<Connection["getSignatureStatuses"]>>;
+    let status: Awaited<ReturnType<typeof getSignatureStatusWithKitRpc>> = null;
     try {
-      statuses = await connection.getSignatureStatuses([signature]);
+      status = await getSignatureStatusWithKitRpc(rpc, signature);
       rateLimitBackoffMs = RATE_LIMIT_BACKOFF_INITIAL_MS;
     } catch (error) {
       if (!isTransientRpcError(error)) {
@@ -980,7 +986,6 @@ async function waitForConfirmedSignature(connection: Connection, signature: stri
       continue;
     }
 
-    const status = statuses.value[0];
     if (status?.err) {
       throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
     }
@@ -992,10 +997,9 @@ async function waitForConfirmedSignature(connection: Connection, signature: stri
     await sleep(SIGNATURE_CONFIRM_POLL_MS);
   }
 
-  let finalStatus: Awaited<ReturnType<Connection["getSignatureStatuses"]>>["value"][number] | null = null;
+  let finalStatus: Awaited<ReturnType<typeof getSignatureStatusWithKitRpc>> = null;
   try {
-    const statuses = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
-    finalStatus = statuses.value[0];
+    finalStatus = await getSignatureStatusWithKitRpc(rpc, signature, { searchTransactionHistory: true });
   } catch (error) {
     if (!isTransientRpcError(error)) {
       throw error;
@@ -1011,10 +1015,7 @@ async function waitForConfirmedSignature(connection: Connection, signature: stri
   }
 
   try {
-    const transaction = await connection.getTransaction(signature, {
-      commitment: "confirmed",
-      maxSupportedTransactionVersion: 0
-    });
+    const transaction = await getTransactionWithKitRpc(rpc, signature, "confirmed");
 
     if (transaction?.meta?.err) {
       throw new Error(`Transaction failed: ${JSON.stringify(transaction.meta.err)}`);
@@ -1294,6 +1295,7 @@ export async function submitAuthorityLifecycleSignedTransactions(
 
   const signatures: SubmittedAuthorityLifecycleTransaction[] = [];
   const connection = new Connection(getSolanaRpcUrl(), "confirmed");
+  const rpc = createKitRpcConnection(getSolanaRpcUrl());
 
   for (const signed of input.signedTransactions) {
     if (signed.operationId !== input.operationId) {
@@ -1311,7 +1313,7 @@ export async function submitAuthorityLifecycleSignedTransactions(
 
     const serializedTransaction = transaction.serialize();
     const signature = await sendRawTransactionWithRetry(connection, serializedTransaction);
-    await waitForConfirmedSignature(connection, signature);
+    await waitForConfirmedSignature(rpc, signature);
 
     signatures.push({
       kind: signed.kind,
