@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { PublicKey } from "@solana/web3.js";
+import { address, getAddressEncoder } from "@solana/kit";
 import nacl from "tweetnacl";
 
 import {
@@ -278,15 +278,16 @@ export async function verifyAndConsumePurchaseChallenge(input: VerifyPurchaseCha
   }
 
   const signatureBytes = decodeSignature(input.challengeSignatureBase64);
-  let walletPublicKey: PublicKey;
+  let walletPublicKeyBytes: Uint8Array;
   try {
-    walletPublicKey = new PublicKey(input.walletPublicKey);
+    const validAddress = address(input.walletPublicKey);
+    walletPublicKeyBytes = Uint8Array.from(getAddressEncoder().encode(validAddress));
   } catch {
     throw new PurchaseAntiBotError("INVALID_CHALLENGE", "Authenticated wallet format is invalid.", 400);
   }
 
   const messageBytes = new TextEncoder().encode(challenge.challengeMessage);
-  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKey.toBytes());
+  const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, walletPublicKeyBytes);
 
   if (!isValid) {
     await markPurchaseChallengeFailed(challenge.id, "Wallet signature validation failed.");

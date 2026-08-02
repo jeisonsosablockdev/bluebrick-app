@@ -183,6 +183,7 @@ Logs must not include full serialized transaction payloads, private keys, cookie
 ## BRI-12 Wallet/Auth Migration Impact (NFT Scope)
 - Change summary:
   - Wallet auth boundary migrated public key byte handling from `@solana/web3.js` to `@solana/kit` (`address` + `getAddressEncoder`) in SIWS verification path.
+  - Candy machine item verification CLI script (`scripts/check-candy-machine-items.js`) and anti-bot challenge validator (`lib/purchase-anti-bot.ts`) migrated public key address parsing from `PublicKey` to `@solana/kit` (`address(...)` + `getAddressEncoder().encode(...)`).
   - Wallet modal auth sync between browser contexts was hardened (`BroadcastChannel` + `storage` + `focus`/`visibilitychange` revalidation).
 - NFT authority impact:
   - No change in authority model for NFT operations.

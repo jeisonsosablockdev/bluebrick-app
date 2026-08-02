@@ -30,11 +30,11 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | Observations | 10 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 523 |
+| Archived | 525 |
 | Observed status | 20 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 521 |
+| Archived status | 523 |
 
 ## Inbox
 
@@ -312,6 +312,8 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-jaymusicmachine-BRI-184-test-suite-for-harnessing | archived | none | [feature-jaymusicmachine-BRI-184-test-suite-for-harnessing](knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
+| feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |

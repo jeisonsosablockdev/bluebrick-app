@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-01T15:03:17.389Z",
+  "generatedAt": "2026-08-02T12:35:06.945Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -1448,6 +1448,30 @@
       "path": "knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md"
     },
     {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-185-lightpanda-integration",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-12-solanakit-wallet-connection",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md"
+    },
+    {
       "id": "knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md",
       "type": "feature",
       "label": "feature-admin-collection-documents-ui-remake-implementation",
@@ -2202,6 +2226,12 @@
       "type": "governance",
       "label": "security-quality-policy",
       "path": "knowledge/governance/security-quality-policy.md"
+    },
+    {
+      "id": "knowledge/governance/toolchain-policy.md",
+      "type": "governance",
+      "label": "toolchain-policy",
+      "path": "knowledge/governance/toolchain-policy.md"
     },
     {
       "id": "knowledge/guides/EPIC-014-distribution-system-sop.md",
@@ -3532,6 +3562,11 @@
     {
       "source": "AGENTS.md",
       "target": "knowledge/governance/security-quality-policy.md",
+      "relation": "governs"
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "knowledge/governance/toolchain-policy.md",
       "relation": "governs"
     },
     {

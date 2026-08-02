@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { PublicKey } = require("@solana/web3.js");
+const { address } = require("@solana/kit");
 
 const EXIT_USAGE_ERROR = 2;
 const EXIT_QUERY_ERROR = 3;
@@ -173,7 +173,7 @@ async function main() {
   }
 
   try {
-    args.candyMachineAddress = new PublicKey(args.candyMachineAddress).toBase58();
+    args.candyMachineAddress = address(args.candyMachineAddress);
   } catch {
     writeStderr("Invalid --candy-machine value. It must be a valid Solana public key.");
     process.exit(EXIT_USAGE_ERROR);
