@@ -48,28 +48,28 @@ describe("lib/squads/squads-batch (SPEC-S04-C)", () => {
   });
 
   describe("deriveAssociatedTokenAddress", () => {
-    it("derives deterministic ATA for valid Solana wallet and token mint", () => {
+    it("derives deterministic ATA for valid Solana wallet and token mint", async () => {
       const wallet = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
       const mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
-      const ata1 = deriveAssociatedTokenAddress(wallet, mint);
-      const ata2 = deriveAssociatedTokenAddress(wallet, mint);
+      const ata1 = await deriveAssociatedTokenAddress(wallet, mint);
+      const ata2 = await deriveAssociatedTokenAddress(wallet, mint);
 
       expect(typeof ata1).toBe("string");
       expect(ata1).toBe(ata2);
       expect(ata1.length).toBeGreaterThan(30);
     });
 
-    it("falls back gracefully for non-pubkey strings", () => {
-      const ata = deriveAssociatedTokenAddress("invalid_wallet", "invalid_mint");
+    it("falls back gracefully for non-pubkey strings", async () => {
+      const ata = await deriveAssociatedTokenAddress("invalid_wallet", "invalid_mint");
       expect(ata).toContain("invalid_wallet_ata_invalid_");
     });
   });
 
   describe("deriveSquadsPdas", () => {
-    it("derives deterministic Squads v4 PDAs", () => {
+    it("@spec BRI-12-REQ-3 derives deterministic Squads v4 PDAs using @solana/kit getProgramDerivedAddress", async () => {
       const multisig = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
-      const pdas = deriveSquadsPdas(multisig, 1);
+      const pdas = await deriveSquadsPdas(multisig, 1);
 
       expect(pdas.squadsMultisigPda).toBeTruthy();
       expect(pdas.squadsVaultPda).toBeTruthy();
