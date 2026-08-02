@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BRI-12",
-  "branch": "SPEC/jeisonsosa-BRI-12-s03-squads-pda-derivation",
+  "branch": "SPEC/jeisonsosa-BRI-12-s04-kit-keypair-signers",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

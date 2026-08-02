@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { Keypair } from "@solana/web3.js";
+import { createKeyPairSignerFromBytes, generateKeyPairSigner } from "@solana/kit";
 import nacl from "tweetnacl";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -95,8 +95,8 @@ describe("lib/purchase-anti-bot", () => {
     process.env.PURCHASE_RATE_LIMIT_MAX_BY_WALLET = "100";
     process.env.PURCHASE_RATE_LIMIT_MAX_BY_IP = "100";
 
-    const wallet = Keypair.generate();
-    const walletPublicKey = wallet.publicKey.toBase58();
+    const wallet = await generateKeyPairSigner();
+    const walletPublicKey = wallet.address;
 
     const challenge = await issuePurchaseChallenge({
       walletPublicKey,
@@ -106,8 +106,12 @@ describe("lib/purchase-anti-bot", () => {
     });
 
     const messageBytes = new TextEncoder().encode(challenge.message);
-    const signature = nacl.sign.detached(messageBytes, wallet.secretKey);
-    const signatureBase64 = Buffer.from(signature).toString("base64");
+    const [signedMessage] = await wallet.signMessages([{ content: messageBytes, signatures: {} }]);
+    const signatureBytes = signedMessage[wallet.address];
+    if (!signatureBytes) {
+      throw new Error("Missing signature for wallet address");
+    }
+    const signatureBase64 = Buffer.from(signatureBytes).toString("base64");
 
     await verifyAndConsumePurchaseChallenge({
       challengeId: challenge.challengeId,
@@ -136,8 +140,8 @@ describe("lib/purchase-anti-bot", () => {
     process.env.PURCHASE_RATE_LIMIT_MAX_BY_WALLET = "100";
     process.env.PURCHASE_RATE_LIMIT_MAX_BY_IP = "100";
 
-    const wallet = Keypair.generate();
-    const walletPublicKey = wallet.publicKey.toBase58();
+    const wallet = await generateKeyPairSigner();
+    const walletPublicKey = wallet.address;
 
     const challenge = await issuePurchaseChallenge({
       walletPublicKey,
@@ -148,8 +152,12 @@ describe("lib/purchase-anti-bot", () => {
     });
 
     const messageBytes = new TextEncoder().encode(challenge.message);
-    const signature = nacl.sign.detached(messageBytes, wallet.secretKey);
-    const signatureBase64 = Buffer.from(signature).toString("base64");
+    const [signedMessage] = await wallet.signMessages([{ content: messageBytes, signatures: {} }]);
+    const signatureBytes = signedMessage[wallet.address];
+    if (!signatureBytes) {
+      throw new Error("Missing signature for wallet address");
+    }
+    const signatureBase64 = Buffer.from(signatureBytes).toString("base64");
 
     await expect(
       verifyAndConsumePurchaseChallenge({
@@ -164,8 +172,8 @@ describe("lib/purchase-anti-bot", () => {
   });
 
   it("@spec BRI-12-REQ-1 verifies challenge signatures with Kit Address format and rejects invalid base58 public keys", async () => {
-    const validWallet = Keypair.generate();
-    const validWalletPublicKey = validWallet.publicKey.toBase58();
+    const validWallet = await generateKeyPairSigner();
+    const validWalletPublicKey = validWallet.address;
 
     const challenge = await issuePurchaseChallenge({
       walletPublicKey: validWalletPublicKey,
@@ -184,5 +192,13 @@ describe("lib/purchase-anti-bot", () => {
         quantity: 1
       })
     ).rejects.toThrow();
+  });
+
+  it("@spec BRI-12-REQ-4 instantiates Kit KeyPair signers from bytes via createKeyPairSignerFromBytes", async () => {
+    const naclKeyPair = nacl.sign.keyPair();
+    const restoredSigner = await createKeyPairSignerFromBytes(naclKeyPair.secretKey);
+
+    expect(restoredSigner.address).toBeTruthy();
+    expect(typeof restoredSigner.address).toBe("string");
   });
 });
