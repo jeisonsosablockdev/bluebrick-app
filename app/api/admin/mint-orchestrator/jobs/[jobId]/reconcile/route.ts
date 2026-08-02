@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Connection } from "@solana/web3.js";
+import { createSolanaRpc, signature as solanaSignature } from "@solana/kit";
 
 import { getRequestRole } from "@/lib/auth-session";
 import {
@@ -66,17 +66,18 @@ function normalizeSignatureList(input: unknown): string[] {
   return Array.from(new Set(signatures));
 }
 
-async function resolveSignatures(connection: Connection, signatures: string[]): Promise<SignatureResolution[]> {
+async function resolveSignatures(signatures: string[]): Promise<SignatureResolution[]> {
   if (signatures.length === 0) {
     return [];
   }
 
+  const rpc = createSolanaRpc(getSolanaRpcUrl());
   const resolutions: SignatureResolution[] = [];
 
   for (const signatureChunk of chunkArray(signatures, SIGNATURE_STATUS_BATCH_LIMIT)) {
-    const statuses = await connection.getSignatureStatuses(signatureChunk, {
+    const statuses = await rpc.getSignatureStatuses(signatureChunk.map((sig) => solanaSignature(sig)), {
       searchTransactionHistory: true
-    });
+    }).send();
 
     signatureChunk.forEach((signature, index) => {
       const status = statuses.value[index];
@@ -116,8 +117,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
 
   try {
     const signaturesToResolve = requestedSignatures.length > 0 ? requestedSignatures : getBatchSignatures(jobId);
-    const connection = new Connection(getSolanaRpcUrl(), "confirmed");
-    const resolutions = await resolveSignatures(connection, signaturesToResolve);
+    const resolutions = await resolveSignatures(signaturesToResolve);
     const { job, updatedItems } = reconcileMintJobSignatures({
       jobId,
       actorPubkey: adminPubkey,

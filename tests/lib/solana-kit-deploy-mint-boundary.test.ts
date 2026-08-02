@@ -10,6 +10,7 @@ const DEPLOY_MINT_FILES = [
   "lib/metaplex-core-admin.ts",
   "lib/candy-guard-payment-config.ts",
   "lib/purchase-third-party-signer.ts",
+  "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",
   "components/admin/core-candy-machine-panel.tsx",
   "components/admin/metaplex-core-mint-panel.tsx"
 ];

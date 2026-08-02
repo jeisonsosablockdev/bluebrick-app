@@ -5,7 +5,7 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-02 14:26:26 UTC
+Updated: 2026-08-02 17:00:41 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ Updated: 2026-08-02 14:26:26 UTC
 | [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | 2026-04-01 16:05:30 UTC | 2026-06-16 ea2ee147 |
 | [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-07-19 35801116 |
 | [`linear-context.md`](./knowledge/architecture/linear-context.md) | general | not set | 2026-06-18 1f8b29ff |
-| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | 2026-06-07 | 2026-07-19 c7a9221a |
+| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | 2026-06-07 | 2026-08-02 6ddcefc3 |
 | [`purchase-tracing.md`](./knowledge/architecture/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-06-16 ea2ee147 |
 | [`rbac.md`](./knowledge/architecture/rbac.md) | general | 2026-03-03 UTC | 2026-06-16 ea2ee147 |
 | [`rotation-spec.md`](./knowledge/architecture/rotation-spec.md) | general | not set | 2026-06-21 86b90d23 |
