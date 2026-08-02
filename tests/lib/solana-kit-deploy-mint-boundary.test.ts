@@ -16,6 +16,8 @@ const DEPLOY_MINT_FILES = [
 
 const MARKETPLACE_PURCHASE_FILES = [
   "lib/purchase-service.ts",
+  "lib/purchase-anti-bot.ts",
+  "lib/property-marketplace-server.ts",
   "components/marketplace/PurchaseCta.tsx"
 ];
 

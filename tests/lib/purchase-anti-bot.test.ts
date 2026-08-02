@@ -162,4 +162,27 @@ describe("lib/purchase-anti-bot", () => {
       })
     ).rejects.toBeInstanceOf(PurchaseAntiBotError);
   });
+
+  it("@spec BRI-12-REQ-1 verifies challenge signatures with Kit Address format and rejects invalid base58 public keys", async () => {
+    const validWallet = Keypair.generate();
+    const validWalletPublicKey = validWallet.publicKey.toBase58();
+
+    const challenge = await issuePurchaseChallenge({
+      walletPublicKey: validWalletPublicKey,
+      propertyId: "torre-marina-premium",
+      candyMachineAddress: "9D7e6sH9QxU8SmR3TGbfnwRCG2Jx5Vt4upPDb9uWQ7Wx",
+      clientIp: `ip-${randomUUID()}`
+    });
+
+    await expect(
+      verifyAndConsumePurchaseChallenge({
+        challengeId: challenge.challengeId,
+        challengeSignatureBase64: "c2lnbmF0dXJl",
+        walletPublicKey: "invalid-public-key-format",
+        propertyId: "torre-marina-premium",
+        candyMachineAddress: "9D7e6sH9QxU8SmR3TGbfnwRCG2Jx5Vt4upPDb9uWQ7Wx",
+        quantity: 1
+      })
+    ).rejects.toThrow();
+  });
 });

@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-185",
-  "branch": "feature/jaymusicmachine-BRI-185-lightpanda-integration",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "task_id": "BRI-12",
+  "branch": "SPEC/jeisonsosa-BRI-12-s01-publickey-address-validation",
+  "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
     "PHASE_2_DOCS_FILLED": { "completed": true },
@@ -11,6 +11,6 @@
     "PHASE_5_TESTS_RED": { "completed": true },
     "PHASE_6_CODE_GREEN": { "completed": true },
     "PHASE_7_VALIDATED": { "completed": true },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true }
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
