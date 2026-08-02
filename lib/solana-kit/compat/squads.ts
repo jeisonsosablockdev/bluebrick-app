@@ -1,29 +1,38 @@
-import { PublicKey } from "@solana/web3.js";
+import {
+  address,
+  getAddressEncoder,
+  getProgramDerivedAddress,
+  type Address
+} from "@solana/kit";
 
-export const SQUADS_V4_PROGRAM_ID = new PublicKey(
+export const SQUADS_V4_PROGRAM_ID = address(
   process.env.SQUADS_PROGRAM_ID || "SQDS426qXaMuXxWrMRWsEGrmLVLknAdWRHmjF6eg582"
 );
 
-export const TOKEN_PROGRAM_ID = new PublicKey(
+export const TOKEN_PROGRAM_ID = address(
   "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 );
 
-export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
+export const ASSOCIATED_TOKEN_PROGRAM_ID = address(
   "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 );
 
 /**
  * Derives Associated Token Address (ATA) for a wallet and mint using SPL Token rules.
  */
-export function deriveAssociatedTokenAddress(walletAddress: string, tokenMintAddress: string): string {
+export async function deriveAssociatedTokenAddress(walletAddress: string, tokenMintAddress: string): Promise<string> {
   try {
-    const walletPk = new PublicKey(walletAddress);
-    const mintPk = new PublicKey(tokenMintAddress);
-    const [ata] = PublicKey.findProgramAddressSync(
-      [walletPk.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintPk.toBuffer()],
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-    return ata.toBase58();
+    const walletAddr = address(walletAddress);
+    const mintAddr = address(tokenMintAddress);
+    const [ata] = await getProgramDerivedAddress({
+      programAddress: ASSOCIATED_TOKEN_PROGRAM_ID,
+      seeds: [
+        getAddressEncoder().encode(walletAddr),
+        getAddressEncoder().encode(TOKEN_PROGRAM_ID),
+        getAddressEncoder().encode(mintAddr)
+      ]
+    });
+    return ata;
   } catch {
     return `${walletAddress}_ata_${tokenMintAddress.slice(0, 8)}`;
   }
@@ -32,42 +41,62 @@ export function deriveAssociatedTokenAddress(walletAddress: string, tokenMintAdd
 /**
  * Derives Squads v4 PDAs (Multisig, Vault, Proposal, Batch) deterministically.
  */
-export function deriveSquadsPdas(
+export async function deriveSquadsPdas(
   multisigSeedStr: string,
   transactionIndex: number | bigint
-): {
+): Promise<{
   squadsMultisigPda: string;
   squadsVaultPda: string;
   proposalPda: string;
   batchPda: string;
-} {
+}> {
   try {
-    const multisigPk = new PublicKey(multisigSeedStr);
-    const txIndexBuffer = Buffer.alloc(8);
-    txIndexBuffer.writeBigUInt64LE(BigInt(transactionIndex));
+    const multisigAddr = address(multisigSeedStr);
+    const txIndexBuffer = new Uint8Array(8);
+    new DataView(txIndexBuffer.buffer).setBigUint64(0, BigInt(transactionIndex), true);
 
-    const [multisigPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("squad"), multisigPk.toBuffer()],
-      SQUADS_V4_PROGRAM_ID
-    );
-    const [vaultPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("squad"), multisigPda.toBuffer(), Buffer.from("vault"), Buffer.from([0])],
-      SQUADS_V4_PROGRAM_ID
-    );
-    const [proposalPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("squad"), multisigPda.toBuffer(), Buffer.from("proposal"), txIndexBuffer],
-      SQUADS_V4_PROGRAM_ID
-    );
-    const [batchPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("squad"), proposalPda.toBuffer(), Buffer.from("batch")],
-      SQUADS_V4_PROGRAM_ID
-    );
+    const [multisigPda] = await getProgramDerivedAddress({
+      programAddress: SQUADS_V4_PROGRAM_ID,
+      seeds: [
+        new TextEncoder().encode("squad"),
+        getAddressEncoder().encode(multisigAddr)
+      ]
+    });
+
+    const [vaultPda] = await getProgramDerivedAddress({
+      programAddress: SQUADS_V4_PROGRAM_ID,
+      seeds: [
+        new TextEncoder().encode("squad"),
+        getAddressEncoder().encode(multisigPda),
+        new TextEncoder().encode("vault"),
+        new Uint8Array([0])
+      ]
+    });
+
+    const [proposalPda] = await getProgramDerivedAddress({
+      programAddress: SQUADS_V4_PROGRAM_ID,
+      seeds: [
+        new TextEncoder().encode("squad"),
+        getAddressEncoder().encode(multisigPda),
+        new TextEncoder().encode("proposal"),
+        txIndexBuffer
+      ]
+    });
+
+    const [batchPda] = await getProgramDerivedAddress({
+      programAddress: SQUADS_V4_PROGRAM_ID,
+      seeds: [
+        new TextEncoder().encode("squad"),
+        getAddressEncoder().encode(proposalPda),
+        new TextEncoder().encode("batch")
+      ]
+    });
 
     return {
-      squadsMultisigPda: multisigPda.toBase58(),
-      squadsVaultPda: vaultPda.toBase58(),
-      proposalPda: proposalPda.toBase58(),
-      batchPda: batchPda.toBase58()
+      squadsMultisigPda: multisigPda,
+      squadsVaultPda: vaultPda,
+      proposalPda: proposalPda,
+      batchPda: batchPda
     };
   } catch {
     return {

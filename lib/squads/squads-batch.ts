@@ -287,7 +287,7 @@ export async function createPayoutBatchesFromClaims(input: {
           0n
         );
 
-        const pdas = deriveSquadsPdas(first.treasury_vault, txCounter++);
+        const pdas = await deriveSquadsPdas(first.treasury_vault, txCounter++);
 
         const { rows: batchRows } = await client.query<SquadsPayoutBatchRow>(
           `INSERT INTO squads_payout_batches (
@@ -325,7 +325,7 @@ export async function createPayoutBatchesFromClaims(input: {
         for (let i = 0; i < chunk.length; i++) {
           const claim = chunk[i]!;
           const itemId = generateUuidV7();
-          const recipientAta = deriveAssociatedTokenAddress(claim.payout_wallet, claim.token_mint);
+          const recipientAta = await deriveAssociatedTokenAddress(claim.payout_wallet, claim.token_mint);
 
           const { rows: itemRows } = await client.query<SquadsPayoutBatchItemRow>(
             `INSERT INTO squads_payout_batch_items (
