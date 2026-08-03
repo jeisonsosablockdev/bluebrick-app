@@ -46,6 +46,9 @@ A solicitud del desarrollador, el trabajo se divide en 4 SPECs atómicas consecu
 - **SPEC-5 (Modal Prompt de Reconexión de Wallet en Compra)**:
   - Scope: Intercepción en `components/marketplace/PurchaseCta.tsx` cuando se presiona el botón de compra sin wallet activa / sesión caducada. En lugar de mostrar sólo un mensaje de texto plano ("Conecta Phantom e inicia sesion antes de comprar."), abre un modal / diálogo interactivo de reconexión con mensaje explicativo y CTA "Conectar Wallet" que gatilla `dispatchOpenWalletModal({ loginMethod: "wallet" })`.
   - Rama: `SPEC/jeisonsosa-BRI-12-s05-wallet-reconnect-modal`
+- **SPEC-6 (Auditoría de Código Limpio y Refactorización refactor-clean)**:
+  - Scope: Auditoría integral de Clean Code en todos los archivos modificados (`lib/purchase-anti-bot.ts`, `lib/property-marketplace-server.ts`, `lib/solana-kit/compat/squads.ts`, `app/api/.../reconcile/route.ts`, `components/marketplace/PurchaseCta.tsx`). Verificación de cero archivos huérfanos/en blanco, cero funciones muertas, cero imports no utilizados y estructura de monorepo impecable antes del cierre.
+  - Rama: `SPEC/jeisonsosa-BRI-12-s06-refactor-clean-audit`
 
 ## 4. TDD (Test-Driven Development) Strategy & TDD Primal Standards
 Siguiendo los principios de la skill **`tdd-primal`**, todas las pruebas unitarias y de contrato se escriben en la fase RED dentro de la SPEC correspondiente antes de modificar el código de producción. Cada test lleva el tag de trazabilidad `@spec BRI-12`.
@@ -57,6 +60,7 @@ Siguiendo los principios de la skill **`tdd-primal`**, todas las pruebas unitari
   - SPEC-3: `tests/lib/solana-kit-squads.test.ts`
   - SPEC-4: `tests/lib/solana-kit-keypairs.test.ts`
   - SPEC-5: `tests/components/purchase-cta-wallet-reconnect.test.ts`
+  - SPEC-6: `tests/lib/clean-code-audit.test.ts`
 - **Command**: `pnpm test`
 - **Assertion Goals (@spec BRI-12)**:
   1. `@spec BRI-12-REQ-1 (SPEC-1)`: Validar que `verifyAndConsumePurchaseChallenge` funcione idénticamente utilizando `address(...)` de `@solana/kit` y la decodificación de bytes Ed25519, fallando correctamente con `401` ante firmas inválidas.
@@ -64,9 +68,10 @@ Siguiendo los principios de la skill **`tdd-primal`**, todas las pruebas unitari
   3. `@spec BRI-12-REQ-3 (SPEC-3)`: Validar que la derivación de PDAs de Squads V4 y ATAs con `getProgramDerivedAddress` de `@solana/kit` entregue **exactamente las mismas direcciones base58** que la implementación legacy de `PublicKey.findProgramAddressSync`.
   4. `@spec BRI-12-REQ-4 (SPEC-4)`: Validar que la generación y carga de firmadores (`generateKeyPairSigner()`, `createKeyPairSignerFromBytes()`) produzcan firmadores válidos compatibles con `@solana/kit`, capaces de firmar mensajes y transacciones sin ninguna dependencia de `Keypair` de `@solana/web3.js`.
   5. `@spec BRI-12-REQ-5 (SPEC-5)`: Validar que al invocar la compra en `PurchaseCta` sin wallet activa, no sólo se impida la transacción sino que se active el modal/diálogo de reconexión y al presionar "Conectar Wallet" se despache el evento `WALLET_MODAL_OPEN_EVENT` (`dispatchOpenWalletModal`).
+  6. `@spec BRI-12-REQ-6 (SPEC-6)`: Validar la ausencia total de archivos huérfanos/en blanco, imports sin uso e incompatibilidades de arquitectura en el árbol de archivos refactorizado.
 
 ## 5. Local Definition of Done (DoD)
-- [ ] La rama parent `feature/jeisonsosa-BRI-12-solanakit-wallet-connection` gobierna las 5 SPECs.
+- [ ] La rama parent `feature/jeisonsosa-BRI-12-solanakit-wallet-connection` gobierna las 6 SPECs.
 - [ ] Se completa el flujo TDD (RED $\rightarrow$ GREEN $\rightarrow$ REFACTOR) en cada SPEC individual.
 - [ ] La suite de pruebas unitarias y de integración pasa al 100% (verde).
 - [ ] `pnpm validate` se ejecuta con 0 errores y 0 warnings.

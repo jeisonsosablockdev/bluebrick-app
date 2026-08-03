@@ -1,8 +1,7 @@
 import {
   address,
   getAddressEncoder,
-  getProgramDerivedAddress,
-  type Address
+  getProgramDerivedAddress
 } from "@solana/kit";
 
 export const SQUADS_V4_PROGRAM_ID = address(
