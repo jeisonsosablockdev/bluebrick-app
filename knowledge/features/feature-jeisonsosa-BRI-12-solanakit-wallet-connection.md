@@ -12,6 +12,7 @@ Sustituir de forma segura las superficies reemplazables de `@solana/web3.js` por
 2. Conexiones y consultas RPC $\rightarrow$ `createSolanaRpc()` en `app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts`, `lib/property-marketplace-server.ts` y `lib/core-authority-lifecycle.ts`.
 3. Derivación de PDAs y ATAs $\rightarrow$ `getProgramDerivedAddress()` en `lib/solana-kit/compat/squads.ts`.
 4. Firmadores y Keypairs en pruebas $\rightarrow$ `generateKeyPairSigner()`, `createKeyPairSignerFromBytes()` en scripts y unit tests.
+5. Modal / Diálogo interactivo de reconexión de wallet $\rightarrow$ al presionar la CTA de compra sin wallet conectada o con sesión caducada en `PurchaseCta.tsx`, presenta un diálogo interactivo ("Conecta Phantom e inicia sesion antes de comprar.") con botón "Conectar Wallet" que gatilla `dispatchOpenWalletModal({ loginMethod: "wallet" })`.
 
 Todo esto manteniendo las suites de prueba unitarias e integraciones pasando en verde (`pnpm validate`), documentando explícitamente las APIs creadas vs APIs heredadas eliminadas, garantizando la seguridad en los endpoints de API y asegurando cero regresiones en la red de componentes conectados (compra en marketplace, catálogo de propiedades, APIs públicas de propiedades y paneles admin multisig).
 

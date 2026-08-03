@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
+import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import {
   deserializeLegacyVersionedTransaction,
   serializeLegacyVersionedTransaction
@@ -232,6 +233,7 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
   ));
   const [lastFlowId, setLastFlowId] = useState<string | null>(null);
   const [requestedQuantity, setRequestedQuantity] = useState(1);
+  const [showWalletReconnectModal, setShowWalletReconnectModal] = useState(false);
 
   const maxSelectableQuantity = useMemo(() => {
     if (quote?.quantityMode === "SINGLE_ONLY") {
@@ -472,13 +474,14 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
 
   async function handlePurchase(): Promise<void> {
     if (!connected || !publicKey || !signTransaction) {
-      setPurchaseError(
-        t({
-          en: "Connect Phantom and sign in before purchasing.",
-          es: "Conecta Phantom e inicia sesion antes de comprar.",
-          pt: "Conecte a Phantom e faca login antes de comprar."
-        })
-      );
+      const errorMessage = t({
+        en: "Connect Phantom and sign in before purchasing.",
+        es: "Conecta Phantom e inicia sesion antes de comprar.",
+        pt: "Conecte a Phantom e faca login antes de comprar."
+      });
+      setPurchaseError(errorMessage);
+      setShowWalletReconnectModal(true);
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
     }
 
@@ -804,6 +807,57 @@ export function PurchaseCta({ propertyId, nftPriceUsd }: PurchaseCtaProps) {
             : t({ en: "Add to cart", es: "Agregar al carrito", pt: "Adicionar ao carrinho" })}
         </Button>
       </div>
+
+      {showWalletReconnectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-100">
+                {t({
+                  en: "Wallet Connection Required",
+                  es: "Conexion de Wallet requerida",
+                  pt: "Conexao de Wallet necessaria"
+                })}
+              </h3>
+              <button
+                type="button"
+                className="text-slate-400 hover:text-slate-200 text-sm font-semibold px-2 py-1 rounded"
+                onClick={() => setShowWalletReconnectModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-sm text-slate-300">
+              {t({
+                en: "Connect Phantom and sign in before purchasing.",
+                es: "Conecta Phantom e inicia sesion antes de comprar.",
+                pt: "Conecte a Phantom e faca login antes de comprar."
+              })}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowWalletReconnectModal(false)}
+              >
+                {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+              </Button>
+              <Button
+                className="marketplace-brand-pill"
+                onClick={() => {
+                  setShowWalletReconnectModal(false);
+                  dispatchOpenWalletModal({ loginMethod: "wallet" });
+                }}
+              >
+                {t({
+                  en: "Connect Wallet",
+                  es: "Conectar Wallet",
+                  pt: "Conectar Wallet"
+                })}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
