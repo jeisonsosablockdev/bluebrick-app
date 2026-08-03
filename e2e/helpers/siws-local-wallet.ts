@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { Keypair } from "@solana/web3.js";
+import { address, createKeyPairSignerFromBytes, type KeyPairSigner } from "@solana/kit";
 import nacl from "tweetnacl";
 import type { Page } from "@playwright/test";
 
@@ -23,7 +23,7 @@ type AuthMeResponse = {
 type LoadedWallet = {
   role: WalletRole;
   keypairPath: string;
-  keypair: Keypair;
+  keypair: KeyPairSigner;
   publicKey: string;
 };
 
@@ -57,7 +57,7 @@ export function getWalletAvailability(role: WalletRole): WalletAvailability {
   };
 }
 
-function loadWallet(role: WalletRole): LoadedWallet {
+async function loadWallet(role: WalletRole): Promise<LoadedWallet> {
   const availability = getWalletAvailability(role);
 
   if (!availability.exists) {
@@ -71,13 +71,13 @@ function loadWallet(role: WalletRole): LoadedWallet {
   }
 
   const secretKey = Uint8Array.from(raw);
-  const keypair = Keypair.fromSecretKey(secretKey);
+  const keypair = await createKeyPairSignerFromBytes(secretKey);
 
   return {
     role,
     keypairPath: availability.keypairPath,
     keypair,
-    publicKey: keypair.publicKey.toBase58()
+    publicKey: keypair.address
   };
 }
 
@@ -111,7 +111,7 @@ export async function authenticateWithWalletRole(
   role: WalletRole,
   statement: string = DEFAULT_STATEMENT
 ): Promise<AuthMeResponse> {
-  const wallet = loadWallet(role);
+  const wallet = await loadWallet(role);
 
   await page.goto("/");
   const domain = new URL(page.url()).host;
@@ -131,12 +131,17 @@ export async function authenticateWithWalletRole(
     statement
   });
 
-  const signature = nacl.sign.detached(new TextEncoder().encode(message), wallet.keypair.secretKey);
+  const messageBytes = new TextEncoder().encode(message);
+  const [signedMessage] = await wallet.keypair.signMessages([{ content: messageBytes, signatures: {} }]);
+  const signatureBytes = signedMessage[address(wallet.publicKey)];
+  if (!signatureBytes) {
+    throw new Error(`Failed to sign SIWS message for ${role} wallet.`);
+  }
 
   const verifyResponse = await page.context().request.post("/api/auth/verify", {
     data: {
       message,
-      signature: Buffer.from(signature).toString("base64"),
+      signature: Buffer.from(signatureBytes).toString("base64"),
       publicKey: wallet.publicKey
     }
   });

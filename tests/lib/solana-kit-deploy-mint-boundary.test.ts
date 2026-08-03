@@ -10,12 +10,16 @@ const DEPLOY_MINT_FILES = [
   "lib/metaplex-core-admin.ts",
   "lib/candy-guard-payment-config.ts",
   "lib/purchase-third-party-signer.ts",
+  "lib/solana-kit/compat/squads.ts",
+  "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",
   "components/admin/core-candy-machine-panel.tsx",
   "components/admin/metaplex-core-mint-panel.tsx"
 ];
 
 const MARKETPLACE_PURCHASE_FILES = [
   "lib/purchase-service.ts",
+  "lib/purchase-anti-bot.ts",
+  "lib/property-marketplace-server.ts",
   "components/marketplace/PurchaseCta.tsx"
 ];
 

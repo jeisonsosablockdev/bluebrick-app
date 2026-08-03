@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Connection, PublicKey } from "@solana/web3.js";
+import { address, createSolanaRpc } from "@solana/kit";
 
 import {
   clonePropertyDetail,
@@ -58,15 +58,12 @@ function recordPersistedMarketplaceReadFailure(fallbackSource: MarketplaceRecord
 
 async function resolveMarketplacePropertyRealtimeSyncStatus(property: PropertyDetail): Promise<MarketplacePropertyRealtimeSyncStatus> {
   try {
-    const collectionAddress = new PublicKey(property.blockchain.collectionAddress);
-    const candyMachineAddress = new PublicKey(property.blockchain.assetMintAddress);
-    const connection = new Connection(getSolanaRpcUrl(), "confirmed");
-    const [collectionAccount, candyMachineAccount] = await connection.getMultipleAccountsInfo(
-      [collectionAddress, candyMachineAddress],
-      "confirmed"
-    );
+    const collectionAddress = address(property.blockchain.collectionAddress);
+    const candyMachineAddress = address(property.blockchain.assetMintAddress);
+    const rpc = createSolanaRpc(getSolanaRpcUrl());
+    const accounts = await rpc.getMultipleAccounts([collectionAddress, candyMachineAddress]).send();
 
-    if (collectionAccount && candyMachineAccount) {
+    if (accounts.value[0] && accounts.value[1]) {
       return {
         syncStatus: "available",
         lastOnchainUpdate: new Date().toISOString()

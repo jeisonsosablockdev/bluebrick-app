@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-185",
-  "branch": "feature/jaymusicmachine-BRI-185-lightpanda-integration",
+  "task_id": "BRI-12",
+  "branch": "feature/jeisonsosa-BRI-12-solanakit-wallet-connection",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
