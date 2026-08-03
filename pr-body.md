@@ -1,6 +1,6 @@
 ## Summary
-- Implementation of task feature/jaymusicmachine-BRI-185-lightpanda-integration
-- Title: feat(shared): implement Lightpanda dual-engine browser factory and decision playbook (BRI-185)
+- Implementation of task feature/jeisonsosa-BRI-12-solanakit-wallet-connection
+- Title: chore(task): update task state to PHASE_8_HUMAN_MERGE_APPROVED for BRI-12
 - Feature-flag strategy: N/A (governance harness and documentation templates update)
 
 ## Issue
