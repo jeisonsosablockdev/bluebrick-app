@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { getTransparencyMetricsQuery, TransparencyPageClient } from "@/features/transparency-portal";
+import { Suspense } from "react";
+import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
+import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
+import { TransparencyContent } from "@/features/transparency-portal";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -9,7 +12,15 @@ export const metadata: Metadata = createPageMetadata({
   section: "transparency"
 });
 
-export default async function TransparencyPage() {
-  const { summary, models } = await getTransparencyMetricsQuery();
-  return <TransparencyPageClient summary={summary} models={models} />;
+export default function TransparencyPage() {
+  return (
+    <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+      <WalletRuntimeProvider>
+        <Suspense fallback={null}>
+          <MainTopNavigationModal />
+        </Suspense>
+      </WalletRuntimeProvider>
+      <TransparencyContent />
+    </main>
+  );
 }
