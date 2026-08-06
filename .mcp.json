@@ -9,8 +9,8 @@
       "args": ["helius-mcp@latest"]
     },
     "linear": {
-      "command": "npx",
-      "args": ["tsx", "./scripts/linear-mcp-server.ts"]
+      "command": "node",
+      "args": ["--import", "tsx", "./scripts/linear-mcp-server.ts"]
     }
   }
 }

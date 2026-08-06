@@ -19,6 +19,7 @@ owns_paths:
 reads:
   - "AGENTS.md"
   - "knowledge/governance/git-monorepo-policy.md"
+  - "knowledge/governance/clean-code-folder-structure.md"
   - "scripts/ci/check-monorepo-structure.sh"
   - ".agents/graph.json"
   - "package.json"
