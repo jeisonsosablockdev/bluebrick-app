@@ -226,7 +226,7 @@ export function QuickTourOverlay() {
   const pathname = usePathname();
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const isProfileRoute = pathname === "/protected/perfil";
+  const isProfileRoute = pathname === "/profile" || pathname === "/profile/perfil" || pathname?.startsWith("/profile");
 
   const [showTour, setShowTour] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -249,7 +249,7 @@ export function QuickTourOverlay() {
     const cardWidth = clamp(Math.min(360, viewportWidth - 24), 280, 360);
     const cardHeight = Math.max(210, cardRef.current?.offsetHeight ?? 230);
 
-    if (!step?.anchorId || pathname !== "/protected/perfil") {
+    if (!step?.anchorId || pathname !== "/profile/perfil") {
       setCardPosition({
         top: viewportWidth < 768 ? Math.max(72, viewportHeight - cardHeight - 16) : 88,
         left: clamp((viewportWidth - cardWidth) / 2, HORIZONTAL_MARGIN, viewportWidth - cardWidth - HORIZONTAL_MARGIN),
@@ -335,7 +335,7 @@ export function QuickTourOverlay() {
       return;
     }
 
-    if (step?.anchorId && pathname === "/protected/perfil") {
+    if (step?.anchorId && pathname === "/profile/perfil") {
       scrollToAnchor(step.anchorId);
     }
   }, [isProfileRoute, pathname, showTour, step?.anchorId]);
@@ -374,8 +374,8 @@ export function QuickTourOverlay() {
 
     setCurrentStep((index) => Math.min(index + 1, TOUR_STEPS.length - 1));
 
-    if (pathname !== "/protected/perfil") {
-      router.push("/protected/perfil");
+    if (pathname !== "/profile/perfil") {
+      router.push("/profile/perfil");
     }
   }, [handleDismiss, pathname, router, step?.isLast]);
 
@@ -456,11 +456,11 @@ export function QuickTourOverlay() {
                 {t({ en: "Back", es: "Atrás", pt: "Voltar" })}
               </Button>
 
-              {pathname !== "/protected/perfil" && currentStep === 0 ? (
+              {pathname !== "/profile/perfil" && currentStep === 0 ? (
                 <Button
                   className="quick-tour-pill"
                   onClick={() => {
-                    router.push("/protected/perfil");
+                    router.push("/profile/perfil");
                     setCurrentStep(0);
                   }}
                 >
