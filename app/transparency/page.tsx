@@ -14,7 +14,7 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function TransparencyPage() {
   return (
-    <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+    <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
       <WalletRuntimeProvider>
         <Suspense fallback={null}>
           <MainTopNavigationModal />
