@@ -28,6 +28,10 @@
       "@/*": [
         "./*"
       ],
+      "@/features/*": [
+        "./apps/web/src/features/*",
+        "./src/features/*"
+      ],
       "@core/*": [
         "./lib/core/*"
       ],
