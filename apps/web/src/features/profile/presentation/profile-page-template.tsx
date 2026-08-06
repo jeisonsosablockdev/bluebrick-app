@@ -3,6 +3,7 @@
 import React from 'react';
 import { UserProfileEntity } from '../domain';
 import { UserProfileHeader } from './user-profile-header';
+import { ProfileKycModule } from '@/components/dashboard/profile-kyc-module';
 
 export interface ProfilePageTemplateProps {
   profile: UserProfileEntity;
@@ -10,8 +11,9 @@ export interface ProfilePageTemplateProps {
 
 export function ProfilePageTemplate({ profile }: ProfilePageTemplateProps) {
   return (
-    <section className="max-w-4xl mx-auto py-8 space-y-6">
+    <section className="max-w-6xl mx-auto py-6 space-y-8">
       <UserProfileHeader profile={profile} />
+      <ProfileKycModule />
     </section>
   );
 }

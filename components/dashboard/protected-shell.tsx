@@ -43,7 +43,7 @@ function truncatePublicKey(publicKey: string): string {
 }
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/protected") {
+  if (href === "/profile") {
     return pathname === href;
   }
 
@@ -55,7 +55,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
 
   return [
     {
-      href: "/protected",
+      href: "/profile",
       label: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
       title: t({ en: "Overview", es: "Resumen", pt: "Resumo" }),
       description: t({
@@ -65,7 +65,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       })
     },
     {
-      href: "/protected/referrals",
+      href: "/profile/referrals",
       label: t({ en: "Referral Rewards", es: "Recompensas por referidos", pt: "Recompensas por indicacoes" }),
       title: t({ en: "Referral Rewards", es: "Recompensas por referidos", pt: "Recompensas por indicacoes" }),
       description: t({
@@ -75,7 +75,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       })
     },
     {
-      href: "/protected/portfolio",
+      href: "/profile/portfolio",
       label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
       title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
       description: t({
@@ -86,7 +86,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       releaseControlled: true
     },
     {
-      href: "/protected/stake",
+      href: "/profile/stake",
       label: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
       title: t({ en: "Stake / Unstake", es: "Stake / Unstake", pt: "Stake / Unstake" }),
       description: t({
@@ -96,7 +96,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       })
     },
     {
-      href: "/protected/rentas",
+      href: "/profile/rentas",
       label: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
       title: t({ en: "Yield / Claim", es: "Rentas / Claim", pt: "Rendas / Claim" }),
       description: t({
@@ -107,7 +107,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       releaseControlled: true
     },
     {
-      href: "/protected/historial",
+      href: "/profile/historial",
       label: t({ en: "History", es: "Historial", pt: "Historico" }),
       title: t({ en: "History", es: "Historial", pt: "Historico" }),
       description: t({
@@ -118,7 +118,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
       releaseControlled: true
     },
     {
-      href: "/protected/perfil",
+      href: "/profile/perfil",
       label: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
       title: t({ en: "Profile / Support", es: "Perfil / Soporte", pt: "Perfil / Suporte" }),
       description: t({
@@ -127,7 +127,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         pt: "Gerencie configuracoes de perfil e canais de suporte."
       })
     }
-  ].filter((item) => showDevOnlyModules || !item.releaseControlled);
+  ].filter((item) => showDevOnlyModules || !item.releaseControlled););
 }
 
 export function isProtectedRouteActive(pathname: string, href: string): boolean {
