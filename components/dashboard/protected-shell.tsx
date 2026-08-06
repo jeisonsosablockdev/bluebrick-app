@@ -127,7 +127,7 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
         pt: "Gerencie configuracoes de perfil e canais de suporte."
       })
     }
-  ].filter((item) => showDevOnlyModules || !item.releaseControlled););
+  ].filter((item) => showDevOnlyModules || !item.releaseControlled);
 }
 
 export function isProtectedRouteActive(pathname: string, href: string): boolean {
