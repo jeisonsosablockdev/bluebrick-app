@@ -1,4 +1,5 @@
 import { ExecutiveDashboard } from "@/components/admin/executive-dashboard";
+import { getAdminMetricsQuery, AdminPageClient } from "../../../apps/web/src/features/admin";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
 import { getAdminDashboardOverview } from "@/lib/purchase-metrics-service";
@@ -24,11 +25,15 @@ export default async function AdminDashboardPage({ searchParams }: AdminDashboar
   const params = await searchParams;
   const range = parseRange(readValue(params.range));
   const initialOverview = await getAdminDashboardOverview({ range }).catch(() => null);
+  const { health } = await getAdminMetricsQuery();
 
   return (
-    <ExecutiveDashboard
-      walletLabel={localize(locale, { en: "Admin", es: "Administrador", pt: "Administrador" })}
-      initialOverview={initialOverview}
-    />
+    <div className="space-y-6">
+      <AdminPageClient metrics={health} />
+      <ExecutiveDashboard
+        walletLabel={localize(locale, { en: "Admin", es: "Administrador", pt: "Administrador" })}
+        initialOverview={initialOverview}
+      />
+    </div>
   );
 }
