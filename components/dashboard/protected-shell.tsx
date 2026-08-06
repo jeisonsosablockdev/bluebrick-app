@@ -76,8 +76,8 @@ export function buildProtectedNavigation(t: TranslateNavFn): NavItem[] {
     },
     {
       href: "/profile/portfolio",
-      label: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
-      title: t({ en: "My Portfolio", es: "Mi Portfolio", pt: "Meu Portfolio" }),
+      label: t({ en: "My Portfolio", es: "Mi Portafolio", pt: "Meu Portfólio" }),
+      title: t({ en: "My Portfolio", es: "Mi Portafolio", pt: "Meu Portfólio" }),
       description: t({
         en: "Review your Fractions, valuation and position status.",
         es: "Consulta tus Fracciones, valor y estado de posiciones.",
