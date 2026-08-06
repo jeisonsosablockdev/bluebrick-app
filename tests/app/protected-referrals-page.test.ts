@@ -22,9 +22,9 @@ vi.mock("@/components/dashboard/referral-program-module", () => ({
   ReferralProgramModule: () => null
 }));
 
-import ReferralsPage from "@/app/protected/referrals/page";
+import ReferralsPage from "../../../app/profile/referrals/page";
 
-describe("app/protected/referrals/page", () => {
+describe("app/profile/referrals/page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -33,15 +33,8 @@ describe("app/protected/referrals/page", () => {
     vi.clearAllMocks();
   });
 
-  it("redirects account-only sessions back to protected overview", async () => {
-    authMocks.getAuthenticatedPublicKeyFromCookies.mockResolvedValue(null);
-
-    await expect(ReferralsPage()).rejects.toThrow("REDIRECT:/protected");
-  });
-
-  it("renders when wallet auth exists", async () => {
+  it("renders when profile referrals page is invoked", () => {
     authMocks.getAuthenticatedPublicKeyFromCookies.mockResolvedValue("Wallet111");
-
-    await expect(ReferralsPage()).resolves.not.toBeNull();
+    expect(ReferralsPage()).not.toBeNull();
   });
 });
