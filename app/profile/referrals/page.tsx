@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ReferralPageClient } from "@/features/referral-marketing";
+import { ReferralPageClient } from "../../../apps/web/src/features/referral-marketing";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
