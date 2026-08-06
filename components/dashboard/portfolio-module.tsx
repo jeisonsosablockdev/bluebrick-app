@@ -310,13 +310,15 @@ function PositionCard({ position, t }: { position: InvestorPortfolioPosition; t:
         {position.documents.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {position.documents.slice(0, 3).map((document) => (
-              <Link
+              <a
                 key={document.id}
                 className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-3 text-xs text-cyan-200 hover:bg-white/10"
                 href={document.url}
+                target="_blank"
+                rel="noreferrer"
               >
                 {document.label}
-              </Link>
+              </a>
             ))}
           </div>
         ) : null}
