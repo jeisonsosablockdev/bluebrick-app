@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { getReferralSummaryQuery, ReferralPageClient } from "@/features/referral-marketing";
-import { ReferralProgramModule } from "@/components/dashboard/referral-program-module";
+import { ReferralPageClient } from "@/features/referral-marketing";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -10,13 +9,6 @@ export const metadata: Metadata = createPageMetadata({
   section: "profile"
 });
 
-export default async function ProfileReferralsPage() {
-  const { summary, invitees } = await getReferralSummaryQuery('SQDS426qUB5hZahVkWgwySsLqyZaKnpBxZBP5tWYW45');
-
-  return (
-    <div className="space-y-6">
-      <ReferralPageClient summary={summary} invitees={invitees} />
-      <ReferralProgramModule />
-    </div>
-  );
+export default function ProfileReferralsPage() {
+  return <ReferralPageClient />;
 }
