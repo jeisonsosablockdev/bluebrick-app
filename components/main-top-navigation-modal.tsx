@@ -401,7 +401,7 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
       return entries;
     }
 
-    entries.push({ href: "/protected", label: t({ en: "Profile", es: "Perfil", pt: "Perfil" }) });
+    entries.push({ href: "/profile", label: t({ en: "Profile", es: "Perfil", pt: "Perfil" }) });
 
     if (hasWalletSession && authState.role === "admin") {
       entries.push({ href: "/admin", label: t({ en: "Dashboard", es: "Dashboard", pt: "Dashboard" }) });
