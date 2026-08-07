@@ -96,13 +96,13 @@ export function buildAdminCollectionGoogleMapsEmbedUrl(content: Pick<
     return null;
   }
 
-  if (content.googleMapsPlace?.placeId) {
+  if (content.googleMapsPlace?.placeId && !content.googleMapsPlace.placeId.startsWith("mock_place_")) {
     return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(
       `place_id:${content.googleMapsPlace.placeId}`
     )}`;
   }
 
-  if (content.googleMapsPlace) {
+  if (content.googleMapsPlace?.lat && content.googleMapsPlace?.lng) {
     return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(
       `${content.googleMapsPlace.lat},${content.googleMapsPlace.lng}`
     )}`;
