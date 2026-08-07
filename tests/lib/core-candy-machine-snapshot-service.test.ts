@@ -198,7 +198,7 @@ describe("lib/core-candy-machine-snapshot-service", () => {
     expect(result.canCreateAsset).toBe(true);
     expect(result.verificationStatus).toBe("verified");
     expect(result.verificationMethod).toBe("candy_machine_items_loaded");
-    expect(result.foundAssets).toBe(0);
+    expect(result.foundAssets).toBeNull();
     expect(result.verificationError).toBeNull();
     expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
       status: "completed",
