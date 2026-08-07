@@ -1,39 +1,34 @@
 import type { Metadata } from "next";
-
-import type { DocumentStatus } from "@/lib/content/types";
-
 import { normalizeRoutePath } from "./site";
 
-export type SeoCanonicalSection = "software" | "knowledge" | "regulatory";
-
-export const SEO_CANONICAL_PREFIX: Record<SeoCanonicalSection, string> = {
-  software: "/software",
-  knowledge: "/knowledge",
-  regulatory: "/regulatory"
-};
-
 export type SeoSection =
-  | SeoCanonicalSection
   | "home"
+  | "software"
+  | "knowledge"
+  | "regulatory"
   | "marketplace"
   | "transparency"
   | "admin"
+  | "profile"
   | "protected"
   | "checkout"
   | "api"
   | "system"
   | "other";
 
-const NOINDEX_PATH_PREFIXES = ["/admin", "/protected", "/checkout", "/api"];
+export type SeoCanonicalSection = SeoSection;
+export const SEO_CANONICAL_PREFIX = "/";
+
+const NOINDEX_PATH_PREFIXES = ["/admin", "/profile", "/protected", "/checkout", "/api"];
 const NOINDEX_EXACT_PATHS = new Set(["/403"]);
-const NOINDEX_SECTIONS = new Set<SeoSection>(["admin", "protected", "checkout", "api", "system"]);
+const NOINDEX_SECTIONS = new Set<SeoSection>(["admin", "profile", "protected", "checkout", "api", "system"]);
 
 export interface SeoIndexPolicyInput {
   path: string;
-  status?: DocumentStatus;
   explicitIndex?: boolean;
   explicitNoIndex?: boolean;
   section?: SeoSection;
+  status?: string;
 }
 
 export function resolveSeoSectionFromPath(path: string): SeoSection {
@@ -59,12 +54,16 @@ export function resolveSeoSectionFromPath(path: string): SeoSection {
     return "marketplace";
   }
 
-  if (normalizedPath.startsWith("/transparencia")) {
+  if (normalizedPath.startsWith("/transparency")) {
     return "transparency";
   }
 
   if (normalizedPath.startsWith("/admin")) {
     return "admin";
+  }
+
+  if (normalizedPath.startsWith("/profile")) {
+    return "profile";
   }
 
   if (normalizedPath.startsWith("/protected")) {
@@ -79,61 +78,50 @@ export function resolveSeoSectionFromPath(path: string): SeoSection {
     return "api";
   }
 
-  if (normalizedPath === "/403") {
-    return "system";
-  }
-
   return "other";
 }
 
-export function isRestrictedPath(path: string): boolean {
-  const normalizedPath = normalizeRoutePath(path);
+export function isIndexablePage(input: SeoIndexPolicyInput): boolean {
+  const normalizedPath = normalizeRoutePath(input.path);
+
+  if (input.explicitNoIndex === true) {
+    return false;
+  }
+
+  if (input.explicitIndex === true) {
+    return true;
+  }
 
   if (NOINDEX_EXACT_PATHS.has(normalizedPath)) {
-    return true;
-  }
-
-  return NOINDEX_PATH_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix));
-}
-
-export function isIndexablePage({
-  path,
-  status,
-  explicitIndex = false,
-  explicitNoIndex = false,
-  section
-}: SeoIndexPolicyInput): boolean {
-  const normalizedPath = normalizeRoutePath(path);
-  const resolvedSection = section ?? resolveSeoSectionFromPath(normalizedPath);
-
-  if (explicitNoIndex) {
     return false;
   }
 
-  if (isRestrictedPath(normalizedPath) || NOINDEX_SECTIONS.has(resolvedSection)) {
+  for (const prefix of NOINDEX_PATH_PREFIXES) {
+    if (normalizedPath.startsWith(prefix)) {
+      return false;
+    }
+  }
+
+  const resolvedSection = input.section ?? resolveSeoSectionFromPath(normalizedPath);
+  if (NOINDEX_SECTIONS.has(resolvedSection)) {
     return false;
   }
 
-  if (status && status !== "published") {
+  if (input.status && input.status !== "published") {
     return false;
-  }
-
-  if (explicitIndex) {
-    return true;
   }
 
   return true;
 }
 
-export function buildRobotsDirectives(indexable: boolean): Metadata["robots"] {
+export function buildRobotsDirectives(input: SeoIndexPolicyInput): Metadata["robots"] {
+  const indexable = isIndexablePage(input);
   return {
     index: indexable,
     follow: indexable,
     googleBot: {
       index: indexable,
-      follow: indexable,
-      "max-image-preview": indexable ? "large" : "none",
-      "max-snippet": indexable ? -1 : 0
+      follow: indexable
     }
   };
 }

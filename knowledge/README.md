@@ -30,11 +30,11 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | Observations | 10 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 525 |
+| Archived | 528 |
 | Observed status | 20 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 523 |
+| Archived status | 526 |
 
 ## Inbox
 
@@ -298,8 +298,6 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | story-011-08-appdata-plugin-fields-aggregation-bri-107 | archived | none | [STORY- 011 08 Appdata Plugin Fields Aggregation BRI- 107](knowledge/features/epic-011/story-011-08-appdata-plugin-fields-aggregation-bri-107.md) | n/a |
 | story-011-08-authorities-aggregation-bri-105 | archived | none | [STORY- 011 08 Authorities Aggregation BRI- 105](knowledge/features/epic-011/story-011-08-authorities-aggregation-bri-105.md) | n/a |
 | story-011-08-base-blockchain-addresses-aggregation-bri-104 | archived | none | [STORY- 011 08 Base Blockchain Addresses Aggregation BRI- 104](knowledge/features/epic-011/story-011-08-base-blockchain-addresses-aggregation-bri-104.md) | n/a |
-| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | active | none | [Feature Monorepo FDD Architecture BRI-186](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
-| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | active | none | [Feature Monorepo FDD Architecture BRI-186 Implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
 | story-011-08-copy-link-interactions-and-tests-bri-109 | archived | none | [STORY- 011 08 Copy Link Interactions And Tests BRI- 109](knowledge/features/epic-011/story-011-08-copy-link-interactions-and-tests-bri-109.md) | n/a |
 | story-011-08-guard-fields-aggregation-bri-106 | archived | none | [STORY- 011 08 Guard Fields Aggregation BRI- 106](knowledge/features/epic-011/story-011-08-guard-fields-aggregation-bri-106.md) | n/a |
 | story-011-08-read-only-blockchain-panel-ui-bri-108 | archived | none | [STORY- 011 08 Read Only Blockchain Panel Ui BRI- 108](knowledge/features/epic-011/story-011-08-read-only-blockchain-panel-ui-bri-108.md) | n/a |
@@ -316,6 +314,8 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
+| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -433,6 +433,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance Implementation](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md) | n/a |
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md) | n/a |
 | index | archived | none | [other](knowledge/fixes/other/index.md) | n/a |
+| clean-code-folder-structure | archived | none | [clean-code-folder-structure](knowledge/governance/clean-code-folder-structure.md) | n/a |
 | documentation-policy | archived | none | [Documentation Policy](knowledge/governance/documentation-policy.md) | n/a |
 | frontend-ui-policy | archived | none | [Frontend Ui Policy](knowledge/governance/frontend-ui-policy.md) | n/a |
 | git-monorepo-policy | archived | none | [Git Monorepo Policy](knowledge/governance/git-monorepo-policy.md) | n/a |

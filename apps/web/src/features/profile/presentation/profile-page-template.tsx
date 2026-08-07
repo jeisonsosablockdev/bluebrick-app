@@ -13,7 +13,7 @@ export function ProfilePageTemplate({ profile }: ProfilePageTemplateProps) {
   return (
     <section className="max-w-6xl mx-auto py-6 space-y-8">
       <UserProfileHeader profile={profile} />
-      <ProfileKycModule />
+      <ProfileKycModule walletPublicKey={profile.primaryWalletAddress} />
     </section>
   );
 }

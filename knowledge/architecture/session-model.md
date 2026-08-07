@@ -777,6 +777,12 @@ Last Updated: 2026-04-14 14:20:00 UTC
   - no new session token shape, refresh rule, reward authority rule, or browser-owned authority state
 - The change does not add or remove any authenticated request path.
 
+## SPEC-23 / BRI-186 Asset Freeze Control Session Architecture
+- `apps/web/src/features/asset-freeze-control` uses existing SIWS wallet sessions.
+- Freeze and thaw controls operate strictly on user-owned assets resolved server-side.
+- No session cookies, tokens, or role boundaries were modified.
+
+
 ## BRI-166 S06 Mobile Core Web Vitals Optimization Session Notes
 - Home and marketplace image loading hints were adjusted for mobile Core Web Vitals.
 - Session invariants remain unchanged:

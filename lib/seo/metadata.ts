@@ -75,7 +75,7 @@ export function createPageMetadata(input: SeoPageMetadataInput): Metadata {
     },
     openGraph: buildOpenGraphMetadata(input, canonicalUrl),
     twitter: buildTwitterMetadata(input),
-    robots: buildRobotsDirectives(indexable),
+    robots: buildRobotsDirectives({ path: canonicalPath, explicitIndex: indexable, section }),
     other: {
       "x-seo-section": section
     }

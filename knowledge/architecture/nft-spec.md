@@ -421,3 +421,8 @@ Last Updated: 2026-04-12 21:07:07 UTC
     - `startDate`
     - `tokenPayment = amountUsdcAtomic` (unit price derived from admin form `Costo por NFT`)
     - `thirdPartySigner` (backend signer, mandatory for public purchase flow)
+
+## SPEC-23 / BRI-186 Asset Freeze Control NFT Architecture
+- `apps/web/src/features/asset-freeze-control` provides user self-managed freeze/thaw control over Metaplex Core NFTs using attached `FreezeDelegate` with `Owner` authority.
+- No changes to collection permanent delegates, update authorities, or mint transaction assembly contracts.
+

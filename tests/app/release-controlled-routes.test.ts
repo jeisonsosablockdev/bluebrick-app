@@ -74,10 +74,10 @@ function setNodeEnv(value: string | undefined): void {
 
 async function loadSyncPages() {
   const [portfolio, stake, rentas, historial, treasury, distributions] = await Promise.all([
-    import("@/app/protected/portfolio/page"),
-    import("@/app/protected/stake/page"),
-    import("@/app/protected/rentas/page"),
-    import("@/app/protected/historial/page"),
+    import("@/app/profile/portfolio/page"),
+    import("@/app/profile/stake/page"),
+    import("@/app/profile/rentas/page"),
+    import("@/app/profile/historial/page"),
     import("@/app/admin/treasury/page"),
     import("@/app/admin/distributions/page")
   ]);

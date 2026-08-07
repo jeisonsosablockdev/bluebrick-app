@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { getUserProfileQuery, ProfilePageTemplate } from "@/features/profile";
+import { OverviewModule } from "@/components/dashboard/overview-module";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Investor Profile",
-  description: "Manage your investor account settings, KYC status, and security preferences.",
+  title: "Investor Dashboard",
+  description: "General account summary, portfolio KPIs, and overview.",
   path: "/profile",
   section: "profile"
 });
 
-export default async function ProfilePage() {
-  const profile = await getUserProfileQuery('SQDS426qUB5hZahVkWgwySsLqyZaKnpBxZBP5tWYW45');
-  return <ProfilePageTemplate profile={profile} />;
+export default function ProfileOverviewPage() {
+  return <OverviewModule />;
 }

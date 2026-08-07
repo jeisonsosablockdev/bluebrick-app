@@ -51,7 +51,7 @@ The harness test suite is an isolated, modular test package located strictly in 
   4. `04-architecture-linter.test.ts`: Asserts that `check-layered-architecture.sh` correctly passes on valid 4-layer structures and fails on invalid root files.
   5. `05-git-workflow.test.ts`: Asserts that `task-init.sh` correctly creates `feature/*` and `SPEC/*` branches in simulated git fixture repos in `.sandbox/`.
   6. `06-pr-governance.test.ts`: Asserts that `pr-metadata-lint.sh`, `pr-governance-lib.sh`, and `generate-pr-body.sh` enforce mandatory PR body sections (specifically `## Human Acceptance\nStatus: approved`), label requirements (`scope:*`, `type:*`, `risk:*`), and Linear issue links.
-  7. `07-doc-governance.test.ts`: Asserts that `check-required-docs.sh` and `validate-okf.ts` correctly flag missing docs or unpopulated placeholders (`<!-- Describir... -->`).
+  7. `07-doc-governance.test.ts`: Asserts that `check-required-docs.sh` and `validate-okf.ts` correctly flag missing docs or unpopulated placeholders (`(describir...)`).
   8. `08-linear-sync.test.ts`: Asserts `linear-status-core.js` and `linear-plan-core.js` payload generation and state synchronization.
 
 ## 5. Local Definition of Done (DoD)

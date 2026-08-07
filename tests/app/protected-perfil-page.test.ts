@@ -30,7 +30,7 @@ vi.mock("@/components/dashboard/profile-kyc-module", () => ({
   ProfileKycModule: ({ walletPublicKey }: { walletPublicKey: string }) => ({ type: "wallet-profile", walletPublicKey })
 }));
 
-import PerfilPage from "@/app/protected/perfil/page";
+import PerfilPage from "@/app/profile/page";
 
 describe("app/protected/perfil/page", () => {
   beforeEach(() => {
@@ -50,7 +50,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: null
     });
 
-    await expect(PerfilPage({})).rejects.toThrow("REDIRECT:/");
+    await expect(PerfilPage()).rejects.toThrow("REDIRECT:/");
   });
 
   it("renders the account-only support module for federated sessions without a wallet", async () => {
@@ -62,7 +62,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage({})).resolves.toMatchObject({
+    await expect(PerfilPage()).resolves.toMatchObject({
       props: {
         children: expect.arrayContaining([
           expect.objectContaining({
@@ -84,7 +84,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage({})).resolves.toMatchObject({
+    await expect(PerfilPage()).resolves.toMatchObject({
       props: {
         children: expect.arrayContaining([
           expect.objectContaining({

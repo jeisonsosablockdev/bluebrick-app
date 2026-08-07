@@ -22,7 +22,7 @@ vi.mock("@/components/dashboard/referral-program-module", () => ({
   ReferralProgramModule: () => null
 }));
 
-import ReferralsPage from "../../../app/profile/referrals/page";
+import ReferralsPage from "@/app/profile/referrals/page";
 
 describe("app/profile/referrals/page", () => {
   beforeEach(() => {

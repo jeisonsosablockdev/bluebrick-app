@@ -5,13 +5,13 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-03 04:00:20 UTC
+Updated: 2026-08-07 04:46:45 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
 | [`app-technical-roadmap-investor-brief.md`](./knowledge/architecture/app-technical-roadmap-investor-brief.md) | general | not set | 2026-07-06 4afd5bbb |
 | [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | 2026-04-01 08:20:33 UTC | 2026-06-16 ea2ee147 |
-| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | 2026-07-22 | 2026-08-02 9da63bd7 |
+| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | 2026-07-22 | 2026-08-02 01eef7d4 |
 | [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | 2026-04-01 10:45:00 UTC | 2026-06-16 67163847 |
 | [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | 2026-04-01 16:05:30 UTC | 2026-06-16 ea2ee147 |
 | [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-07-19 35801116 |
@@ -20,7 +20,7 @@ Updated: 2026-08-03 04:00:20 UTC
 | [`purchase-tracing.md`](./knowledge/architecture/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-06-16 ea2ee147 |
 | [`rbac.md`](./knowledge/architecture/rbac.md) | general | 2026-03-03 UTC | 2026-06-16 ea2ee147 |
 | [`rotation-spec.md`](./knowledge/architecture/rotation-spec.md) | general | not set | 2026-06-21 86b90d23 |
-| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | 2026-07-22 | 2026-08-02 9da63bd7 |
+| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | 2026-07-22 | 2026-08-02 01eef7d4 |
 | [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-07-19 35801116 |
 | [`stake-audit.md`](./knowledge/architecture/stake-audit.md) | general | not set | 2026-06-18 1f8b29ff |
 | [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-21 86b90d23 |

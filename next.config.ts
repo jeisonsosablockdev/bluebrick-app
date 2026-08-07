@@ -36,6 +36,20 @@ const nextConfig: NextConfig = {
       }
     ]
   },
+  async redirects() {
+    return [
+      {
+        source: "/protected",
+        destination: "/profile",
+        permanent: true
+      },
+      {
+        source: "/protected/:slug*",
+        destination: "/profile/:slug*",
+        permanent: true
+      }
+    ];
+  },
   async headers() {
     const securityOptions = readSecurityHeadersOptionsFromEnv();
     const securityHeaders = buildSecurityHeaders(securityOptions);

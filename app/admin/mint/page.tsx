@@ -1,4 +1,4 @@
-import { notFound } from "next";
+import { notFound } from "next/navigation";
 
 import { CoreCandyMachinePanel } from "@/components/admin/core-candy-machine-panel";
 import { MintOrchestratorSigningPanel } from "@/components/admin/mint-orchestrator-signing-panel";

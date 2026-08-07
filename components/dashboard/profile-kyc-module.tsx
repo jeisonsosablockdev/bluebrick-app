@@ -62,7 +62,7 @@ type OnboardingRewardSnapshot = {
 };
 
 type ProfileKycModuleProps = {
-  walletPublicKey: string;
+  walletPublicKey?: string;
 };
 
 type ProfileApiPayload = {
@@ -348,7 +348,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
 
   const selectedAvatarPreviewUrl = useMemo(() => resolveAvatarPreviewUrl(avatarUrl), [avatarUrl]);
   const walletProviderName = wallet?.adapter?.name ?? null;
-  const connectedWalletAddress = wallet?.adapter?.publicKey?.toBase58() ?? profile?.walletPublicKey ?? walletPublicKey;
+  const connectedWalletAddress = wallet?.adapter?.publicKey?.toBase58() ?? profile?.walletPublicKey ?? walletPublicKey ?? "";
   const walletAccountLabel = useMemo(
     () => getWalletAccountLabel(wallet?.adapter, connectedWalletAddress),
     [connectedWalletAddress, wallet?.adapter]
@@ -558,7 +558,7 @@ export function ProfileKycModule({ walletPublicKey }: ProfileKycModuleProps): Re
     if (profile && !profile.username.trim() && !username.trim()) {
       setUsername(
         buildWalletSuggestedUsername({
-          walletPublicKey: profile.walletPublicKey || walletPublicKey,
+          walletPublicKey: profile.walletPublicKey || walletPublicKey || connectedWalletAddress,
           providerName: walletProviderName,
           accountLabel: walletAccountLabel
         })
