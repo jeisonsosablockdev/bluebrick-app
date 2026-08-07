@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound } from "next";
 
 import { CoreCandyMachinePanel } from "@/components/admin/core-candy-machine-panel";
 import { MintOrchestratorSigningPanel } from "@/components/admin/mint-orchestrator-signing-panel";
+import { getMintStatusQuery, NftMintingPageClient } from "../../../apps/web/src/features/nft-minting";
 import { Card } from "@/components/ui/card";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -13,6 +14,7 @@ export default async function AdminMintPage() {
   }
 
   const locale = await getServerLocale();
+  const config = await getMintStatusQuery("CMv3_BRIDS_Sunset_Miami_Devnet_Addr");
 
   return (
     <div className="space-y-4">
@@ -28,6 +30,7 @@ export default async function AdminMintPage() {
         </p>
       </Card>
 
+      <NftMintingPageClient config={config} />
       <CoreCandyMachinePanel />
       <MintOrchestratorSigningPanel />
     </div>
