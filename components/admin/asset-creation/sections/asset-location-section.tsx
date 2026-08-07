@@ -93,6 +93,8 @@ export function AssetLocationSection({
         sessionToken
       });
 
+      const fullAddress = place.formattedAddress || suggestion.fullText || place.placeLabel;
+
       setForm((prev) => ({
         ...prev,
         country: place.country ?? prev.country,
@@ -104,7 +106,7 @@ export function AssetLocationSection({
         geoLng: String(place.lng),
         googleMapsPlace: place
       }));
-      setQuery(place.placeLabel);
+      setQuery(fullAddress);
       setSuggestionsState({ kind: "idle" });
     } catch (error) {
       setSuggestionsState({
