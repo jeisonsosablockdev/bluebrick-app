@@ -355,11 +355,17 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 * **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
 * **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts`.
 
-#### **`SPEC-24 (Test Suite & QA Artifacts Cleanup)`**:
-* **Objetivo & Alcance**: Eliminar la carpeta `/artifacts` obsoleta en la raíz, mover las pruebas E2E de `/e2e` a `tests/e2e/`, actualizar `playwright.config.ts` y añadir exclusiones en `.gitignore` para artefactos temporales de test.
-* **Archivos Afectados**: `/artifacts` (eliminar), `/e2e` ➔ `tests/e2e/`, `playwright.config.ts`, `.gitignore`.
+#### **`SPEC-24 (Test Suite, QA & Root Hygiene Cleanup)`**:
+* **Objetivo & Alcance**: 
+  1. Eliminar la carpeta `/artifacts` obsoleta en la raíz y configurar `.gitignore` para artefactos de test temporales.
+  2. Mover la suite de pruebas end-to-end de `/e2e` a `tests/e2e/` y actualizar `playwright.config.ts`.
+  3. Eliminar el archivo de configuración heredado `.eslintrc.json` (manteniendo exclusivamente `eslint.config.mjs` bajo estándar Flat Config).
+  4. Mover `skills-lock.json` a `.agents/skills-lock.json`.
+  5. Configurar `scripts/ci/generate-pr-body.sh` y `pr-auto.sh` para que el cuerpo dinámico del PR se genere en `.agents/pr-body.md` evitando polución de la raíz.
+  6. Actualizar `.gitignore` con exclusiones para `.cache-synpress/`, `.npm-cache/`, `.agents/pr-body.md` y directorios temporales.
+* **Archivos Afectados**: `/artifacts` (eliminar), `/e2e` ➔ `tests/e2e/`, `.eslintrc.json` (eliminar), `skills-lock.json` ➔ `.agents/skills-lock.json`, `scripts/ci/generate-pr-body.sh`, `scripts/ci/pr-auto.sh`, `playwright.config.ts`, `.gitignore`.
 * **Trazabilidad OKF**: `AGENTS.md`, `git-monorepo-policy.md`.
-* **Verificación**: `pnpm test:harness` y `pnpm validate`.
+* **Verificación**: `pnpm test:harness`, `pnpm test tests/lib/root-hygiene-governance.test.ts` y `pnpm validate`.
 
 #### **`SPEC-25 (Shared UI Kit & Motion 12 Animation Engine - shared/ui/motion)`**:
 * **Objetivo & Alcance**: Centralizar la infraestructura de diseño visual y el motor de animación de Motion 12 (`motion.dev`) en `apps/web/src/features/shared/ui/motion/` (proveedores `MotionProvider`, presets de transición de rutas `RouteTransition`, variantes de micro-animación `glassmorphismVariants`, `staggerVariants` y respeto a `prefers-reduced-motion`) y los componentes base del Design System (`Button`, `Card`, `ThemeToggle`).
