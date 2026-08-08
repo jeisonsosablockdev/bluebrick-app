@@ -355,15 +355,31 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 * **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
 * **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts`.
 
-#### **`SPEC-24 (Test Suite, QA & Root Hygiene Cleanup)`**:
+#### **`SPEC-24 (Test Suite, QA & CI/CD Root Hygiene Governance)`**:
 * **Objetivo & Alcance**: 
-  1. Eliminar la carpeta `/artifacts` obsoleta en la raíz y configurar `.gitignore` para artefactos de test temporales.
-  2. Mover la suite de pruebas end-to-end de `/e2e` a `tests/e2e/` y actualizar `playwright.config.ts`.
-  3. Eliminar el archivo de configuración heredado `.eslintrc.json` (manteniendo exclusivamente `eslint.config.mjs` bajo estándar Flat Config).
-  4. Mover `skills-lock.json` a `.agents/skills-lock.json`.
-  5. Configurar `scripts/ci/generate-pr-body.sh` y `pr-auto.sh` para que el cuerpo dinámico del PR se genere en `.agents/pr-body.md` evitando polución de la raíz.
-  6. Actualizar `.gitignore` con exclusiones para `.cache-synpress/`, `.npm-cache/`, `.agents/pr-body.md` y directorios temporales.
-* **Archivos Afectados**: `/artifacts` (eliminar), `/e2e` ➔ `tests/e2e/`, `.eslintrc.json` (eliminar), `skills-lock.json` ➔ `.agents/skills-lock.json`, `scripts/ci/generate-pr-body.sh`, `scripts/ci/pr-auto.sh`, `playwright.config.ts`, `.gitignore`.
+  1. **Blindaje de Scripts CI/CD (`generate-pr-body.sh` y `pr-auto.sh`)**:
+     - Configurar `scripts/ci/generate-pr-body.sh` para que su ruta de salida por defecto sea estrictamente `${ROOT_DIR}/.github/pr-body.md`.
+     - Actualizar `scripts/ci/pr-auto.sh` para consumir `${ROOT_DIR}/.github/pr-body.md` y ejecutar la auto-limpieza post-publicación (`rm -f "${BODY_FILE}"`), garantizando un ciclo de vida estrictamente efímero.
+     - Actualizar `scripts/ci/check-monorepo-structure.sh` para verificar y prohibir permanentemente la creación de `pr-body.md` en la raíz.
+  2. **Consolidación de Tests y Artefactos QA**:
+     - Eliminar la carpeta obsoleta `/artifacts` en la raíz.
+     - Mover la suite completa de pruebas E2E de `/e2e` a `tests/e2e/`.
+     - Actualizar `playwright.config.ts` (`testDir: "./tests/e2e"`, `outputDir: "./tests/artifacts"`).
+  3. **Limpieza de Archivos de Configuración Heredados**:
+     - Eliminar el archivo `.eslintrc.json` legacy (operar 100% bajo Flat Config con `eslint.config.mjs`).
+     - Reubicar `skills-lock.json` a `.agents/skills-lock.json`.
+  4. **Protección Permanente en `.gitignore`**:
+     - Añadir exclusiones explícitas para `.github/pr-body.md`, `artifacts/`, `tests/artifacts/`, `.cache-synpress/`, `.npm-cache/` y `.agents/*.tmp`.
+* **Archivos Afectados**: 
+  - `scripts/ci/generate-pr-body.sh`
+  - `scripts/ci/pr-auto.sh`
+  - `scripts/ci/check-monorepo-structure.sh`
+  - `playwright.config.ts`
+  - `.gitignore`
+  - `.eslintrc.json` (eliminar)
+  - `/artifacts/` (eliminar)
+  - `/e2e` ➔ `tests/e2e/`
+  - `skills-lock.json` ➔ `.agents/skills-lock.json`
 * **Trazabilidad OKF**: `AGENTS.md`, `git-monorepo-policy.md`.
 * **Verificación**: `pnpm test:harness`, `pnpm test tests/lib/root-hygiene-governance.test.ts` y `pnpm validate`.
 
