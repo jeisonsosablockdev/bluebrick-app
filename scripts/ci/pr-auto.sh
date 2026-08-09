@@ -21,7 +21,8 @@ if [[ -f "${PR_RUN_FILE}" ]]; then
 fi
 
 # 1. Generate compliant PR body
-bash "${SCRIPT_DIR}/generate-pr-body.sh" "${ROOT_DIR}/pr-body.md"
+BODY_FILE="${ROOT_DIR}/.github/pr-body.md"
+bash "${SCRIPT_DIR}/generate-pr-body.sh" "${BODY_FILE}"
 
 # 2. Deduce Labels
 SCOPE_LABEL="scope:shared"
@@ -49,12 +50,15 @@ echo "Deducted Labels -> Scope: ${SCOPE_LABEL} | Type: ${TYPE_LABEL} | Risk: ${R
 # 3. Open / Update PR automatically via pr-open.sh
 bash "${SCRIPT_DIR}/pr-open.sh" \
   --title "${TITLE}" \
-  --body-file "${ROOT_DIR}/pr-body.md" \
+  --body-file "${BODY_FILE}" \
   --scope "${SCOPE_LABEL}" \
   --type "${TYPE_LABEL}" \
   --risk "${RISK_LABEL}" \
   --draft 0 \
   --validate-mode full
+
+# 4. Clean up ephemeral PR body post-publish
+rm -f "${BODY_FILE}"
 
 # Record single-trigger completion
 cat <<EOF > "${PR_RUN_FILE}"
