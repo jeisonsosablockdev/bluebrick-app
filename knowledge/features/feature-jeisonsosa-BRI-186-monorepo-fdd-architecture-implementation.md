@@ -348,11 +348,86 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 
 ### 🧹 Fase 4: Limpieza & Cierre de Gobernanza
 
-#### **`SPEC-23 (Clean Code Audit, Final Hardening & Monorepo Validation)`**
-* **Objetivo & Alcance**: Eliminación de carpetas y archivos obsoletos en la raíz (`components/`, `lib/`), verificación de cero código legado (`@solana/web3.js` v1), sincronización del grafo de conocimiento `.agents/graph.json` y auditoría de Gatekeeper 2 por parte del `architect`.
-* **Archivos Afectados**: Limpieza general de archivos en la raíz.
+#### **`SPEC-23 (Feature Slice: Asset Freeze & Thaw Policies - EPIC-006)`**:
+* **Objetivo & Alcance**: Implementar la feature autónoma de políticas de congelamiento/descongelamiento (`asset-freeze-control`) en `apps/web/src/features/asset-freeze-control/`.
+* **Capas FDD**: `domain/`, `infrastructure/`, `application/`, `presentation/`, `index.ts`.
+* **Archivos Afectados**: `apps/web/src/features/asset-freeze-control/*`, `tests/features/asset-freeze-control.test.ts`.
+* **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
+* **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts`.
+
+#### **`SPEC-24 (Test Suite, QA & CI/CD Root Hygiene Governance)`**:
+* **Objetivo & Alcance**: 
+  1. **Blindaje de Scripts CI/CD (`generate-pr-body.sh` y `pr-auto.sh`)**:
+     - Configurar `scripts/ci/generate-pr-body.sh` para que su ruta de salida por defecto sea estrictamente `${ROOT_DIR}/.github/pr-body.md`.
+     - Actualizar `scripts/ci/pr-auto.sh` para consumir `${ROOT_DIR}/.github/pr-body.md` y ejecutar la auto-limpieza post-publicación (`rm -f "${BODY_FILE}"`), garantizando un ciclo de vida estrictamente efímero.
+     - Actualizar `scripts/ci/check-monorepo-structure.sh` para verificar y prohibir permanentemente la creación de `pr-body.md` en la raíz.
+  2. **Consolidación de Tests y Artefactos QA**:
+     - Eliminar la carpeta obsoleta `/artifacts` en la raíz.
+     - Mover la suite completa de pruebas E2E de `/e2e` a `tests/e2e/`.
+     - Actualizar `playwright.config.ts` (`testDir: "./tests/e2e"`, `outputDir: "./tests/artifacts"`).
+  3. **Limpieza de Archivos de Configuración Heredados**:
+     - Eliminar el archivo `.eslintrc.json` legacy (operar 100% bajo Flat Config con `eslint.config.mjs`).
+     - Reubicar `skills-lock.json` a `.agents/skills-lock.json`.
+  4. **Protección Permanente en `.gitignore`**:
+     - Añadir exclusiones explícitas para `.github/pr-body.md`, `artifacts/`, `tests/artifacts/`, `.cache-synpress/`, `.npm-cache/` y `.agents/*.tmp`.
+* **Archivos Afectados**: 
+  - `scripts/ci/generate-pr-body.sh`
+  - `scripts/ci/pr-auto.sh`
+  - `scripts/ci/check-monorepo-structure.sh`
+  - `playwright.config.ts`
+  - `.gitignore`
+  - `.eslintrc.json` (eliminar)
+  - `/artifacts/` (eliminar)
+  - `/e2e` ➔ `tests/e2e/`
+  - `skills-lock.json` ➔ `.agents/skills-lock.json`
+* **Trazabilidad OKF**: `AGENTS.md`, `git-monorepo-policy.md`.
+* **Verificación**: `pnpm test:harness`, `pnpm test tests/lib/root-hygiene-governance.test.ts` y `pnpm validate`.
+
+#### **`SPEC-25 (Shared UI Kit & Motion 12 Animation Engine - shared/ui/motion)`**:
+* **Objetivo & Alcance**: Centralizar la infraestructura de diseño visual y el motor de animación de Motion 12 (`motion.dev`) en `apps/web/src/features/shared/ui/motion/` (proveedores `MotionProvider`, presets de transición de rutas `RouteTransition`, variantes de micro-animación `glassmorphismVariants`, `staggerVariants` y respeto a `prefers-reduced-motion`) y los componentes base del Design System (`Button`, `Card`, `ThemeToggle`).
+* **Capas FDD**: `shared/ui/motion/`, `shared/ui/theme/`, `shared/ui/ui/`.
+* **Archivos Afectados**: `apps/web/src/features/shared/ui/motion/*`, `components/motion/*` ➔ `shared/ui/motion/`.
+* **Trazabilidad OKF**: `frontend-ui-policy.md`.
+* **Verificación**: Tests unitarios de presets de Motion 12 y providers de accesibilidad.
+
+#### **`SPEC-26 (Feature Slice: Splash Screen & Smooth Transition UX)`**:
+* **Objetivo & Alcance**: Crear la feature autónoma de Splash Screen (`splash-screen`) en `apps/web/src/features/splash-screen/` consumiendo el motor Motion 12 de `shared/ui/motion/`, soporte para sesión no intrusiva (`sessionStorage`) y transición suave hacia la aplicación.
+* **Capas FDD**: `presentation/` (SplashScreenOverlay, BrandMotionLogo), `application/` (useSplashScreen), `domain/` (SplashStateRules).
+* **Archivos Afectados**: `apps/web/src/features/splash-screen/*`, `lib/app-splash.ts`.
+* **Trazabilidad OKF**: `frontend-ui-policy.md`.
+* **Verificación**: Tests unitarios de renderizado y transición de Splash Screen.
+
+#### **`SPEC-27 (Landing Page Experience & Visual Polish - Motion 12 & Glassmorphism)`**:
+* **Objetivo & Alcance**: Restaurar y pulir la experiencia visual completa del Landing Page en `apps/web/src/features/landing/`: Hero Section premium, tarjetas de Featured Properties, Dark/Light theme toggle, secciones institucionales y efectos Glassmorphism con Motion 12.
+* **Capas FDD**: `presentation/` (HeroSection, FeaturedPropertiesGrid, ProcessTimeline, FaqAccordion, FooterSection), `application/`, `domain/`, `infrastructure/`.
+* **Archivos Afectados**: `apps/web/src/features/landing/*`, `components/sections/*` ➔ `landing/presentation/`.
+* **Trazabilidad OKF**: `BRI-186`, `frontend-ui-policy.md`.
+* **Verificación**: `pnpm test`, `pnpm validate:routes`, `pnpm validate:seo`.
+
+#### **`SPEC-28 (Content-as-Code & Knowledge Schemas Colocation - educational-resources)`**:
+* **Objetivo & Alcance**: Reubicar los archivos Markdown de conocimiento y esquemas JSON a la feature `educational-resources`.
+* **Capas FDD**: `infrastructure/content/`, `infrastructure/schemas/`.
+* **Archivos Afectados**: `/content` ➔ `apps/web/src/features/educational-resources/infrastructure/content/`, `/schemas` ➔ `infrastructure/schemas/`.
+* **Trazabilidad OKF**: `EPIC-010`, `knowledge-system.md`.
+* **Verificación**: `pnpm validate:content`, `pnpm validate:ai`, `pnpm validate:knowledge`.
+
+#### **`SPEC-29 (Database Migrations Relocation - shared/infrastructure/db)`**:
+* **Objetivo & Alcance**: Mover las migraciones SQL de `/db/migrations` a `apps/web/src/features/shared/infrastructure/db/migrations/` y actualizar `scripts/db-migrate.js` con fallback de compatibilidad.
+* **Archivos Afectados**: `/db/migrations` ➔ `apps/web/src/features/shared/infrastructure/db/migrations/`, `scripts/db-migrate.js`.
+* **Trazabilidad OKF**: `BRI-12`, `BRI-160`.
+* **Verificación**: `pnpm validate:db` (41 migraciones validadas).
+
+#### **`SPEC-30 (Static Web Assets Colocation - apps/web/public)`**:
+* **Objetivo & Alcance**: Mover `/public` a `apps/web/public/` para que la aplicación web sirva sus propios recursos estáticos (imágenes, favicons, fuentes, `sw.js`).
+* **Archivos Afectados**: `/public` ➔ `apps/web/public/`.
+* **Trazabilidad OKF**: `BRI-186`.
+* **Verificación**: `pnpm typecheck` y comprobación de rutas públicas.
+
+#### **`SPEC-31 (Final App Router & Monorepo Root Consolidation)`**:
+* **Objetivo & Alcance**: Consolidar el App Router en `apps/web/src/app`, migrar componentes restantes de `/components` y `/lib` a `shared/ui/` y `shared/lib/`, eliminar el symlink `/src`, sincronizar alias en `tsconfig.json` y purificar al 100% la raíz del monorepo.
+* **Archivos Afectados**: `/app` ➔ `apps/web/src/app/`, `/components` ➔ `shared/ui/`, `/lib` ➔ `shared/lib/`, `/src` (eliminar), `tsconfig.json`, `apps/web/tsconfig.json`.
 * **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2).
-* **Verificación**: Ejecución limpia de `pnpm validate` al 100% verde (0 errores, 0 warnings).
+* **Verificación**: Compilación completa con `pnpm build` (140 páginas) y ejecución limpia de `pnpm validate` al 100% verde (0 errores, 0 warnings).
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)

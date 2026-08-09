@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-OUTPUT_FILE="${1:-${ROOT_DIR}/pr-body.md}"
+OUTPUT_FILE="${1:-${ROOT_DIR}/.github/pr-body.md}"
 
 BRANCH="$(git branch --show-current 2>/dev/null || echo "feature/work")"
 TITLE="$(git log -1 --format=%s 2>/dev/null || echo "feat: update task")"

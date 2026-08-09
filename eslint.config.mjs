@@ -5,9 +5,11 @@ const legacyWeb3ImportAllowlist = [
   "components/admin/core-candy-machine-panel.tsx",
   "components/admin/metaplex-core-mint-panel.tsx",
   "components/marketplace/PurchaseCta.tsx",
+  "tests/e2e/helpers/siws-local-wallet.ts",
   "e2e/helpers/siws-local-wallet.ts",
   "scripts/devnet-authority-lifecycle-proof.ts",
   "scripts/validation/epic-001-validation.mjs",
+  "tests/e2e/wallet-setup/solana-wallet-profiles.mjs",
   "e2e/wallet-setup/solana-wallet-profiles.mjs",
   "lib/candy-guard-payment-config.ts",
   "lib/core-authority-lifecycle.ts",
@@ -38,9 +40,9 @@ const noWeb3ImportsRule = [
 const config = [
   {
     ignores: [
-      ".next/**",
-      ".vercel/**",
-      "node_modules/**",
+      "**/.next/**",
+      "**/.vercel/**",
+      "**/node_modules/**",
       "playwright-report/**",
       "test-results/**",
       ".blob-report/**",
