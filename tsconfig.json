@@ -26,6 +26,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
+        "./apps/web/src/*",
         "./*"
       ],
       "@/features/*": [
@@ -33,15 +34,19 @@
         "./src/features/*"
       ],
       "@core/*": [
+        "./apps/web/src/lib/core/*",
         "./lib/core/*"
       ],
       "@software/*": [
+        "./apps/web/src/lib/software/*",
         "./lib/software/*"
       ],
       "@knowledge/*": [
+        "./apps/web/src/lib/knowledge/*",
         "./lib/knowledge/*"
       ],
       "@regulatory/*": [
+        "./apps/web/src/lib/regulatory/*",
         "./lib/regulatory/*"
       ]
     }

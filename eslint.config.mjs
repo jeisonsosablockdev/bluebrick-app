@@ -21,6 +21,16 @@ const legacyWeb3ImportAllowlist = [
   "lib/purchase-service.ts",
   "lib/purchase-third-party-signer.ts",
   "lib/solana-kit/compat/**/*.{ts,tsx}",
+  "apps/web/src/lib/candy-guard-payment-config.ts",
+  "apps/web/src/lib/core-authority-lifecycle.ts",
+  "apps/web/src/lib/core-candy-machine-admin.ts",
+  "apps/web/src/lib/core-candy-machine-snapshot-service.ts",
+  "apps/web/src/lib/metaplex-core-admin.ts",
+  "apps/web/src/lib/property-marketplace-server.ts",
+  "apps/web/src/lib/purchase-anti-bot.ts",
+  "apps/web/src/lib/purchase-service.ts",
+  "apps/web/src/lib/purchase-third-party-signer.ts",
+  "apps/web/src/lib/solana-kit/compat/**/*.{ts,tsx}",
   "tests/lib/purchase-anti-bot.test.ts"
 ];
 
@@ -38,6 +48,7 @@ const noWeb3ImportsRule = [
 ];
 
 const config = [
+  ...nextVitals,
   {
     ignores: [
       "**/.next/**",
@@ -52,7 +63,9 @@ const config = [
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
     rules: {
-      "no-restricted-imports": noWeb3ImportsRule
+      "no-restricted-imports": noWeb3ImportsRule,
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/preserve-manual-memoization": "warn"
     }
   },
   {
@@ -62,7 +75,7 @@ const config = [
     }
   },
   {
-    files: ["lib/software/**/*.{ts,tsx}"],
+    files: ["lib/software/**/*.{ts,tsx}", "apps/web/src/lib/software/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -73,7 +86,7 @@ const config = [
     }
   },
   {
-    files: ["lib/knowledge/**/*.{ts,tsx}"],
+    files: ["lib/knowledge/**/*.{ts,tsx}", "apps/web/src/lib/knowledge/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -84,7 +97,7 @@ const config = [
     }
   },
   {
-    files: ["lib/regulatory/**/*.{ts,tsx}"],
+    files: ["lib/regulatory/**/*.{ts,tsx}", "apps/web/src/lib/regulatory/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -92,13 +105,6 @@ const config = [
           patterns: ["@software/*", "@knowledge/*"]
         }
       ]
-    }
-  },
-  ...nextVitals,
-  {
-    rules: {
-      "react-hooks/set-state-in-effect": "off",
-      "react-hooks/preserve-manual-memoization": "off"
     }
   }
 ];

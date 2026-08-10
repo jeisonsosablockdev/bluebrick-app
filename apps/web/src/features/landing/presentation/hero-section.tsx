@@ -22,6 +22,7 @@ export function HeroSection({ marketplaceTotal = 0 }: HeroSectionProps) {
           src="/images/BRD-NY-04.png"
           alt="Hero Background"
           fill
+          sizes="100vw"
           priority
           className="hero-bg-dark object-cover object-right-top"
         />

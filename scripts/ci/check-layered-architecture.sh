@@ -14,16 +14,21 @@ echo ""
 
 VIOLATIONS=()
 
-# 1. Enforce mandatory canonical directories in /lib
+# 1. Enforce mandatory canonical directories in /lib or /apps/web/src/lib
 MANDATORY_DIRS=("hooks" "state" "pipelines" "infrastructure")
 for dir in "${MANDATORY_DIRS[@]}"; do
-  if [ ! -d "$REPO_ROOT/lib/$dir" ]; then
-    VIOLATIONS+=("Missing mandatory layer directory: /lib/$dir")
+  if [ ! -d "$REPO_ROOT/apps/web/src/lib/$dir" ] && [ ! -d "$REPO_ROOT/lib/$dir" ]; then
+    VIOLATIONS+=("Missing mandatory layer directory: /lib/$dir or /apps/web/src/lib/$dir")
   fi
 done
 
 # 2. Enforce Layer 1 (Presentation: /app, /components) does not import direct DB (pg)
-if grep -rn --include="*.ts" --include="*.tsx" 'from "pg"' "$REPO_ROOT/app" "$REPO_ROOT/components" 2>/dev/null; then
+APP_DIR="$REPO_ROOT/app"
+[ -d "$REPO_ROOT/apps/web/src/app" ] && APP_DIR="$REPO_ROOT/apps/web/src/app"
+COMPONENTS_DIR="$REPO_ROOT/components"
+[ -d "$REPO_ROOT/apps/web/src/components" ] && COMPONENTS_DIR="$REPO_ROOT/apps/web/src/components"
+
+if grep -rn --include="*.ts" --include="*.tsx" 'from "pg"' "$APP_DIR" "$COMPONENTS_DIR" 2>/dev/null; then
   VIOLATIONS+=("Layer 1 (Presentation) contains forbidden direct DB imports ('pg')")
 fi
 
