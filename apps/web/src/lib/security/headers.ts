@@ -25,8 +25,8 @@ function normalizeReportUri(value: string | undefined): string | null {
 export function buildCspValue(options: SecurityHeadersOptions): string {
   const reportUri = normalizeReportUri(options.cspReportUri);
   const scriptSrcValue = options.isProduction
-    ? "script-src 'self' 'unsafe-inline'"
-    : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+    ? "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com";
   const googleMapsFrameSrc = "https://www.google.com https://maps.google.com";
 
   const directives: string[] = [
@@ -39,7 +39,7 @@ export function buildCspValue(options: SecurityHeadersOptions): string {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https:",
+    "connect-src 'self' https: https://va.vercel-scripts.com",
     "worker-src 'self' blob:",
     `frame-src 'self' ${googleMapsFrameSrc}`
   ];

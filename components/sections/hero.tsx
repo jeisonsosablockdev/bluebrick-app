@@ -75,6 +75,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
           src="/images/BRD-NY-04.png" 
           alt="Hero Background" 
           fill
+          sizes="100vw"
           priority
           className="hero-bg-dark object-cover object-right-top"
         />
@@ -83,6 +84,7 @@ export function HeroSection({ marketplaceTotal }: HeroSectionProps) {
           src="/images/BRD-NYDAY-06.png" 
           alt="Hero Background Light" 
           fill
+          sizes="100vw"
           priority
           className="hero-bg-light object-cover object-right-top"
         />
