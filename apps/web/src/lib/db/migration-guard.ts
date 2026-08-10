@@ -1,10 +1,49 @@
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
 import type { Pool } from "pg";
 
-const MIGRATIONS_DIR = path.resolve(process.cwd(), "db", "migrations");
+function getMigrationsDir(): string {
+  const canonicalPath = path.resolve(
+    process.cwd(),
+    "apps",
+    "web",
+    "src",
+    "features",
+    "shared",
+    "infrastructure",
+    "db",
+    "migrations"
+  );
+
+  if (fs.existsSync(canonicalPath)) {
+    return canonicalPath;
+  }
+
+  return path.resolve(process.cwd(), "db", "migrations");
+}
+
+function getRelativeMigrationsPath(): string {
+  const canonicalPath = path.resolve(
+    process.cwd(),
+    "apps",
+    "web",
+    "src",
+    "features",
+    "shared",
+    "infrastructure",
+    "db",
+    "migrations"
+  );
+
+  if (fs.existsSync(canonicalPath)) {
+    return path.join("apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations");
+  }
+
+  return path.join("db", "migrations");
+}
 
 declare global {
   var __dbMigrationGuardPromise: Promise<void> | undefined;
@@ -23,7 +62,12 @@ function shouldEnforceDatabaseMigrationGuard(): boolean {
 }
 
 async function listTrackedMigrationFiles(): Promise<string[]> {
-  const entries = await readdir(MIGRATIONS_DIR, { withFileTypes: true });
+  const migrationsDir = getMigrationsDir();
+  if (!fs.existsSync(migrationsDir)) {
+    return [];
+  }
+
+  const entries = await readdir(migrationsDir, { withFileTypes: true });
   const allFiles = entries
     .filter((entry) => entry.isFile() && /^[0-9]+_.*\.sql$/i.test(entry.name))
     .map((entry) => entry.name)
@@ -43,7 +87,8 @@ async function listTrackedMigrationFiles(): Promise<string[]> {
 
 function getTrackedMigrationFiles(): Set<string> | null {
   try {
-    const output = execFileSync("git", ["ls-files", "--", path.join("db", "migrations")], {
+    const relativePath = getRelativeMigrationsPath();
+    const output = execFileSync("git", ["ls-files", "--", relativePath], {
       cwd: process.cwd(),
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"]
