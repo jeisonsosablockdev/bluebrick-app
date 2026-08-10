@@ -1,7 +1,6 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-186",
-  "branch": "SPEC/jeisonsosa-bri-186-spec31-domain-infra-migration",
+  "task_id": "BRI-186-SPEC32",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
