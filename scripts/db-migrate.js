@@ -5,7 +5,7 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { Pool } = require("pg");
 
-const MIGRATIONS_DIR = path.resolve(process.cwd(), "db", "migrations");
+const MIGRATIONS_DIR = path.resolve(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations");
 const explicitEnvKeys = new Set(Object.keys(process.env));
 
 function parseEnvValue(rawValue) {
@@ -110,7 +110,7 @@ async function listMigrationFiles() {
 
 function getTrackedMigrationFiles() {
   try {
-    const output = execFileSync("git", ["ls-files", "--", path.join("db", "migrations")], {
+    const output = execFileSync("git", ["ls-files", "--", path.join("apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations")], {
       cwd: process.cwd(),
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"]

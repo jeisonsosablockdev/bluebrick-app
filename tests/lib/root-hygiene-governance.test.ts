@@ -13,6 +13,7 @@ describe("root hygiene governance (SPEC-24)", () => {
     const rootSkillsLock = path.join(repoRoot, "skills-lock.json");
     const rootArtifacts = path.join(repoRoot, "artifacts");
     const rootE2e = path.join(repoRoot, "e2e");
+    const rootDb = path.join(repoRoot, "db");
 
     expect(existsSync(orphanPrBodyUpper), "PR_BODY.md should not pollute root").toBe(false);
     expect(existsSync(orphanPrBodyLower), "pr-body.md should not pollute root").toBe(false);
@@ -21,6 +22,7 @@ describe("root hygiene governance (SPEC-24)", () => {
     expect(existsSync(rootSkillsLock), "skills-lock.json should not pollute root").toBe(false);
     expect(existsSync(rootArtifacts), "/artifacts should not exist in root").toBe(false);
     expect(existsSync(rootE2e), "/e2e should be consolidated to tests/e2e").toBe(false);
+    expect(existsSync(rootDb), "/db should be relocated to apps/web/src/features/shared/infrastructure/db/migrations").toBe(false);
   });
 
   it("enforces test suite and artifacts destination in tests directory", () => {
