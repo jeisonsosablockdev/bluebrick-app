@@ -1,4 +1,5 @@
-import fs from "node:fs/promises";
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import path from "node:path";
 
 import { ContentFrontmatterSchema } from "./schema";
@@ -9,7 +10,7 @@ const SUPPORTED_EXTENSIONS = new Set([".md", ".mdx"]);
 const LAYERS: ContentLayer[] = ["software", "knowledge", "regulatory"];
 
 async function collectFilesRecursively(directoryPath: string): Promise<string[]> {
-  const directoryEntries = await fs.readdir(directoryPath, { withFileTypes: true });
+  const directoryEntries = await fsPromises.readdir(directoryPath, { withFileTypes: true });
   const nestedResults = await Promise.all(
     directoryEntries.map(async (entry) => {
       const absolutePath = path.join(directoryPath, entry.name);
@@ -44,7 +45,7 @@ function ensureUniqueSlugs(documents: ContentDocument[]): void {
     const existingPath = seen.get(document.slug);
     if (existingPath) {
       throw new Error(
-        `Duplicated slug detected: \"${document.slug}\" in ${existingPath} and ${document.sourcePath}`
+        `Duplicated slug detected: "${document.slug}" in ${existingPath} and ${document.sourcePath}`
       );
     }
     seen.set(document.slug, document.sourcePath);
@@ -54,44 +55,53 @@ function ensureUniqueSlugs(documents: ContentDocument[]): void {
 export async function loadContentDocuments(
   options: LoadContentOptions = {}
 ): Promise<ContentDocument[]> {
-  const contentRoot = options.contentRoot ?? path.join(process.cwd(), "content");
+  const defaultPath = fs.existsSync(path.join(process.cwd(), "apps", "web", "src", "content"))
+    ? path.join(process.cwd(), "apps", "web", "src", "content")
+    : path.join(process.cwd(), "content");
+
+  const contentRoot = options.contentRoot ?? defaultPath;
   const includeDrafts = options.includeDrafts ?? false;
 
   const targetLayers = options.layer ? [options.layer] : LAYERS;
 
-  const allFiles = (
-    await Promise.all(
-      targetLayers.map(async (layer) => {
-        const layerDir = path.join(contentRoot, layer);
-        try {
-          return await collectFilesRecursively(layerDir);
-        } catch {
-          return [];
-        }
-      })
-    )
+  const layerPaths = targetLayers.map((layer) => path.join(contentRoot, layer));
+  const existingLayerPaths = layerPaths.filter((layerPath) => fs.existsSync(layerPath));
+
+  const allFilePaths = (
+    await Promise.all(existingLayerPaths.map((layerPath) => collectFilesRecursively(layerPath)))
   ).flat();
 
   const documents: ContentDocument[] = [];
 
-  for (const absoluteFilePath of allFiles) {
-    const source = await fs.readFile(absoluteFilePath, "utf8");
-    const parsed = parseFrontmatter(source);
-    const validatedFrontmatter = ContentFrontmatterSchema.parse(parsed.frontmatter);
-    const layer = getLayerFromPath(contentRoot, absoluteFilePath);
+  for (const filePath of allFilePaths) {
+    const fileContent = await fsPromises.readFile(filePath, "utf8");
+    const { frontmatter: rawFrontmatter, body } = parseFrontmatter(fileContent);
 
-    if (!includeDrafts && validatedFrontmatter.status === "draft") {
+    const parsedResult = ContentFrontmatterSchema.safeParse(rawFrontmatter);
+    if (!parsedResult.success) {
+      throw new Error(
+        `Invalid content frontmatter in ${filePath}: ${parsedResult.error.message}`
+      );
+    }
+
+    const frontmatter = parsedResult.data;
+    if (frontmatter.status === "draft" && !includeDrafts) {
       continue;
     }
 
+    const layer = getLayerFromPath(contentRoot, filePath);
+
     documents.push({
-      ...validatedFrontmatter,
-      body: parsed.body,
+      ...frontmatter,
       layer,
-      sourcePath: absoluteFilePath
+      sourcePath: filePath,
+      body
     });
   }
 
   ensureUniqueSlugs(documents);
-  return documents;
+
+  return documents.sort((a, b) =>
+    (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
+  );
 }

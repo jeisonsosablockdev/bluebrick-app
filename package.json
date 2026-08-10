@@ -7,9 +7,9 @@
   },
   "scripts": {
     "predev": "node ./scripts/db-migrate-if-configured.js",
-    "dev": "next dev --webpack",
+    "dev": "next dev -p 3001 --webpack",
     "predev:turbo": "node ./scripts/db-migrate-if-configured.js",
-    "dev:turbo": "next dev --turbo",
+    "dev:turbo": "next dev -p 3001 --turbo",
     "build": "next build --webpack",
     "start": "next start",
     "postinstall": "node ./scripts/patch-synpress-phantom-peer.js",

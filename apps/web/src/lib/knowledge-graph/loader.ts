@@ -1,10 +1,15 @@
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 import { KnowledgeGraphSchema } from "./schema";
 import type { KnowledgeGraph } from "./types";
 
-const DEFAULT_GRAPH_PATH = path.join(process.cwd(), "content", "entities", "semantic-graph.v1.json");
+const DEFAULT_GRAPH_PATH = fsSync.existsSync(
+  path.join(process.cwd(), "apps", "web", "src", "content", "entities", "semantic-graph.v1.json")
+)
+  ? path.join(process.cwd(), "apps", "web", "src", "content", "entities", "semantic-graph.v1.json")
+  : path.join(process.cwd(), "content", "entities", "semantic-graph.v1.json");
 
 let cachedGraph: KnowledgeGraph | null = null;
 
