@@ -44,7 +44,13 @@ export function getRequestHost(request: NextRequest): string {
 }
 
 export function normalizeHost(host: string): string {
-  return host.trim().toLowerCase();
+  const cleaned = host.trim().toLowerCase().replace(/^https?:\/\//, "");
+  const hostname = cleaned.split(":")[0];
+  if (hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]") {
+    return "localhost";
+  }
+
+  return hostname;
 }
 
 export function isIssuedAtValid(issuedAt: string): boolean {

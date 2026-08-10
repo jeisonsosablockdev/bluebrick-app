@@ -43,6 +43,8 @@ describe("lib/auth", () => {
 
   it("normalizes host values", () => {
     expect(normalizeHost("  API.Example.Com ")).toBe("api.example.com");
+    expect(normalizeHost("http://localhost:3001")).toBe("localhost");
+    expect(normalizeHost("127.0.0.1:3001")).toBe("localhost");
   });
 
   it("validates issued-at timestamps inside allowed window", () => {
