@@ -21,20 +21,20 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-07-22T00:00:00.000Z
+Last Generated: 2026-08-11T00:00:00.000Z
 
 ## Snapshot
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 10 |
+| Observations | 11 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 528 |
-| Observed status | 20 |
+| Archived | 529 |
+| Observed status | 21 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 526 |
+| Archived status | 527 |
 
 ## Inbox
 
@@ -50,6 +50,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | KNOW-2026-06-005 | observed | guide | [Candy Machine deploy iteration 2026-06-11](knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md) | BRI-173 |
 | KNOW-2026-06-006 | observed | guide | [Candy Machine deploy iteration 2026-06-16 (SPEC05 rebase)](knowledge/inbox/2026-06/KNOW-2026-06-006-candy-machine-deploy-iteration-scope05-rebase.md) | BRI-168 |
 | KNOW-2026-07-001 | observed | guide | [Candy Machine deploy iteration 2026-07-22 BRI-182](knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md) | BRI-182 |
+| KNOW-2026-08-001 | observed | guide | [Candy Machine deploy iteration 2026-08-11 BRI-186](knowledge/inbox/candy-machine-deploy-iteration-2026-08-11-bri-186.md) | BRI-186 |
 
 ## Promotion Proposals
 
@@ -440,6 +441,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | iconography-rules | archived | none | [Iconography Rules](knowledge/governance/iconography-rules.md) | n/a |
 | index | archived | none | [Index](knowledge/governance/index.md) | n/a |
 | licenses-report | archived | none | [licenses-report](knowledge/governance/licenses-report.md) | n/a |
+| monorepo-symlink-deprecation-guide | archived | none | [monorepo-symlink-deprecation-guide](knowledge/governance/monorepo-symlink-deprecation-guide.md) | n/a |
 | nft-policy | archived | none | [Nft Policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
 | security-quality-policy | archived | none | [Security Quality Policy](knowledge/governance/security-quality-policy.md) | n/a |

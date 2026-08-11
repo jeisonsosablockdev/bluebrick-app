@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
-import { getAllowedDevOrigins } from "./lib/dev-origins";
-import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./lib/security/headers";
+import { getAllowedDevOrigins } from "./apps/web/src/lib/dev-origins";
+import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./apps/web/src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

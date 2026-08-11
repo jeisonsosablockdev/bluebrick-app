@@ -4,7 +4,7 @@ import {
   shouldUseLightpanda,
   type BrowserEngineMode,
   type BrowserTaskPurpose,
-} from '../../lib/infrastructure/browser-factory';
+} from "../../apps/web/src/lib/infrastructure/browser-factory";
 
 describe('BrowserFactory Infrastructure Unit Tests', () => {
   describe('shouldUseLightpanda decision playbook', () => {
