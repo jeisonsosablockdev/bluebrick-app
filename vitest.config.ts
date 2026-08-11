@@ -18,8 +18,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@/features": path.resolve(currentDirPath, "apps/web/src/features"),
-      "@": currentDirPath,
+      "@/app": path.resolve(currentDirPath, "app"),
+      "@/scripts": path.resolve(currentDirPath, "scripts"),
+      "@/tests": path.resolve(currentDirPath, "tests"),
+      "@": path.resolve(currentDirPath, "apps/web/src"),
       "server-only": path.resolve(currentDirPath, "tests/mocks/server-only.ts")
     }
   }
