@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RentasPageClient } from "../../../apps/web/src/features/staking-distribution";
+import { RentasPageClient } from "@/features/staking-distribution";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
