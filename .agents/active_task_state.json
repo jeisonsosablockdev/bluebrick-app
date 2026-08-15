@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-186-SPEC35",
+  "task_id": "BRI-186-SPEC36",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
