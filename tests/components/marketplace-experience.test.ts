@@ -14,6 +14,15 @@ vi.mock("@/components/marketplace/MarketplaceGridClient", () => ({
     )
 }));
 
+vi.mock("@/features/marketplace/presentation/MarketplaceGridClient", () => ({
+  MarketplaceGridClient: ({ properties }: { properties: Array<{ title: string }> }) =>
+    createElement(
+      "div",
+      { "data-testid": "marketplace-grid" },
+      properties.map((property) => property.title).join(", ")
+    )
+}));
+
 vi.mock("next/dynamic", () => ({
   default: () =>
     ({ selectedPinId }: { selectedPinId?: string | null }) =>
@@ -21,6 +30,11 @@ vi.mock("next/dynamic", () => ({
 }));
 
 vi.mock("@/components/marketplace/MarketplaceMapClient", () => ({
+  MarketplaceMapClient: ({ selectedPinId }: { selectedPinId?: string | null }) =>
+    createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
+}));
+
+vi.mock("@/features/marketplace/presentation/MarketplaceMapClient", () => ({
   MarketplaceMapClient: ({ selectedPinId }: { selectedPinId?: string | null }) =>
     createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
 }));
@@ -55,6 +69,47 @@ vi.mock("@/components/marketplace/MarketplaceMapShell", () => ({
           {
             key: pin.id,
             type: "button",
+            "data-testid": `map-pin-${pin.id}`,
+            onClick: () => onPinSelect?.(pin.id)
+          },
+          pin.title
+        )
+      )
+    );
+  }
+}));
+
+vi.mock("@/features/marketplace/presentation/MarketplaceMapShell", () => ({
+  MarketplaceMapShell: ({
+    fallback,
+    mapboxAccessToken,
+    onPinSelect,
+    pins,
+    selectedPinId,
+    map
+  }: {
+    fallback: ReactNode;
+    mapboxAccessToken: string | null;
+    onPinSelect?: (pinId: string) => void;
+    pins: Array<{ id: string; title: string }>;
+    selectedPinId?: string | null;
+    map: ReactNode;
+  }) => {
+    if (!mapboxAccessToken || pins.length === 0) {
+      return createElement("div", { "data-testid": "marketplace-map-fallback" }, fallback);
+    }
+
+    return createElement(
+      "div",
+      { "data-testid": "marketplace-map-shell", "data-selected-pin-id": selectedPinId ?? "" },
+      map,
+      pins.map((pin) =>
+        createElement(
+          "button",
+          {
+            key: pin.id,
+            type: "button",
+            "data-testid": `map-pin-${pin.id}`,
             onClick: () => onPinSelect?.(pin.id)
           },
           pin.title
@@ -69,7 +124,12 @@ vi.mock("@/components/marketplace/MarketplaceViewModeShell", () => ({
     createElement("div", { "data-testid": "marketplace-view-shell" }, render("combined-map-top"))
 }));
 
-import { MarketplaceExperience } from "@/components/marketplace/MarketplaceExperience";
+vi.mock("@/features/marketplace/presentation/MarketplaceViewModeShell", () => ({
+  MarketplaceViewModeShell: ({ render }: { render: (mode: string) => ReactNode }) =>
+    createElement("div", { "data-testid": "marketplace-view-shell" }, render("combined-map-top"))
+}));
+
+import { MarketplaceExperience } from "@/features/marketplace";
 
 type RenderHandle = {
   container: HTMLDivElement;

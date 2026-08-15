@@ -22,8 +22,12 @@ vi.mock("@/components/marketplace/PurchaseCta", () => ({
   PurchaseCta: () => createElement("div", null, "purchase-cta")
 }));
 
-import { MarketplaceCard } from "@/components/marketplace/MarketplaceCard";
-import { PropertyDetailContent } from "@/components/marketplace/PropertyDetailContent";
+vi.mock("@/features/marketplace/presentation/PurchaseCta", () => ({
+  PurchaseCta: () => createElement("div", null, "purchase-cta")
+}));
+
+import { MarketplaceCard } from "@/features/marketplace";
+import { PropertyDetailContent } from "@/features/marketplace";
 
 type RenderHandle = {
   container: HTMLDivElement;

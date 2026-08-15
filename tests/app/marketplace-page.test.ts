@@ -23,6 +23,11 @@ vi.mock("@/components/marketplace/MarketplaceExperience", () => ({
   MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
 }));
 
+vi.mock("@/features/marketplace", () => ({
+  MarketplaceFilters: () => createElement("div", null, "marketplace-filters"),
+  MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
+}));
+
 vi.mock("@/components/dashboard/dashboard-charts", () => ({
   DashboardCharts: ({ context }: { context: string }) => createElement("div", { "data-testid": `dashboard-charts-${context}` }, `charts:${context}`)
 }));

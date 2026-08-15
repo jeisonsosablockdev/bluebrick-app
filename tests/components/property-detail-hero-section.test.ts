@@ -13,7 +13,11 @@ vi.mock("@/components/marketplace/PurchaseCta", () => ({
   PurchaseCta: ({ propertyId }: { propertyId: string }) => createElement("div", { "data-testid": "purchase-cta" }, propertyId)
 }));
 
-import { PropertyDetailHeroSection } from "@/components/marketplace/PropertyDetailHeroSection";
+vi.mock("@/features/marketplace/presentation/PurchaseCta", () => ({
+  PurchaseCta: ({ propertyId }: { propertyId: string }) => createElement("div", { "data-testid": "purchase-cta" }, propertyId)
+}));
+
+import { PropertyDetailHeroSection } from "@/features/marketplace";
 import type { PropertyDetail } from "@/lib/property-service";
 
 const property = {

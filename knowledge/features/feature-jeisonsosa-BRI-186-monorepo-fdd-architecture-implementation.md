@@ -319,115 +319,216 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 #### **`SPEC-19 (Feature Slice: Property Asset Management - EPIC-001 & EPIC-011)`**:
 * **Objetivo & Alcance**: Migrar la consola de gestión de propiedades de la administración (`app/admin/assets`, editores de resúmenes financieros, cargadores de PDFs) a `src/features/property-management/`.
 * **Capas FDD**: `presentation/` (PropertyInformationEditor, DocumentsEditor), `application/` (savePropertyDetailsAction), `domain/` (RealEstateAssetModel), `infrastructure/` (PropertyRepository, IPFSAdapter).
-* **Archivos Afectados**: `app/admin/assets/*`, `components/admin/property/*` ➔ `src/features/property-management/*`.
 * **Trazabilidad OKF**: `EPIC-001`, `EPIC-011` (Stories 02-07).
-* **Verificación**: `pnpm validate:content` y tests de edición de propiedades.
+* **Verificación**: `pnpm validate:content` y tests de edición de propiedades (Completado en commit `22f904e8`).
 
-#### **`SPEC-20 (Feature Slice: Staking & Squads v4 Treasury Claims - EPIC-014)`**:
+#### **`SPEC-20 (Feature Slice: Staking & Squads v4 Treasury Claims - EPIC-014)`**
 * **Objetivo & Alcance**: Migrar el módulo de Staking, prorrateo de rentas y cobro de dividendos (`BRI-6/7/8`) a `src/features/staking-distribution/`. Incluye el widget de cobro para el inversionista y la consola admin respaldada por `shared/infrastructure/squads`.
 * **Capas FDD**: `presentation/` (AdminDistributionConsole, InvestorClaimsWidget), `application/` (executeDistributionAction, claimDividendsAction), `domain/` (ProrrateoMath, DistributionRules), `infrastructure/` (Squads v4 consumer).
 * **Archivos Afectados**: `app/protected/stake/*`, `components/admin/distributions/*` ➔ `src/features/staking-distribution/*`.
 * **Trazabilidad OKF**: `EPIC-014`, `BRI-6/7/8`.
-* **Verificación**: `pnpm test tests/lib/knowledge-system.test.ts` y tests unitarios de distribución de rentas.
+* **Verificación**: `pnpm test tests/lib/knowledge-system.test.ts` y tests unitarios de distribución de rentas (Completado en commit `ead251b6`).
 
-#### **`SPEC-21 (Feature Slice: Metaplex Core NFT Minting & Candy Machine - EPIC-002)`**:
+#### **`SPEC-21 (Feature Slice: Metaplex Core NFT Minting & Candy Machine - EPIC-002)`**
 * **Objetivo & Alcance**: Migrar la consola de acuñación de colecciones Metaplex Core, deploys de Candy Machine v3 y firma notariada Anchor (`solana-p0-05/06`) a `src/features/nft-minting/`.
 * **Capas FDD**: `presentation/` (AdminCandyMachineConsole, NotarySigningCard), `application/` (createCollectionMintAction), `domain/` (AnchorNotaryRules), `infrastructure/` (Metaplex core-writer consumer).
 * **Archivos Afectados**: `app/admin/mint/*`, `components/admin/metaplex-core-mint-panel.tsx` ➔ `src/features/nft-minting/*`.
 * **Trazabilidad OKF**: `EPIC-002` (Stories 01-07), `solana-p0-05`.
-* **Verificación**: `pnpm test` de validación de metadatos Metaplex Core.
+* **Verificación**: `pnpm test` de validación de metadatos Metaplex Core (Completado en commit `0fb09fe4`).
 
-#### **`SPEC-22 (Feature Slice: Asset Freeze & Thaw Policies - EPIC-006)`**:
-* **Objetivo & Alcance**: Migrar las políticas de congelamiento/descongelamiento de activos (Freeze Authority, Permanent Freeze) a `src/features/asset-freeze-control/`.
-* **Capas FDD**: `presentation/` (FreezeThawControlCard, PermanentFreezePolicyUi), `application/` (freezeAssetAction), `domain/` (FreezeInvariants), `infrastructure/` (FreezeAuthorityRpcClient).
-* **Archivos Afectados**: `lib/core-freeze-control.ts`, `components/admin/freeze/*` ➔ `src/features/asset-freeze-control/*`.
-* **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
-* **Verificación**: Tests unitarios de invariantes de Freeze y firma de congelamiento.
+#### **`SPEC-22 (Admin Location Auto-Import & Resilient Fallback)`**
+* **Objetivo & Alcance**: Ajustar resolución resiliente de direcciones y búsqueda Google Maps en la consola de propiedades.
+* **Archivos Afectados**: `apps/web/src/features/property-management/application/*`.
+* **Trazabilidad OKF**: `BRI-10`, `BRI-186`.
+* **Verificación**: `pnpm test` (Completado en commit `f54d49a5`).
 
 ---
 
-### 🧹 Fase 4: Limpieza & Cierre de Gobernanza
+### 🧹 Fase 4: Limpieza, Colocación Física & Refactorizaciones Ejecutadas (SPEC-23 a SPEC-32)
 
-#### **`SPEC-23 (Feature Slice: Asset Freeze & Thaw Policies - EPIC-006)`**:
+#### **`SPEC-23 (Feature Slice: Asset Freeze & Thaw Policies - EPIC-006)`**
 * **Objetivo & Alcance**: Implementar la feature autónoma de políticas de congelamiento/descongelamiento (`asset-freeze-control`) en `apps/web/src/features/asset-freeze-control/`.
 * **Capas FDD**: `domain/`, `infrastructure/`, `application/`, `presentation/`, `index.ts`.
 * **Archivos Afectados**: `apps/web/src/features/asset-freeze-control/*`, `tests/features/asset-freeze-control.test.ts`.
 * **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
-* **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts`.
+* **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts` (Completado en commit `a27bae02`).
 
-#### **`SPEC-24 (Test Suite, QA & CI/CD Root Hygiene Governance)`**:
-* **Objetivo & Alcance**: 
-  1. **Blindaje de Scripts CI/CD (`generate-pr-body.sh` y `pr-auto.sh`)**:
-     - Configurar `scripts/ci/generate-pr-body.sh` para que su ruta de salida por defecto sea estrictamente `${ROOT_DIR}/.github/pr-body.md`.
-     - Actualizar `scripts/ci/pr-auto.sh` para consumir `${ROOT_DIR}/.github/pr-body.md` y ejecutar la auto-limpieza post-publicación (`rm -f "${BODY_FILE}"`), garantizando un ciclo de vida estrictamente efímero.
-     - Actualizar `scripts/ci/check-monorepo-structure.sh` para verificar y prohibir permanentemente la creación de `pr-body.md` en la raíz.
-  2. **Consolidación de Tests y Artefactos QA**:
-     - Eliminar la carpeta obsoleta `/artifacts` en la raíz.
-     - Mover la suite completa de pruebas E2E de `/e2e` a `tests/e2e/`.
-     - Actualizar `playwright.config.ts` (`testDir: "./tests/e2e"`, `outputDir: "./tests/artifacts"`).
-  3. **Limpieza de Archivos de Configuración Heredados**:
-     - Eliminar el archivo `.eslintrc.json` legacy (operar 100% bajo Flat Config con `eslint.config.mjs`).
-     - Reubicar `skills-lock.json` a `.agents/skills-lock.json`.
-  4. **Protección Permanente en `.gitignore`**:
-     - Añadir exclusiones explícitas para `.github/pr-body.md`, `artifacts/`, `tests/artifacts/`, `.cache-synpress/`, `.npm-cache/` y `.agents/*.tmp`.
-* **Archivos Afectados**: 
-  - `scripts/ci/generate-pr-body.sh`
-  - `scripts/ci/pr-auto.sh`
-  - `scripts/ci/check-monorepo-structure.sh`
-  - `playwright.config.ts`
-  - `.gitignore`
-  - `.eslintrc.json` (eliminar)
-  - `/artifacts/` (eliminar)
-  - `/e2e` ➔ `tests/e2e/`
-  - `skills-lock.json` ➔ `.agents/skills-lock.json`
+#### **`SPEC-24 (Test Suite, QA & CI/CD Root Hygiene Governance)`**
+* **Objetivo & Alcance**: Consolidar la suite completa de pruebas E2E en `tests/e2e/`, blindar `generate-pr-body.sh` y `pr-auto.sh` para ciclo de vida efímero en `.github/pr-body.md`, eliminar `.eslintrc.json` y carpetas `/artifacts` obsoletas.
+* **Archivos Afectados**: `tests/e2e/`, `playwright.config.ts`, `.gitignore`, `scripts/ci/*`.
 * **Trazabilidad OKF**: `AGENTS.md`, `git-monorepo-policy.md`.
-* **Verificación**: `pnpm test:harness`, `pnpm test tests/lib/root-hygiene-governance.test.ts` y `pnpm validate`.
+* **Verificación**: `pnpm test:harness` y `pnpm validate` (Completado en commit `eec080f0`).
 
-#### **`SPEC-25 (Shared UI Kit & Motion 12 Animation Engine - shared/ui/motion)`**:
-* **Objetivo & Alcance**: Centralizar la infraestructura de diseño visual y el motor de animación de Motion 12 (`motion.dev`) en `apps/web/src/features/shared/ui/motion/` (proveedores `MotionProvider`, presets de transición de rutas `RouteTransition`, variantes de micro-animación `glassmorphismVariants`, `staggerVariants` y respeto a `prefers-reduced-motion`) y los componentes base del Design System (`Button`, `Card`, `ThemeToggle`).
-* **Capas FDD**: `shared/ui/motion/`, `shared/ui/theme/`, `shared/ui/ui/`.
-* **Archivos Afectados**: `apps/web/src/features/shared/ui/motion/*`, `components/motion/*` ➔ `shared/ui/motion/`.
+#### **`SPEC-25 (Shared UI Kit & Motion 12 Animation Engine - shared/ui/motion)`**
+* **Objetivo & Alcance**: Centralizar la infraestructura de diseño visual y el motor de animación de Motion 12 (`motion.dev`) en `apps/web/src/features/shared/ui/motion/` y los componentes base del Design System (`Button`, `Card`, `ThemeToggle`).
+* **Archivos Afectados**: `apps/web/src/features/shared/ui/motion/*`, `apps/web/src/features/shared/ui/theme/*`.
 * **Trazabilidad OKF**: `frontend-ui-policy.md`.
-* **Verificación**: Tests unitarios de presets de Motion 12 y providers de accesibilidad.
+* **Verificación**: Tests unitarios de presets de Motion 12 y providers de accesibilidad (Completado en commit `46c6496d`).
 
-#### **`SPEC-26 (Feature Slice: Splash Screen & Smooth Transition UX)`**:
-* **Objetivo & Alcance**: Crear la feature autónoma de Splash Screen (`splash-screen`) en `apps/web/src/features/splash-screen/` consumiendo el motor Motion 12 de `shared/ui/motion/`, soporte para sesión no intrusiva (`sessionStorage`) y transición suave hacia la aplicación.
-* **Capas FDD**: `presentation/` (SplashScreenOverlay, BrandMotionLogo), `application/` (useSplashScreen), `domain/` (SplashStateRules).
+#### **`SPEC-26 (Feature Slice: Splash Screen & Smooth Transition UX)`**
+* **Objetivo & Alcance**: Crear la feature autónoma de Splash Screen (`splash-screen`) en `apps/web/src/features/splash-screen/` consumiendo el motor Motion 12 de `shared/ui/motion/`.
 * **Archivos Afectados**: `apps/web/src/features/splash-screen/*`, `lib/app-splash.ts`.
 * **Trazabilidad OKF**: `frontend-ui-policy.md`.
-* **Verificación**: Tests unitarios de renderizado y transición de Splash Screen.
+* **Verificación**: Tests unitarios de renderizado y transición de Splash Screen (Completado en commit `1add826b`).
 
-#### **`SPEC-27 (Landing Page Experience & Visual Polish - Motion 12 & Glassmorphism)`**:
-* **Objetivo & Alcance**: Restaurar y pulir la experiencia visual completa del Landing Page en `apps/web/src/features/landing/`: Hero Section premium, tarjetas de Featured Properties, Dark/Light theme toggle, secciones institucionales y efectos Glassmorphism con Motion 12.
-* **Capas FDD**: `presentation/` (HeroSection, FeaturedPropertiesGrid, ProcessTimeline, FaqAccordion, FooterSection), `application/`, `domain/`, `infrastructure/`.
+#### **`SPEC-27 (Landing Page Experience & Visual Polish - Motion 12 & Glassmorphism)`**
+* **Objetivo & Alcance**: Restaurar y pulir la experiencia visual completa del Landing Page en `apps/web/src/features/landing/`: Hero Section premium, Featured Properties, Dark/Light theme toggle y efectos Glassmorphism con Motion 12.
 * **Archivos Afectados**: `apps/web/src/features/landing/*`, `components/sections/*` ➔ `landing/presentation/`.
 * **Trazabilidad OKF**: `BRI-186`, `frontend-ui-policy.md`.
-* **Verificación**: `pnpm test`, `pnpm validate:routes`, `pnpm validate:seo`.
+* **Verificación**: `pnpm test`, `pnpm validate:routes`, `pnpm validate:seo` (Completado en commit `a71a68f1`).
 
-#### **`SPEC-28 (Content-as-Code & Knowledge Schemas Colocation - educational-resources)`**:
+#### **`SPEC-28 (Content-as-Code & Knowledge Schemas Colocation - educational-resources)`**
 * **Objetivo & Alcance**: Reubicar los archivos Markdown de conocimiento y esquemas JSON a la feature `educational-resources`.
-* **Capas FDD**: `infrastructure/content/`, `infrastructure/schemas/`.
 * **Archivos Afectados**: `/content` ➔ `apps/web/src/features/educational-resources/infrastructure/content/`, `/schemas` ➔ `infrastructure/schemas/`.
 * **Trazabilidad OKF**: `EPIC-010`, `knowledge-system.md`.
-* **Verificación**: `pnpm validate:content`, `pnpm validate:ai`, `pnpm validate:knowledge`.
+* **Verificación**: `pnpm validate:content`, `pnpm validate:ai`, `pnpm validate:knowledge` (Completado en commit `87f2be14`).
 
-#### **`SPEC-29 (Database Migrations Relocation - shared/infrastructure/db)`**:
-* **Objetivo & Alcance**: Mover las migraciones SQL de `/db/migrations` a `apps/web/src/features/shared/infrastructure/db/migrations/` y actualizar `scripts/db-migrate.js` con fallback de compatibilidad.
+#### **`SPEC-29 (Database Migrations Relocation - shared/infrastructure/db)`**
+* **Objetivo & Alcance**: Mover las migraciones SQL de `/db/migrations` a `apps/web/src/features/shared/infrastructure/db/migrations/` (41 migraciones) y eliminar `/db` en raíz.
 * **Archivos Afectados**: `/db/migrations` ➔ `apps/web/src/features/shared/infrastructure/db/migrations/`, `scripts/db-migrate.js`.
 * **Trazabilidad OKF**: `BRI-12`, `BRI-160`.
-* **Verificación**: `pnpm validate:db` (41 migraciones validadas).
+* **Verificación**: `pnpm validate:db` (Completado en commit `6a636ceb`).
 
-#### **`SPEC-30 (Static Web Assets Colocation - apps/web/public)`**:
+#### **`SPEC-30 (Static Web Assets Colocation - apps/web/public)`**
 * **Objetivo & Alcance**: Mover `/public` a `apps/web/public/` para que la aplicación web sirva sus propios recursos estáticos (imágenes, favicons, fuentes, `sw.js`).
 * **Archivos Afectados**: `/public` ➔ `apps/web/public/`.
 * **Trazabilidad OKF**: `BRI-186`.
-* **Verificación**: `pnpm typecheck` y comprobación de rutas públicas.
+* **Verificación**: `pnpm typecheck` y comprobación de rutas públicas (Completado en commit `ce35b76b`).
 
-#### **`SPEC-31 (Final App Router & Monorepo Root Consolidation)`**:
-* **Objetivo & Alcance**: Consolidar el App Router en `apps/web/src/app`, migrar componentes restantes de `/components` y `/lib` a `shared/ui/` y `shared/lib/`, eliminar el symlink `/src`, sincronizar alias en `tsconfig.json` y purificar al 100% la raíz del monorepo.
-* **Archivos Afectados**: `/app` ➔ `apps/web/src/app/`, `/components` ➔ `shared/ui/`, `/lib` ➔ `shared/lib/`, `/src` (eliminar), `tsconfig.json`, `apps/web/tsconfig.json`.
-* **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2).
-* **Verificación**: Compilación completa con `pnpm build` (140 páginas) y ejecución limpia de `pnpm validate` al 100% verde (0 errores, 0 warnings).
+#### **`SPEC-31 (Domain, Content & Infrastructure Migration - Deprecating Root Symlinks)`**
+* **Objetivo & Alcance**: Reubicar schemas, content y lib a `apps/web/src`, depreciar los symlinks raíz `/lib`, `/content`, `/schemas` y migrar imports hacia `apps/web/src`.
+* **Archivos Afectados**: `/lib` ➔ `apps/web/src/lib/`, `tsconfig.json`, `vitest.config.ts`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`.
+* **Verificación**: `pnpm validate` (Completado en commit `14740b72`, `23bc533c`).
+
+#### **`SPEC-32 (Navigation Monolith Decomposition & Auth Hybrid Stabilization)`**
+* **Objetivo & Alcance**: Descomponer el monolito central de navegación `main-top-navigation-modal.tsx` (1,501 LOC) en módulos FDD limpios en `apps/web/src/features/navigation/` y `apps/web/src/features/shared/auth/`, estabilizar WorkOS AuthKit Proxy en `proxy.ts` hacia `/profile` e integrar `AccountProfileSupportModule` sin colisiones de overlay.
+* **Archivos Afectados**: `components/main-top-navigation-modal.tsx` (slim orchestrator), `apps/web/src/features/navigation/*`, `apps/web/src/features/shared/auth/*`, `proxy.ts`, `tailwind.config.ts`.
+* **Trazabilidad OKF**: `BRI-186`, `BRI-154`, `BRI-159`.
+* **Verificación**: 8 suites de tests unitarios TDD (66 tests verdes) y `pnpm validate` al 100% (Completado en commit `24389ce9`).
+
+---
+
+### 📦 Bloque 1: Migración y Modularización de Componentes Monolíticos Restantes (`components/` ➔ `features/*/presentation/`)
+
+#### **`SPEC-33 (Marketplace Presentation & Interactive Visualizer Migration)`**
+* **Objetivo & Alcance**: Migrar los componentes del catálogo de inmuebles, tarjetas Mapbox, visualizador 3D, deal economics y vistas de detalle (`components/marketplace/*` ~15 archivos / ~3,000 LOC) hacia `apps/web/src/features/marketplace/presentation/` y `application/`. Convertir `app/marketplace/*` en Thin Wrappers.
+* **Capas FDD**: `presentation/` (Visualizer3D, MapboxCardGrid, PropertyDetailView, InvestmentSelector), `application/` (usePropertyFilter, useMarketplaceMap).
+* **Archivos Afectados**: `components/marketplace/*` ➔ `apps/web/src/features/marketplace/presentation/*`, `app/marketplace/*`.
+* **Trazabilidad OKF**: `BRI-164` (S1-S44), `BRI-153`.
+* **Verificación**: `pnpm validate:content` y tests de renderizado interactivo del catálogo.
+
+#### **`SPEC-34 (Dashboard Modules Migration: Profile KYC & Account Support)`**
+* **Objetivo & Alcance**: Migrar los módulos del perfil de usuario, completado de cuenta y verificación KYC/AML (`components/dashboard/profile-kyc-module.tsx`, `components/dashboard/account-profile-support-module.tsx`, `components/dashboard/historial-module.tsx`) hacia `apps/web/src/features/profile/presentation/`.
+* **Capas FDD**: `presentation/` (ProfileKycModule, AccountProfileSupportModule, HistorialModule).
+* **Archivos Afectados**: `components/dashboard/profile-kyc-module.tsx`, `components/dashboard/account-profile-support-module.tsx`, `components/dashboard/historial-module.tsx` ➔ `apps/web/src/features/profile/presentation/*`.
+* **Trazabilidad OKF**: `BRI-151` (S1-S8), `EPIC-004`.
+* **Verificación**: `pnpm test tests/components/account-profile-support-module.test.ts` y tests de perfil.
+
+#### **`SPEC-35 (Dashboard Modules Migration: Investor Portfolio & Referral Marketing)`**
+* **Objetivo & Alcance**: Migrar los módulos de visualización de portafolio del inversionista (`components/dashboard/portfolio-module.tsx`) hacia `apps/web/src/features/investor-portfolio/presentation/` y el módulo de recompensas por referidos (`components/dashboard/referral-program-module.tsx`) hacia `apps/web/src/features/referral-marketing/presentation/`.
+* **Capas FDD**: `presentation/` (PortfolioModule, HoldingsChart, ReferralProgramModule, InviteCodeSection).
+* **Archivos Afectados**: `components/dashboard/portfolio-module.tsx` ➔ `apps/web/src/features/investor-portfolio/presentation/*`, `components/dashboard/referral-program-module.tsx` ➔ `apps/web/src/features/referral-marketing/presentation/*`.
+* **Trazabilidad OKF**: `BRI-171`, `BRI-174`, `BRI-16`.
+* **Verificación**: Tests unitarios de renderizado de portafolio y comisiones de referidos.
+
+#### **`SPEC-36 (Dashboard Modules Migration: Staking Distribution & Squads v4 UI)`**
+* **Objetivo & Alcance**: Migrar el módulo de Staking y reclamaciones de dividendos (`components/dashboard/stake-module.tsx`) y las consolas de distribución de tesorería (`components/admin/distributions/*`) hacia `apps/web/src/features/staking-distribution/presentation/`.
+* **Capas FDD**: `presentation/` (StakeModule, RentasModule, DistributionConsole, ClaimsWidget).
+* **Archivos Afectados**: `components/dashboard/stake-module.tsx`, `components/admin/distributions/*` ➔ `apps/web/src/features/staking-distribution/presentation/*`.
+* **Trazabilidad OKF**: `BRI-6`, `BRI-7`, `BRI-8`, `EPIC-014`.
+* **Verificación**: Tests unitarios de componentes de Staking y cobro de dividendos.
+
+#### **`SPEC-37 (Admin Operations, Property Management & Checkout Presentation)`**
+* **Objetivo & Alcance**: Migrar los editores de gestión de inmuebles (`components/admin/property/*`, `components/admin/core-candy-machine-panel.tsx`) hacia `apps/web/src/features/property-management/presentation/` y `apps/web/src/features/nft-minting/presentation/`. Migrar el embudo de compra (`components/checkout/*`) hacia `apps/web/src/features/checkout-payment/presentation/`.
+* **Capas FDD**: `presentation/` (PropertyEditor, DocumentsUploader, CheckoutFunnelClient, PaymentSelector).
+* **Archivos Afectados**: `components/admin/*`, `components/checkout/*` ➔ `features/{property-management,nft-minting,checkout-payment}/presentation/*`.
+* **Trazabilidad OKF**: `EPIC-001`, `EPIC-003`, `EPIC-011`.
+* **Verificación**: Tests unitarios de editores de inmuebles y embudo de pago.
+
+#### **`SPEC-38 (Landing Sections, PWA Notifications & Shared UI Migration)`**
+* **Objetivo & Alcance**: Migrar las secciones de portada (`components/sections/*`) hacia `apps/web/src/features/landing/presentation/`, los componentes de PWA (`components/pwa/*`) hacia `apps/web/src/features/pwa-notifications/presentation/`, y centralizar el UI Kit base (`components/ui/*`, `components/theme/*`, `components/motion/*`, `components/i18n/*`) hacia `apps/web/src/features/shared/ui/`.
+* **Capas FDD**: `presentation/` (HeroSection, ProcessTimeline, FaqAccordion, PwaInstallBanner, Button, Card, Modal, ThemeToggle).
+* **Archivos Afectados**: `components/sections/*`, `components/pwa/*`, `components/ui/*`, `components/theme/*`, `components/motion/*`, `components/i18n/*` ➔ `features/{landing,pwa-notifications,shared/ui}/presentation/*`.
+* **Trazabilidad OKF**: `BRI-39`, `BRI-65`, `BRI-66`, `EPIC-013`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:seo` y comprobación de componentes compartidos.
+
+---
+
+### ⚙️ Bloque 2: Co-localización de Lógica de Negocio y Servicios (`lib/` ➔ `features/*/{domain,application,infrastructure}/`)
+
+#### **`SPEC-39 (Checkout, Payment & Purchase Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios y repositorios de checkout, pasarelas de pago Crypto/Fiat, anti-bot y trazabilidad (`lib/checkout-*.ts`, `lib/purchase-*.ts`, `lib/anti-bot/`) en `apps/web/src/features/checkout-payment/{domain,application,infrastructure}/`.
+* **Capas FDD**: `domain/` (AntiBotLimits, PurchaseInvariants), `application/` (processPurchaseAction), `infrastructure/` (PurchaseAttemptsRepo, CheckoutRepo).
+* **Archivos Afectados**: `lib/checkout-*.ts`, `lib/purchase-*.ts`, `lib/anti-bot/*` ➔ `apps/web/src/features/checkout-payment/*`.
+* **Trazabilidad OKF**: `EPIC-003`, `BRI-151`.
+* **Verificación**: Tests unitarios de compra e idempotencia de pagos.
+
+#### **`SPEC-40 (Compliance, Profile, Accounts & KYC Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los repositorios y servicios de perfil, verificación KYC/AML, recompensas de onboarding y reconciliación de cuentas (`lib/compliance/`, `lib/kyc/`, `lib/onboarding-reward-*.ts`, `lib/accounts/`) en `apps/web/src/features/profile/{domain,application,infrastructure}/`.
+* **Capas FDD**: `domain/` (UserProfileModel, KycInvariants), `application/` (saveProfileAction, processKycAction), `infrastructure/` (UserProfilesRepo, KycCasesRepo).
+* **Archivos Afectados**: `lib/compliance/*`, `lib/kyc/*`, `lib/onboarding-reward-*.ts`, `lib/accounts/*` ➔ `apps/web/src/features/profile/*`.
+* **Trazabilidad OKF**: `BRI-151`, `EPIC-004`.
+* **Verificación**: Tests de verificación KYC y repositorios de perfil.
+
+#### **`SPEC-41 (Investor Portfolio & Referral Marketing Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios de consulta de portafolio DAS layer (`lib/investor-*.ts`) y el motor de comisiones y atribución de referidos (`lib/referrals/`) en `apps/web/src/features/investor-portfolio/` y `apps/web/src/features/referral-marketing/`.
+* **Capas FDD**: `domain/` (HoldingModel, CommissionRules), `application/` (fetchPortfolioQuery, trackReferralAction), `infrastructure/` (DasLayerFetcher, ReferralRepo).
+* **Archivos Afectados**: `lib/investor-*.ts`, `lib/referrals/*` ➔ `features/{investor-portfolio,referral-marketing}/*`.
+* **Trazabilidad OKF**: `BRI-171`, `BRI-16`.
+* **Verificación**: Tests de cálculo de comisiones y consultas DAS indexadas.
+
+#### **`SPEC-42 (Staking, Squads v4 & Property Asset Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios de Staking, prorrateo de dividendos (`lib/stake-*.ts`, `lib/distribution/`) y gestión de inmuebles (`lib/property-*.ts`) en `apps/web/src/features/staking-distribution/` y `apps/web/src/features/property-management/`.
+* **Capas FDD**: `domain/` (ProrrateoMath, AssetModel), `application/` (executeDistributionAction, savePropertyAction), `infrastructure/` (StakeRepo, PropertyRepo).
+* **Archivos Afectados**: `lib/stake-*.ts`, `lib/distribution/*`, `lib/property-*.ts` ➔ `features/{staking-distribution,property-management}/*`.
+* **Trazabilidad OKF**: `BRI-6`, `BRI-7`, `BRI-8`, `EPIC-001`.
+* **Verificación**: Tests unitarios de prorrateo y repositorios de propiedades.
+
+#### **`SPEC-43 (NFT Minting, Candy Machine & Freeze Authority Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar la lógica de acuñación Metaplex Core, deploys de Candy Machine, firma notariada Anchor y políticas de congelamiento (`lib/core-candy-machine-*.ts`, `lib/metaplex-*.ts`, `lib/mint-jobs/`, `lib/mpl-core-freeze-*.ts`) en `apps/web/src/features/nft-minting/` y `apps/web/src/features/asset-freeze-control/`.
+* **Capas FDD**: `domain/` (AnchorNotaryRules, FreezeInvariants), `application/` (deployCandyMachineAction, freezeAssetAction), `infrastructure/` (UmiAdapter, FreezeAuthorityClient).
+* **Archivos Afectados**: `lib/core-candy-machine-*.ts`, `lib/metaplex-*.ts`, `lib/mint-jobs/*`, `lib/mpl-core-freeze-*.ts` ➔ `features/{nft-minting,asset-freeze-control}/*`.
+* **Trazabilidad OKF**: `solana-p0-05`, `solana-p0-06`, `EPIC-002`, `EPIC-006`.
+* **Verificación**: Tests de creación de colecciones Metaplex Core e invariantes de Freeze.
+
+#### **`SPEC-44 (Shared Infrastructure, Auth, DB & Core System Utilities Colocation)`**
+* **Objetivo & Alcance**: Co-localizar las utilidades transversales de `lib/` (`lib/auth*.ts`, `lib/db/`, `lib/solana-kit/`, `lib/motion.ts`, `lib/i18n.ts`, `lib/utils.ts`) en `apps/web/src/features/shared/{auth,infrastructure,ui,wallet}/`.
+* **Capas FDD**: `shared/auth/`, `shared/infrastructure/db/`, `shared/infrastructure/solana-rpc/`, `shared/ui/`, `shared/wallet/`.
+* **Archivos Afectados**: `lib/auth*.ts`, `lib/db/*`, `lib/solana-kit/*`, `lib/motion.ts`, `lib/i18n.ts`, `lib/utils.ts` ➔ `apps/web/src/features/shared/*`.
+* **Trazabilidad OKF**: `BRI-12`, `BRI-154`, `BRI-160`.
+* **Verificación**: `pnpm validate:db`, `pnpm validate:architecture` y tests de autenticación.
+
+---
+
+### 🧹 Bloque 3: Consolidación App Router y Limpieza de Raíz
+
+#### **`SPEC-45 (App Router Physical Relocation to apps/web/src/app)`**
+* **Objetivo & Alcance**: Mover físicamente el directorio `app/` desde la raíz hacia `apps/web/src/app`. Configurar `next.config.ts`, `tsconfig.json` y los endpoints del App Router de Next.js 16 para operar 100% de forma autónoma dentro de `apps/web/`.
+* **Capas FDD**: Thin App Router (`apps/web/src/app/*`).
+* **Archivos Afectados**: `app/*` ➔ `apps/web/src/app/*`, `next.config.ts`, `apps/web/package.json`.
+* **Trazabilidad OKF**: `BRI-186`, `clean-code-folder-structure.md`.
+* **Verificación**: `pnpm dev` y `pnpm validate:routes`.
+
+#### **`SPEC-46 (Root Symlink Elimination & Path Aliases Harmonization)`**
+* **Objetivo & Alcance**: Eliminar definitivamente todos los symlinks de compatibilidad en la raíz del repositorio (`components`, `public`, `src`). Sincronizar los alias de TypeScript (`@/*` ➔ `./apps/web/src/*`) en `tsconfig.json` y `tsconfig.typecheck.json`.
+* **Archivos Afectados**: `components` (eliminar symlink), `public` (eliminar symlink), `src` (eliminar symlink), `tsconfig.json`, `tsconfig.typecheck.json`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`, `AGENTS.md`.
+* **Verificación**: `pnpm typecheck` con 0 errores y validación de imports absolutos.
+
+---
+
+### 🧼 Bloque 4: Limpieza, Refactorización y Auditoría Final (Clean Code Audit)
+
+#### **`SPEC-37 (Clean Code Audit, Zero Dead-Code, Monorepo Root Purification & Final DoD)`**
+* **Objetivo & Alcance**: 
+  1. Ejecutar una auditoría exhaustiva de Clean Code: eliminación de dead code, imports residuales, verificación de 0 implicit `any` y cumplimiento estricto de convenciones de nombrado.
+  2. Verificar que la raíz del monorepo cumpla al 100% con la whitelist de directorios (`programs/`, `apps/`, `packages/`, `.agents/`, `knowledge/`, `scripts/`, `tests/`).
+  3. Ejecución de la suite completa `pnpm validate` (16 gates en verde), `check-monorepo-structure.sh`, `check-layered-architecture.sh` y build de producción de Next.js (`pnpm build`).
+* **Archivos Afectados**: Todo el monorepo.
+* **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2), `security-quality-policy.md`.
+* **Verificación**: `pnpm validate` al 100% verde (0 errores, 0 warnings) y `pnpm build` exitoso.
+
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
-import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
-import { MarketplaceExperience } from "@/components/marketplace/MarketplaceExperience";
+import { MarketplaceFilters, MarketplaceExperience } from "@/features/marketplace";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
