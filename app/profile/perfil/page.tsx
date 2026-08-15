@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { AuthLinkStatusBanner } from "@/components/dashboard/auth-link-status-banner";
-import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
-import { ProfileKycModule } from "@/components/dashboard/profile-kyc-module";
+import { AccountProfileSupportModule, ProfileKycModule } from "@/features/profile";
 import { parseAuthLinkStatus } from "@/lib/auth-link-status";
 import { resolveAppAuthContext } from "@/lib/app-auth";
 
