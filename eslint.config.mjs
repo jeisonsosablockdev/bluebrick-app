@@ -33,6 +33,13 @@ const legacyWeb3ImportAllowlist = [
   "apps/web/src/lib/purchase-service.ts",
   "apps/web/src/lib/purchase-third-party-signer.ts",
   "apps/web/src/lib/solana-kit/compat/**/*.{ts,tsx}",
+  "apps/web/src/features/asset-freeze-control/application/core-authority-lifecycle.ts",
+  "apps/web/src/features/nft-minting/domain/candy-guard-payment-config.ts",
+  "apps/web/src/features/nft-minting/application/core-candy-machine-admin.ts",
+  "apps/web/src/features/nft-minting/application/core-candy-machine-snapshot-service.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-anti-bot.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-service.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-third-party-signer.ts",
   "tests/lib/purchase-anti-bot.test.ts"
 ];
 
