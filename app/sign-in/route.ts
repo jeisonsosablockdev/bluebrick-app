@@ -9,7 +9,7 @@ function resolveSafeReturnTo(request: NextRequest, fallbackPath: string): string
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const returnTo = resolveSafeReturnTo(request, "/protected");
+  const returnTo = resolveSafeReturnTo(request, "/profile");
 
   if (!isWorkosConfigured()) {
     return NextResponse.redirect(new URL("/", request.url));

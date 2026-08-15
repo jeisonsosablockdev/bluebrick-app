@@ -110,7 +110,7 @@ export function OnboardingRewardReminder(): ReactElement | null {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/protected/perfil">
+          <Link href="/profile/perfil">
             <Button className="reward-cta-pulse min-h-11">
               {t({ en: "Complete profile", es: "Completar perfil", pt: "Completar perfil" })}
             </Button>

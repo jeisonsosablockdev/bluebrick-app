@@ -1,5 +1,7 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 
+const reactHooks = nextVitals[0].plugins["react-hooks"];
+
 const legacyWeb3ImportAllowlist = [
   "app/api/admin/mint-orchestrator/jobs/*/reconcile/route.ts",
   "components/admin/core-candy-machine-panel.tsx",
@@ -57,11 +59,15 @@ const config = [
       "playwright-report/**",
       "test-results/**",
       ".blob-report/**",
-      ".cache-synpress/**"
+      ".cache-synpress/**",
+      ".agents/**"
     ]
   },
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    plugins: {
+      "react-hooks": reactHooks
+    },
     rules: {
       "no-restricted-imports": noWeb3ImportsRule,
       "react-hooks/set-state-in-effect": "warn",

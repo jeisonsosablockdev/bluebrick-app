@@ -30,11 +30,11 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | Observations | 11 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 529 |
+| Archived | 530 |
 | Observed status | 21 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 527 |
+| Archived status | 528 |
 
 ## Inbox
 
@@ -105,6 +105,7 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | solana-stack | archived | none | [Solana Stack](knowledge/architecture/solana-stack.md) | n/a |
 | stake-audit | archived | none | [Stake Audit](knowledge/architecture/stake-audit.md) | n/a |
 | state-machine | archived | none | [State Machine](knowledge/architecture/state-machine.md) | n/a |
+| third-party-integrations | archived | none | [Third-Party Integrations & Services Registry](knowledge/architecture/third-party-integrations.md) | n/a |
 | threat-model | archived | none | [Threat Model](knowledge/architecture/threat-model.md) | n/a |
 | toolchain-policy | archived | none | [Toolchain Maintenance Policy](knowledge/architecture/toolchain-policy.md) | n/a |
 | index | archived | none | [archive](knowledge/archive/index.md) | n/a |

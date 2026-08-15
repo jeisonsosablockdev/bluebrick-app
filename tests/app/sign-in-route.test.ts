@@ -55,6 +55,7 @@ describe("GET /sign-in", () => {
 
     await GET(new NextRequest("https://example.com/sign-in?returnTo=https://evil.example"));
 
-    expect(authkitMocks.getSignInUrl).toHaveBeenCalledWith({ returnTo: "/protected" });
+    expect(authkitMocks.getSignInUrl).toHaveBeenCalledWith({ returnTo: "/profile" });
   });
 });
+

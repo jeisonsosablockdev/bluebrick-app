@@ -188,7 +188,7 @@ type GeneratedMetadataUris = {
 
 const DEFAULT_START_DATE = () => new Date(Date.now() + 60_000).toISOString();
 const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
-const SUBMIT_TX_TIMEOUT_MS = 120_000;
+const SUBMIT_TX_TIMEOUT_MS = 180_000;
 const DEPLOY_SIGNATURE_STATUS_MAX_ATTEMPTS = 30;
 const DEPLOY_SIGNATURE_STATUS_POLL_MS = 2_000;
 const SNAPSHOT_AUTO_RECHECK_DELAY_MS = 15_000;
@@ -537,10 +537,14 @@ export function CoreCandyMachinePanel({
     preparedTransactions: PreparedTransaction[],
     signedTransactionsBase64: string[]
   ): Promise<SubmitResponse["transactions"]> {
+    const dynamicTimeoutMs = Math.max(
+      SUBMIT_TX_TIMEOUT_MS,
+      preparedTransactions.length * 25_000
+    );
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, SUBMIT_TX_TIMEOUT_MS);
+    }, dynamicTimeoutMs);
 
     try {
       logClientDeployTrace("submit_request", {

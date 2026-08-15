@@ -24,3 +24,4 @@ PR_BODY.md
 .github/pr-body.md
 opencode.json
 .agents/pr_last_run.json
+*.tsbuildinfo

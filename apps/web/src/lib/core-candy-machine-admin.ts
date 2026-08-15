@@ -835,7 +835,9 @@ function isTransientRpcError(error: unknown): boolean {
     || message.includes("timeout")
     || message.includes("socket hang up")
     || message.includes("econnreset")
-    || message.includes("etimedout");
+    || message.includes("etimedout")
+    || message.includes("3012")
+    || message.includes("accountnotinitialized");
 }
 
 function isBlockhashExpiredRpcError(error: unknown): boolean {
@@ -1769,6 +1771,10 @@ export async function submitCoreCandyMachineSignedTransactions(rawInput: SubmitS
           signature,
           confirmationMode: "immediate"
         });
+
+        if (signed.kind === "create-candy-machine") {
+          await sleep(1000);
+        }
       } else {
         deferredConfirmations.push({
           signature,

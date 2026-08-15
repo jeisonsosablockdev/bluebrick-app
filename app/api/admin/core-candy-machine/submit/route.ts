@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 import { getRequestRole } from "@/lib/auth-session";
 import {
   isCoreCandyMachineAdminInputError,

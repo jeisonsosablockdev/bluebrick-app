@@ -30,7 +30,7 @@ vi.mock("@/components/dashboard/profile-kyc-module", () => ({
   ProfileKycModule: ({ walletPublicKey }: { walletPublicKey: string }) => ({ type: "wallet-profile", walletPublicKey })
 }));
 
-import PerfilPage from "@/app/profile/page";
+import PerfilPage from "@/app/profile/perfil/page";
 
 describe("app/protected/perfil/page", () => {
   beforeEach(() => {

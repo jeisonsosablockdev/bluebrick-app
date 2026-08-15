@@ -6,7 +6,7 @@ import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository"
 import { isWorkosConfigured } from "@/lib/workos/config";
 
 const authHandler = handleAuth({
-  returnPathname: "/protected",
+  returnPathname: "/profile",
   onSuccess: async ({ user }) => {
     const account = await ensureFederatedAccount({
       workosUserId: user.id,

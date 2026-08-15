@@ -5,7 +5,7 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-11 06:56:22 UTC
+Updated: 2026-08-15 22:09:35 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
@@ -24,6 +24,7 @@ Updated: 2026-08-11 06:56:22 UTC
 | [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-07-19 35801116 |
 | [`stake-audit.md`](./knowledge/architecture/stake-audit.md) | general | not set | 2026-06-18 1f8b29ff |
 | [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-21 86b90d23 |
+| [`third-party-integrations.md`](./knowledge/architecture/third-party-integrations.md) | general | not set | not committed |
 | [`threat-model.md`](./knowledge/architecture/threat-model.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-16 ea2ee147 |
 | [`toolchain-policy.md`](./knowledge/architecture/toolchain-policy.md) | general | not set | 2026-06-16 ea2ee147 |
 

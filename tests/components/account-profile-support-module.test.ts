@@ -96,7 +96,7 @@ describe("components/dashboard/account-profile-support-module", () => {
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(navigationMocks.push).toHaveBeenCalledWith("/protected");
+    expect(navigationMocks.push).toHaveBeenCalledWith("/profile");
 
     act(() => {
       root.unmount();

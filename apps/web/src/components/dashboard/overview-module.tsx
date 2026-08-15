@@ -109,7 +109,7 @@ function EmptyState({ t }: { t: TranslateFn }): ReactElement {
             {t({ en: "Explore marketplace", es: "Explorar marketplace", pt: "Explorar marketplace" })}
           </Button>
         </Link>
-        <Link href="/protected/perfil" className="inline-flex min-h-11 items-center text-sm text-cyan-300 hover:text-cyan-200">
+        <Link href="/profile/perfil" className="inline-flex min-h-11 items-center text-sm text-cyan-300 hover:text-cyan-200">
           {t({ en: "Review profile", es: "Revisar perfil", pt: "Revisar perfil" })}
         </Link>
       </div>
@@ -279,7 +279,7 @@ function HoldingsPreview({ overview, t }: { overview: InvestorOverview; t: Trans
         <h2 className="text-lg font-semibold text-white">
           {t({ en: "Current holdings", es: "Holdings actuales", pt: "Holdings atuais" })}
         </h2>
-        <Link href="/protected/stake" className="text-sm text-cyan-300 hover:text-cyan-200">
+        <Link href="/profile/stake" className="text-sm text-cyan-300 hover:text-cyan-200">
           {t({ en: "Open Stake / Unstake", es: "Abrir Stake / Unstake", pt: "Abrir Stake / Unstake" })}
         </Link>
       </div>

@@ -4,7 +4,12 @@ const SOLSCAN_BASE_URL = "https://solscan.io";
 const SOLSCAN_DEVNET_QUERY = "cluster=devnet";
 export const METAPLEX_CORE_PROGRAM_ID = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d";
 
-function pickConfiguredRpc(): { url: string | null; source: "SOLANA_RPC_URL" | "NEXT_PUBLIC_SOLANA_RPC" | null } {
+function pickConfiguredRpc(): { url: string | null; source: "NEXT_PUBLIC_SOLANA_RPC_URL" | "SOLANA_RPC_URL" | "NEXT_PUBLIC_SOLANA" | null } {
+  const publicRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.trim();
+  if (publicRpcUrl) {
+    return { url: publicRpcUrl, source: "NEXT_PUBLIC_SOLANA_RPC_URL" };
+  }
+
   const serverRpc = process.env.SOLANA_RPC_URL?.trim();
   if (serverRpc) {
     return { url: serverRpc, source: "SOLANA_RPC_URL" };
@@ -12,7 +17,7 @@ function pickConfiguredRpc(): { url: string | null; source: "SOLANA_RPC_URL" | "
 
   const publicRpc = process.env.NEXT_PUBLIC_SOLANA_RPC?.trim();
   if (publicRpc) {
-    return { url: publicRpc, source: "NEXT_PUBLIC_SOLANA_RPC" };
+    return { url: publicRpc, source: "NEXT_PUBLIC_SOLANA" };
   }
 
   return { url: null, source: null };

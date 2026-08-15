@@ -1,4 +1,4 @@
-const PRIVATE_POST_LOGOUT_PATH_PREFIXES = ["/admin", "/protected", "/checkout"];
+const PRIVATE_POST_LOGOUT_PATH_PREFIXES = ["/admin", "/profile", "/protected", "/checkout"];
 
 export const POST_LOGOUT_PUBLIC_HREF = "/";
 
