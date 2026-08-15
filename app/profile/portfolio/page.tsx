@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { getInvestorPortfolioQuery, PortfolioPageClient } from "@/features/investor-portfolio";
-import { PortfolioModule } from "@/components/dashboard/portfolio-module";
+import { getInvestorPortfolioQuery, PortfolioPageClient, PortfolioModule } from "@/features/investor-portfolio";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
