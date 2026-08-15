@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
-import { CheckoutPageClient } from "@/components/checkout/CheckoutPageClient";
+import { CheckoutPageClient } from "@/features/checkout-payment";
 import { H1, Lead } from "@/components/ui/typography";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { createPageMetadata } from "@/lib/seo";
