@@ -1,0 +1,68 @@
+{
+  "heroStats": [
+    { "label": "Inversores", "value": "15K+" },
+    { "label": "Propiedades", "value": "120+" },
+    { "label": "Rentabilidad", "value": "20%" },
+    { "label": "Capital", "value": "$50M+" }
+  ],
+  "features": [
+    {
+      "title": "Fraccionamiento Seguro",
+      "description": "Activos reales divididos en fracciones digitales con trazabilidad completa.",
+      "action": "Explorar",
+      "actionHref": "/transparencia",
+      "icon": "🧩"
+    },
+    {
+      "title": "Ingresos Recurrentes",
+      "description": "Consulta el estado de distribuciones y actualizaciones asociadas a cada proyecto publicado.",
+      "action": "Ver Flujo",
+      "actionHref": "/transparencia",
+      "icon": "📈"
+    },
+    {
+      "title": "Inversion Flexible",
+      "description": "Compra fracciones con reglas de mercado transparentes.",
+      "action": "Conocer Más",
+      "actionHref": "/transparencia",
+      "icon": "⚡"
+    }
+  ],
+  "properties": [
+    {
+      "title": "Edificio Central Norte",
+      "location": "Bogotá, CO",
+      "roi": "12.8% ROI",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Complejo Marberia",
+      "location": "Medellín, CO",
+      "roi": "11.4% ROI",
+      "image": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Torre del Río",
+      "location": "CDMX, MX",
+      "roi": "13.2% ROI",
+      "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cómo inicio con BRIDS?",
+      "answer": "Regístrate, completa verificación y selecciona una propiedad fraccionada desde el panel principal.",
+      "topic": "WALLET"
+    },
+    {
+      "question": "¿Cuál es la inversión mínima?",
+      "answer": "Puedes iniciar desde montos bajos según la propiedad, con acceso a diversificación progresiva.",
+      "topic": "Transparencia"
+    },
+    {
+      "question": "¿Cómo se distribuyen los retornos?",
+      "answer": "La distribución depende de la estructura del proyecto y de procesos operados por terceros. BRIDS muestra estados y trazabilidad disponibles.",
+      "topic": "Transparencia"
+    }
+  ]
+}
