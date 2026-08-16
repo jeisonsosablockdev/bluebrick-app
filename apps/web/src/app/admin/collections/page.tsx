@@ -1,5 +1,5 @@
-import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
-import { AdminCollectionsWorkspace } from "@/components/admin/admin-collections-workspace";
+import { AdminModulePlaceholder } from "@/features/admin/presentation/admin-module-placeholder";
+import { AdminCollectionsWorkspace } from "@/features/admin/presentation/admin-collections-workspace";
 import { loadAdminCollectionsPageState } from "@/lib/admin/collections-page-state";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";

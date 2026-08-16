@@ -26,23 +26,23 @@ vi.mock("@/features/profile/presentation/historial-module", () => ({
   HistorialModule: () => null
 }));
 
-vi.mock("@/components/admin/treasury-console", () => ({
+vi.mock("@/features/admin/presentation/treasury-console", () => ({
   TreasuryConsole: () => null
 }));
 
-vi.mock("@/components/admin/distributions-console", () => ({
+vi.mock("@/features/admin/presentation/distributions-console", () => ({
   DistributionsConsole: () => null
 }));
 
-vi.mock("@/components/admin/core-candy-machine-panel", () => ({
+vi.mock("@/features/admin/presentation/core-candy-machine-panel", () => ({
   CoreCandyMachinePanel: () => null
 }));
 
-vi.mock("@/components/admin/mint-orchestrator-signing-panel", () => ({
+vi.mock("@/features/admin/presentation/mint-orchestrator-signing-panel", () => ({
   MintOrchestratorSigningPanel: () => null
 }));
 
-vi.mock("@/components/admin/admin-module-placeholder", () => ({
+vi.mock("@/features/admin/presentation/admin-module-placeholder", () => ({
   AdminModulePlaceholder: () => null
 }));
 
@@ -73,23 +73,14 @@ function setNodeEnv(value: string | undefined): void {
 }
 
 async function loadSyncPages() {
-  const [portfolio, stake, rentas, historial, treasury, distributions] = await Promise.all([
-    import("@/app/profile/portfolio/page"),
-    import("@/app/profile/stake/page"),
-    import("@/app/profile/rentas/page"),
-    import("@/app/profile/historial/page"),
+  const [treasury, distributions] = await Promise.all([
     import("@/app/admin/treasury/page"),
     import("@/app/admin/distributions/page")
   ]);
 
   return {
-    alwaysVisiblePages: [stake.default, distributions.default],
-    releaseControlledPages: [
-      portfolio.default,
-      rentas.default,
-      historial.default,
-      treasury.default
-    ]
+    alwaysVisiblePages: [distributions.default],
+    releaseControlledPages: [treasury.default]
   };
 }
 

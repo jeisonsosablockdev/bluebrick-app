@@ -1,4 +1,4 @@
-import { AssetPreviewConsole } from "@/components/admin/asset-preview-console";
+import { AssetPreviewConsole } from "@/features/admin/presentation/asset-preview-console";
 
 type AdminAssetPreviewPageProps = {
   params: Promise<{

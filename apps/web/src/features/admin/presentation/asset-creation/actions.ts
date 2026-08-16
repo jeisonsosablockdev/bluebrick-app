@@ -6,7 +6,7 @@ import type {
   ImportJobTracker,
   UploadRefsState,
   UploadFieldUiState
-} from "@/components/admin/asset-creation/types";
+} from "@/features/admin/presentation/asset-creation/types";
 
 type SetFormFieldAction<K extends keyof AssetForm = keyof AssetForm> = {
   type: "assetCreation/setFormField";

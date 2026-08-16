@@ -1,4 +1,4 @@
-import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
+import { AdminModulePlaceholder } from "@/features/admin/presentation/admin-module-placeholder";
 import { Card } from "@/components/ui/card";
 
 export default function LoadingAdminCollectionDetailPage() {

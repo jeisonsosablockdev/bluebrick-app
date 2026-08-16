@@ -4,7 +4,7 @@ import {
   buildAdminNavigation,
   isAdminRouteActive,
   resolveCurrentAdminLabel
-} from "@/components/admin/admin-shell-navigation";
+} from "@/features/admin/presentation/admin-shell-navigation";
 import type { LocaleText } from "@/lib/i18n";
 
 function english(text: LocaleText): string {
@@ -25,7 +25,7 @@ function setNodeEnv(value: string | undefined): void {
   env.NODE_ENV = value;
 }
 
-describe("components/admin/admin-shell-navigation", () => {
+describe("features/admin/presentation/admin-shell-navigation", () => {
   afterEach(() => {
     setNodeEnv(originalNodeEnv);
 

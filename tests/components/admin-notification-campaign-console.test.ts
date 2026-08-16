@@ -16,11 +16,11 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-vi.mock("@/components/admin/use-admin-notification-campaign-console", () => ({
+vi.mock("@/features/admin/presentation/use-admin-notification-campaign-console", () => ({
   useAdminNotificationCampaignConsole: consoleMocks.useAdminNotificationCampaignConsole
 }));
 
-import { AdminNotificationCampaignConsole } from "@/components/admin/admin-notification-campaign-console";
+import { AdminNotificationCampaignConsole } from "@/features/admin/presentation/admin-notification-campaign-console";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -39,7 +39,7 @@ function renderConsole(): RenderHandle {
   return { container, root };
 }
 
-describe("components/admin/admin-notification-campaign-console", () => {
+describe("features/admin/presentation/admin-notification-campaign-console", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "es",

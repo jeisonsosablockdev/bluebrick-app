@@ -7,7 +7,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AdminCollectionDocumentsEditor } from "@/components/admin/admin-collection-documents-editor";
+import { AdminCollectionDocumentsEditor } from "@/features/admin/presentation/admin-collection-documents-editor";
 import { uploadAssetFileViaClientBlob } from "@/lib/admin/asset-upload-client";
 
 vi.mock("@/lib/admin/asset-upload-client", () => ({
@@ -32,7 +32,7 @@ function renderNode(node: ReactNode): RenderHandle {
   return { container, root };
 }
 
-describe("components/admin/admin-collection-documents-editor", () => {
+describe("features/admin/presentation/admin-collection-documents-editor", () => {
   beforeEach(() => {
     Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
   });

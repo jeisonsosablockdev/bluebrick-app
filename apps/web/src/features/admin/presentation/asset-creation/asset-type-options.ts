@@ -1,4 +1,4 @@
-import type { AssetType } from "@/components/admin/asset-creation/types";
+import type { AssetType } from "@/features/admin/presentation/asset-creation/types";
 
 export type AssetTypeSelectionOption = {
   value: Exclude<AssetType, "">;

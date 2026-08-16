@@ -4,8 +4,8 @@ const reactHooks = nextVitals[0].plugins["react-hooks"];
 
 const legacyWeb3ImportAllowlist = [
   "app/api/admin/mint-orchestrator/jobs/*/reconcile/route.ts",
-  "components/admin/core-candy-machine-panel.tsx",
-  "components/admin/metaplex-core-mint-panel.tsx",
+  "apps/web/src/features/admin/presentation/core-candy-machine-panel.tsx",
+  "apps/web/src/features/admin/presentation/metaplex-core-mint-panel.tsx",
   "apps/web/src/features/marketplace/presentation/PurchaseCta.tsx",
   "tests/e2e/helpers/siws-local-wallet.ts",
   "e2e/helpers/siws-local-wallet.ts",

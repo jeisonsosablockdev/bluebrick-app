@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 
-import type { AssetForm, FileUploadField, UploadRefsState, UploadUiState } from "@/components/admin/asset-creation/types";
+import type { AssetForm, FileUploadField, UploadRefsState, UploadUiState } from "@/features/admin/presentation/asset-creation/types";
 import {
   type AssetUploadCategory,
   type FinalizeResponse,

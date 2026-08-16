@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { TreasuryConsole } from "@/components/admin/treasury-console";
+import { TreasuryConsole } from "@/features/admin/presentation/treasury-console";
 import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 export default function AdminTreasuryPage() {

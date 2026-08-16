@@ -1,7 +1,7 @@
 import type {
   DeployCompletedPayload,
   SnapshotFinalizeResponse
-} from "@/components/admin/core-candy-machine-panel";
+} from "@/features/admin/presentation/core-candy-machine-panel";
 import type { CollectionBootstrapGoogleMapsPlace } from "@/lib/admin/collection-bootstrap-mapper";
 
 export type AssetType = "building_new" | "rental_property" | "land_lot" | "";
