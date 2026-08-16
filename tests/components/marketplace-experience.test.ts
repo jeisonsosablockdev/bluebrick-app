@@ -5,7 +5,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/components/marketplace/MarketplaceGridClient", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceGridClient", () => ({
   MarketplaceGridClient: ({ properties }: { properties: Array<{ title: string }> }) =>
     createElement(
       "div",
@@ -29,7 +29,7 @@ vi.mock("next/dynamic", () => ({
       createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceMapClient", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceMapClient", () => ({
   MarketplaceMapClient: ({ selectedPinId }: { selectedPinId?: string | null }) =>
     createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
 }));
@@ -39,7 +39,7 @@ vi.mock("@/features/marketplace/presentation/MarketplaceMapClient", () => ({
     createElement("div", { "data-testid": "marketplace-map-client", "data-selected-pin-id": selectedPinId ?? "" }, "map")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceMapShell", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceMapShell", () => ({
   MarketplaceMapShell: ({
     fallback,
     mapboxAccessToken,
@@ -119,7 +119,7 @@ vi.mock("@/features/marketplace/presentation/MarketplaceMapShell", () => ({
   }
 }));
 
-vi.mock("@/components/marketplace/MarketplaceViewModeShell", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceViewModeShell", () => ({
   MarketplaceViewModeShell: ({ render }: { render: (mode: string) => ReactNode }) =>
     createElement("div", { "data-testid": "marketplace-view-shell" }, render("combined-map-top"))
 }));
@@ -177,7 +177,7 @@ function renderExperience(): RenderHandle {
   return { container, root };
 }
 
-describe("components/marketplace/MarketplaceExperience", () => {
+describe("features/marketplace/presentation/MarketplaceExperience", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     vi.useRealTimers();

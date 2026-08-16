@@ -15,7 +15,7 @@ vi.mock("react-map-gl/mapbox", () => ({
   Marker: ({ children }: { children: ReactNode }) => createElement("div", { "data-testid": "marker" }, children)
 }));
 
-import { MarketplaceMapClient } from "@/components/marketplace/MarketplaceMapClient";
+import { MarketplaceMapClient } from "@/features/marketplace/presentation/MarketplaceMapClient";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
 const BOSTON_PIN: MarketplaceMapPin = {
@@ -79,7 +79,7 @@ function renderClient(overrides: Partial<Parameters<typeof MarketplaceMapClient>
   return { container, root };
 }
 
-describe("components/marketplace/MarketplaceMapClient", () => {
+describe("features/marketplace/presentation/MarketplaceMapClient", () => {
   beforeEach(() => {
     latestMapProps = null;
     vi.useRealTimers();

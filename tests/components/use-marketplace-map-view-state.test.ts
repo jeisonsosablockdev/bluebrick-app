@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   useMarketplaceMapViewState,
   type MarketplaceMapViewStateController
-} from "@/components/marketplace/useMarketplaceMapViewState";
+} from "@/features/marketplace/presentation/useMarketplaceMapViewState";
 import type { MarketplaceMapPin } from "@/lib/marketplace-map-pins";
 
 const pins: MarketplaceMapPin[] = [
@@ -51,7 +51,7 @@ function ViewStateProbe({
   return null;
 }
 
-describe("components/marketplace/useMarketplaceMapViewState", () => {
+describe("features/marketplace/presentation/useMarketplaceMapViewState", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     latestController = null;

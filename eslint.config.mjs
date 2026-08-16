@@ -6,7 +6,7 @@ const legacyWeb3ImportAllowlist = [
   "app/api/admin/mint-orchestrator/jobs/*/reconcile/route.ts",
   "components/admin/core-candy-machine-panel.tsx",
   "components/admin/metaplex-core-mint-panel.tsx",
-  "components/marketplace/PurchaseCta.tsx",
+  "apps/web/src/features/marketplace/presentation/PurchaseCta.tsx",
   "tests/e2e/helpers/siws-local-wallet.ts",
   "e2e/helpers/siws-local-wallet.ts",
   "scripts/devnet-authority-lifecycle-proof.ts",

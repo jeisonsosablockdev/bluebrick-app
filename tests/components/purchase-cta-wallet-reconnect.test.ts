@@ -8,7 +8,7 @@ import {
   type WalletModalOpenDetail
 } from "@/lib/auth-ui-events";
 
-describe("components/marketplace/PurchaseCta - SPEC 5 Wallet Reconnect Prompt", () => {
+describe("features/marketplace/presentation/PurchaseCta - SPEC 5 Wallet Reconnect Prompt", () => {
   it("@spec BRI-12-REQ-5 dispatches WALLET_MODAL_OPEN_EVENT when dispatchOpenWalletModal is called", () => {
     const eventHandler = vi.fn();
     window.addEventListener(WALLET_MODAL_OPEN_EVENT, eventHandler);

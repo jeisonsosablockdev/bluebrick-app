@@ -14,7 +14,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { PropertyDetailGoogleMapsCard } from "@/components/marketplace/PropertyDetailGoogleMapsCard";
+import { PropertyDetailGoogleMapsCard } from "@/features/marketplace/presentation/PropertyDetailGoogleMapsCard";
 import type { PropertyDetail } from "@/lib/property-service";
 
 type RenderHandle = {

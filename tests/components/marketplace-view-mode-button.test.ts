@@ -5,7 +5,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MarketplaceViewModeButton } from "@/components/marketplace/MarketplaceViewModeButton";
+import { MarketplaceViewModeButton } from "@/features/marketplace/presentation/MarketplaceViewModeButton";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -24,7 +24,7 @@ function renderButton(currentMode: "combined-map-top" | "list-only" | "map-only"
   return { container, root };
 }
 
-describe("components/marketplace/MarketplaceViewModeButton", () => {
+describe("features/marketplace/presentation/MarketplaceViewModeButton", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();

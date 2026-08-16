@@ -15,11 +15,11 @@ vi.mock("@/components/main-top-navigation-modal", () => ({
   MainTopNavigationModal: () => createElement("div", null, "wallet-modal")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceFilters", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceFilters", () => ({
   MarketplaceFilters: () => createElement("div", null, "marketplace-filters")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceExperience", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceExperience", () => ({
   MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
 }));
 

@@ -7,7 +7,7 @@ import {
   formatMarketplaceDetailPercent,
   formatMarketplaceDetailUsd,
   shouldRenderMarketplaceDetailMetric
-} from "@/components/marketplace/property-detail-formatters";
+} from "@/features/marketplace/presentation/property-detail-formatters";
 
 describe("marketplace detail formatters", () => {
   it("formats USD, percentages, months, and unavailable values by locale", () => {

@@ -14,7 +14,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   })
 }));
 
-import { PropertyDetailMediaSection } from "@/components/marketplace/PropertyDetailMediaSection";
+import { PropertyDetailMediaSection } from "@/features/marketplace/presentation/PropertyDetailMediaSection";
 import type { PropertyDetail } from "@/lib/property-service";
 
 const property = {

@@ -5,7 +5,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { MarketplaceViewModeShell } from "@/components/marketplace/MarketplaceViewModeShell";
+import { MarketplaceViewModeShell } from "@/features/marketplace/presentation/MarketplaceViewModeShell";
 import type { MarketplaceViewMode } from "@/lib/marketplace-view-mode";
 
 type RenderHandle = {
@@ -29,7 +29,7 @@ function renderShell(): RenderHandle {
   return { container, root };
 }
 
-describe("components/marketplace/MarketplaceViewModeShell", () => {
+describe("features/marketplace/presentation/MarketplaceViewModeShell", () => {
   afterEach(() => {
     document.body.innerHTML = "";
   });
