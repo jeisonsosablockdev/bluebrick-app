@@ -109,17 +109,15 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
   });
 
   const { referralCode, referralOrigin, isReferralFieldVisible, setIsReferralFieldVisible, handleReferralCodeChange } =
-    useReferralCapture({ authState, queryReferralCode, cleanCurrentLandingPath });
-
-  const [postAuthDecisionReward, setPostAuthDecisionReward] = useState<import("@/lib/post-auth-decision").PostAuthOnboardingReward | null>(null);
+    useReferralCapture({ authState, queryReferralCode, cleanCurrentLandingPath });  const [postAuthReward, setPostAuthReward] = useState<import("@/lib/post-auth-decision").PostAuthOnboardingReward | null>(null);
 
   const { handleExploreAfterAuth, handleCompleteProfileAfterAuth } = usePostAuthDecision({
     shouldPromptPostAuthDecision,
     hasFederatedSession: authState.federatedAuthenticated ?? false,
     hasWalletSession: authState.walletAuthenticated ?? false,
-    postAuthDecisionReward,
+    postAuthDecisionReward: postAuthReward,
     cleanCurrentLandingPath,
-    setPostAuthDecisionReward,
+    setPostAuthDecisionReward: setPostAuthReward,
   });
 
   const visibility = useNavModalVisibility({
@@ -150,8 +148,6 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
     es: "Firma este mensaje para vincular tu wallet a esta cuenta BRIDS.",
     pt: "Assine esta mensagem para vincular sua carteira a esta conta BRIDS.",
   });
-
-  const [postAuthReward, setPostAuthReward] = useState<typeof postAuthDecisionReward>(null);
 
   const { handleWalletPrimaryAction, handleStartWalletSignIn } = useWalletSignIn({
     authState,
@@ -188,6 +184,7 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
     setIsOpen,
     setAuthState,
     setSuppressedWalletPublicKey,
+    setHasWalletAuthIntent,
     refreshAuthState,
   });
 
@@ -254,7 +251,7 @@ export function MainTopNavigationModal({ initialAuth = ANONYMOUS_AUTH_STATE }: W
     await navigator.clipboard.writeText(visibility.copyableWalletPublicKey);
   }
 
-  const activeReward = postAuthReward ?? postAuthDecisionReward;
+  const activeReward = postAuthReward;
 
   return (
     <>

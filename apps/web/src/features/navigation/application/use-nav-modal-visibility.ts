@@ -199,8 +199,10 @@ export function useNavModalVisibility(params: UseNavModalVisibilityParams): UseN
         ? `${t({ en: "Account", es: "Cuenta", pt: "Conta" })}: ${authState.email ?? t({ en: "Federated session", es: "Sesion federada", pt: "Sessao federada" })}`
         : t({ en: "Not signed in", es: "Sin sesion iniciada", pt: "Sem sessao iniciada" });
 
-  const topFeedbackText = statusText ?? authLinkStatusContent?.message ?? lastError;
-  const isTopFeedbackStatus = Boolean(statusText || authLinkStatusContent);
+  const effectivePhase = phase !== "idle" ? phase : connecting ? "connecting" : disconnecting ? "disconnecting" : "idle";
+  const computedStatusText = statusText ?? getStatusText(effectivePhase, t);
+  const topFeedbackText = computedStatusText ?? authLinkStatusContent?.message ?? lastError;
+  const isTopFeedbackStatus = Boolean(computedStatusText || authLinkStatusContent);
 
   return {
     hasWalletSession,

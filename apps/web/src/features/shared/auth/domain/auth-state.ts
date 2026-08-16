@@ -1,4 +1,6 @@
-import type { AuthMeResponse } from "@/lib/auth-client";
+import { ANONYMOUS_AUTH_STATE, type AuthMeResponse } from "@/lib/auth-client";
+
+export { ANONYMOUS_AUTH_STATE, type AuthMeResponse };
 
 export function areAuthMeResponsesEquivalent(previous: AuthMeResponse, next: AuthMeResponse): boolean {
   return previous.authenticated === next.authenticated

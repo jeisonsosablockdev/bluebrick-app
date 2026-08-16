@@ -16,7 +16,7 @@
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { ANONYMOUS_AUTH_STATE, type AuthMeResponse } from "@/lib/auth-client";
+import { ANONYMOUS_AUTH_STATE, type AuthMeResponse } from "@/features/shared/auth/domain/auth-state";
 import { broadcastAuthSync } from "@/lib/auth-sync";
 import { getFriendlyWalletErrorMessage } from "@/features/navigation/application/nav-modal-utils";
 import { POST_LOGOUT_PUBLIC_HREF, shouldRedirectToPublicAfterLogout } from "@/lib/navigation/private-routes";
@@ -35,6 +35,7 @@ type UseWalletDisconnectParams = {
   setIsOpen: (open: boolean) => void;
   setAuthState: (updater: (prev: AuthMeResponse) => AuthMeResponse) => void;
   setSuppressedWalletPublicKey: (key: string | null) => void;
+  setHasWalletAuthIntent?: (hasIntent: boolean) => void;
   refreshAuthState: (options?: { silent?: boolean }) => Promise<void>;
 };
 
@@ -52,6 +53,7 @@ export function useWalletDisconnect(params: UseWalletDisconnectParams): UseWalle
     setLastError,
     setAuthState,
     setSuppressedWalletPublicKey,
+    setHasWalletAuthIntent,
     refreshAuthState,
   } = params;
 
@@ -109,6 +111,7 @@ export function useWalletDisconnect(params: UseWalletDisconnectParams): UseWalle
         window.location.assign(`/sign-out?returnTo=${encodeURIComponent(returnTo)}`);
       } else {
         setSuppressedWalletPublicKey(disconnectedPublicKey);
+        setHasWalletAuthIntent?.(false);
         setAuthState((_previous) => ({
           ...ANONYMOUS_AUTH_STATE,
           federatedAvailable: _previous.federatedAvailable,
