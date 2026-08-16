@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { buildPhantomBrowseDeepLink } from "@/lib/referrals/client-state";
+import { buildPhantomBrowseDeepLink } from "@/features/referral-marketing/application/client-state";
 import {
   MOBILE_MEDIA_QUERY,
   MOBILE_USER_AGENT_PATTERN,

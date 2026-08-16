@@ -5,11 +5,11 @@ import {
   mergeFederatedOnlyAccountIntoWalletAccount,
   findAccountByWalletPublicKey,
   AccountRepositoryError
-} from "@/lib/accounts/repository";
-import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository";
-import { promoteReferralIntentForAccountWallet } from "@/lib/referrals/repository";
+} from "@/features/profile/infrastructure/accounts-repository";
+import { applyFederatedEmailPrefill } from "@/features/profile/infrastructure/profile-repository";
+import { promoteReferralIntentForAccountWallet } from "@/features/referral-marketing/infrastructure/referrals-repository";
 import { getRoleForWallet } from "@/lib/rbac";
-import { consumeNonce } from "@/lib/state/auth-store";
+import { consumeNonce } from "@/features/shared/auth/domain/auth-store";
 import {
   clearWalletLinkContextCookie,
   getRequestHost,

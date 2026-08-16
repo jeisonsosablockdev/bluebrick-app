@@ -2,7 +2,7 @@ import { ExecutiveDashboard } from "@/features/admin/presentation/executive-dash
 import { getAdminMetricsQuery, AdminPageClient } from "@/features/admin";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
-import { getAdminDashboardOverview } from "@/lib/purchase-metrics-service";
+import { getAdminDashboardOverview } from "@/features/checkout-payment/application/purchase-metrics-service";
 
 type AdminDashboardPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

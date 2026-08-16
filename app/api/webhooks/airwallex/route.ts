@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { reconcileAirwallexPaymentIntent } from "@/lib/checkout-service";
+import { reconcileAirwallexPaymentIntent } from "@/features/checkout-payment/application/checkout-service";
 
 function getWebhookSecret(): string {
   const secret = process.env.AIRWALLEX_WEBHOOK_SECRET?.trim();

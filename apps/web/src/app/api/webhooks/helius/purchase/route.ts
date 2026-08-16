@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { processPurchaseHeliusWebhookPayload } from "@/lib/purchase-webhook-reconciliation";
+import { processPurchaseHeliusWebhookPayload } from "@/features/checkout-payment/application/purchase-webhook-reconciliation";
 
 function unauthorizedResponse(): NextResponse {
   return NextResponse.json(

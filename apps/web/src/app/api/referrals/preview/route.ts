@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getReferralPreviewByCode } from "@/lib/referrals/preview-service";
+import { getReferralPreviewByCode } from "@/features/referral-marketing/application/preview-service";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const code = request.nextUrl.searchParams.get("code")?.trim() ?? "";

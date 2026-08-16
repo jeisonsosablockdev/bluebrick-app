@@ -8,9 +8,9 @@ import {
   deriveReferralAttributionSource,
   extractReferralCodeFromUrl,
   parseStoredReferralHint
-} from "@/lib/referrals/client-state";
+} from "@/features/referral-marketing/application/client-state";
 
-describe("lib/referrals/client-state", () => {
+describe("features/referral-marketing/application/client-state", () => {
   it("extracts normalized referral codes from URL query params", () => {
     expect(extractReferralCodeFromUrl("https://example.com/?ref=abc-123")).toBe("ABC-123");
     expect(extractReferralCodeFromUrl("https://example.com/marketplace")).toBeNull();

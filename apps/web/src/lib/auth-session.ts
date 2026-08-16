@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { getSessionPublicKey } from "@/lib/state/auth-store";
+import { getSessionPublicKey } from "@/features/shared/auth/domain/auth-store";
 import { getRoleForWallet, type UserRole } from "@/lib/rbac";
 
 const AUTH_COOKIE_NAME = "siws_session";

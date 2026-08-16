@@ -13,7 +13,7 @@ vi.mock("@/lib/app-auth", () => ({
   resolveAppAuthContext: appAuthMocks.resolveAppAuthContext
 }));
 
-vi.mock("@/lib/referrals/repository", () => ({
+vi.mock("@/features/referral-marketing/infrastructure/referrals-repository", () => ({
   upsertReferralIntentForAccount: referralRepositoryMocks.upsertReferralIntentForAccount
 }));
 

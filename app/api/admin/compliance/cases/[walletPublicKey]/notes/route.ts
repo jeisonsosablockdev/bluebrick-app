@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { addComplianceCaseNote, ComplianceCaseServiceError, getComplianceCaseNotes } from "@/lib/compliance/case-service";
+import { addComplianceCaseNote, ComplianceCaseServiceError, getComplianceCaseNotes } from "@/features/profile/application/case-service";
 
 type RouteParams = {
   params: Promise<{

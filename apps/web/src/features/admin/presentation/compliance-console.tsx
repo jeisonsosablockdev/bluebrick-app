@@ -17,8 +17,8 @@ import type {
   ComplianceCaseDetailForAdmin,
   ComplianceNoteRecord,
   ListComplianceCasesResult
-} from "@/lib/compliance/profile-repository";
-import type { ComplianceStatus } from "@/lib/compliance/compliance-status-projector";
+} from "@/features/profile/infrastructure/profile-repository";
+import type { ComplianceStatus } from "@/features/profile/domain/compliance-status-projector";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

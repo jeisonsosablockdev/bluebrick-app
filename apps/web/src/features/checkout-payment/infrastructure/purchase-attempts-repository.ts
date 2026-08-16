@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type PurchaseAttemptStatus = "created" | "prepared" | "submitted" | "confirmed" | "failed";
 export type PurchaseAttemptAssetVerificationStatus = "not_required" | "pending" | "verified" | "failed";

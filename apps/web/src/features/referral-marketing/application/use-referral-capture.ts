@@ -19,7 +19,7 @@ import {
   readStoredReferralHint,
   writeStoredReferralHint,
   type ReferralHintOrigin
-} from "@/lib/referrals/client-state";
+} from "@/features/referral-marketing/application/client-state";
 import { persistReferralIntent } from "@/lib/auth-client";
 import type { AuthMeResponse } from "@/lib/auth-client";
 

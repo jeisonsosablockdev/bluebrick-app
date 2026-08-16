@@ -4,9 +4,9 @@ import {
   AIRWALLEX_CHECKOUT_ENABLED,
   getCheckoutPaymentMethodDisabledError,
   isCheckoutPaymentMethodEnabled
-} from "@/lib/checkout-payment-methods";
+} from "@/features/checkout-payment/domain/checkout-payment-methods";
 
-describe("lib/checkout-payment-methods", () => {
+describe("features/checkout-payment/domain/checkout-payment-methods", () => {
   it("keeps crypto enabled", () => {
     expect(isCheckoutPaymentMethodEnabled("crypto")).toBe(true);
     expect(getCheckoutPaymentMethodDisabledError("crypto")).toBeNull();

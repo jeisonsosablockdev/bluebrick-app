@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { deriveCoreCandyMachineNames } from "@/lib/core-candy-machine-naming";
-import { createCoreMetadataRecord } from "@/lib/core-candy-machine-metadata-store";
+import { deriveCoreCandyMachineNames } from "@/features/nft-minting/domain/core-candy-machine-naming";
+import { createCoreMetadataRecord } from "@/features/nft-minting/infrastructure/core-candy-machine-metadata-store";
 import {
   createCoreCandyMachinePinataMetadataUris,
   isPinataConfigured,

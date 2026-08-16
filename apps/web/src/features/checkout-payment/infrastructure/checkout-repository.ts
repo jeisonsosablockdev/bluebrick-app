@@ -4,8 +4,8 @@ import type {
   CheckoutPaymentMethod,
   OrderStatus,
   PaymentAttemptStatus
-} from "@/lib/checkout-domain";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/checkout-payment/domain/checkout-domain";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type CartRecord = {
   id: string;

@@ -11,7 +11,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/core-authority-lifecycle", () => ({
+vi.mock("@/features/asset-freeze-control/application/core-authority-lifecycle", () => ({
   prepareAuthorityLifecycleOperation: routeMocks.prepareAuthorityLifecycleOperation,
   isCoreAuthorityLifecycleInputError: routeMocks.isCoreAuthorityLifecycleInputError
 }));

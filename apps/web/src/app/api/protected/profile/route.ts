@@ -5,7 +5,7 @@ import {
   getOrCreateProfileBundle,
   ProfileRepositoryError,
   updateProfileBasics
-} from "@/lib/compliance/profile-repository";
+} from "@/features/profile/infrastructure/profile-repository";
 import { COUNTRIES } from "@/lib/countries";
 import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 

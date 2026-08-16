@@ -1,5 +1,5 @@
 import { MonitoringConsole } from "@/features/admin/presentation/monitoring-console";
-import { getAdminMonitoringEvents } from "@/lib/purchase-metrics-service";
+import { getAdminMonitoringEvents } from "@/features/checkout-payment/application/purchase-metrics-service";
 
 type AdminMonitoringPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

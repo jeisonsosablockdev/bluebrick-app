@@ -4,13 +4,13 @@ import {
   deriveAssociatedTokenAddress,
   resolveUsdcMintAddress,
   resolveUsdcPaymentRecipient
-} from "@/lib/candy-guard-payment-config";
+} from "@/features/nft-minting/domain/candy-guard-payment-config";
 import {
   validateAppDataEconomicV1,
   type AppDataEconomicV1
-} from "@/lib/core-candy-machine-admin";
-import { getPurchaseThirdPartySignerAddress } from "@/lib/purchase-third-party-signer";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/nft-minting/application/core-candy-machine-admin";
+import { getPurchaseThirdPartySignerAddress } from "@/features/checkout-payment/application/purchase-third-party-signer";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 import type { AdminCollectionOwnership } from "@/lib/admin/collection-ownership";
 

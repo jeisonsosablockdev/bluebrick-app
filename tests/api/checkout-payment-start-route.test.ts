@@ -10,8 +10,8 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/checkout-service", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/checkout-service")>("@/lib/checkout-service");
+vi.mock("@/features/checkout-payment/application/checkout-service", async () => {
+  const actual = await vi.importActual<typeof import("@/features/checkout-payment/application/checkout-service")>("@/features/checkout-payment/application/checkout-service");
 
   return {
     ...actual,

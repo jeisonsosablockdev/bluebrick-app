@@ -2,7 +2,7 @@ import { fetchAsset, fetchCollection, freezeAsset, isFrozen, mplCore, thawAsset 
 import { createNoopSigner, publicKey, signerIdentity } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { DasClient } from "@/lib/infrastructure/das-client";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,

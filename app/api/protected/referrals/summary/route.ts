@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { getReferralDashboardSummary } from "@/lib/referrals/dashboard-service";
+import { getReferralDashboardSummary } from "@/features/referral-marketing/application/dashboard-service";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const walletPublicKey = getAuthenticatedPublicKeyFromRequest(request);

@@ -22,7 +22,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/purchase-service", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-service", () => ({
   PurchaseFlowError: routeMocks.MockPurchaseFlowError,
   preparePurchase: routeMocks.preparePurchase
 }));

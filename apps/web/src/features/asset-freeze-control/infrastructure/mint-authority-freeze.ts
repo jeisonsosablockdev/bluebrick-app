@@ -13,7 +13,7 @@
  * minted before the window opened cannot be diluted by late minters.
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type MintAuthorityFreezeResult =
   | { status: "already_frozen"; frozenAt: string }

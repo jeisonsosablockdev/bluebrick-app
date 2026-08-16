@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getFlowId, recordPurchaseFlowEvent, withFlowIdHeader } from "@/lib/purchase-flow-trace";
-import { PurchaseFlowError, quotePurchaseForProperty } from "@/lib/purchase-service";
+import { getFlowId, recordPurchaseFlowEvent, withFlowIdHeader } from "@/features/checkout-payment/application/purchase-flow-trace";
+import { PurchaseFlowError, quotePurchaseForProperty } from "@/features/checkout-payment/application/purchase-service";
 
 type QuoteBody = {
   propertyId?: unknown;

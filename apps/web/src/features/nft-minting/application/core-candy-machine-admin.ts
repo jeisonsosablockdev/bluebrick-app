@@ -8,16 +8,16 @@ import {
   deriveAssociatedTokenAddress,
   resolveUsdcMintAddress,
   resolveUsdcPaymentRecipient
-} from "@/lib/candy-guard-payment-config";
+} from "@/features/nft-minting/domain/candy-guard-payment-config";
 
 import {
   CORE_CANDY_MACHINE_LIMITS,
   buildConfigLinePrefixName,
   deriveCoreCandyMachineNames,
   utf8ByteLength
-} from "@/lib/core-candy-machine-naming";
+} from "@/features/nft-minting/domain/core-candy-machine-naming";
 import { recordOperabilityLog } from "@/lib/observability";
-import { createPurchaseThirdPartySigner, getPurchaseThirdPartySignerAddress } from "@/lib/purchase-third-party-signer";
+import { createPurchaseThirdPartySigner, getPurchaseThirdPartySignerAddress } from "@/features/checkout-payment/application/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   convertUmiTransactionToLegacyVersionedTransaction,

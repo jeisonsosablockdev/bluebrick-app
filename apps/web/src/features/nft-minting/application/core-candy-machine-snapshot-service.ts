@@ -15,7 +15,7 @@ import {
   type SnapshotProofKind,
   upsertAssetMintSnapshot,
   upsertMintJobFromSnapshot
-} from "@/lib/core-candy-machine-snapshot-repository";
+} from "@/features/nft-minting/infrastructure/core-candy-machine-snapshot-repository";
 import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {

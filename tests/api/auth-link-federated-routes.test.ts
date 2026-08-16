@@ -39,12 +39,12 @@ vi.mock("@/lib/auth", () => ({
   clearFederatedLinkContextCookie: authMocks.clearFederatedLinkContextCookie
 }));
 
-vi.mock("@/lib/accounts/repository", () => ({
+vi.mock("@/features/profile/infrastructure/accounts-repository", () => ({
   mergeFederatedOnlyAccountIntoWalletAccount: accountMocks.mergeFederatedOnlyAccountIntoWalletAccount,
   AccountRepositoryError: accountMocks.AccountRepositoryError
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   applyFederatedEmailPrefill: profileRepositoryMocks.applyFederatedEmailPrefill
 }));
 

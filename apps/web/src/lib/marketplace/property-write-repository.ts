@@ -1,6 +1,6 @@
 import { deriveAdminCanonicalLocationLabel } from "@/lib/admin/admin-collection-location-sync";
 import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { toMarketplaceDocumentId } from "@/lib/marketplace/property-row-mapper";
 import type { CreateMarketplaceEntryInput } from "@/lib/property-service";
 

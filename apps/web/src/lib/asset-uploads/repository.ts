@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "../db/pool.ts";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   type AssetUploadCategory,
   type SignedUploadContract,

@@ -18,7 +18,7 @@ import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 import { Connection, PublicKey as Web3PublicKey, VersionedTransaction } from "@solana/web3.js";
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import {
   createKitRpcConnection,

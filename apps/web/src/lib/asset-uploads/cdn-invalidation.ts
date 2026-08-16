@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 const MAX_INVALIDATION_PATHS = 25;
 const MAX_ERROR_LENGTH = 500;

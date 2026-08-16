@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { AuthMeResponse } from "@/lib/auth-client";
-import { areAuthMeResponsesEquivalent } from "@/lib/state/auth-state";
+import { areAuthMeResponsesEquivalent } from "@/features/shared/auth/domain/auth-state";
 
 const BASE_AUTH: AuthMeResponse = {
   authenticated: true,

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   evaluateHeliusAmlClassification,
   screenWalletWithHelius
-} from "@/lib/compliance/aml-helius";
+} from "@/features/profile/infrastructure/aml-helius";
 
 const WALLET = "Wallet11111111111111111111111111111111111";
 const WALLET_FALLBACK = "Wallet22222222222222222222222222222222222";

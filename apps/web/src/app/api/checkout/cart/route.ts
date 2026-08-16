@@ -6,7 +6,7 @@ import {
   getCart,
   removeCartItemByProperty,
   upsertCartItemQuantity
-} from "@/lib/checkout-service";
+} from "@/features/checkout-payment/application/checkout-service";
 
 type CartMutationBody = {
   propertyId?: unknown;

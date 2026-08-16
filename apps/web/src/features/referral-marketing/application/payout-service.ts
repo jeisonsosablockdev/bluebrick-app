@@ -2,14 +2,14 @@ import { randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
-import type { ReferralRewardStatus } from "@/lib/referrals/domain";
-import { listReferralAttributionsForReferrer, type ReferralMetadata } from "@/lib/referrals/repository";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
+import type { ReferralRewardStatus } from "@/features/referral-marketing/domain/referrals-domain";
+import { listReferralAttributionsForReferrer, type ReferralMetadata } from "@/features/referral-marketing/infrastructure/referrals-repository";
 import {
   listReferralRewardEventsByAttributionIds,
   transitionReferralRewardEventStatuses,
   type ReferralRewardEventRecord
-} from "@/lib/referrals/reward-engine";
+} from "@/features/referral-marketing/application/reward-engine";
 
 export type ReferralPayoutStatus = "draft" | "approved" | "executed" | "failed" | "canceled";
 

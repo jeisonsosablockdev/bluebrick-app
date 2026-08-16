@@ -1,5 +1,5 @@
 import { SalesOverviewPanel } from "@/features/admin/presentation/sales-overview-panel";
-import { getAdminSalesOverview } from "@/lib/purchase-metrics-service";
+import { getAdminSalesOverview } from "@/features/checkout-payment/application/purchase-metrics-service";
 
 type AdminSalesPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

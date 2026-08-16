@@ -4,7 +4,7 @@ import { getRequestRole } from "@/lib/auth-session";
 import {
   finalizeCoreCandyMachineSnapshot,
   isCoreCandyMachineSnapshotError
-} from "@/lib/core-candy-machine-snapshot-service";
+} from "@/features/nft-minting/application/core-candy-machine-snapshot-service";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestRole = getRequestRole(request);

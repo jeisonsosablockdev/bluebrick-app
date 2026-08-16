@@ -12,9 +12,9 @@ import {
   markReferralAttributionKycApproved,
   promoteReferralIntentForAccountWallet,
   upsertReferralIntentForAccount
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 
-describe("lib/referrals/repository (in-memory)", () => {
+describe("features/referral-marketing/infrastructure/referrals-repository (in-memory)", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetReferralRepositoryStateForTests();

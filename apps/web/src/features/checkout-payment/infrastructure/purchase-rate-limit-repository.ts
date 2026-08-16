@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type PurchaseRateLimitEndpoint = "purchase_challenge" | "purchase_prepare";
 

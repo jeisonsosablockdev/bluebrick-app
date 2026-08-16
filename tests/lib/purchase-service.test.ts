@@ -11,9 +11,9 @@ import {
   getPurchaseAssetVerificationRetryConfig,
   mapSubmitErrorToPurchaseError,
   resolvePreparedPriceLamports
-} from "@/lib/purchase-service";
+} from "@/features/checkout-payment/application/purchase-service";
 
-describe("lib/purchase-service", () => {
+describe("features/checkout-payment/application/purchase-service", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });

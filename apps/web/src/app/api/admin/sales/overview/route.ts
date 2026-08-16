@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { getAdminSalesOverview } from "@/lib/purchase-metrics-service";
+import { getAdminSalesOverview } from "@/features/checkout-payment/application/purchase-metrics-service";
 
 function readRange(value: string | null): "24h" | "7d" | "30d" {
   return value === "7d" || value === "30d" ? value : "24h";

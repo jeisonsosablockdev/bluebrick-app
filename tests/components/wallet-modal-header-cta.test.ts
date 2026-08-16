@@ -115,7 +115,7 @@ vi.mock("@/components/onboarding/onboarding-reward-decision-modal", () => ({
   }) => open ? createElement("div", { "data-testid": "post-auth-decision" }, walletConnected ? "wallet-decision" : "account-decision") : null
 }));
 
-vi.mock("@/lib/referrals/client-state", () => ({
+vi.mock("@/features/referral-marketing/application/client-state", () => ({
   buildPhantomBrowseDeepLink: referralStateMocks.buildPhantomBrowseDeepLink,
   buildReferralAuthPayload: referralStateMocks.buildReferralAuthPayload,
   buildReferralAuthMetadata: referralStateMocks.buildReferralAuthMetadata,

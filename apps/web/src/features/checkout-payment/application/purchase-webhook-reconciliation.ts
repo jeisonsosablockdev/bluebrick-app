@@ -2,13 +2,13 @@ import { randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   markPurchaseAttemptConfirmed,
   markPurchaseAttemptFailedBySignature
-} from "@/lib/purchase-attempts-repository";
-import { recordReferralPurchaseSignal } from "@/lib/referrals/reward-engine";
-import { invalidatePurchaseQuoteCache } from "@/lib/purchase-service";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
+import { recordReferralPurchaseSignal } from "@/features/referral-marketing/application/reward-engine";
+import { invalidatePurchaseQuoteCache } from "@/features/checkout-payment/application/purchase-service";
 
 export type PurchaseWebhookStatus = "confirmed" | "failed";
 

@@ -23,7 +23,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/compliance/case-service", () => ({
+vi.mock("@/features/profile/application/case-service", () => ({
   ComplianceCaseServiceError: routeMocks.MockComplianceCaseServiceError,
   applyKycDecisionForComplianceCase: routeMocks.applyKycDecisionForComplianceCase
 }));

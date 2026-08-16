@@ -5,7 +5,7 @@ const routeMocks = vi.hoisted(() => ({
   processPurchaseHeliusWebhookPayload: vi.fn()
 }));
 
-vi.mock("@/lib/purchase-webhook-reconciliation", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-webhook-reconciliation", () => ({
   processPurchaseHeliusWebhookPayload: routeMocks.processPurchaseHeliusWebhookPayload
 }));
 

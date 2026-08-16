@@ -30,17 +30,17 @@ const queryMock = vi.fn(async (sql: string) => {
   return { rows: [], rowCount: 0 };
 });
 
-vi.mock("@/lib/db/pool", () => ({
+vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   withDbClient: async (
     work: (client: { query: typeof queryMock }) => Promise<unknown>
   ) => work({ query: queryMock })
 }));
 
-vi.mock("@/lib/purchase-third-party-signer", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-third-party-signer", () => ({
   getPurchaseThirdPartySignerAddress: () => "ThirdPartyFallback111"
 }));
 
-vi.mock("@/lib/candy-guard-payment-config", () => ({
+vi.mock("@/features/nft-minting/domain/candy-guard-payment-config", () => ({
   resolveUsdcMintAddress: () => "UsdcMintFallback111",
   resolveUsdcPaymentRecipient: () => "UsdcRecipientFallback111",
   deriveAssociatedTokenAddress: () => "UsdcDestinationFallback111"

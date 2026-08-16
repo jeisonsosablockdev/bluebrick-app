@@ -17,7 +17,7 @@ vi.mock("node:child_process", () => ({
 import {
   assertDatabaseMigrationsApplied,
   resetDatabaseMigrationGuardForTests
-} from "@/lib/db/migration-guard";
+} from "@/features/shared/infrastructure/db/migration-guard";
 
 type QueryResult = {
   rows: Array<Record<string, unknown>>;
@@ -46,7 +46,7 @@ function buildMigrationDirEntry(name: string) {
   };
 }
 
-describe("lib/db/migration-guard", () => {
+describe("features/shared/infrastructure/db/migration-guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetDatabaseMigrationGuardForTests();

@@ -26,16 +26,16 @@ import {
   markPurchaseAttemptPrepared,
   markPurchaseAttemptFailed,
   markPurchaseAttemptSubmitted
-} from "@/lib/purchase-attempts-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
 import {
   assertPurchaseRateLimit,
   issuePurchaseChallenge,
   PurchaseAntiBotError,
   verifyAndConsumePurchaseChallenge
-} from "@/lib/purchase-anti-bot";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/checkout-payment/application/purchase-anti-bot";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
-import { createPurchaseThirdPartySigner } from "@/lib/purchase-third-party-signer";
+import { createPurchaseThirdPartySigner } from "@/features/checkout-payment/application/purchase-third-party-signer";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import { readBoundedIntegerEnv } from "@/lib/runtime-config";
 import {

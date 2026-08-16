@@ -1,4 +1,4 @@
-import { normalizeReferralCode, type ReferralAttributionSource } from "@/lib/referrals/domain";
+import { normalizeReferralCode, type ReferralAttributionSource } from "@/features/referral-marketing/domain/referrals-domain";
 
 export const REFERRAL_HINT_STORAGE_KEY = "brids_referral_hint";
 

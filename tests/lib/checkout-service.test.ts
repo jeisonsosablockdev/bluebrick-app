@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { CheckoutError, createOrderFromCart } from "@/lib/checkout-service";
+import { CheckoutError, createOrderFromCart } from "@/features/checkout-payment/application/checkout-service";
 
-describe("lib/checkout-service", () => {
+describe("features/checkout-payment/application/checkout-service", () => {
   it("rejects suspended airwallex checkout before opening a transaction", async () => {
     await expect(
       createOrderFromCart({

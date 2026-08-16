@@ -7,7 +7,7 @@ import {
   hasUsableNonce,
   issueNonce,
   revokeSession
-} from "@/lib/state/auth-store";
+} from "@/features/shared/auth/domain/auth-store";
 import { getAllowedDevOrigins } from "@/lib/dev-origins";
 import { formatUsdByLocale, ONBOARDING_REWARD_STATUS_LABELS } from "@/lib/onboarding-reward-copy";
 import { readBoundedIntegerEnv } from "@/lib/runtime-config";

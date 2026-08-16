@@ -10,7 +10,7 @@
 import { calculateHamiltonAllocation, type WalletTimeWeightInput } from "../../apps/web/src/lib/distribution/hamilton";
 import { validateSnapshotInput } from "../../apps/web/src/lib/distribution/snapshot";
 import { DualProviderGapError } from "../../apps/web/src/lib/archival/archival-rpc-client";
-import { isComplianceHoldExpired } from "../../apps/web/src/lib/claims/compliance-monitor";
+import { isComplianceHoldExpired } from "../../apps/web/src/features/staking-distribution/application/compliance-monitor";
 
 console.log("==========================================================");
 console.log("🧪 FASE 4: EXPERIMENTOS DE VERIFICACIÓN EPIC-014");

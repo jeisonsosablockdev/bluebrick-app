@@ -20,7 +20,7 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromRequest: routeMocks.getAuthenticatedPublicKeyFromRequest
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   getOrCreateProfileBundle: routeMocks.getOrCreateProfileBundle,
   updateProfileBasics: routeMocks.updateProfileBasics,
   ProfileRepositoryError: routeMocks.MockProfileRepositoryError

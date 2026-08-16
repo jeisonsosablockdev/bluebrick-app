@@ -10,7 +10,7 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromRequest: routeMocks.getAuthenticatedPublicKeyFromRequest
 }));
 
-vi.mock("@/lib/referrals/dashboard-service", () => ({
+vi.mock("@/features/referral-marketing/application/dashboard-service", () => ({
   listReferralDashboardInvitees: routeMocks.listReferralDashboardInvitees
 }));
 

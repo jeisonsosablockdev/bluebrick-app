@@ -8,7 +8,7 @@ import {
   isCoreCandyMachineSubmitRecoverableError,
   submitCoreCandyMachineSignedTransactions,
   type SubmitSignedCandyMachineTransactionsInput
-} from "@/lib/core-candy-machine-admin";
+} from "@/features/nft-minting/application/core-candy-machine-admin";
 
 type SubmitRequestBody = Partial<Omit<SubmitSignedCandyMachineTransactionsInput, "expectedPayerPublicKey">>;
 

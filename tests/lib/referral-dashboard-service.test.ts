@@ -6,22 +6,22 @@ import {
   __resetReferralPayoutServiceStateForTests,
   createReferralPayoutBatch,
   executeReferralPayout
-} from "@/lib/referrals/payout-service";
+} from "@/features/referral-marketing/application/payout-service";
 import {
   __resetReferralRepositoryStateForTests,
   bindReferralAtFirstAuth,
   getOrCreateReferralCodeForWallet,
   markReferralAttributionKycApproved
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 import {
   __resetReferralRewardEngineStateForTests,
   recordReferralPurchaseSignal,
   setReferralRewardRule,
   settleMatureReferralRewardEvents
-} from "@/lib/referrals/reward-engine";
-import { getReferralDashboardSummary, listReferralDashboardInvitees } from "@/lib/referrals/dashboard-service";
+} from "@/features/referral-marketing/application/reward-engine";
+import { getReferralDashboardSummary, listReferralDashboardInvitees } from "@/features/referral-marketing/application/dashboard-service";
 
-describe("lib/referrals/dashboard-service", () => {
+describe("features/referral-marketing/application/dashboard-service", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetReferralRepositoryStateForTests();

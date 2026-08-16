@@ -1,7 +1,7 @@
 import { Pool, type PoolClient } from "pg";
 
-import { normalizeDatabaseUrlForPg } from "@/lib/db/connection-string";
-import { assertDatabaseMigrationsApplied } from "@/lib/db/migration-guard";
+import { normalizeDatabaseUrlForPg } from "@/features/shared/infrastructure/db/connection-string";
+import { assertDatabaseMigrationsApplied } from "@/features/shared/infrastructure/db/migration-guard";
 
 declare global {
   var __dbPool: Pool | undefined;

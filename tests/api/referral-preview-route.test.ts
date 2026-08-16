@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { GET } from "@/app/api/referrals/preview/route";
-import { __resetReferralRepositoryStateForTests, getOrCreateReferralCodeForWallet } from "@/lib/referrals/repository";
+import { __resetReferralRepositoryStateForTests, getOrCreateReferralCodeForWallet } from "@/features/referral-marketing/infrastructure/referrals-repository";
 
 function createRequest(code?: string): NextRequest {
   const url = code

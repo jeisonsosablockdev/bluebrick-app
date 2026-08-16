@@ -1,6 +1,6 @@
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   __getWebPushSubscriptionRecordsForTests,
   type WebPushPlatformFamily,

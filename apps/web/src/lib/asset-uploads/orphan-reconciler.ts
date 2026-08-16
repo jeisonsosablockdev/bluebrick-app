@@ -1,4 +1,4 @@
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 import { deleteGcsObjectIfPresent, getGcsUploadConfig } from "@/lib/asset-uploads/gcs";
 

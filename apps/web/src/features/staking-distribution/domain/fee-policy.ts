@@ -14,7 +14,7 @@
  * - Locking: Fee quote locks policy version at claim request time
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 export type FeeScopeType = "global" | "project" | "candy_machine";

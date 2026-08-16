@@ -9,8 +9,8 @@ import {
   mergeFederatedOnlyAccountIntoWalletAccount,
   type AccountIdentityBundle,
   AccountRepositoryError
-} from "@/lib/accounts/repository";
-import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository";
+} from "@/features/profile/infrastructure/accounts-repository";
+import { applyFederatedEmailPrefill } from "@/features/profile/infrastructure/profile-repository";
 
 function redirectWithStatus(request: NextRequest, status: string, contextId?: string | null): NextResponse {
   const url = new URL("/protected/perfil", request.url);

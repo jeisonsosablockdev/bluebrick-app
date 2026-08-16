@@ -10,7 +10,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/compliance/aml-screening-service", () => ({
+vi.mock("@/features/profile/application/aml-screening-service", () => ({
   runWalletAmlScreening: routeMocks.runWalletAmlScreening
 }));
 

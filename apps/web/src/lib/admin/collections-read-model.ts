@@ -1,6 +1,6 @@
 import "server-only";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type AdminCollectionValidationState = "linked" | "missing_snapshot" | "inconsistent" | "orphaned";
 export type AdminCollectionEditableSection = "summary" | "propertyInformation" | "gallery" | "documents";

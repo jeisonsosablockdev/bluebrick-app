@@ -3,8 +3,8 @@ import {
   listReferralAttributionsForReferrer,
   listReferralAttributionsPageForReferrer,
   type ReferralAttributionRecord
-} from "@/lib/referrals/repository";
-import { listReferralRewardEventsByAttributionIds, type ReferralRewardEventRecord } from "@/lib/referrals/reward-engine";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
+import { listReferralRewardEventsByAttributionIds, type ReferralRewardEventRecord } from "@/features/referral-marketing/application/reward-engine";
 
 export type ReferralDashboardInviteeState = "pending" | "completed";
 

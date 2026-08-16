@@ -10,7 +10,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/purchase-metrics-service", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-metrics-service", () => ({
   getAdminDashboardOverview: routeMocks.getAdminDashboardOverview
 }));
 

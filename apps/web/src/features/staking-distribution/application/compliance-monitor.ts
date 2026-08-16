@@ -6,7 +6,7 @@
  * `CLAWBACK_TTL_EXPIRED` audit events, and credits the project's treasury clawback reserve.
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 export const DEFAULT_COMPLIANCE_HOLD_TTL_MS = 365 * 24 * 3600 * 1000; // 12 months (365 days)

@@ -9,7 +9,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 
-import { createClaimQuote, ClaimFlowError } from "@/lib/claims/claim-flow";
+import { createClaimQuote, ClaimFlowError } from "@/features/staking-distribution/application/claim-flow";
 import { resolveAppAuthContext } from "@/lib/app-auth";
 
 export const dynamic = "force-dynamic";

@@ -40,7 +40,7 @@ vi.mock("../../apps/web/src/lib/auth-sync", () => ({
   parseAuthSyncPayloadFromUnknown: vi.fn((v: unknown) => (v === "valid" ? { type: "login" } : null)),
 }));
 
-vi.mock("../../apps/web/src/lib/state/auth-state", () => ({
+vi.mock("../../apps/web/src/features/shared/auth/domain/auth-state", () => ({
   areAuthMeResponsesEquivalent: vi.fn((a: unknown, b: unknown) => a === b),
 }));
 

@@ -10,13 +10,13 @@ import {
   linkFederatedIdentityToAccount,
   linkWalletIdentityToAccount,
   mergeFederatedOnlyAccountIntoWalletAccount
-} from "@/lib/accounts/repository";
+} from "@/features/profile/infrastructure/accounts-repository";
 
 function clearDatabaseUrl(): void {
   delete process.env.DATABASE_URL;
 }
 
-describe("lib/accounts/repository", () => {
+describe("features/profile/infrastructure/accounts-repository", () => {
   afterEach(() => {
     clearDatabaseUrl();
     __resetAccountRepositoryStateForTests();

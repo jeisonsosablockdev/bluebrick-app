@@ -9,7 +9,7 @@
  * - RPC evidence (archival context slot and provider list)
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export type CommitteeItemSummary = {
   walletPublicKey: string;

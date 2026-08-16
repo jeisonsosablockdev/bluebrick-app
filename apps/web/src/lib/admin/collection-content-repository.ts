@@ -1,6 +1,6 @@
 import "server-only";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   normalizeCollectionBootstrapDocumentsJson,
   normalizeCollectionBootstrapGoogleMapsPlaceJson,

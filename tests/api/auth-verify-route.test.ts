@@ -22,11 +22,11 @@ vi.mock("@/lib/auth", () => ({
   clearNonceCookie: routeMocks.clearNonceCookie
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   isWalletRegistered: routeMocks.isWalletRegistered
 }));
 
-vi.mock("@/lib/referrals/repository", () => ({
+vi.mock("@/features/referral-marketing/infrastructure/referrals-repository", () => ({
   bindReferralAtFirstAuth: routeMocks.bindReferralAtFirstAuth
 }));
 
