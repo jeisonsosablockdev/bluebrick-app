@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 22.54 38.5">
+  <defs>
+    <style>
+      .cls-1 {
+        clip-path: url(#clippath);
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+
+      .cls-2, .cls-3 {
+        stroke-width: 0px;
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <clipPath id="clippath">
+      <path class="cls-2" d="M10.32.43L1.07,5.77c-.29.17-.47.48-.47.82v18.42c0,.52.43.94.95.94h0c.52,0,.94-.43.94-.95V7.13s7.35-4.23,7.35-4.23v21.59L1.14,29.52c-.31.15-.52.42-.53.77-.01.35.17.61.47.78l9.29,5.37c.15.08.31.13.48.13s.33-.04.47-.13l9.3-5.37c.29-.17.47-.48.47-.82v-10.74c0-.36-.22-.62-.54-.81l-5.17-2.98c-.47-.23-1.04-.02-1.26.45-.23.47-.03,1.04.45,1.26l4.63,2.67v9.59l-8.35,4.82-7.3-4.21,7.67-4.43c.32-.16.53-.49.53-.85V1.25c0-.34-.18-.65-.47-.82-.15-.08-.31-.13-.48-.13s-.33.04-.48.13"/>
+    </clipPath>
+    <linearGradient id="linear-gradient" x1="-3.94" y1="7750.69" x2="-2.94" y2="7750.69" gradientTransform="translate(-289946.98 140.09) rotate(90) scale(37.41 -37.41)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00b0f9"/>
+      <stop offset=".17" stop-color="#03aff9"/>
+      <stop offset=".31" stop-color="#0dadf9"/>
+      <stop offset=".44" stop-color="#1ea9f9"/>
+      <stop offset=".57" stop-color="#37a4f9"/>
+      <stop offset=".69" stop-color="#569df9"/>
+      <stop offset=".81" stop-color="#7d95f9"/>
+      <stop offset=".92" stop-color="#a98bf9"/>
+      <stop offset="1" stop-color="#cf84f9"/>
+      <stop offset="1" stop-color="#cf84f9"/>
+    </linearGradient>
+  </defs>
+  <g class="cls-1">
+    <rect class="cls-3" x="-9.51" y="-1.29" width="40.7" height="39.44" transform="translate(-10.13 14.25) rotate(-48.26)"/>
+  </g>
+</svg>

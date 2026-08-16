@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0.0",
+  "publishedOnly": true,
+  "feeds": {
+    "rss": "/feeds/rss",
+    "json": "/feeds/json",
+    "recent": "/feeds/recent",
+    "export": "/feeds/export",
+    "searchIndex": "/feeds/search-index"
+  }
+}
