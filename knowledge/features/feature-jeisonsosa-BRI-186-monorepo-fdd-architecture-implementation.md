@@ -539,16 +539,26 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 * **Verificación**: `pnpm validate:routes`, `pnpm validate:pipeline`, `pnpm typecheck`.
 
 #### **`SPEC-51 (Root Symlink Elimination & Path Aliases Harmonization)`**
-* **Objetivo & Alcance**: Eliminar symlinks residuales en la raíz del monorepo (`components`, `src`, `lib`, etc.) y remover el directorio `app/` en raíz ahora que `apps/web/src/app` es el source of truth físico y autónomo. Sincronizar y blindar `tsconfig.json` y `tsconfig.typecheck.json` para resolver `@/*` exclusivamente desde `./apps/web/src/*`.
-* **Archivos Afectados**: Symlinks raíz (`components`, `src`, `lib`, `public`), `app/` en raíz, `tsconfig.json`, `tsconfig.typecheck.json`.
+* **Objetivo & Alcance**: Eliminar symlinks residuales en la raíz del monorepo (`components`, `src`, `lib`, `public`, etc.). Sincronizar y blindar `tsconfig.json` y `tsconfig.typecheck.json` para resolver `@/*` exclusivamente desde `./apps/web/src/*`. Implementar Route Handlers estáticos limpios (`/brand`, `/images`, `/avatars`) para servir assets directamente desde `apps/web/public/` sin contaminación ni duplicidad en el root.
+* **Archivos Afectados**: Symlinks raíz (`components`, `src`, `lib`, `public`, `apps/web/app`), `tsconfig.json`, `tsconfig.typecheck.json`, `tests/features/root-symlink-elimination-fdd.test.ts`.
 * **Trazabilidad OKF**: `git-monorepo-policy.md`, `AGENTS.md`.
-* **Verificación**: `pnpm typecheck` con 0 errores, `pnpm validate:architecture` y validación de imports absolutos.
+* **Verificación**: `pnpm typecheck` con 0 errores, `pnpm validate:architecture`, 16/16 gates de `pnpm validate` en verde y Next.js build exitoso.
 
 ---
 
-### 🧼 Bloque 4: Limpieza, Refactorización y Auditoría Final (Clean Code Audit)
+### 🧼 Bloque 4: Organización de Infraestructura, Limpieza y Auditoría Final (Clean Code & DoD)
 
-#### **`SPEC-52 (Clean Code Audit, Zero Dead-Code, Monorepo Root Whitelist & Final DoD)`**
+#### **`SPEC-52 (Harness Organization & Centralization)`**
+* **Objetivo & Alcance**: 
+  1. Centralizar y estructurar la suite de tests de gobernanza e infraestructura en `tests/harness/` con organización modular y clara.
+  2. Unificar runner helpers (`sandbox-builder.ts`, `script-executor.ts`) y simplificar la ejecución de `test:harness`.
+  3. Eliminar scripts temporales y redundantes de migración en `scripts/ci/` (`check-root-symlink-migration.ts`, `migrate-symlink-imports.ts`).
+  4. Reducir desorden y centralizar las políticas ejecutables de CI y arquitectura.
+* **Archivos Afectados**: `tests/harness/*`, `scripts/ci/*`, `package.json`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`, `security-quality-policy.md`.
+* **Verificación**: `pnpm test:harness`, `pnpm validate` (16 gates) y `check-monorepo-structure.sh`.
+
+#### **`SPEC-53 (Clean Code Audit, Zero Dead-Code, Monorepo Root Whitelist & Final DoD)`**
 * **Objetivo & Alcance**: 
   1. Ejecutar una auditoría exhaustiva de Clean Code: eliminación de dead code, imports residuales, verificación de 0 implicit `any` y cumplimiento estricto de convenciones de nombrado.
   2. Verificar que la raíz del monorepo cumpla al 100% con la whitelist de directorios (`programs/`, `apps/`, `packages/`, `.agents/`, `knowledge/`, `scripts/`, `tests/`).
@@ -556,7 +566,7 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
   4. Ejecución de la suite completa `pnpm validate` (16 gates en verde), `check-monorepo-structure.sh`, `check-layered-architecture.sh` y build de producción de Next.js (`pnpm build`).
 * **Archivos Afectados**: Todo el monorepo.
 * **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2), `security-quality-policy.md`.
-* **Verificación**: `pnpm validate` al 100% verde (0 errores, 0 warnings) y `pnpm build` exitoso.
+* **Verificación**: `pnpm validate` al 100% verde (0 errores, 0 warnings), `pnpm build` exitoso y Human Acceptance registrado.
 
 
 ## 4. TDD (Test-Driven Development) Strategy
