@@ -9,7 +9,7 @@ import { PwaCapabilityCard } from "@/components/pwa/pwa-capability-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COUNTRIES } from "@/lib/countries";
-import { TOUR_STEP_IDS } from "@/components/dashboard/quick-tour-overlay";
+import { TOUR_STEP_IDS } from "@/features/profile/presentation/quick-tour-overlay";
 import {
   formatOnboardingRewardRemainingWindow,
   formatUsdByLocale,

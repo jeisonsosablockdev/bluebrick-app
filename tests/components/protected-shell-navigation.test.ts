@@ -4,7 +4,7 @@ import {
   buildProtectedNavigation,
   isProtectedRouteActive,
   resolveCurrentProtectedModule
-} from "@/components/dashboard/protected-shell";
+} from "@/features/profile/presentation/protected-shell";
 import type { LocaleText } from "@/lib/i18n";
 
 function english(text: LocaleText): string {
@@ -25,7 +25,7 @@ function setNodeEnv(value: string | undefined): void {
   env.NODE_ENV = value;
 }
 
-describe("components/dashboard/protected-shell", () => {
+describe("features/profile/presentation/protected-shell", () => {
   afterEach(() => {
     setNodeEnv(originalNodeEnv);
 
@@ -42,15 +42,15 @@ describe("components/dashboard/protected-shell", () => {
 
     const navigation = buildProtectedNavigation(english);
 
-    expect(navigation[0]?.href).toBe("/protected");
-    expect(navigation[1]?.href).toBe("/protected/referrals");
+    expect(navigation[0]?.href).toBe("/profile");
+    expect(navigation[1]?.href).toBe("/profile/referrals");
     expect(navigation[1]?.label).toBe("Referral Rewards");
   });
 
   it("matches nested protected routes", () => {
-    expect(isProtectedRouteActive("/protected/referrals", "/protected/referrals")).toBe(true);
-    expect(isProtectedRouteActive("/protected/referrals/detail", "/protected/referrals")).toBe(true);
-    expect(isProtectedRouteActive("/protected/portfolio", "/protected/referrals")).toBe(false);
+    expect(isProtectedRouteActive("/profile/referrals", "/profile/referrals")).toBe(true);
+    expect(isProtectedRouteActive("/profile/referrals/detail", "/profile/referrals")).toBe(true);
+    expect(isProtectedRouteActive("/profile/portfolio", "/profile/referrals")).toBe(false);
   });
 
   it("resolves the current protected module from the active route", () => {
@@ -59,7 +59,7 @@ describe("components/dashboard/protected-shell", () => {
 
     const navigation = buildProtectedNavigation(english);
 
-    expect(resolveCurrentProtectedModule("/protected/referrals", navigation).label).toBe("Referral Rewards");
+    expect(resolveCurrentProtectedModule("/profile/referrals", navigation).label).toBe("Referral Rewards");
     expect(resolveCurrentProtectedModule("/unknown", navigation).label).toBe("Overview");
   });
 
@@ -71,10 +71,10 @@ describe("components/dashboard/protected-shell", () => {
     const routes = navigation.map((item) => item.href);
 
     expect(routes).toEqual([
-      "/protected",
-      "/protected/referrals",
-      "/protected/stake",
-      "/protected/perfil"
+      "/profile",
+      "/profile/referrals",
+      "/profile/stake",
+      "/profile/perfil"
     ]);
   });
 });

@@ -9,7 +9,7 @@ import {
   type DashboardOverviewResponse,
   type MetricsRange
 } from "@/lib/admin-metrics-client";
-import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { DashboardCharts } from "@/features/investor-portfolio/presentation/dashboard-charts";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

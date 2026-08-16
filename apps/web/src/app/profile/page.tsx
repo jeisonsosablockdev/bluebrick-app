@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OverviewModule } from "@/components/dashboard/overview-module";
+import { OverviewModule } from "@/features/investor-portfolio/presentation/overview-module";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({

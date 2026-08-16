@@ -12,7 +12,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { OverviewModule } from "@/components/dashboard/overview-module";
+import { OverviewModule } from "@/features/investor-portfolio/presentation/overview-module";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -93,7 +93,7 @@ async function flush(): Promise<void> {
   });
 }
 
-describe("components/dashboard/overview-module", () => {
+describe("features/investor-portfolio/presentation/overview-module", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "en",

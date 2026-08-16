@@ -3,7 +3,7 @@
 import React from 'react';
 import { UserProfileEntity } from '../domain';
 import { UserProfileHeader } from './user-profile-header';
-import { ProfileKycModule } from '@/components/dashboard/profile-kyc-module';
+import { ProfileKycModule } from '@/features/profile/presentation/profile-kyc-module';
 
 export interface ProfilePageTemplateProps {
   profile: UserProfileEntity;
