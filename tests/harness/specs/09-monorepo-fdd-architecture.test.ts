@@ -157,4 +157,69 @@ describe('09 - Monorepo FDD Architecture & Governance Harness (BRI-186)', () => 
       scanDirForViolations(featuresRoot);
     });
   });
+
+  describe('6. Legacy Proxies, Symlinks & Directory Elimination', () => {
+    test('no root symlinks exist in the repository', () => {
+      const symlinkCandidates = [
+        path.join(repoRoot, 'components'),
+        path.join(repoRoot, 'public'),
+        path.join(repoRoot, 'src'),
+        path.join(repoRoot, 'src/features'),
+        path.join(repoRoot, 'apps/web/app')
+      ];
+
+      for (const candidate of symlinkCandidates) {
+        if (fs.existsSync(candidate)) {
+          const stats = fs.lstatSync(candidate);
+          expect(stats.isSymbolicLink(), `Path ${candidate} must not be a symbolic link`).toBe(false);
+        }
+      }
+    });
+
+    test('legacy component directories are completely eliminated', () => {
+      const componentsRoot = path.join(webAppRoot, 'src/components');
+      expect(fs.existsSync(path.join(componentsRoot, 'admin'))).toBe(false);
+      expect(fs.existsSync(path.join(componentsRoot, 'checkout'))).toBe(false);
+      expect(fs.existsSync(path.join(componentsRoot, 'dashboard'))).toBe(false);
+      expect(fs.existsSync(path.join(componentsRoot, 'marketplace'))).toBe(false);
+      expect(fs.existsSync(path.join(componentsRoot, 'sections'))).toBe(false);
+    });
+
+    test('legacy lib proxies are eliminated and replaced by canonical feature modules', () => {
+      const libDir = path.join(webAppRoot, 'src/lib');
+      const legacyLibProxies = [
+        'purchase-service.ts',
+        'purchase-anti-bot.ts',
+        'purchase-attempts-repository.ts',
+        'checkout-service.ts',
+        'checkout-repository.ts',
+        'core-candy-machine-admin.ts',
+        'stake-profile-events-repository.ts',
+        'referrals/reward-engine.ts',
+        'referrals/payout-service.ts',
+        'compliance/aml-screening-service.ts',
+        'compliance/case-service.ts',
+        'distributions/distribution-engine.ts',
+        'claims/claim-flow.ts'
+      ];
+
+      for (const proxyFile of legacyLibProxies) {
+        expect(fs.existsSync(path.join(libDir, proxyFile))).toBe(false);
+      }
+    });
+  });
+
+  describe('7. TSConfig Path Aliases Harmonization', () => {
+    test('tsconfig compiler paths map directly to canonical apps/web/src locations with zero legacy fallbacks', () => {
+      const tsconfigPath = path.join(repoRoot, 'tsconfig.json');
+      const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8'));
+
+      expect(tsconfig.compilerOptions.paths['@/*']).toEqual(['./apps/web/src/*', './*']);
+      expect(tsconfig.compilerOptions.paths['@/features/*']).toEqual(['./apps/web/src/features/*']);
+      expect(tsconfig.compilerOptions.paths['@core/*']).toEqual(['./apps/web/src/lib/core/*']);
+      expect(tsconfig.compilerOptions.paths['@software/*']).toEqual(['./apps/web/src/lib/software/*']);
+      expect(tsconfig.compilerOptions.paths['@knowledge/*']).toEqual(['./apps/web/src/lib/knowledge/*']);
+      expect(tsconfig.compilerOptions.paths['@regulatory/*']).toEqual(['./apps/web/src/lib/regulatory/*']);
+    });
+  });
 });
