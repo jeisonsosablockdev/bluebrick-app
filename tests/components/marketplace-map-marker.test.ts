@@ -9,9 +9,9 @@ vi.mock("react-map-gl/mapbox", () => ({
   Marker: ({ children }: { children: ReactNode }) => createElement("div", { "data-testid": "marker" }, children)
 }));
 
-import { MarketplaceMapMarker } from "@/components/marketplace/MarketplaceMapMarker";
+import { MarketplaceMapMarker } from "@/features/marketplace/presentation/MarketplaceMapMarker";
 
-describe("components/marketplace/MarketplaceMapMarker", () => {
+describe("features/marketplace/presentation/MarketplaceMapMarker", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();

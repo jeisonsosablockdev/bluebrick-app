@@ -11,7 +11,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { PropertyDetailFeesReturnCard } from "@/components/marketplace/PropertyDetailFeesReturnCard";
+import { PropertyDetailFeesReturnCard } from "@/features/marketplace/presentation/PropertyDetailFeesReturnCard";
 
 function renderCard(economics: Record<string, number | null>) {
   const container = document.createElement("div");

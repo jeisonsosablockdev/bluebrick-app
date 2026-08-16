@@ -9,7 +9,7 @@ vi.mock("next/image", () => ({
   default: (props: { alt: string; className: string; src: string }) => createElement("img", props)
 }));
 
-vi.mock("@/components/marketplace/PurchaseCta", () => ({
+vi.mock("@/features/marketplace/presentation/PurchaseCta", () => ({
   PurchaseCta: ({ propertyId }: { propertyId: string }) => createElement("div", { "data-testid": "purchase-cta" }, propertyId)
 }));
 

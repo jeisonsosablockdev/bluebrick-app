@@ -2,13 +2,13 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { MarketplaceMapShell } from "@/components/marketplace/MarketplaceMapShell";
+import { MarketplaceMapShell } from "@/features/marketplace/presentation/MarketplaceMapShell";
 
 function renderShell(element: ReactNode): string {
   return renderToStaticMarkup(createElement("div", null, element));
 }
 
-describe("components/marketplace/MarketplaceMapShell", () => {
+describe("features/marketplace/presentation/MarketplaceMapShell", () => {
   it("falls back to the list when the Mapbox token is missing", () => {
     const html = renderShell(
       createElement(MarketplaceMapShell, {

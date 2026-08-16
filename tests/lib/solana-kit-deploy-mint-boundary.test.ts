@@ -20,7 +20,7 @@ const MARKETPLACE_PURCHASE_FILES = [
   "lib/purchase-service.ts",
   "lib/purchase-anti-bot.ts",
   "lib/property-marketplace-server.ts",
-  "components/marketplace/PurchaseCta.tsx"
+  "features/marketplace/presentation/PurchaseCta.tsx"
 ];
 
 function readRepoFile(relativePath: string): string {

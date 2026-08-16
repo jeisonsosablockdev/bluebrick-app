@@ -9,7 +9,7 @@ const REFACTOR_FILES = [
   "lib/property-marketplace-server.ts",
   "lib/solana-kit/compat/squads.ts",
   "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",
-  "components/marketplace/PurchaseCta.tsx",
+  "features/marketplace/presentation/PurchaseCta.tsx",
   "scripts/check-candy-machine-items.js"
 ];
 

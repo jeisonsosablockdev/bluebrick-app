@@ -11,7 +11,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { PropertyDetailPropertyInfoCard } from "@/components/marketplace/PropertyDetailPropertyInfoCard";
+import { PropertyDetailPropertyInfoCard } from "@/features/marketplace/presentation/PropertyDetailPropertyInfoCard";
 
 describe("PropertyDetailPropertyInfoCard", () => {
   beforeEach(() => {

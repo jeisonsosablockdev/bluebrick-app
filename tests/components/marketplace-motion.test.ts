@@ -18,7 +18,7 @@ vi.mock("next/image", () => ({
   default: (props: { alt: string; src: string }) => createElement("img", props)
 }));
 
-vi.mock("@/components/marketplace/PurchaseCta", () => ({
+vi.mock("@/features/marketplace/presentation/PurchaseCta", () => ({
   PurchaseCta: () => createElement("div", null, "purchase-cta")
 }));
 
@@ -46,7 +46,7 @@ function renderNode(node: ReactElement): RenderHandle {
   return { container, root };
 }
 
-describe("components/marketplace motion surfaces", () => {
+describe("features/marketplace/presentation motion surfaces", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY = "test-google-maps-embed-key";
     localeMocks.useI18n.mockReturnValue({

@@ -11,7 +11,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { PropertyDetailDocumentsBlockchainCards } from "@/components/marketplace/PropertyDetailDocumentsBlockchainCards";
+import { PropertyDetailDocumentsBlockchainCards } from "@/features/marketplace/presentation/PropertyDetailDocumentsBlockchainCards";
 
 describe("PropertyDetailDocumentsBlockchainCards", () => {
   beforeEach(() => {
