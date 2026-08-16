@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   AdminCollectionGalleryShell,
   buildAdminCollectionGalleryGroups
-} from "@/components/admin/admin-collection-gallery-shell";
+} from "@/features/admin/presentation/admin-collection-gallery-shell";
 import type { AdminCollectionContentRecord } from "@/lib/admin/collection-content-repository";
 
 const content: AdminCollectionContentRecord = {
@@ -57,7 +57,7 @@ const content: AdminCollectionContentRecord = {
   updatedAt: "2026-04-26T02:00:00.000Z"
 };
 
-describe("components/admin/admin-collection-gallery-shell", () => {
+describe("features/admin/presentation/admin-collection-gallery-shell", () => {
   it("keeps gallery and property groups distinct", () => {
     const groups = buildAdminCollectionGalleryGroups(content);
 
@@ -83,7 +83,7 @@ describe("components/admin/admin-collection-gallery-shell", () => {
       })
     );
 
-    expect(html).toContain("Gallery shell live");
+    expect(html).toContain("Media reference");
     expect(html).toContain("Marketplace gallery");
     expect(html).toContain("Property imagery");
     expect(html).toContain("Add gallery image");

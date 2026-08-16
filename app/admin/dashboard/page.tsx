@@ -1,4 +1,4 @@
-import { ExecutiveDashboard } from "@/components/admin/executive-dashboard";
+import { ExecutiveDashboard } from "@/features/admin/presentation/executive-dashboard";
 import { getAdminMetricsQuery, AdminPageClient } from "@/features/admin";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";

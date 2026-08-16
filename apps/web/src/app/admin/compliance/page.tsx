@@ -1,4 +1,4 @@
-import { ComplianceConsole } from "@/components/admin/compliance-console";
+import { ComplianceConsole } from "@/features/admin/presentation/compliance-console";
 import { getComplianceCasesQueue } from "@/lib/compliance/case-service";
 import type { ComplianceStatus } from "@/lib/compliance/compliance-status-projector";
 

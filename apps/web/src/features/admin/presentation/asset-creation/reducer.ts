@@ -1,5 +1,5 @@
-import type { AssetCreationAction } from "@/components/admin/asset-creation/actions";
-import { createInitialAssetCreationState, type AssetCreationState } from "@/components/admin/asset-creation/types";
+import type { AssetCreationAction } from "@/features/admin/presentation/asset-creation/actions";
+import { createInitialAssetCreationState, type AssetCreationState } from "@/features/admin/presentation/asset-creation/types";
 
 function dedupe(values: string[]): string[] {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));

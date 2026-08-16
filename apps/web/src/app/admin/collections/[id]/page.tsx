@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import Link from "next/link";
 
-import { AdminCollectionDetailShell } from "@/components/admin/admin-collection-detail-shell";
-import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
+import { AdminCollectionDetailShell } from "@/features/admin/presentation/admin-collection-detail-shell";
+import { AdminModulePlaceholder } from "@/features/admin/presentation/admin-module-placeholder";
 import { Card } from "@/components/ui/card";
 import { loadAdminCollectionDetailPageState } from "@/lib/admin/collection-detail-page-state";
 import { localize } from "@/lib/i18n";

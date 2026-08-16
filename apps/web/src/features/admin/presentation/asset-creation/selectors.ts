@@ -1,4 +1,4 @@
-import type { AssetCreationState, AssetForm, TypeFormState } from "@/components/admin/asset-creation/types";
+import type { AssetCreationState, AssetForm, TypeFormState } from "@/features/admin/presentation/asset-creation/types";
 
 export function toSafeNonNegativeInteger(value: unknown): number {
   const parsed = Number(value);

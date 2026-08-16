@@ -4,7 +4,7 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AdminCollectionLocationEditor } from "@/components/admin/admin-collection-location-editor";
+import { AdminCollectionLocationEditor } from "@/features/admin/presentation/admin-collection-location-editor";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -51,7 +51,7 @@ function renderEditor(): RenderHandle {
   return { container, root };
 }
 
-describe("components/admin/admin-collection-location-editor", () => {
+describe("features/admin/presentation/admin-collection-location-editor", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
@@ -65,7 +65,7 @@ describe("components/admin/admin-collection-location-editor", () => {
     const { container, root } = renderEditor();
 
     expect(container.textContent).toContain("Search address");
-    expect(container.textContent).toContain("Autocomplete selection stays local in this slice.");
+    expect(container.textContent).toContain("Select an address to preview the reduced Maps payload before saving.");
     expect(container.textContent).toContain("Open in Google Maps");
     expect(container.textContent).toContain("Save location");
     expect(container.textContent).toContain("Cancel");

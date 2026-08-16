@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { ForbiddenView } from "@/components/forbidden-view";
-import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminShell } from "@/features/admin/presentation/admin-shell";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { getAuthenticatedPublicKeyFromCookies } from "@/lib/auth";
 import { getServerLocale } from "@/lib/i18n-server";

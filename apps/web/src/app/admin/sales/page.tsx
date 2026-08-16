@@ -1,4 +1,4 @@
-import { SalesOverviewPanel } from "@/components/admin/sales-overview-panel";
+import { SalesOverviewPanel } from "@/features/admin/presentation/sales-overview-panel";
 import { getAdminSalesOverview } from "@/lib/purchase-metrics-service";
 
 type AdminSalesPageProps = {

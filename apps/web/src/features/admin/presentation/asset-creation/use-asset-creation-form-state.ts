@@ -19,11 +19,11 @@ import {
   setUploadRefs as setUploadRefsAction,
   setUploadState as setUploadStateAction,
   setValidationErrors as setValidationErrorsAction
-} from "@/components/admin/asset-creation/actions";
+} from "@/features/admin/presentation/asset-creation/actions";
 import {
   assetCreationReducer
-} from "@/components/admin/asset-creation/reducer";
-import type { AssetCreationAction } from "@/components/admin/asset-creation/actions";
+} from "@/features/admin/presentation/asset-creation/reducer";
+import type { AssetCreationAction } from "@/features/admin/presentation/asset-creation/actions";
 import type {
   AssetCreationState,
   AssetForm,
@@ -32,10 +32,10 @@ import type {
   ImportJobTracker,
   UploadRefsState,
   UploadUiState
-} from "@/components/admin/asset-creation/types";
+} from "@/features/admin/presentation/asset-creation/types";
 import {
   createInitialAssetCreationState
-} from "@/components/admin/asset-creation/types";
+} from "@/features/admin/presentation/asset-creation/types";
 
 type SetStateAction<T> = T | ((prev: T) => T);
 

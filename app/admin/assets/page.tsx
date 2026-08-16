@@ -1,5 +1,5 @@
 import { getManagedPropertiesQuery, PropertyManagementPageClient } from "@/features/property-management";
-import { AdminModulePlaceholder } from "@/components/admin/admin-module-placeholder";
+import { AdminModulePlaceholder } from "@/features/admin/presentation/admin-module-placeholder";
 import { localize } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
 

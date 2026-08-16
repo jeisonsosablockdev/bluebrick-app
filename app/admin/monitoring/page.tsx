@@ -1,4 +1,4 @@
-import { MonitoringConsole } from "@/components/admin/monitoring-console";
+import { MonitoringConsole } from "@/features/admin/presentation/monitoring-console";
 import { getAdminMonitoringEvents } from "@/lib/purchase-metrics-service";
 
 type AdminMonitoringPageProps = {

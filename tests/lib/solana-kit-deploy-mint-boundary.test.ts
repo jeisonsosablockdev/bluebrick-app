@@ -12,8 +12,8 @@ const DEPLOY_MINT_FILES = [
   "lib/purchase-third-party-signer.ts",
   "lib/solana-kit/compat/squads.ts",
   "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",
-  "components/admin/core-candy-machine-panel.tsx",
-  "components/admin/metaplex-core-mint-panel.tsx"
+  "features/admin/presentation/core-candy-machine-panel.tsx",
+  "features/admin/presentation/metaplex-core-mint-panel.tsx"
 ];
 
 const MARKETPLACE_PURCHASE_FILES = [
