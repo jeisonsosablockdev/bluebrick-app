@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${ROOT_DIR:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 PR_RUN_FILE="${ROOT_DIR}/.agents/pr_last_run.json"
 
+BRANCH="$(git branch --show-current 2>/dev/null || echo "refactor/jeisonsosa-BRI-186-monorepo-fdd-architecture")"
 ISSUE_ID="$(node -e "try{const p=JSON.parse(require('fs').readFileSync('${ROOT_DIR}/.agents/active_task_state.json','utf8'));process.stdout.write(p.task_id||'');}catch(e){}" 2>/dev/null || echo "")"
 if [[ -z "${ISSUE_ID}" ]]; then
   ISSUE_ID="$(echo "${BRANCH}" | grep -oE 'BRI-[0-9]+' | head -1 || echo "BRI-186")"
