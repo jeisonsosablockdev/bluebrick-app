@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-186-SPEC52",
+  "task_id": "BRI-186-SPEC53",
   "current_phase": "PHASE_6_CODE_GREEN",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

@@ -127,6 +127,7 @@ export function useWalletSignIn(params: UseWalletSignInParams) {
         throw new Error("Phantom wallet was not found in this browser.");
       }
 
+      setHasWalletAuthIntent?.(true);
       if (initialSigningPreparation.status === "needs_connection") {
         setPhase("connecting");
 
