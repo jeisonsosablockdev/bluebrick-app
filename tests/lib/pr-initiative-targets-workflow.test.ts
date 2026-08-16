@@ -24,7 +24,7 @@ describe("parent-work-target PR workflow", () => {
 
   it("runs validate and docs gates for parent work branch PRs", () => {
     expect(workflowSource).toContain("name: Validate (lint + typecheck + docs governance)");
-    expect(workflowSource).toContain("run: npm run validate");
+    expect(workflowSource).toContain("run: pnpm validate");
     expect(workflowSource).toContain("name: Required Docs Sync Check");
     expect(workflowSource).toContain("run: bash ./scripts/ci/check-required-docs.sh");
   });

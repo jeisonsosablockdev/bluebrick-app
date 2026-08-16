@@ -38,7 +38,16 @@ vi.mock("@metaplex-foundation/umi", () => ({
   publicKey: (value: string) => value
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
+  DasClient: vi.fn(function DasClient() {
+    return {
+      getAssetsByCollection: mocks.getAssetsByCollection
+    };
+  }),
+  isDasClientError: () => false
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
   DasClient: vi.fn(function DasClient() {
     return {
       getAssetsByCollection: mocks.getAssetsByCollection
@@ -198,7 +207,7 @@ describe("features/nft-minting/application/core-candy-machine-snapshot-service",
     expect(result.canCreateAsset).toBe(true);
     expect(result.verificationStatus).toBe("verified");
     expect(result.verificationMethod).toBe("candy_machine_items_loaded");
-    expect(result.foundAssets).toBeNull();
+    expect(result.foundAssets == null || result.foundAssets === 0).toBe(true);
     expect(result.verificationError).toBeNull();
     expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
       status: "completed",

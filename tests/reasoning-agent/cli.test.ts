@@ -5,8 +5,9 @@ const mockLLM = {
   invokeStructured: vi.fn(),
 };
 
-vi.mock("@/lib/reasoning-agent/llm", () => ({
-  createLLMProvider: () => mockLLM,
+vi.mock("@/lib/reasoning-agent/llm/provider-factory", () => ({
+  createProvider: () => mockLLM,
+  detectProviderFromEnv: () => ({ type: "local" })
 }));
 
 describe("ReasoningAgent CLI Integration", () => {

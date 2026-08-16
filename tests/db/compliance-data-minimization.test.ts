@@ -39,7 +39,7 @@ const prohibitedSensitiveColumnNames = [
 ] as const;
 
 function getComplianceMigrationsSql(): string {
-  const migrationsDir = path.join(process.cwd(), "db", "migrations");
+  const migrationsDir = path.join(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations");
 
   return complianceMigrationFiles
     .map((fileName) => fs.readFileSync(path.join(migrationsDir, fileName), "utf8"))

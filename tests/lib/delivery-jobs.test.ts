@@ -96,19 +96,22 @@ describe("lib/notifications/delivery-jobs", () => {
       consentSource: "protected_profile"
     });
 
-    sendMocks.sendWebPushEnvelope
-      .mockResolvedValueOnce({
+    sendMocks.sendWebPushEnvelope.mockImplementation(async (subscription: { endpoint: string }) => {
+      if (subscription?.endpoint?.includes("gone")) {
+        return {
+          outcome: "pruned",
+          httpStatus: 410,
+          errorCode: "HTTP_410",
+          errorMessage: "Gone"
+        };
+      }
+      return {
         outcome: "delivered",
         httpStatus: 201,
         errorCode: null,
         errorMessage: null
-      })
-      .mockResolvedValueOnce({
-        outcome: "pruned",
-        httpStatus: 410,
-        errorCode: "HTTP_410",
-        errorMessage: "Gone"
-      });
+      };
+    });
 
     const created = await createOrGetTransactionalWebPushJob({
       dedupeKey: "kyc:wallet111:evt_2",

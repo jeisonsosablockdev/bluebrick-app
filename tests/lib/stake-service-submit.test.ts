@@ -40,7 +40,11 @@ vi.mock("@metaplex-foundation/umi-bundle-defaults", () => ({
   createUmi: vi.fn(() => ({ use: vi.fn().mockReturnThis() }))
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
+  DasClient: vi.fn()
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
   DasClient: vi.fn()
 }));
 

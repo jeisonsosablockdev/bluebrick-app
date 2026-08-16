@@ -13,6 +13,10 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
+vi.mock("@/features/shared/ui/locale-provider", () => ({
+  useI18n: localeMocks.useI18n
+}));
+
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
@@ -32,6 +36,30 @@ function renderToggle(): RenderHandle {
 
   return { container, root };
 }
+
+const storage = new Map<string, string>();
+const localStorageMock = {
+  getItem: vi.fn((key: string) => storage.get(key) ?? null),
+  setItem: vi.fn((key: string, value: string) => {
+    storage.set(key, String(value));
+  }),
+  removeItem: vi.fn((key: string) => {
+    storage.delete(key);
+  }),
+  clear: vi.fn(() => {
+    storage.clear();
+  }),
+  get length() {
+    return storage.size;
+  },
+  key: vi.fn((idx: number) => Array.from(storage.keys())[idx] ?? null)
+};
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  writable: true,
+  configurable: true
+});
 
 describe("components/theme/theme-toggle", () => {
   beforeEach(() => {

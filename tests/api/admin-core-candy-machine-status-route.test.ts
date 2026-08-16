@@ -13,8 +13,16 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
+vi.mock("@/lib/state/mint-orchestrator-store", () => ({
+  getWebhookEventsBySignatures: routeMocks.getWebhookEventsBySignatures
+}));
+
 vi.mock("@/lib/mint-orchestrator-store", () => ({
   getWebhookEventsBySignatures: routeMocks.getWebhookEventsBySignatures
+}));
+
+vi.mock("@/lib/infrastructure/solana", () => ({
+  getSolanaRpcUrl: routeMocks.getSolanaRpcUrl
 }));
 
 vi.mock("@/lib/solana", () => ({

@@ -68,6 +68,10 @@ vi.mock("@/features/referral-marketing/infrastructure/referrals-repository", () 
   promoteReferralIntentForAccountWallet: referralRepositoryMocks.promoteReferralIntentForAccountWallet
 }));
 
+vi.mock("@/features/shared/auth/domain/auth-store", () => ({
+  consumeNonce: authStoreMocks.consumeNonce
+}));
+
 vi.mock("@/lib/auth-store", () => ({
   consumeNonce: authStoreMocks.consumeNonce
 }));

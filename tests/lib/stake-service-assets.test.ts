@@ -36,10 +36,18 @@ vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   )
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
   DasClient: vi.fn(function DasClient() {
     return {
-    getAssetsByOwner: dasMocks.getAssetsByOwner
+      getAssetsByOwner: dasMocks.getAssetsByOwner
+    };
+  })
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
+  DasClient: vi.fn(function DasClient() {
+    return {
+      getAssetsByOwner: dasMocks.getAssetsByOwner
     };
   })
 }));

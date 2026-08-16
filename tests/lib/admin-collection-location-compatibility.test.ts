@@ -45,6 +45,7 @@ describe("canonical location contract compatibility", () => {
       stateProvince: "Antioquia",
       city: "Medellin",
       address: "Carrera 43A #1-50",
+      postalCode: null,
       geoLat: 6.25184,
       geoLng: -75.56359
     });
