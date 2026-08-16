@@ -135,7 +135,7 @@ fi
 
 echo
 echo "4) Checking branch-age discipline..."
-FIRST_COMMIT_EPOCH="$(git log --reverse --format='%ct' "${MERGE_BASE}..${HEAD_REVISION}" | head -n1)"
+FIRST_COMMIT_EPOCH="$(git log --reverse -n 1 --format='%ct' "${MERGE_BASE}..${HEAD_REVISION}")"
 NOW_EPOCH="$(date +%s)"
 AGE_DAYS="$(awk -v now="${NOW_EPOCH}" -v first="${FIRST_COMMIT_EPOCH}" 'BEGIN {printf "%.2f", (now-first)/86400}')"
 echo "Branch age (days): ${AGE_DAYS}"
