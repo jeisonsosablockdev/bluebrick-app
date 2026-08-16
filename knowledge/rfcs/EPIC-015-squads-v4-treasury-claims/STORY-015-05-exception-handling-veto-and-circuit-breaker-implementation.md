@@ -21,18 +21,20 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 1. 4-Layer Architecture Mapping
 
 ### Layer 1: Presentation Layer
-- Botón **"Rechazar Propuesta Marco"** y botones de **"Veto Individual"** por fila en `squads-multisig-console.tsx`.
+- **`apps/web/src/features/admin/presentation/treasury-console.tsx`**: Botón **"Rechazar Propuesta Marco"** y botones de **"Veto Individual"** por fila en la consola de tesorería.
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/admin/batches/[id]/reject/route.ts`**: Cancela la propuesta global y descongela la corrida.
-- **`app/api/admin/batches/[id]/veto/route.ts`**: Veta un ítem específico marcándolo como `VETOED_BY_ADMIN`.
-- **`app/api/admin/batches/[id]/circuit-breaker/route.ts`**: Pausa inmediatamente el bot ejecutor.
+- **`apps/web/src/app/api/admin/payout-runs/[id]/reject/route.ts`**: Cancela la propuesta global y descongela la corrida.
+- **`apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts`**: Veta un ítem específico marcándolo como `VETOED_BY_ADMIN`.
+- **`apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts`**: Pausa inmediatamente el bot ejecutor.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/squads/merkle-tree-verifier.ts`**: Genera e inspecciona el árbol de Merkle criptográfico (`merkleRoot`) usando hashing Keccak256 sobre las hojas `(claimId, wallet, amount)`.
+- **`apps/web/src/features/staking-distribution/domain/merkle-tree.ts`**: Genera e inspecciona el árbol de Merkle criptográfico (`merkleRoot`) usando hashing Keccak256 sobre las hojas `(claimId, wallet, amount)`.
+- **`apps/web/src/features/staking-distribution/application/payout-settlement-flow.ts`**: Manejo de excepciones, veto granular y control del circuit breaker.
 
 ### Layer 4: Infrastructure Layer
-- Verificación contra el mensaje/instruction data on-chain. Si la raíz debe ser enforcement on-chain, se requiere un programa de settlement propio.
+- **`programs/payout_settlement`**: Verificación on-chain de Merkle proof, veto de leaves y freno de emergencia en el contrato Anchor.
+- **`apps/web/src/lib/solana-kit/compat/payout-settlement.ts`**: Adaptador de comunicación RPC con el programa.
 
 ---
 
@@ -113,14 +115,16 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ---
 
-## 4. Canonical Documentation References (Squads V4)
+## 4. Canonical Documentation References (Squads V4 & Helium Circuit Breaker)
 
 > Fuente canónica: [`squads-v4-documentation-reference.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md)
+> Referencia Open-Source Permisiva: [Helium Circuit Breaker (Apache-2.0)](https://github.com/helium/helium-program-library/tree/master/programs/circuit-breaker)
 
 | SPEC | Documentación Requerida | URL / Sección |
 | --- | --- | --- |
 | SPEC-01 (TDD) | Account: `Proposal` status enum (`Cancelled`, `Rejected`) | [Protocol Accounts](https://docs.squads.so/main/protocol/accounts) §3.2 |
-| SPEC-02 (Merkle) | Account: `VaultTransaction.message` — donde se almacenaría la merkleRoot en instruction data | [Protocol Accounts](https://docs.squads.so/main/protocol/accounts) §3.3 |
+| SPEC-02 (Merkle) | Account: `VaultTransaction.message` — donde se almacena la `merkleRoot` en `PayoutRun` | [Protocol Accounts](https://docs.squads.so/main/protocol/accounts) §3.3 |
+| SPEC-02 (Circuit Breaker) | Patrón de pausa de emergencia y límites de flujo on-chain (Apache-2.0) | [Helium Circuit Breaker Program](https://github.com/helium/helium-program-library/tree/master/programs/circuit-breaker) |
 | SPEC-03 (Veto Endpoints) | Instruction: `proposalReject` — modelo de rechazo por umbral | [Protocol Instructions](https://docs.squads.so/main/protocol/instructions) |
 | SPEC-03 (Veto Endpoints) | Instruction: `proposalCancel` — cancelación de propuestas | [Protocol Instructions](https://docs.squads.so/main/protocol/instructions) |
 | SPEC-03 (Veto Endpoints) | Guide: Vote on Proposal — flow de rechazo | [Vote on Proposal](https://docs.squads.so/main/development/guides/vote-on-proposal) §6.3 |

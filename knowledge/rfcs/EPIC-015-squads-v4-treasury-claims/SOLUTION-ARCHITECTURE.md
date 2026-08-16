@@ -16,6 +16,49 @@ La solución elegida para las dispersiones masivas es un **programa `payout_sett
 
 Esta es una decisión que reemplaza explícitamente la alternativa anterior de "Merkle root auditora" y el modelo de "Batch + una Vault Transaction por leg". Ambos son insuficientes frente a un agente de despacho malicioso: el primero no impone nada on-chain y el segundo entrega al executor un conjunto de transferencias que no se verifica por proof en el momento de liquidar.
 
+## Justificación Arquitectónica y Análisis Comparativo de Alternativas (ADR)
+
+### 1. Evaluación de Alternativas de Dispersión de Tesorería en Solana
+
+| Criterio | Alternativa A: Sublotes Squads (20 legs/tx) | Alternativa B: Squads Spending Limits | Alternativa C (Seleccionada): **Squads + Anchor Merkle Settlement Program** |
+| :--- | :--- | :--- | :--- |
+| **Carga Operacional del Comité** | ❌ **Inviable a escala:** Requiere aprobar ~500 a 1,000 propuestas de lotes para 10,000–20,000 inversores. | ✅ 1 sola firma para fijar el límite periódico. | ✅ **Óptima (1 Firma):** El comité aprueba 1 única propuesta de setup para $N$ beneficiarios. |
+| **Modelo de Confianza / Seguridad** | ⚠️ **Vulnerable:** Un worker off-chain podría ensamblar o alterar transferencias tras la aprobación general. | ❌ **Peligro Crítico:** La llave del worker tiene discreción total de transferir fondos a cualquier wallet arbitraria. | 🛡️ **Zero-Trust Criptográfico:** Los fondos van a una **Escrow PDA** y solo se liberan si la **Merkle Proof** valida la hoja sellada. |
+| **Límites Físicos de Solana (MTU ~1232 bytes)** | ❌ Cada transferencia SPL Token añade ~150–200 bytes, saturando el límite de 1232 bytes por transacción. | ❌ Mismo cuello de botella de MTU en las transacciones del worker. | ✅ **Sin Límite de Escala:** Cada liquidación se procesa de forma individual o en minilotes concurrentes. |
+| **Prevención de Doble Cobro / Replay** | ⚠️ Dependiente exclusivamente de locking y base de datos off-chain. | ⚠️ Dependiente de base de datos off-chain. | 🛡️ **Enforcement Nativo On-Chain:** Se crea un **`ClaimReceipt` PDA** único; Solana revierte ante cualquier colisión de cuenta. |
+| **Rol y Autoridad del Cranker / Worker** | ⚠️ Requiere privilegios elevados de ejecución en Squads. | ⚠️ Requiere custodiar la clave privada del spending limit. | 🛡️ **Completamente Permissionless:** El cranker solo aporta gas; no puede alterar beneficiarios, montos ni robar fondos. |
+
+### 2. Por qué los Contratos Anchor son Estrictamente Necesarios en el Alcance
+
+1. **`programs/payout_settlement` (Liquidación Criptográfica y Custodia Escrow PDA):**
+   - Squads v4 es un protocolo de gobernanza y tesorería multisig general, no un motor de validación de árboles de Merkle.
+   - Permite que el comité apruebe atómicamente:
+     1. La creación del `PayoutRun` con la `merkleRoot` inmutable.
+     2. La transferencia del saldo total comprometido desde la Vault PDA al **Escrow PDA**.
+     3. El sellado del run (`seal_run`).
+   - El contrato garantiza matemáticamente que **ningún actor intermedio (worker, base de datos, hacker)** pueda desviar un solo centavo de la distribución aprobada.
+   - La creación de la PDA `[b"receipt", run_pda, claim_id]` proporciona una barrera criptográfica irrevocable contra el doble gasto a nivel del runtime de Solana.
+
+2. **`programs/project_config_notary` (PDA Notario On-Chain de Parámetros y Fechas):**
+   - **Amenaza Mitigada:** Almacenar fechas críticas de cálculo de rendimientos (`project_start_at`, `project_end_at`) exclusivamente en Postgres permite que un atacante con acceso a la base de datos o mediante inyección SQL manipule los periodos y reclame rendimientos ilícitos.
+   - **Garantía On-Chain:** La PDA Notario `[b"project_config", collection_address]` reside en Solana y su instrucción `update_project_dates` exige que `authority_vault.is_signer == true`. Como las PDAs carecen de clave privada, dicha firma solo puede originarse mediante **CPI desde la Vault PDA de Squads v4** cuando el comité vota y ejecuta la propuesta.
+   - El motor de distribución (`distribution-engine.ts`) lee directamente del RPC de Solana mediante `@solana/kit`, degradando a Postgres al rol de caché informativo de solo lectura.
+
+### 3. Base Canónica de Referencia de Código: Helium Network (`lazy-distributor`) & Análisis Legal de Licencias
+
+Para el diseño e implementación de `programs/payout_settlement`, se adopta formalmente como **base canónica y referencia de arquitectura abierta el estándar de Helium Network**:
+
+| Proyecto / Repositorio | Licencia | Evaluación Legal & Compatibilidad Comercial | Veredicto para BRIDS |
+| :--- | :--- | :--- | :--- |
+| **Helium Network (`helium-program-library / lazy-distributor`)** | **Apache-2.0** | ✅ **Permisiva y Comercial:** Permite uso libre, comercial y desarrollo propietario sin copyleft ni exigencia de apertura de código backend. | 🏆 **BASE CANÓNICA SELECCIONADA** |
+| **Goki Protocol (`merkle-distributor`)** | **AGPL-3.0** | ❌ **Copyleft Viral (Sección 13):** Obligaría por ley a publicar el código fuente completo del backend, APIs privadas y servicios de BRIDS a cualquier usuario que interactúe por red. | 🚫 **RECHAZADO (Prohibido por `license-policy.json`)** |
+| **Saber HQ / Jito (`merkle-distributor`)** | **GPL-3.0** | ❌ **Copyleft Fuerte:** Prohibida en la política de licencias del monorepo por incompatibilidad con software comercial y SaaS. | 🚫 **RECHAZADO (Prohibido por `license-policy.json`)** |
+
+> [!IMPORTANT]
+> **Estrategia Clean-Room Implementada en `programs/payout_settlement`:**
+> - El programa se implementa de forma independiente (Clean-Room) bajo licencia **Apache-2.0 / MIT**, adoptando las primitivas de `helium-program-library / lazy-distributor` y el módulo criptográfico estándar `solana_program::keccak::hashv`.
+> - Se elimina al 100% cualquier riesgo de contaminación viral de licencias AGPL/GPL, garantizando el cumplimiento estricto de [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json) y protegiendo el código propietario de BRIDS.
+
 ## Decisiones propuestas que requieren Human Design Approval
 
 | Decisión | Propuesta | Motivo |
@@ -201,7 +244,12 @@ El programa Anchor `project_config_notary` es la fuente de verdad de fechas:
 
 ## Reglas de implementación no negociables
 
-- Usar `@solana/kit` para RPC/cliente y encapsular la dependencia web3.js de `@sqds/multisig` en `lib/solana-kit/compat/squads.ts` mediante `@solana/web3-compat` si es necesario.
+- Usar `@solana/kit` para RPC/cliente y encapsular la dependencia web3.js de `@sqds/multisig` en `apps/web/src/lib/solana-kit/compat/squads.ts` mediante `@solana/web3-compat` si es necesario.
+- Estructuración estricta en el estándar **Monorepo Workspaces & 4-Layer Feature-Driven Design (FDD)** establecido en PR #327:
+  * Presentación en `apps/web/src/features/{admin,staking-distribution}/presentation/`
+  * Aplicación en `apps/web/src/app/api/` y `apps/web/src/features/staking-distribution/application/`
+  * Dominio en `apps/web/src/features/staking-distribution/domain/` (0 dependencias externas)
+  * Infraestructura en `apps/web/src/features/staking-distribution/infrastructure/`, `apps/web/src/lib/solana-kit/compat/`, `packages/solana-client` y `programs/`
 - El adaptador nunca devuelve strings de fallback para PDAs, ATAs, signatures o slots. Un address inválido es error tipado y fail-closed.
 - No aceptar `executionSignature`, `executionSlot`, `blockTime`, estado de proposal ni aprobadores desde HTTP como evidencia.
 - Cada envío se simula; la confirmación se verifica con firma, slot, error de meta y cuentas esperadas antes de proyectar DB.

@@ -21,17 +21,19 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 1. 4-Layer Architecture Mapping
 
 ### Layer 1: Presentation Layer
-- **`components/admin/compliance-console.tsx`**: Modal/formulario **"Resolución de Caso & Reasignación de Wallet"** con inputs `case_number` y `requested_wallet`.
+- **`apps/web/src/features/admin/presentation/compliance-console.tsx`**: Modal/formulario **"Resolución de Caso & Reasignación de Wallet"** con inputs `case_number` y `requested_wallet`.
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/admin/compliance/overrides/route.ts`**: Endpoints GET (listar pendientes) y POST (crear solicitud `PENDING`).
-- **`app/api/admin/compliance/overrides/[id]/approve/route.ts`**: Endpoint POST para aprobación multisig/admin.
+- **`apps/web/src/app/api/admin/compliance/overrides/route.ts`**: Endpoints GET (listar pendientes) y POST (crear solicitud `PENDING`).
+- **`apps/web/src/app/api/admin/compliance/overrides/[id]/approve/route.ts`**: Endpoint POST para aprobación multisig/admin.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/claims/payout-override-service.ts`**: Lógica de negocio que impide usar la nueva wallet hasta que el estado sea `APPROVED`.
+- **`apps/web/src/features/staking-distribution/application/claim-flow.ts`**: Lógica de orquestación de reclamos y overrides con verificación de `case_number`.
+- **`apps/web/src/features/staking-distribution/domain/payout-override.ts`**: Reglas de dominio que impiden usar la nueva wallet hasta que el estado sea `APPROVED`.
 
 ### Layer 4: Infrastructure Layer
-- **DB Migration (`scripts/db/migrations/*`)**: Tabla con `case_number` normalizado, wallet solicitada, wallet efectiva, actor, motivo, estado, versión y trazabilidad on-chain; constraint único e índice de estado.
+- **`apps/web/src/features/staking-distribution/infrastructure/payout-override-repository.ts`**: Persistencia y queries a la tabla `distribution_payout_overrides` vía `@/features/shared/infrastructure/db/pool`.
+- **DB Migration (`apps/web/src/features/shared/infrastructure/db/migrations/*`)**: Tabla con `case_number` normalizado, wallet solicitada, wallet efectiva, actor, motivo, estado, versión y trazabilidad on-chain.
 
 ---
 

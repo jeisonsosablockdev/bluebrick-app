@@ -21,18 +21,18 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 1. 4-Layer Architecture Mapping
 
 ### Layer 1: Presentation Layer
-- Botón **"Solicitar Cambio de Fecha"** en `/admin/collections/[id]`.
-- Notificación al comité en `/admin/notifications`.
-- Pestaña **"Gobernanza de Proyectos"** en `/admin/treasury/squads`.
+- **`apps/web/src/features/admin/presentation/distributions-console.tsx`**: Pestaña/sección de gobernanza y visualización de fechas del proyecto.
+- **`apps/web/src/features/admin/presentation/admin-notification-campaign-console.tsx`**: Notificaciones de auditoría de fechas.
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/admin/collections/[id]/date-change-request/route.ts`**: Registra solicitud `PENDING_MULTISIG`.
-- **`lib/admin/collection-patch-payload.ts`**: Rechaza peticiones con campos de fechas (`400 IMMUTABLE_PROJECT_DATE_FIELD`).
+- **`apps/web/src/app/api/admin/collections/[id]/date-change-request/route.ts`**: Registra solicitud `PENDING_MULTISIG`.
+- **`apps/web/src/features/admin/domain/collection-patch-validator.ts`**: Rechaza peticiones con campos de fechas (`400 IMMUTABLE_PROJECT_DATE_FIELD`).
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/distributions/distribution-engine.ts`**: Lectura directa de fechas desde la PDA Notario en Solana RPC.
+- **`apps/web/src/features/staking-distribution/application/distribution-engine.ts`**: Lectura directa de fechas desde la PDA Notario en Solana RPC vía `@solana/kit`.
 
 ### Layer 4: Infrastructure Layer
+- **`programs/project_config_notary`**: Contrato Anchor que mantiene el estado canónico de la PDA Notario on-chain.
 - Postgres DB como réplica de lectura informativa (*Read-Model Cache*), actualizada solo tras confirmación on-chain.
 
 ---

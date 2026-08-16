@@ -21,18 +21,19 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 1. 4-Layer Architecture Mapping
 
 ### Layer 1: Presentation Layer
-- Botón **"Cancelar Reclamación"** en la interfaz de reclamaciones del inversor para registros en `CLAIM_REQUESTED`.
+- **`apps/web/src/features/staking-distribution/presentation/rentas-module.tsx`**: Botón **"Cancelar Reclamación"** en la interfaz de reclamaciones del inversor para registros en `CLAIM_REQUESTED`.
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/cron/claims-expiry/route.ts`**: Marca como `EXPIRED` las reclamaciones en `CLAIM_REQUESTED` tras 48 horas.
-- **`app/api/cron/compliance-ttl/route.ts`**: Marca como `RETAINED_COMPLIANCE` los fondos sin reclamar tras 12 meses.
-- **`app/api/claims/[claimId]/cancel/route.ts`**: Cancelación activa por el usuario.
+- **`apps/web/src/app/api/cron/claims-expiry/route.ts`**: Marca como `EXPIRED` las reclamaciones en `CLAIM_REQUESTED` tras 48 horas.
+- **`apps/web/src/app/api/cron/compliance-ttl/route.ts`**: Marca como `RETAINED_COMPLIANCE` los fondos sin reclamar tras 12 meses.
+- **`apps/web/src/app/api/claims/[claimId]/cancel/route.ts`**: Cancelación activa por el usuario.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/claims/compliance-monitor.ts`**: Queries SQL con ventanas UTC, locking, límites por página y eventos idempotentes.
+- **`apps/web/src/features/staking-distribution/application/compliance-monitor.ts`**: Queries SQL con ventanas UTC, locking, límites por página y eventos idempotentes.
+- **`apps/web/src/features/staking-distribution/application/claim-flow.ts`**: Lógica de cancelación y transición de estado de reclamaciones.
 
 ### Layer 4: Infrastructure Layer
-- Autenticación por cabecera `Authorization: Bearer ${CRON_SECRET}`.
+- Autenticación por cabecera `Authorization: Bearer ${CRON_SECRET}` y persistencia vía `apps/web/src/features/staking-distribution/infrastructure/distribution-repository.ts`.
 
 ---
 

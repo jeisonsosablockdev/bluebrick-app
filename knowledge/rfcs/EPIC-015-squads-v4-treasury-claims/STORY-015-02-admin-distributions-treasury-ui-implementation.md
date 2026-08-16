@@ -21,18 +21,18 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 1. 4-Layer Architecture Mapping
 
 ### Layer 1: Presentation Layer
-- **`app/admin/treasury/squads/page.tsx`**: Ruta de administración nativa en el workspace `/admin/treasury`.
-- **`components/admin/squads-multisig-console.tsx`**: Consola interactiva cliente con Header Governance Card, Audit Warning Banner, toggle "Expandir Todos / Ocultar Todos" y filas minimalistas con chevrons desplegables.
-- **`components/admin/distributions-console.tsx`**: Botón **"Crear Propuesta Marco Squads"** en corridas finalizadas.
+- **`apps/web/src/app/admin/treasury/squads/page.tsx`**: Ruta de administración nativa en el workspace `/admin/treasury`.
+- **`apps/web/src/features/admin/presentation/treasury-console.tsx`**: Consola interactiva cliente con Header Governance Card, Audit Warning Banner, toggle "Expandir Todos / Ocultar Todos" y filas minimalistas con chevrons desplegables.
+- **`apps/web/src/features/admin/presentation/distributions-console.tsx`**: Botón **"Crear Propuesta Marco Squads"** en corridas finalizadas.
 
 ### Layer 2: Application/Consumption Layer
-- Consumo de datos mediante los hooks de React Query y API Routes de `/api/admin/batches/*`.
+- Consumo de datos mediante los hooks de React Query y API Routes en `apps/web/src/app/api/admin/payout-runs/*`.
 
 ### Layer 3: Domain/Pipelines/Services Layer
 - No aplica (UI Layer).
 
 ### Layer 4: Infrastructure Layer
-- Integración con Wallet Standard (Phantom / Solflare) únicamente en el borde cliente; la UI nunca decide autoridad, saldo, estado de aprobación ni fechas canónicas.
+- Integración con Wallet Standard (Phantom / Solflare) únicamente en el borde cliente mediante `@solana/react` y `@/features/shared/presentation/wallet`; la UI nunca decide autoridad, saldo, estado de aprobación ni fechas canónicas.
 
 ---
 

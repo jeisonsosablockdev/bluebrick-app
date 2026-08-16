@@ -27,16 +27,18 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - No aplica (se integra en la UI en STORY-015-02).
 
 ### Layer 2: Application/Consumption Layer
-- **`app/api/admin/payout-runs/create-proposal/route.ts`**: Construye una propuesta Squads de setup desde dos attestationes coincidentes; no envía, firma ni acepta cuentas arbitrarias del cliente.
+- **`apps/web/src/app/api/admin/payout-runs/create-proposal/route.ts`**: Construye una propuesta Squads de setup desde dos attestationes coincidentes; no envía, firma ni acepta cuentas arbitrarias del cliente.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`lib/payouts/snapshot-builder.ts`**: Construye snapshot determinista y la leaf canónica; no tiene capacidad de transferir.
-- **`lib/payouts/snapshot-verifier.ts`**: Recalcula independientemente root/total/cantidad desde el snapshot bloqueado.
-- **`lib/payouts/settlement-cranker.ts`**: Sólo presenta proof de una item ya comprometida y reconcilia `ClaimReceipt`; no posee autoridad de Vault.
+- **`apps/web/src/features/staking-distribution/domain/payout-leaf.ts`**: Construye snapshot determinista, leaf canónica y Merkle root; cero dependencias de DB/framework.
+- **`apps/web/src/features/staking-distribution/application/snapshot-verifier.ts`**: Recalcula independientemente root/total/cantidad desde el snapshot bloqueado.
+- **`apps/web/src/features/staking-distribution/application/settlement-cranker.ts`**: Sólo presenta proof de una leaf ya comprometida y reconcilia `ClaimReceipt`; no posee autoridad de Vault.
 
 ### Layer 4: Infrastructure Layer
-- **`lib/solana-kit/compat/squads.ts`**: Adaptador aislado para `@sqds/multisig`; el program ID y cluster se configuran y se validan por RPC, nunca se asumen desde una constante no verificada.
-- **`lib/solana-kit/compat/payout-settlement.ts`**: Adaptador de IDL/Kit para `PayoutRun`, escrow y `ClaimReceipt`; valida owner, discriminador, seeds y token program antes de decodificar.
+- **`apps/web/src/lib/solana-kit/compat/squads.ts`**: Adaptador aislado para `@sqds/multisig`; el program ID y cluster se configuran y se validan por RPC, nunca se asumen desde una constante no verificada.
+- **`apps/web/src/lib/solana-kit/compat/payout-settlement.ts`**: Adaptador de IDL/Kit para `PayoutRun`, escrow y `ClaimReceipt`; valida owner, discriminador, seeds y token program antes de decodificar.
+- **`packages/solana-client`**: Bindings tipados generados por Codama / Anchor IDL para programas de Solana.
+- **`programs/payout_settlement`**: Programa Anchor on-chain para verificación de Merkle proofs, escrow PDA y receipts.
 
 ---
 
@@ -164,9 +166,21 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ---
 
-## 4. Canonical Documentation References (Squads V4)
+## 4. Canonical Documentation & Open-Source References (Squads V4 & Merkle Distributors)
 
 > Fuente canónica: [`squads-v4-documentation-reference.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md)
+
+### 4.1 Referencias Canónicas de la Industria (Merkle Distributor & Licenciamiento)
+- **Goki / Saber Merkle Distributor**: [github.com/GokiProtocol/goki](https://github.com/GokiProtocol/goki/tree/master/programs/merkle-distributor) y [github.com/saber-hq/merkle-distributor](https://github.com/saber-hq/merkle-distributor) (Arquitectura canónica de cuentas `MerkleDistributor` y `ClaimStatus` PDA).
+- **Helium Lazy Distributor**: [github.com/helium/helium-program-library/tree/master/programs/lazy-distributor](https://github.com/helium/helium-program-library/tree/master/programs/lazy-distributor) (Distribución a 1M+ nodos con licencia permisiva **Apache-2.0**).
+- **Jito Foundation Distributor**: [github.com/jito-foundation/distributor](https://github.com/jito-foundation/distributor) (Distribución de recompensas y airdrops auditada por OtterSec).
+
+> [!IMPORTANT]
+> **Análisis de Licenciamiento y Uso Comercial (Gobernanza `license-policy.json`):**
+> - Los repositorios de **Goki (`AGPL-3.0`)** y **Saber / Jito (`GPL-3.0`)** utilizan licencias de **Strong Copyleft** (prohibidas explícitamente en [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json) por riesgo de contaminación viral del repositorio).
+> - **Estrategia Clean-Room Implementada:** Para garantizar **uso 100% libre, comercial y sin restricciones de copyleft**, `programs/payout_settlement` se implementa de forma independiente (Clean-Room) bajo licencia permisiva **Apache-2.0 / MIT** siguiendo las primitivas matemáticas abiertas de Solana (`keccak256`) y el modelo de Helium Network (`Apache-2.0`).
+
+### 4.2 Matriz de Documentación Técnica por SPEC
 
 | SPEC | Documentación Requerida | URL / Sección |
 | --- | --- | --- |
@@ -174,7 +188,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | SPEC-02 (SDK) | PDA derivation, Multisig, Proposal y Vault Transaction | [Accounts reference](https://docs.squads.so/main/development/reference/accounts) |
 | SPEC-02 (SDK) | Program ID Devnet y API de TypeScript | [TypeScript overview](https://docs.squads.so/main/development/typescript/overview) |
 | SPEC-03 (Snapshot) | Hashing, encoding, proof y modelo de amenaza | `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación |
-| SPEC-04/05 (Program) | CPI signer, Token/Token-2022 y validación de cuentas | `solana-dev` + `SOLUTION-ARCHITECTURE.md` §Contrato on-chain |
+| SPEC-04/05 (Program) | Merkle Tree verification, CPI signer, Token/Token-2022 | `solana-dev` + Goki/Helium Architecture Reference |
 | SPEC-06 (Proposal) | Crear/ejecutar Vault Transaction y votos | [TypeScript instructions](https://docs.squads.so/main/development/typescript/instructions) |
 | SPEC-07 (Cranker) | RPC, simulación, confirmación y cuentas no confiables | `solana-dev` §Agent safety guardrails |
 
