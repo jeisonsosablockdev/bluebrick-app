@@ -20,7 +20,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: navigationMocks.useSearchParams
 }));
 
-import { HistorialModule } from "@/components/dashboard/historial-module";
+import { HistorialModule } from "@/features/profile/presentation/historial-module";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -46,7 +46,7 @@ function renderModule(): RenderHandle {
   return { container, root };
 }
 
-describe("components/dashboard/historial-module", () => {
+describe("features/profile/presentation/historial-module", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "en",

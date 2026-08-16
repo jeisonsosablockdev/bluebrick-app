@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { ProtectedShell } from "@/components/dashboard/protected-shell";
+import { ProtectedShell } from "@/features/profile/presentation/protected-shell";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { resolveAppAuthContext } from "@/lib/app-auth";
 import { createPageMetadata } from "@/lib/seo";

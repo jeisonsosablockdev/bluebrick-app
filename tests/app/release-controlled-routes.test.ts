@@ -10,19 +10,19 @@ vi.mock("next/navigation", () => ({
   notFound: navigationMocks.notFound
 }));
 
-vi.mock("@/components/dashboard/portfolio-module", () => ({
+vi.mock("@/features/investor-portfolio/presentation/portfolio-module", () => ({
   PortfolioModule: () => null
 }));
 
-vi.mock("@/components/dashboard/stake-module", () => ({
+vi.mock("@/features/staking-distribution/presentation/stake-module", () => ({
   StakeModule: () => null
 }));
 
-vi.mock("@/components/dashboard/rentas-module", () => ({
+vi.mock("@/features/staking-distribution/presentation/rentas-module", () => ({
   RentasModule: () => null
 }));
 
-vi.mock("@/components/dashboard/historial-module", () => ({
+vi.mock("@/features/profile/presentation/historial-module", () => ({
   HistorialModule: () => null
 }));
 

@@ -18,7 +18,7 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromCookies: authMocks.getAuthenticatedPublicKeyFromCookies
 }));
 
-vi.mock("@/components/dashboard/referral-program-module", () => ({
+vi.mock("@/features/referral-marketing/presentation/referral-program-module", () => ({
   ReferralProgramModule: () => null
 }));
 

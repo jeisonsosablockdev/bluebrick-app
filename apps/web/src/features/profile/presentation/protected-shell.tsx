@@ -8,8 +8,8 @@ import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
-import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
-import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
+import { OnboardingRewardReminder } from "@/features/profile/presentation/onboarding-reward-reminder";
+import { QuickTourOverlay } from "@/features/profile/presentation/quick-tour-overlay";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { FooterSection } from "@/features/landing/presentation/footer";
 import { Button } from "@/components/ui/button";

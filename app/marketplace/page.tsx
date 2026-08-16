@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { MarketplaceFilters } from "@/features/marketplace/presentation/MarketplaceFilters";
 import { MarketplaceExperience } from "@/features/marketplace/presentation/MarketplaceExperience";
-import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { DashboardCharts } from "@/features/investor-portfolio/presentation/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
 import { FooterSection } from "@/features/landing/presentation/footer";

@@ -28,7 +28,7 @@ vi.mock("@/features/marketplace", () => ({
   MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
 }));
 
-vi.mock("@/components/dashboard/dashboard-charts", () => ({
+vi.mock("@/features/investor-portfolio/presentation/dashboard-charts", () => ({
   DashboardCharts: ({ context }: { context: string }) => createElement("div", { "data-testid": `dashboard-charts-${context}` }, `charts:${context}`)
 }));
 

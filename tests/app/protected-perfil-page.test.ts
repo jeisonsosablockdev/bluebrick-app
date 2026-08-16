@@ -18,15 +18,15 @@ vi.mock("@/lib/app-auth", () => ({
   resolveAppAuthContext: appAuthMocks.resolveAppAuthContext
 }));
 
-vi.mock("@/components/dashboard/account-profile-support-module", () => ({
+vi.mock("@/features/profile/presentation/account-profile-support-module", () => ({
   AccountProfileSupportModule: ({ email }: { email: string | null }) => ({ type: "account-only", email })
 }));
 
-vi.mock("@/components/dashboard/auth-link-status-banner", () => ({
+vi.mock("@/features/profile/presentation/auth-link-status-banner", () => ({
   AuthLinkStatusBanner: ({ status }: { status: string | null }) => ({ type: "auth-link-status", status })
 }));
 
-vi.mock("@/components/dashboard/profile-kyc-module", () => ({
+vi.mock("@/features/profile/presentation/profile-kyc-module", () => ({
   ProfileKycModule: ({ walletPublicKey }: { walletPublicKey: string }) => ({ type: "wallet-profile", walletPublicKey })
 }));
 

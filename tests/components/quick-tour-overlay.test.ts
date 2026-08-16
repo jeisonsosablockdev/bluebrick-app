@@ -9,7 +9,7 @@ const localeMocks = vi.hoisted(() => ({
 }));
 
 const navigationMocks = vi.hoisted(() => ({
-  pathname: "/protected/perfil",
+  pathname: "/profile/perfil",
   push: vi.fn()
 }));
 
@@ -22,7 +22,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: navigationMocks.push })
 }));
 
-import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
+import { QuickTourOverlay } from "@/features/profile/presentation/quick-tour-overlay";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -56,9 +56,9 @@ function getDescriptionStrongText(container: HTMLDivElement): string | null {
   return container.querySelector(".quick-tour-description strong")?.textContent ?? null;
 }
 
-describe("components/dashboard/quick-tour-overlay", () => {
+describe("features/profile/presentation/quick-tour-overlay", () => {
   beforeEach(() => {
-    navigationMocks.pathname = "/protected/perfil";
+    navigationMocks.pathname = "/profile/perfil";
     localeMocks.useI18n.mockReturnValue({
       locale: "es",
       setLocale: vi.fn(),
@@ -115,8 +115,8 @@ describe("components/dashboard/quick-tour-overlay", () => {
     });
   });
 
-  it("does not render on the protected overview route", async () => {
-    navigationMocks.pathname = "/protected";
+  it("does not render on the marketplace route", async () => {
+    navigationMocks.pathname = "/marketplace";
 
     const { container, root } = renderOverlay();
 

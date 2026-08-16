@@ -30,7 +30,7 @@ vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
   serializeLegacyVersionedTransaction: transactionMocks.serializeLegacyVersionedTransaction
 }));
 
-import { StakeModule } from "@/components/dashboard/stake-module";
+import { StakeModule } from "@/features/staking-distribution/presentation/stake-module";
 
 const LONG_STAKE_ASSET_ADDRESS = "12dbThcSbsv1HmVFEc388oiB5BFXVyxzP8ZPwprVDbrt";
 
@@ -88,7 +88,7 @@ function clickButton(container: HTMLElement, label: string): void {
   button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 }
 
-describe("components/dashboard/stake-module", () => {
+describe("features/staking-distribution/presentation/stake-module", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "en",
