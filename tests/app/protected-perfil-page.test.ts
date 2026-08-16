@@ -50,7 +50,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: null
     });
 
-    await expect(PerfilPage()).rejects.toThrow("REDIRECT:/");
+    await expect(PerfilPage({})).rejects.toThrow("REDIRECT:/");
   });
 
   it("renders the account-only support module for federated sessions without a wallet", async () => {
@@ -62,7 +62,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage()).resolves.toMatchObject({
+    await expect(PerfilPage({})).resolves.toMatchObject({
       props: {
         children: expect.arrayContaining([
           expect.objectContaining({
@@ -84,7 +84,7 @@ describe("app/protected/perfil/page", () => {
       workosEmail: "user@example.com"
     });
 
-    await expect(PerfilPage()).resolves.toMatchObject({
+    await expect(PerfilPage({})).resolves.toMatchObject({
       props: {
         children: expect.arrayContaining([
           expect.objectContaining({

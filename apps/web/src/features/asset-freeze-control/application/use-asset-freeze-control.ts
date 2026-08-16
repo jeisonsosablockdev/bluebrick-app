@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import type { AssetFreezeItem } from "../domain/asset-freeze-types";
 import { fetchUserFreezeAssets } from "../infrastructure/asset-freeze-repository";

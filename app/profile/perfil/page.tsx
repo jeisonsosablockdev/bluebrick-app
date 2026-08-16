@@ -9,9 +9,9 @@ type PerfilPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function PerfilPage(props: PerfilPageProps = {}) {
+export default async function PerfilPage(props: PerfilPageProps) {
   const auth = await resolveAppAuthContext();
-  const resolvedSearchParams = props?.searchParams ? await props.searchParams : undefined;
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : undefined;
   const authLinkStatusParam = resolvedSearchParams?.authLinkStatus;
   const authLinkStatus = parseAuthLinkStatus(typeof authLinkStatusParam === "string" ? authLinkStatusParam : null);
 

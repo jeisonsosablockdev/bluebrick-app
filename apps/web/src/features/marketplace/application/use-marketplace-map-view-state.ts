@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import type { ViewState } from "react-map-gl/mapbox";
 

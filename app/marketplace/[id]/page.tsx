@@ -7,7 +7,7 @@ import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { getMarketplacePropertyDetailOrThrowRpc } from "@/lib/property-marketplace-server";
 import { createPageMetadata } from "@/lib/seo";
-import { PropertyDetailContent } from "@/features/marketplace";
+import { PropertyDetailContent } from "@/features/marketplace/presentation/PropertyDetailContent";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 
 type MarketplaceDetailPageProps = {
