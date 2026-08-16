@@ -501,30 +501,52 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 
 ---
 
-### 🧹 Bloque 3: Consolidación App Router y Limpieza de Raíz
+### 🧹 Bloque 3: Limpieza y Eliminación Incremental de Proxies & Symlinks por Feature
 
-#### **`SPEC-45 (App Router Physical Relocation to apps/web/src/app)`**
-* **Objetivo & Alcance**: Mover físicamente el directorio `app/` desde la raíz hacia `apps/web/src/app`. Configurar `next.config.ts`, `tsconfig.json` y los endpoints del App Router de Next.js 16 para operar 100% de forma autónoma dentro de `apps/web/`.
-* **Capas FDD**: Thin App Router (`apps/web/src/app/*`).
-* **Archivos Afectados**: `app/*` ➔ `apps/web/src/app/*`, `next.config.ts`, `apps/web/package.json`.
-* **Trazabilidad OKF**: `BRI-186`, `clean-code-folder-structure.md`.
-* **Verificación**: `pnpm dev` y `pnpm validate:routes`.
+#### **`SPEC-46 (Marketplace & Landing Legacy Cleanup & Root Symlinks)`**
+* **Objetivo & Alcance**: Eliminar proxies y symlinks legacy de `components/marketplace/*` y `components/sections/*`. Actualizar todas las importaciones en tests y rutas para consumir directamente `@/features/marketplace` y `@/features/landing`. Eliminar symlink de `public` y symlinks legacy de Marketplace.
+* **Capas FDD**: `features/marketplace/`, `features/landing/`.
+* **Archivos Afectados**: `apps/web/src/components/marketplace/*`, `apps/web/src/components/sections/*`, tests asociados.
+* **Trazabilidad OKF**: `BRI-164`, `BRI-39`, `git-monorepo-policy.md`.
+* **Verificación**: `pnpm validate:content`, `pnpm validate:routes`, `pnpm validate:seo`.
 
-#### **`SPEC-46 (Root Symlink Elimination & Path Aliases Harmonization)`**
-* **Objetivo & Alcance**: Eliminar definitivamente todos los symlinks de compatibilidad en la raíz del repositorio (`components`, `public`, `src`). Sincronizar los alias de TypeScript (`@/*` ➔ `./apps/web/src/*`) en `tsconfig.json` y `tsconfig.typecheck.json`.
-* **Archivos Afectados**: `components` (eliminar symlink), `public` (eliminar symlink), `src` (eliminar symlink), `tsconfig.json`, `tsconfig.typecheck.json`.
+#### **`SPEC-47 (Dashboard: Profile, Portfolio, Referrals & Staking Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar proxies legacy en `components/dashboard/*` (`profile-kyc-module.tsx`, `portfolio-module.tsx`, `referral-program-module.tsx`, `stake-module.tsx`, `rentas-module.tsx`, `account-profile-support-module.tsx`, `historial-module.tsx`). Actualizar tests asociados para importar directamente de sus respectivos `@/features/{profile,investor-portfolio,referral-marketing,staking-distribution}`.
+* **Capas FDD**: `features/{profile,investor-portfolio,referral-marketing,staking-distribution}/`.
+* **Archivos Afectados**: `apps/web/src/components/dashboard/*`, tests de perfil, portafolio, referidos y staking.
+* **Trazabilidad OKF**: `BRI-151`, `BRI-171`, `BRI-16`, `BRI-6/7/8`.
+* **Verificación**: `pnpm test` de suites de dashboard y `pnpm typecheck`.
+
+#### **`SPEC-48 (Admin, Asset Management & Checkout Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar proxies y duplicados en `components/admin/*` y `components/checkout/*`. Actualizar tests y referencias para consumir directamente `@/features/{admin,property-management,checkout-payment}`.
+* **Capas FDD**: `features/{admin,property-management,checkout-payment}/`.
+* **Archivos Afectados**: `apps/web/src/components/admin/*`, `apps/web/src/components/checkout/*`, tests de administración y checkout.
+* **Trazabilidad OKF**: `EPIC-001`, `EPIC-003`, `EPIC-011`.
+* **Verificación**: `pnpm test` de suites admin y checkout y `pnpm typecheck`.
+
+#### **`SPEC-49 (Services & Lib Legacy Proxies Cleanup por Feature)`**
+* **Objetivo & Alcance**: Eliminar proxies de `lib/` correspondientes a checkout, purchase, compliance, referrals, staking, squads y metaplex (`apps/web/src/lib/{purchase-*,checkout-*,compliance/*,referrals/*,claims/*,distributions/*,squads/*,anti-bot/*}`). Actualizar imports en rutas API (`apps/web/src/app/api/*`) y tests para importar desde `@/features/*`.
+* **Capas FDD**: `features/*/{domain,application,infrastructure}`.
+* **Archivos Afectados**: `apps/web/src/lib/*`, `apps/web/src/app/api/*`, tests de servicios.
+* **Trazabilidad OKF**: `EPIC-003`, `BRI-151`, `BRI-16`, `BRI-6/7/8`, `solana-p0-05/06`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:pipeline`, `pnpm typecheck`.
+
+#### **`SPEC-50 (Root Symlink Elimination & Path Aliases Harmonization)`**
+* **Objetivo & Alcance**: Eliminar symlinks residuales en la raíz del monorepo (`components`, `src`, `lib`, etc.) y remover el directorio `app/` en raíz ahora que `apps/web/src/app` es el source of truth físico y autónomo. Sincronizar y blindar `tsconfig.json` y `tsconfig.typecheck.json` para resolver `@/*` exclusivamente desde `./apps/web/src/*`.
+* **Archivos Afectados**: Symlinks raíz (`components`, `src`, `lib`, `public`), `app/` en raíz, `tsconfig.json`, `tsconfig.typecheck.json`.
 * **Trazabilidad OKF**: `git-monorepo-policy.md`, `AGENTS.md`.
-* **Verificación**: `pnpm typecheck` con 0 errores y validación de imports absolutos.
+* **Verificación**: `pnpm typecheck` con 0 errores, `pnpm validate:architecture` y validación de imports absolutos.
 
 ---
 
 ### 🧼 Bloque 4: Limpieza, Refactorización y Auditoría Final (Clean Code Audit)
 
-#### **`SPEC-37 (Clean Code Audit, Zero Dead-Code, Monorepo Root Purification & Final DoD)`**
+#### **`SPEC-51 (Clean Code Audit, Zero Dead-Code, Monorepo Root Purification & Final DoD)`**
 * **Objetivo & Alcance**: 
   1. Ejecutar una auditoría exhaustiva de Clean Code: eliminación de dead code, imports residuales, verificación de 0 implicit `any` y cumplimiento estricto de convenciones de nombrado.
   2. Verificar que la raíz del monorepo cumpla al 100% con la whitelist de directorios (`programs/`, `apps/`, `packages/`, `.agents/`, `knowledge/`, `scripts/`, `tests/`).
-  3. Ejecución de la suite completa `pnpm validate` (16 gates en verde), `check-monorepo-structure.sh`, `check-layered-architecture.sh` y build de producción de Next.js (`pnpm build`).
+  3. Consolidar el Design System UI Kit base en `apps/web/src/features/shared/ui/`.
+  4. Ejecución de la suite completa `pnpm validate` (16 gates en verde), `check-monorepo-structure.sh`, `check-layered-architecture.sh` y build de producción de Next.js (`pnpm build`).
 * **Archivos Afectados**: Todo el monorepo.
 * **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2), `security-quality-policy.md`.
 * **Verificación**: `pnpm validate` al 100% verde (0 errores, 0 warnings) y `pnpm build` exitoso.
