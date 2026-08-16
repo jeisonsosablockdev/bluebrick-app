@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import type {
   MintBatchRecord,
   MintBatchStatus,

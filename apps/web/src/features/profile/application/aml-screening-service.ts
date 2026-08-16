@@ -2,8 +2,8 @@ import {
   recordComplianceAuditEvent,
   updateAmlStatusFromProvider,
   type ComplianceAuditActorType
-} from "@/lib/compliance/profile-repository";
-import { screenWalletWithHelius } from "@/lib/compliance/aml-helius";
+} from "@/features/profile/infrastructure/profile-repository";
+import { screenWalletWithHelius } from "@/features/profile/infrastructure/aml-helius";
 
 export type RunWalletAmlScreeningInput = {
   walletPublicKey: string;

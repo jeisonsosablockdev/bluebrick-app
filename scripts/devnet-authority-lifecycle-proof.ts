@@ -12,8 +12,8 @@ import {
   isCoreAuthorityLifecycleSubmitRecoverableError,
   prepareAuthorityLifecycleOperation,
   submitAuthorityLifecycleSignedTransactions
-} from "@/lib/core-authority-lifecycle";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/asset-freeze-control/application/core-authority-lifecycle";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { getSolanaRpcUrl, METAPLEX_CORE_PROGRAM_ID } from "@/lib/infrastructure/solana";
 
 type EnvSource = ".env" | ".env.local";

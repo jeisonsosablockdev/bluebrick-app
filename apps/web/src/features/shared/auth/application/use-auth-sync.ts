@@ -24,7 +24,7 @@ import {
   parseAuthSyncPayload,
   parseAuthSyncPayloadFromUnknown,
 } from "@/lib/auth-sync";
-import { areAuthMeResponsesEquivalent } from "@/lib/state/auth-state";
+import { areAuthMeResponsesEquivalent } from "@/features/shared/auth/domain/auth-state";
 import { getFriendlyWalletErrorMessage } from "@/features/navigation/application/nav-modal-utils";
 import type { Translate } from "@/features/navigation/domain/nav-modal-types";
 

@@ -19,11 +19,11 @@ vi.mock("@/lib/kyc/stripe-identity", () => ({
   createStripeIdentityVerificationSession: routeMocks.createStripeIdentityVerificationSession
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   markKycSessionPending: routeMocks.markKycSessionPending
 }));
 
-vi.mock("@/lib/compliance/aml-screening-service", () => ({
+vi.mock("@/features/profile/application/aml-screening-service", () => ({
   runWalletAmlScreening: routeMocks.runWalletAmlScreening
 }));
 

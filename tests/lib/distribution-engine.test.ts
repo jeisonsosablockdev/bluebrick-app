@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateDistributionPreparation,
   type DistributionCalculationInput
-} from "@/lib/distributions/distribution-engine";
+} from "@/features/staking-distribution/application/distribution-engine";
 
 const baseInput: DistributionCalculationInput = {
   scope: {
@@ -18,7 +18,7 @@ const baseInput: DistributionCalculationInput = {
   walletEligibility: []
 };
 
-describe("lib/distributions/distribution-engine", () => {
+describe("features/staking-distribution/application/distribution-engine", () => {
   it("counts only validated events matching the run collection/property scope", () => {
     const result = calculateDistributionPreparation({
       ...baseInput,

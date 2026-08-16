@@ -4,7 +4,7 @@ import { getRequestRole } from "@/lib/auth-session";
 import {
   CheckoutError,
   getOrderSnapshot
-} from "@/lib/checkout-service";
+} from "@/features/checkout-payment/application/checkout-service";
 
 type RouteContext = {
   params: Promise<{ orderId: string }>;

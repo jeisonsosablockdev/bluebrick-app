@@ -10,7 +10,7 @@
  * 6. Persistence of DistributionItem records and run status transition
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import { listValidatedOriginsByProject } from "@/lib/provenance/provenance-repository";
 import {

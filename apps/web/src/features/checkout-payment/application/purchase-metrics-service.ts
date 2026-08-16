@@ -2,10 +2,10 @@ import {
   listPurchaseAttempts,
   type PurchaseAttemptRecord,
   type PurchaseAttemptStatus
-} from "@/lib/purchase-attempts-repository";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { listMarketplaceProperties } from "@/lib/property-marketplace-server";
-import { listPurchaseWebhookEvents } from "@/lib/purchase-webhook-reconciliation";
+import { listPurchaseWebhookEvents } from "@/features/checkout-payment/application/purchase-webhook-reconciliation";
 
 export type MetricsRange = "24h" | "7d" | "30d";
 

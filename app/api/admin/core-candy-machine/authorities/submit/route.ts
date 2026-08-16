@@ -6,7 +6,7 @@ import {
   isCoreAuthorityLifecycleSubmitRecoverableError,
   submitAuthorityLifecycleSignedTransactions,
   type SubmitAuthorityLifecycleSignedTransactionsInput
-} from "@/lib/core-authority-lifecycle";
+} from "@/features/asset-freeze-control/application/core-authority-lifecycle";
 
 type SubmitAuthorityRequestBody = Partial<Omit<SubmitAuthorityLifecycleSignedTransactionsInput, "expectedPayerPublicKey">>;
 

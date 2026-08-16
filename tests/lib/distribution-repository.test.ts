@@ -9,9 +9,9 @@ import {
   listDistributionItemsByWallet,
   listDistributionAuditEvents,
   replaceDistributionItems
-} from "@/lib/distributions/distribution-repository";
+} from "@/features/staking-distribution/infrastructure/distribution-repository";
 
-describe("lib/distributions/distribution-repository (in-memory)", () => {
+describe("features/staking-distribution/infrastructure/distribution-repository (in-memory)", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetDistributionRepositoryStateForTests();

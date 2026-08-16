@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { markKycSessionPending } from "@/lib/compliance/profile-repository";
+import { markKycSessionPending } from "@/features/profile/infrastructure/profile-repository";
 import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
-import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
+import { runWalletAmlScreening } from "@/features/profile/application/aml-screening-service";
 import {
   consumeStripeSessionRateLimit,
   createStripeIdentityVerificationSession,

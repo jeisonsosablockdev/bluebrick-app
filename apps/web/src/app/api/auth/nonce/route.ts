@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { setNonceCookie } from "@/lib/auth";
-import { issueNonce } from "@/lib/state/auth-store";
+import { issueNonce } from "@/features/shared/auth/domain/auth-store";
 
 export async function GET(): Promise<NextResponse> {
   const nonce = issueNonce();

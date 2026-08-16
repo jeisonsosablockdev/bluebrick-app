@@ -12,9 +12,9 @@ import {
   markPurchaseAttemptFailedBySignature,
   markPurchaseAttemptPrepared,
   markPurchaseAttemptSubmitted
-} from "@/lib/purchase-attempts-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
 
-describe("lib/purchase-attempts-repository (in-memory)", () => {
+describe("features/checkout-payment/infrastructure/purchase-attempts-repository (in-memory)", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
   });

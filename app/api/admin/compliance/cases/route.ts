@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { ComplianceCaseServiceError, getComplianceCasesQueue } from "@/lib/compliance/case-service";
+import { ComplianceCaseServiceError, getComplianceCasesQueue } from "@/features/profile/application/case-service";
 
 function toOptionalString(value: string | null): string | undefined {
   if (typeof value !== "string") {

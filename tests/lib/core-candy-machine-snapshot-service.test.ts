@@ -57,12 +57,12 @@ vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
   normalizeLegacyPublicKey: (value: string) => value
 }));
 
-vi.mock("@/lib/core-candy-machine-snapshot-repository", () => ({
+vi.mock("@/features/nft-minting/infrastructure/core-candy-machine-snapshot-repository", () => ({
   upsertMintJobFromSnapshot: mocks.upsertMintJobFromSnapshot,
   upsertAssetMintSnapshot: mocks.upsertAssetMintSnapshot
 }));
 
-import { finalizeCoreCandyMachineSnapshot } from "@/lib/core-candy-machine-snapshot-service";
+import { finalizeCoreCandyMachineSnapshot } from "@/features/nft-minting/application/core-candy-machine-snapshot-service";
 
 function buildFinalizePayload(overrides?: {
   quantity?: number;
@@ -158,7 +158,7 @@ function mockCandyMachineStateSequence(states: Array<{
   });
 }
 
-describe("lib/core-candy-machine-snapshot-service", () => {
+describe("features/nft-minting/application/core-candy-machine-snapshot-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.findCandyGuardPda.mockReturnValue(["Guard111111111111111111111111111111111"]);

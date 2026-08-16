@@ -12,7 +12,7 @@ import { useMobileWalletDetection } from "../../apps/web/src/features/navigation
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
-vi.mock("../../apps/web/src/lib/referrals/client-state", () => ({
+vi.mock("../../apps/web/src/features/referral-marketing/application/client-state", () => ({
   buildPhantomBrowseDeepLink: vi.fn((url: string) => `https://phantom.app/ul/browse/${encodeURIComponent(url)}`),
 }));
 

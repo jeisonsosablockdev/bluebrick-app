@@ -6,7 +6,7 @@
  * - asset_project_origins
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 export type ProvenanceSource = "captured_at_mint" | "parsed_transaction" | "admin_backfill";

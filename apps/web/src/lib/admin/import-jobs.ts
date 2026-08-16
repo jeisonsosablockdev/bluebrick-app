@@ -12,7 +12,7 @@ import {
   parseCollectionSymbol,
   parseExitStrategy
 } from "@/lib/admin/asset-compatibility-validation";
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_IMPORT_ROWS = 10_000;

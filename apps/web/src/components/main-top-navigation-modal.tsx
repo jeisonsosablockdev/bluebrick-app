@@ -29,7 +29,7 @@ import { WalletModalShell } from "@/components/wallet-modal/wallet-modal-shell";
 import { WalletProofPanel } from "@/components/wallet-modal/wallet-proof-panel";
 
 import { ANONYMOUS_AUTH_STATE, type AuthMeResponse } from "@/lib/auth-client";
-import { normalizeReferralCodeInput } from "@/lib/referrals/client-state";
+import { normalizeReferralCodeInput } from "@/features/referral-marketing/application/client-state";
 import { parseAuthLinkStatus } from "@/lib/auth-link-status";
 import { getWalletModalAutoClose } from "@/lib/infrastructure/solana";
 import { formatOnboardingRewardDeadlineLabel } from "@/lib/onboarding-reward-copy";

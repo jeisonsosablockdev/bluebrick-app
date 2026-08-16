@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
+import { runWalletAmlScreening } from "@/features/profile/application/aml-screening-service";
 
 type AmlScreenRequestBody = {
   walletPublicKey?: unknown;

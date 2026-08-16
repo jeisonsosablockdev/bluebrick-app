@@ -15,8 +15,8 @@ import {
   type SetKycDecisionByAdminInput,
   type SetSuspensionByAdminInput,
   ProfileRepositoryError
-} from "@/lib/compliance/profile-repository";
-import type { ComplianceStatus } from "@/lib/compliance/compliance-status-projector";
+} from "@/features/profile/infrastructure/profile-repository";
+import type { ComplianceStatus } from "@/features/profile/domain/compliance-status-projector";
 
 const WALLET_PUBLIC_KEY_REGEX = /^[A-Za-z0-9]{32,64}$/;
 const ALLOWED_CASE_STATUSES: ComplianceStatus[] = [

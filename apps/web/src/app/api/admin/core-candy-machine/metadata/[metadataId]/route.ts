@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCoreMetadataRecord } from "@/lib/core-candy-machine-metadata-store";
+import { getCoreMetadataRecord } from "@/features/nft-minting/infrastructure/core-candy-machine-metadata-store";
 
 type RouteParams = {
   params: Promise<{

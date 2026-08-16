@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { getAdminMonitoringEvents } from "@/lib/purchase-metrics-service";
+import { getAdminMonitoringEvents } from "@/features/checkout-payment/application/purchase-metrics-service";
 
 function readOptional(value: string | null): string | undefined {
   if (typeof value !== "string") {

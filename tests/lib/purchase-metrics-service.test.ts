@@ -8,11 +8,11 @@ import {
   markPurchaseAttemptFailedBySignature,
   markPurchaseAttemptPrepared,
   markPurchaseAttemptSubmitted
-} from "@/lib/purchase-attempts-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
 import {
   getAdminDashboardOverview,
   getAdminSalesOverview
-} from "@/lib/purchase-metrics-service";
+} from "@/features/checkout-payment/application/purchase-metrics-service";
 
 async function seedAttempt(input: {
   signature: string;
@@ -61,7 +61,7 @@ async function seedAttempt(input: {
   });
 }
 
-describe("lib/purchase-metrics-service", () => {
+describe("features/checkout-payment/application/purchase-metrics-service", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
   });

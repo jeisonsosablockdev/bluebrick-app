@@ -12,7 +12,7 @@
  * - investmentModel is stored as metadata for audit/reporting (does not affect math in v1)
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import {
   getProjectCandyMachineSource,

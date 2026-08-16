@@ -2,7 +2,7 @@ import {
   countRecentPurchaseRateLimitEvents,
   createPurchaseRateLimitEvent,
   type PurchaseRateLimitEndpoint
-} from "@/lib/purchase-rate-limit-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-rate-limit-repository";
 import { getPurchaseAntiBotConfig, PurchaseAntiBotError } from "./config";
 
 export async function assertPurchaseRateLimit(input: {

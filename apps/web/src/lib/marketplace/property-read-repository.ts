@@ -1,5 +1,5 @@
 import { getMarketplaceEntryLocationColumnSupport } from "@/lib/admin/marketplace-entry-location-columns";
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   mapPersistedRowToPropertyDetail,
   type PersistedMarketplaceRow

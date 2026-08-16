@@ -6,14 +6,14 @@ import {
   deriveAssociatedTokenAddress,
   deriveSquadsPdas,
   SquadsBatchError
-} from "@/lib/squads/squads-batch";
+} from "@/features/staking-distribution/application/squads-batch";
 
 import {
   DEFAULT_COMPLIANCE_HOLD_TTL_MS,
   isComplianceHoldExpired
-} from "@/lib/claims/compliance-monitor";
+} from "@/features/staking-distribution/application/compliance-monitor";
 
-describe("lib/squads/squads-batch (SPEC-S04-C)", () => {
+describe("features/staking-distribution/application/squads-batch (SPEC-S04-C)", () => {
   it("exports MAX_LEGS_PER_BATCH = 20 leg capping for Squads proposals", () => {
     expect(MAX_LEGS_PER_BATCH).toBe(20);
   });
@@ -88,7 +88,7 @@ describe("lib/squads/squads-batch (SPEC-S04-C)", () => {
   });
 });
 
-describe("lib/claims/compliance-monitor (SPEC-S04-C)", () => {
+describe("features/staking-distribution/application/compliance-monitor (SPEC-S04-C)", () => {
   it("exports 12-month DEFAULT_COMPLIANCE_HOLD_TTL_MS (365 days)", () => {
     expect(DEFAULT_COMPLIANCE_HOLD_TTL_MS).toBe(365 * 24 * 3600 * 1000);
   });

@@ -2,17 +2,17 @@ import { randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   projectComplianceStatus,
   type AmlStatus,
   type ComplianceStatus,
   type KycStatus
-} from "@/lib/compliance/compliance-status-projector";
+} from "@/features/profile/domain/compliance-status-projector";
 import {
   type AmlFlag,
   type AmlProviderClassification
-} from "@/lib/compliance/aml-helius";
+} from "@/features/profile/infrastructure/aml-helius";
 
 export type ProfileBundle = {
   walletPublicKey: string;

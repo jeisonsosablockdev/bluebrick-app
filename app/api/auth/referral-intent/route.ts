@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { resolveAppAuthContext } from "@/lib/app-auth";
-import { upsertReferralIntentForAccount } from "@/lib/referrals/repository";
-import { normalizeReferralAttributionSource, type ReferralAttributionSource } from "@/lib/referrals/domain";
+import { upsertReferralIntentForAccount } from "@/features/referral-marketing/infrastructure/referrals-repository";
+import { normalizeReferralAttributionSource, type ReferralAttributionSource } from "@/features/referral-marketing/domain/referrals-domain";
 
 type ReferralIntentRequestBody = {
   referralCode?: unknown;

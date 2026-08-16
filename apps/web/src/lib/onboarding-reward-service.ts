@@ -8,8 +8,8 @@ import {
   getOrCreateProfileBundle,
   isProfileDatabaseConfigured,
   recordComplianceAuditEvent
-} from "@/lib/compliance/profile-repository";
-import { withDbClient } from "@/lib/db/pool";
+} from "@/features/profile/infrastructure/profile-repository";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 
 export type OnboardingRewardStatus =

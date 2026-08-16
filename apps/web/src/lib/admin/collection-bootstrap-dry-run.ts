@@ -6,7 +6,7 @@ import {
   type CollectionBootstrapReasonCode,
   type CollectionBootstrapStatus
 } from "./collection-bootstrap-mapper.ts";
-import { withDbClient } from "../db/pool.ts";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 export const COLLECTION_BOOTSTRAP_DRY_RUN_VERSION = "2026-04-23-v1";
 

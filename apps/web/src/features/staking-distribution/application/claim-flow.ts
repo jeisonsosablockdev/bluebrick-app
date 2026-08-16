@@ -11,12 +11,12 @@
  * - Payout wallet override requires cryptographic proof (SIWS) + committee evidence
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import {
   resolveActiveFeePolicy,
   calculateClaimFee
-} from "@/lib/claims/fee-policy";
+} from "@/features/staking-distribution/domain/fee-policy";
 import { verifySiwsSignature } from "@/lib/siws";
 
 export type ClaimStatus =

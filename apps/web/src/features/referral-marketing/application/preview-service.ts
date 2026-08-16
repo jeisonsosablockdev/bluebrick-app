@@ -1,4 +1,4 @@
-import { findReferralCodeByCode } from "@/lib/referrals/repository";
+import { findReferralCodeByCode } from "@/features/referral-marketing/infrastructure/referrals-repository";
 
 export type ReferralPreviewRecord = {
   code: string;

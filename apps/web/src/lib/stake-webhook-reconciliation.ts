@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   createLegacyConnection,
   getLegacyTransactionBySignature,
@@ -13,7 +13,7 @@ import {
   markStakeActionAttemptValidated,
   type StakeActionAttemptRecord
 } from "@/lib/stake-attempts-repository";
-import { upsertStakeProfileEvent } from "@/lib/stake-profile-events-repository";
+import { upsertStakeProfileEvent } from "@/features/staking-distribution/infrastructure/stake-profile-events-repository";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 import { createArchivalRpcClient } from "@/lib/archival/archival-rpc-client";
 

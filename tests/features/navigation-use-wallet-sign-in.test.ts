@@ -37,7 +37,7 @@ vi.mock("../../apps/web/src/lib/auth-sync", () => ({
   AUTH_SYNC_STORAGE_KEY: "auth_sync",
 }));
 
-vi.mock("../../apps/web/src/lib/referrals/client-state", () => ({
+vi.mock("../../apps/web/src/features/referral-marketing/application/client-state", () => ({
   buildReferralAuthPayload: vi.fn(() => ({ normalizedReferralCode: "", referralSource: null, referralMetadata: null })),
   clearStoredReferralHint: vi.fn(),
   persistReferralIntent: vi.fn().mockResolvedValue(undefined),

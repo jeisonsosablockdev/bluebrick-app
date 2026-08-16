@@ -5,7 +5,7 @@
  * Sealed to only permit helius-archive and alchemy-archive.
  */
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import { generateUuidV7 } from "@/lib/uuid-v7";
 import type { ArchivalEndpointName } from "@/lib/archival/archival-rpc-client";
 

@@ -5,9 +5,9 @@ import {
   listPurchaseFlowEvents,
   recordPurchaseFlowEvent,
   withFlowIdHeader
-} from "@/lib/purchase-flow-trace";
+} from "@/features/checkout-payment/application/purchase-flow-trace";
 
-describe("lib/purchase-flow-trace flags", () => {
+describe("features/checkout-payment/application/purchase-flow-trace flags", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     delete process.env.PURCHASE_TRACE_ENABLED;

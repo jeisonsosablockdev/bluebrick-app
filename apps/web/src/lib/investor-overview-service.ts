@@ -3,19 +3,19 @@ import "server-only";
 import {
   getOrCreateProfileBundle,
   type ProfileBundle
-} from "@/lib/compliance/profile-repository";
+} from "@/features/profile/infrastructure/profile-repository";
 import {
   listDistributionItemsByWallet,
   type DistributionItemWithRunRecord
-} from "@/lib/distributions/distribution-repository";
+} from "@/features/staking-distribution/infrastructure/distribution-repository";
 import {
   listPurchaseAttempts,
   type PurchaseAttemptRecord
-} from "@/lib/purchase-attempts-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
 import {
   listStakeProfileEventsByWallet,
   type StakeProfileEventRecord
-} from "@/lib/stake-profile-events-repository";
+} from "@/features/staking-distribution/infrastructure/stake-profile-events-repository";
 import {
   listStakeAssetsForWallet,
   type StakeAssetItem

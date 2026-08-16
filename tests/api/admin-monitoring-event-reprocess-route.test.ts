@@ -10,7 +10,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/purchase-webhook-reconciliation", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-webhook-reconciliation", () => ({
   reprocessPurchaseWebhookEventById: routeMocks.reprocessPurchaseWebhookEventById
 }));
 

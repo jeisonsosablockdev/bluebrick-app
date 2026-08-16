@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { getOrCreateProfileBundle } from "@/lib/compliance/profile-repository";
+import { getOrCreateProfileBundle } from "@/features/profile/infrastructure/profile-repository";
 
 function unauthorizedResponse(): NextResponse {
   return NextResponse.json(

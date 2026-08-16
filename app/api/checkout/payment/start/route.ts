@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
+import { getCheckoutPaymentMethodDisabledError } from "@/features/checkout-payment/domain/checkout-payment-methods";
 import {
   CheckoutError,
   startOrderPayment
-} from "@/lib/checkout-service";
+} from "@/features/checkout-payment/application/checkout-service";
 
 type StartPaymentBody = {
   orderId?: unknown;

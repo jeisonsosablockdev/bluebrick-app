@@ -10,7 +10,7 @@ import {
   issuePurchaseChallenge,
   PurchaseAntiBotError,
   verifyAndConsumePurchaseChallenge
-} from "@/lib/purchase-anti-bot";
+} from "@/features/checkout-payment/application/purchase-anti-bot";
 
 const ORIGINAL_CHALLENGE_TTL = process.env.PURCHASE_CHALLENGE_TTL_SECONDS;
 const ORIGINAL_WINDOW = process.env.PURCHASE_RATE_LIMIT_WINDOW_SECONDS;
@@ -43,7 +43,7 @@ afterEach(() => {
   }
 });
 
-describe("lib/purchase-anti-bot", () => {
+describe("features/checkout-payment/application/purchase-anti-bot", () => {
   it("builds deterministic challenge message payload", () => {
     const message = buildPurchaseChallengeMessage({
       walletPublicKey: "Wallet1111111111111111111111111111111111111",

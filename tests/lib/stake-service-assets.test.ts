@@ -30,7 +30,7 @@ const freezeDelegateMocks = vi.hoisted(() => ({
   hasOwnerFreezeDelegatePlugin: vi.fn()
 }));
 
-vi.mock("@/lib/db/pool", () => ({
+vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   withDbClient: vi.fn(async (callback: (client: { query: typeof dbMocks.query }) => Promise<unknown>) =>
     callback({ query: dbMocks.query })
   )

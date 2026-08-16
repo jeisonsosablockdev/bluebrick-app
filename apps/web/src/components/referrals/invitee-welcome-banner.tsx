@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Card } from "@/components/ui/card";
-import { normalizeReferralCodeInput } from "@/lib/referrals/client-state";
+import { normalizeReferralCodeInput } from "@/features/referral-marketing/application/client-state";
 
 type ReferralPreviewResponse = {
   ok?: boolean;

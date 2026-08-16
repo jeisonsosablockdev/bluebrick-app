@@ -1,6 +1,6 @@
 import { setTimeout as delay } from "node:timers/promises";
 
-import type { AmlStatus } from "@/lib/compliance/compliance-status-projector";
+import type { AmlStatus } from "@/features/profile/domain/compliance-status-projector";
 
 export type AmlProviderClassification = "clear" | "review_required" | "flagged" | "unavailable";
 export type AmlFlagSeverity = "low" | "medium" | "high" | "unknown";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { reprocessPurchaseWebhookEventById } from "@/lib/purchase-webhook-reconciliation";
+import { reprocessPurchaseWebhookEventById } from "@/features/checkout-payment/application/purchase-webhook-reconciliation";
 
 export async function POST(
   request: NextRequest,

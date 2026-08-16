@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { listReferralDashboardInvitees } from "@/lib/referrals/dashboard-service";
+import { listReferralDashboardInvitees } from "@/features/referral-marketing/application/dashboard-service";
 import { sanitizeInteger } from "@/lib/security";
 
 const DEFAULT_LIMIT = 10;

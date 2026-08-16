@@ -20,7 +20,7 @@ import {
   getStakeActionAttemptBySignature,
   markStakeActionAttemptSubmitted
 } from "@/lib/stake-attempts-repository";
-import { listStakeProfileEventsByWallet } from "@/lib/stake-profile-events-repository";
+import { listStakeProfileEventsByWallet } from "@/features/staking-distribution/infrastructure/stake-profile-events-repository";
 import {
   processStakeHeliusWebhookPayload,
   reconcileSubmittedStakeActionBySignature

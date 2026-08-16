@@ -11,7 +11,7 @@ describe("onboarding reward navigation", () => {
   });
 
   it("sends profile users to the protected profile editor", () => {
-    expect(ONBOARDING_REWARD_COMPLETE_PROFILE_HREF).toBe("/protected/perfil");
+    expect(ONBOARDING_REWARD_COMPLETE_PROFILE_HREF).toBe("/profile/perfil");
   });
 });
 

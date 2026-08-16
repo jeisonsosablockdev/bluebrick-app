@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { assertFinancialAccessByComplianceStatus, ComplianceCaseServiceError } from "@/lib/compliance/case-service";
-import { getOrCreateProfileBundle } from "@/lib/compliance/profile-repository";
-import { getFlowId, recordPurchaseFlowEvent, withFlowIdHeader } from "@/lib/purchase-flow-trace";
-import { issuePurchaseChallengeForProperty, PurchaseFlowError } from "@/lib/purchase-service";
+import { assertFinancialAccessByComplianceStatus, ComplianceCaseServiceError } from "@/features/profile/application/case-service";
+import { getOrCreateProfileBundle } from "@/features/profile/infrastructure/profile-repository";
+import { getFlowId, recordPurchaseFlowEvent, withFlowIdHeader } from "@/features/checkout-payment/application/purchase-flow-trace";
+import { issuePurchaseChallengeForProperty, PurchaseFlowError } from "@/features/checkout-payment/application/purchase-service";
 
 type ChallengeBody = {
   propertyId?: unknown;

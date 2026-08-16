@@ -1,4 +1,4 @@
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 
 type JobStatus = "draft" | "running" | "partial" | "completed" | "failed";
 type BatchStatus = "prepared" | "submitted" | "confirmed" | "failed";

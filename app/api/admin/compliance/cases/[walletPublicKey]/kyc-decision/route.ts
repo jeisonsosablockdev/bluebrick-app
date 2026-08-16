@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { applyKycDecisionForComplianceCase, ComplianceCaseServiceError } from "@/lib/compliance/case-service";
+import { applyKycDecisionForComplianceCase, ComplianceCaseServiceError } from "@/features/profile/application/case-service";
 import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
 
 type RouteParams = {

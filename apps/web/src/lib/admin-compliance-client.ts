@@ -3,8 +3,8 @@ import type {
   ComplianceCaseDetailForAdmin,
   ComplianceNoteRecord,
   ListComplianceCasesResult
-} from "@/lib/compliance/profile-repository";
-import type { ComplianceStatus } from "@/lib/compliance/compliance-status-projector";
+} from "@/features/profile/infrastructure/profile-repository";
+import type { ComplianceStatus } from "@/features/profile/domain/compliance-status-projector";
 
 type JsonSuccess<T> = {
   ok: true;

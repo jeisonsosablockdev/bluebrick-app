@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedPublicKeyFromRequest } from "@/lib/auth";
-import { listStakeProfileEventsByWallet } from "@/lib/stake-profile-events-repository";
+import { listStakeProfileEventsByWallet } from "@/features/staking-distribution/infrastructure/stake-profile-events-repository";
 
 function unauthorizedResponse(): NextResponse {
   return NextResponse.json(

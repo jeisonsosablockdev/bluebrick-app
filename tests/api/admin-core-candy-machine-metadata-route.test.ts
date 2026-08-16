@@ -9,7 +9,7 @@ const routeMocks = vi.hoisted(() => ({
   isPinataFileServiceError: vi.fn()
 }));
 
-vi.mock("@/lib/core-candy-machine-metadata-store", () => ({
+vi.mock("@/features/nft-minting/infrastructure/core-candy-machine-metadata-store", () => ({
   createCoreMetadataRecord: routeMocks.createCoreMetadataRecord
 }));
 

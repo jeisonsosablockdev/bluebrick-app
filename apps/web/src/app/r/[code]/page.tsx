@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ReferralShareLanding } from "@/components/referrals/referral-share-landing";
-import { getReferralPreviewByCode } from "@/lib/referrals/preview-service";
+import { getReferralPreviewByCode } from "@/features/referral-marketing/application/preview-service";
 import { createPageMetadata } from "@/lib/seo";
 
 type ReferralSharePageParams = {

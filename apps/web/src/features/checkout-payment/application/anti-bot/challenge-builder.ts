@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { createPurchaseChallenge } from "@/lib/purchase-challenges-repository";
+import { createPurchaseChallenge } from "@/features/checkout-payment/infrastructure/purchase-challenges-repository";
 import { getPurchaseAntiBotConfig, PurchaseAntiBotError } from "./config";
 import { assertPurchaseRateLimit } from "./rate-limiter";
 

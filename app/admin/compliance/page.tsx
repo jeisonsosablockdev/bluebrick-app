@@ -1,6 +1,6 @@
 import { ComplianceConsole } from "@/features/admin/presentation/compliance-console";
-import { getComplianceCasesQueue } from "@/lib/compliance/case-service";
-import type { ComplianceStatus } from "@/lib/compliance/compliance-status-projector";
+import { getComplianceCasesQueue } from "@/features/profile/application/case-service";
+import type { ComplianceStatus } from "@/features/profile/domain/compliance-status-projector";
 
 type AdminCompliancePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

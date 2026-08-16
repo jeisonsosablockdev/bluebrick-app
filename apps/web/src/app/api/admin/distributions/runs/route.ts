@@ -5,7 +5,7 @@ import {
   createDistributionRunDraft,
   DistributionServiceError,
   listDistributionRunsForAdmin
-} from "@/lib/distributions/distribution-service";
+} from "@/features/staking-distribution/application/distribution-service";
 
 function errorResponse(status: number, code: string, message: string, details?: Record<string, unknown>): NextResponse {
   return NextResponse.json(

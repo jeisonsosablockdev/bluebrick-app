@@ -7,22 +7,22 @@ import {
   bindReferralAtFirstAuth,
   getOrCreateReferralCodeForWallet,
   markReferralAttributionKycApproved
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 import {
   __resetReferralRewardEngineStateForTests,
   listReferralRewardEventsForInvitee,
   recordReferralPurchaseSignal,
   setReferralRewardRule,
   settleMatureReferralRewardEvents
-} from "@/lib/referrals/reward-engine";
+} from "@/features/referral-marketing/application/reward-engine";
 import {
   __resetReferralPayoutServiceStateForTests,
   createReferralPayoutBatch,
   executeReferralPayout,
   listReferralPayoutsForReferrer
-} from "@/lib/referrals/payout-service";
+} from "@/features/referral-marketing/application/payout-service";
 
-describe("lib/referrals/payout-service (in-memory)", () => {
+describe("features/referral-marketing/application/payout-service (in-memory)", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetReferralRepositoryStateForTests();

@@ -10,7 +10,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/compliance/case-service", () => ({
+vi.mock("@/features/profile/application/case-service", () => ({
   ComplianceCaseServiceError: class ComplianceCaseServiceError extends Error {
     code: string;
     status: number;

@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-import { listWalletComplianceStatuses } from "@/lib/compliance/profile-repository";
+import { listWalletComplianceStatuses } from "@/features/profile/infrastructure/profile-repository";
 import {
   calculateDistributionPreparation,
   type DistributionCalculationInput,
   type DistributionStakeEvent,
   type DistributionWalletEligibility
-} from "@/lib/distributions/distribution-engine";
+} from "@/features/staking-distribution/application/distribution-engine";
 import {
   appendDistributionAuditEvent,
   blockDistributionRun,
@@ -15,11 +15,11 @@ import {
   listDistributionRuns,
   replaceDistributionItems,
   type DistributionRunRecord
-} from "@/lib/distributions/distribution-repository";
+} from "@/features/staking-distribution/infrastructure/distribution-repository";
 import {
   listStakeProfileEventsForDistribution,
   type StakeProfileEventRecord
-} from "@/lib/stake-profile-events-repository";
+} from "@/features/staking-distribution/infrastructure/stake-profile-events-repository";
 
 export type CreateDistributionRunDraftInput = {
   periodKey: string;

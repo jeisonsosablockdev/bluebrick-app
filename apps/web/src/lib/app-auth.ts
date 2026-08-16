@@ -7,7 +7,7 @@ import {
   ensureFederatedAccount,
   ensureWalletFirstAccount,
   type AccountIdentityBundle
-} from "@/lib/accounts/repository";
+} from "@/features/profile/infrastructure/accounts-repository";
 import { getRoleForWallet, type UserRole } from "@/lib/rbac";
 import { isWorkosConfigured } from "@/lib/workos/config";
 

@@ -5,7 +5,7 @@ import {
   type AirwallexRuntimeMode,
   retrieveAirwallexPaymentIntent
 } from "@/lib/infrastructure/airwallex-client";
-import { getCheckoutPaymentMethodDisabledError } from "@/lib/checkout-payment-methods";
+import { getCheckoutPaymentMethodDisabledError } from "@/features/checkout-payment/domain/checkout-payment-methods";
 import {
   ensureNonNegativeAmount,
   ensurePositiveQuantity,
@@ -14,7 +14,7 @@ import {
   type CheckoutPaymentMethod,
   type OrderStatus,
   type PaymentAttemptStatus
-} from "@/lib/checkout-domain";
+} from "@/features/checkout-payment/domain/checkout-domain";
 import {
   createOrder,
   createPaymentAttempt,
@@ -37,7 +37,7 @@ import {
   type MarketplaceCheckoutProperty,
   type OrderRecord,
   type OrderItemRecord
-} from "@/lib/checkout-repository";
+} from "@/features/checkout-payment/infrastructure/checkout-repository";
 import {
   consumeOnboardingRewardReservationForOrder,
   getOnboardingRewardForWallet,

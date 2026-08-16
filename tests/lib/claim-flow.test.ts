@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { ClaimFlowError, submitPayoutOverride } from "@/lib/claims/claim-flow";
+import { ClaimFlowError, submitPayoutOverride } from "@/features/staking-distribution/application/claim-flow";
 import { verifySiwsSignature, buildSiwsMessage } from "@/lib/siws";
 
-describe("lib/claims/claim-flow", () => {
+describe("features/staking-distribution/application/claim-flow", () => {
   it("creates ClaimFlowError with correct error code and message", () => {
     const error = new ClaimFlowError("QUOTE_EXPIRED", "Claim quote has expired (48-hour TTL exceeded).");
     expect(error.code).toBe("QUOTE_EXPIRED");

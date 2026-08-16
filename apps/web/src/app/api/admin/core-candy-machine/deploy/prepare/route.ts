@@ -5,7 +5,7 @@ import {
   isCoreCandyMachineAdminInputError,
   prepareCoreCandyMachineDeploy,
   type PrepareCandyMachineDeployInput
-} from "@/lib/core-candy-machine-admin";
+} from "@/features/nft-minting/application/core-candy-machine-admin";
 
 type PrepareDeployRequestBody = Partial<Omit<PrepareCandyMachineDeployInput, "payerPublicKey">>;
 

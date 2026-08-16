@@ -12,7 +12,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/core-candy-machine-admin", () => ({
+vi.mock("@/features/nft-minting/application/core-candy-machine-admin", () => ({
   submitCoreCandyMachineSignedTransactions: routeMocks.submitCoreCandyMachineSignedTransactions,
   isCoreCandyMachineAdminInputError: routeMocks.isCoreCandyMachineAdminInputError,
   isCoreCandyMachineSubmitRecoverableError: routeMocks.isCoreCandyMachineSubmitRecoverableError

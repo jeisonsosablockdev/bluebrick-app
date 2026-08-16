@@ -5,12 +5,12 @@ import {
   recordComplianceAuditEvent,
   registerKycWebhookEvent,
   updateKycStatusFromProvider
-} from "@/lib/compliance/profile-repository";
-import { runWalletAmlScreening } from "@/lib/compliance/aml-screening-service";
-import { type KycStatus } from "@/lib/compliance/compliance-status-projector";
+} from "@/features/profile/infrastructure/profile-repository";
+import { runWalletAmlScreening } from "@/features/profile/application/aml-screening-service";
+import { type KycStatus } from "@/features/profile/domain/compliance-status-projector";
 import { getOnboardingRewardForWallet } from "@/lib/onboarding-reward-service";
-import { markReferralAttributionKycApproved } from "@/lib/referrals/repository";
-import { promotePendingQualificationRewardsForInvitee } from "@/lib/referrals/reward-engine";
+import { markReferralAttributionKycApproved } from "@/features/referral-marketing/infrastructure/referrals-repository";
+import { promotePendingQualificationRewardsForInvitee } from "@/features/referral-marketing/application/reward-engine";
 
 export class InvalidStripeWebhookSignatureError extends Error {}
 export class InvalidStripeWebhookPayloadError extends Error {}

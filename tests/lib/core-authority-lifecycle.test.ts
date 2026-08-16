@@ -4,7 +4,7 @@ import {
   evaluateAuthorityLifecycleTransition,
   isCoreAuthorityLifecycleInputError,
   type AuthorityMultisigEvidence
-} from "@/lib/core-authority-lifecycle";
+} from "@/features/asset-freeze-control/application/core-authority-lifecycle";
 
 const baseMultisig: AuthorityMultisigEvidence = {
   proposalId: "proposal-1",

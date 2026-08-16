@@ -2,8 +2,8 @@ import { randomBytes, randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
-import { ensureProfileExists } from "@/lib/compliance/profile-repository";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
+import { ensureProfileExists } from "@/features/profile/infrastructure/profile-repository";
 import {
   buildWindowEndIso,
   DEFAULT_REFERRAL_ELIGIBILITY_WINDOW_DAYS,
@@ -13,7 +13,7 @@ import {
   normalizeReferralCode,
   type ReferralAttributionSource,
   type ReferralAttributionStatus
-} from "@/lib/referrals/domain";
+} from "@/features/referral-marketing/domain/referrals-domain";
 
 export type ReferralMetadata = Record<string, unknown>;
 

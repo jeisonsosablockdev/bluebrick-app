@@ -4,7 +4,7 @@ import { getRequestRole } from "@/lib/auth-session";
 import {
   DistributionServiceError,
   finalizePreparedDistributionRun
-} from "@/lib/distributions/distribution-service";
+} from "@/features/staking-distribution/application/distribution-service";
 
 type RouteContext = {
   params: Promise<{

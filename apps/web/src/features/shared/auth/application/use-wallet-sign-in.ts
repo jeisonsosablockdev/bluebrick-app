@@ -27,8 +27,8 @@ import {
   type AuthMeResponse,
 } from "@/lib/auth-client";
 import { broadcastAuthSync } from "@/lib/auth-sync";
-import { clearStoredReferralHint } from "@/lib/referrals/client-state";
-import { buildReferralAuthPayload } from "@/lib/referrals/client-state";
+import { clearStoredReferralHint } from "@/features/referral-marketing/application/client-state";
+import { buildReferralAuthPayload } from "@/features/referral-marketing/application/client-state";
 import { resolvePostAuthDecision, type PostAuthOnboardingReward } from "@/lib/post-auth-decision";
 import { resolveWalletSigningPreparation } from "@/lib/wallet-signing-prep";
 import { getFriendlyWalletErrorMessage } from "@/features/navigation/application/nav-modal-utils";
@@ -38,7 +38,7 @@ import type {
   ProtectedProfileResponse,
   Translate,
 } from "@/features/navigation/domain/nav-modal-types";
-import type { ReferralHintOrigin } from "@/lib/referrals/client-state";
+import type { ReferralHintOrigin } from "@/features/referral-marketing/application/client-state";
 
 type UseWalletSignInParams = {
   authState: AuthMeResponse;

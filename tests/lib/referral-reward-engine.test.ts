@@ -7,16 +7,16 @@ import {
   bindReferralAtFirstAuth,
   getOrCreateReferralCodeForWallet,
   markReferralAttributionKycApproved
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 import {
   __resetReferralRewardEngineStateForTests,
   promotePendingQualificationRewardsForInvitee,
   recordReferralPurchaseSignal,
   setReferralRewardRule,
   settleMatureReferralRewardEvents
-} from "@/lib/referrals/reward-engine";
+} from "@/features/referral-marketing/application/reward-engine";
 
-describe("lib/referrals/reward-engine (in-memory)", () => {
+describe("features/referral-marketing/application/reward-engine (in-memory)", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetReferralRepositoryStateForTests();

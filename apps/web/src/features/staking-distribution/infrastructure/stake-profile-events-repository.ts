@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import type { StakeProductAction } from "@/lib/stake-attempts-repository";
 
 export type StakeProfileValidationStatus = "pending" | "validated" | "reconcile_pending" | "rejected";

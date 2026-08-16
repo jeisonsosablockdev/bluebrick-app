@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { ensureWalletFirstAccount } from "@/lib/accounts/repository";
+import { ensureWalletFirstAccount } from "@/features/profile/infrastructure/accounts-repository";
 import {
   clearNonceCookie,
   consumeNonceFromRequest,
@@ -9,10 +9,10 @@ import {
   setSessionCookie,
   verifySiwsPayload
 } from "@/lib/auth";
-import { isWalletRegistered } from "@/lib/compliance/profile-repository";
+import { isWalletRegistered } from "@/features/profile/infrastructure/profile-repository";
 import { ensureOnboardingRewardRegistered } from "@/lib/onboarding-reward-service";
-import { normalizeReferralAttributionSource } from "@/lib/referrals/domain";
-import { bindReferralAtFirstAuth } from "@/lib/referrals/repository";
+import { normalizeReferralAttributionSource } from "@/features/referral-marketing/domain/referrals-domain";
+import { bindReferralAtFirstAuth } from "@/features/referral-marketing/infrastructure/referrals-repository";
 
 type VerifyRequestBody = {
   message?: unknown;

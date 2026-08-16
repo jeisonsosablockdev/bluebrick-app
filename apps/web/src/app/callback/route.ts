@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleAuth } from "@workos-inc/authkit-nextjs";
 
-import { ensureFederatedAccount } from "@/lib/accounts/repository";
-import { applyFederatedEmailPrefill } from "@/lib/compliance/profile-repository";
+import { ensureFederatedAccount } from "@/features/profile/infrastructure/accounts-repository";
+import { applyFederatedEmailPrefill } from "@/features/profile/infrastructure/profile-repository";
 import { isWorkosConfigured } from "@/lib/workos/config";
 
 const authHandler = handleAuth({

@@ -5,7 +5,7 @@ import {
   isCoreAuthorityLifecycleInputError,
   prepareAuthorityLifecycleOperation,
   type PrepareAuthorityLifecycleInput
-} from "@/lib/core-authority-lifecycle";
+} from "@/features/asset-freeze-control/application/core-authority-lifecycle";
 
 type PrepareAuthorityRequestBody = Partial<Omit<PrepareAuthorityLifecycleInput, "payerPublicKey">>;
 

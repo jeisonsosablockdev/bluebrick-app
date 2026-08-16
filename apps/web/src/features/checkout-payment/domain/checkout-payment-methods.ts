@@ -1,4 +1,4 @@
-import type { CheckoutPaymentMethod } from "@/lib/checkout-domain";
+import type { CheckoutPaymentMethod } from "@/features/checkout-payment/domain/checkout-domain";
 
 export const AIRWALLEX_CHECKOUT_ENABLED = false;
 

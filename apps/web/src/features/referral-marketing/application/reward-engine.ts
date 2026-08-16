@@ -2,19 +2,19 @@ import { randomUUID } from "node:crypto";
 
 import type { PoolClient } from "pg";
 
-import { withDbClient } from "@/lib/db/pool";
+import { withDbClient } from "@/features/shared/infrastructure/db/pool";
 import {
   buildWindowEndIso,
   DEFAULT_REFERRAL_ELIGIBILITY_WINDOW_DAYS,
   DEFAULT_REFERRAL_HOLDING_PERIOD_DAYS,
   DEFAULT_REFERRAL_SETTLEMENT_WINDOW_DAYS,
   type ReferralRewardStatus
-} from "@/lib/referrals/domain";
+} from "@/features/referral-marketing/domain/referrals-domain";
 import {
   getActiveReferralAttributionByInviteeWallet,
   type ReferralAttributionRecord,
   type ReferralMetadata
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 
 export type ReferralRewardRuleRecord = {
   id: string;

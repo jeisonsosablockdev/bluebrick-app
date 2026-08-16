@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = process.cwd();
 
 const REFACTOR_FILES = [
-  "lib/purchase-anti-bot.ts",
+  "features/checkout-payment/application/purchase-anti-bot.ts",
   "lib/property-marketplace-server.ts",
   "lib/solana-kit/compat/squads.ts",
   "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",

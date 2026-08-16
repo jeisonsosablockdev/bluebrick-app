@@ -10,7 +10,7 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromRequest: routeMocks.getAuthenticatedPublicKeyFromRequest
 }));
 
-vi.mock("@/lib/stake-profile-events-repository", () => ({
+vi.mock("@/features/staking-distribution/infrastructure/stake-profile-events-repository", () => ({
   listStakeProfileEventsByWallet: routeMocks.listStakeProfileEventsByWallet
 }));
 

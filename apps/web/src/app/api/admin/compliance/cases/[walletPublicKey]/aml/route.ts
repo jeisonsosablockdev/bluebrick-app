@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getRequestRole } from "@/lib/auth-session";
-import { getAmlCaseSnapshotForAdmin } from "@/lib/compliance/profile-repository";
+import { getAmlCaseSnapshotForAdmin } from "@/features/profile/infrastructure/profile-repository";
 
 type RouteParams = {
   params: Promise<{

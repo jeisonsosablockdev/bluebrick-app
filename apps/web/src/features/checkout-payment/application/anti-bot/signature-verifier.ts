@@ -5,7 +5,7 @@ import {
   consumePurchaseChallenge,
   getPurchaseChallengeById,
   markPurchaseChallengeFailed
-} from "@/lib/purchase-challenges-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-challenges-repository";
 import { assertMatchingChallengeContext } from "./challenge-builder";
 import { PurchaseAntiBotError } from "./config";
 
