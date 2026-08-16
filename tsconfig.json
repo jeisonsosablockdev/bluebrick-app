@@ -30,24 +30,19 @@
         "./*"
       ],
       "@/features/*": [
-        "./apps/web/src/features/*",
-        "./src/features/*"
+        "./apps/web/src/features/*"
       ],
       "@core/*": [
-        "./apps/web/src/lib/core/*",
-        "./lib/core/*"
+        "./apps/web/src/lib/core/*"
       ],
       "@software/*": [
-        "./apps/web/src/lib/software/*",
-        "./lib/software/*"
+        "./apps/web/src/lib/software/*"
       ],
       "@knowledge/*": [
-        "./apps/web/src/lib/knowledge/*",
-        "./lib/knowledge/*"
+        "./apps/web/src/lib/knowledge/*"
       ],
       "@regulatory/*": [
-        "./apps/web/src/lib/regulatory/*",
-        "./lib/regulatory/*"
+        "./apps/web/src/lib/regulatory/*"
       ]
     }
   },

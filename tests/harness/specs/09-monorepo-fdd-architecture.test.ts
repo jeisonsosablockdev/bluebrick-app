@@ -7,7 +7,7 @@ describe('09 - Monorepo FDD Architecture & Governance Harness (BRI-186)', () => 
   const workspaceConfig = path.join(repoRoot, 'pnpm-workspace.yaml');
   const webAppRoot = path.join(repoRoot, 'apps/web');
   const featuresRoot = path.join(webAppRoot, 'src/features');
-  const appRoutesRoot = path.join(webAppRoot, 'app');
+  const appRoutesRoot = path.join(webAppRoot, 'src/app');
 
   // List of all 16 canonical vertical feature slices
   const expectedFeatureSlices = [
