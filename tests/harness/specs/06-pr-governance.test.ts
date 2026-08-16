@@ -90,7 +90,7 @@ Status: approved
 
       const result = executeHarnessScript('scripts/ci/pr-auto.sh', [], {
         cwd: sandbox.sandboxPath,
-        env: { ROOT_DIR: sandbox.sandboxPath },
+        env: { ROOT_DIR: sandbox.sandboxPath, FORCE_PR_UPDATE: '0' },
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('already executed for current commit SHA');
