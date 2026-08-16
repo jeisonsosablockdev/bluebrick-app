@@ -2,8 +2,8 @@
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import Link from "next/link";
-import { FooterSection } from "@/components/sections/footer";
-import { ContactFormSection } from "@/components/sections/contact-form";
+import { FooterSection } from "@/features/landing/presentation/footer";
+import { ContactFormSection } from "@/features/landing/presentation/contact-form";
 
 export function TransparencyContent() {
   const { t } = useI18n();

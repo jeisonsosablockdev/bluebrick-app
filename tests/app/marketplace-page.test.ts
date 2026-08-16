@@ -32,7 +32,7 @@ vi.mock("@/components/dashboard/dashboard-charts", () => ({
   DashboardCharts: ({ context }: { context: string }) => createElement("div", { "data-testid": `dashboard-charts-${context}` }, `charts:${context}`)
 }));
 
-vi.mock("@/components/sections/footer", () => ({
+vi.mock("@/features/landing/presentation/footer", () => ({
   FooterSection: () => createElement("footer", { "data-testid": "app-footer" }, "app-footer")
 }));
 
