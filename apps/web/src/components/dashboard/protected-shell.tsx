@@ -11,7 +11,7 @@ import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { OnboardingRewardReminder } from "@/components/dashboard/onboarding-reward-reminder";
 import { QuickTourOverlay } from "@/components/dashboard/quick-tour-overlay";
 import { RouteTransition } from "@/components/motion/route-transition";
-import { FooterSection } from "@/components/sections/footer";
+import { FooterSection } from "@/features/landing/presentation/footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { UserRole } from "@/lib/rbac";

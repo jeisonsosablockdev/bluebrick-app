@@ -6,7 +6,7 @@ import { MarketplaceFilters, MarketplaceExperience } from "@/features/marketplac
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Card } from "@/components/ui/card";
 import { H1, Lead } from "@/components/ui/typography";
-import { FooterSection } from "@/components/sections/footer";
+import { FooterSection } from "@/features/landing/presentation/footer";
 import { DEFAULT_LOCALE, localize } from "@/lib/i18n";
 import { type ListingStatus, type PropertyFilters } from "@/lib/property-service";
 import {
