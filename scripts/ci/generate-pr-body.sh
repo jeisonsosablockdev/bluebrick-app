@@ -29,6 +29,8 @@ cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la refactorización integral de la plataforma BRIDS hacia un **Monorepo Workspaces (\`apps/web\`, \`packages/*\`, \`programs/*\`)** con **Feature-Driven Design (FDD)** organizado en 4 capas estrictas (Presentation, Application, Domain, Infrastructure) a lo largo de **16 Feature Slices verticales** y la capa compartida \`shared\`.
 
+- Feature-Flag Strategy: Refactorización estructural modular en 53 SPECs; preservación total de compatibilidad de contratos públicos y APIs.
+
 ### 🚀 Principales Cambios y Logros:
 1. **Estructura Monorepo y Whitelist de Raíz**:
    - Raíz del monorepo 100% limpia sin contaminación ni carpetas no autorizadas.
