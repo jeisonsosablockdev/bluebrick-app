@@ -503,35 +503,42 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 
 ### 🧹 Bloque 3: Limpieza y Eliminación Incremental de Proxies & Symlinks por Feature
 
-#### **`SPEC-46 (Marketplace & Landing Legacy Cleanup & Root Symlinks)`**
-* **Objetivo & Alcance**: Eliminar proxies y symlinks legacy de `components/marketplace/*` y `components/sections/*`. Actualizar todas las importaciones en tests y rutas para consumir directamente `@/features/marketplace` y `@/features/landing`. Eliminar symlink de `public` y symlinks legacy de Marketplace.
-* **Capas FDD**: `features/marketplace/`, `features/landing/`.
-* **Archivos Afectados**: `apps/web/src/components/marketplace/*`, `apps/web/src/components/sections/*`, tests asociados.
-* **Trazabilidad OKF**: `BRI-164`, `BRI-39`, `git-monorepo-policy.md`.
-* **Verificación**: `pnpm validate:content`, `pnpm validate:routes`, `pnpm validate:seo`.
+#### **`SPEC-46 (Marketplace Legacy Cleanup & Direct Feature Imports)`**
+* **Objetivo & Alcance**: Eliminar físicamente el directorio legacy `apps/web/src/components/marketplace/`. Actualizar todos los tests de marketplace y rutas de la aplicación para consumir exclusivamente `@/features/marketplace`.
+* **Capas FDD**: `features/marketplace/`.
+* **Archivos Afectados**: `apps/web/src/components/marketplace/*` (eliminación), tests de marketplace, `app/marketplace/*`.
+* **Trazabilidad OKF**: `BRI-164`, `git-monorepo-policy.md`.
+* **Verificación**: `pnpm validate:content`, `pnpm test` de marketplace, `pnpm typecheck`.
 
-#### **`SPEC-47 (Dashboard: Profile, Portfolio, Referrals & Staking Legacy Cleanup)`**
-* **Objetivo & Alcance**: Eliminar proxies legacy en `components/dashboard/*` (`profile-kyc-module.tsx`, `portfolio-module.tsx`, `referral-program-module.tsx`, `stake-module.tsx`, `rentas-module.tsx`, `account-profile-support-module.tsx`, `historial-module.tsx`). Actualizar tests asociados para importar directamente de sus respectivos `@/features/{profile,investor-portfolio,referral-marketing,staking-distribution}`.
+#### **`SPEC-47 (Landing Sections Legacy Cleanup & Direct Feature Imports)`**
+* **Objetivo & Alcance**: Eliminar físicamente el directorio legacy `apps/web/src/components/sections/`. Actualizar todos los tests de landing y páginas públicas para consumir exclusivamente `@/features/landing`.
+* **Capas FDD**: `features/landing/`.
+* **Archivos Afectados**: `apps/web/src/components/sections/*` (eliminación), tests de landing, páginas públicas (`app/page.tsx`, etc.).
+* **Trazabilidad OKF**: `BRI-39`, `BRI-65`, `frontend-ui-policy.md`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:seo`, `pnpm test`.
+
+#### **`SPEC-48 (Dashboard: Profile, Portfolio, Referrals & Staking Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar físicamente `apps/web/src/components/dashboard/*` (`profile-kyc-module.tsx`, `portfolio-module.tsx`, `referral-program-module.tsx`, `stake-module.tsx`, `rentas-module.tsx`, `account-profile-support-module.tsx`, `historial-module.tsx`). Actualizar tests asociados para importar directamente de sus respectivos `@/features/{profile,investor-portfolio,referral-marketing,staking-distribution}`.
 * **Capas FDD**: `features/{profile,investor-portfolio,referral-marketing,staking-distribution}/`.
 * **Archivos Afectados**: `apps/web/src/components/dashboard/*`, tests de perfil, portafolio, referidos y staking.
 * **Trazabilidad OKF**: `BRI-151`, `BRI-171`, `BRI-16`, `BRI-6/7/8`.
 * **Verificación**: `pnpm test` de suites de dashboard y `pnpm typecheck`.
 
-#### **`SPEC-48 (Admin, Asset Management & Checkout Legacy Cleanup)`**
-* **Objetivo & Alcance**: Eliminar proxies y duplicados en `components/admin/*` y `components/checkout/*`. Actualizar tests y referencias para consumir directamente `@/features/{admin,property-management,checkout-payment}`.
+#### **`SPEC-49 (Admin, Asset Management & Checkout Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar proxies y duplicados en `apps/web/src/components/admin/*` y `apps/web/src/components/checkout/*`. Actualizar tests y referencias para consumir directamente `@/features/{admin,property-management,checkout-payment}`.
 * **Capas FDD**: `features/{admin,property-management,checkout-payment}/`.
 * **Archivos Afectados**: `apps/web/src/components/admin/*`, `apps/web/src/components/checkout/*`, tests de administración y checkout.
 * **Trazabilidad OKF**: `EPIC-001`, `EPIC-003`, `EPIC-011`.
 * **Verificación**: `pnpm test` de suites admin y checkout y `pnpm typecheck`.
 
-#### **`SPEC-49 (Services & Lib Legacy Proxies Cleanup por Feature)`**
-* **Objetivo & Alcance**: Eliminar proxies de `lib/` correspondientes a checkout, purchase, compliance, referrals, staking, squads y metaplex (`apps/web/src/lib/{purchase-*,checkout-*,compliance/*,referrals/*,claims/*,distributions/*,squads/*,anti-bot/*}`). Actualizar imports en rutas API (`apps/web/src/app/api/*`) y tests para importar desde `@/features/*`.
+#### **`SPEC-50 (Services & Lib Legacy Proxies Cleanup por Feature)`**
+* **Objetivo & Alcance**: Eliminar proxies de `apps/web/src/lib/` correspondientes a checkout, purchase, compliance, referrals, staking, squads y metaplex (`apps/web/src/lib/{purchase-*,checkout-*,compliance/*,referrals/*,claims/*,distributions/*,squads/*,anti-bot/*}`). Actualizar imports en rutas API (`apps/web/src/app/api/*`) y tests para importar desde `@/features/*`.
 * **Capas FDD**: `features/*/{domain,application,infrastructure}`.
 * **Archivos Afectados**: `apps/web/src/lib/*`, `apps/web/src/app/api/*`, tests de servicios.
 * **Trazabilidad OKF**: `EPIC-003`, `BRI-151`, `BRI-16`, `BRI-6/7/8`, `solana-p0-05/06`.
 * **Verificación**: `pnpm validate:routes`, `pnpm validate:pipeline`, `pnpm typecheck`.
 
-#### **`SPEC-50 (Root Symlink Elimination & Path Aliases Harmonization)`**
+#### **`SPEC-51 (Root Symlink Elimination & Path Aliases Harmonization)`**
 * **Objetivo & Alcance**: Eliminar symlinks residuales en la raíz del monorepo (`components`, `src`, `lib`, etc.) y remover el directorio `app/` en raíz ahora que `apps/web/src/app` es el source of truth físico y autónomo. Sincronizar y blindar `tsconfig.json` y `tsconfig.typecheck.json` para resolver `@/*` exclusivamente desde `./apps/web/src/*`.
 * **Archivos Afectados**: Symlinks raíz (`components`, `src`, `lib`, `public`), `app/` en raíz, `tsconfig.json`, `tsconfig.typecheck.json`.
 * **Trazabilidad OKF**: `git-monorepo-policy.md`, `AGENTS.md`.
@@ -541,7 +548,7 @@ Para garantizar que **cada componente siga funcionando perfectamente** tras cada
 
 ### 🧼 Bloque 4: Limpieza, Refactorización y Auditoría Final (Clean Code Audit)
 
-#### **`SPEC-51 (Clean Code Audit, Zero Dead-Code, Monorepo Root Purification & Final DoD)`**
+#### **`SPEC-52 (Clean Code Audit, Zero Dead-Code, Monorepo Root Whitelist & Final DoD)`**
 * **Objetivo & Alcance**: 
   1. Ejecutar una auditoría exhaustiva de Clean Code: eliminación de dead code, imports residuales, verificación de 0 implicit `any` y cumplimiento estricto de convenciones de nombrado.
   2. Verificar que la raíz del monorepo cumpla al 100% con la whitelist de directorios (`programs/`, `apps/`, `packages/`, `.agents/`, `knowledge/`, `scripts/`, `tests/`).
