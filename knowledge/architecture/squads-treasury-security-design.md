@@ -71,9 +71,10 @@ flowchart TD
 
 Para garantizar que la lista de beneficiarios es matemáticamente consistente y resistente a manipulación, el sistema implementa la derivación de **Árboles de Merkle**:
 
-1. **Leaf Hashing (Hash de Hoja)**:
-   Cada beneficiario de la corrida representa una hoja calculada criptográficamente:
-   $$\text{Leaf}_i = \text{hash}(\text{recipient\_pubkey} \parallel \text{amount\_minor} \parallel \text{claim\_id})$$
+1. **Leaf Hashing (Hash de Hoja)** — Codec canónico único (ver `SOLUTION-ARCHITECTURE.md` §Codec Canónico Único):
+   Cada beneficiario de la corrida representa una hoja calculada con `solana_program::keccak::hashv`:
+   $$\text{Leaf}_i = \text{keccak256}(\text{domain} \parallel \text{runId} \parallel \text{claimId} \parallel \text{mint} \parallel \text{tokenProgram} \parallel \text{recipientWallet} \parallel \text{recipientAta} \parallel \text{amountMinor})$$
+   Domain separator: `"brids:epic015:payout:v1"`. Encoding: pubkeys 32 bytes, u64 little-endian 8 bytes.
 
 2. **Verificación en el Pipeline TypeScript**:
    Antes de emitir cualquier propuesta, la función `verifyAllTreeLeaves` recorre la totalidad de las hojas en memoria confirmando que el 100% satisface la raíz del árbol (`merkleRoot`).
@@ -89,8 +90,8 @@ Para garantizar que la lista de beneficiarios es matemáticamente consistente y 
 El sistema proporciona 3 herramientas de control operativo para el comité:
 
 1. **Rechazo Global (`proposalReject`)**: Permite a cualquier miembro del comité cancelar la Propuesta Marco en Squads v4 antes de su ejecución, devolviendo los ítems a la cola sin tocar fondos.
-2. **Veto Granular de Ítems (`vetoClaimItem`)**: Permite vetar a un usuario individual antes de votar, moviéndolo a `compliance_hold` y recalculando automáticamente la raíz de Merkle sin afectar al resto del grupo.
-3. **Freno de Emergencia (`circuitBreaker`)**: Permite pausar inmediatamente la ejecución desatendida del bot si se detecta una anomalía de red durante el despacho.
+2. **Veto Granular de Ítems (`vetoClaimItem`) — Pre-Seal Only**: Permite vetar a un usuario individual **antes de sellar** el run, excluyéndolo del snapshot y recalculando la raíz de Merkle automáticamente. Tras `seal_run`, la root es inmutable on-chain y el mecanismo es `pause_run` + `cancel_run` (propuesta Squads) + nuevo run sin la leaf vetada. No existe PDA de revocación individual.
+3. **Freno de Emergencia (`circuitBreaker`)**: Permite pausar inmediatamente la ejecución desatendida del bot si se detecta una anomalía de red durante el despacho. Para bloqueo on-chain autoritativo, una propuesta Squads invoca `pause_run`.
 
 ---
 

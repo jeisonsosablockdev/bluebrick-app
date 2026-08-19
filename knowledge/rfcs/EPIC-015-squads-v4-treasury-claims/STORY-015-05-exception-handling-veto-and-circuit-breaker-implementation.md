@@ -25,15 +25,15 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ### Layer 2: Application/Consumption Layer
 - **`apps/web/src/app/api/admin/payout-runs/[id]/reject/route.ts`**: Cancela la propuesta global y descongela la corrida.
-- **`apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts`**: Veta un ítem específico marcándolo como `VETOED_BY_ADMIN`.
-- **`apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts`**: Pausa inmediatamente el bot ejecutor.
+- **`apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts`**: Veta un ítem específico **antes de sellar** el run. Excluye la leaf del snapshot, recalcula root y attestations, e invalida la propuesta previa. No opera post-seal (ver §Supersession Contract).
+- **`apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts`**: Activa el freno de emergencia en dos capas: **(1) Local:** detiene el bot ejecutor propio (flag en DB/Redis con compare-and-set). **(2) On-chain (obligatorio si el run está sellado):** inicia la creación de una propuesta Squads para invocar `pause_run`, que es la **única** garantía de que un cranker externo o comprometido no pueda ejecutar `settle_claim`. Sin `pause_run` on-chain, la pausa local no tiene efecto fuera del bot propio.
 
 ### Layer 3: Domain/Pipelines/Services Layer
-- **`apps/web/src/features/staking-distribution/domain/merkle-tree.ts`**: Genera e inspecciona el árbol de Merkle criptográfico (`merkleRoot`) usando hashing Keccak256 sobre las hojas `(claimId, wallet, amount)`.
+- **`apps/web/src/features/staking-distribution/domain/merkle-tree.ts`**: Genera e inspecciona el árbol de Merkle criptográfico (`merkleRoot`) usando el codec canónico único: `keccak256(domain || runId || claimId || mint || tokenProgram || recipientWallet || recipientAta || amountMinor)` con domain separator `"brids:epic015:payout:v1"` (ver `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación).
 - **`apps/web/src/features/staking-distribution/application/payout-settlement-flow.ts`**: Manejo de excepciones, veto granular y control del circuit breaker.
 
 ### Layer 4: Infrastructure Layer
-- **`programs/payout_settlement`**: Verificación on-chain de Merkle proof, veto de leaves y freno de emergencia en el contrato Anchor.
+- **`programs/payout_settlement`**: Verificación on-chain de Merkle proof, freno de emergencia (`pause_run`) y custodia de escrow. El veto individual opera exclusivamente pre-seal; post-seal se usa `pause_run` + `cancel_run` vía Squads.
 - **`apps/web/src/lib/solana-kit/compat/payout-settlement.ts`**: Adaptador de comunicación RPC con el programa.
 
 ---
@@ -63,7 +63,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - Alterar 1 solo centavo en la wallet de pago hace fallar la verificación con `ERR_MERKLE_ROOT_MISMATCH`.
   - Reconstrucción del árbol de Merkle sobre 1,000 ítems genera la raíz de 32 bytes exacta.
   - Veto sin permisos de admin retorna `403`.
-  - Circuit breaker activado impide ejecución de nuevos mensajes.
+  - Circuit breaker local activado detiene el bot propio; `pause_run` on-chain impide `settle_claim` de cualquier cranker (incluido uno externo o comprometido).
 - **DoD de SPEC-01**: Todos los tests compilando y fallando correctamente (RED).
 
 ---
@@ -72,9 +72,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-02-merkle-verifier`
 - **Subagente ejecutor**: `security`
 - **Subagentes de apoyo**: `solana` (compatibilidad con instruction data on-chain)
-- **Objetivo**: Implementar `merkle-tree-verifier.ts` con encoding canónico versionado, Keccak256 hashing, domain separator, ordenamiento de hojas y generación de la `merkleRoot` de 32 bytes.
+- **Objetivo**: Implementar `merkle-tree.ts` (Layer 3 — Domain) con el codec canónico único de 8 campos `keccak256(domain || runId || claimId || mint || tokenProgram || recipientWallet || recipientAta || amountMinor)`, domain separator `"brids:epic015:payout:v1"`, ordenamiento de hojas por `claimId` binario y generación de la `merkleRoot` de 32 bytes. Debe ser idéntico al encoding on-chain de `settle_claim` (ver `SOLUTION-ARCHITECTURE.md` §Codec Canónico Único).
 - **Archivos a Crear**:
-  - `lib/squads/merkle-tree-verifier.ts`
+  - `apps/web/src/features/staking-distribution/domain/merkle-tree.ts` (Layer 3 — Domain)
 - **DoD de SPEC-02**: Verificador generando `merkleRoot` correcta. Tests de Merkle de SPEC-01 en verde.
 
 ---
@@ -83,12 +83,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-03-veto-endpoints`
 - **Subagente ejecutor**: `api`
 - **Subagentes de apoyo**: `security` (permisos admin, compare-and-set), `solana` (verificación estado on-chain de la propuesta)
-- **Objetivo**: Implementar los endpoints API REST de rechazo global (`reject`), veto granular (`veto`) y freno de emergencia (`circuit-breaker`) con validación de permisos y transiciones de estado.
+- **Objetivo**: Implementar los endpoints API REST de rechazo global (`reject`), veto granular pre-seal (`veto`) y freno de emergencia de dos capas (`circuit-breaker`: pausa local del bot + creación de propuesta Squads para `pause_run` on-chain) con validación de permisos y transiciones de estado.
 - **Archivos a Crear**:
-  - `app/api/admin/batches/[id]/reject/route.ts`
-  - `app/api/admin/batches/[id]/veto/route.ts`
-  - `app/api/admin/batches/[id]/circuit-breaker/route.ts`
-- **DoD de SPEC-03**: Endpoints funcionales con permisos de admin. Tests de SPEC-01 de veto y circuit breaker en verde.
+  - `apps/web/src/app/api/admin/payout-runs/[id]/reject/route.ts` (Layer 2 — Application)
+  - `apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts` (Layer 2 — Application)
+  - `apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts` (Layer 2 — Application)
+- **DoD de SPEC-03**: Endpoints funcionales con permisos de admin. El endpoint `circuit-breaker` detiene el bot local Y crea una propuesta Squads para `pause_run` cuando el run está sellado. Tests de SPEC-01 de veto y circuit breaker en verde.
 
 ---
 
@@ -96,9 +96,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-04-veto-ui`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `state` (circuit breaker state management), `qa` (verificación visual de estados)
-- **Objetivo**: Agregar los botones de "Rechazar Propuesta Marco", "Veto Individual" y "Freno de Emergencia" en `squads-multisig-console.tsx` con indicadores visuales de estado.
+- **Objetivo**: Agregar los botones de "Rechazar Propuesta Marco", "Veto Individual" (pre-seal only) y "Freno de Emergencia" en `treasury-console.tsx` (Layer 1 — Presentation) con indicadores visuales de estado. El botón de emergencia debe mostrar dos estados: **(a)** pausa local activa (bot detenido, indicador ámbar) y **(b)** `pause_run` on-chain confirmado (indicador rojo, settlement bloqueado para cualquier cranker). Si solo hay pausa local sin `pause_run`, el UI debe advertir explícitamente que un cranker externo aún puede liquidar leaves.
 - **Archivos a Modificar**:
-  - `components/admin/squads-multisig-console.tsx`
+  - `apps/web/src/features/admin/presentation/treasury-console.tsx` (Layer 1 — Presentation)
 - **DoD de SPEC-04**: Botones renderizando correctamente con estados visuales adecuados.
 
 ---
@@ -133,20 +133,36 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ## 5. Blocking Design Contract
 - **Decisión cerrada:** `payout_settlement` almacena root y verifica proofs on-chain. La variante de root auditora queda prohibida.
-- Las hojas deben tener encoding canónico versionado: `claimId`, address bytes, mint, amount integer en unidades mínimas y domain separator.
+- Las hojas deben tener el codec canónico único de 8 campos definido en `SOLUTION-ARCHITECTURE.md` §Codec Canónico Único.
 - Rechazo/cancelación sigue el modelo Squads: alcanzar el umbral requerido.
 - El circuito de emergencia es un estado compartido con compare-and-set; no revierte pagos confirmados.
-- Veto antes de aprobación invalida el snapshot y crea nueva versión; veto después de aprobación requiere cancelar/reemplazar.
+
+> [!IMPORTANT]
+> **Regla de Veto Pre-Seal Only (P0 — Unificada):**
+> - **Antes de `seal_run`:** El admin puede vetar filas individuales. Cada veto excluye la leaf del snapshot, recalcula root + attestations e invalida la propuesta Squads previa. Se genera un nuevo ciclo (snapshot → attestation → proposal).
+> - **Después de `seal_run`:** El root es inmutable on-chain. **No existe instrucción `revoke_leaf` ni PDA de revocación.** Un `VETOED_BY_ADMIN` en Postgres NO impide que una proof válida liquide la leaf vía `settle_claim`. El mecanismo post-seal es: circuit breaker (detiene al cranker) → `pause_run` (propuesta Squads, detiene settlement on-chain) → `cancel_run` (propuesta Squads) → nuevo run excluyendo las leaves vetadas y las ya liquidadas.
+> - **Post-ejecución:** Un pago confirmado con `ClaimReceipt` es irrevocable. Solo aplica flujo de auditoría/disputa.
 
 ## 6. Acceptance and Failure Matrix
 | Case | Expected result |
 | --- | --- |
 | Root encoding differs | Fail closed before proposal |
 | DB item changes after approval | Message hash/root check detects mismatch |
-| Proposal approved and circuit breaker on | No further execution; confirmed legs immutable |
+| Proposal approved and circuit breaker local on | Own bot stops; external cranker still can settle. Requires `pause_run` on-chain for full stop |
+| Proposal approved and `pause_run` on-chain confirmed | `settle_claim` reverts for any cranker; confirmed legs immutable |
 | Veto after execution | Audit-only/dispute flow; never fake reversal |
 | Unauthorized reject/veto | 403 and no on-chain/DB transition |
 
 ## 7. Supersession Contract — Circuit Breaker y PayoutRun
 
-El circuit breaker detiene la construcción de propuestas y el cranker antes de enviar `settle_claim`; no cambia el programa ni invalida receipts. Para detener pagos de forma autoritativa, una propuesta Squads debe invocar `pause_run` sobre el `PayoutRun`; para reanudar o cancelar, otra propuesta Vault firma la operación correspondiente. Un veto previo a `seal_run` invalida la propuesta; después de sellar, la corrección requiere pause/cancel y un run de reemplazo de las leaves sin receipt. STORY-015-05 no implementa Merkle ni escrow: esas invariantes pertenecen exclusivamente a STORY-015-01.
+> [!WARNING]
+> **Defensa en Profundidad de Dos Capas (P0 — Decisión Cerrada):**
+>
+> | Capa | Mecanismo | Alcance | Garantía |
+> |---|---|---|---|
+> | **1. Local (Circuit Breaker)** | Flag en DB/Redis con compare-and-set; el endpoint `circuit-breaker/route.ts` lo activa | Solo detiene el bot ejecutor propio | ⚠️ **No es garantía on-chain.** Un cranker comprometido, externo o un script con la proof puede llamar `settle_claim` directamente. |
+> | **2. On-chain (`pause_run`)** | Instrucción del programa `payout_settlement`, validada con 3 capas (signer + PDA re-derivation contra Squads v4 + multisig owner check) | Bloquea `settle_claim` para **cualquier** cranker a nivel del runtime de Solana | ✅ **Garantía criptográfica.** El programa revierte la tx si el run está pausado. |
+>
+> El endpoint `circuit-breaker` DEBE iniciar automáticamente la creación de una propuesta Squads para `pause_run` cuando el run está sellado. La UI debe advertir si solo existe pausa local sin `pause_run` on-chain confirmado.
+
+Para reanudar o cancelar un run pausado, otra propuesta Vault firma `resume_run` o `cancel_run` respectivamente. Un veto previo a `seal_run` invalida la propuesta y recalcula root; después de sellar, la corrección requiere `pause_run` → `cancel_run` → `refund_unclaimed` → nuevo run excluyendo leaves vetadas + ya liquidadas. STORY-015-05 no implementa Merkle ni escrow: esas invariantes pertenecen exclusivamente a STORY-015-01.

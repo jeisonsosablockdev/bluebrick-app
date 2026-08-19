@@ -30,11 +30,11 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 549 |
+| Archived | 550 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 547 |
+| Archived status | 548 |
 
 ## Inbox
 
@@ -85,6 +85,7 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | stake-distribution | archived | none | [Stake Distribution API](knowledge/api/endpoints/stake-distribution.md) | n/a |
 | webhooks | archived | none | [Webhooks](knowledge/api/endpoints/webhooks.md) | n/a |
 | index | archived | none | [API Reference](knowledge/api/index.md) | n/a |
+| ios-integration-guide | archived | none | [iOS API Integration Guide](knowledge/api/ios-integration-guide.md) | n/a |
 | index | archived | none | [rpc](knowledge/api/rpc/index.md) | n/a |
 | metaplex-core | archived | none | [Metaplex Core RPC](knowledge/api/rpc/metaplex-core.md) | n/a |
 | solana-methods | archived | none | [Solana RPC Methods](knowledge/api/rpc/solana-methods.md) | n/a |

@@ -30,14 +30,16 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - Emite `proposalReject` mediante el SDK `@sqds/multisig` en Solana Devnet.
 - Libera todas las reclamaciones del lote a estado `queued_for_payout` o `draft` y registra `BATCH_REJECTED` en `claim_or_payout_events`.
 
-### 2. Veto Granular de Ítems Individuales (`Item Veto`)
-- En la tabla de beneficiarios, el administrador puede vetar una fila individual antes de autorizar la propuesta marco.
+### 2. Veto Granular de Ítems Individuales (`Item Veto`) — Pre-Seal Only
+- En la tabla de beneficiarios, el administrador puede vetar una fila individual **antes de sellar** el payout run (`seal_run`).
 - La reclamación pasa a estado `compliance_hold` o `disputed`.
-- Al vetar un ítem, el backend reconstruye el **Árbol de Merkle de la corrida**, excluyendo la hoja del ítem vetado y emitiendo una nueva raíz criptográfica (`merkleRoot`).
+- Al vetar un ítem, el backend reconstruye el **Árbol de Merkle de la corrida**, excluyendo la hoja del ítem vetado y emitiendo una nueva raíz criptográfica (`merkleRoot`). Se invalida la propuesta previa y se genera un nuevo ciclo (snapshot → attestation → proposal).
+- **Post-seal:** La root es inmutable on-chain. No existe instrucción `revoke_leaf` ni PDA de revocación. El mecanismo post-seal es: circuit breaker → `pause_run` (propuesta Squads) → `cancel_run` → nuevo run.
 
-### 3. Freno de Emergencia (`Emergency Circuit Breaker`)
-- Botón destacado en el monitor de ejecución para pausar de inmediato el worker desatendido.
-- Detiene el despacho de los sublotes de 20 restantes.
+### 3. Freno de Emergencia (`Emergency Circuit Breaker`) — Defensa de Dos Capas
+- Botón destacado en el monitor de ejecución para pausar de inmediato el worker desatendido **(capa local)**.
+- Detiene el despacho de los sublotes restantes del bot propio.
+- **Capa on-chain (obligatoria):** El endpoint debe iniciar automáticamente una propuesta Squads para `pause_run`, que es la **única** garantía de que un cranker externo o comprometido no pueda ejecutar `settle_claim`. Sin `pause_run` on-chain, la pausa local no tiene efecto fuera del bot propio.
 - Los sublotes ya confirmados en Devnet se marcan como `executed`; los pendientes quedan como `partially_failed` o `paused` para auditoría.
 
 ### 4. Modelo de Amenazas Cero-Confianza (Paranoia Security Shield)

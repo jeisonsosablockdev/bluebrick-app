@@ -76,22 +76,22 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ---
 
-### SPEC-03: Instrucción de Inicialización (initialize.rs)
+### SPEC-03: Instrucción de Inicialización de Configuración (initialize.rs)
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s06-03-initialize`
 - **Subagente ejecutor**: `solana`
-- **Subagentes de apoyo**: `security` (reinitialize guard, authority bootstrap)
-- **Objetivo**: Implementar la instrucción `initialize_project_config` que crea la PDA vinculada a la colección con la autoridad de bootstrap explícita. Impedir duplicados.
+- **Subagentes de apoyo**: `security` (reinitialize guard, authority bootstrap, 3-layer Vault validation)
+- **Objetivo**: Implementar la instrucción `initialize_project_config` que crea la PDA vinculada a la colección con la autoridad de bootstrap explícita. Valida que `authority_vault` sea signer, que su dirección coincida con la PDA re-derivada de Squads v4 (`[b"multisig", multisig_pda.as_ref(), b"vault", &[vault_index]]`) contra `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`, y que `multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`. Impedir duplicados.
 - **Archivos a Crear**:
   - `programs/project_config_notary/src/instructions/initialize.rs`
-- **DoD de SPEC-03**: Instrucción compilando. Test de SPEC-01 para duplicados en verde.
+- **DoD de SPEC-03**: Instrucción compilando. Test de SPEC-01 para duplicados y validación de 3 capas de Vault en verde.
 
 ---
 
 ### SPEC-04: Instrucción de Actualización de Fechas (update_dates.rs)
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s06-04-update-dates`
 - **Subagente ejecutor**: `solana`
-- **Subagentes de apoyo**: `security` (CPI signer validation, `is_signer` + `key()` check)
-- **Objetivo**: Implementar `update_project_dates` con validación `authority_vault.key() == state.authority_vault && authority_vault.is_signer` (firma proviene de CPI de Squads), validación `start_at <= end_at`, versionado y emisión de evento con valores old/new.
+- **Subagentes de apoyo**: `security` (CPI signer validation, 3-layer Vault check)
+- **Objetivo**: Implementar `update_project_dates` con validación de 3 capas: `authority_vault.key() == state.authority_vault`, `authority_vault.is_signer` (firma proviene de CPI de Squads), y re-derivación contra Squads v4 program ID con `multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`; validación `start_at <= end_at`, versionado y emisión de evento con valores old/new.
 - **Archivos a Crear**:
   - `programs/project_config_notary/src/instructions/update_dates.rs`
 - **DoD de SPEC-04**: Instrucción compilando. Tests de SPEC-01 de autoridad y rangos en verde.
@@ -140,8 +140,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 5. Blocking Design Contract
 - `ProjectConfigState` debe incluir `authority_vault`, `multisig`, `vault_index`, `collection_address`, `start_at`, `end_at`, `version`, `updated_at` y `bump`; tamaño y discriminador documentados.
 - Semillas canónicas y únicas: `[b"project_config", collection_address]`.
-- `initialize` impide duplicados y exige autoridad de bootstrap explícita.
-- `update_project_dates` comprueba `authority_vault.key() == state.authority_vault` y `authority_vault.is_signer`; la firma proviene de CPI de Squads.
+- `initialize` y `update_project_dates` comprueban validación de 3 capas para `authority_vault`: (1) `authority_vault.is_signer`, (2) re-derivación de la Vault PDA `[b"multisig", multisig_pda, b"vault", &[vault_index]]` contra `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`, y (3) `multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`. La firma proviene de CPI de Squads durante `vaultTransactionExecute`.
 - El programa no puede leer ni confiar en Postgres, `runId`, ni una firma HTTP.
 
 ## 6. Acceptance and Failure Matrix

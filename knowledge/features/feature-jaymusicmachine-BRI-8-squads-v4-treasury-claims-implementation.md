@@ -36,7 +36,7 @@ Toda la implementación se organiza estrictamente en la arquitectura **Monorepo 
                                                  |
 +----------------------------------------------------------------------------------------------------+
 | 3. Domain / Pipelines / Services Layer (apps/web/src/features/staking-distribution/domain/)        |
-|    - payout-leaf.ts: Hasheo canónico Keccak256 de leaves (claimId, wallet, amountMinor, mint)      |
+|    - payout-leaf.ts: Codec canónico keccak256(domain‖runId‖claimId‖mint‖tokenProg‖wallet‖ata‖amount)|
 |    - merkle-tree.ts: Construcción determinista y validación de árboles de Merkle                   |
 |    - fee-policy.ts: Políticas de retención, tarifas y reglas de cálculo de staking/yield           |
 |    - yield-calculation.ts: Cálculo de elegibilidad y snapshot bloqueado                            |
@@ -56,6 +56,16 @@ Toda la implementación se organiza estrictamente en la arquitectura **Monorepo 
 +----------------------------------------------------------------------------------------------------+
 ```
 
+### 2.1 Canonical Open-Source Reference (Helium Network - Pinned Release)
+- **Repositorio Canónico Pinneado:** `https://github.com/helium/helium-program-library` (Release Tag: `program-lazy-distributor-v0.3.8`, Anchor `0.31.1`).
+- **Primitivas EXACTAS Adoptadas:**
+  1. Verificación de Merkle Proofs vía `solana_program::keccak::hashv`.
+  2. Custodia de fondos en Escrow PDA con transferencias CPI firmadas por las seeds de `PayoutRun`.
+  3. Registro atómico de `ClaimReceipt` PDA para resistencia estricta a doble cobro.
+  4. Patrón de Circuit Breaker (pausa de emergencia multisig).
+- **Componentes Excluidos:** Red de oráculos en vivo (reemplazada por doble attestation Ed25519), compresión/Bubblegum de NFTs, recompensas acumulativas continuas y tokenomics de subDAOs.
+- **Licencia:** Implementación Clean-Room bajo **Apache-2.0 / MIT** conforme a [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json).
+
 ## 3. Atomic Slices & Story Breakdown (STORY-015-01 a STORY-015-07)
 
 - **STORY-015-01 (Treasury Settlement Authorization & Squads SDK Integration)**:
@@ -71,7 +81,7 @@ Toda la implementación se organiza estrictamente en la arquitectura **Monorepo 
   - Route Handlers en `apps/web/src/app/api/cron/{claims-expiry,compliance-ttl}/route.ts`.
   - Endpoint de cancelación `apps/web/src/app/api/claims/[claimId]/cancel/route.ts` para solicitudes en `CLAIM_REQUESTED`.
 - **STORY-015-05 (Exception Handling, Veto & Merkle Circuit Breaker)**:
-  - Rechazo de propuesta (`proposalReject`), veto granular on-chain de leaves no liquidadas y freno de emergencia en `programs/payout_settlement`.
+  - Rechazo de propuesta (`proposalReject`), veto granular pre-seal (excluye leaf → recalcula root), `pause_run`/`cancel_run` post-seal y freno de emergencia en `programs/payout_settlement`.
 - **STORY-015-06 (On-Chain Project Config PDA Program)**:
   - Contrato Anchor `programs/project_config_notary` en Solana Devnet para resguardar fechas y parámetros inmutables del proyecto.
 - **STORY-015-07 (On-Chain Project Dates Notary Governance & RPC Direct Reader)**:

@@ -117,7 +117,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - `programs/payout_settlement/src/instructions/update_policy.rs`
   - `programs/payout_settlement/src/instructions/initialize_run.rs`
   - `programs/payout_settlement/src/instructions/seal_run.rs`
-- **DoD de SPEC-04**: sólo la Vault PDA signer puede inicializar/actualizar `TreasuryPolicy` e inicializar/sellar un run; `initialize_run` toma las public keys de la policy (nunca del request) y exige dos verificaciones Ed25519 del mensaje exacto; escrow owner/mint/token program y balance exacto se validan; run no es reinitializable ni modificable tras sellado.
+- **DoD de SPEC-04**: sólo la Vault PDA signer verificada con 3 capas (signer + re-derivación contra `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` + owner check del multisig) puede inicializar/actualizar `TreasuryPolicy` e inicializar/sellar un run; `initialize_run` toma las public keys de la policy (nunca del request) y exige dos verificaciones Ed25519 del mensaje exacto; escrow owner/mint/token program y balance exacto se validan; run no es reinitializable ni modificable tras sellado.
 
 ---
 
@@ -171,14 +171,28 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 > Fuente canónica: [`squads-v4-documentation-reference.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md)
 
 ### 4.1 Referencias Canónicas de la Industria (Merkle Distributor & Licenciamiento)
-- **Goki / Saber Merkle Distributor**: [github.com/GokiProtocol/goki](https://github.com/GokiProtocol/goki/tree/master/programs/merkle-distributor) y [github.com/saber-hq/merkle-distributor](https://github.com/saber-hq/merkle-distributor) (Arquitectura canónica de cuentas `MerkleDistributor` y `ClaimStatus` PDA).
-- **Helium Lazy Distributor**: [github.com/helium/helium-program-library/tree/master/programs/lazy-distributor](https://github.com/helium/helium-program-library/tree/master/programs/lazy-distributor) (Distribución a 1M+ nodos con licencia permisiva **Apache-2.0**).
-- **Jito Foundation Distributor**: [github.com/jito-foundation/distributor](https://github.com/jito-foundation/distributor) (Distribución de recompensas y airdrops auditada por OtterSec).
+- 🏆 **Base Canónica Seleccionada (Commit Pinneado)**: **Helium Lazy Distributor & Circuit Breaker**
+  - Repositorio: [github.com/helium/helium-program-library](https://github.com/helium/helium-program-library/tree/master/programs/lazy-distributor)
+  - Release / Tag: `program-lazy-distributor-v0.3.8` (Anchor `0.31.1` / Rust 2021)
+  - Manifests: `programs/lazy-distributor/Cargo.toml` y `programs/circuit-breaker/Cargo.toml`
+  - Licencia: Permisiva **Apache-2.0** (compatible 100% con uso comercial y sin copyleft).
+- 🚫 **Alternativa Rechazada (GPL-3.0 Copyleft)**: Jito Foundation Distributor ([github.com/jito-foundation/distributor](https://github.com/jito-foundation/distributor)) y Saber HQ (`merkle-distributor`).
+- 🚫 **Alternativa Rechazada (AGPL-3.0 Copyleft)**: Goki Protocol (`merkle-distributor`).
+
+#### Desglose de Primitivas Técnicas de Helium Adoptadas vs. Excluidas:
+- **✅ Primitivas EXACTAS Adoptadas:**
+  1. Verificación de Merkle Proofs en Rust (`solana_program::keccak::hashv`).
+  2. Custodia de Tokens en Escrow PDA con transferencias CPI firmadas por las seeds de la PDA del `PayoutRun`.
+  3. Recibo Único de Liquidación (`ClaimReceipt` PDA) como barrera atómica contra doble reclamo y reentrancy.
+  4. Patrón de Circuit Breaker (pausa de emergencia multisig).
+- **❌ Componentes y Dependencias Excluidos:**
+  1. Red de oráculos en vivo de Helium (sustituido por Doble Attestation Ed25519 con sysvar check).
+  2. Bubblegum / Compressed NFTs (`spl-account-compression`, `mpl-bubblegum`).
+  3. Recompensas acumulativas continuas de Hotspots/Epochs (BRIDS usa runs atómicos cerrados).
+  4. Gobernanza y tokenomics de subDAOs de Helium (HNT/MOBILE/IOT).
 
 > [!IMPORTANT]
-> **Análisis de Licenciamiento y Uso Comercial (Gobernanza `license-policy.json`):**
-> - Los repositorios de **Goki (`AGPL-3.0`)** y **Saber / Jito (`GPL-3.0`)** utilizan licencias de **Strong Copyleft** (prohibidas explícitamente en [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json) por riesgo de contaminación viral del repositorio).
-> - **Estrategia Clean-Room Implementada:** Para garantizar **uso 100% libre, comercial y sin restricciones de copyleft**, `programs/payout_settlement` se implementa de forma independiente (Clean-Room) bajo licencia permisiva **Apache-2.0 / MIT** siguiendo las primitivas matemáticas abiertas de Solana (`keccak256`) y el modelo de Helium Network (`Apache-2.0`).
+> **Estrategia Clean-Room:** `programs/payout_settlement` se implementa bajo licencia permisiva **Apache-2.0 / MIT** adoptando exclusivamente las primitivas matemáticas y de seguridad de Helium Network, garantizando 0 copyleft y cumplimiento de [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json).
 
 ### 4.2 Matriz de Documentación Técnica por SPEC
 
@@ -211,5 +225,5 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Proof, leaf, ATA, mint o amount no coinciden | `settle_claim` revierte; el escrow no cambia |
 | Receipt ya existe | `settle_claim` revierte; no hay doble pago |
 | Worker pierde RPC | Consultar primero receipt y firma con backoff; no duplicar envío |
-| Circuit breaker activo | No crear ni ejecutar nuevos mensajes; conservar confirmados |
+| Circuit breaker local activo | Bot propio no crea ni ejecuta; cranker externo aún puede settle. Requiere `pause_run` on-chain |
 | Setup no deja escrow con total exacto | `seal_run` revierte y la transacción atómica no deja run activo |
