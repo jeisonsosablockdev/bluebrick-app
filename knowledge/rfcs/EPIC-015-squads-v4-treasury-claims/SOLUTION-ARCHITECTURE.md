@@ -97,9 +97,16 @@ Dado que `lazy-distributor` es un distribuidor especializado para oráculos y co
 | **Saber HQ / Jito (`merkle-distributor`)** | **GPL-3.0** | ❌ **Copyleft Fuerte:** Prohibida en la política de licencias del monorepo por incompatibilidad con software comercial y SaaS. | 🚫 **RECHAZADO (Prohibido por `license-policy.json`)** |
 
 > [!IMPORTANT]
-> **Estrategia Clean-Room Implementada en el Monorepo:**
-> - Ambos programas (`programs/payout_settlement` y `programs/project_config_notary`) se implementan bajo licencias permisivas **Apache-2.0 / MIT**, adoptando las primitivas de Helium Network y el estándar canónico de Anchor.
-> - Se elimina al 100% cualquier riesgo de contaminación viral de licencias AGPL/GPL, garantizando el cumplimiento estricto de [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json) y protegiendo el código propietario de BRIDS.
+> **Estrategia Clean-Room & Declaración de Estado de Auditoría:**
+> - **Clasificación Formal:** Helium Network (`lazy-distributor` / `circuit-breaker`) se adopta estrictamente como **referencia open-source permisiva (Apache-2.0)**, **NO como contrato auditado** aplicable al alcance de BRIDS.
+> - **Sin Prueba de Alcance de Auditoría Externa:** No existe un informe de auditoría independiente que cubra el commit específico de Helium en relación con la arquitectura de BRIDS, ni mucho menos el futuro código de `payout_settlement`.
+> - **Requisitos Normativos para Calificar como "Auditado":** Para que un contrato sea catalogado como auditado en la gobernanza de BRIDS, se debe adjuntar el informe técnico formal que contenga:
+>   1. **Firma / Auditor:** Entidad de seguridad independiente reconocida.
+>   2. **Fecha & Commit Pinneado:** SHA exacto auditado.
+>   3. **Alcance (Scope):** Lista exhaustiva de contratos e instrucciones evaluadas.
+>   4. **Findings & Resolución:** Vulnerabilidades detectadas y prueba de fix.
+>   5. **Matriz de Diferencias:** Desglose de cambios entre el código auditado y la implementación en producción.
+> - **Garantía para BRIDS:** Tanto `programs/payout_settlement` como `programs/project_config_notary` son desarrollos clean-room bajo Apache-2.0 / MIT que deberán someterse a auditoría estricta previa a cualquier despliegue en Mainnet.
 
 ## Decisiones propuestas que requieren Human Design Approval
 

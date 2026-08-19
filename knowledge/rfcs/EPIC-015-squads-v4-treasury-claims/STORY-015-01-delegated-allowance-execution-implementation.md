@@ -171,11 +171,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 > Fuente canónica: [`squads-v4-documentation-reference.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md)
 
 ### 4.1 Referencias Canónicas de la Industria (Merkle Distributor & Licenciamiento)
-- 🏆 **Base Canónica Seleccionada (Commit Pinneado)**: **Helium Lazy Distributor & Circuit Breaker**
+- 🏆 **Referencia Open-Source Permisiva Seleccionada (Commit Pinneado)**: **Helium Lazy Distributor & Circuit Breaker**
   - Repositorio: [github.com/helium/helium-program-library](https://github.com/helium/helium-program-library/tree/master/programs/lazy-distributor)
   - Release / Tag: `program-lazy-distributor-v0.3.8` (Anchor `0.31.1` / Rust 2021)
   - Manifests: `programs/lazy-distributor/Cargo.toml` y `programs/circuit-breaker/Cargo.toml`
   - Licencia: Permisiva **Apache-2.0** (compatible 100% con uso comercial y sin copyleft).
+  - **Estado de Auditoría:** Se adopta como **referencia de código open-source permisiva**, no como contrato auditado para BRIDS. No existe reporte de auditoría externa aportado para este commit ni para `payout_settlement`; se requerirá auditoría independiente formal previa a Mainnet.
 - 🚫 **Alternativa Rechazada (GPL-3.0 Copyleft)**: Jito Foundation Distributor ([github.com/jito-foundation/distributor](https://github.com/jito-foundation/distributor)) y Saber HQ (`merkle-distributor`).
 - 🚫 **Alternativa Rechazada (AGPL-3.0 Copyleft)**: Goki Protocol (`merkle-distributor`).
 
@@ -192,7 +193,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   4. Gobernanza y tokenomics de subDAOs de Helium (HNT/MOBILE/IOT).
 
 > [!IMPORTANT]
-> **Estrategia Clean-Room:** `programs/payout_settlement` se implementa bajo licencia permisiva **Apache-2.0 / MIT** adoptando exclusivamente las primitivas matemáticas y de seguridad de Helium Network, garantizando 0 copyleft y cumplimiento de [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json).
+> **Estrategia Clean-Room & Requisitos de Auditoría:**
+> `programs/payout_settlement` se implementa bajo licencia permisiva **Apache-2.0 / MIT** adoptando de forma aislada las primitivas matemáticas y de seguridad de Helium Network, garantizando 0 copyleft y cumplimiento de [`knowledge/governance/license-policy.json`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/governance/license-policy.json). Toda atribución de "contrato auditado" queda reservada a la entrega del informe formal de auditoría independiente con auditor, fecha, commit SHA, scope, hallazgos resueltos y matriz de diferencias respecto a BRIDS.
 
 ### 4.2 Matriz de Documentación Técnica por SPEC
 
