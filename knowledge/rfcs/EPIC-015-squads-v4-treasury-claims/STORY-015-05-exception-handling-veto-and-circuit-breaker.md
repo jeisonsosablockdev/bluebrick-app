@@ -36,11 +36,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - Al vetar un ítem, el backend reconstruye el **Árbol de Merkle de la corrida**, excluyendo la hoja del ítem vetado y emitiendo una nueva raíz criptográfica (`merkleRoot`). Se invalida la propuesta previa y se genera un nuevo ciclo (snapshot → attestation → proposal).
 - **Post-seal:** La root es inmutable on-chain. No existe instrucción `revoke_leaf` ni PDA de revocación. El mecanismo post-seal es: circuit breaker → `pause_run` (propuesta Squads) → `cancel_run` → nuevo run.
 
-### 3. Freno de Emergencia (`Emergency Circuit Breaker`) — Defensa de Dos Capas
+### 3. Freno de Emergencia (`Emergency Circuit Breaker`) — Defensa de Dos Capas con Fast-Pause 1-de-M
 - Botón destacado en el monitor de ejecución para pausar de inmediato el worker desatendido **(capa local)**.
-- Detiene el despacho de los sublotes restantes del bot propio.
-- **Capa on-chain (obligatoria):** El endpoint debe iniciar automáticamente una propuesta Squads para `pause_run`, que es la **única** garantía de que un cranker externo o comprometido no pueda ejecutar `settle_claim`. Sin `pause_run` on-chain, la pausa local no tiene efecto fuera del bot propio.
-- Los sublotes ya confirmados en Devnet se marcan como `executed`; los pendientes quedan como `partially_failed` o `paused` para auditoría.
+- Detiene el despacho de los sublotes restantes del bot propio en ~50ms.
+- **Capa on-chain (Fast-Pause Inmediata — 1-de-M):** El modal permite que **cualquier miembro individual registrado en el Multisig de Squads** firme una transacción directa de `pause_run` desde su wallet conectada (~400ms en 1 slot), o mediante propuesta Vault. Esta es la **única** garantía de que ningún cranker externo o comprometido pueda ejecutar `settle_claim`.
+- **Asimetría de Seguridad:** La pausa es 1-de-M para reacción inmediata ante exploits, pero la reanudación (`resume_run`) o cancelación (`cancel_run`) exige estrictamente la aprobación multisig N-de-M de la Vault.
+- Los pagos ya confirmados con `ClaimReceipt` son inmutables; los pendientes quedan congelados on-chain.
 
 ### 4. Modelo de Amenazas Cero-Confianza (Paranoia Security Shield)
 

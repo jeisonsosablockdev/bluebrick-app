@@ -26,7 +26,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ### Layer 2: Application/Consumption Layer
 - **`apps/web/src/app/api/admin/payout-runs/[id]/reject/route.ts`**: Cancela la propuesta global y descongela la corrida.
 - **`apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts`**: Veta un ítem específico **antes de sellar** el run. Excluye la leaf del snapshot, recalcula root y attestations, e invalida la propuesta previa. No opera post-seal (ver §Supersession Contract).
-- **`apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts`**: Activa el freno de emergencia en dos capas: **(1) Local:** detiene el bot ejecutor propio (flag en DB/Redis con compare-and-set). **(2) On-chain (obligatorio si el run está sellado):** inicia la creación de una propuesta Squads para invocar `pause_run`, que es la **única** garantía de que un cranker externo o comprometido no pueda ejecutar `settle_claim`. Sin `pause_run` on-chain, la pausa local no tiene efecto fuera del bot propio.
+- **`apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts`**: Activa el freno de emergencia en dos capas: **(1) Local:** detiene el bot ejecutor propio (flag en DB/Redis con compare-and-set). **(2) On-chain (Fast-Pause 1-de-M):** prepara la transacción directa de `pause_run` para que **cualquier miembro registrado en el Multisig de Squads** firme inmediatamente (~400ms) desde su wallet (Phantom/Solflare), bloqueando `settle_claim` on-chain para cualquier cranker sin tener que esperar la recolección de firmas ni el timelock de una propuesta.
 
 ### Layer 3: Domain/Pipelines/Services Layer
 - **`apps/web/src/features/staking-distribution/domain/merkle-tree.ts`**: Genera e inspecciona el árbol de Merkle criptográfico (`merkleRoot`) usando el codec canónico único: `keccak256(domain || runId || claimId || mint || tokenProgram || recipientWallet || recipientAta || amountMinor)` con domain separator `"brids:epic015:payout:v1"` (ver `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación).
@@ -82,13 +82,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ### SPEC-03: Endpoints de Veto, Rechazo y Circuit Breaker
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-03-veto-endpoints`
 - **Subagente ejecutor**: `api`
-- **Subagentes de apoyo**: `security` (permisos admin, compare-and-set), `solana` (verificación estado on-chain de la propuesta)
-- **Objetivo**: Implementar los endpoints API REST de rechazo global (`reject`), veto granular pre-seal (`veto`) y freno de emergencia de dos capas (`circuit-breaker`: pausa local del bot + creación de propuesta Squads para `pause_run` on-chain) con validación de permisos y transiciones de estado.
+- **Subagentes de apoyo**: `security` (permisos admin, compare-and-set), `solana` (verificación estado on-chain de la propuesta y miembros del Multisig)
+- **Objetivo**: Implementar los endpoints API REST de rechazo global (`reject`), veto granular pre-seal (`veto`) y freno de emergencia de dos capas (`circuit-breaker`: pausa local del bot + preparación de transacción directa `pause_run` para firma 1-de-M por cualquier miembro del Multisig) con validación de permisos y transiciones de estado.
 - **Archivos a Crear**:
   - `apps/web/src/app/api/admin/payout-runs/[id]/reject/route.ts` (Layer 2 — Application)
   - `apps/web/src/app/api/admin/payout-runs/[id]/veto/route.ts` (Layer 2 — Application)
   - `apps/web/src/app/api/admin/payout-runs/[id]/circuit-breaker/route.ts` (Layer 2 — Application)
-- **DoD de SPEC-03**: Endpoints funcionales con permisos de admin. El endpoint `circuit-breaker` detiene el bot local Y crea una propuesta Squads para `pause_run` cuando el run está sellado. Tests de SPEC-01 de veto y circuit breaker en verde.
+- **DoD de SPEC-03**: Endpoints funcionales con permisos de admin. El endpoint `circuit-breaker` detiene el bot local Y genera el payload para firma directa de `pause_run` (1-de-M). Tests de SPEC-01 de veto y circuit breaker en verde.
 
 ---
 
@@ -96,10 +96,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-04-veto-ui`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `state` (circuit breaker state management), `qa` (verificación visual de estados)
-- **Objetivo**: Agregar los botones de "Rechazar Propuesta Marco", "Veto Individual" (pre-seal only) y "Freno de Emergencia" en `treasury-console.tsx` (Layer 1 — Presentation) con indicadores visuales de estado. El botón de emergencia debe mostrar dos estados: **(a)** pausa local activa (bot detenido, indicador ámbar) y **(b)** `pause_run` on-chain confirmado (indicador rojo, settlement bloqueado para cualquier cranker). Si solo hay pausa local sin `pause_run`, el UI debe advertir explícitamente que un cranker externo aún puede liquidar leaves.
+- **Objetivo**: Agregar los botones de "Rechazar Propuesta Marco", "Veto Individual" (pre-seal only) y "Freno de Emergencia" en `treasury-console.tsx` (Layer 1 — Presentation) con indicadores visuales de estado. Al pulsar "Freno de Emergencia", el modal permite a cualquier miembro de Squads firmar la tx directa `pause_run` (1-de-M, ~400ms) desde su wallet conectada. El botón muestra dos estados: **(a)** pausa local activa (ámbar) y **(b)** `pause_run` on-chain confirmado (rojo, settlement bloqueado para cualquier cranker).
 - **Archivos a Modificar**:
   - `apps/web/src/features/admin/presentation/treasury-console.tsx` (Layer 1 — Presentation)
-- **DoD de SPEC-04**: Botones renderizando correctamente con estados visuales adecuados.
+- **DoD de SPEC-04**: Botones renderizando correctamente con flujo de firma 1-de-M y estados visuales adecuados.
 
 ---
 
@@ -149,20 +149,21 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Root encoding differs | Fail closed before proposal |
 | DB item changes after approval | Message hash/root check detects mismatch |
 | Proposal approved and circuit breaker local on | Own bot stops; external cranker still can settle. Requires `pause_run` on-chain for full stop |
-| Proposal approved and `pause_run` on-chain confirmed | `settle_claim` reverts for any cranker; confirmed legs immutable |
+| Proposal approved and `pause_run` on-chain (1-of-M or Vault) | `settle_claim` reverts for any cranker; confirmed legs immutable |
 | Veto after execution | Audit-only/dispute flow; never fake reversal |
-| Unauthorized reject/veto | 403 and no on-chain/DB transition |
+| Unauthorized reject/veto/pause | 403 / on-chain revert (`UnauthorizedMember`) |
 
 ## 7. Supersession Contract — Circuit Breaker y PayoutRun
 
 > [!WARNING]
-> **Defensa en Profundidad de Dos Capas (P0 — Decisión Cerrada):**
+> **Defensa en Profundidad & Fast-Pause 1-de-M (P0 — Decisión Cerrada):**
 >
-> | Capa | Mecanismo | Alcance | Garantía |
-> |---|---|---|---|
-> | **1. Local (Circuit Breaker)** | Flag en DB/Redis con compare-and-set; el endpoint `circuit-breaker/route.ts` lo activa | Solo detiene el bot ejecutor propio | ⚠️ **No es garantía on-chain.** Un cranker comprometido, externo o un script con la proof puede llamar `settle_claim` directamente. |
-> | **2. On-chain (`pause_run`)** | Instrucción del programa `payout_settlement`, validada con 3 capas (signer + PDA re-derivation contra Squads v4 + multisig owner check) | Bloquea `settle_claim` para **cualquier** cranker a nivel del runtime de Solana | ✅ **Garantía criptográfica.** El programa revierte la tx si el run está pausado. |
+> | Capa | Mecanismo | Autoridad | Tiempo de Reacción | Garantía |
+> |---|---|---|---|---|
+> | **1. Local (Circuit Breaker)** | Flag en DB/Redis con compare-and-set; endpoint `circuit-breaker/route.ts` | Admin de Backend | Inmediato (~50ms) | ⚠️ Solo detiene el bot propio. No frena crankers externos. |
+> | **2. On-Chain Fast-Pause (`pause_run`)** | Tx directa de Solana invocando `pause_run` | **Cualquier miembro individual (1-de-M)** registrado en el Squads Multisig (o la Vault PDA) | **1 Slot (~400ms)** | ✅ **Criptográfica Total:** `settle_claim` revierte en runtime para **cualquier** cranker. |
+> | **3. Reanudación / Cancelación (`resume_run` / `cancel_run`)** | Propuesta Squads aprobada | **Vault PDA (Umbral N-de-M)** | Ciclo de Votación Multisig | 🛡️ **Protección contra Insider:** Ningún miembro individual puede reanudar ni desviar fondos unilateralmente. |
 >
-> El endpoint `circuit-breaker` DEBE iniciar automáticamente la creación de una propuesta Squads para `pause_run` cuando el run está sellado. La UI debe advertir si solo existe pausa local sin `pause_run` on-chain confirmado.
+> El endpoint y la UI de `circuit-breaker` permiten a cualquier miembro del comité multisig firmar la tx directa de `pause_run` desde su wallet para congelar la corrida on-chain en un solo slot.
 
-Para reanudar o cancelar un run pausado, otra propuesta Vault firma `resume_run` o `cancel_run` respectivamente. Un veto previo a `seal_run` invalida la propuesta y recalcula root; después de sellar, la corrección requiere `pause_run` → `cancel_run` → `refund_unclaimed` → nuevo run excluyendo leaves vetadas + ya liquidadas. STORY-015-05 no implementa Merkle ni escrow: esas invariantes pertenecen exclusivamente a STORY-015-01.
+Para reanudar o cancelar un run pausado, la Vault PDA firma `resume_run` o `cancel_run` mediante propuesta multisig aprobada (N-de-M). Un veto previo a `seal_run` invalida la propuesta y recalcula root; después de sellar, la corrección requiere `pause_run` (1-de-M) → `cancel_run` (N-de-M) → `refund_unclaimed` → nuevo run excluyendo leaves vetadas + ya liquidadas. STORY-015-05 no implementa Merkle ni escrow: esas invariantes pertenecen exclusivamente a STORY-015-01.

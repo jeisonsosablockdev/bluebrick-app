@@ -297,20 +297,25 @@ La propuesta Squads contiene las dos verificaciones Ed25519 y una instrucción `
 ### Contrato on-chain de `payout_settlement`
 
 > [!CAUTION]
-> **Validación de Vault PDA (P0 — Requisito de Seguridad):**
-> `authority_vault.is_signer` **solo no es suficiente**. Una PDA firmante de un programa atacante podría invocar `initialize_policy` vía CPI antes que la tesorería legítima. **Todas** las instrucciones que exigen `authority_vault` DEBEN verificar las 3 capas:
+> **Validación de Vault PDA & Asimetría de Autoridad de Emergencia (P0 — Modelo de Seguridad):**
+> 1. **Operaciones Críticas de Fondos y Gobernanza (`initialize_policy`, `update_policy`, `initialize_run`, `seal_run`, `resume_run`, `cancel_run`, `refund_unclaimed`):**
+>    Exigen **estrictamente propuesta Squads N-de-M ejecutada por `authority_vault`**, validada en 3 capas:
+>    - **Firma:** `authority_vault.is_signer == true` (Anchor `Signer<'info>`).
+>    - **Re-derivación PDA:** `authority_vault.key() == get_vault_pda(multisig_pda, vault_index, SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf)`.
+>    - **Owner Check:** `multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`.
 >
-> | Capa | Verificación | Rust pseudocódigo |
-> |---|---|---|
-> | **1. Firma** | `authority_vault.is_signer == true` | Anchor `Signer<'info>` |
-> | **2. Re-derivación PDA** | `authority_vault.key() == get_vault_pda(multisig_pda, vault_index, SQUADS_V4_PROGRAM_ID)` | `Pubkey::find_program_address(&[b"multisig", multisig_pda.as_ref(), b"vault", &[vault_index]], &SQUADS_V4_ID)` |
-> | **3. Owner check** | `multisig_account.owner == SQUADS_V4_PROGRAM_ID` | `constraint = multisig_account.owner == &SQUADS_V4_ID` |
+> 2. **Freno Rápido de Emergencia (`pause_run` — 1-de-M):**
+>    Para eliminar la ventana de riesgo donde un cranker externo podría seguir liquidando leaves mientras se recolectan firmas de propuesta, `pause_run` cuenta con **autorización de emergencia 1-de-M**:
+>    - Puede ser ejecutada por la `authority_vault` (propuesta Squads) **O de forma inmediata (1 slot ~400ms) por CUALQUIERA de los miembros registrados en el Multisig de Squads** (`multisig_account.members.iter().any(|m| m.key == caller.key())`).
+>    - **Verificaciones on-chain de `pause_run`:**
+>      1. `caller.is_signer == true`.
+>      2. `multisig_account.key() == policy.multisig_pda` y `multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`.
+>      3. `caller.key() == policy.authority_vault || multisig_account.members.iter().any(|m| m.key == caller.key())`.
+>    - **Asimetría Estricta:** Un miembro individual **solo puede pausar (`pause_run`)**. Reanudar (`resume_run`), cancelar (`cancel_run`) o retirar fondos (`refund_unclaimed`) exige **obligatoriamente el umbral N-de-M de la Vault**.
 >
 > **Seeds exactos de Squads v4** (fuente: [`v4/sdk/rs/src/pda.rs`](https://github.com/Squads-Protocol/v4/blob/HEAD/sdk/rs/src/pda.rs)):
 > - Vault PDA: `[b"multisig", multisig_pda.as_ref(), b"vault", &[vault_index]]` con program_id `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`
 > - Multisig PDA: `[b"multisig", b"multisig", create_key.as_ref()]` con el mismo program_id
->
-> **Instrucciones afectadas:** `initialize_policy`, `update_policy`, `initialize_run`, `seal_run`, `pause_run`, `cancel_run`, `resume_run`, `refund_unclaimed`.
 
 `TreasuryPolicy` es una PDA derivada de `[b"treasury_policy", treasury_id_hash]`, inicializada y actualizable sólo por `authority_vault` verificada con las 3 capas anteriores. Guarda `authority_vault`, `multisig_pda`, `vault_index`, mint/token program permitidos, `attester_a`, `attester_b`, `policy_version`, `paused` y bump. En `initialize_policy`, los valores `multisig_pda` y `vault_index` se almacenan y la re-derivación confirma que `authority_vault` corresponde exactamente a esa Vault de Squads v4. Es la ancla on-chain del Authority Manifest.
 
@@ -325,13 +330,13 @@ La única secuencia que activa una corrida es una Vault Transaction de Squads, a
 
 `settle_claim` recibe `leaf`, `proof`, recipient ATA y amount. Recalcula la leaf con el encoding anterior, verifica la proof contra `merkle_root`, comprueba mint/token-program/ATA/expiración/estado y crea `ClaimReceipt` PDA derivada de `[b"claim_receipt", payout_run, leaf_hash]`. Si el receipt ya existe, falla. Sólo después transfiere el monto exacto del escrow al ATA comprometido. El cranker no firma como Vault ni recibe un parámetro que pueda sustituir recipient, mint, amount o root.
 
-`pause_run`, `cancel_run` y `refund_unclaimed` exigen `authority_vault` con las 3 capas de validación (signer + PDA re-derivation + multisig owner check) y por ello sólo son invocables mediante otra propuesta Squads aprobada. Ninguna operación revierte un receipt ni un pago ya confirmado.
+`pause_run` puede ser invocada de inmediato por cualquier miembro individual del Squads Multisig (1-de-M) o por la Vault PDA; mientras que `resume_run`, `cancel_run` y `refund_unclaimed` exigen estrictamente `authority_vault` con las 3 capas de validación N-de-M. Ninguna operación revierte un receipt ni un pago ya confirmado.
 
 > [!IMPORTANT]
 > **Regla de Veto Pre-Seal Only (P0 — Decisión Cerrada):**
 > El contrato `payout_settlement` **no incluye instrucción `revoke_leaf` ni PDA de revocación individual**. La `merkleRoot` es inmutable tras `seal_run`. El veto granular solo opera antes del sellado:
 > 1. **Pre-seal:** Admin veta fila → se excluye del snapshot → se recalculan root + attestations → se crea nueva propuesta Squads. El ciclo completo (snapshot → attestation → proposal) se repite.
-> 2. **Post-seal:** El mecanismo es: circuit breaker (detiene al cranker off-chain) → `pause_run` (propuesta Squads, bloquea `settle_claim` on-chain) → `cancel_run` (propuesta Squads) → `refund_unclaimed` → nuevo run excluyendo leaves vetadas + ya liquidadas.
+> 2. **Post-seal:** El mecanismo es: circuit breaker (detiene al cranker off-chain) → `pause_run` (inmediato 1-de-M por cualquier admin en ~400ms, o propuesta Squads; bloquea `settle_claim` on-chain) → `cancel_run` (propuesta Squads N-de-M) → `refund_unclaimed` → nuevo run excluyendo leaves vetadas + ya liquidadas.
 > 3. **Post-ejecución:** Un `ClaimReceipt` es irrevocable. Solo aplica flujo de auditoría/disputa.
 >
 > Un `VETOED_BY_ADMIN` en Postgres sin `pause_run` on-chain **no impide** que un cranker con proof válida liquide la leaf. La defensa en profundidad es: DB flag → circuit breaker → `pause_run` on-chain.

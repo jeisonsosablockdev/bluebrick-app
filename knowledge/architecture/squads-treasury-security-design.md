@@ -91,7 +91,7 @@ El sistema proporciona 3 herramientas de control operativo para el comité:
 
 1. **Rechazo Global (`proposalReject`)**: Permite a cualquier miembro del comité cancelar la Propuesta Marco en Squads v4 antes de su ejecución, devolviendo los ítems a la cola sin tocar fondos.
 2. **Veto Granular de Ítems (`vetoClaimItem`) — Pre-Seal Only**: Permite vetar a un usuario individual **antes de sellar** el run, excluyéndolo del snapshot y recalculando la raíz de Merkle automáticamente. Tras `seal_run`, la root es inmutable on-chain y el mecanismo es `pause_run` + `cancel_run` (propuesta Squads) + nuevo run sin la leaf vetada. No existe PDA de revocación individual.
-3. **Freno de Emergencia (`circuitBreaker`)**: Permite pausar inmediatamente la ejecución desatendida del bot si se detecta una anomalía de red durante el despacho. Para bloqueo on-chain autoritativo, una propuesta Squads invoca `pause_run`.
+3. **Freno de Emergencia (`circuitBreaker` & `pause_run` 1-de-M)**: Permite pausar inmediatamente la ejecución desatendida del bot propio en base de datos (~50ms) y ejecutar `pause_run` directamente on-chain por **cualquier miembro individual del Multisig de Squads (1-de-M, ~400ms)** desde su wallet conectada. El bloqueo on-chain revierte cualquier llamada a `settle_claim` de crankers externos. La reanudación (`resume_run`) o cancelación (`cancel_run`) exige estrictamente propuesta con umbral multisig N-de-M.
 
 ---
 
