@@ -6,7 +6,8 @@ const host = parsedBaseUrl.hostname;
 const port = parsedBaseUrl.port || "3000";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./tests/e2e",
+  outputDir: "./tests/artifacts",
   timeout: 45_000,
   // Keep smoke E2E deterministic in Next.js dev mode to avoid compile-time navigation aborts.
   workers: 1,

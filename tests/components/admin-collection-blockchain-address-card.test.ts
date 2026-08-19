@@ -4,7 +4,7 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AdminCollectionBlockchainAddressCard } from "@/components/admin/admin-collection-blockchain-address-card";
+import { AdminCollectionBlockchainAddressCard } from "@/features/admin/presentation/admin-collection-blockchain-address-card";
 import { getSolscanAccountUrl } from "@/lib/infrastructure/solana";
 
 type RenderHandle = {
@@ -34,7 +34,7 @@ function renderCard(
   return { container, root };
 }
 
-describe("components/admin/admin-collection-blockchain-address-card", () => {
+describe("features/admin/presentation/admin-collection-blockchain-address-card", () => {
   let clipboardWriteText: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {

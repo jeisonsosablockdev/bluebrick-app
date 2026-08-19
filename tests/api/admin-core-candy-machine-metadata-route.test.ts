@@ -9,8 +9,15 @@ const routeMocks = vi.hoisted(() => ({
   isPinataFileServiceError: vi.fn()
 }));
 
-vi.mock("@/lib/core-candy-machine-metadata-store", () => ({
+vi.mock("@/features/nft-minting/infrastructure/core-candy-machine-metadata-store", () => ({
   createCoreMetadataRecord: routeMocks.createCoreMetadataRecord
+}));
+
+vi.mock("@/lib/infrastructure/pinata-file-service", () => ({
+  isPinataConfigured: routeMocks.isPinataConfigured,
+  resolveImageForPinata: routeMocks.resolveImageForPinata,
+  createCoreCandyMachinePinataMetadataUris: routeMocks.createCoreCandyMachinePinataMetadataUris,
+  isPinataFileServiceError: routeMocks.isPinataFileServiceError
 }));
 
 vi.mock("@/lib/pinata-file-service", () => ({

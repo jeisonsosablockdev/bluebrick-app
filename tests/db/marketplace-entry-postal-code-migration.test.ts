@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 describe("db/migrations/032_marketplace_entry_postal_code.sql", () => {
   it("adds first-class postal code storage to marketplace_entries", () => {
     const sql = readFileSync(
-      join(process.cwd(), "db/migrations/032_marketplace_entry_postal_code.sql"),
+      join(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations", "032_marketplace_entry_postal_code.sql"),
       "utf8"
     ).toLowerCase();
 

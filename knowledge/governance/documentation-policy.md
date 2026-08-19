@@ -86,6 +86,20 @@ Must document:
 
 ⸻
 
+For Third-Party Integrations & External Services
+
+Must update or create:
+	•	`knowledge/architecture/third-party-integrations.md`
+	•	`.env.example`
+
+Must document:
+	•	Provider purpose and canonical architecture reference
+	•	Environment variables required across client and server
+	•	Authorized Redirect URIs, Webhook endpoints, and domains (Development, QA, RC, Production)
+	•	Post-update synchronization: must run `pnpm knowledge:index` to update `knowledge/README.md`
+
+⸻
+
 Strict Rule
 
 If documentation is missing or outdated → task incomplete.

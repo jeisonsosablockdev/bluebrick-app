@@ -30,16 +30,24 @@ const freezeDelegateMocks = vi.hoisted(() => ({
   hasOwnerFreezeDelegatePlugin: vi.fn()
 }));
 
-vi.mock("@/lib/db/pool", () => ({
+vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   withDbClient: vi.fn(async (callback: (client: { query: typeof dbMocks.query }) => Promise<unknown>) =>
     callback({ query: dbMocks.query })
   )
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
   DasClient: vi.fn(function DasClient() {
     return {
-    getAssetsByOwner: dasMocks.getAssetsByOwner
+      getAssetsByOwner: dasMocks.getAssetsByOwner
+    };
+  })
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
+  DasClient: vi.fn(function DasClient() {
+    return {
+      getAssetsByOwner: dasMocks.getAssetsByOwner
     };
   })
 }));

@@ -1,24 +1,31 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 
+const reactHooks = nextVitals[0].plugins["react-hooks"];
+
 const legacyWeb3ImportAllowlist = [
   "app/api/admin/mint-orchestrator/jobs/*/reconcile/route.ts",
-  "components/admin/core-candy-machine-panel.tsx",
-  "components/admin/metaplex-core-mint-panel.tsx",
-  "components/marketplace/PurchaseCta.tsx",
+  "apps/web/src/features/admin/presentation/core-candy-machine-panel.tsx",
+  "apps/web/src/features/admin/presentation/metaplex-core-mint-panel.tsx",
+  "apps/web/src/features/marketplace/presentation/PurchaseCta.tsx",
+  "tests/e2e/helpers/siws-local-wallet.ts",
   "e2e/helpers/siws-local-wallet.ts",
   "scripts/devnet-authority-lifecycle-proof.ts",
   "scripts/validation/epic-001-validation.mjs",
+  "tests/e2e/wallet-setup/solana-wallet-profiles.mjs",
   "e2e/wallet-setup/solana-wallet-profiles.mjs",
-  "lib/candy-guard-payment-config.ts",
-  "lib/core-authority-lifecycle.ts",
-  "lib/core-candy-machine-admin.ts",
-  "lib/core-candy-machine-snapshot-service.ts",
   "lib/metaplex-core-admin.ts",
   "lib/property-marketplace-server.ts",
-  "lib/purchase-anti-bot.ts",
-  "lib/purchase-service.ts",
-  "lib/purchase-third-party-signer.ts",
   "lib/solana-kit/compat/**/*.{ts,tsx}",
+  "apps/web/src/lib/metaplex-core-admin.ts",
+  "apps/web/src/lib/property-marketplace-server.ts",
+  "apps/web/src/lib/solana-kit/compat/**/*.{ts,tsx}",
+  "apps/web/src/features/asset-freeze-control/application/core-authority-lifecycle.ts",
+  "apps/web/src/features/nft-minting/domain/candy-guard-payment-config.ts",
+  "apps/web/src/features/nft-minting/application/core-candy-machine-admin.ts",
+  "apps/web/src/features/nft-minting/application/core-candy-machine-snapshot-service.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-anti-bot.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-service.ts",
+  "apps/web/src/features/checkout-payment/application/purchase-third-party-signer.ts",
   "tests/lib/purchase-anti-bot.test.ts"
 ];
 
@@ -36,21 +43,28 @@ const noWeb3ImportsRule = [
 ];
 
 const config = [
+  ...nextVitals,
   {
     ignores: [
-      ".next/**",
-      ".vercel/**",
-      "node_modules/**",
+      "**/.next/**",
+      "**/.vercel/**",
+      "**/node_modules/**",
       "playwright-report/**",
       "test-results/**",
       ".blob-report/**",
-      ".cache-synpress/**"
+      ".cache-synpress/**",
+      ".agents/**"
     ]
   },
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    plugins: {
+      "react-hooks": reactHooks
+    },
     rules: {
-      "no-restricted-imports": noWeb3ImportsRule
+      "no-restricted-imports": noWeb3ImportsRule,
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/preserve-manual-memoization": "warn"
     }
   },
   {
@@ -60,7 +74,7 @@ const config = [
     }
   },
   {
-    files: ["lib/software/**/*.{ts,tsx}"],
+    files: ["lib/software/**/*.{ts,tsx}", "apps/web/src/lib/software/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -71,7 +85,7 @@ const config = [
     }
   },
   {
-    files: ["lib/knowledge/**/*.{ts,tsx}"],
+    files: ["lib/knowledge/**/*.{ts,tsx}", "apps/web/src/lib/knowledge/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -82,7 +96,7 @@ const config = [
     }
   },
   {
-    files: ["lib/regulatory/**/*.{ts,tsx}"],
+    files: ["lib/regulatory/**/*.{ts,tsx}", "apps/web/src/lib/regulatory/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -90,13 +104,6 @@ const config = [
           patterns: ["@software/*", "@knowledge/*"]
         }
       ]
-    }
-  },
-  ...nextVitals,
-  {
-    rules: {
-      "react-hooks/set-state-in-effect": "off",
-      "react-hooks/preserve-manual-memoization": "off"
     }
   }
 ];

@@ -20,7 +20,7 @@ vi.mock("@/components/ui/input", () => ({
   Input: (props: Record<string, unknown>) => createElement("input", props)
 }));
 
-import { CONTACT_FORM_SECTION_ID, ContactFormSection } from "@/components/sections/contact-form";
+import { CONTACT_FORM_SECTION_ID, ContactFormSection } from "@/features/landing/presentation/contact-form";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -39,7 +39,7 @@ function renderContactForm(): RenderHandle {
   return { container, root };
 }
 
-describe("components/sections/contact-form", () => {
+describe("features/landing/presentation/contact-form", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "es",

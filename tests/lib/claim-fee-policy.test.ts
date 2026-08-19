@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   calculateClaimFee,
   type ClaimFeePolicyRecord
-} from "@/lib/claims/fee-policy";
+} from "@/features/staking-distribution/domain/fee-policy";
 
-describe("lib/claims/fee-policy", () => {
+describe("features/staking-distribution/domain/fee-policy", () => {
   const basePolicy: ClaimFeePolicyRecord = {
     id: "policy-test-1",
     scopeType: "global",

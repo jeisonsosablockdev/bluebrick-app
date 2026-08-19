@@ -24,7 +24,7 @@ vi.mock("@/components/ui/input", () => ({
   Input: (props: Record<string, unknown>) => createElement("input", props)
 }));
 
-import { FooterSection } from "@/components/sections/footer";
+import { FooterSection } from "@/features/landing/presentation/footer";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -41,7 +41,7 @@ function renderFooter(): RenderHandle {
   return { container, root };
 }
 
-describe("components/sections/footer", () => {
+describe("features/landing/presentation/footer", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "es",

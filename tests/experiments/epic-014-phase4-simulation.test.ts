@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { calculateHamiltonAllocation, type WalletTimeWeightInput } from "@/lib/distribution/hamilton";
 import { DualProviderGapError } from "@/lib/archival/archival-rpc-client";
-import { isComplianceHoldExpired } from "@/lib/claims/compliance-monitor";
+import { isComplianceHoldExpired } from "@/features/staking-distribution/application/compliance-monitor";
 
 describe("Phase 4 Interactive Verification & System Experiments", () => {
   it("Experimento 1: Hamilton Largest-Remainder BigInt precision & pool sum invariant (Σ gross == pool)", () => {

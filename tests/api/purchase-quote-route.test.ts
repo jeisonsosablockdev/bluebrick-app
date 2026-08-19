@@ -17,7 +17,7 @@ const routeMocks = vi.hoisted(() => ({
   }
 }));
 
-vi.mock("@/lib/purchase-service", () => {
+vi.mock("@/features/checkout-payment/application/purchase-service", () => {
   return {
     PurchaseFlowError: routeMocks.MockPurchaseFlowError,
     quotePurchaseForProperty: routeMocks.quotePurchaseForProperty

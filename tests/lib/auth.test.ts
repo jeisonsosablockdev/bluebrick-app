@@ -2,7 +2,7 @@ import { createSignableMessage, generateKeyPairSigner } from "@solana/kit";
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 
-import { getSessionPublicKey, issueNonce } from "@/lib/state/auth-store";
+import { getSessionPublicKey, issueNonce } from "@/features/shared/auth/domain/auth-store";
 import { getRequestHost, isIssuedAtValid, normalizeHost, verifySiwsPayload } from "@/lib/auth";
 import { buildSiwsMessage } from "@/lib/siws";
 
@@ -43,6 +43,8 @@ describe("lib/auth", () => {
 
   it("normalizes host values", () => {
     expect(normalizeHost("  API.Example.Com ")).toBe("api.example.com");
+    expect(normalizeHost("http://localhost:3001")).toBe("localhost");
+    expect(normalizeHost("127.0.0.1:3001")).toBe("localhost");
   });
 
   it("validates issued-at timestamps inside allowed window", () => {

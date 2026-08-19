@@ -13,14 +13,14 @@ const handlerMocks = vi.hoisted(() => ({
   promotePendingQualificationRewardsForInvitee: vi.fn()
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   findWalletByKycProviderSessionId: handlerMocks.findWalletByKycProviderSessionId,
   recordComplianceAuditEvent: handlerMocks.recordComplianceAuditEvent,
   registerKycWebhookEvent: handlerMocks.registerKycWebhookEvent,
   updateKycStatusFromProvider: handlerMocks.updateKycStatusFromProvider
 }));
 
-vi.mock("@/lib/compliance/aml-screening-service", () => ({
+vi.mock("@/features/profile/application/aml-screening-service", () => ({
   runWalletAmlScreening: handlerMocks.runWalletAmlScreening
 }));
 
@@ -28,11 +28,11 @@ vi.mock("@/lib/onboarding-reward-service", () => ({
   getOnboardingRewardForWallet: handlerMocks.getOnboardingRewardForWallet
 }));
 
-vi.mock("@/lib/referrals/repository", () => ({
+vi.mock("@/features/referral-marketing/infrastructure/referrals-repository", () => ({
   markReferralAttributionKycApproved: handlerMocks.markReferralAttributionKycApproved
 }));
 
-vi.mock("@/lib/referrals/reward-engine", () => ({
+vi.mock("@/features/referral-marketing/application/reward-engine", () => ({
   promotePendingQualificationRewardsForInvitee: handlerMocks.promotePendingQualificationRewardsForInvitee
 }));
 

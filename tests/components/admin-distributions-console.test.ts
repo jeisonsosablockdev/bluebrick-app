@@ -16,7 +16,7 @@ vi.mock("@/lib/release-module-visibility", () => ({
   isReleaseControlledRouteVisible: vi.fn(() => true)
 }));
 
-import { DistributionsConsole } from "@/components/admin/distributions-console";
+import { DistributionsConsole } from "@/features/admin/presentation/distributions-console";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -42,7 +42,7 @@ function renderConsole(): RenderHandle {
   return { container, root };
 }
 
-describe("components/admin/distributions-console", () => {
+describe("features/admin/presentation/distributions-console", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "en",

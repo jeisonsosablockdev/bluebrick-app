@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const migrationFileName = "031_stake_profile_persistence.sql";
 
 function getMigrationSql(): string {
-  return fs.readFileSync(path.join(process.cwd(), "db", "migrations", migrationFileName), "utf8");
+  return fs.readFileSync(path.join(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations", migrationFileName), "utf8");
 }
 
 describe("stake profile persistence migration", () => {

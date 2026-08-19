@@ -29,7 +29,7 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromCookies: authMocks.getAuthenticatedPublicKeyFromCookies
 }));
 
-vi.mock("@/lib/accounts/repository", () => ({
+vi.mock("@/features/profile/infrastructure/accounts-repository", () => ({
   ensureFederatedAccount: accountMocks.ensureFederatedAccount,
   ensureWalletFirstAccount: accountMocks.ensureWalletFirstAccount
 }));

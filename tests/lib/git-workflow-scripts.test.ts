@@ -29,6 +29,7 @@ function runBash(scriptPath: string, args: string[], cwd: string, extraEnv: Reco
       encoding: "utf8",
       env: {
         ...process.env,
+        LINEAR_API_KEY: "",
         ...extraEnv
       }
     }).trim();

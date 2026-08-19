@@ -11,6 +11,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # Newline-separated whitelist of allowed top-level directory names
 ALLOWED="
 programs
+apps
 app
 components
 lib

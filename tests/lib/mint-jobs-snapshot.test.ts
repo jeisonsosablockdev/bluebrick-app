@@ -10,7 +10,7 @@ const queryMock = vi.fn(async (sql: string) => {
   return { rows: [], rowCount: 1 };
 });
 
-vi.mock("@/lib/db/pool", () => {
+vi.mock("@/features/shared/infrastructure/db/pool", () => {
   return {
     withDbClient: async (work: (client: { query: typeof queryMock }) => Promise<void>) => {
       await work({ query: queryMock });

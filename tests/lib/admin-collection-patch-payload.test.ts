@@ -141,6 +141,7 @@ describe("lib/admin/collection-patch-payload", () => {
       stateProvince: "Bogotá D.C.",
       city: "Bogota",
       address: "Calle 72 #10-34",
+      postalCode: null,
       geoLat: 4.711,
       geoLng: -74.072
     });

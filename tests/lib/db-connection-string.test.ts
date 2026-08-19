@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeDatabaseUrlForPg } from "@/lib/db/connection-string";
+import { normalizeDatabaseUrlForPg } from "@/features/shared/infrastructure/db/connection-string";
 
-describe("lib/db/connection-string", () => {
+describe("features/shared/infrastructure/db/connection-string", () => {
   it("upgrades legacy sslmode aliases to verify-full by default", () => {
     const result = normalizeDatabaseUrlForPg(
       "postgresql://user:pass@example.com/db?channel_binding=require&sslmode=require"

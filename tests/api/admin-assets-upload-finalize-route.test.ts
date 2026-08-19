@@ -74,7 +74,7 @@ describe("POST /api/admin/assets/uploads/[uploadId]/finalize", () => {
       mimeType: "image/png",
       sizeBytes: 128,
       contentMd5Base64: "1B2M2Y8AsgTpgAmY7PhCfg==",
-      expiresAt: "2026-06-29T15:00:00.000Z",
+      expiresAt: "2029-06-29T15:00:00.000Z",
       createdAt: "2026-05-29T14:50:00.000Z",
       finalizedAt: null,
       finalFileRefId: null

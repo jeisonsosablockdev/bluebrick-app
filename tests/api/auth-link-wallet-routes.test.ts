@@ -53,19 +53,23 @@ vi.mock("@/lib/app-auth", () => ({
   resolveAppAuthContext: appAuthMocks.resolveAppAuthContext
 }));
 
-vi.mock("@/lib/accounts/repository", () => ({
+vi.mock("@/features/profile/infrastructure/accounts-repository", () => ({
   findAccountByWalletPublicKey: accountMocks.findAccountByWalletPublicKey,
   linkWalletIdentityToAccount: accountMocks.linkWalletIdentityToAccount,
   mergeFederatedOnlyAccountIntoWalletAccount: accountMocks.mergeFederatedOnlyAccountIntoWalletAccount,
   AccountRepositoryError: accountMocks.AccountRepositoryError
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   applyFederatedEmailPrefill: profileRepositoryMocks.applyFederatedEmailPrefill
 }));
 
-vi.mock("@/lib/referrals/repository", () => ({
+vi.mock("@/features/referral-marketing/infrastructure/referrals-repository", () => ({
   promoteReferralIntentForAccountWallet: referralRepositoryMocks.promoteReferralIntentForAccountWallet
+}));
+
+vi.mock("@/features/shared/auth/domain/auth-store", () => ({
+  consumeNonce: authStoreMocks.consumeNonce
 }));
 
 vi.mock("@/lib/auth-store", () => ({

@@ -1,15 +1,15 @@
 {
   "name": "brids",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "bin": {
     "reasoning-agent": "./lib/reasoning-agent/cli.ts"
   },
   "scripts": {
     "predev": "node ./scripts/db-migrate-if-configured.js",
-    "dev": "next dev --webpack",
+    "dev": "next dev -p 3001 --webpack",
     "predev:turbo": "node ./scripts/db-migrate-if-configured.js",
-    "dev:turbo": "next dev --turbo",
+    "dev:turbo": "next dev -p 3001 --turbo",
     "build": "next build --webpack",
     "start": "next start",
     "postinstall": "node ./scripts/patch-synpress-phantom-peer.js",
@@ -119,6 +119,7 @@
     "@types/spark-md5": "^3.0.5",
     "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "^4.1.5",
+    "@workos/mcp-docs-server": "^0.2.0",
     "autoprefixer": "10.4.20",
     "esbuild": "^0.28.0",
     "eslint": "9.21.0",

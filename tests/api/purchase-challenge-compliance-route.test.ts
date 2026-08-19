@@ -36,16 +36,16 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/purchase-service", () => ({
+vi.mock("@/features/checkout-payment/application/purchase-service", () => ({
   PurchaseFlowError: routeMocks.MockPurchaseFlowError,
   issuePurchaseChallengeForProperty: routeMocks.issuePurchaseChallengeForProperty
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   getOrCreateProfileBundle: routeMocks.getOrCreateProfileBundle
 }));
 
-vi.mock("@/lib/compliance/case-service", () => ({
+vi.mock("@/features/profile/application/case-service", () => ({
   ComplianceCaseServiceError: routeMocks.MockComplianceCaseServiceError,
   assertFinancialAccessByComplianceStatus: routeMocks.assertFinancialAccessByComplianceStatus
 }));

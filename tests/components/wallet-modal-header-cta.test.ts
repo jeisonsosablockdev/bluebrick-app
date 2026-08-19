@@ -115,7 +115,7 @@ vi.mock("@/components/onboarding/onboarding-reward-decision-modal", () => ({
   }) => open ? createElement("div", { "data-testid": "post-auth-decision" }, walletConnected ? "wallet-decision" : "account-decision") : null
 }));
 
-vi.mock("@/lib/referrals/client-state", () => ({
+vi.mock("@/features/referral-marketing/application/client-state", () => ({
   buildPhantomBrowseDeepLink: referralStateMocks.buildPhantomBrowseDeepLink,
   buildReferralAuthPayload: referralStateMocks.buildReferralAuthPayload,
   buildReferralAuthMetadata: referralStateMocks.buildReferralAuthMetadata,
@@ -1513,7 +1513,7 @@ describe("components/MainTopNavigationModal header CTA", () => {
     });
 
     const marketplaceLink = container.querySelector('a[href="/marketplace"]');
-    const profileLink = container.querySelector('a[href="/protected"]');
+    const profileLink = container.querySelector('a[href="/profile"]');
     const dashboardLink = container.querySelector('a[href="/admin"]');
 
     expect(marketplaceLink?.className).toContain("sm:w-[6.75rem]");

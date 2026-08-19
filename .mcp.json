@@ -4,13 +4,21 @@
       "type": "http",
       "url": "https://mcp.solana.com/mcp"
     },
+    "solana-mcp-sse": {
+      "type": "sse",
+      "url": "https://mcp.solana.com/sse"
+    },
     "helius": {
       "command": "npx",
       "args": ["helius-mcp@latest"]
     },
     "linear": {
+      "command": "node",
+      "args": ["--import", "tsx", "./scripts/linear-mcp-server.ts"]
+    },
+    "workos-docs": {
       "command": "npx",
-      "args": ["tsx", "./scripts/linear-mcp-server.ts"]
+      "args": ["-y", "@workos/mcp-docs-server"]
     }
   }
 }

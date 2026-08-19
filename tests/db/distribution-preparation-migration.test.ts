@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const migrationFileName = "034_distribution_preparation.sql";
 
 function readMigrationSql(): string {
-  return fs.readFileSync(path.join(process.cwd(), "db", "migrations", migrationFileName), "utf8").toLowerCase();
+  return fs.readFileSync(path.join(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations", migrationFileName), "utf8").toLowerCase();
 }
 
 describe("distribution preparation migration", () => {

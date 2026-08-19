@@ -25,7 +25,7 @@ type EditSessionUploadRow = {
 
 const queryMock = vi.fn();
 
-vi.mock("@/lib/db/pool", () => ({
+vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   withDbClient: async (
     work: (client: { query: typeof queryMock }) => Promise<unknown>
   ) => work({ query: queryMock })

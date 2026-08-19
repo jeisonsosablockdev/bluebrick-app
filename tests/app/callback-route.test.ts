@@ -21,11 +21,11 @@ vi.mock("@workos-inc/authkit-nextjs", () => ({
   handleAuth: authkitMocks.handleAuth
 }));
 
-vi.mock("@/lib/accounts/repository", () => ({
+vi.mock("@/features/profile/infrastructure/accounts-repository", () => ({
   ensureFederatedAccount: accountRepositoryMocks.ensureFederatedAccount
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   applyFederatedEmailPrefill: profileRepositoryMocks.applyFederatedEmailPrefill
 }));
 

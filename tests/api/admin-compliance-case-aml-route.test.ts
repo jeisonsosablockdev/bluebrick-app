@@ -10,7 +10,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/compliance/profile-repository", () => ({
+vi.mock("@/features/profile/infrastructure/profile-repository", () => ({
   getAmlCaseSnapshotForAdmin: routeMocks.getAmlCaseSnapshotForAdmin
 }));
 

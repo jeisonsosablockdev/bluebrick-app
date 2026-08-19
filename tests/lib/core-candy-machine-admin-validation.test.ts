@@ -6,9 +6,9 @@ import {
   prepareCoreCandyMachineDeploy,
   prepareCoreCandyMachineMint,
   validateAppDataEconomicV1
-} from "@/lib/core-candy-machine-admin";
+} from "@/features/nft-minting/application/core-candy-machine-admin";
 
-describe("lib/core-candy-machine-admin validation", () => {
+describe("features/nft-minting/application/core-candy-machine-admin validation", () => {
   it("validates AppData economic payload v1", () => {
     const payload = validateAppDataEconomicV1({
       revenue_share_bps: 2500,

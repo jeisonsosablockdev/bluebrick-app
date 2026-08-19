@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { getPurchaseAntiBotConfig } from "@/lib/anti-bot/config";
-import { assertMatchingChallengeContext, buildPurchaseChallengeMessage } from "@/lib/anti-bot/challenge-builder";
-import { decodeSignature } from "@/lib/anti-bot/signature-verifier";
+import { getPurchaseAntiBotConfig } from "@/features/checkout-payment/application/anti-bot/config";
+import { assertMatchingChallengeContext, buildPurchaseChallengeMessage } from "@/features/checkout-payment/application/anti-bot/challenge-builder";
+import { decodeSignature } from "@/features/checkout-payment/application/anti-bot/signature-verifier";
 
 describe("SPEC 7 - Modular Anti-Bot Refactor (SRP)", () => {
   it("@spec BRI-12-REQ-7 parses anti-bot config parameters with defaults", () => {

@@ -12,7 +12,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { ReferralProgramModule } from "@/components/dashboard/referral-program-module";
+import { ReferralProgramModule } from "@/features/referral-marketing/presentation/referral-program-module";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -38,7 +38,7 @@ function renderModule(): RenderHandle {
   return { container, root };
 }
 
-describe("components/dashboard/referral-program-module", () => {
+describe("features/referral-marketing/presentation/referral-program-module", () => {
   let clipboardWriteText: ReturnType<typeof vi.fn>;
   let fetchMock: ReturnType<typeof vi.fn>;
 

@@ -11,7 +11,7 @@ vi.mock("@/components/i18n/locale-provider", () => ({
   useI18n: localeMocks.useI18n
 }));
 
-import { PropertyDetailExecutionGovernanceCards } from "@/components/marketplace/PropertyDetailExecutionGovernanceCards";
+import { PropertyDetailExecutionGovernanceCards } from "@/features/marketplace/presentation/PropertyDetailExecutionGovernanceCards";
 
 function renderCards(project: Record<string, string | number | null>, governance: Record<string, string>, investmentNotes = "Investment fallback") {
   const container = document.createElement("div");

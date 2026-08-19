@@ -15,19 +15,24 @@ vi.mock("@/components/main-top-navigation-modal", () => ({
   MainTopNavigationModal: () => createElement("div", null, "wallet-modal")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceFilters", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceFilters", () => ({
   MarketplaceFilters: () => createElement("div", null, "marketplace-filters")
 }));
 
-vi.mock("@/components/marketplace/MarketplaceExperience", () => ({
+vi.mock("@/features/marketplace/presentation/MarketplaceExperience", () => ({
   MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
 }));
 
-vi.mock("@/components/dashboard/dashboard-charts", () => ({
+vi.mock("@/features/marketplace", () => ({
+  MarketplaceFilters: () => createElement("div", null, "marketplace-filters"),
+  MarketplaceExperience: () => createElement("div", null, "marketplace-experience")
+}));
+
+vi.mock("@/features/investor-portfolio/presentation/dashboard-charts", () => ({
   DashboardCharts: ({ context }: { context: string }) => createElement("div", { "data-testid": `dashboard-charts-${context}` }, `charts:${context}`)
 }));
 
-vi.mock("@/components/sections/footer", () => ({
+vi.mock("@/features/landing/presentation/footer", () => ({
   FooterSection: () => createElement("footer", { "data-testid": "app-footer" }, "app-footer")
 }));
 

@@ -32,7 +32,7 @@ vi.mock("@/components/pwa/pwa-capability-card", () => ({
   PwaCapabilityCard: () => null
 }));
 
-import { AccountProfileSupportModule } from "@/components/dashboard/account-profile-support-module";
+import { AccountProfileSupportModule } from "@/features/profile/presentation/account-profile-support-module";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -51,7 +51,7 @@ function renderModule(email: string | null = "user@example.com"): RenderHandle {
   return { container, root };
 }
 
-describe("components/dashboard/account-profile-support-module", () => {
+describe("features/profile/presentation/account-profile-support-module", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "es",
@@ -96,7 +96,7 @@ describe("components/dashboard/account-profile-support-module", () => {
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(navigationMocks.push).toHaveBeenCalledWith("/protected");
+    expect(navigationMocks.push).toHaveBeenCalledWith("/profile");
 
     act(() => {
       root.unmount();

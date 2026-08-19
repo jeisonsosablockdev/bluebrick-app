@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectComplianceStatus } from "@/lib/compliance/compliance-status-projector";
+import { projectComplianceStatus } from "@/features/profile/domain/compliance-status-projector";
 
 describe("projectComplianceStatus", () => {
   it("prioritizes suspended over any other status", () => {

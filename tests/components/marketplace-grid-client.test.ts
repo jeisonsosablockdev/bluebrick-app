@@ -18,11 +18,11 @@ vi.mock("next/image", () => ({
   default: (props: { alt: string; src: string }) => createElement("img", props)
 }));
 
-vi.mock("@/components/marketplace/PurchaseCta", () => ({
+vi.mock("@/features/marketplace/presentation/PurchaseCta", () => ({
   PurchaseCta: () => createElement("div", null, "purchase-cta")
 }));
 
-import { MarketplaceGridClient } from "@/components/marketplace/MarketplaceGridClient";
+import { MarketplaceGridClient } from "@/features/marketplace/presentation/MarketplaceGridClient";
 import type { PropertyDetail, PropertyListItem } from "@/lib/property-service";
 
 type RenderHandle = {
@@ -122,7 +122,7 @@ async function flushAsyncEffects(): Promise<void> {
   });
 }
 
-describe("components/marketplace MarketplaceGridClient", () => {
+describe("features/marketplace/presentation MarketplaceGridClient", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY = "test-google-maps-embed-key";
     localeMocks.useI18n.mockReturnValue({

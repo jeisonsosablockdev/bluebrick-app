@@ -1,0 +1,68 @@
+{
+  "heroStats": [
+    { "label": "Investors", "value": "15K+" },
+    { "label": "Properties", "value": "120+" },
+    { "label": "Yield", "value": "20%" },
+    { "label": "Capital", "value": "$50M+" }
+  ],
+  "features": [
+    {
+      "title": "Secure Fractionalization",
+      "description": "Real assets split into digital fractions with complete traceability.",
+      "action": "Explore",
+      "actionHref": "/transparencia",
+      "icon": "🧩"
+    },
+    {
+      "title": "Recurring Income",
+      "description": "Review distribution status and project-related updates from the platform dashboard.",
+      "action": "View Flow",
+      "actionHref": "/transparencia",
+      "icon": "📈"
+    },
+    {
+      "title": "Flexible Investment",
+      "description": "Buy fractions under transparent market rules.",
+      "action": "Learn More",
+      "actionHref": "/transparencia",
+      "icon": "⚡"
+    }
+  ],
+  "properties": [
+    {
+      "title": "Central North Tower",
+      "location": "Bogota, CO",
+      "roi": "12.8% ROI",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "Marberia Complex",
+      "location": "Medellin, CO",
+      "roi": "11.4% ROI",
+      "image": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      "title": "River Tower",
+      "location": "CDMX, MX",
+      "roi": "13.2% ROI",
+      "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1200&auto=format&fit=crop"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How do I get started with BRIDS?",
+      "answer": "Sign up, complete verification, and select a fractional property from the main dashboard.",
+      "topic": "WALLET"
+    },
+    {
+      "question": "What is the minimum investment?",
+      "answer": "You can start with low amounts depending on the property, with progressive diversification.",
+      "topic": "Transparency"
+    },
+    {
+      "question": "How are returns distributed?",
+      "answer": "Distribution depends on each project structure and third-party operated processes. BRIDS displays available status and traceability.",
+      "topic": "Transparency"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const migrationFileName = "020_asset_upload_edit_sessions.sql";
 
 function getMigrationSql(): string {
-  return fs.readFileSync(path.join(process.cwd(), "db", "migrations", migrationFileName), "utf8");
+  return fs.readFileSync(path.join(process.cwd(), "apps", "web", "src", "features", "shared", "infrastructure", "db", "migrations", migrationFileName), "utf8");
 }
 
 describe("asset upload edit sessions migration", () => {

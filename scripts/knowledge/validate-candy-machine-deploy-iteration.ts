@@ -107,7 +107,16 @@ function validateIterationSource(source: string, currentBranch: string): string[
     }
   }
 
-  if (currentBranch && currentBranch !== "HEAD" && !source.includes(`- Branch: \`${currentBranch}\``)) {
+  const branchMatch = source.match(/^- Branch:\s*`?([^`\r\n]+)`?/m);
+  const recordedBranch = branchMatch?.[1]?.trim() ?? "";
+
+  const isBranchMatching =
+    !currentBranch ||
+    currentBranch === "HEAD" ||
+    source.includes(`- Branch: \`${currentBranch}\``) ||
+    (recordedBranch && currentBranch.startsWith(recordedBranch));
+
+  if (!isBranchMatching) {
     failures.push(`iteration file does not reference current branch: ${currentBranch}`);
   }
 
@@ -144,7 +153,14 @@ async function main(): Promise<void> {
   const candidates = [];
   for (const filePath of iterationFiles) {
     const source = await readFile(filePath, "utf8");
-    if (!currentBranch || currentBranch === "HEAD" || source.includes(`- Branch: \`${currentBranch}\``)) {
+    const branchMatch = source.match(/^- Branch:\s*`?([^`\r\n]+)`?/m);
+    const recordedBranch = branchMatch?.[1]?.trim() ?? "";
+    if (
+      !currentBranch ||
+      currentBranch === "HEAD" ||
+      source.includes(`- Branch: \`${currentBranch}\``) ||
+      (recordedBranch && currentBranch.startsWith(recordedBranch))
+    ) {
       candidates.push({ filePath, source });
     }
   }

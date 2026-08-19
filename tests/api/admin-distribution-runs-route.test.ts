@@ -11,7 +11,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/distributions/distribution-service", () => ({
+vi.mock("@/features/staking-distribution/application/distribution-service", () => ({
   DistributionServiceError: class DistributionServiceError extends Error {
     code: string;
     status: number;

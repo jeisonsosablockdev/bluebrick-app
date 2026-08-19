@@ -11,7 +11,7 @@ vi.mock("@/lib/auth-session", () => ({
   getRequestRole: routeMocks.getRequestRole
 }));
 
-vi.mock("@/lib/core-candy-machine-snapshot-service", () => ({
+vi.mock("@/features/nft-minting/application/core-candy-machine-snapshot-service", () => ({
   finalizeCoreCandyMachineSnapshot: routeMocks.finalizeCoreCandyMachineSnapshot,
   isCoreCandyMachineSnapshotError: routeMocks.isCoreCandyMachineSnapshotError
 }));

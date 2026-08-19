@@ -13,12 +13,12 @@ import {
   AssetMediaSection,
   AssetTypeSelectionSection,
   GuidanceBadge
-} from "@/components/admin/asset-creation/sections";
-import { assetTypeOptions } from "@/components/admin/asset-creation/asset-type-options";
-import { initialAssetForm } from "@/components/admin/asset-creation/types";
+} from "@/features/admin/presentation/asset-creation/sections";
+import { assetTypeOptions } from "@/features/admin/presentation/asset-creation/asset-type-options";
+import { initialAssetForm } from "@/features/admin/presentation/asset-creation/types";
 
 import type { ReactNode } from "react";
-import type { AssetForm } from "@/components/admin/asset-creation/types";
+import type { AssetForm } from "@/features/admin/presentation/asset-creation/types";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -55,7 +55,7 @@ function LocationHarness(): ReactNode {
   );
 }
 
-describe("components/admin/asset-creation guidance", () => {
+describe("features/admin/presentation/asset-creation guidance", () => {
   beforeEach(() => {
     Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
   });

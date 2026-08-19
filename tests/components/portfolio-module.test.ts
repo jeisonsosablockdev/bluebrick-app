@@ -16,7 +16,7 @@ vi.mock("next/image", () => ({
   default: (props: { alt?: string; src?: string; className?: string }) => createElement("img", props)
 }));
 
-import { PortfolioModule } from "@/components/dashboard/portfolio-module";
+import { PortfolioModule } from "@/features/investor-portfolio/presentation/portfolio-module";
 
 type RenderHandle = {
   container: HTMLDivElement;
@@ -98,7 +98,7 @@ async function flush(): Promise<void> {
   });
 }
 
-describe("components/dashboard/portfolio-module", () => {
+describe("features/investor-portfolio/presentation/portfolio-module", () => {
   beforeEach(() => {
     localeMocks.useI18n.mockReturnValue({
       locale: "en",

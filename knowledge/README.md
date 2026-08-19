@@ -21,20 +21,20 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-07-22T00:00:00.000Z
+Last Generated: 2026-08-11T00:00:00.000Z
 
 ## Snapshot
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 10 |
+| Observations | 11 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 525 |
-| Observed status | 20 |
+| Archived | 530 |
+| Observed status | 21 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 523 |
+| Archived status | 528 |
 
 ## Inbox
 
@@ -50,6 +50,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | KNOW-2026-06-005 | observed | guide | [Candy Machine deploy iteration 2026-06-11](knowledge/inbox/2026-06/KNOW-2026-06-005-candy-machine-deploy-iteration-2026-06-11-branching-policy-preflight.md) | BRI-173 |
 | KNOW-2026-06-006 | observed | guide | [Candy Machine deploy iteration 2026-06-16 (SPEC05 rebase)](knowledge/inbox/2026-06/KNOW-2026-06-006-candy-machine-deploy-iteration-scope05-rebase.md) | BRI-168 |
 | KNOW-2026-07-001 | observed | guide | [Candy Machine deploy iteration 2026-07-22 BRI-182](knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md) | BRI-182 |
+| KNOW-2026-08-001 | observed | guide | [Candy Machine deploy iteration 2026-08-11 BRI-186](knowledge/inbox/candy-machine-deploy-iteration-2026-08-11-bri-186.md) | BRI-186 |
 
 ## Promotion Proposals
 
@@ -104,6 +105,7 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | solana-stack | archived | none | [Solana Stack](knowledge/architecture/solana-stack.md) | n/a |
 | stake-audit | archived | none | [Stake Audit](knowledge/architecture/stake-audit.md) | n/a |
 | state-machine | archived | none | [State Machine](knowledge/architecture/state-machine.md) | n/a |
+| third-party-integrations | archived | none | [Third-Party Integrations & Services Registry](knowledge/architecture/third-party-integrations.md) | n/a |
 | threat-model | archived | none | [Threat Model](knowledge/architecture/threat-model.md) | n/a |
 | toolchain-policy | archived | none | [Toolchain Maintenance Policy](knowledge/architecture/toolchain-policy.md) | n/a |
 | index | archived | none | [archive](knowledge/archive/index.md) | n/a |
@@ -314,6 +316,8 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
+| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
+| feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -431,12 +435,14 @@ Last Generated: 2026-07-22T00:00:00.000Z
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance Implementation](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance-implementation.md) | n/a |
 | fix-test-suite-drift-marketplace-i18n-and-pr-governance | archived | none | [Fix Test Suite Drift Marketplace I18n And Pr Governance](knowledge/fixes/other/fix-test-suite-drift-marketplace-i18n-and-pr-governance.md) | n/a |
 | index | archived | none | [other](knowledge/fixes/other/index.md) | n/a |
+| clean-code-folder-structure | archived | none | [clean-code-folder-structure](knowledge/governance/clean-code-folder-structure.md) | n/a |
 | documentation-policy | archived | none | [Documentation Policy](knowledge/governance/documentation-policy.md) | n/a |
 | frontend-ui-policy | archived | none | [Frontend Ui Policy](knowledge/governance/frontend-ui-policy.md) | n/a |
 | git-monorepo-policy | archived | none | [Git Monorepo Policy](knowledge/governance/git-monorepo-policy.md) | n/a |
 | iconography-rules | archived | none | [Iconography Rules](knowledge/governance/iconography-rules.md) | n/a |
 | index | archived | none | [Index](knowledge/governance/index.md) | n/a |
 | licenses-report | archived | none | [licenses-report](knowledge/governance/licenses-report.md) | n/a |
+| monorepo-symlink-deprecation-guide | archived | none | [monorepo-symlink-deprecation-guide](knowledge/governance/monorepo-symlink-deprecation-guide.md) | n/a |
 | nft-policy | archived | none | [Nft Policy](knowledge/governance/nft-policy.md) | n/a |
 | pr-policy-source-of-truth | archived | none | [PR Policy Source of Truth](knowledge/governance/pr-policy-source-of-truth.md) | n/a |
 | security-quality-policy | archived | none | [Security Quality Policy](knowledge/governance/security-quality-policy.md) | n/a |

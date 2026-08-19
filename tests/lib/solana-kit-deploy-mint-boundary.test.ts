@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -6,25 +6,33 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = process.cwd();
 
 const DEPLOY_MINT_FILES = [
-  "lib/core-candy-machine-admin.ts",
+  "features/nft-minting/application/core-candy-machine-admin.ts",
   "lib/metaplex-core-admin.ts",
-  "lib/candy-guard-payment-config.ts",
-  "lib/purchase-third-party-signer.ts",
+  "features/nft-minting/domain/candy-guard-payment-config.ts",
+  "features/checkout-payment/application/purchase-third-party-signer.ts",
   "lib/solana-kit/compat/squads.ts",
   "app/api/admin/mint-orchestrator/jobs/[jobId]/reconcile/route.ts",
-  "components/admin/core-candy-machine-panel.tsx",
-  "components/admin/metaplex-core-mint-panel.tsx"
+  "features/admin/presentation/core-candy-machine-panel.tsx",
+  "features/admin/presentation/metaplex-core-mint-panel.tsx"
 ];
 
 const MARKETPLACE_PURCHASE_FILES = [
-  "lib/purchase-service.ts",
-  "lib/purchase-anti-bot.ts",
+  "features/checkout-payment/application/purchase-service.ts",
+  "features/checkout-payment/application/purchase-anti-bot.ts",
   "lib/property-marketplace-server.ts",
-  "components/marketplace/PurchaseCta.tsx"
+  "features/marketplace/presentation/PurchaseCta.tsx"
 ];
 
 function readRepoFile(relativePath: string): string {
-  return readFileSync(join(REPO_ROOT, relativePath), "utf8");
+  const directPath = join(REPO_ROOT, relativePath);
+  if (existsSync(directPath)) {
+    return readFileSync(directPath, "utf8");
+  }
+  const appWebPath = join(REPO_ROOT, "apps/web/src", relativePath);
+  if (existsSync(appWebPath)) {
+    return readFileSync(appWebPath, "utf8");
+  }
+  throw new Error(`File not found: ${relativePath}`);
 }
 
 describe("Solana Kit deploy/mint boundary", () => {

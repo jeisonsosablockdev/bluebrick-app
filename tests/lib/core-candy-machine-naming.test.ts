@@ -5,9 +5,9 @@ import {
   buildConfigLinePrefixName,
   deriveCoreCandyMachineNames,
   utf8ByteLength
-} from "@/lib/core-candy-machine-naming";
+} from "@/features/nft-minting/domain/core-candy-machine-naming";
 
-describe("lib/core-candy-machine-naming", () => {
+describe("features/nft-minting/domain/core-candy-machine-naming", () => {
   it("derives names within candy machine byte limits", () => {
     const derived = deriveCoreCandyMachineNames({
       collectionSource: "Proyecto Premium Torre Marina Fase Internacional",

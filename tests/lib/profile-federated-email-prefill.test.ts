@@ -4,13 +4,13 @@ import {
   __resetProfileRepositoryStateForTests,
   applyFederatedEmailPrefill,
   updateProfileBasics
-} from "@/lib/compliance/profile-repository";
+} from "@/features/profile/infrastructure/profile-repository";
 
 function clearDatabaseUrl(): void {
   delete process.env.DATABASE_URL;
 }
 
-describe("lib/compliance/profile-repository federated email prefill", () => {
+describe("features/profile/infrastructure/profile-repository federated email prefill", () => {
   afterEach(() => {
     clearDatabaseUrl();
     __resetProfileRepositoryStateForTests();

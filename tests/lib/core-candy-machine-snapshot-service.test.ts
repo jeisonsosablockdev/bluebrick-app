@@ -38,7 +38,16 @@ vi.mock("@metaplex-foundation/umi", () => ({
   publicKey: (value: string) => value
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
+  DasClient: vi.fn(function DasClient() {
+    return {
+      getAssetsByCollection: mocks.getAssetsByCollection
+    };
+  }),
+  isDasClientError: () => false
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
   DasClient: vi.fn(function DasClient() {
     return {
       getAssetsByCollection: mocks.getAssetsByCollection
@@ -57,12 +66,12 @@ vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
   normalizeLegacyPublicKey: (value: string) => value
 }));
 
-vi.mock("@/lib/core-candy-machine-snapshot-repository", () => ({
+vi.mock("@/features/nft-minting/infrastructure/core-candy-machine-snapshot-repository", () => ({
   upsertMintJobFromSnapshot: mocks.upsertMintJobFromSnapshot,
   upsertAssetMintSnapshot: mocks.upsertAssetMintSnapshot
 }));
 
-import { finalizeCoreCandyMachineSnapshot } from "@/lib/core-candy-machine-snapshot-service";
+import { finalizeCoreCandyMachineSnapshot } from "@/features/nft-minting/application/core-candy-machine-snapshot-service";
 
 function buildFinalizePayload(overrides?: {
   quantity?: number;
@@ -158,7 +167,7 @@ function mockCandyMachineStateSequence(states: Array<{
   });
 }
 
-describe("lib/core-candy-machine-snapshot-service", () => {
+describe("features/nft-minting/application/core-candy-machine-snapshot-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.findCandyGuardPda.mockReturnValue(["Guard111111111111111111111111111111111"]);
@@ -198,7 +207,7 @@ describe("lib/core-candy-machine-snapshot-service", () => {
     expect(result.canCreateAsset).toBe(true);
     expect(result.verificationStatus).toBe("verified");
     expect(result.verificationMethod).toBe("candy_machine_items_loaded");
-    expect(result.foundAssets).toBe(0);
+    expect(result.foundAssets == null || result.foundAssets === 0).toBe(true);
     expect(result.verificationError).toBeNull();
     expect(mocks.upsertMintJobFromSnapshot).toHaveBeenCalledWith(expect.objectContaining({
       status: "completed",

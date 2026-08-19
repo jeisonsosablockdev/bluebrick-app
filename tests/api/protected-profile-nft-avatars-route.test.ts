@@ -24,7 +24,14 @@ vi.mock("@/lib/auth", () => ({
   getAuthenticatedPublicKeyFromRequest: routeMocks.getAuthenticatedPublicKeyFromRequest
 }));
 
-vi.mock("@/lib/das-client", () => ({
+vi.mock("@/lib/infrastructure/das-client", () => ({
+  DasClient: class MockDasClient {
+    getAssetsByOwner = routeMocks.getAssetsByOwner;
+  },
+  isDasClientError: (error: unknown) => error instanceof routeMocks.MockDasClientError
+}));
+
+vi.mock("@/features/shared/infrastructure/solana-rpc/das-client", () => ({
   DasClient: class MockDasClient {
     getAssetsByOwner = routeMocks.getAssetsByOwner;
   },

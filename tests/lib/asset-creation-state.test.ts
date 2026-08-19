@@ -20,7 +20,7 @@ import {
   setSnapshotFinalize,
   setUploadRefs,
   setUploadState
-} from "@/components/admin/asset-creation";
+} from "@/features/admin/presentation/asset-creation";
 
 describe("asset creation canonical state", () => {
   it("creates a deterministic initial state with provided draftId", () => {

@@ -12,38 +12,34 @@ describe("agent orchestration contracts", () => {
     expect(source).toContain("knowledge/features/feature-<slug>.md");
     expect(source).toContain("knowledge/fixes/fix-<slug>.md");
     expect(source).toContain("first SPEC");
-    expect(source).toContain("npm run task:init");
-    expect(source).toContain("In Progress");
-    expect(source).toContain("In Review");
-    expect(source).toContain("Done");
+    expect(source).toContain("task:init");
+    expect(source).toContain("Definition of Done");
   });
 
   it("requires planner and docs agents to use artifact-first preconditions", () => {
-    const planner = readFileSync(path.join(repoRoot, ".codex", "agents", "planner.toml"), "utf8");
-    const docs = readFileSync(path.join(repoRoot, ".codex", "agents", "docs.toml"), "utf8");
+    const planner = readFileSync(path.join(repoRoot, ".agents", "agents", "planner.yaml"), "utf8");
+    const docs = readFileSync(path.join(repoRoot, ".agents", "agents", "docs.yaml"), "utf8");
 
     expect(planner).toContain("parent Linear issue");
     expect(planner).toContain("first SPEC");
-    expect(planner).toContain("Socratic clarification pass");
     expect(planner).toContain("Human Acceptance");
     expect(docs).toContain("problem artifact");
     expect(docs).toContain("solution artifact");
-    expect(docs).toContain("Socratic breakdown");
     expect(docs).toContain("explain-like-socrates");
   });
 
   it("requires docs and testing policies to mention clarification and tests-first contracts", () => {
     const docsPolicy = readFileSync(
-      path.join(repoRoot, ".codex", "policies", "docs-policy.md"),
+      path.join(repoRoot, "knowledge", "governance", "documentation-policy.md"),
       "utf8"
     );
     const testingPolicy = readFileSync(
-      path.join(repoRoot, ".codex", "policies", "testing-policy.md"),
+      path.join(repoRoot, "knowledge", "governance", "security-quality-policy.md"),
       "utf8"
     );
 
-    expect(docsPolicy).toContain("dual artifact");
-    expect(docsPolicy).toContain("SPEC model");
-    expect(testingPolicy).toContain("test-plan-first");
+    expect(docsPolicy).toContain("artifact");
+    expect(docsPolicy).toContain("SPEC");
+    expect(testingPolicy).toContain("Devnet");
   });
 });

@@ -4,7 +4,7 @@ import {
   DistributionServiceError,
   createDistributionRunDraft,
   finalizePreparedDistributionRun
-} from "@/lib/distributions/distribution-service";
+} from "@/features/staking-distribution/application/distribution-service";
 
 const deps = {
   createDistributionDraft: vi.fn(),
@@ -17,7 +17,7 @@ const deps = {
   appendDistributionAuditEvent: vi.fn()
 };
 
-describe("lib/distributions/distribution-service", () => {
+describe("features/staking-distribution/application/distribution-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps.createDistributionDraft.mockResolvedValue(baseRun());

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
-import { getAllowedDevOrigins } from "./lib/dev-origins";
-import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./lib/security/headers";
+import { getAllowedDevOrigins } from "./apps/web/src/lib/dev-origins";
+import { buildSecurityHeaders, readSecurityHeadersOptionsFromEnv } from "./apps/web/src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -35,6 +35,20 @@ const nextConfig: NextConfig = {
         pathname: "/admin-assets/**"
       }
     ]
+  },
+  async redirects() {
+    return [
+      {
+        source: "/protected",
+        destination: "/profile",
+        permanent: true
+      },
+      {
+        source: "/protected/:slug*",
+        destination: "/profile/:slug*",
+        permanent: true
+      }
+    ];
   },
   async headers() {
     const securityOptions = readSecurityHeadersOptionsFromEnv();

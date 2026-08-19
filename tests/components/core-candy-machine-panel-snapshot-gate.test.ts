@@ -8,7 +8,7 @@ import {
   CoreCandyMachinePanel,
   isDeploySignatureConfirmedForCreateAsset,
   waitForDeploySignatureStatuses
-} from "@/components/admin/core-candy-machine-panel";
+} from "@/features/admin/presentation/core-candy-machine-panel";
 
 import type { ReactNode } from "react";
 

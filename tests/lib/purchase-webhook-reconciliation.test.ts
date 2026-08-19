@@ -7,22 +7,22 @@ import {
   bindReferralAtFirstAuth,
   getOrCreateReferralCodeForWallet,
   markReferralAttributionKycApproved
-} from "@/lib/referrals/repository";
+} from "@/features/referral-marketing/infrastructure/referrals-repository";
 import {
   __resetReferralRewardEngineStateForTests,
   listReferralRewardEventsForInvitee,
   setReferralRewardRule
-} from "@/lib/referrals/reward-engine";
+} from "@/features/referral-marketing/application/reward-engine";
 import {
   createPurchaseAttempt,
   getPurchaseAttemptBySignature,
   markPurchaseAttemptPrepared,
   markPurchaseAttemptSubmitted
-} from "@/lib/purchase-attempts-repository";
+} from "@/features/checkout-payment/infrastructure/purchase-attempts-repository";
 import {
   listPurchaseWebhookEvents,
   processPurchaseHeliusWebhookPayload
-} from "@/lib/purchase-webhook-reconciliation";
+} from "@/features/checkout-payment/application/purchase-webhook-reconciliation";
 
 async function createSubmittedAttempt(signature: string): Promise<{
   id: string;
@@ -62,7 +62,7 @@ async function createSubmittedAttempt(signature: string): Promise<{
   };
 }
 
-describe("lib/purchase-webhook-reconciliation", () => {
+describe("features/checkout-payment/application/purchase-webhook-reconciliation", () => {
   beforeEach(() => {
     delete process.env.DATABASE_URL;
     __resetReferralRepositoryStateForTests();

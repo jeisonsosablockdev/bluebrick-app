@@ -7,7 +7,12 @@ import { isWorkosConfigured } from "@/lib/workos/config";
 const handleWorkosProxy = authkitProxy();
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/protected") || request.nextUrl.pathname.startsWith("/api/auth")) {
+  if (
+    request.nextUrl.pathname.startsWith("/profile") ||
+    request.nextUrl.pathname.startsWith("/protected") ||
+    request.nextUrl.pathname.startsWith("/api/auth") ||
+    request.nextUrl.pathname.startsWith("/api/protected")
+  ) {
     if (!isWorkosConfigured()) {
       return NextResponse.next();
     }
@@ -19,5 +24,14 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/protected/:path*", "/api/auth/:path*"]
+  matcher: [
+    "/admin/:path*",
+    "/profile",
+    "/profile/:path*",
+    "/protected",
+    "/protected/:path*",
+    "/api/auth/:path*",
+    "/api/protected/:path*"
+  ]
 };
+

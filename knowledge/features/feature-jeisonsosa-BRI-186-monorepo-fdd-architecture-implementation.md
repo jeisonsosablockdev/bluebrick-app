@@ -1,0 +1,593 @@
+# Solution Spec: monorepo-fdd-architecture Implementation (BRI-186)
+
+## 1. Governance & Agent Assignment
+- **Initiative Planner**: `planner`
+- **Lead Implementation Specialist**: `architect` & `frontend`
+- **Architect Gatekeeper**: `architect` (Gate 1 & Gate 2)
+- **Quality & Review**: `qa` & `reviewer`
+- **Security Auditor**: `security`
+
+## 2. Solution Overview & 4-Layer Architecture
+
+La solución establece una arquitectura dual basada en **Monorepo Workspaces (Nivel Macro)** y **Feature-Driven Design (FDD) en 4 capas (Nivel Micro)** organizadas en torno a las **secciones principales de la aplicación web de BRIDS** más la capa de recursos compartidos (`shared`):
+
+```text
+brids/                                      <-- Monorepo Root
+├── programs/                               <-- Rust Anchor Smart Contracts (Solana)
+├── apps/
+│   └── web/                                <-- Next.js 16+ App Router
+│       ├── app/                            <-- Thin App Router (Rutas, Layouts, Providers)
+│       └── src/
+│           ├── features/                   <-- Vertical Slices por Sección de Aplicación (FDD)
+│           │   │
+│           │   ├── landing/                <-- 🌐 1. LANDING & PUBLIC HERO
+│           │   │   ├── index.ts            <-- Public API Boundary
+│           │   │   ├── presentation/       <-- Hero Section, Dark Theme, Splash Screen, Motion 12
+│           │   │   ├── application/        <-- Static Content Loaders, Editorial DTOs, SEO Metadata
+│           │   │   ├── domain/             <-- Structured Data Models (JSON-LD, AI Discovery)
+│           │   │   └── infrastructure/     <-- CMS / Content as Code repositories
+│           │   │
+│           │   ├── marketplace/            <-- 🛒 2. MARKETPLACE & PROPERTY CATALOG
+│           │   │   ├── index.ts            <-- Public API Boundary
+│           │   │   ├── presentation/       <-- 3D Visualizer, Mapbox Cards, Deal Economics, Detail View
+│           │   │   ├── application/        <-- Property Selection Hooks, Filter Actions
+│           │   │   ├── domain/             <-- Investment Rules, Token Price Calculations
+│           │   │   └── infrastructure/     <-- Marketplace DB Repositories, Metaplex Core RPC Adapters
+│           │   │
+│           │   ├── checkout-payment/       <-- 💳 3. CHECKOUT & SINGLE PAYMENT FUNNEL (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Vistas /checkout y /checkout/success)
+│           │   │   ├── presentation/       <-- CheckoutPageClient, PaymentMethodSelector, SuccessReceipt
+│           │   │   ├── application/        <-- processCryptoPaymentAction, processAirwallexPaymentAction
+│           │   │   ├── domain/             <-- Anti-bot Limits, Purchase Idempotency Rules
+│           │   │   └── infrastructure/     <-- Airwallex Client, Solana Purchase Adapter, Attempt Repositories
+│           │   │
+│           │   ├── recurring-deposits/     <-- 💵 4. RECURRING FIAT TOP-UPS & SUBSCRIPTIONS (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Controles de Recarga Recurrente)
+│           │   │   ├── presentation/       <-- RecurringTopupCard, ScheduleSelector, LittioSubscriptionManager
+│           │   │   ├── application/        <-- setupRecurringDepositAction, processRecurringTopupWebhookAction
+│           │   │   ├── domain/             <-- RecurringScheduleRules, TopupInvariants
+│           │   │   └── infrastructure/     <-- Littio Client, Sphere Solana Adapter, Subscription Repository
+│           │   │
+│           │   ├── offline-recovery/       <-- 🛡️ 5. OFFLINE RECOVERY PROTOCOL & ANCHOR NOTARY (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Modal de Recuperación y Queue Offline)
+│           │   │   ├── presentation/       <-- RecoveryPromptModal, InterruptedTransactionCard, SyncBadge
+│           │   │   ├── application/        <-- recoverInterruptedTransactionAction, submitAnchorNotaryProofAction
+│           │   │   ├── domain/             <-- RecoveryPayloadInvariants, AnchorNotaryRules, OfflineSessionState
+│           │   │   └── infrastructure/     <-- AnchorNotaryRpcClient, IndexedDbSignatureStore, RecoveryRepo
+│           │   │
+│           │   ├── profile/                <-- 👤 6. USER PROFILE & KYC / IDENTITY (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Vista /profile/perfil)
+│           │   │   ├── presentation/       <-- ProfileFormCard, KycIdentityStatusCard, RewardPromptModal
+│           │   │   ├── application/        <-- saveProfileDetailsAction, completeKycAction
+│           │   │   ├── domain/             <-- UserProfile Model, KycStatusInvariants, RewardRules
+│           │   │   └── infrastructure/     <-- User DB Repository, Kyc Provider Adapter
+│           │   │
+│           │   ├── investor-portfolio/     <-- 📈 5. INVESTOR PORTFOLIO & HOLDINGS (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Vista /profile/portfolio)
+│           │   │   ├── presentation/       <-- PortfolioOverviewWidget, HoldingsBreakdownChart, AssetCard
+│           │   │   ├── application/        <-- fetchInvestorHoldingsQuery, calculatePortfolioReturnQuery
+│           │   │   ├── domain/             <-- InvestorHolding Model, AssetValuationRules
+│           │   │   └── infrastructure/     <-- Solana DAS Layer Indexer RPC, On-Chain Asset Fetcher
+│           │   │
+│           │   ├── referral-marketing/     <-- 🎁 6. REFERRAL SYSTEM & REWARDS (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Vista /profile/referrals)
+│           │   │   ├── presentation/       <-- ReferralLinkCard, CommissionMetricsWidget, InviteModal
+│           │   │   ├── application/        <-- generateReferralCodeAction, trackReferralCommissionAction
+│           │   │   ├── domain/             <-- ReferralTierRules, MultiLevelCommissionRules
+│           │   │   └── infrastructure/     <-- Referral DB Repository, Commission Ledger
+│           │   │
+│           │   ├── educational-resources/  <-- 📚 7. BLOG & AI DISCOVERY EDITORIAL (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta /resources, /knowledge, /platform)
+│           │   │   ├── presentation/       <-- ResourcePageTemplate, ArticleCardGrid, ArticleJsonLd
+│           │   │   ├── application/        <-- getResourceBySlug, getAllResourcesQuery
+│           │   │   ├── domain/             <-- ArticleEntity, EditorialSeoContracts
+│           │   │   └── infrastructure/     <-- ContentAsCodeLoader, RssAiFeedGenerator
+│           │   │
+│           │   ├── pwa-notifications/      <-- 📱 8. PWA INSTALLABILITY & WEB PUSH (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Banner PWA, Bell de Notificaciones)
+│           │   │   ├── presentation/       <-- PwaInstallBanner, WebPushNotificationModal, PushCampaignConsole
+│           │   │   ├── application/        <-- subscribeToWebPushAction, sendPushCampaignAction, usePwaPrompt
+│           │   │   ├── domain/             <-- PushPayloadRules, PwaInstallabilityInvariants
+│           │   │   └── infrastructure/     <-- WebPushVapidAdapter, PushSubscriptionRepository, ServiceWorker
+│           │   │
+│           │   ├── admin/                  <-- ⚙️ 8. ADMIN SHELL & SYSTEM OPERATIONS
+│           │   │   ├── index.ts            <-- Public API Boundary
+│           │   │   ├── presentation/       <-- Admin Layout Shell, Navigation Sidebar, Audit Logs UI
+│           │   │   ├── application/        <-- System Monitoring Actions, Admin Operations
+│           │   │   ├── domain/             <-- Admin Authority Rules, System Audit Invariants
+│           │   │   └── infrastructure/     <-- Authority Registry, Webhook Repositories
+│           │   │
+│           │   ├── property-management/    <-- 🏠 9. PROPERTY ASSET EDITOR & CONTENT (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Editores de Inmuebles)
+│           │   │   ├── presentation/       <-- PropertyInformationEditor, DocumentsEditor, SummaryEditor
+│           │   │   ├── application/        <-- savePropertyDetailsAction, uploadPropertyDocumentsAction
+│           │   │   ├── domain/             <-- RealEstateAsset Model, Document Validation Rules
+│           │   │   └── infrastructure/     <-- Property DB Repository, Pinata IPFS Upload Adapter
+│           │   │
+│           │   ├── staking-distribution/   <-- 💰 10. STAKING & SQUADS V4 CLAIMS (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Widgets para Admin y Profile)
+│           │   │   ├── presentation/       <-- AdminDistributionConsole, InvestorClaimsWidget
+│           │   │   ├── application/        <-- executeDistributionAction, claimDividendsAction
+│           │   │   ├── domain/             <-- Distribution Engine Rules, Prorrateo Math, Squads Vaults
+│           │   │   └── infrastructure/     <-- Squads v4 RPC Adapter, Stake History Repositories
+│           │   │
+│           │   ├── nft-minting/            <-- 🎨 11. METAPLEX CORE MINTING & CANDY MACHINE (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Notaría & Candy Machine UI)
+│           │   │   ├── presentation/       <-- AdminCandyMachineConsole, NotarySigningCard
+│           │   │   ├── application/        <-- createCollectionMintAction, executeCandyMachineMintAction
+│           │   │   ├── domain/             <-- Anchor Notary Rules, Metaplex Core Collection Plugins
+│           │   │   └── infrastructure/     <-- Umi / Metaplex Core RPC Adapters, IPFS Metadata Repositories
+│           │   │
+│           │   ├── asset-freeze-control/   <-- 🔒 12. ASSET FREEZE & THAW POLICIES (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Controles de Freeze/Thaw)
+│           │   │   ├── presentation/       <-- FreezeThawControlCard, PermanentFreezePolicyUi
+│           │   │   ├── application/        <-- freezeAssetAction, thawAssetAction, setPermanentFreezeAction
+│           │   │   ├── domain/             <-- FreezeInvariants, Metaplex Core Freeze Plugin Rules
+│           │   │   └── infrastructure/     <-- Freeze Authority RPC Client, On-Chain State Fetcher
+│           │   │
+│           │   ├── transparency-portal/    <-- 📊 13. TRANSPARENCY & ON-CHAIN STRATEGY PORTAL (DEDICATED)
+│           │   │   ├── index.ts            <-- Public API Boundary (Exporta Vista /transparencia)
+│           │   │   ├── presentation/       <-- TransparencyContent, InvestmentModelsSection
+│           │   │   ├── application/        <-- fetchPublicMetricsAction, getInvestmentModelsQuery
+│           │   │   ├── domain/             <-- InvestmentModelRules, TransparencyMetricsModel
+│           │   │   └── infrastructure/     <-- Public On-Chain Metrics RPC, Financial Models Repository
+│           │   │
+│           │   └── shared/                 <-- 📦 RECURSOS COMPARTIDOS (Cross-Cutting)
+│           │       ├── ui/                 <-- Look visual global, Design System UI Kit, Modo Oscuro/Claro, Motion 12
+│           │       ├── wallet/             <-- Conexión de Red & Wallet Standard (@solana/kit, Wallet Modal)
+│           │       ├── auth/               <-- SISTEMA DE AUTENTICACIÓN HÍBRIDA Y AUTORIZACIÓN
+│           │       │   ├── siws/           <-- 🔐 Sign-In With Solana (Firma Criptográfica)
+│           │       │   ├── workos/         <-- 📧 Login OAuth/OIDC WorkOS (Email / Social Fiat)
+│           │       │   ├── reconciliation/ <-- 🔗 Reconciliador Híbrido (Vinculación Wallet ↔ Email)
+│           │       │   └── rbac/           <-- 🛡️ RBAC Global Guards (Admin, Operator, Investor Roles)
+│           │       ├── i18n/               <-- 🌐 Internacionalización (useI18n, LocaleProvider, localize)
+│           │       ├── notifications/      <-- PWA Web Push & Transacciones Transactional
+│           │       └── infrastructure/     <-- INFRAESTRUCTURA Y ADAPTADORES COMPARTIDOS
+│           │           ├── db/             <-- Cliente Drizzle PostgreSQL y Esquemas Base
+│           │           ├── solana-rpc/     <-- Cliente RPC Base Solana y Providers
+│           │           ├── squads/         <-- Cliente SDK Squads v4 Multisig (@squads/v4)
+│           │           ├── metaplex/       <-- INTEGRACIÓN METAPLEX CORE Y DAS LAYER
+│           │           │   ├── das-fetcher/<-- 🔍 Lectura Indexada (DAS API: getAssetsByOwner/Group)
+│           │           │   └── core-writer/<-- ✍️ Escritura On-Chain (Umi + mpl-core + Candy Machine)
+│           │           └── ipfs/           <-- Cliente Upload Pinata IPFS
+│           │
+├── .agents/                                <-- Harness de Desarrollo y Agentes AI (Antigravity)
+└── packages/
+    └── solana-client/                      <-- Autogenerated Solana Client (@solana/kit via IDL)
+```
+
+### Trazabilidad de Features Rastreadas desde el Índice OKF
+
+| Sección Web / Feature Slice | Trazabilidad OKF / Iniciativas Rastreadas | Dominio y Funcionalidades |
+| :--- | :--- | :--- |
+| **`landing/`** | `BRI-39`, `BRI-65`, `BRI-68`, `BRI-121`, `BRI-168` | Portada principal, Dark Hero Section, Splash Screen de carga inicial, contenido institucional (`about`, `regulatory`). |
+| **`marketplace/`** | `BRI-164` (S1-S44), `BRI-153` | Catálogo interactivo de propiedades tokenizadas, visualizador 3D, mapas dinámicos Mapbox, detalle de inmueble, deal economics y selector de oferta. |
+| **`checkout-payment/`** | `EPIC-003` (Stories 01-06), `BRI-151`, `app/checkout` | Feature autónoma para el embudo de checkout y pasarelas de pago: pagos en Crypto (Solana) y Fiat (Airwallex), consumo de créditos de perfil (`BRI-151`), anti-bot limits, idempotencia de compra y recibo de éxito. |
+| **`profile/`** | `BRI-151` (S1-S8), `BRI-153`, `app/profile/perfil` | Feature autónoma para perfil de usuario, completado de datos de cuenta, verificación KYC / identidad e incentivos de recompensa por perfil (Migración de `/protected/perfil` a `/profile/perfil`). |
+| **`investor-portfolio/`** | `BRI-171`, `BRI-174`, `app/profile/portfolio` | Feature autónoma para el portafolio real del inversionista: holdings de tokens/NFTs en Solana DAS layer, gráficos de distribución de activos y cálculo de rentabilidad (Migración de `/protected/portfolio` a `/profile/portfolio`). |
+| **`referral-marketing/`** | `BRI-16`, `app/profile/referrals` | Feature autónoma para el sistema de referidos y marketing: generación de códigos/links de invitación, seguimiento de comisiones multinivel y métricas de adquisición (Migración de `/protected/referrals` a `/profile/referrals`). |
+| **`educational-resources/`** | `EPIC-010` (Stories 01-10), `app/resources`, `app/knowledge`, `app/platform` | Feature autónoma para el sistema de blog, artículos educativos, whitepapers y exportaciones AI Discovery: plantillas editoriales, cargador Content-as-Code, esquemas JSON-LD y feeds RSS/AI. |
+| **`admin/`** | `BRI-123`, `EPIC-011` (Story 01) | Shell de la consola de administración, navegación general, layout de administración y monitoreo del sistema. |
+| **`property-management/`** | `EPIC-011` (Stories 02-07), `BRI-10` | Feature autónoma para gestión y edición de propiedades: editores de información inmobiliaria, resumen financiero, adjuntos PDF/documentos y sugerencias contextuales de localización. |
+| **`staking-distribution/`** | `BRI-6`, `BRI-7`, `BRI-8` (Stories & RFCs Squads v4) | Feature autónoma para Staking y Reclamaciones de Tesorería Squads v4: motor de cálculo de prorrateo, trazabilidad de dividendos, firma multisig de distribución para admins y widget de cobro individual para inversionistas. |
+| **`nft-minting/`** | `solana-p0-05` (H1-H3, H8-H10), `solana-p0-06` (H1-H6), `BRI-5` | Feature autónoma para acuñación de NFTs Metaplex Core: Candy Machine deploys, Anchor Notary signatures, creación de colecciones e indexador DAS layer. |
+| **`asset-freeze-control/`** | `solana-p0-05` (H4-H5, H7), `solana-p0-06` (H7), `BRI-170` | Feature autónoma para políticas de congelamiento: acciones de Freeze/Thaw de NFTs en la consola admin, Permanent Freeze policy, delegación de autoridades y salvaguardas de owner freeze. |
+| **`transparency-portal/`** | `app/transparencia` | Feature autónoma para el portal público de transparencia y estrategia: modelos de inversión (Fix & Flip, Renting, Land development), métricas operativas on-chain y divulgación de estrategia. |
+| **`shared/`** | `BRI-12`, `BRI-160`, `BRI-154`, `BRI-159`, `BRI-66`, `BRI-163`, `BRI-157`, `BRI-156` | UI Kit y Design System con Modo Oscuro/Claro y animaciones Motion 12, Conexión de red y modal de Wallet Standard con `@solana/kit`, Autenticación Híbrida (WorkOS + SIWS), Sistema de Autorización RBAC (`src/features/shared/auth/rbac/`), i18n, PWA Web Push Notifications, cliente base de base de datos (PostgreSQL/Drizzle). |
+
+### Definición de las 4 Capas Funcionales dentro de cada Feature Slice (`src/features/[feature]/`):
+1. **Presentation Layer (`presentation/`)**: Componentes de UI puros (React Server & Client Components) con animaciones de Motion 12 (`motion.dev`). Prohibido importar clientes de base de datos o llamadas directas a RPC de Solana.
+2. **Application / Consumption Layer (`application/`)**: Server Actions, hooks reactivos (`useTransactionPool`, Zustand, TanStack Query) y DTOs de validación con Zod.
+3. **Domain / Pipelines Layer (`domain/`)**: Lógica de negocio pura, Value Objects y construcciones de instrucciones de Solana con `@solana/kit` (`pipe()`). 100% independiente de frameworks UI o DBs.
+4. **Infrastructure Layer (`infrastructure/`)**: Repositorios de persistencia (PostgreSQL/Drizzle), clientes RPC de Solana y llamadas a servicios externos.
+
+## 3. Atomic Slices & Logical Sequence (Estrategia Incremental de Validación por Fases)
+
+Para garantizar que **cada componente siga funcionando perfectamente** tras cada migración, la iniciativa se ejecutará de forma atómica a través de **23 SPECs secuenciales**. Cada SPEC está estrictamente acotado y especifica sus archivos de origen, destino en 4 capas FDD, tickets OKF resueltos y comando de verificación:
+
+---
+
+### 🔴 Fase 1: Pruebas Iniciales de Arquitectura (TDD Baseline)
+
+#### **`SPEC-01 (TDD Baseline & Monorepo FDD Architecture Harness)`**
+* **Objetivo & Alcance**: Diseñar y escribir la suite de pruebas de gobernanza FDD en `tests/harness/specs/09-monorepo-fdd-architecture.test.ts` (Fase RED). Esta suite audita que ningún archivo en `presentation/` o `application/` importe librerías de base de datos o Solana v1, que cada feature exporte su API vía `index.ts` y que no existan importaciones cruzadas prohibidas.
+* **Archivos Afectados**: `[NEW] tests/harness/specs/09-monorepo-fdd-architecture.test.ts`.
+* **Trazabilidad OKF**: `AGENTS.md` (Gatekeeper 1 & Double-Gatekeeper protocol).
+* **Verificación**: `pnpm test tests/harness/specs/09-monorepo-fdd-architecture.test.ts` (Debe fallar intencionalmente antes de migrar código).
+
+---
+
+### 🏗️ Fase 2: Infraestructura Monorepo & Recursos Compartidos (`shared/`)
+
+#### **`SPEC-02 (Monorepo Root & Workspace Isolation)`**
+* **Objetivo & Alcance**: Configurar la estructura física de monorepo pnpm workspaces. Mover el proyecto Next.js a `apps/web/`, aislar los smart contracts de Rust en `programs/` en la raíz y configurar la librería cliente autogenerada `packages/solana-client`.
+* **Archivos Afectados**: `[NEW] pnpm-workspace.yaml`, `[MODIFY] package.json`, `[NEW] apps/web/`, `[NEW] packages/solana-client/`.
+* **Trazabilidad OKF**: `BRI-186`, `clean-code-folder-structure.md`.
+* **Verificación**: `pnpm validate:architecture` y compilación limpia con `pnpm dev`.
+
+#### **`SPEC-03 (Shared Infrastructure: Drizzle Database & Persistence Layer)`**
+* **Objetivo & Alcance**: Estructurar `src/features/shared/infrastructure/db/`. Migrar el cliente base de PostgreSQL/Drizzle y los modelos de esquemas relacionales.
+* **Archivos Afectados**: `lib/db.ts` ➔ `src/features/shared/infrastructure/db/drizzle-client.ts`, `db/schema.ts` ➔ `src/features/shared/infrastructure/db/schema.ts`.
+* **Trazabilidad OKF**: `BRI-12`, `BRI-160`.
+* **Verificación**: `pnpm validate:db` y `pnpm test tests/lib/knowledge-system.test.ts`.
+
+#### **`SPEC-04 (Shared Network Wallet Connection, Hybrid Auth & Global RBAC)`**
+* **Objetivo & Alcance**: Estructurar `src/features/shared/wallet/` y `src/features/shared/auth/`. Migrar la conexión de red RPC con `@solana/kit`, el modal Wallet Standard y desglosar la autenticación/autorización en 4 sub-módulos autónomos: `siws/` (Sign-In With Solana), `workos/` (OAuth Email/Social Fiat), `reconciliation/` (Reconciliador Híbrido de Identidades) y `rbac/` (Guards Globales de Autorización).
+* **Archivos Afectados**: `lib/solana-wallet.ts` ➔ `src/features/shared/wallet/wallet-adapter.ts`, `lib/auth.ts` ➔ `src/features/shared/auth/reconciliation/hybrid-auth-service.ts`, `[NEW] src/features/shared/auth/rbac/rbac-guards.ts`.
+* **Trazabilidad OKF**: `BRI-154`, `BRI-159`, `BRI-123`.
+* **Verificación**: `pnpm test tests/lib/content-contracts.test.ts`, pruebas de firma SIWS y tests unitarios de guards RBAC.
+
+#### **`SPEC-05 (Shared UI Kit, Dark Mode & Motion 12 Design System)`**
+* **Objetivo & Alcance**: Estructurar `src/features/shared/ui/`. Migrar componentes atómicos globales (`Button`, `Modal`, `Card`, `Input`, `Navbar`, `Sidebar`), el selector de tema Modo Oscuro/Claro (`ThemeToggle`) y pulido visual con animaciones de Motion 12 (`motion.dev`).
+* **Archivos Afectados**: `components/ui/*` ➔ `src/features/shared/ui/components/*`, `components/theme-toggle.tsx` ➔ `src/features/shared/ui/theme-toggle.tsx`.
+* **Trazabilidad OKF**: `BRI-66`, `BRI-163`.
+* **Verificación**: `pnpm build` y verificación visual del selector de tema en navegador.
+
+#### **`SPEC-06 (Shared Metaplex Core & DAS Layer Infrastructure)`**
+* **Objetivo & Alcance**: Estructurar `src/features/shared/infrastructure/metaplex/` dividiéndolo explícitamente en `das-fetcher/` (lectura indexada rápida de activos/NFTs) y `core-writer/` (escritura on-chain Umi + `mpl-core`).
+* **Archivos Afectados**: `lib/das-layer-fetcher.ts` ➔ `src/features/shared/infrastructure/metaplex/das-fetcher/das-client.ts`, `lib/metaplex-core-admin.ts` ➔ `src/features/shared/infrastructure/metaplex/core-writer/umi-client.ts`.
+* **Trazabilidad OKF**: `solana-p0-05`, `solana-p0-06`.
+* **Verificación**: Tests unitarios de cliente Umi y llamada JSON-RPC a DAS `getAssetsByOwner`.
+
+#### **`SPEC-07 (Shared Squads v4 Multisig Infrastructure)`**
+* **Objetivo & Alcance**: Estructurar `src/features/shared/infrastructure/squads/`. Crear el cliente e integrador del SDK de Squads v4 (`@squads/v4`) para la gestión de propuestas multisig, firma de transacciones de tesorería y bóvedas on-chain.
+* **Archivos Afectados**: `lib/squads-v4-client.ts` ➔ `src/features/shared/infrastructure/squads/squads-v4-client.ts`.
+* **Trazabilidad OKF**: `EPIC-014`, `BRI-6/7/8`.
+* **Verificación**: Test unitario del builder de propuestas multisig Squads v4.
+
+---
+
+### 🌐 Fase 3: Migración Incremental de Vertical Feature Slices
+
+#### **`SPEC-08 (Feature Slice: Landing & Public Hero)`**
+* **Objetivo & Alcance**: Migrar portada principal, Dark Hero Section, Splash Screen de carga inicial y páginas legales a `src/features/landing/`. Convertir `app/page.tsx` y `app/about/page.tsx` en Thin Wrappers.
+* **Capas FDD**: `presentation/` (Hero, Splash), `application/` (EditorialLoaders), `domain/` (HeroDataModel), `infrastructure/` (CmsLoader).
+* **Archivos Afectados**: `components/landing/*` ➔ `src/features/landing/presentation/*`, `app/page.tsx` ➔ Thin Wrapper.
+* **Trazabilidad OKF**: `BRI-39`, `BRI-65`, `BRI-68`.
+* **Verificación**: `pnpm validate:seo`, `pnpm validate:routes` y comprobación visual de la portada.
+
+#### **`SPEC-09 (Feature Slice: Educational Resources & AI Discovery Blog - EPIC-010)`**
+* **Objetivo & Alcance**: Migrar las rutas `/resources`, `/knowledge`, `/platform` y el cargador Content-as-Code (`EPIC-010`) a `src/features/educational-resources/`. Configurar datos estructurados `JSON-LD` y feeds RSS/AI (`/llms.txt`).
+* **Capas FDD**: `presentation/` (ArticleCardGrid, ResourcePageTemplate), `application/` (getResourceBySlug), `domain/` (ArticleEntity), `infrastructure/` (ContentAsCodeLoader, RssAiFeedGenerator).
+* **Archivos Afectados**: `app/resources/*`, `app/data/*` ➔ `src/features/educational-resources/*`.
+* **Trazabilidad OKF**: `EPIC-010` (Stories 01-10).
+* **Verificación**: `pnpm validate:seo`, `pnpm test` de validación Content-as-Code y verificación de `JSON-LD`.
+
+#### **`SPEC-10 (Feature Slice: PWA Installability & Web Push Notifications - EPIC-013)`**
+* **Objetivo & Alcance**: Migrar componentes de instalación PWA (`PwaInstallBanner`), gestor de suscripciones VAPID y consola admin de campañas Web Push (`EPIC-013`) a `src/features/pwa-notifications/`.
+* **Capas FDD**: `presentation/` (PwaInstallBanner, WebPushPermissionModal), `application/` (subscribeToWebPushAction), `domain/` (PushPayloadRules), `infrastructure/` (WebPushVapidAdapter, ServiceWorker).
+* **Archivos Afectados**: `components/pwa/*` ➔ `src/features/pwa-notifications/*`, `app/manifest.ts`.
+* **Trazabilidad OKF**: `EPIC-013`.
+* **Verificación**: `pnpm test` de Service Worker y suscripción VAPID Push.
+
+#### **`SPEC-11 (Feature Slice: Transparency & Strategy Portal)`**
+* **Objetivo & Alcance**: Migrar la página pública `/transparencia`, modelos de inversión (Fix & Flip, Renting) y métricas auditables on-chain a `src/features/transparency-portal/`. Convertir `app/transparencia/page.tsx` en Thin Wrapper.
+* **Capas FDD**: `presentation/` (TransparencyContent, InvestmentModelsSection), `application/` (fetchPublicMetricsAction), `domain/` (InvestmentModelRules), `infrastructure/` (PublicOnChainMetricsRpc).
+* **Archivos Afectados**: `app/transparencia/*` ➔ `src/features/transparency-portal/*`.
+* **Trazabilidad OKF**: `app/transparencia`.
+* **Verificación**: `pnpm validate:routes` y comprobación visual del portal de transparencia.
+
+#### **`SPEC-12 (Feature Slice: Marketplace & 3D Property Catalog)`**
+* **Objetivo & Alcance**: Migrar catálogo de inmuebles, tarjetas Mapbox, visualizador 3D y deal economics a `src/features/marketplace/`. Convertir `app/marketplace/*` en Thin Wrappers.
+* **Capas FDD**: `presentation/` (Visualizer3D, MapboxCardGrid, PropertyDetailView), `application/` (usePropertyFilter), `domain/` (DealEconomicsRules), `infrastructure/` (MarketplaceRepository, DAS layer consumer).
+* **Archivos Afectados**: `components/marketplace/*`, `app/marketplace/*` ➔ `src/features/marketplace/*`.
+* **Trazabilidad OKF**: `BRI-164` (S1-S44), `BRI-153`.
+* **Verificación**: `pnpm validate:content` y comprobación interactiva del catálogo 3D.
+
+#### **`SPEC-13 (Feature Slice: Checkout & Single Payment Funnel - EPIC-003)`**
+* **Objetivo & Alcance**: Migrar el embudo de compra única, pasarelas de pago Crypto (Solana) y Fiat (Airwallex), consumo de créditos (`BRI-151`), anti-bot limits y recibo de éxito (`app/checkout`, `app/checkout/success`) a `src/features/checkout-payment/`.
+* **Capas FDD**: `presentation/` (CheckoutPageClient, PaymentMethodSelector), `application/` (processCryptoPaymentAction, processAirwallexPaymentAction), `domain/` (AntiBotLimits, PurchaseIdempotencyRules), `infrastructure/` (AirwallexClient, SolanaPurchaseAdapter).
+* **Archivos Afectados**: `app/checkout/*`, `components/checkout/*` ➔ `src/features/checkout-payment/*`.
+* **Trazabilidad OKF**: `EPIC-003` (Stories 01-06), `BRI-151`.
+* **Verificación**: `pnpm e2e:playwright` (smoke test de compra) y tests de pasarela Airwallex.
+
+#### **`SPEC-14 (Feature Slice: Recurring Fiat Top-Ups & Subscriptions - EPIC-008)`**
+* **Objetivo & Alcance**: Migrar el módulo autónomo de recargas recurrentes de saldo Fiat/USDC (Littio / Sphere Solana) a `src/features/recurring-deposits/`.
+* **Capas FDD**: `presentation/` (RecurringTopupCard, ScheduleSelector), `application/` (setupRecurringDepositAction, processWebhookAction), `domain/` (RecurringScheduleRules), `infrastructure/` (LittioClient, SphereAdapter).
+* **Archivos Afectados**: `lib/recurring-topup.ts`, `components/recurring-topup/*` ➔ `src/features/recurring-deposits/*`.
+* **Trazabilidad OKF**: `EPIC-008`.
+* **Verificación**: Tests unitarios de lógica de suscripción periódica y webhook handlers.
+
+#### **`SPEC-15 (Feature Slice: Offline Recovery Protocol & Anchor Notary - EPIC-007)`**
+* **Objetivo & Alcance**: Migrar el protocolo de recuperación offline, firmas diferidas en IndexedDB y notariado Anchor a `src/features/offline-recovery/`.
+* **Capas FDD**: `presentation/` (RecoveryPromptModal, SyncBadge), `application/` (recoverTransactionAction), `domain/` (AnchorNotaryRules), `infrastructure/` (AnchorNotaryRpcClient, IndexedDbStore).
+* **Archivos Afectados**: `lib/offline-recovery.ts`, `components/recovery/*` ➔ `src/features/offline-recovery/*`.
+* **Trazabilidad OKF**: `EPIC-007`.
+* **Verificación**: Tests unitarios de resiliencia offline y firma notariada Anchor.
+
+#### **`SPEC-16 (Feature Slice: User Profile & KYC / Identity - Renaming /protected/perfil -> /profile/perfil)`**
+* **Objetivo & Alcance**: Migrar perfil de usuario, completado de cuenta y verificación KYC/AML a `src/features/profile/`. Renombrar todas las rutas de `/protected/perfil` a `/profile/perfil` y `/profile`.
+* **Capas FDD**: `presentation/` (ProfileFormCard, KycIdentityStatusCard), `application/` (saveProfileDetailsAction, completeKycAction), `domain/` (UserProfileModel, KycStatusInvariants), `infrastructure/` (UserRepository, KycAdapter).
+* **Archivos Afectados**: `app/protected/perfil/*` ➔ `app/profile/perfil/*`, `src/features/profile/*`.
+* **Trazabilidad OKF**: `BRI-151` (S1-S8), `EPIC-004`.
+* **Verificación**: `pnpm test` de lógica de perfil y verificación de acceso a `/profile/perfil`.
+
+#### **`SPEC-17 (Feature Slice: Investor Portfolio & Real Holdings - Renaming /protected/portfolio -> /profile/portfolio)`**:
+* **Objetivo & Alcance**: Migrar vista de portafolio del inversionista, lectura de holdings on-chain en Solana DAS layer y gráficos ECharts a `src/features/investor-portfolio/`. Renombrar la ruta `/protected/portfolio` a `/profile/portfolio`.
+* **Capas FDD**: `presentation/` (PortfolioOverviewWidget, HoldingsBreakdownChart), `application/` (fetchInvestorHoldingsQuery), `domain/` (InvestorHoldingModel), `infrastructure/` (DAS layer consumer).
+* **Archivos Afectados**: `app/protected/portfolio/*` ➔ `app/profile/portfolio/*`, `src/features/investor-portfolio/*`.
+* **Trazabilidad OKF**: `BRI-171`, `BRI-174`.
+* **Verificación**: `pnpm test` de consulta de portafolio en la nueva ruta `/profile/portfolio`.
+
+#### **`SPEC-18 (Feature Slice: Referral Marketing System - Renaming /protected/referrals -> /profile/referrals)`**:
+* **Objetivo & Alcance**: Migrar el sistema de referidos, generación de links únicos de invitación y comisiones multinivel (`BRI-16`) a `src/features/referral-marketing/`. Renombrar la ruta `/protected/referrals` a `/profile/referrals`.
+* **Capas FDD**: `presentation/` (ReferralLinkCard, CommissionMetricsWidget), `application/` (generateReferralCodeAction), `domain/` (ReferralTierRules), `infrastructure/` (ReferralRepository).
+* **Archivos Afectados**: `app/protected/referrals/*` ➔ `app/profile/referrals/*`, `src/features/referral-marketing/*`.
+* **Trazabilidad OKF**: `BRI-16`.
+* **Verificación**: Tests unitarios de motor de referidos en la nueva ruta `/profile/referrals`.
+
+#### **`SPEC-19 (Feature Slice: Property Asset Management - EPIC-001 & EPIC-011)`**:
+* **Objetivo & Alcance**: Migrar la consola de gestión de propiedades de la administración (`app/admin/assets`, editores de resúmenes financieros, cargadores de PDFs) a `src/features/property-management/`.
+* **Capas FDD**: `presentation/` (PropertyInformationEditor, DocumentsEditor), `application/` (savePropertyDetailsAction), `domain/` (RealEstateAssetModel), `infrastructure/` (PropertyRepository, IPFSAdapter).
+* **Trazabilidad OKF**: `EPIC-001`, `EPIC-011` (Stories 02-07).
+* **Verificación**: `pnpm validate:content` y tests de edición de propiedades (Completado en commit `22f904e8`).
+
+#### **`SPEC-20 (Feature Slice: Staking & Squads v4 Treasury Claims - EPIC-014)`**
+* **Objetivo & Alcance**: Migrar el módulo de Staking, prorrateo de rentas y cobro de dividendos (`BRI-6/7/8`) a `src/features/staking-distribution/`. Incluye el widget de cobro para el inversionista y la consola admin respaldada por `shared/infrastructure/squads`.
+* **Capas FDD**: `presentation/` (AdminDistributionConsole, InvestorClaimsWidget), `application/` (executeDistributionAction, claimDividendsAction), `domain/` (ProrrateoMath, DistributionRules), `infrastructure/` (Squads v4 consumer).
+* **Archivos Afectados**: `app/protected/stake/*`, `components/admin/distributions/*` ➔ `src/features/staking-distribution/*`.
+* **Trazabilidad OKF**: `EPIC-014`, `BRI-6/7/8`.
+* **Verificación**: `pnpm test tests/lib/knowledge-system.test.ts` y tests unitarios de distribución de rentas (Completado en commit `ead251b6`).
+
+#### **`SPEC-21 (Feature Slice: Metaplex Core NFT Minting & Candy Machine - EPIC-002)`**
+* **Objetivo & Alcance**: Migrar la consola de acuñación de colecciones Metaplex Core, deploys de Candy Machine v3 y firma notariada Anchor (`solana-p0-05/06`) a `src/features/nft-minting/`.
+* **Capas FDD**: `presentation/` (AdminCandyMachineConsole, NotarySigningCard), `application/` (createCollectionMintAction), `domain/` (AnchorNotaryRules), `infrastructure/` (Metaplex core-writer consumer).
+* **Archivos Afectados**: `app/admin/mint/*`, `components/admin/metaplex-core-mint-panel.tsx` ➔ `src/features/nft-minting/*`.
+* **Trazabilidad OKF**: `EPIC-002` (Stories 01-07), `solana-p0-05`.
+* **Verificación**: `pnpm test` de validación de metadatos Metaplex Core (Completado en commit `0fb09fe4`).
+
+#### **`SPEC-22 (Admin Location Auto-Import & Resilient Fallback)`**
+* **Objetivo & Alcance**: Ajustar resolución resiliente de direcciones y búsqueda Google Maps en la consola de propiedades.
+* **Archivos Afectados**: `apps/web/src/features/property-management/application/*`.
+* **Trazabilidad OKF**: `BRI-10`, `BRI-186`.
+* **Verificación**: `pnpm test` (Completado en commit `f54d49a5`).
+
+---
+
+### 🧹 Fase 4: Limpieza, Colocación Física & Refactorizaciones Ejecutadas (SPEC-23 a SPEC-32)
+
+#### **`SPEC-23 (Feature Slice: Asset Freeze & Thaw Policies - EPIC-006)`**
+* **Objetivo & Alcance**: Implementar la feature autónoma de políticas de congelamiento/descongelamiento (`asset-freeze-control`) en `apps/web/src/features/asset-freeze-control/`.
+* **Capas FDD**: `domain/`, `infrastructure/`, `application/`, `presentation/`, `index.ts`.
+* **Archivos Afectados**: `apps/web/src/features/asset-freeze-control/*`, `tests/features/asset-freeze-control.test.ts`.
+* **Trazabilidad OKF**: `EPIC-006`, `solana-p0-05-h4/h5`.
+* **Verificación**: `pnpm test tests/features/asset-freeze-control.test.ts` (Completado en commit `a27bae02`).
+
+#### **`SPEC-24 (Test Suite, QA & CI/CD Root Hygiene Governance)`**
+* **Objetivo & Alcance**: Consolidar la suite completa de pruebas E2E en `tests/e2e/`, blindar `generate-pr-body.sh` y `pr-auto.sh` para ciclo de vida efímero en `.github/pr-body.md`, eliminar `.eslintrc.json` y carpetas `/artifacts` obsoletas.
+* **Archivos Afectados**: `tests/e2e/`, `playwright.config.ts`, `.gitignore`, `scripts/ci/*`.
+* **Trazabilidad OKF**: `AGENTS.md`, `git-monorepo-policy.md`.
+* **Verificación**: `pnpm test:harness` y `pnpm validate` (Completado en commit `eec080f0`).
+
+#### **`SPEC-25 (Shared UI Kit & Motion 12 Animation Engine - shared/ui/motion)`**
+* **Objetivo & Alcance**: Centralizar la infraestructura de diseño visual y el motor de animación de Motion 12 (`motion.dev`) en `apps/web/src/features/shared/ui/motion/` y los componentes base del Design System (`Button`, `Card`, `ThemeToggle`).
+* **Archivos Afectados**: `apps/web/src/features/shared/ui/motion/*`, `apps/web/src/features/shared/ui/theme/*`.
+* **Trazabilidad OKF**: `frontend-ui-policy.md`.
+* **Verificación**: Tests unitarios de presets de Motion 12 y providers de accesibilidad (Completado en commit `46c6496d`).
+
+#### **`SPEC-26 (Feature Slice: Splash Screen & Smooth Transition UX)`**
+* **Objetivo & Alcance**: Crear la feature autónoma de Splash Screen (`splash-screen`) en `apps/web/src/features/splash-screen/` consumiendo el motor Motion 12 de `shared/ui/motion/`.
+* **Archivos Afectados**: `apps/web/src/features/splash-screen/*`, `lib/app-splash.ts`.
+* **Trazabilidad OKF**: `frontend-ui-policy.md`.
+* **Verificación**: Tests unitarios de renderizado y transición de Splash Screen (Completado en commit `1add826b`).
+
+#### **`SPEC-27 (Landing Page Experience & Visual Polish - Motion 12 & Glassmorphism)`**
+* **Objetivo & Alcance**: Restaurar y pulir la experiencia visual completa del Landing Page en `apps/web/src/features/landing/`: Hero Section premium, Featured Properties, Dark/Light theme toggle y efectos Glassmorphism con Motion 12.
+* **Archivos Afectados**: `apps/web/src/features/landing/*`, `components/sections/*` ➔ `landing/presentation/`.
+* **Trazabilidad OKF**: `BRI-186`, `frontend-ui-policy.md`.
+* **Verificación**: `pnpm test`, `pnpm validate:routes`, `pnpm validate:seo` (Completado en commit `a71a68f1`).
+
+#### **`SPEC-28 (Content-as-Code & Knowledge Schemas Colocation - educational-resources)`**
+* **Objetivo & Alcance**: Reubicar los archivos Markdown de conocimiento y esquemas JSON a la feature `educational-resources`.
+* **Archivos Afectados**: `/content` ➔ `apps/web/src/features/educational-resources/infrastructure/content/`, `/schemas` ➔ `infrastructure/schemas/`.
+* **Trazabilidad OKF**: `EPIC-010`, `knowledge-system.md`.
+* **Verificación**: `pnpm validate:content`, `pnpm validate:ai`, `pnpm validate:knowledge` (Completado en commit `87f2be14`).
+
+#### **`SPEC-29 (Database Migrations Relocation - shared/infrastructure/db)`**
+* **Objetivo & Alcance**: Mover las migraciones SQL de `/db/migrations` a `apps/web/src/features/shared/infrastructure/db/migrations/` (41 migraciones) y eliminar `/db` en raíz.
+* **Archivos Afectados**: `/db/migrations` ➔ `apps/web/src/features/shared/infrastructure/db/migrations/`, `scripts/db-migrate.js`.
+* **Trazabilidad OKF**: `BRI-12`, `BRI-160`.
+* **Verificación**: `pnpm validate:db` (Completado en commit `6a636ceb`).
+
+#### **`SPEC-30 (Static Web Assets Colocation - apps/web/public)`**
+* **Objetivo & Alcance**: Mover `/public` a `apps/web/public/` para que la aplicación web sirva sus propios recursos estáticos (imágenes, favicons, fuentes, `sw.js`).
+* **Archivos Afectados**: `/public` ➔ `apps/web/public/`.
+* **Trazabilidad OKF**: `BRI-186`.
+* **Verificación**: `pnpm typecheck` y comprobación de rutas públicas (Completado en commit `ce35b76b`).
+
+#### **`SPEC-31 (Domain, Content & Infrastructure Migration - Deprecating Root Symlinks)`**
+* **Objetivo & Alcance**: Reubicar schemas, content y lib a `apps/web/src`, depreciar los symlinks raíz `/lib`, `/content`, `/schemas` y migrar imports hacia `apps/web/src`.
+* **Archivos Afectados**: `/lib` ➔ `apps/web/src/lib/`, `tsconfig.json`, `vitest.config.ts`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`.
+* **Verificación**: `pnpm validate` (Completado en commit `14740b72`, `23bc533c`).
+
+#### **`SPEC-32 (Navigation Monolith Decomposition & Auth Hybrid Stabilization)`**
+* **Objetivo & Alcance**: Descomponer el monolito central de navegación `main-top-navigation-modal.tsx` (1,501 LOC) en módulos FDD limpios en `apps/web/src/features/navigation/` y `apps/web/src/features/shared/auth/`, estabilizar WorkOS AuthKit Proxy en `proxy.ts` hacia `/profile` e integrar `AccountProfileSupportModule` sin colisiones de overlay.
+* **Archivos Afectados**: `components/main-top-navigation-modal.tsx` (slim orchestrator), `apps/web/src/features/navigation/*`, `apps/web/src/features/shared/auth/*`, `proxy.ts`, `tailwind.config.ts`.
+* **Trazabilidad OKF**: `BRI-186`, `BRI-154`, `BRI-159`.
+* **Verificación**: 8 suites de tests unitarios TDD (66 tests verdes) y `pnpm validate` al 100% (Completado en commit `24389ce9`).
+
+---
+
+### 📦 Bloque 1: Migración y Modularización de Componentes Monolíticos Restantes (`components/` ➔ `features/*/presentation/`)
+
+#### **`SPEC-33 (Marketplace Presentation & Interactive Visualizer Migration)`**
+* **Objetivo & Alcance**: Migrar los componentes del catálogo de inmuebles, tarjetas Mapbox, visualizador 3D, deal economics y vistas de detalle (`components/marketplace/*` ~15 archivos / ~3,000 LOC) hacia `apps/web/src/features/marketplace/presentation/` y `application/`. Convertir `app/marketplace/*` en Thin Wrappers.
+* **Capas FDD**: `presentation/` (Visualizer3D, MapboxCardGrid, PropertyDetailView, InvestmentSelector), `application/` (usePropertyFilter, useMarketplaceMap).
+* **Archivos Afectados**: `components/marketplace/*` ➔ `apps/web/src/features/marketplace/presentation/*`, `app/marketplace/*`.
+* **Trazabilidad OKF**: `BRI-164` (S1-S44), `BRI-153`.
+* **Verificación**: `pnpm validate:content` y tests de renderizado interactivo del catálogo.
+
+#### **`SPEC-34 (Dashboard Modules Migration: Profile KYC & Account Support)`**
+* **Objetivo & Alcance**: Migrar los módulos del perfil de usuario, completado de cuenta y verificación KYC/AML (`components/dashboard/profile-kyc-module.tsx`, `components/dashboard/account-profile-support-module.tsx`, `components/dashboard/historial-module.tsx`) hacia `apps/web/src/features/profile/presentation/`.
+* **Capas FDD**: `presentation/` (ProfileKycModule, AccountProfileSupportModule, HistorialModule).
+* **Archivos Afectados**: `components/dashboard/profile-kyc-module.tsx`, `components/dashboard/account-profile-support-module.tsx`, `components/dashboard/historial-module.tsx` ➔ `apps/web/src/features/profile/presentation/*`.
+* **Trazabilidad OKF**: `BRI-151` (S1-S8), `EPIC-004`.
+* **Verificación**: `pnpm test tests/components/account-profile-support-module.test.ts` y tests de perfil.
+
+#### **`SPEC-35 (Dashboard Modules Migration: Investor Portfolio & Referral Marketing)`**
+* **Objetivo & Alcance**: Migrar los módulos de visualización de portafolio del inversionista (`components/dashboard/portfolio-module.tsx`) hacia `apps/web/src/features/investor-portfolio/presentation/` y el módulo de recompensas por referidos (`components/dashboard/referral-program-module.tsx`) hacia `apps/web/src/features/referral-marketing/presentation/`.
+* **Capas FDD**: `presentation/` (PortfolioModule, HoldingsChart, ReferralProgramModule, InviteCodeSection).
+* **Archivos Afectados**: `components/dashboard/portfolio-module.tsx` ➔ `apps/web/src/features/investor-portfolio/presentation/*`, `components/dashboard/referral-program-module.tsx` ➔ `apps/web/src/features/referral-marketing/presentation/*`.
+* **Trazabilidad OKF**: `BRI-171`, `BRI-174`, `BRI-16`.
+* **Verificación**: Tests unitarios de renderizado de portafolio y comisiones de referidos.
+
+#### **`SPEC-36 (Dashboard Modules Migration: Staking Distribution & Squads v4 UI)`**
+* **Objetivo & Alcance**: Migrar el módulo de Staking y reclamaciones de dividendos (`components/dashboard/stake-module.tsx`) y las consolas de distribución de tesorería (`components/admin/distributions/*`) hacia `apps/web/src/features/staking-distribution/presentation/`.
+* **Capas FDD**: `presentation/` (StakeModule, RentasModule, DistributionConsole, ClaimsWidget).
+* **Archivos Afectados**: `components/dashboard/stake-module.tsx`, `components/admin/distributions/*` ➔ `apps/web/src/features/staking-distribution/presentation/*`.
+* **Trazabilidad OKF**: `BRI-6`, `BRI-7`, `BRI-8`, `EPIC-014`.
+* **Verificación**: Tests unitarios de componentes de Staking y cobro de dividendos.
+
+#### **`SPEC-37 (Admin Operations, Property Management & Checkout Presentation)`**
+* **Objetivo & Alcance**: Migrar los editores de gestión de inmuebles (`components/admin/property/*`, `components/admin/core-candy-machine-panel.tsx`) hacia `apps/web/src/features/property-management/presentation/` y `apps/web/src/features/nft-minting/presentation/`. Migrar el embudo de compra (`components/checkout/*`) hacia `apps/web/src/features/checkout-payment/presentation/`.
+* **Capas FDD**: `presentation/` (PropertyEditor, DocumentsUploader, CheckoutFunnelClient, PaymentSelector).
+* **Archivos Afectados**: `components/admin/*`, `components/checkout/*` ➔ `features/{property-management,nft-minting,checkout-payment}/presentation/*`.
+* **Trazabilidad OKF**: `EPIC-001`, `EPIC-003`, `EPIC-011`.
+* **Verificación**: Tests unitarios de editores de inmuebles y embudo de pago.
+
+#### **`SPEC-38 (Landing Sections, PWA Notifications & Shared UI Migration)`**
+* **Objetivo & Alcance**: Migrar las secciones de portada (`components/sections/*`) hacia `apps/web/src/features/landing/presentation/`, los componentes de PWA (`components/pwa/*`) hacia `apps/web/src/features/pwa-notifications/presentation/`, y centralizar el UI Kit base (`components/ui/*`, `components/theme/*`, `components/motion/*`, `components/i18n/*`) hacia `apps/web/src/features/shared/ui/`.
+* **Capas FDD**: `presentation/` (HeroSection, ProcessTimeline, FaqAccordion, PwaInstallBanner, Button, Card, Modal, ThemeToggle).
+* **Archivos Afectados**: `components/sections/*`, `components/pwa/*`, `components/ui/*`, `components/theme/*`, `components/motion/*`, `components/i18n/*` ➔ `features/{landing,pwa-notifications,shared/ui}/presentation/*`.
+* **Trazabilidad OKF**: `BRI-39`, `BRI-65`, `BRI-66`, `EPIC-013`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:seo` y comprobación de componentes compartidos.
+
+---
+
+### ⚙️ Bloque 2: Co-localización de Lógica de Negocio y Servicios (`lib/` ➔ `features/*/{domain,application,infrastructure}/`)
+
+#### **`SPEC-39 (Checkout, Payment & Purchase Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios y repositorios de checkout, pasarelas de pago Crypto/Fiat, anti-bot y trazabilidad (`lib/checkout-*.ts`, `lib/purchase-*.ts`, `lib/anti-bot/`) en `apps/web/src/features/checkout-payment/{domain,application,infrastructure}/`.
+* **Capas FDD**: `domain/` (AntiBotLimits, PurchaseInvariants), `application/` (processPurchaseAction), `infrastructure/` (PurchaseAttemptsRepo, CheckoutRepo).
+* **Archivos Afectados**: `lib/checkout-*.ts`, `lib/purchase-*.ts`, `lib/anti-bot/*` ➔ `apps/web/src/features/checkout-payment/*`.
+* **Trazabilidad OKF**: `EPIC-003`, `BRI-151`.
+* **Verificación**: Tests unitarios de compra e idempotencia de pagos.
+
+#### **`SPEC-40 (Compliance, Profile, Accounts & KYC Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los repositorios y servicios de perfil, verificación KYC/AML, recompensas de onboarding y reconciliación de cuentas (`lib/compliance/`, `lib/kyc/`, `lib/onboarding-reward-*.ts`, `lib/accounts/`) en `apps/web/src/features/profile/{domain,application,infrastructure}/`.
+* **Capas FDD**: `domain/` (UserProfileModel, KycInvariants), `application/` (saveProfileAction, processKycAction), `infrastructure/` (UserProfilesRepo, KycCasesRepo).
+* **Archivos Afectados**: `lib/compliance/*`, `lib/kyc/*`, `lib/onboarding-reward-*.ts`, `lib/accounts/*` ➔ `apps/web/src/features/profile/*`.
+* **Trazabilidad OKF**: `BRI-151`, `EPIC-004`.
+* **Verificación**: Tests de verificación KYC y repositorios de perfil.
+
+#### **`SPEC-41 (Investor Portfolio & Referral Marketing Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios de consulta de portafolio DAS layer (`lib/investor-*.ts`) y el motor de comisiones y atribución de referidos (`lib/referrals/`) en `apps/web/src/features/investor-portfolio/` y `apps/web/src/features/referral-marketing/`.
+* **Capas FDD**: `domain/` (HoldingModel, CommissionRules), `application/` (fetchPortfolioQuery, trackReferralAction), `infrastructure/` (DasLayerFetcher, ReferralRepo).
+* **Archivos Afectados**: `lib/investor-*.ts`, `lib/referrals/*` ➔ `features/{investor-portfolio,referral-marketing}/*`.
+* **Trazabilidad OKF**: `BRI-171`, `BRI-16`.
+* **Verificación**: Tests de cálculo de comisiones y consultas DAS indexadas.
+
+#### **`SPEC-42 (Staking, Squads v4 & Property Asset Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar los servicios de Staking, prorrateo de dividendos (`lib/stake-*.ts`, `lib/distribution/`) y gestión de inmuebles (`lib/property-*.ts`) en `apps/web/src/features/staking-distribution/` y `apps/web/src/features/property-management/`.
+* **Capas FDD**: `domain/` (ProrrateoMath, AssetModel), `application/` (executeDistributionAction, savePropertyAction), `infrastructure/` (StakeRepo, PropertyRepo).
+* **Archivos Afectados**: `lib/stake-*.ts`, `lib/distribution/*`, `lib/property-*.ts` ➔ `features/{staking-distribution,property-management}/*`.
+* **Trazabilidad OKF**: `BRI-6`, `BRI-7`, `BRI-8`, `EPIC-001`.
+* **Verificación**: Tests unitarios de prorrateo y repositorios de propiedades.
+
+#### **`SPEC-43 (NFT Minting, Candy Machine & Freeze Authority Services Colocation)`**
+* **Objetivo & Alcance**: Co-localizar la lógica de acuñación Metaplex Core, deploys de Candy Machine, firma notariada Anchor y políticas de congelamiento (`lib/core-candy-machine-*.ts`, `lib/metaplex-*.ts`, `lib/mint-jobs/`, `lib/mpl-core-freeze-*.ts`) en `apps/web/src/features/nft-minting/` y `apps/web/src/features/asset-freeze-control/`.
+* **Capas FDD**: `domain/` (AnchorNotaryRules, FreezeInvariants), `application/` (deployCandyMachineAction, freezeAssetAction), `infrastructure/` (UmiAdapter, FreezeAuthorityClient).
+* **Archivos Afectados**: `lib/core-candy-machine-*.ts`, `lib/metaplex-*.ts`, `lib/mint-jobs/*`, `lib/mpl-core-freeze-*.ts` ➔ `features/{nft-minting,asset-freeze-control}/*`.
+* **Trazabilidad OKF**: `solana-p0-05`, `solana-p0-06`, `EPIC-002`, `EPIC-006`.
+* **Verificación**: Tests de creación de colecciones Metaplex Core e invariantes de Freeze.
+
+#### **`SPEC-44 (Shared Infrastructure, Auth, DB & Core System Utilities Colocation)`**
+* **Objetivo & Alcance**: Co-localizar las utilidades transversales de `lib/` (`lib/auth*.ts`, `lib/db/`, `lib/solana-kit/`, `lib/motion.ts`, `lib/i18n.ts`, `lib/utils.ts`) en `apps/web/src/features/shared/{auth,infrastructure,ui,wallet}/`.
+* **Capas FDD**: `shared/auth/`, `shared/infrastructure/db/`, `shared/infrastructure/solana-rpc/`, `shared/ui/`, `shared/wallet/`.
+* **Archivos Afectados**: `lib/auth*.ts`, `lib/db/*`, `lib/solana-kit/*`, `lib/motion.ts`, `lib/i18n.ts`, `lib/utils.ts` ➔ `apps/web/src/features/shared/*`.
+* **Trazabilidad OKF**: `BRI-12`, `BRI-154`, `BRI-160`.
+* **Verificación**: `pnpm validate:db`, `pnpm validate:architecture` y tests de autenticación.
+
+---
+
+### 🧹 Bloque 3: Limpieza y Eliminación Incremental de Proxies & Symlinks por Feature
+
+#### **`SPEC-46 (Marketplace Legacy Cleanup & Direct Feature Imports)`**
+* **Objetivo & Alcance**: Eliminar físicamente el directorio legacy `apps/web/src/components/marketplace/`. Actualizar todos los tests de marketplace y rutas de la aplicación para consumir exclusivamente `@/features/marketplace`.
+* **Capas FDD**: `features/marketplace/`.
+* **Archivos Afectados**: `apps/web/src/components/marketplace/*` (eliminación), tests de marketplace, `app/marketplace/*`.
+* **Trazabilidad OKF**: `BRI-164`, `git-monorepo-policy.md`.
+* **Verificación**: `pnpm validate:content`, `pnpm test` de marketplace, `pnpm typecheck`.
+
+#### **`SPEC-47 (Landing Sections Legacy Cleanup & Direct Feature Imports)`**
+* **Objetivo & Alcance**: Eliminar físicamente el directorio legacy `apps/web/src/components/sections/`. Actualizar todos los tests de landing y páginas públicas para consumir exclusivamente `@/features/landing`.
+* **Capas FDD**: `features/landing/`.
+* **Archivos Afectados**: `apps/web/src/components/sections/*` (eliminación), tests de landing, páginas públicas (`app/page.tsx`, etc.).
+* **Trazabilidad OKF**: `BRI-39`, `BRI-65`, `frontend-ui-policy.md`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:seo`, `pnpm test`.
+
+#### **`SPEC-48 (Dashboard: Profile, Portfolio, Referrals & Staking Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar físicamente `apps/web/src/components/dashboard/*` (`profile-kyc-module.tsx`, `portfolio-module.tsx`, `referral-program-module.tsx`, `stake-module.tsx`, `rentas-module.tsx`, `account-profile-support-module.tsx`, `historial-module.tsx`). Actualizar tests asociados para importar directamente de sus respectivos `@/features/{profile,investor-portfolio,referral-marketing,staking-distribution}`.
+* **Capas FDD**: `features/{profile,investor-portfolio,referral-marketing,staking-distribution}/`.
+* **Archivos Afectados**: `apps/web/src/components/dashboard/*`, tests de perfil, portafolio, referidos y staking.
+* **Trazabilidad OKF**: `BRI-151`, `BRI-171`, `BRI-16`, `BRI-6/7/8`.
+* **Verificación**: `pnpm test` de suites de dashboard y `pnpm typecheck`.
+
+#### **`SPEC-49 (Admin, Asset Management & Checkout Legacy Cleanup)`**
+* **Objetivo & Alcance**: Eliminar proxies y duplicados en `apps/web/src/components/admin/*` y `apps/web/src/components/checkout/*`. Actualizar tests y referencias para consumir directamente `@/features/{admin,property-management,checkout-payment}`.
+* **Capas FDD**: `features/{admin,property-management,checkout-payment}/`.
+* **Archivos Afectados**: `apps/web/src/components/admin/*`, `apps/web/src/components/checkout/*`, tests de administración y checkout.
+* **Trazabilidad OKF**: `EPIC-001`, `EPIC-003`, `EPIC-011`.
+* **Verificación**: `pnpm test` de suites admin y checkout y `pnpm typecheck`.
+
+#### **`SPEC-50 (Services & Lib Legacy Proxies Cleanup por Feature)`**
+* **Objetivo & Alcance**: Eliminar proxies de `apps/web/src/lib/` correspondientes a checkout, purchase, compliance, referrals, staking, squads y metaplex (`apps/web/src/lib/{purchase-*,checkout-*,compliance/*,referrals/*,claims/*,distributions/*,squads/*,anti-bot/*}`). Actualizar imports en rutas API (`apps/web/src/app/api/*`) y tests para importar desde `@/features/*`.
+* **Capas FDD**: `features/*/{domain,application,infrastructure}`.
+* **Archivos Afectados**: `apps/web/src/lib/*`, `apps/web/src/app/api/*`, tests de servicios.
+* **Trazabilidad OKF**: `EPIC-003`, `BRI-151`, `BRI-16`, `BRI-6/7/8`, `solana-p0-05/06`.
+* **Verificación**: `pnpm validate:routes`, `pnpm validate:pipeline`, `pnpm typecheck`.
+
+#### **`SPEC-51 (Root Symlink Elimination & Path Aliases Harmonization)`**
+* **Objetivo & Alcance**: Eliminar symlinks residuales en la raíz del monorepo (`components`, `src`, `lib`, `public`, etc.). Sincronizar y blindar `tsconfig.json` y `tsconfig.typecheck.json` para resolver `@/*` exclusivamente desde `./apps/web/src/*`. Implementar Route Handlers estáticos limpios (`/brand`, `/images`, `/avatars`) para servir assets directamente desde `apps/web/public/` sin contaminación ni duplicidad en el root.
+* **Archivos Afectados**: Symlinks raíz (`components`, `src`, `lib`, `public`, `apps/web/app`), `tsconfig.json`, `tsconfig.typecheck.json`, `tests/features/root-symlink-elimination-fdd.test.ts`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`, `AGENTS.md`.
+* **Verificación**: `pnpm typecheck` con 0 errores, `pnpm validate:architecture`, 16/16 gates de `pnpm validate` en verde y Next.js build exitoso.
+
+---
+
+### 🧼 Bloque 4: Organización de Infraestructura, Limpieza y Auditoría Final (Clean Code & DoD)
+
+#### **`SPEC-52 (Harness Organization & Centralization)`**
+* **Objetivo & Alcance**: 
+  1. Centralizar y estructurar la suite de tests de gobernanza e infraestructura en `tests/harness/` con organización modular y clara.
+  2. Unificar runner helpers (`sandbox-builder.ts`, `script-executor.ts`) y simplificar la ejecución de `test:harness`.
+  3. Eliminar scripts temporales y redundantes de migración en `scripts/ci/` (`check-root-symlink-migration.ts`, `migrate-symlink-imports.ts`).
+  4. Reducir desorden y centralizar las políticas ejecutables de CI y arquitectura.
+* **Archivos Afectados**: `tests/harness/*`, `scripts/ci/*`, `package.json`.
+* **Trazabilidad OKF**: `git-monorepo-policy.md`, `security-quality-policy.md`.
+* **Verificación**: `pnpm test:harness`, `pnpm validate` (16 gates) y `check-monorepo-structure.sh`.
+
+#### **`SPEC-53 (Clean Code Audit, Zero Dead-Code, Monorepo Root Whitelist & Final DoD)`**
+* **Objetivo & Alcance**: 
+  1. Ejecutar una auditoría exhaustiva de Clean Code: eliminación de dead code, imports residuales, verificación de 0 implicit `any` y cumplimiento estricto de convenciones de nombrado.
+  2. Verificar que la raíz del monorepo cumpla al 100% con la whitelist de directorios (`programs/`, `apps/`, `packages/`, `.agents/`, `knowledge/`, `scripts/`, `tests/`).
+  3. Consolidar el Design System UI Kit base en `apps/web/src/features/shared/ui/`.
+  4. Ejecución de la suite completa `pnpm validate` (16 gates en verde), `check-monorepo-structure.sh`, `check-layered-architecture.sh` y build de producción de Next.js (`pnpm build`).
+* **Archivos Afectados**: Todo el monorepo.
+* **Trazabilidad OKF**: `AGENTS.md` (Definition of Done & Gatekeeper 2), `security-quality-policy.md`.
+* **Verificación**: `pnpm validate` al 100% verde (0 errores, 0 warnings), `pnpm build` exitoso y Human Acceptance registrado.
+
+
+## 4. TDD (Test-Driven Development) Strategy
+### Unit/Integration Tests (Fase RED)
+- **Test File Path**: `tests/harness/specs/09-monorepo-fdd-architecture.test.ts` y `tests/lib/monorepo-fdd-governance.test.ts`
+- **Command**: `pnpm test tests/harness/specs/09-monorepo-fdd-architecture.test.ts`
+- **Assertion Goals**:
+  - Validar que `check-monorepo-structure.sh` acepte la estructura de workspaces (`apps/`, `programs/`, `packages/`, `.agents/`).
+  - Validar que las 4 secciones principales (`landing`, `marketplace`, `profile`, `admin`) y `shared` respeten los límites de la Public API Boundary (`index.ts`).
+  - Validar que ninguna ruta en `apps/web/src/features/*/presentation` contenga importaciones de capas de infraestructura o base de datos directas.
+  - Verificar que el cliente de Solana en `packages/solana-client` consuma `@solana/kit` fáci de importar en los Feature Slices.
+
+## 5. Local Definition of Done (DoD)
+- [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.
+- [ ] La suite de pruebas de regresión pasa al 100% (verde).
+- [ ] `pnpm validate` se ejecuta con 0 errores y 0 warnings.
+- [ ] La documentación de gobernanza y arquitectura del monorepo está actualizada.
+- [ ] Aprobación explícita del humano registrada.
+
+## 6. Spec Artifact Traceability
+- **Problem Spec**: [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md)
+- **Solution Spec**: [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md)
+- **Linear Issue**: [Linear Ticket #BRI-186](https://linear.app/brids-app/issue/BRI-186)
+

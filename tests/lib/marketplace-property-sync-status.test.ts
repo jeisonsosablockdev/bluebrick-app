@@ -5,7 +5,7 @@ const dbMocks = vi.hoisted(() => ({
   withDbClient: vi.fn(async (work: (client: { query: typeof dbMocks.query }) => Promise<unknown>) => work({ query: dbMocks.query }))
 }));
 
-vi.mock("@/lib/db/pool", () => ({
+vi.mock("@/features/shared/infrastructure/db/pool", () => ({
   withDbClient: dbMocks.withDbClient
 }));
 

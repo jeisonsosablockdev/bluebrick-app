@@ -1,6 +1,6 @@
 import process from "node:process";
 
-import { runCollectionBootstrapDryRunCli } from "../lib/admin/collection-bootstrap-dry-run-cli.ts";
+import { runCollectionBootstrapDryRunCli } from "../apps/web/src/lib/admin/collection-bootstrap-dry-run-cli.ts";
 
 async function main(): Promise<void> {
   const result = await runCollectionBootstrapDryRunCli(process.argv.slice(2));
