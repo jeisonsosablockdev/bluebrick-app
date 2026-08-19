@@ -88,7 +88,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Objetivo**: Instalar `@sqds/multisig` y construir el wrapper de infraestructura en la capa 4.
 - **Archivos a Crear/Modificar**:
   - `package.json` (agregar `@sqds/multisig`)
-  - `lib/solana-kit/compat/squads.ts` (wrapper con validación RPC del program ID en Devnet)
+  - `apps/web/src/lib/solana-kit/compat/squads.ts` (Layer 4 — Infrastructure wrapper con validación RPC del program ID en Devnet)
 - **DoD de SPEC-02**: `@sqds/multisig` instalado, wrapper compilando limpiamente, `getAccountInfo(programId)` verificado en Devnet.
 
 ---
@@ -99,9 +99,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (encoding, inmovilidad e identidad de attestation), `db` (snapshot bloqueado)
 - **Responsabilidad única**: convertir claims ya elegibles y bloqueadas en el artefacto determinista que el comité aprueba. No crea propuestas, no construye transacciones, no hace RPC y no liquida pagos.
 - **Archivos a Crear/Modificar**:
-  - `lib/payouts/snapshot-builder.ts`
-  - `lib/payouts/snapshot-verifier.ts`
-  - migración para `payout_snapshot_attestations`
+  - `apps/web/src/features/staking-distribution/domain/payout-leaf.ts` (Layer 3 — Domain: snapshot determinista, leaf canónica, Merkle root)
+  - `apps/web/src/features/staking-distribution/application/snapshot-verifier.ts` (Layer 3 — Application: recálculo independiente de root/total/count)
+  - migración Drizzle/SQL para tabla `payout_snapshot_attestations`
 - **Contrato de salida**: `{runId, snapshotHash, snapshotVersion, rulesVersion, merkleRoot, totalAmountMinor, itemCount, orderedLeafHashes, expiry}` y una firma Ed25519 sobre el mensaje canónico definido en `SOLUTION-ARCHITECTURE.md`, una por cada attester. La salida es inválida si ambas attestations no coinciden byte a byte o provienen de la misma public key.
 - **DoD de SPEC-03**: tests RED de encoding, orden, root, discrepancia e inmutabilidad en verde; ningún import de Squads, RPC ni programa settlement.
 
@@ -136,8 +136,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `solana` (instrucción on-chain), `security` (validación/allowlist), `db` (idempotencia)
 - **Responsabilidad única**: construir y persistir el paquete de propuesta que contiene las tres instrucciones de setup. No calcula roots ni hace cranking.
 - **Archivos a Crear**:
-  - `app/api/admin/payout-runs/create-proposal/route.ts`
-  - `lib/payouts/squads-setup-proposal.ts`
+  - `apps/web/src/app/api/admin/payout-runs/create-proposal/route.ts` (Layer 2 — Application: endpoint REST de creación de propuesta)
+  - `apps/web/src/features/staking-distribution/application/squads-setup-proposal.ts` (Layer 3 — Application: orquestación de la propuesta Vault)
 - **DoD de SPEC-06**: acepta sólo `runId`; resuelve el Authority Manifest server-side; exige dos attestationes coincidentes; simula y devuelve un paquete para firmar. Tras confirmación Devnet registra proposal, `PayoutRun`, escrow, signature, slot y evidencia RPC.
 
 ---
@@ -147,6 +147,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `security` (idempotencia/denegación de servicio), `db` (outbox/proyección)
 - **Responsabilidad única**: seleccionar una item ya comprometida, presentar su proof y proyectar sólo receipts confirmados. No puede regenerar snapshot, alterar leaf ni enviar pagos directos.
+- **Archivos a Crear/Modificar**:
+  - `apps/web/src/features/staking-distribution/application/settlement-cranker.ts` (Layer 3 — Application: cranker sin privilegios)
+  - `apps/web/src/lib/solana-kit/compat/payout-settlement.ts` (Layer 4 — Infrastructure: adaptador de comunicación RPC)
 - **DoD de SPEC-07**: reintentos consultan primero `ClaimReceipt`; RPC ambiguo deriva a `execution_unknown`; saldo, receipt, signature, slot y meta se verifican antes de marcar `executed`.
 
 ---
@@ -159,10 +162,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Verificaciones**:
   - `pnpm validate` ejecutándose con 0 errores y 0 warnings.
   - No hay `any` implícitos.
-  - Naming claro y consistente en todo el módulo `lib/squads/`.
+  - Naming claro y consistente en todo el feature `apps/web/src/features/staking-distribution/` y adaptadores `apps/web/src/lib/solana-kit/compat/`.
   - Archivos separados por responsabilidad (SRP).
   - Documentación JSDoc actualizada.
-- **DoD de SPEC-05**: Suite completa en verde, `pnpm validate` limpio y cero hallazgos bloqueantes.
+- **DoD de SPEC-08**: Suite completa en verde, `pnpm validate` limpio y cero hallazgos bloqueantes.
 
 ---
 
