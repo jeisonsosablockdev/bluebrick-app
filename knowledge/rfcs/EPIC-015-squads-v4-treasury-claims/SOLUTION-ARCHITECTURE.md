@@ -165,10 +165,11 @@ No se fija N-de-M, integrantes ni vault index por inferencia del wallet conectad
 | **ProgramData Address** | `Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuzQpF1D71K` |
 | **Program Owner** | `BPFLoaderUpgradeab1e11111111111111111111111` |
 | **Upgrade Authority** | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (CLI Wallet) |
-| **Slot de Despliegue** | `486049609` |
-| **Firma de Transacción (Deploy Tx)** | `spygfgaiCNA9DMtyPfkhuYuX9FyPY6nZeqG9ZWPDtUCRnAqyxw6BC6CTZXvrkoUYTJUwhp58t3xA7tryKz8oE7R` |
-| **Tamaño del Bytecode** | `263,200 bytes` (257 KB) |
-| **Rent-Exemption Bloqueado** | `1.83307608 SOL` |
+| **Slot de Despliegue Inicial** | `486049609` (Sig: `spygfgaiCNA...`) |
+| **Slot de Upgrade (settle_claim)** | `486180563` |
+| **Firma de Upgrade Tx** | `3yyqJKc73VaFHX45wAH9vuo2eX7LX1eGNTsY2f4LNwzVXX5t6eVeoz9iN29r8AEzwyySLbTB1de5pweWXgx3SEgu` |
+| **Tamaño del Bytecode** | `297,768 bytes` (~290 KB) |
+| **Rent-Exemption Bloqueado** | `2.07366936 SOL` |
 
 ### 2.2 Secuencia de Despliegue e Inicialización Canónica
 
