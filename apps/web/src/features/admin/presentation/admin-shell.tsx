@@ -4,24 +4,27 @@
  * =========================================================================================
  * Layer 1: Presentation Layer — Admin Shell Layout
  * Component: AdminShell
- * Description: Master administrative navigation shell with clean, sober dark aesthetics,
- *              matching the profile design language with zero emoticons.
+ * Description: Master administrative navigation shell matching the exact visual design,
+ *              glassmorphism tokens, and sidebar pill styling of /profile (protected-shell).
  * =========================================================================================
  */
 
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
-  AdminNavigationSectionBlock,
+  AdminNavigation,
   buildAdminNavigation,
   resolveCurrentAdminLabel
 } from "@/features/admin/presentation/admin-shell-navigation";
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { RouteTransition } from "@/components/motion/route-transition";
+import { FooterSection } from "@/features/landing/presentation/footer";
 import { Button } from "@/components/ui/button";
+import { createPanelMotionVariants, MOTION_FAST_OPACITY_TRANSITION } from "@/lib/motion";
 
 type AdminShellProps = {
   authenticatedPublicKey: string;
@@ -29,37 +32,11 @@ type AdminShellProps = {
   children: ReactNode;
 };
 
-function AdminSidebarHeader({
-  title,
-  walletLabel,
-  action
-}: {
-  title: string;
-  walletLabel: string;
-  action?: ReactNode;
-}): ReactElement {
-  return (
-    <div className="space-y-3 border-b border-slate-800 pb-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-200">{title}</p>
-          <div className="mt-0.5 flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] text-slate-400 font-mono">Devnet</span>
-          </div>
-        </div>
-        {action}
-      </div>
-
-      <div className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs">
-        <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">Operator</div>
-        <div className="mt-0.5 font-mono text-xs text-slate-300 truncate">{walletLabel}</div>
-      </div>
-    </div>
-  );
+function truncatePublicKey(publicKey: string): string {
+  return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
 }
 
-export function AdminShell({ authenticatedPublicKey, walletLabel, children }: AdminShellProps): ReactElement {
+export function AdminShell({ authenticatedPublicKey, walletLabel: _walletLabel, children }: AdminShellProps): ReactElement {
   const { t } = useI18n();
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -68,12 +45,14 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
   const currentLabel = useMemo(() => resolveCurrentAdminLabel(pathname, adminNav), [adminNav, pathname]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden py-6 md:py-8 bg-slate-950 text-slate-100">
+    <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <Suspense fallback={null}>
           <MainTopNavigationModal
             initialAuth={{
               authenticated: true,
+              walletAuthenticated: true,
+              accountAuthenticated: true,
               pubkey: authenticatedPublicKey,
               role: "admin"
             }}
@@ -81,95 +60,114 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
         </Suspense>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[240px,1fr] lg:gap-6">
-        {/* Desktop Sober Sidebar */}
+      <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:grid lg:grid-cols-[260px,minmax(0,1fr)] lg:gap-6">
+        {/* Desktop Sidebar — 100% Identical to /profile */}
         <aside className="hidden lg:block">
-          <div className="sticky top-6 flex h-[calc(100vh-3rem)] flex-col rounded-2xl border border-slate-800 bg-slate-900/70 p-4 backdrop-blur-xl">
-            <AdminSidebarHeader
-              title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
-              walletLabel={walletLabel}
-            />
-            <div className="no-scrollbar mt-3 flex-1 overflow-y-auto pr-1 space-y-3">
-              {adminNav.map((section) => (
-                <AdminNavigationSectionBlock
-                  key={section.section}
-                  section={section}
-                  pathname={pathname}
-                />
-              ))}
+          <div className="dashboard-sidebar marketplace-depth-card sticky top-6 h-[calc(100vh-3rem)] space-y-4 border-none bg-transparent p-3 rounded-[28px] backdrop-blur-xl">
+            <div>
+              <p className="dashboard-sidebar-title px-2 text-xs uppercase tracking-[0.2em]">
+                {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
+              </p>
             </div>
+            <AdminNavigation pathname={pathname} sections={adminNav} />
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <section className="space-y-6">
-          <header className="space-y-3 border-b border-slate-800 pb-4">
-            <div className="flex items-center justify-between gap-2">
+        <section className="min-w-0 space-y-5">
+          <header className="space-y-4 border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between gap-3">
               <Button
                 aria-label={t({ en: "Open admin menu", es: "Abrir menu admin", pt: "Abrir menu admin" })}
-                className="min-h-9 px-3 text-xs lg:hidden border border-slate-800 bg-slate-900"
+                className="min-h-11 min-w-11 px-0 lg:hidden"
                 variant="ghost"
                 onClick={() => setIsDrawerOpen(true)}
               >
-                {t({ en: "Menu", es: "Menú", pt: "Menu" })}
+                {t({ en: "Menu", es: "Menu", pt: "Menu" })}
               </Button>
-              <div className="ml-auto rounded-full border border-slate-800 bg-slate-900 px-3 py-1 font-mono text-xs text-slate-300">
-                {walletLabel}
+              <div className="ml-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="font-medium text-white">
+                  {truncatePublicKey(authenticatedPublicKey)}
+                </span>
               </div>
             </div>
-            <nav aria-label="breadcrumb" className="text-xs text-slate-400">
-              <span className="text-slate-400">{t({ en: "Admin", es: "Admin", pt: "Admin" })}</span>
-              <span className="px-2 text-slate-600">/</span>
-              <span className="text-slate-200">{currentLabel}</span>
+            <nav aria-label="breadcrumb" className="text-xs text-white/60">
+              <span className="text-white/80">{t({ en: "Admin", es: "Admin", pt: "Admin" })}</span>
+              <span className="px-1">/</span>
+              <span>{currentLabel}</span>
             </nav>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                {t({ en: "Administrative operations", es: "Operación Administrativa", pt: "Operacao Administrativa" })}
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
+                {t({ en: "Administrative Console", es: "Consola de Administracion", pt: "Console de Administracao" })}
               </p>
-              <h1 className="text-xl font-bold text-slate-100 tracking-tight sm:text-2xl">{currentLabel}</h1>
+              <h1 className="text-2xl font-semibold text-white">{currentLabel}</h1>
+              <p className="mt-1 text-sm text-white/70">
+                {t({
+                  en: "Administrative operations and protocol governance.",
+                  es: "Operaciones administrativas y gobernanza del protocolo.",
+                  pt: "Operacoes administrativas e governanca do protocolo."
+                })}
+              </p>
             </div>
           </header>
 
-          <RouteTransition routeKey={pathname} className="space-y-6" mode="navigation-origin">
+          <RouteTransition routeKey={pathname} className="min-w-0 space-y-5" mode="navigation-origin">
             {children}
           </RouteTransition>
         </section>
       </div>
 
-      {/* Mobile Drawer */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
-          <button
-            aria-label={t({ en: "Close admin menu", es: "Cerrar menu admin", pt: "Fechar menu admin" })}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setIsDrawerOpen(false)}
-            type="button"
-          />
-          <aside className="relative z-10 flex h-full w-[85%] max-w-xs flex-col border-r border-slate-800 bg-slate-950 p-4">
-            <AdminSidebarHeader
-              title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
-              walletLabel={walletLabel}
-              action={(
-                <Button className="h-8 px-2 text-xs" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
-                  ✕
-                </Button>
-              )}
-            />
+      <div className="mx-auto mt-10 max-w-6xl px-4 md:px-6">
+        <FooterSection />
+      </div>
 
-            <div className="no-scrollbar mt-3 flex-1 overflow-y-auto pr-1 space-y-3">
-              {adminNav.map((section) => (
-                <AdminNavigationSectionBlock
-                  key={`mobile-${section.section}`}
-                  section={section}
-                  pathname={pathname}
-                  onNavigate={() => setIsDrawerOpen(false)}
-                  sectionKeyPrefix="mobile"
-                />
-              ))}
-            </div>
-          </aside>
-        </div>
-      )}
+      {/* Mobile Drawer with Motion */}
+      <AnimatePresence>
+        {isDrawerOpen ? (
+          <motion.div
+            key="admin-mobile-nav"
+            className="fixed inset-0 z-40 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={MOTION_FAST_OPACITY_TRANSITION}
+          >
+            <motion.button
+              aria-label={t({ en: "Close menu", es: "Cerrar menu", pt: "Fechar menu" })}
+              className="absolute inset-0 bg-black/70"
+              onClick={() => setIsDrawerOpen(false)}
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={MOTION_FAST_OPACITY_TRANSITION}
+            />
+            <motion.aside
+              className="dashboard-sidebar marketplace-depth-card relative h-full w-[84%] max-w-xs rounded-r-3xl border-none bg-transparent p-4 backdrop-blur-xl"
+              variants={createPanelMotionVariants()}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <p className="dashboard-sidebar-title text-xs uppercase tracking-[0.2em]">
+                  {t({ en: "Navigation", es: "Navegacion", pt: "Navegacao" })}
+                </p>
+                <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
+                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                </Button>
+              </div>
+              <AdminNavigation
+                onNavigate={() => setIsDrawerOpen(false)}
+                pathname={pathname}
+                sectionKeyPrefix="mobile"
+                sections={adminNav}
+              />
+            </motion.aside>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </main>
   );
 }

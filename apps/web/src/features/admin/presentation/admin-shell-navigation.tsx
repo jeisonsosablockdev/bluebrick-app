@@ -69,58 +69,20 @@ export function AdminNavigationLink({
 
   return (
     <Link
-      className={`group flex min-h-9 items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-        isActive
-          ? "bg-white/10 text-white font-semibold shadow-sm"
-          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+      className={`flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors ${
+        isActive ? "dashboard-sidebar-link-active" : "dashboard-sidebar-link"
       }`}
       href={item.route}
       onClick={onNavigate}
+      title={item.label}
     >
-      <div className="flex items-center gap-2.5">
-        <span
-          className={`h-1.5 w-1.5 rounded-full transition-colors ${
-            isActive ? "bg-cyan-400" : "bg-slate-600 group-hover:bg-slate-400"
-          }`}
-        />
-        <span className="truncate">{item.label}</span>
-      </div>
+      <span className="block w-full truncate">{item.label}</span>
       {item.badgeCount ? (
-        <span className="rounded-md border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+        <span className="ml-2 rounded-full border border-white/10 bg-white/10 px-2 py-0.5 text-xs text-white">
           {item.badgeCount}
         </span>
       ) : null}
     </Link>
-  );
-}
-
-export function AdminNavigationSectionBlock({
-  section,
-  pathname,
-  onNavigate,
-  sectionKeyPrefix
-}: {
-  section: AdminNavigationSection;
-  pathname: string;
-  onNavigate?: () => void;
-  sectionKeyPrefix?: string;
-}): ReactElement {
-  return (
-    <div className="space-y-1">
-      <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500">
-        {section.section}
-      </p>
-      <nav className="space-y-0.5">
-        {section.items.map((item) => (
-          <AdminNavigationLink
-            key={`${sectionKeyPrefix ?? "nav"}-${item.route}`}
-            item={item}
-            onNavigate={onNavigate}
-            pathname={pathname}
-          />
-        ))}
-      </nav>
-    </div>
   );
 }
 
@@ -135,18 +97,19 @@ export function AdminNavigation({
   onNavigate?: () => void;
   sectionKeyPrefix?: string;
 }): ReactElement {
+  const allItems = sections.flatMap((section) => section.items);
+
   return (
-    <div className="space-y-4">
-      {sections.map((section) => (
-        <AdminNavigationSectionBlock
-          key={`${sectionKeyPrefix ?? "nav"}-${section.section}`}
-          section={section}
-          pathname={pathname}
+    <nav className="space-y-1">
+      {allItems.map((item) => (
+        <AdminNavigationLink
+          key={`${sectionKeyPrefix ?? "nav"}-${item.route}`}
+          item={item}
           onNavigate={onNavigate}
-          sectionKeyPrefix={sectionKeyPrefix}
+          pathname={pathname}
         />
       ))}
-    </div>
+    </nav>
   );
 }
 

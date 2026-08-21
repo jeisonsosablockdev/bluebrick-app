@@ -4,8 +4,8 @@
  * =========================================================================================
  * Layer 1: Presentation Layer — Distributions Console (Admin)
  * Component: DistributionsConsole
- * Description: Clean, sober administrative console for managing staking yield distributions,
- *              snapshot runs, and Squads v4 treasury integration, styled consistently with /profile.
+ * Description: High-fidelity administrative console matching the exact visual cards,
+ *              marketplace-depth-card styling, and sober layout of /profile (overview-module).
  * =========================================================================================
  */
 
@@ -50,14 +50,14 @@ const initialState: DistributionRunsState = {
 function statusBadgeClass(status: DistributionRunStatus): string {
   switch (status) {
     case "finalized":
-      return "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+      return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
     case "blocked":
-      return "border border-amber-500/30 bg-amber-500/10 text-amber-400";
+      return "bg-amber-500/15 text-amber-300 border border-amber-500/30";
     case "failed":
-      return "border border-rose-500/30 bg-rose-500/10 text-rose-400";
+      return "bg-rose-500/15 text-rose-300 border border-rose-500/30";
     case "draft":
     default:
-      return "border border-cyan-500/30 bg-cyan-500/10 text-cyan-400";
+      return "bg-cyan-500/15 text-cyan-200 border border-cyan-500/30";
   }
 }
 
@@ -163,21 +163,62 @@ export function DistributionsConsole(): ReactElement {
   }, [runsState.runs, filterStatus]);
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header Banner & Main Title */}
+    <div className="space-y-4">
+      {/* 1. Top KPI Metrics Grid — Matching /profile Exactly */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {/* KPI 1 */}
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
+            {t({ en: "Total Dispersed", es: "Total Dispersado", pt: "Total Distribuido" })}
+          </p>
+          <p className="text-2xl font-semibold text-white">{kpis.totalDispersedUsdc}</p>
+          <p className="text-xs text-white/55">
+            USDC · {t({ en: "On-chain verified", es: "Verificado on-chain", pt: "Verificado on-chain" })}
+          </p>
+        </article>
+
+        {/* KPI 2 */}
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
+            {t({ en: "Total Batches", es: "Total de Corridas", pt: "Total de Lotes" })}
+          </p>
+          <p className="text-2xl font-semibold text-white">{kpis.totalRuns}</p>
+          <p className="text-xs text-white/55">
+            {kpis.finalizedRuns} {t({ en: "finalized runs", es: "corridas finalizadas", pt: "lotes finalizados" })}
+          </p>
+        </article>
+
+        {/* KPI 3 */}
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
+            {t({ en: "Staking Holders", es: "Titulares en Staking", pt: "Titulares em Staking" })}
+          </p>
+          <p className="text-2xl font-semibold text-white">{kpis.totalWallets}</p>
+          <p className="text-xs text-white/55">
+            {t({ en: "MPL Core Freeze Active", es: "Freeze MPL Core Activo", pt: "Freeze MPL Core Ativo" })}
+          </p>
+        </article>
+
+        {/* KPI 4 */}
+        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
+            {t({ en: "Squads Vault", es: "Bóveda Squads", pt: "Cofre Squads" })}
+          </p>
+          <p className="text-2xl font-semibold text-white font-mono truncate">rVKw...KaD</p>
+          <p className="text-xs text-white/55">
+            2 / 4 Quorum · Devnet Active
+          </p>
+        </article>
+      </div>
+
+      {/* 2. Operations & Actions Card */}
       <Card className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                {t({ en: "Staking & Treasury Operations", es: "Operaciones de Staking y Tesorería", pt: "Operacoes de Staking e Tesouraria" })}
-              </p>
-            </div>
-            <h2 className="text-xl font-bold text-slate-100 tracking-tight">
+          <div>
+            <h2 className="text-lg font-semibold text-white">
               {t({ en: "Yield Distributions", es: "Dispersión de Rendimientos", pt: "Distribuicao de Rendimentos" })}
             </h2>
-            <p className="text-xs text-slate-400 max-w-2xl">
+            <p className="text-sm text-white/75">
               {t({
                 en: "Auditable snapshot computation, Merkle tree compilation, and Squads v4 multisig settlement governance.",
                 es: "Cálculo auditable de snapshots, compilación de árboles Merkle y gobernanza de liquidación multisig con Squads v4.",
@@ -186,17 +227,18 @@ export function DistributionsConsole(): ReactElement {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {showTreasuryLink ? (
               <Link href="/admin/treasury">
-                <Button className="border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-medium min-h-9" variant="outline">
+                <Button className="min-h-11" variant="outline">
                   {t({ en: "Squads Vault", es: "Bóveda Squads", pt: "Cofre Squads" })}
                 </Button>
               </Link>
             ) : null}
             <Button
-              className="bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs min-h-9 px-4 transition-colors"
-              onClick={() => alert("El modal de creación se conectará en SPEC-05")}
+              className="min-h-11"
+              variant="primary"
+              onClick={() => alert("El modal de creación interactivo se conectará en SPEC-05")}
             >
               {t({ en: "+ New Distribution", es: "+ Nueva Distribución", pt: "+ Nova Distribuicao" })}
             </Button>
@@ -204,84 +246,23 @@ export function DistributionsConsole(): ReactElement {
         </div>
       </Card>
 
-      {/* 2. Top KPI Metric Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* KPI 1: Total Volume */}
-        <Card className="p-4 space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>{t({ en: "Total Dispersed", es: "Total Dispersado", pt: "Total Distribuido" })}</span>
-            <span className="font-mono text-[10px] text-slate-400">USDC</span>
-          </div>
-          <p className="text-xl font-bold text-slate-100 font-mono">{kpis.totalDispersedUsdc}</p>
-          <p className="text-[11px] text-slate-400">
-            {t({ en: "Verified on Devnet", es: "Verificado en Devnet", pt: "Verificado em Devnet" })}
-          </p>
-        </Card>
-
-        {/* KPI 2: Total Runs */}
-        <Card className="p-4 space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>{t({ en: "Total Batches", es: "Total de Corridas", pt: "Total de Lotes" })}</span>
-            <span className="font-mono text-[10px] text-slate-400">RUNS</span>
-          </div>
-          <p className="text-xl font-bold text-slate-100 font-mono">{kpis.totalRuns}</p>
-          <p className="text-[11px] text-slate-400">
-            {kpis.finalizedRuns} {t({ en: "finalized", es: "finalizadas", pt: "finalizadas" })}
-          </p>
-        </Card>
-
-        {/* KPI 3: Beneficiary Wallets */}
-        <Card className="p-4 space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>{t({ en: "Staking Holders", es: "Titulares en Staking", pt: "Titulares em Staking" })}</span>
-            <span className="font-mono text-[10px] text-slate-400">WALLETS</span>
-          </div>
-          <p className="text-xl font-bold text-slate-100 font-mono">{kpis.totalWallets}</p>
-          <p className="text-[11px] text-slate-400">
-            {t({ en: "MPL Core Freeze Active", es: "Freeze MPL Core Activo", pt: "Freeze MPL Core Ativo" })}
-          </p>
-        </Card>
-
-        {/* KPI 4: Squads Multisig Status */}
-        <Card className="p-4 space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>{t({ en: "Squads Vault", es: "Bóveda Squads", pt: "Cofre Squads" })}</span>
-            <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-emerald-400 text-[10px] font-semibold">2 / 4 Quorum</span>
-          </div>
-          <p className="text-sm font-semibold text-slate-200 font-mono truncate">rVKw...KaD</p>
-          <p className="text-[11px] text-slate-400">
-            Devnet Cluster Active
-          </p>
-        </Card>
-      </div>
-
-      {/* 3. Distribution Runs Table & Filter Section */}
+      {/* 3. Table & Runs Section */}
       <Card className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-3">
-          <div className="space-y-0.5">
-            <h3 className="text-base font-semibold text-slate-100">
-              {t({ en: "Historical & Active Runs", es: "Corridas Activas e Históricas", pt: "Lotes Ativos e Historicos" })}
-            </h3>
-            <p className="text-xs text-slate-400">
-              {t({
-                en: "Inspect settlement trees, proof hashes, and payout status.",
-                es: "Inspecciona árboles de liquidación, hashes de prueba y estado de pagos.",
-                pt: "Inspecione arvores de liquidacao, hashes e status de pagamento.",
-              })}
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-white">
+            {t({ en: "Historical & Active Runs", es: "Corridas Activas e Históricas", pt: "Lotes Ativos e Historicos" })}
+          </h2>
 
-          {/* Quick Filter Tabs */}
-          <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1">
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
             {(["all", "draft", "finalized", "blocked"] as const).map((filter) => (
               <button
                 key={filter}
                 type="button"
                 onClick={() => setFilterStatus(filter)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                   filterStatus === filter
-                    ? "bg-slate-800 text-slate-100"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-white/15 text-white"
+                    : "text-white/60 hover:text-white"
                 }`}
               >
                 {filter === "all" ? t({ en: "All", es: "Todos", pt: "Todos" }) : filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -291,72 +272,63 @@ export function DistributionsConsole(): ReactElement {
         </div>
 
         {runsState.status === "loading" ? (
-          <div className="flex items-center justify-center py-10 text-xs text-slate-400">
+          <div className="py-8 text-center text-sm text-white/70">
             {t({ en: "Loading distribution runs...", es: "Cargando corridas de distribución...", pt: "Carregando lotes de distribuicao..." })}
           </div>
         ) : null}
 
         {runsState.status === "error" ? (
-          <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+          <div className="rounded-2xl border border-rose-300/20 bg-rose-500/10 p-4 text-sm text-rose-100">
             {runsState.error}
           </div>
         ) : null}
 
         {runsState.status === "ready" && filteredRuns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-900/30 py-10 text-center">
-            <p className="text-sm font-medium text-slate-300">
-              {t({ en: "No distribution runs found", es: "No se encontraron corridas de distribución", pt: "Nenhum lote encontrado" })}
-            </p>
-            <p className="mt-1 text-xs text-slate-500 max-w-sm">
-              {t({
-                en: "Create a new run to calculate snapshot allocations from staking history.",
-                es: "Crea una nueva corrida para calcular las asignaciones basadas en el historial de staking.",
-                pt: "Crie um novo lote para calcular as alocacoes do historico de staking.",
-              })}
-            </p>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/75">
+            {t({ en: "No distribution runs found", es: "No se encontraron corridas de distribución", pt: "Nenhum lote encontrado" })}
           </div>
         ) : null}
 
         {filteredRuns.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-xs">
+            <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 font-medium">
-                  <th className="px-3 py-2.5">Run ID</th>
-                  <th className="px-3 py-2.5">Period</th>
-                  <th className="px-3 py-2.5">Collection / Property</th>
-                  <th className="px-3 py-2.5">Wallets</th>
-                  <th className="px-3 py-2.5">Items</th>
-                  <th className="px-3 py-2.5">Amount (USDC)</th>
-                  <th className="px-3 py-2.5">Status</th>
-                  <th className="px-3 py-2.5">Created</th>
-                  <th className="px-3 py-2.5 text-right">{t({ en: "Actions", es: "Acciones", pt: "Acoes" })}</th>
+                <tr className="border-b border-white/10 text-white/60 text-xs">
+                  <th className="px-3 py-2.5 font-medium">Run ID</th>
+                  <th className="px-3 py-2.5 font-medium">Period</th>
+                  <th className="px-3 py-2.5 font-medium">Collection / Property</th>
+                  <th className="px-3 py-2.5 font-medium">Wallets</th>
+                  <th className="px-3 py-2.5 font-medium">Items</th>
+                  <th className="px-3 py-2.5 font-medium">Amount (USDC)</th>
+                  <th className="px-3 py-2.5 font-medium">Status</th>
+                  <th className="px-3 py-2.5 font-medium">Created</th>
+                  <th className="px-3 py-2.5 font-medium text-right">{t({ en: "Actions", es: "Acciones", pt: "Acoes" })}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono">
+              <tbody className="divide-y divide-white/10">
                 {filteredRuns.map((run) => (
-                  <tr key={run.id} className="transition-colors hover:bg-slate-900/50">
-                    <td className="px-3 py-2.5 text-slate-200">{shortValue(run.id)}</td>
-                    <td className="px-3 py-2.5 text-slate-300 font-sans">{run.periodKey}</td>
-                    <td className="px-3 py-2.5 text-slate-400 font-sans">
-                      {shortValue(run.collectionAddress)} <span className="text-slate-600">/</span> {run.propertyId}
+                  <tr key={run.id} className="transition-colors hover:bg-white/[0.02]">
+                    <td className="px-3 py-3 font-mono text-white text-xs">{shortValue(run.id)}</td>
+                    <td className="px-3 py-3 text-white text-xs">{run.periodKey}</td>
+                    <td className="px-3 py-3 font-mono text-white/80 text-xs">
+                      {shortValue(run.collectionAddress)} / {run.propertyId}
                     </td>
-                    <td className="px-3 py-2.5 text-slate-300">{run.totalWallets}</td>
-                    <td className="px-3 py-2.5 text-slate-300">{run.itemCount}</td>
-                    <td className="px-3 py-2.5 text-slate-100 font-bold">{formatUsdcAmount(run.totalAmountMinor)}</td>
-                    <td className="px-3 py-2.5 font-sans">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadgeClass(run.status)}`}>
+                    <td className="px-3 py-3 text-white text-xs">{run.totalWallets}</td>
+                    <td className="px-3 py-3 text-white text-xs">{run.itemCount}</td>
+                    <td className="px-3 py-3 font-semibold text-white text-xs">{formatUsdcAmount(run.totalAmountMinor)}</td>
+                    <td className="px-3 py-3 text-xs">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(run.status)}`}>
                         {statusLabel(run.status, t)}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-slate-400 font-sans">{formatDate(run.createdAt)}</td>
-                    <td className="px-3 py-2.5 text-right font-sans">
+                    <td className="px-3 py-3 text-white/70 text-xs">{formatDate(run.createdAt)}</td>
+                    <td className="px-3 py-3 text-right">
                       <Button
-                        className="border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs px-2.5 py-1 min-h-8"
+                        className="min-h-9 px-3 py-1 text-xs"
                         variant="ghost"
                         onClick={() => setSelected(run)}
                       >
-                        {t({ en: "View Detail", es: "Ver Detalle", pt: "Ver Detalhe" })}
+                        {t({ en: "View detail", es: "Ver detalle", pt: "Ver detalhe" })}
                       </Button>
                     </td>
                   </tr>
@@ -372,76 +344,57 @@ export function DistributionsConsole(): ReactElement {
         <div className="fixed inset-0 z-50 flex justify-end">
           <button
             aria-label={t({ en: "Close detail", es: "Cerrar detalle", pt: "Fechar detalhe" })}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelected(null)}
             type="button"
           />
-          <aside className="relative z-10 h-full w-full max-w-xl overflow-y-auto border-l border-slate-800 bg-slate-950 p-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
-                  {t({ en: "Run Inspection", es: "Inspección de Corrida", pt: "Inspecao de Lote" })}
-                </span>
-                <h3 className="break-all text-lg font-bold text-slate-100 font-mono">{selected.id}</h3>
-              </div>
-              <Button className="text-xs h-8 px-2" variant="ghost" onClick={() => setSelected(null)}>
-                ✕ {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+          <aside className="glass-drawer-surface relative h-full w-full max-w-xl overflow-y-auto p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="break-all text-lg font-semibold text-white">
+                {t({ en: "Run detail", es: "Detalle de corrida", pt: "Detalhe da corrida" })} {selected.id}
+              </h3>
+              <Button className="min-h-11 shrink-0" variant="ghost" onClick={() => setSelected(null)}>
+                {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
               </Button>
             </div>
 
-            <div className="space-y-4 text-xs">
+            <Card className="space-y-3 text-sm text-white/80">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-3">
-                  <span className="text-slate-400">{t({ en: "Period", es: "Período", pt: "Periodo" })}</span>
-                  <p className="mt-1 font-semibold text-slate-200 text-sm font-sans">{selected.periodKey}</p>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <span className="text-white/60 text-xs">{t({ en: "Period", es: "Período", pt: "Periodo" })}</span>
+                  <p className="font-semibold text-white mt-1">{selected.periodKey}</p>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-3">
-                  <span className="text-slate-400">{t({ en: "Status", es: "Estado", pt: "Estado" })}</span>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <span className="text-white/60 text-xs">{t({ en: "Status", es: "Estado", pt: "Estado" })}</span>
                   <p className="mt-1">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusBadgeClass(selected.status)}`}>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(selected.status)}`}>
                       {statusLabel(selected.status, t)}
                     </span>
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-3 font-mono">
-                <div>
-                  <span className="text-slate-500 text-[11px]">Collection Mint</span>
-                  <p className="break-all text-slate-300 text-xs">{selected.collectionAddress}</p>
-                </div>
-                <div>
-                  <span className="text-slate-500 text-[11px]">Property Identifier</span>
-                  <p className="break-all text-slate-300 text-xs font-sans">{selected.propertyId}</p>
-                </div>
-                <div>
-                  <span className="text-slate-500 text-[11px]">Token Mint</span>
-                  <p className="break-all text-slate-300 text-xs">{selected.tokenMint}</p>
-                </div>
-                <div>
-                  <span className="text-slate-500 text-[11px]">Total Net Minor Units</span>
-                  <p className="text-emerald-400 font-bold text-sm">{formatUsdcAmount(selected.totalAmountMinor)} ({selected.totalAmountMinor} units)</p>
-                </div>
-                <div>
-                  <span className="text-slate-500 text-[11px]">Merkle Checksum / Output Hash</span>
-                  <p className="break-all text-slate-400 text-xs">{selected.outputChecksum ?? "Pending seal..."}</p>
-                </div>
+              <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-4 text-xs font-mono">
+                <p className="break-all"><span className="text-white/60">Collection:</span> {selected.collectionAddress}</p>
+                <p className="break-all"><span className="text-white/60">Property:</span> {selected.propertyId}</p>
+                <p className="break-all"><span className="text-white/60">Token Mint:</span> {selected.tokenMint}</p>
+                <p><span className="text-white/60">Eligible Wallets:</span> {selected.totalWallets}</p>
+                <p><span className="text-white/60">Prepared Items:</span> {selected.itemCount}</p>
+                <p><span className="text-white/60">Amount:</span> {formatUsdcAmount(selected.totalAmountMinor)} ({selected.totalAmountMinor} units)</p>
+                <p className="break-all"><span className="text-white/60">Checksum:</span> {selected.outputChecksum ?? "-"}</p>
                 {selected.blockedReason ? (
-                  <div>
-                    <span className="text-rose-400 text-[11px]">Blocked Reason</span>
-                    <p className="break-all text-rose-300 text-xs font-sans">{selected.blockedReason}</p>
-                  </div>
+                  <p className="break-all text-amber-300"><span className="text-white/60">Blocked Reason:</span> {selected.blockedReason}</p>
                 ) : null}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end pt-3">
                 <Link href={`/admin/treasury/squads?runId=${selected.id}`}>
-                  <Button className="border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium min-h-9">
+                  <Button className="min-h-11" variant="outline">
                     {t({ en: "View Squads Proposal", es: "Ver Propuesta Squads", pt: "Ver Proposta Squads" })}
                   </Button>
                 </Link>
               </div>
-            </div>
+            </Card>
           </aside>
         </div>
       ) : null}
