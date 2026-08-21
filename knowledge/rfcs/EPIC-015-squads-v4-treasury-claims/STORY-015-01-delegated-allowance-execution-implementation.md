@@ -58,7 +58,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ## 3. SPEC Delivery Structure (Atomic Branches)
 
 ### SPEC-01: TDD — Tests en Fallo (RED Phase)
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-01-tdd`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-tdd`
 - **Subagente ejecutor**: `qa`
 - **Subagentes de apoyo**: `solana` (definir assertions de protocolo Squads)
 - **Objetivo**: Escribir los tests unitarios e integración en fase RED (fallo controlado) sin implementar lógica de negocio.
@@ -85,7 +85,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-02: Instalación SDK & Wrapper de Infraestructura Squads
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-02-squads-sdk`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-squads-sdk`
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `architect` (Gate 1 — validar ubicación en Layer 4)
 - **Objetivo**: Instalar `@sqds/multisig` y construir el wrapper de infraestructura en la capa 4.
@@ -97,7 +97,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-03: Contrato de Snapshot y Attestation Independiente
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-03-payout-snapshot`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s03-payout-snapshot`
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `security` (encoding, inmovilidad e identidad de attestation), `db` (snapshot bloqueado)
 - **Responsabilidad única**: convertir claims ya elegibles y bloqueadas en el artefacto determinista que el comité aprueba. No crea propuestas, no construye transacciones, no hace RPC y no liquida pagos.
@@ -109,7 +109,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **DoD de SPEC-03**: tests RED de encoding, orden, root, discrepancia e inmutabilidad en verde; ningún import de Squads, RPC ni programa settlement.
 
 ### SPEC-04: Programa `payout_settlement` — Run, Escrow y Sellado
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-04-settlement-program`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s04-settlement-program`
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `security` (CPI/signer/SPL Token allowlist), `architect` (Gate 1 de paths e imports)
 - **Responsabilidad única**: implementar `TreasuryPolicy`, `initialize_run` y `seal_run`. No construye snapshots, no crea propuestas y no ejecuta claims.
@@ -125,7 +125,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-05: Programa `payout_settlement` — Liquidación de una Leaf
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-05-settle-claim`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s05-settle-claim`
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `security` (proof, replay, cuentas token), `qa` (Mollusk/LiteSVM)
 - **Responsabilidad única**: implementar `settle_claim` y `ClaimReceipt`. No administra el lifecycle de Squads ni modifica elegibilidad.
@@ -134,7 +134,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-06: Propuesta Squads de Setup y Evidencia Devnet
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-06-squads-setup-proposal`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s06-squads-setup-proposal`
 - **Subagente ejecutor**: `api`
 - **Subagentes de apoyo**: `solana` (instrucción on-chain), `security` (validación/allowlist), `db` (idempotencia)
 - **Responsabilidad única**: construir y persistir el paquete de propuesta que contiene las tres instrucciones de setup. No calcula roots ni hace cranking.
@@ -146,7 +146,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-07: Cranker y Proyección de Receipts
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-07-settlement-cranker`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s07-settlement-cranker`
 - **Subagente ejecutor**: `solana`
 - **Subagentes de apoyo**: `security` (idempotencia/denegación de servicio), `db` (outbox/proyección)
 - **Responsabilidad única**: seleccionar una item ya comprometida, presentar su proof y proyectar sólo receipts confirmados. No puede regenerar snapshot, alterar leaf ni enviar pagos directos.
@@ -158,7 +158,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 ---
 
 ### SPEC-08: Clean Code Audit & Refactoring
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-08-refactor-clean`
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s08-refactor-clean`
 - **Subagente ejecutor**: `reviewer`
 - **Subagentes de apoyo**: `architect` (Gate 2 — diff audit, layer isolation), `docs` (JSDoc, knowledge sync)
 - **Objetivo**: Auditoría de código limpio según skill `code-refactoring-refactor-clean`. Verificar naming, eliminación de dead code, cumplimiento del patrón de 4 capas, duplicaciones.
