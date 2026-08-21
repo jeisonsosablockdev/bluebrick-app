@@ -60,9 +60,10 @@ describe("features/staking-distribution/application/squads-batch (SPEC-S04-C)", 
       expect(ata1.length).toBeGreaterThan(30);
     });
 
-    it("falls back gracefully for non-pubkey strings", async () => {
-      const ata = await deriveAssociatedTokenAddress("invalid_wallet", "invalid_mint");
-      expect(ata).toContain("invalid_wallet_ata_invalid_");
+    it("fails closed for non-pubkey strings", async () => {
+      await expect(
+        deriveAssociatedTokenAddress("invalid_wallet", "invalid_mint")
+      ).rejects.toThrow();
     });
   });
 
