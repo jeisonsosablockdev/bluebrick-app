@@ -25,3 +25,7 @@ PR_BODY.md
 opencode.json
 .agents/pr_last_run.json
 *.tsbuildinfo
+target
+**/target
+programs/**/target
+
