@@ -518,3 +518,9 @@ Cada SPEC comienza RED y termina con evidencia proporcional:
 - vetar una leaf post-seal usando solo un flag de Postgres (`VETOED_BY_ADMIN`) sin `pause_run` on-chain — una proof válida liquidaría la leaf igualmente;
 - confiar en el circuit breaker local (flag DB/Redis) como garantía de detención de settlement — un cranker externo o comprometido puede llamar `settle_claim` directamente; `pause_run` on-chain es la única garantía autoritativa;
 - validar `authority_vault` con solo `is_signer` sin re-derivar la Vault PDA contra el Squads v4 program ID (`SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`) y sin verificar `multisig.owner == SQUADS_V4_ID` — una PDA firmante de un programa atacante podría inicializar `TreasuryPolicy` antes que la tesorería legítima.
+
+---
+
+## 7. 📑 Reportes de Auditoría, QA y Fuzzing
+
+* 📜 **Reporte Maestro:** [`QA-AND-FUZZING-REPORT.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/QA-AND-FUZZING-REPORT.md) (59 tests unitarios/integración, 4,500 iteraciones de Fuzzing en Enfoques A, B y C).
