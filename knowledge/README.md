@@ -30,11 +30,11 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 551 |
+| Archived | 552 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 549 |
+| Archived status | 550 |
 
 ## Inbox
 
@@ -594,6 +594,7 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | STORY-014-02-core-infrastructure | archived | none | [STORY- 014 02 Core Infrastructure](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-02-core-infrastructure.md) | n/a |
 | STORY-014-03-distribution-engine | archived | none | [STORY- 014 03 Distribution Engine](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-03-distribution-engine.md) | n/a |
 | STORY-014-04-treasury-claims | archived | none | [STORY- 014 04 Treasury Claims](knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md) | n/a |
+| QA-AND-FUZZING-REPORT | archived | none | [Reporte Maestro de QA, Fuzzing y Verificación Formal de Invariantes](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/QA-AND-FUZZING-REPORT.md) | n/a |
 | SOLUTION-ARCHITECTURE | archived | none | [EPIC-015 Decision-Complete Solution Architecture](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md) | n/a |
 | squads-v4-documentation-reference | archived | none | [Squads V4 Protocol & SDK — Canonical Documentation Reference](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md) | n/a |
 | STORY-015-01-delegated-allowance-execution-implementation | archived | none | [STORY-015-01 Treasury Settlement Authorization Implementation Spec](knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution-implementation.md) | n/a |
