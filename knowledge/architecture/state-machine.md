@@ -69,9 +69,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/architec
 | `appdata_adapter_ready` | write initial payload | `appdata_v1_written` | `AppData v1` schema validation |
 | `appdata_v1_written` | write updated payload | `appdata_v1_updated` | Same schema + authority constraints |
 
-### Illegal Transitions
-- [x] `appdata_unset -> appdata_v1_written` without adapter attach.
-- [x] Any state -> update with invalid `yield_mode`.
-- [x] Any state -> write with unsupported payload keys.
+## EPIC-015 STORY-015-01 Addendum (PayoutRun Lifecycle)
+### PayoutRun States
+| State | Description | Entry Condition | Allowed Next Actions |
+| --- | --- | --- | --- |
+| `Draft` (`0`) | Run initialized on-chain, escrow pending funding | `initialize_run` | `seal_run`, `cancel_run` |
+| `Active` (`1`) | Escrow exact funded, claims open for settlement | `seal_run` (escrow balance == total) | `settle_claim`, `pause_run`, `cancel_run` |
+| `Paused` (`2`) | Emergency circuit breaker active | `pause_run` (authorized key) | `resume_run`, `cancel_run` |
+| `Cancelled` (`3`) | Run aborted, remaining escrow refundable | `cancel_run` | Terminal state |
 
-Last Updated: 2026-04-01 08:20:33 UTC
+Last Updated: 2026-08-21 12:00:00 UTC

@@ -117,9 +117,15 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/architec
   - `economic_version` format gate + explicit support for `v1`.
   - Unsupported keys rejected (`additionalProperties=false` behavior).
   - Optional lifecycle timestamps accepted when omitted.
-- Devnet proof anchor:
-  - Collection: `2vPD7d2ojHbMTa4CubV5MwzhQKRNrc1DFbTpBBTBszHi`
-  - Asset: `D5HnpX9tXFi5gxaD1mds6EmtPvVSyeuWvHpu4Z7X7YqK`
-  - Final on-chain `AppData` confirms updated economic payload (`yield_mode=linear`, `yield_bps=1300`, `distribution_enabled=false`).
+## EPIC-015 STORY-015-01: Squads v4 Treasury Claims & Delegated Settlement
+- Scope:
+  - `programs/payout_settlement/` (Anchor on-chain program)
+  - `apps/web/src/features/staking-distribution/` (4-layer FDD structure)
+  - `knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/`
+- Runtime components:
+  1. `payout_settlement` Anchor Program (`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` on Devnet).
+  2. Double-attestation validation (Attester A & B) and deterministic 191B leaf preimage verification.
+  3. Atomic `ClaimReceipt` PDA creation to prevent replay / double claims.
+  4. Helium directional Merkle verification for O(log N) scalable settlements.
 
-Last Updated: 2026-04-01 08:20:33 UTC
+Last Updated: 2026-08-21 12:00:00 UTC

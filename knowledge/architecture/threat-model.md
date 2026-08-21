@@ -68,16 +68,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/threat-m
 | Invalid economic mode injection | Strict catalog (`cap`, `linear`) | `validateAppDataEconomicV1` | Unit test: invalid mode rejected |
 | Unauthorized economic update attempt | Server-side admin gate + signer-based on-chain authority | `/api/admin/core-candy-machine/mint/prepare` + `writeData` with `UpdateAuthority` | Devnet evidence: only authorized signer writes accepted |
 
-## Compliance Admin Operations Addendum (EPIC-004 STORY-005)
-- New threat vectors:
-  - Unauthorized admin mutations on compliance cases.
-  - Missing justification on reject/override decisions.
-  - Loss of incident context due to missing notes/audit linkage.
-  - Financial actions executed by wallets marked as `restricted_aml` or `suspended`.
-- Mitigations:
-  - Admin-only guards on every `/api/admin/compliance/cases/*` mutation route.
-  - Service-level validation for mandatory reasons in rejected KYC and AML override decisions.
-  - Dedicated `compliance_notes` table + `compliance_audit_events` trail per mutation.
-  - Runtime compliance gate in purchase flows (`challenge`, `prepare`, `submit`) for blocked statuses.
+## EPIC-015 STORY-015-01 Addendum (Squads v4 Treasury Claims & Settlement)
+### Additional Threat Vectors & Mitigations
+| Threat | Entry Point | Mitigation | Where Implemented |
+| --- | --- | --- | --- |
+| Double Claim / Replay Attack | `settle_claim` instruction | `ClaimReceipt` PDA (`[b"claim_receipt", run_id, claim_id]`) initialized atomically; second attempt reverts | `programs/payout_settlement/src/instructions/settle_claim.rs` |
+| Sybil / Collusion Snapshot Attack | Run creation | Double Attestation (independent Attester A & B public keys verified) | `programs/payout_settlement/src/instructions/initialize_run.rs` |
+| Fake Multisig Authority Impersonation | `initialize_policy` | 3-Layer Squads v4 verification (Signer + Vault PDA re-derivation + Multisig ownership) | `programs/payout_settlement/src/instructions/initialize_policy.rs` |
+| Malformed / Adulterated Merkle Proof | `settle_claim` | 191-byte exact leaf reconstruction + Helium directional Keccak-256 hash | `programs/payout_settlement/src/instructions/settle_claim.rs` |
 
-Last Updated: 2026-04-01 08:20:33 UTC
+Last Updated: 2026-08-21 12:00:00 UTC

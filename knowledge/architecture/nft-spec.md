@@ -9,7 +9,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/nft-spec
 
 # NFT Spec
 
-Last Updated: 2026-06-07
+Last Updated: 2026-08-21
 
 ## Admin Candy Machine Deploy Logging Contract
 

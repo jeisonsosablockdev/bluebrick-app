@@ -21,7 +21,7 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-08-16T00:00:00.000Z
+Last Generated: 2026-08-21T00:00:00.000Z
 
 ## Snapshot
 
@@ -30,11 +30,11 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 552 |
+| Archived | 554 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 550 |
+| Archived status | 552 |
 
 ## Inbox
 
@@ -323,6 +323,8 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
+| FEAT-BRI-8-SOLUTION | archived | none | [Feature Implementation: Squads v4 Treasury Claims & Delegated Allowance Settlement](knowledge/features/feature-squads-v4-treasury-claims-bri-8-implementation.md) | n/a |
+| FEAT-BRI-8-PROBLEM | archived | none | [Feature: Squads v4 Treasury Claims & Delegated Allowance Settlement](knowledge/features/feature-squads-v4-treasury-claims-bri-8.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |

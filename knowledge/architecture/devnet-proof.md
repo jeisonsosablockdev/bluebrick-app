@@ -25,6 +25,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/devnet-p
 | --- | --- | --- | --- | --- | --- | --- |
 | Create Core collection | `31iKqrqa7cFn3z2b8Q2oVbD2tazBLUBQ1t1ahgTSeadXxHrjXVSt4zXu3QTzWvXEN77rCXEdV6dhC673SNUxhrDR` | `447194800` | `2026-03-09 03:14:41 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/31iKqrqa7cFn3z2b8Q2oVbD2tazBLUBQ1t1ahgTSeadXxHrjXVSt4zXu3QTzWvXEN77rCXEdV6dhC673SNUxhrDR?cluster=devnet` |
 | Mint Core asset in collection | `2nsk2m6QaWjYipQFcZqN7ZbbnBgAbDYjMisFM4yXgqQ2911deiRZxavon457z8i8wLRHjJSjxfVVH3tDwH3CjNtD` | `447194802` | `2026-03-09 03:14:41 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/2nsk2m6QaWjYipQFcZqN7ZbbnBgAbDYjMisFM4yXgqQ2911deiRZxavon457z8i8wLRHjJSjxfVVH3tDwH3CjNtD?cluster=devnet` |
+| Deploy Payout Settlement Anchor Program (`HLp7YXKZZ8...`) | `spygfgaiCNA9DMtyPfkhuYuX9FyPY6nZeqG9ZWPDtUCRnAqyxw6BC6CTZXvrkoUYTJUwhp58t3xA7tryKz8oE7R` | `486049609` | `2026-08-21 00:00:00 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/spygfgaiCNA9DMtyPfkhuYuX9FyPY6nZeqG9ZWPDtUCRnAqyxw6BC6CTZXvrkoUYTJUwhp58t3xA7tryKz8oE7R?cluster=devnet` |
+| Upgrade Payout Settlement Program (`settle_claim`) | `3yyqJKc73VaFHX45wAH9vuo2eX7LX1eGNTsY2f4LNwzVXX5t6eVeoz9iN29r8AEzwyySLbTB1de5pweWXgx3SEgu` | `486180563` | `2026-08-21 12:00:00 UTC` | `finalized` | `null` | `https://explorer.solana.com/tx/3yyqJKc73VaFHX45wAH9vuo2eX7LX1eGNTsY2f4LNwzVXX5t6eVeoz9iN29r8AEzwyySLbTB1de5pweWXgx3SEgu?cluster=devnet` |
 
 ## Core Candy Machine Deploy Proof (Pinata Flow)
 - Verification run date: 2026-03-18 00:46:30 UTC

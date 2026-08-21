@@ -122,5 +122,6 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/authorit
 - [x] Emergency operations bypass cooldown only with elevated quorum.
 - [x] Every prepared/submit operation emits auditable record (`authority_audit_events`) with proposal metadata and final signature.
 - [x] Registry state changes are collection-scoped and conflict-checked on submit.
+- [x] **EPIC-015 Treasury Policy Model:** 3-layer Squads v4 validation (Signer check, PDA re-derivation with index, and Multisig ownership check) prevents rogue authority initialization on `payout_settlement`.
 
-Last Updated: 2026-04-01 10:45:00 UTC
+Last Updated: 2026-08-21 12:00:00 UTC
