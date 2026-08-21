@@ -2,7 +2,7 @@
 //! Layer: Solana Program (Anchor On-Chain Runtime)
 //! Program: payout_settlement
 //! Description: Main entrypoint for Squads v4 Authorized Merkle Payout Settlement
-//! Program ID: J2xccRtuG43drESLYznHhLhQkLTdfepcKYbiQ9BsJVaf
+//! Program ID: HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE
 //! ============================================================================
 
 use anchor_lang::prelude::*;
@@ -86,5 +86,25 @@ pub mod payout_settlement {
      */
     pub fn seal_run(ctx: Context<SealRun>) -> Result<()> {
         instructions::seal_run::seal_run(ctx)
+    }
+
+    /**
+     * Liquidates an individual payout leaf by verifying the Merkle proof, recording a ClaimReceipt PDA,
+     * and transferring tokens from the Escrow ATA to the recipient ATA.
+     */
+    pub fn settle_claim(
+        ctx: Context<SettleClaim>,
+        claim_id: [u8; 16],
+        amount_minor: u64,
+        leaf_index: u32,
+        merkle_proof: Vec<[u8; 32]>,
+    ) -> Result<()> {
+        instructions::settle_claim::settle_claim(
+            ctx,
+            claim_id,
+            amount_minor,
+            leaf_index,
+            merkle_proof,
+        )
     }
 }
