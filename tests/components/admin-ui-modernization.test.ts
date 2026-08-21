@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 
 /**
  * =========================================================================================
- * 🎨 SPEC-01 ADMIN UI MODERNIZATION TEST SUITE
+ * 🎨 SPEC-01 ADMIN UI MODERNIZATION TEST SUITE (SOBER & CLEAN)
  * =========================================================================================
  * 
- * Tests the modern visual design contracts, KPI metric cards, and layout enhancements
- * in /admin and /admin/distributions.
+ * Tests the clean, sober visual design contracts, KPI metric cards, and layout enhancements
+ * in /admin and /admin/distributions, matching the /profile design standard.
  */
-describe('SPEC-01 Admin UI Modernization & KPI Cards', () => {
+describe('SPEC-01 Admin UI Modernization & KPI Cards (Clean Style)', () => {
   it('should define KPI metric formatting utilities correctly', () => {
     const formatUsdcAmount = (amountMinor: string | number | bigint) => {
       const numeric = Number(amountMinor) / 1_000_000;
@@ -24,25 +24,25 @@ describe('SPEC-01 Admin UI Modernization & KPI Cards', () => {
     expect(formatUsdcAmount(0)).toBe('$0.00');
   });
 
-  it('should provide dynamic badge styles for all distribution run statuses', () => {
-    const getModernBadgeStyle = (status: 'draft' | 'blocked' | 'finalized' | 'failed' | 'active') => {
+  it('should provide sober, clean badge styles for all distribution run statuses', () => {
+    const getSoberBadgeStyle = (status: 'draft' | 'blocked' | 'finalized' | 'failed' | 'active') => {
       switch (status) {
         case 'finalized':
         case 'active':
-          return 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
+          return 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400';
         case 'blocked':
-          return 'border border-amber-500/40 bg-amber-500/10 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]';
+          return 'border border-amber-500/30 bg-amber-500/10 text-amber-400';
         case 'failed':
-          return 'border border-rose-500/40 bg-rose-500/10 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.2)]';
+          return 'border border-rose-500/30 bg-rose-500/10 text-rose-400';
         case 'draft':
         default:
-          return 'border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.2)]';
+          return 'border border-cyan-500/30 bg-cyan-500/10 text-cyan-400';
       }
     };
 
-    expect(getModernBadgeStyle('finalized')).toContain('text-emerald-300');
-    expect(getModernBadgeStyle('blocked')).toContain('text-amber-300');
-    expect(getModernBadgeStyle('failed')).toContain('text-rose-300');
-    expect(getModernBadgeStyle('draft')).toContain('text-cyan-300');
+    expect(getSoberBadgeStyle('finalized')).toContain('text-emerald-400');
+    expect(getSoberBadgeStyle('blocked')).toContain('text-amber-400');
+    expect(getSoberBadgeStyle('failed')).toContain('text-rose-400');
+    expect(getSoberBadgeStyle('draft')).toContain('text-cyan-400');
   });
 });

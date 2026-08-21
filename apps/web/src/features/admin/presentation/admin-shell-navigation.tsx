@@ -7,7 +7,6 @@ import { areDevOnlyModulesVisible } from "@/lib/release-module-visibility";
 type AdminNavigationItemDefinition = {
   label: LocaleText;
   route: string;
-  icon: string;
   badgeCount?: number;
   releaseControlled?: boolean;
 };
@@ -20,7 +19,6 @@ type AdminNavigationSectionDefinition = {
 export type AdminNavigationItem = {
   label: string;
   route: string;
-  icon: string;
   badgeCount?: number;
 };
 
@@ -33,28 +31,28 @@ const ADMIN_NAVIGATION_DEFINITIONS: AdminNavigationSectionDefinition[] = [
   {
     section: { en: "General", es: "General", pt: "Geral" },
     items: [
-      { label: { en: "Overview", es: "Resumen", pt: "Resumo" }, route: "/admin/dashboard", icon: "📊" },
-      { label: { en: "Assets", es: "Activos", pt: "Ativos" }, route: "/admin/assets", icon: "💎", badgeCount: 2 },
-      { label: { en: "Create asset", es: "Crear activo", pt: "Criar ativo" }, route: "/admin/assets/new", icon: "✨" }
+      { label: { en: "Overview", es: "Resumen", pt: "Resumo" }, route: "/admin/dashboard" },
+      { label: { en: "Assets", es: "Activos", pt: "Ativos" }, route: "/admin/assets", badgeCount: 2 },
+      { label: { en: "Create asset", es: "Crear activo", pt: "Criar ativo" }, route: "/admin/assets/new" }
     ]
   },
   {
     section: { en: "Operations", es: "Operaciones", pt: "Operacoes" },
     items: [
-      { label: { en: "Mint", es: "Mint", pt: "Mint" }, route: "/admin/mint", icon: "⚡", releaseControlled: true },
-      { label: { en: "Compliance", es: "Cumplimiento", pt: "Compliance" }, route: "/admin/compliance", icon: "🛡️" },
-      { label: { en: "Collections", es: "Colecciones", pt: "Colecoes" }, route: "/admin/collections", icon: "🏢" },
-      { label: { en: "Collections health", es: "Salud de colecciones", pt: "Saude de colecoes" }, route: "/admin/health/collections", icon: "🩺" },
-      { label: { en: "Sales", es: "Ventas", pt: "Vendas" }, route: "/admin/sales", icon: "📈" },
-      { label: { en: "Notifications", es: "Notificaciones", pt: "Notificacoes" }, route: "/admin/notifications", icon: "🔔" },
-      { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", icon: "🏛️", releaseControlled: true },
-      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions", icon: "💸" },
-      { label: { en: "Monitoring", es: "Monitoreo", pt: "Monitoramento" }, route: "/admin/monitoring", icon: "📡", badgeCount: 3 }
+      { label: { en: "Mint", es: "Mint", pt: "Mint" }, route: "/admin/mint", releaseControlled: true },
+      { label: { en: "Compliance", es: "Cumplimiento", pt: "Compliance" }, route: "/admin/compliance" },
+      { label: { en: "Collections", es: "Colecciones", pt: "Colecoes" }, route: "/admin/collections" },
+      { label: { en: "Collections health", es: "Salud de colecciones", pt: "Saude de colecoes" }, route: "/admin/health/collections" },
+      { label: { en: "Sales", es: "Ventas", pt: "Vendas" }, route: "/admin/sales" },
+      { label: { en: "Notifications", es: "Notificaciones", pt: "Notificacoes" }, route: "/admin/notifications" },
+      { label: { en: "Treasury", es: "Tesoreria", pt: "Tesouraria" }, route: "/admin/treasury", releaseControlled: true },
+      { label: { en: "Distribution", es: "Distribucion", pt: "Distribuicao" }, route: "/admin/distributions" },
+      { label: { en: "Monitoring", es: "Monitoreo", pt: "Monitoramento" }, route: "/admin/monitoring", badgeCount: 3 }
     ]
   },
   {
     section: { en: "System", es: "Sistema", pt: "Sistema" },
-    items: [{ label: { en: "Settings", es: "Configuracion", pt: "Configuracao" }, route: "/admin/settings", icon: "⚙️", releaseControlled: true }]
+    items: [{ label: { en: "Settings", es: "Configuracion", pt: "Configuracao" }, route: "/admin/settings", releaseControlled: true }]
   }
 ];
 
@@ -71,24 +69,24 @@ export function AdminNavigationLink({
 
   return (
     <Link
-      className={`group flex min-h-10 items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+      className={`group flex min-h-9 items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
         isActive
-          ? "border-l-2 border-cyan-400 bg-gradient-to-r from-cyan-500/15 via-cyan-500/5 to-transparent text-cyan-300 font-semibold shadow-[inset_0_0_12px_rgba(6,182,212,0.1)]"
-          : "text-slate-300 hover:bg-white/5 hover:text-white"
+          ? "bg-white/10 text-white font-semibold shadow-sm"
+          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
       }`}
       href={item.route}
       onClick={onNavigate}
     >
-      <span className="flex items-center gap-2.5">
-        <span className={`flex h-6 w-6 items-center justify-center rounded-lg text-sm transition-transform group-hover:scale-110 ${
-          isActive ? "bg-cyan-500/20 text-cyan-300" : "bg-white/5 text-slate-400"
-        }`}>
-          {item.icon}
-        </span>
+      <div className="flex items-center gap-2.5">
+        <span
+          className={`h-1.5 w-1.5 rounded-full transition-colors ${
+            isActive ? "bg-cyan-400" : "bg-slate-600 group-hover:bg-slate-400"
+          }`}
+        />
         <span className="truncate">{item.label}</span>
-      </span>
+      </div>
       {item.badgeCount ? (
-        <span className="rounded-full border border-rose-500/30 bg-rose-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.2)]">
+        <span className="rounded-md border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
           {item.badgeCount}
         </span>
       ) : null}
@@ -108,8 +106,8 @@ export function AdminNavigationSectionBlock({
   sectionKeyPrefix?: string;
 }): ReactElement {
   return (
-    <div className="space-y-1.5 py-1">
-      <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+    <div className="space-y-1">
+      <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500">
         {section.section}
       </p>
       <nav className="space-y-0.5">
@@ -174,7 +172,6 @@ export function buildAdminNavigation(t: (text: LocaleText) => string): AdminNavi
       .map((item) => ({
         label: t(item.label),
         route: item.route,
-        icon: item.icon,
         badgeCount: item.badgeCount
       }))
   })).filter((section) => section.items.length > 0);
