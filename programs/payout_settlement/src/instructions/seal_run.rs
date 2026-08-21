@@ -1,3 +1,9 @@
+//! ============================================================================
+//! Layer: Solana Program Instruction (Anchor Instruction Handler)
+//! Instruction: seal_run
+//! Description: Seals PayoutRun after verifying exact Escrow ATA balance match
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
 

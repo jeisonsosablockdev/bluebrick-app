@@ -1,20 +1,20 @@
 [toolchain]
 anchor_version = "0.31.1"
-solana_version = "1.18.26"
+solana_version = "2.1.11"
 
 [features]
 resolution = true
 skip-lint = false
 
 [programs.devnet]
-payout_settlement = "J2xccRtuG43drESLYznHhLhQkLTdfepcKYbiQ9BsJVaf"
+payout_settlement = "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"
-wallet = "~/.config/solana/id.json"
+wallet = "/Users/jaymusicmachine/my-solana-wallet.json"
 
 [scripts]
 test = "vitest run tests/programs/payout-settlement.test.ts"

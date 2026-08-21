@@ -1,3 +1,9 @@
+//! ============================================================================
+//! Layer: Solana Program State (Anchor On-Chain State Definitions)
+//! Program: payout_settlement
+//! Description: Account structures, layouts and constants for Payout Settlement
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 
 /**

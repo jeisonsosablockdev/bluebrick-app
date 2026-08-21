@@ -1,3 +1,9 @@
+//! ============================================================================
+//! Layer: Solana Program Errors (Anchor Custom Error Codes)
+//! Program: payout_settlement
+//! Description: Domain-specific errors and security invariant violation codes
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 
 #[error_code]

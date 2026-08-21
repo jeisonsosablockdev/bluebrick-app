@@ -1,3 +1,9 @@
+//! ============================================================================
+//! Layer: Solana Program Instruction (Anchor Instruction Handler)
+//! Instruction: initialize_policy
+//! Description: Initializes TreasuryPolicy PDA binding Squads v4 Multisig Vault
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 use crate::state::{TreasuryPolicy, SQUADS_V4_PROGRAM_ID};
 use crate::errors::PayoutSettlementError;
@@ -43,12 +49,14 @@ pub fn initialize_policy(
     payout_attester_b: Pubkey,
     emergency_pause_authority: Pubkey,
 ) -> Result<()> {
+    // Step 1: Invariant Check — Sybil Attack Prevention (Attester A != Attester B)
     require_keys_neq!(
         payout_attester_a,
         payout_attester_b,
         PayoutSettlementError::IdenticalAttestersForbidden
     );
 
+    // Step 2: Initialize TreasuryPolicy state fields with immutable Squads v4 binding
     let policy = &mut ctx.accounts.treasury_policy;
     policy.multisig_pda = ctx.accounts.multisig.key();
     policy.vault_index = vault_index;
@@ -61,5 +69,7 @@ pub fn initialize_policy(
     policy.pause_nonce = 0;
     policy.bump = ctx.bumps.treasury_policy;
 
+    // Step 3: Successfully conclude instruction
     Ok(())
 }
+

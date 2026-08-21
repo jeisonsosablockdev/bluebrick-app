@@ -1,3 +1,9 @@
+//! ============================================================================
+//! Layer: Solana Program Instruction (Anchor Instruction Handler)
+//! Instruction: initialize_run
+//! Description: Initializes PayoutRun state in Draft status and creates Escrow ATA
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::instructions as ix_sysvar;
 use anchor_spl::token::{Token, TokenAccount, Mint};

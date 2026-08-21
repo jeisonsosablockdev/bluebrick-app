@@ -1,3 +1,10 @@
+//! ============================================================================
+//! Layer: Solana Program (Anchor On-Chain Runtime)
+//! Program: payout_settlement
+//! Description: Main entrypoint for Squads v4 Authorized Merkle Payout Settlement
+//! Program ID: J2xccRtuG43drESLYznHhLhQkLTdfepcKYbiQ9BsJVaf
+//! ============================================================================
+
 use anchor_lang::prelude::*;
 
 pub mod state;
@@ -6,7 +13,7 @@ pub mod instructions;
 
 use instructions::*;
 
-declare_id!("J2xccRtuG43drESLYznHhLhQkLTdfepcKYbiQ9BsJVaf");
+declare_id!("HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE");
 
 #[program]
 pub mod payout_settlement {
