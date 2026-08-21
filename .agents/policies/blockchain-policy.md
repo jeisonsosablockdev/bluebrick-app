@@ -17,8 +17,10 @@
 - **MCP Usage**: Prefer invoking Solana Developer MCP servers over LLM context memory. Use the `mcp` action in tool calls for non-trivial Solana questions or `get_documentation` for canonical source docs.
 - **Auto-Fixing**: When writing or modifying Solana program Rust, run `program_autofixer` via `run_command`.
 - Keep the network on `devnet` and treat MCP tool output as supporting evidence, not completion proof.
+- **Mandatory In-Code Commentary**: Every Solana program file (`programs/**/*.rs`), SDK wrapper, and `@solana/kit` pipeline file MUST include: 1) Module header declaring purpose and layer, 2) Comprehensive Rust doc comments (`///`) or TSDoc on instructions/accounts, 3) Inline explanations of all PDA seed derivations, authority guards, and invariant checks, 4) Step-by-step execution sequencing (`// Step N: ...`).
 
 ## Required Evidence
 - Real transaction hash or hashes
 - Account or state readback
+- Verified in-code commentary and safety invariant annotations in diff
 - Update `knowledge/devnet-proof.md` using `write_to_file` when required.

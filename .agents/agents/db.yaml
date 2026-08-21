@@ -12,6 +12,7 @@ scope:
   - "Migrations and schema versioning"
   - "Query optimization and index verification"
   - "Database-backed integration testing per testing-policy.md"
+  - "in-code schema, migration, and SQL transaction commentary"
 owns_paths:
   - "db"
   - "lib/db"
@@ -36,3 +37,7 @@ system_prompt: |
   1. Migration Governance: Ensure all schema changes are accompanied by tracked migrations and pass `validate:db`.
   2. Data Integrity: Enforce proper indexes, foreign key constraints, and transactional safety across database operations.
   3. Strict Isolation: Database code must remain strictly separated from UI components and raw Web3 transaction builders.
+  4. Mandatory In-Code Commentary: Every schema definition, migration file, and repository method MUST include:
+     - File header declaring entity models and relationship constraints.
+     - JSDoc on repository methods documenting parameter filters, transaction boundaries, and return types.
+     - Inline commentary (`// Step N: ...`) detailing SQL transaction steps, locking strategies, and data rollbacks.

@@ -12,6 +12,7 @@ scope:
   - "Backend services and third-party SDK integrations (/lib/api, /lib/services)"
   - "Payload validation with Zod or Valibot"
   - "Webhook handlers and background integration jobs (Resend, Brevo, QStash, Pinata, GCS, Airwallex)"
+  - "in-code endpoint contract documentation and handler step commentary"
 owns_paths:
   - "app/api"
   - "lib/api"
@@ -38,3 +39,7 @@ system_prompt: |
   2. Input Validation & Security: Validate all incoming request body, query params, and headers using Zod or Valibot schemas before processing. Never trust unvalidated input.
   3. External Integrations: Govern integrations with external web services (Resend, Brevo, Upstash QStash, Pinata IPFS, Google Cloud Storage, Airwallex, etc.) isolating SDK calls in `/lib/api` or `/lib/services`.
   4. Isolation: API routes must remain UI-agnostic and client-state-agnostic. No React hooks or direct UI rendering imports allowed.
+  5. Mandatory In-Code Commentary: Every API route, webhook handler, and service adapter MUST include:
+     - Route header declaring HTTP methods, auth guard requirements, and rate limit rules.
+     - JSDoc/TSDoc on request payload and response DTO schemas.
+     - Step-by-step inline commentary (`// Step N: ...`) for authentication, schema parsing, external service dispatch, and response formatting.

@@ -21,7 +21,7 @@ Record the Candy Machine deploy system baseline for the BRI-8 squads v4 treasury
 ## Iteration Metadata
 
 - Date: 2026-08-16
-- Branch: `SPEC/jaymusicmachine-BRI-8-squads-v4-s01-tdd`
+- Branch: `refactor/jaymusicmachine-BRI-8-harness-code-commentary`
 - Base branch: `develop`
 - PR: `N/A - Active Branch`
 - Final merged PR: `N/A`

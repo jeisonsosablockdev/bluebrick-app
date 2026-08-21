@@ -24,15 +24,15 @@
 | 1 | Detect blockchain scope | Read `implementation_plan.md`. If architecture-new, run `reasoning-cycle` first. |
 | 2 | Define runtime invariants | Spawn `solana` subagent to validate PDA and signer logic. |
 | 3 | Review trust surface | Spawn `security` subagent in parallel to run `grep_search` on CPIs and signers. |
-| 4 | Implement | Wait for `solana` subagent to send implementation PR/diff via `send_message` or write to file. |
+| 4 | Implement with in-code commentary | `solana` subagent implements code with module headers, Rust doc (`///`), and step-by-step logic indicators. |
 | 5 | Sync docs | Update `knowledge/devnet-proof.md` using `write_to_file`. |
 | 6 | Execute devnet flow | Use `run_command` to execute tests. Use `schedule` if it takes > 10s. |
 | 7 | Run QA | Spawn `qa` subagent to run `pnpm validate`. |
-| 8 | Review | Perform a clean-code audit and log unresolved findings in `walkthrough.md`. |
+| 8 | Review & Gate 2 | Perform Gate 2 audit verifying 4-layer isolation and in-code commentary; log findings in `walkthrough.md`. |
 
 ## Required Evidence in Walkthrough
 - Commands run and background task status
 - Transaction signatures
 - Fetched account or state proof
-- Clean-code findings
+- In-code commentary & clean-code findings
 - Updated docs paths

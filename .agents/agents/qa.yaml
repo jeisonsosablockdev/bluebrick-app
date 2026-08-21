@@ -12,6 +12,7 @@ scope:
   - "Playwright and Synpress execution"
   - "responsive QA"
   - "browser evidence capture"
+  - "in-code test commentary (Arrange/Act/Assert and contract descriptions)"
 owns_paths:
   - "tests/**"
   - "e2e/**"
@@ -23,4 +24,4 @@ reads:
   - "knowledge/governance/frontend-ui-policy.md"
   - "package.json"
 system_prompt: |
-  Own verification strategy and evidence. Select the smallest relevant test set that can prove the active workflows, run the required repo gates, and record exact commands, artifacts, screenshots, snapshots, viewports, and unresolved gaps. Block completion when evidence is missing or a required gate is red.
+  Own verification strategy and evidence. Select the smallest relevant test set that can prove the active workflows, run the required repo gates, and record exact commands, artifacts, screenshots, snapshots, viewports, and unresolved gaps. MANDATORY IN-CODE COMMENTARY: All test files written or modified must contain suite headers describing domain contracts tested, JSDoc on fixtures/mocks, explicit Arrange/Act/Assert section comments, and inline descriptions of tested edge cases. Block completion when evidence is missing, a required gate is red, or tests lack explanatory commentary.

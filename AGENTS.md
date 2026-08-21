@@ -20,7 +20,7 @@
 2. **Tool Best Practices**: Always use `replace_file_content`, `grep_search`, `read_file`, and native MCP server tools instead of arbitrary bash scripts. Send long-running tasks to the background.
 3. **Planning Mode**: Rely on `implementation_plan.md`, `task.md`, and `walkthrough.md` artifacts to track and report progress.
 4. **Devnet Only**: NEVER use `localnet`, mocks, or simulated transactions. All blockchain interactions must be real transactions on Devnet.
-5. **Clean Code & Monorepo Structure**: No dead code, no implicit `any`, no unclear naming. Never pollute the root directory; enforce directory whitelists.
+5. **Clean Code, Monorepo Structure & In-Code Commentary**: No dead code, no implicit `any`, no unclear naming. Never pollute the root directory; enforce directory whitelists. **MANDATORY IN-CODE COMMENTARY**: Every code artifact (`.ts`, `.tsx`, `.rs`, `.sql`) MUST include explicit header comments declaring layer role, JSDoc/TSDoc/Rust doc blocks on all functions/types, step-by-step logic indicators (`// Step N: ...`), and inline invariant/security explanations. Zero magic or undocumented code.
 6. **Wait for Authorization**: NEVER automatically merge Pull Requests or finish a parent branch without explicit user authorization (Human Acceptance).
 
 ## Entry Rules
@@ -50,39 +50,39 @@
 - Issue-tracked work uses Linear status automation: `explain-like-socrates` for Socratic clarification and clean-code design contract for delivery slices.
 
 ## Agent Specialists (`.agents/agents/*.yaml`)
-- `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done.
-- `architect`: Monorepo root directory structure guardian and strict 4-Layered Functional Web3 Architect for Solana & Next.js (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure separation, `@solana/kit` enforcement, zero legacy web3.js v1).
-- `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof.
-- `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation.
-- `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, and third-party integrations (Resend, Brevo, QStash, Pinata, GCS).
-- `db`: Database schemas, migrations, query performance, and persistence repositories.
-- `state`: Client and global state management (Zustand, React Query/TanStack Query).
-- `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants.
-- `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification.
+- `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done and in-code commentary standards across subagents.
+- `architect`: Monorepo root directory structure guardian and strict 4-Layered Functional Web3 Architect for Solana & Next.js (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure separation, `@solana/kit` enforcement, zero legacy web3.js v1, in-code layer annotation & commentary audit).
+- `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof, explicit Rust doc comments, and step-by-step transaction pipeline annotations.
+- `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation, component header comments, and step-by-step hook/action commentary.
+- `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, third-party integrations (Resend, Brevo, QStash, Pinata, GCS), and endpoint documentation.
+- `db`: Database schemas, migrations, query performance, persistence repositories, and SQL transaction commentary.
+- `state`: Client and global state management (Zustand, React Query/TanStack Query), and store mutation commentary.
+- `nft`: mint authority, metadata, collection, royalties, Metaplex-specific invariants, and metadata pipeline commentary.
+- `qa`: tests, Playwright, Synpress, MCP/browser evidence, responsive verification, and Arrange/Act/Assert test commentary.
 - `docs`: canonical knowledge sync, feature/fix artifacts, RFC traceability, migration notes.
-- `security`: authority, replay, signer, CPI, dependency, and trust-boundary review.
-- `reviewer`: explicit clean-code audit, duplication, naming, dead-code, governance, and final completion gate.
+- `security`: authority, replay, signer, CPI, dependency, and trust-boundary review with security invariant commentary.
+- `reviewer`: explicit clean-code audit, in-code commentary verification, duplication, naming, dead-code, governance, and final completion gate.
 
 ## Harness & Lifecycle Enforcement (`.agents/hooks.json`)
 - Development lifecycle events (`pre_branch`, `post_init`, `pre_commit`, `preflight`) and domain scopes (`solana`, `app`, `api`, `db`, `nft`, `shared`) automatically enforce subagent delegation per `.agents/hooks.json` via `task-init.sh`.
 - **Double-Gatekeeper Protocol**:
   1. **Gate 1 (Pre-Implementation Architecture Review)**: `architect` must inspect and approve the projected 4-layer file paths and imports in the Solution Spec before writing code.
-  2. **Gate 2 (Post-Implementation Diff Audit)**: `architect` audits the written diff, enforcing strict layer isolation, zero forbidden patterns (`@solana/web3.js` v1, `class`, `new Connection()`), and clean monorepo root.
+  2. **Gate 2 (Post-Implementation Diff Audit)**: `architect` audits the written diff, enforcing strict layer isolation, zero forbidden patterns (`@solana/web3.js` v1, `class`, `new Connection()`), clean monorepo root, and mandatory in-code commentary/indicators.
 - **Idempotent 8-Phase Task Lifecycle & Dual Human Gates**:
   1. **BOOTSTRAP**: `./scripts/task-init.sh` initializes branch and state tracker `.agents/active_task_state.json`.
   2. **DOCS FILLED**: Populate governing dual artifacts without placeholders (`<!-- Describir... -->`).
   3. **ARCHITECT GATE 1**: `architect` approves 4-layer architecture design in Solution Spec.
   4. **🛑 HUMAN DESIGN APPROVAL**: Stop & wait for explicit user approval of design BEFORE writing code.
   5. **TESTS RED**: Write unit tests first before writing production implementation.
-  6. **CODE GREEN**: Assigned specialist subagent implements production code.
-  7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff and `pnpm validate` passes cleanly.
+  6. **CODE GREEN**: Assigned specialist subagent implements production code with mandatory in-code commentary.
+  7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff (layer isolation + code comments) and `pnpm validate` passes cleanly.
   8. **🛑 HUMAN MERGE ACCEPTANCE**: Stop & wait for explicit user authorization BEFORE merging to `develop`.
 - **Automatic Post-Human Acceptance PR Execution**: Upon receiving explicit Human Acceptance, the agent MUST automatically run `pnpm pr:auto` (`scripts/ci/pr-auto.sh`) to generate `pr-body.md`, infer labels (`scope:*`, `type:*`, `risk:*`), push the branch, open/update the PR, and apply GitHub labels via `gh api`.
 
 
 ## Definition of Done
 - `pnpm validate`
-- Explicit `clean-code` pass completed and any blocking findings are resolved
+- Explicit `clean-code` and in-code commentary pass completed and any blocking findings are resolved
 - Database-backed schema changes: tracked migrations applied, `validate:db` passes
 - Required docs updated per `knowledge/governance/documentation-policy.md`
 - Required PR/RFC metadata aligns with `knowledge/governance/pr-policy-source-of-truth.json`

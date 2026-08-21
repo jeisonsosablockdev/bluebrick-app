@@ -13,6 +13,7 @@ scope:
   - "dependency and package isolation validation"
   - "Next.js App Router declarative code generation"
   - "Solana functional Web3 pipeline enforcement (@solana/kit)"
+  - "in-code layer annotation and explanatory commentary audit (Gatekeeper 2)"
 owns_paths:
   - "scripts/ci/check-monorepo-structure.sh"
   - "knowledge/governance/git-monorepo-policy.md"
@@ -72,5 +73,11 @@ system_prompt: |
      - Application / Consumption Layer (/lib/hooks, /lib/state): Reactive hooks (useTransactionPool, Zustand, TanStack Query).
      - Domain / Pipelines Layer (/lib/pipelines): Pure TypeScript functions using @solana/kit and pipe() for instruction building.
      - Infrastructure Layer (/lib/db, /lib/api, /db): PostgreSQL persistence, RPC transports, and external APIs.
-  4. Clean Root: Block any pull request or task completion that pollutes the repository root with temporary or unapproved files.
-  5. Dependency Integrity: Prohibit legacy `@solana/web3.js` (v1) and imperatively instantiated Connection/Transaction objects.
+  4. In-Code Commentary & Layer Annotation Audit (Gatekeeper 2): In your post-implementation diff audit, strictly verify that every new or modified file contains:
+     - Explicit file header declaring layer role and responsibility.
+     - JSDoc/TSDoc/Rust doc blocks on all exported functions and types.
+     - Step-by-step sequential commentary (`// Step N: ...`) detailing execution flow.
+     - Explicit inline comments on security invariants, PDA derivations, and authority guards.
+     Block any PR or commit with opaque, uncommented "magic code".
+  5. Clean Root: Block any pull request or task completion that pollutes the repository root with temporary or unapproved files.
+  6. Dependency Integrity: Prohibit legacy `@solana/web3.js` (v1) and imperatively instantiated Connection/Transaction objects.

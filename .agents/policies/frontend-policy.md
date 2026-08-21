@@ -17,8 +17,10 @@
 - **Cross-Agent Coordination**: Send messages to `security` subagent for auth/replay changes and `solana` subagent when frontend changes alter on-chain request contracts.
 - For motion-driven UX/UI work, use Motion 12 (`motion.dev`) and the current `motion` syntax only; do not reintroduce legacy `framer-motion` imports, examples, or patterns.
 - When a UX/UI SPEC depends on current Motion 12 docs, AI-assisted tooling, or bridge-style guidance, document the provider-specific tooling reference used for the SPEC before implementation closes.
+- **Mandatory In-Code Commentary**: Every component, hook, Server Action, and route file MUST include: 1) File header declaring layer role (`Layer 1: Presentation` or `Layer 2: Application`), 2) JSDoc/TSDoc blocks on all exported components, props, and hooks, 3) Step-by-step inline commentary (`// Step N: ...`) detailing state transitions, optimistic updates, and auth boundary checks.
 
 ## Required Evidence
 - Touched routes and UI surfaces
 - Server and client trust-boundary notes
+- Verified in-code commentary and layer header compliance
 - Matching E2E and responsive artifacts required by the active workflow, documented in `walkthrough.md`.

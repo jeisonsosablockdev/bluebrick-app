@@ -219,6 +219,37 @@ Feature A  --->  features/B/index.ts (Public API)  --->  Feature B Internals
 
 ---
 
+## 4.1. Estándar Canónico de Comentarios e Indicaciones en el Código (In-Code Commentary)
+
+Todo código producido o modificado en el repositorio debe ser autoexplicativo, estructurado y contener comentarios e indicaciones explícitas de lo que se está haciendo. Esta regla es canónica y de obligatorio cumplimiento:
+
+1. **Encabezado de Archivo / Módulo (File Header)**:
+   - Todo archivo `.ts`, `.tsx`, `.rs` o `.sql` debe incluir en la cabecera un comentario que declare:
+     - **Capa Arquitectónica**: (ej. `Layer 1: Presentation`, `Layer 2: Application`, `Layer 3: Domain`, `Layer 4: Infrastructure`, `On-Chain Program`).
+     - **Propósito y Responsabilidad**: Descripción concisa de la intención del archivo y qué invariantes o reglas de negocio resuelve.
+     - **Límites de Importación**: Declaración de dependencias permitidas y prohibidas según la matriz de capas.
+
+2. **Documentación de Contratos e Interfaces (JSDoc / TSDoc / Rust `///`)**:
+   - Cada función pública/exportada, hook, Server Action, pipeline, endpoint y estructura de datos debe documentarse con:
+     - Propósito y caso de uso.
+     - Descripción de cada parámetro `@param` y retorno `@returns`.
+     - Invariantes de seguridad, precondiciones y posibles errores / excepciones lanzadas (`@throws`).
+
+3. **Secuenciación y Trazabilidad Paso a Paso (`// Step N: ...`)**:
+   - En funciones complejas, composición de transacciones (`@solana/kit`), pipelines de cálculo o mutaciones de estado, el código debe desglosarse con comentarios secuenciales explícitos:
+     - `// Step 1: Validar entradas y DTOs mediante esquemas Zod`
+     - `// Step 2: Derivar PDAs o cuentas requeridas con semillas canónicas`
+     - `// Step 3: Construir y firmar mensaje de transacción`
+     - `// Step 4: Persistir idempotencia y emitir eventos`
+
+4. **Anotación de Invariantes de Seguridad y Negocio**:
+   - Todo check de autoridad, verificación de firma criptográfica, derivación de PDA, validación de anti-bot o cálculo financiero debe incluir un comentario explicativo indicando *qué invariante se está protegiendo* y *por qué*.
+
+5. **Prohibición de Código Opaco ("Zero Magic Code")**:
+   - Queda estrictamente prohibido el código sin comentarios contextuales o con lógica implícita no documentada. La ausencia de comentarios explicativos es motivo de bloqueo inmediato en las revisiones de código y gates de CI.
+
+---
+
 ## 5. Instrucciones de Inyección para el Agente `architect`
 
 Cuando el subagente `architect` ejecute sus revisiones de **Gatekeeper 1 (Pre-Code)** o **Gatekeeper 2 (Post-Code)**, debe verificar:
@@ -227,3 +258,5 @@ Cuando el subagente `architect` ejecute sus revisiones de **Gatekeeper 1 (Pre-Co
 2. **Ubicación Física del Archivo**: Validar que si el archivo reside en `apps/web/src/features/[name]/presentation/`, no contenga ningún import de `@solana/kit`, `pg`, `drizzle` ni `infrastructure`.
 3. **Barrels de Importación**: Validar que los imports entre carpetas de `features/` pasen exclusivamente por el `index.ts` raíz de la feature correspondiente.
 4. **Validación de Whitelist**: Asegurar que no se creen carpetas fuera de la estructura de Monorepo Whitelist.
+5. **Auditoría de Comentarios e Indicaciones en Código**: En Gatekeeper 2, auditar que el diff contenga encabezados de capa, contratos JSDoc/TSDoc/Rust doc y comentarios secuenciales paso a paso explicando la lógica implementada.
+

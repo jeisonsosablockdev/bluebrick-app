@@ -30,11 +30,11 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 550 |
+| Archived | 551 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 548 |
+| Archived status | 549 |
 
 ## Inbox
 
@@ -489,6 +489,7 @@ Last Generated: 2026-08-16T00:00:00.000Z
 | incident-wallet-connection | archived | none | [Incident Response - Wallet Connection Issues](knowledge/operations/runbooks/incident-wallet-connection.md) | n/a |
 | index | archived | none | [runbooks](knowledge/operations/runbooks/index.md) | n/a |
 | vercel-deployment-rollback | archived | none | [Vercel Deployment Rollback](knowledge/operations/runbooks/vercel-deployment-rollback.md) | n/a |
+| squads-devnet-multisig | archived | none | [BRIDS Devnet Squads v4 Governance and Treasury Multisig](knowledge/operations/squads-devnet-multisig.md) | n/a |
 | 000-manifest | archived | none | [000 Manifest](knowledge/rfcs/000-manifest.md) | n/a |
 | index | archived | none | [artifacts](knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/index.md) | n/a |
 | STORY-001-04-phase1-inventory | archived | none | [STORY- 001 04 Phase1 Inventory](knowledge/rfcs/EPIC-001-admin-asset-create-form/artifacts/STORY-001-04-phase1-inventory.md) | n/a |

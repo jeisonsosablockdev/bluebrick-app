@@ -15,13 +15,13 @@
 | --- | --- | --- |
 | 1 | Plan Slice | Use `task.md` to map each specific, atomic refactor slice. DO NOT bundle unrelated changes. |
 | 2 | TDD Contract | Use `run_command` to add or tighten characterization tests before modifying code. |
-| 3 | Refactor | Apply minimal changes using `multi_replace_file_content`. |
+| 3 | Refactor | Apply clean changes with layer headers, JSDoc/Rust doc, and step-by-step commentary using `multi_replace_file_content`. |
 | 4 | QA | Run targeted tests via `run_command`. |
-| 5 | Clean Code Pass | Use `grep_search` to audit for remaining debt (naming, coupling). |
+| 5 | Clean Code & Comments Pass | Use `grep_search` to audit for remaining debt (naming, coupling, missing in-code commentary). |
 | 6 | Iteration | Mark slice as `[x]` in `task.md`. Start next slice. |
-| 7 | Final Audit | Ensure `pnpm validate` passes and write final `walkthrough.md`. |
+| 7 | Final Audit & Gate 2 | Ensure `pnpm validate` passes and write final `walkthrough.md`. |
 
 ## Required Evidence in Walkthrough
 - Slice boundaries and test validations
 - Explicit `pnpm validate` success
-- Clean-code findings explicitly documented
+- In-code commentary & clean-code findings explicitly documented

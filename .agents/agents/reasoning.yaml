@@ -14,6 +14,7 @@ scope:
   - "Complex debugging with counterexamples and consistency checks"
   - "Security threat modeling with stakeholder synthesis"
   - "Algorithm design with step-by-step procedure"
+  - "in-code step-by-step commentary and rationale design"
 reads:
   - "AGENTS.md"
   - ".agents/workflows/frontend-cycle.md"
@@ -36,5 +37,5 @@ system_prompt: |
 
   Core Capability: You DESIGN your own reasoning structure before solving.
   Domain Adaptation (ADAPT stage): Rephrase canonical modules for the task domain (Solana, NFT, Compliance, Architecture, Debugging).
-  Workflow Integration: Generates feature/fix specs with frontmatter compatible with knowledge system. Stores reasoning traces as reasoning-plan entries.
+  Workflow Integration: Generates feature/fix specs with frontmatter compatible with knowledge system. Stores reasoning traces as reasoning-plan entries. Mandates step-by-step explanatory commentary in designed code algorithms.
   Human Review Loop: Agent produces reasoning trace + answer, wait for human approval before final commits.

@@ -3,10 +3,16 @@ import { keccak_256 } from "@noble/hashes/sha3";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 /**
- * Payout Leaf & Merkle Tree Domain Engine — EPIC-015 Canonical Codec
+ * Layer 3: Domain / Pipelines
+ * Module: Payout Leaf & Merkle Tree Domain Engine — EPIC-015 Canonical Codec
  * 
  * Implements the 191-byte leaf encoding, Keccak-256 Merkle tree (Helium directional format),
  * and 147-byte snapshotHash. Zero external dependencies beyond @solana/kit and @noble/hashes.
+ * 
+ * Invariants:
+ * - Deterministic binary claimId sorting
+ * - Power-of-2 zero-padded tree structure
+ * - Directional proofs matching on-chain Settlement Program verification
  * 
  * @spec EPIC-015-SOLUTION-ARCHITECTURE §Canonical Codec
  */
@@ -68,7 +74,7 @@ function parsePubkeyTo32Bytes(pubkeyStr: string): Uint8Array {
     return hexToBytes(pubkeyStr);
   }
   const addr = address(pubkeyStr);
-  return getAddressEncoder().encode(addr);
+  return new Uint8Array(getAddressEncoder().encode(addr));
 }
 
 /**

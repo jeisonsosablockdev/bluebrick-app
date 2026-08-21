@@ -17,11 +17,13 @@
 - Wallet-connected or extension-dependent auth paths require Synpress coverage.
 - Browser-critical flows require artifact capture plus responsive coverage at 320, 375, 768, and 1024 widths.
 - Responsive/browser-critical evidence must be readable, route-state complete, and explicit about global overflow; ambiguous evidence is a blocking failure, not a warning.
+- **Mandatory In-Code Commentary**: All test suites (`tests/**/*.test.ts`, `e2e/**/*.spec.ts`) MUST include: 1) Suite header describing the domain contracts tested, 2) JSDoc/comments on helper fixtures and mocks, 3) Explicit `// Arrange`, `// Act`, `// Assert` block structure, 4) Inline commentary detailing edge cases, negative invariants, and expected error assertions.
 - Record exact commands and unresolved gaps; failing tests or missing evidence block completion.
 
 ## Required Evidence
 - Commands run and their background task status
 - Relevant unit or integration results
+- Verified in-code commentary and test structure clarity
 - Playwright results when in scope
 - Synpress results when in scope
 - Record evidence in `walkthrough.md`

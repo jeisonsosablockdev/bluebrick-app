@@ -5,7 +5,7 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-22 17:36:45 UTC
+Updated: 2026-08-21 03:19:58 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
@@ -14,7 +14,7 @@ Updated: 2026-08-22 17:36:45 UTC
 | [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | 2026-07-22 | 2026-08-06 a27bae02 |
 | [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | 2026-04-01 10:45:00 UTC | 2026-06-16 67163847 |
 | [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | 2026-04-01 16:05:30 UTC | 2026-06-16 ea2ee147 |
-| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-07-19 35801116 |
+| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-07-25 d65efc37 |
 | [`linear-context.md`](./knowledge/architecture/linear-context.md) | general | not set | 2026-06-18 1f8b29ff |
 | [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | 2026-06-07 | 2026-08-06 a27bae02 |
 | [`purchase-tracing.md`](./knowledge/architecture/purchase-tracing.md) | general | 2026-03-20 19:25:00 UTC | 2026-06-16 ea2ee147 |
@@ -22,6 +22,7 @@ Updated: 2026-08-22 17:36:45 UTC
 | [`rotation-spec.md`](./knowledge/architecture/rotation-spec.md) | general | not set | 2026-06-21 86b90d23 |
 | [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | 2026-07-22 | 2026-08-06 a27bae02 |
 | [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-07-19 35801116 |
+| [`squads-treasury-security-design.md`](./knowledge/architecture/squads-treasury-security-design.md) | general | not set | 2026-08-19 b6d1d5d3 |
 | [`stake-audit.md`](./knowledge/architecture/stake-audit.md) | general | not set | 2026-06-18 1f8b29ff |
 | [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | 2026-04-01 08:20:33 UTC | 2026-06-21 86b90d23 |
 | [`third-party-integrations.md`](./knowledge/architecture/third-party-integrations.md) | general | not set | 2026-08-15 24389ce9 |

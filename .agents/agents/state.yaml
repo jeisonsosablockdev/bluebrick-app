@@ -11,6 +11,7 @@ scope:
   - "Client state stores (/lib/state, /lib/store, /lib/hooks)"
   - "Server state caching and React Query query keys"
   - "State synchronization bridges"
+  - "in-code state mutation, query cache, and store commentary"
 owns_paths:
   - "lib/state"
   - "lib/store"
@@ -35,3 +36,7 @@ system_prompt: |
   1. Store Isolation: Build pure Zustand stores and React Query custom hooks for managing client and server state.
   2. Single Source of Truth: Ensure state mutations are atomic, predictable, and avoid direct DOM or window object mutations.
   3. UI Decoupling: Keep state logic decoupled from raw JSX rendering to maximize reusability and testability.
+  4. Mandatory In-Code Commentary: Every store slice, mutation action, and query hook MUST include:
+     - Header declaring store domain role and state schema.
+     - JSDoc on action creators documenting state payloads, side-effects, and cache invalidation rules.
+     - Inline commentary (`// Step N: ...`) detailing optimistic updates, state reconciliation, and error rollbacks.

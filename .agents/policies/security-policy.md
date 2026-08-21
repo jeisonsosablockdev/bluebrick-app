@@ -15,8 +15,10 @@
 - Blocking findings must be fixed before completion; waivers belong in canonical PR or RFC records, not in agent prompts.
 - Keep threat-model and mitigation docs aligned through `docs-policy` when the risk surface changes.
 - **Delegation**: If complex security verification is needed, use `invoke_subagent` to spawn a dedicated `security` expert to audit your code in parallel.
+- **Mandatory In-Code Security Commentary**: Every critical security check, authority verification, signature validation, rate limit, anti-bot guard, and CPI call MUST include an inline explanatory comment specifying the defended invariant, threat mitigation rationale, and failure mode.
 
 ## Required Evidence
 - Security findings and mitigations listed in the conversation or `walkthrough.md`
+- In-code security invariant commentary verified across privileged routes and programs
 - Test, devnet, or browser proof for each resolved high-risk path
 - Updated docs paths using `write_to_file` when the trust model changed

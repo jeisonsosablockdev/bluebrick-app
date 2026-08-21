@@ -34,6 +34,7 @@ Transversal Development Policy
 	•	**Linear as Source of Truth & Mandatory Template:** Usar Linear como fuente principal para issues, objetivos, SPECS y criterios de aceptación. TODO issue en Linear y su correspondiente artefacto Markdown debe seguir OBLIGATORIAMENTE la estructura bilingüe oficial en [linear-brief-template.md](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/templates/linear-brief-template.md) (conocida como "Human Brief").
 	•	**SPEC Tracking:** Evitar que los SPECS principales vivan en comentarios sueltos de Linear; deben ser parte del cuerpo principal del issue o de documentos dedicados.
 	•	**Bilingual Standard & Quality:** Toda documentación bilingüe debe estructurarse con `VERSION ESPAÑOL` primero y `ENGLISH VERSION` después. Se exige el uso correcto de tildes, puntuación y ortografía en toda documentación escrita en español.
+	•	**Canonical In-Code Commentary & Intent Indications:** Todo código fuente nuevo o modificado (`.ts`, `.tsx`, `.rs`, `.sql`) debe incluir obligatoriamente comentarios descriptivos e indicaciones paso a paso de lo que se está haciendo (`// Step N: ...`), encabezados de módulo con declaración de capa arquitectónica (Presentation, Application, Domain, Infrastructure) y bloques JSDoc/TSDoc/Rust doc en contratos públicos. El código opaco ("magic code" sin comentarios explicativos) será rechazado como no conforme.
 
 ⸻
 

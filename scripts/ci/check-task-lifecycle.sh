@@ -55,6 +55,7 @@ if [[ -n "${CODE_CHANGES}" ]]; then
         "PHASE_5_TESTS_RED",
         "PHASE_6_CODE_GREEN",
         "PHASE_7_VALIDATED",
+        "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
         "PHASE_8_HUMAN_MERGE_APPROVED"
       ];
       if (!allowedPhases.includes(state.current_phase)) {
