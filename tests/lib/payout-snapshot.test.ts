@@ -12,14 +12,35 @@ import {
 } from '../../apps/web/src/features/staking-distribution/domain/payout-leaf';
 
 /**
- * SPEC-01 TDD Suite — EPIC-015 Payout Settlement Codec & Merkle Tree Engine
+ * =========================================================================================
+ * 🛡️ SPEC-01 / SPEC-03 TDD SUITE — PAYOUT CODEC & HELIUM MERKLE TREE ENGINE
+ * =========================================================================================
+ * 
+ * Target Layer: Layer 3 (Domain Engine)
+ * Target File:  apps/web/src/features/staking-distribution/domain/payout-leaf.ts
+ * 
+ * Threat Models & Vulnerabilities Covered:
+ * 1. Serialization Drift / Type Confusion: Verifies that leaf preimages match the exact 191-byte
+ *    specification (Domain + UUIDs + Pubkeys + u64 LE).
+ * 2. Cross-Chain / Domain Collision: Verifies that domain separators ('brids:epic015:payout:v1')
+ *    prevent collision with other programs or protocols.
+ * 3. Directional Proof Inversion: Verifies that Helium's index-based directional tree algorithm
+ *    ((index >> depth) & 1 == 0) correctly places sibling hashes without relying on sorted pairs.
+ * 4. Merkle Padding Ambiguity: Verifies that odd-sized trees and 1-leaf trees pad with EMPTY_NODE
+ *    ([0u8; 32]) deterministically.
+ * 5. Double-Claim / Duplicate Attack: Verifies that duplicate claimIds in the same snapshot
+ *    are detected and rejected immediately (fail closed).
  * 
  * @spec EPIC-015-SOLUTION-ARCHITECTURE §Canonical Codec
  * @spec STORY-015-01-SPEC-01
+ * @spec STORY-015-01-SPEC-03
  */
 describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', () => {
   describe('A. 191-Byte Leaf Encoding & Hashing (@spec EPIC-015-CODEC-LEAF)', () => {
     it('should encode a payout leaf into exactly 191 bytes preimage matching golden fixture', () => {
+      // Threat Model: Binary byte offset mismatch between TypeScript client and on-chain Anchor Rust program.
+      // Defense: Strict 191-byte golden vector verification against payout-settlement-v1.json.
+
       // Arrange
       const leafFixture = fixture.leaves[0];
       const itemInput: PayoutClaimItemInput = {
@@ -42,6 +63,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should compute Keccak-256 leaf hash matching golden fixture', () => {
+      // Invariant: solana_program::keccak::hashv equivalent output
+
       // Arrange
       const leafFixture = fixture.leaves[0];
       const itemInput: PayoutClaimItemInput = {
@@ -62,6 +85,9 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should reject non-canonical UUIDs for runId or claimId (not RFC-4122 canonical)', () => {
+      // Threat Model: Malformed UUID string injects variable-length bytes into preimage.
+      // Defense: Strict RFC-4122 regex validation before hex decoding.
+
       // Arrange
       const invalidItem: PayoutClaimItemInput = {
         runId: 'invalid-uuid-format',
@@ -80,6 +106,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
 
   describe('B. Helium Directional Merkle Tree Construction (@spec EPIC-015-CODEC-MERKLE)', () => {
     it('should build Merkle tree for 1 leaf (itemCount=1) with EMPTY padding sibling matching fixture', () => {
+      // Edge Case: 1 leaf tree must have depth=1 and root = keccak256(leaf || [0u8; 32]).
+
       // Arrange
       const leaf0 = fixture.leaves[0];
       const items: PayoutClaimItemInput[] = [
@@ -127,6 +155,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should build Merkle tree for 3 leaves (itemCount=3) with EMPTY padding matching fixture', () => {
+      // Edge Case: 3 leaves pad to 4 nodes (2^2) using 1 EMPTY node at index 3.
+
       // Arrange
       const items: PayoutClaimItemInput[] = fixture.leaves.map(l => ({
         runId: fixture.runId,
@@ -150,6 +180,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should verify proof recomputation against root using index-based direction', () => {
+      // Invariant: recomputeMerkleRoot produces the identical root as on-chain verification
+
       // Arrange
       const leaf0 = fixture.leaves[0];
 
@@ -165,6 +197,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should sort leaves strictly by binary claimId before building tree', () => {
+      // Invariant: Unsorted inputs must produce identical deterministic root via sorting
+
       // Arrange — pass items in reverse order
       const itemsUnsorted: PayoutClaimItemInput[] = fixture.leaves.slice().reverse().map(l => ({
         runId: fixture.runId,
@@ -185,6 +219,9 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
 
     it('should reject duplicate claimIds in the same snapshot', () => {
+      // Threat Model: Attacker includes same claimId twice to cause double-spending or tree collision.
+      // Defense: Set-based claimId collision detection.
+
       // Arrange
       const leaf0 = fixture.leaves[0];
       const itemsDuplicate: PayoutClaimItemInput[] = [
@@ -215,6 +252,8 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
 
   describe('C. 147-Byte SnapshotHash Calculation (@spec EPIC-015-CODEC-SNAPSHOT-HASH)', () => {
     it('should compute 147-byte snapshotHash matching golden fixture', () => {
+      // Invariant: Signed message hash for independent dual Ed25519 attestation
+
       // Arrange
       const snapshotParams = {
         snapshotVersion: fixture.snapshotVersion,
@@ -235,3 +274,4 @@ describe('EPIC-015 Payout Snapshot & Merkle Codec (@spec EPIC-015-CODEC-V1)', ()
     });
   });
 });
+
