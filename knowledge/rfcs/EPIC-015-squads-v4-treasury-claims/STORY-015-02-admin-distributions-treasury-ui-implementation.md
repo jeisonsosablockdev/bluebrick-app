@@ -49,11 +49,24 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ## 3. SPEC Delivery Structure (Atomic Branches)
 
-### SPEC-01: TDD — Tests de Componentes en Fallo (RED Phase)
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-01-tdd`
+### SPEC-01: Modernización del Estilo Visual de /admin y /admin/distributions
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-01-admin-ui-modernization`
+- **Subagente ejecutor**: `frontend`
+- **Subagentes de apoyo**: `architect` (validación de componentes de presentación)
+- **Objetivo**: Modernizar el layout de `/admin` y la consola de `/admin/distributions` con el sistema de diseño Dark Glassmorphism, tarjetas KPI de métricas, estilos de badges nítidos, efectos hover interactivos y jerarquía visual pulida.
+- **Archivos a Crear/Modificar**:
+  - `apps/web/src/features/admin/presentation/admin-shell.tsx`
+  - `apps/web/src/features/admin/presentation/distributions-console.tsx`
+  - `tests/components/admin-ui-modernization.test.tsx`
+- **DoD de SPEC-01**: Interfaz renovada, responsiva, tarjetas KPI en el encabezado, tests de renderizado en verde y `pnpm validate` limpio.
+
+---
+
+### SPEC-02: TDD — Tests de Componentes de Tesorería en Fallo (RED Phase)
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-02-tdd`
 - **Subagente ejecutor**: `qa`
 - **Subagentes de apoyo**: `frontend` (definir assertions de rendering y a11y)
-- **Objetivo**: Escribir los tests de componentes React (Testing Library / Vitest) en fase RED sin implementar lógica de renderizado.
+- **Objetivo**: Escribir los tests de componentes React (Testing Library / Vitest) en fase RED para la consola de Squads multisig, control global de expansión y el banner de auditoría.
 - **Archivos a Crear**:
   - `tests/components/squads-multisig-console.test.tsx`
   - `tests/components/distributions-console-squads-button.test.tsx`
@@ -61,46 +74,46 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - El componente falla si `project_start_at` o `project_end_at` están alteradas y no renderiza la alerta.
   - El botón global "Expandir Todos" no abre todas las filas si no existe el handler.
   - El botón "Crear Propuesta Marco" no se renderiza para corridas no finalizadas.
-- **DoD de SPEC-01**: Todos los tests compilando y fallando correctamente (RED).
+- **DoD de SPEC-02**: Todos los tests compilando y fallando correctamente (RED).
 
 ---
 
-### SPEC-02: Ruta de Página y Server Component
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-02-page-route`
+### SPEC-03: Ruta de Página y Server Component
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-03-page-route`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `architect` (Gate 1 — SSR boundary validation)
 - **Objetivo**: Crear la ruta `apps/web/src/app/admin/treasury/squads/page.tsx` como Server Component que carga el DTO server-side con `proposalStatus`, `threshold`, `approvals`, `onChainDates`, `dbDates`.
 - **Archivos a Crear**:
   - `apps/web/src/app/admin/treasury/squads/page.tsx` (Layer 1 — Presentation: Server Component)
   - `apps/web/src/app/admin/treasury/squads/loading.tsx` (Layer 1 — Presentation: Skeleton loading)
-- **DoD de SPEC-02**: Ruta montando con datos server-side; shell determinístico sin hydration mismatch.
+- **DoD de SPEC-03**: Ruta montando con datos server-side; shell determinístico sin hydration mismatch.
 
 ---
 
-### SPEC-03: Consola Multisig y Controles UI
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-03-console-ui`
+### SPEC-04: Consola Multisig y Controles UI
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-04-console-ui`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `state` (React Query hooks, wallet context), `qa` (verificar assertions en verde)
 - **Objetivo**: Implementar la consola multisig con el Header Governance Card, Audit Warning Banner, toggle global "Expandir Todos / Ocultar Todos", filas minimalistas con chevrons desplegables (Wallet Origen, Wallet Pago, Asset Pubkey, Mint Date, Fee Breakdown, Badge Override).
 - **Archivos a Crear**:
   - `apps/web/src/features/admin/presentation/treasury-console.tsx` (Layer 1 — Presentation: FDD feature component)
-- **DoD de SPEC-03**: Todos los tests de SPEC-01 en verde. La UI renderiza correctamente la alerta de auditoría, las filas y los controles globales.
+- **DoD de SPEC-04**: Todos los tests de SPEC-02 en verde. La UI renderiza correctamente la alerta de auditoría, las filas y los controles globales.
 
 ---
 
-### SPEC-04: Integración del Botón "Crear Propuesta Marco" en Distribuciones
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-04-distributions-button`
+### SPEC-05: Modal Interactivo de Creación de Distribución y Botón Squads
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-05-distributions-modal`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `state` (navegación y query invalidation)
-- **Objetivo**: Actualizar `distributions-console.tsx` para agregar el botón **"Crear Propuesta Marco Squads"** en corridas finalizadas que redirige a `/admin/treasury/squads?runId={id}`.
+- **Objetivo**: Actualizar `distributions-console.tsx` para agregar el modal interactivo de creación de distribución `[ + Nueva Distribución ]` conectado a `POST /api/admin/distributions/runs` y el botón **"Crear Propuesta Marco Squads"**.
 - **Archivos a Modificar**:
   - `apps/web/src/features/admin/presentation/distributions-console.tsx` (Layer 1 — Presentation: FDD feature component)
-- **DoD de SPEC-04**: Botón redirige correctamente; tests de SPEC-01 del botón en verde.
+- **DoD de SPEC-05**: Modal y botón interactivo completamente funcionales; tests unitarios y de integración en verde.
 
 ---
 
-### SPEC-05: Clean Code Audit & Refactoring
-- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-05-refactor-clean`
+### SPEC-06: Clean Code Audit & Refactoring
+- **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-06-refactor-clean`
 - **Subagente ejecutor**: `reviewer`
 - **Subagentes de apoyo**: `architect` (Gate 2 — diff audit, hydration safety), `frontend` (a11y review), `docs` (knowledge sync)
 - **Objetivo**: Auditoría de código limpio: naming, eliminación de dead code, consistencia de estilos, eliminación de `any` implícitos, verificación de accesibilidad (a11y) básica en los componentes.
@@ -108,7 +121,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - `pnpm validate` con 0 errores y 0 warnings.
   - No hay hydration mismatches.
   - Componentes separados por responsabilidad (SRP).
-- **DoD de SPEC-05**: Suite completa en verde, `pnpm validate` limpio y cero hallazgos bloqueantes.
+- **DoD de SPEC-06**: Suite completa en verde, `pnpm validate` limpio y cero hallazgos bloqueantes.
 
 ---
 
