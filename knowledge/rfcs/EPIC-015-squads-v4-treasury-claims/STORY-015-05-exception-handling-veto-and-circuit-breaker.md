@@ -34,13 +34,15 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - En la tabla de beneficiarios, el administrador puede vetar una fila individual **antes de sellar** el payout run (`seal_run`).
 - La reclamación pasa a estado `compliance_hold` o `disputed`.
 - Al vetar un ítem, el backend reconstruye el **Árbol de Merkle de la corrida**, excluyendo la hoja del ítem vetado y emitiendo una nueva raíz criptográfica (`merkleRoot`). Se invalida la propuesta previa y se genera un nuevo ciclo (snapshot → attestation → proposal).
-- **Post-seal:** La root es inmutable on-chain. No existe instrucción `revoke_leaf` ni PDA de revocación. El mecanismo post-seal es: circuit breaker → `pause_run` (propuesta Squads) → `cancel_run` → nuevo run.
+- **Post-seal:** La root es inmutable on-chain. No existe instrucción `revoke_leaf` ni PDA de revocación. El mecanismo post-seal es: circuit breaker → `pause_run` con firma de emergencia previamente autorizada por Squads → `cancel_run` N-de-M → nuevo run.
 
-### 3. Freno de Emergencia (`Emergency Circuit Breaker`) — Defensa de Dos Capas con Fast-Pause 1-de-M
+### 3. Freno de Emergencia (`Emergency Circuit Breaker`) — Defensa de Dos Capas con Firma de Pausa Delegada
 - Botón destacado en el monitor de ejecución para pausar de inmediato el worker desatendido **(capa local)**.
 - Detiene el despacho de los sublotes restantes del bot propio en ~50ms.
-- **Capa on-chain (Fast-Pause Inmediata — 1-de-M):** El modal permite que **cualquier miembro individual registrado en el Multisig de Squads** firme una transacción directa de `pause_run` desde su wallet conectada (~400ms en 1 slot), o mediante propuesta Vault. Esta es la **única** garantía de que ningún cranker externo o comprometido pueda ejecutar `settle_claim`.
-- **Asimetría de Seguridad:** La pausa es 1-de-M para reacción inmediata ante exploits, pero la reanudación (`resume_run`) o cancelación (`cancel_run`) exige estrictamente la aprobación multisig N-de-M de la Vault.
+- **Capa on-chain (Fast-Pause inmediata, sin umbral):** una propuesta Squads N-de-M configura una clave pública `emergency_pause_authority` en `TreasuryPolicy`. Cualquier persona o servicio puede retransmitir `pause_run`, pero debe adjuntar la firma Ed25519 vigente de esa clave sobre el mensaje canónico de pausa. Una Vault PDA de Squads no puede emitir una firma suelta: solo firma al ejecutar una propuesta, por lo que no se finge un “1-de-M” directo.
+- La firma solo es válida durante un máximo de 300 segundos, está ligada a policy, run, programa, versión de clave y `pause_nonce`, y queda registrada con `paused_at`/`paused_by`. La clave privada vive fuera del backend y su rotación requiere Vault N-de-M.
+- **Asimetría de Seguridad:** La clave delegada solo puede pausar. Reanudar (`resume_run`), cancelar (`cancel_run`), retirar fondos o cambiar/rotar la clave exige estrictamente una propuesta multisig N-de-M de la Vault.
+- **Antireplay:** `pause_run` exige la verificación Ed25519 inmediatamente anterior en la transacción, `expires_at` vigente y `pause_nonce` exacto. Al pausar consume/incrementa el nonce; una firma anterior no puede reutilizarse tras reanudar.
 - Los pagos ya confirmados con `ClaimReceipt` son inmutables; los pendientes quedan congelados on-chain.
 
 ### 4. Modelo de Amenazas Cero-Confianza (Paranoia Security Shield)

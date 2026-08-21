@@ -68,9 +68,12 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - `tests/api/create-payout-run-proposal.test.ts`
 - **Assertions**:
   - Dos calculadores sobre el mismo snapshot producen el mismo root, total, count y `snapshotHash`; una diferencia impide crear propuesta.
+  - Rust y TypeScript consumen el mismo fixture `tests/fixtures/payout-settlement-v1.json` y reproducen preimage de 191 bytes, leaf, root, proof, `snapshotHash` y ClaimReceipt PDA para árboles de 1, 2 y 3 hojas; UUID no canónico, `index >= itemCount` y proof de longitud incorrecta fallan. El caso de 1 leaf exige profundidad 1 y hermano `EMPTY`.
   - Una proof alterada, recipient/ATA/monto/mint/token-program distintos o run no sellado fallan en `settle_claim`.
   - La segunda liquidación de la misma leaf falla porque el `ClaimReceipt` PDA ya existe.
-  - La propuesta de setup contiene exactamente `initialize_run`, transfer al escrow y `seal_run`; no contiene una transferencia directa a un beneficiario.
+  - Una Vault PDA firmante derivada de otro multisig, `vault_index`, `create_key`, programa o cuenta Multisig con owner/discriminator inválido no puede inicializar ni actualizar policy. Solo la Vault exacta configurada puede hacerlo.
+  - `pause_run` acepta únicamente una instrucción Ed25519 inmediatamente anterior, con clave, mensaje, expiración y nonce exactos; firma vencida, key/version errónea o replay después de `resume_run` fallan. Una firma válida pausa aunque el relayer no sea miembro de Squads; no puede reanudar, cancelar, retirar ni cambiar policy.
+  - La propuesta de setup contiene exactamente `initialize_run`, transferencia al escrow y `seal_run`; no contiene una transferencia directa a un beneficiario. La mint Token-2022 con cualquier extensión, incluida `TransferFee` o `TransferHook`, se rechaza.
 - **Test Commands**:
   ```bash
   pnpm test tests/lib/payout-snapshot.test.ts
@@ -102,13 +105,13 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - `apps/web/src/features/staking-distribution/domain/payout-leaf.ts` (Layer 3 — Domain: snapshot determinista, leaf canónica, Merkle root)
   - `apps/web/src/features/staking-distribution/application/snapshot-verifier.ts` (Layer 3 — Application: recálculo independiente de root/total/count)
   - migración Drizzle/SQL para tabla `payout_snapshot_attestations`
-- **Contrato de salida**: `{runId, snapshotHash, snapshotVersion, rulesVersion, merkleRoot, totalAmountMinor, itemCount, orderedLeafHashes, expiry}` y una firma Ed25519 sobre el mensaje canónico definido en `SOLUTION-ARCHITECTURE.md`, una por cada attester. La salida es inválida si ambas attestations no coinciden byte a byte o provienen de la misma public key.
+- **Contrato de salida**: `{runId, snapshotHash, snapshotVersion, rulesVersion, merkleRoot, totalAmountMinor, itemCount, orderedLeafHashes, expiry}` y una firma Ed25519 sobre el mensaje binario canónico de `SOLUTION-ARCHITECTURE.md`, una por cada attester. La salida es inválida si ambas attestations no coinciden byte a byte, omiten `snapshotVersion`/policy/program ID, están vencidas o provienen de la misma public key.
 - **DoD de SPEC-03**: tests RED de encoding, orden, root, discrepancia e inmutabilidad en verde; ningún import de Squads, RPC ni programa settlement.
 
 ### SPEC-04: Programa `payout_settlement` — Run, Escrow y Sellado
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s01-04-settlement-program`
 - **Subagente ejecutor**: `solana`
-- **Subagentes de apoyo**: `security` (CPI/signer/Token-2022), `architect` (Gate 1 de paths e imports)
+- **Subagentes de apoyo**: `security` (CPI/signer/SPL Token allowlist), `architect` (Gate 1 de paths e imports)
 - **Responsabilidad única**: implementar `TreasuryPolicy`, `initialize_run` y `seal_run`. No construye snapshots, no crea propuestas y no ejecuta claims.
 - **Archivos a Crear**:
   - `programs/payout_settlement/src/lib.rs`
@@ -117,7 +120,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
   - `programs/payout_settlement/src/instructions/update_policy.rs`
   - `programs/payout_settlement/src/instructions/initialize_run.rs`
   - `programs/payout_settlement/src/instructions/seal_run.rs`
-- **DoD de SPEC-04**: sólo la Vault PDA signer verificada con 3 capas (signer + re-derivación contra `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` + owner check del multisig) puede inicializar/actualizar `TreasuryPolicy` e inicializar/sellar un run; `initialize_run` toma las public keys de la policy (nunca del request) y exige dos verificaciones Ed25519 del mensaje exacto; escrow owner/mint/token program y balance exacto se validan; run no es reinitializable ni modificable tras sellado.
+- **DoD de SPEC-04**: sólo la Vault PDA signer exacta puede inicializar/actualizar `TreasuryPolicy` e inicializar/sellar un run: se re-derivan Vault y Multisig con `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`, `multisigPda=rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD`, `vaultIndex=0`, `vaultPda=D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB` y el `create_key` real leído/verificado por RPC; se valida `multisig.owner`, discriminator, longitud, `threshold=2`, cuatro miembros esperados y permisos. La identidad Squads/Vault queda inmutable. `TreasuryPolicy` guarda la clave pública/version de pausa de emergencia, rotables solo por Vault. En V1, `mint=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` y `tokenProgram=TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`; SOL, otros mints y Token-2022 se rechazan antes de construir o ejecutar la propuesta. `initialize_run` toma las public keys de la policy (nunca del request) y exige dos verificaciones Ed25519 del mensaje binario exacto; almacena `snapshotVersion`; valida escrow, owner, mint, token program y balance exacto. `refund_unclaimed` queda limitado al ATA canónico de la Vault; run no es reinitializable ni modificable tras sellado.
 
 ---
 
@@ -138,7 +141,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Archivos a Crear**:
   - `apps/web/src/app/api/admin/payout-runs/create-proposal/route.ts` (Layer 2 — Application: endpoint REST de creación de propuesta)
   - `apps/web/src/features/staking-distribution/application/squads-setup-proposal.ts` (Layer 3 — Application: orquestación de la propuesta Vault)
-- **DoD de SPEC-06**: acepta sólo `runId`; resuelve el Authority Manifest server-side; exige dos attestationes coincidentes; simula y devuelve un paquete para firmar. Tras confirmación Devnet registra proposal, `PayoutRun`, escrow, signature, slot y evidencia RPC.
+- **DoD de SPEC-06**: acepta sólo `runId`; resuelve server-side `treasury_id=brids-devnet-gov-treasury` contra el Authority Manifest de `SOLUTION-ARCHITECTURE.md`; nunca acepta `multisigPda`, `vaultPda`, mint, token program, attesters ni settlement program desde el cliente. Antes de proponer, valida por RPC el programa Squads, Multisig, Vault PDA, threshold `2/4`, miembros/permisos, `create_key`, USDC/SPL Token, `TreasuryPolicy` y programa `payout_settlement` desplegado. Exige dos attestationes coincidentes e independientes; simula y devuelve un paquete para firmar. Tras confirmación Devnet registra proposal, `PayoutRun`, escrow, signature, slot y evidencia RPC.
 
 ---
 
@@ -175,8 +178,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 
 ### 4.1 Referencias Canónicas de la Industria (Merkle Distributor & Licenciamiento)
 - 🏆 **Referencia Open-Source Permisiva Seleccionada (Commit Pinneado)**: **Helium Lazy Distributor & Circuit Breaker**
-  - Repositorio: [github.com/helium/helium-program-library](https://github.com/helium/helium-program-library/tree/master/programs/lazy-distributor)
-  - Release / Tag: `program-lazy-distributor-v0.3.8` (Anchor `0.31.1` / Rust 2021)
+  - Repositorio: [Helium lazy-distributor en el commit fijado](https://github.com/helium/helium-program-library/tree/f3070dc43d7f76263e8e75631c812b5a61a31794/programs/lazy-distributor)
+  - Release / Tag: [`program-lazy-distributor-0.3.8`](https://github.com/helium/helium-program-library/tree/program-lazy-distributor-0.3.8) (Anchor `0.31.1` / Rust 2021).
+  - Commit inmutable: [`f3070dc43d7f76263e8e75631c812b5a61a31794`](https://github.com/helium/helium-program-library/commit/f3070dc43d7f76263e8e75631c812b5a61a31794). El tag no sustituye este SHA para revisiones de seguridad, atribución o comparación de divergencias.
   - Manifests: `programs/lazy-distributor/Cargo.toml` y `programs/circuit-breaker/Cargo.toml`
   - Licencia: Permisiva **Apache-2.0** (compatible 100% con uso comercial y sin copyleft).
   - **Estado de Auditoría:** Se adopta como **referencia de código open-source permisiva**, no como contrato auditado para BRIDS. No existe reporte de auditoría externa aportado para este commit ni para `payout_settlement`; se requerirá auditoría independiente formal previa a Mainnet.
@@ -207,7 +211,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | SPEC-02 (SDK) | PDA derivation, Multisig, Proposal y Vault Transaction | [Accounts reference](https://docs.squads.so/main/development/reference/accounts) |
 | SPEC-02 (SDK) | Program ID Devnet y API de TypeScript | [TypeScript overview](https://docs.squads.so/main/development/typescript/overview) |
 | SPEC-03 (Snapshot) | Hashing, encoding, proof y modelo de amenaza | `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación |
-| SPEC-04/05 (Program) | Merkle Tree verification, CPI signer, Token/Token-2022 | `solana-dev` + Goki/Helium Architecture Reference |
+| SPEC-04/05 (Program) | Merkle Tree verification, CPI signer, SPL Token allowlist | `solana-dev` + Goki/Helium Architecture Reference |
 | SPEC-06 (Proposal) | Crear/ejecutar Vault Transaction y votos | [TypeScript instructions](https://docs.squads.so/main/development/typescript/instructions) |
 | SPEC-07 (Cranker) | RPC, simulación, confirmación y cuentas no confiables | `solana-dev` §Agent safety guardrails |
 
@@ -231,4 +235,5 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | Receipt ya existe | `settle_claim` revierte; no hay doble pago |
 | Worker pierde RPC | Consultar primero receipt y firma con backoff; no duplicar envío |
 | Circuit breaker local activo | Bot propio no crea ni ejecuta; cranker externo aún puede settle. Requiere `pause_run` on-chain |
+| Pausa de emergencia retransmitida | Solo se congela si la instrucción Ed25519 inmediatamente anterior verifica el mensaje canónico, nonce y expiración vigentes; el relayer no recibe otros privilegios |
 | Setup no deja escrow con total exacto | `seal_run` revierte y la transacción atómica no deja run activo |
