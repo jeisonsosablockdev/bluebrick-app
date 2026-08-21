@@ -75,7 +75,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (verificar eliminación completa de rutas mutadoras), `architect` (Gate 1 — source of truth validation)
 - **Objetivo**: Actualizar `collection-patch-payload.ts` declarando `IMMUTABLE_PROJECT_DATE_FIELDS` y rechazando cualquier petición que contenga campos de fechas. Verificar que no quede ninguna ruta mutadora residual en el código.
 - **Archivos a Modificar**:
-  - `lib/admin/collection-patch-payload.ts`
+  - `apps/web/src/features/admin/domain/collection-patch-validator.ts` (Layer 3 — Domain: pure validation rules, 0 external deps)
 - **DoD de SPEC-02**: Validador rechazando mutaciones de fechas. Tests de SPEC-01 de inmutabilidad en verde.
 
 ---
@@ -86,8 +86,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `api` (integración con capa de consumo), `security` (validación cluster, program owner, discriminator)
 - **Objetivo**: Modificar `calculateDistributionPreparation` para que consulte `fetchProjectConfigPDAOnChain` directamente vía Solana RPC, validando cluster, program owner, PDA seeds, discriminator, account length y versión antes de decodificar. RPC fallido bloquea el cálculo.
 - **Archivos a Crear/Modificar**:
-  - `lib/distributions/distribution-engine.ts`
-  - `lib/solana-kit/pda/project-config-reader.ts`
+  - `apps/web/src/features/staking-distribution/application/distribution-engine.ts` (Layer 2 — Application: calculation service)
+  - `apps/web/src/lib/solana-kit/pda/project-config-reader.ts` (Layer 4 — Infrastructure: Solana RPC reader)
 - **DoD de SPEC-03**: Motor leyendo directamente de Solana. Tests de SPEC-01 de lectura RPC en verde.
 
 ---
@@ -98,10 +98,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `state` (notification state management), `security` (audit trail)
 - **Objetivo**: Implementar `POST /api/admin/collections/[id]/date-change-request` que crea intención auditable sin modificar Postgres. Implementar la UI del botón "Solicitar Cambio de Fecha" en `/admin/collections/[id]`, la notificación destacada en `/admin/notifications` y la pestaña "Gobernanza de Proyectos" en `/admin/treasury/squads`.
 - **Archivos a Crear/Modificar**:
-  - `app/api/admin/collections/[id]/date-change-request/route.ts`
+  - `apps/web/src/app/api/admin/collections/[id]/date-change-request/route.ts` (Layer 2 — Application/API: Next.js route)
   - Componente de solicitud de cambio de fecha en `/admin/collections/[id]`
   - Componente de notificación de gobernanza en `/admin/notifications`
-  - Pestaña de gobernanza en `squads-multisig-console.tsx`
+  - Pestaña de gobernanza en `apps/web/src/features/admin/presentation/treasury-console.tsx`
 - **DoD de SPEC-04**: Flujo UI/UX completo funcional. Tests de SPEC-01 del endpoint en verde.
 
 ---
@@ -112,7 +112,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (signature/slot verification)
 - **Objetivo**: Implementar el listener/indexador que sincroniza Postgres cuando una transacción de Squads ejecuta la instrucción `update_project_dates` en el programa `project_config_notary`. Guardar `observed_at`, `slot`, `signature`, `config_version` y estado de sincronización.
 - **Archivos a Crear**:
-  - `lib/solana-kit/indexers/project-config-indexer.ts`
+  - `apps/web/src/lib/solana-kit/indexers/project-config-indexer.ts` (Layer 4 — Infrastructure: Solana event indexer)
 - **DoD de SPEC-05**: Sincronización funcional con evidencia on-chain.
 
 ---

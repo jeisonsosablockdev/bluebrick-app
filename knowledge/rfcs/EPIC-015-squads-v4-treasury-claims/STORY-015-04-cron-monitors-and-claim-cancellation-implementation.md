@@ -73,8 +73,8 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (timing-safe `CRON_SECRET` comparison), `db` (advisory locks, windowed queries)
 - **Objetivo**: Implementar los endpoints `/api/cron/claims-expiry` y `/api/cron/compliance-ttl` con autenticación `CRON_SECRET` (comparación en tiempo constante), locking reentrante y queries con ventanas UTC.
 - **Archivos a Crear**:
-  - `app/api/cron/claims-expiry/route.ts`
-  - `app/api/cron/compliance-ttl/route.ts`
+  - `apps/web/src/app/api/cron/claims-expiry/route.ts` (Layer 2 — Application/API: Next.js cron route)
+  - `apps/web/src/app/api/cron/compliance-ttl/route.ts` (Layer 2 — Application/API: Next.js cron route)
 - **DoD de SPEC-02**: Endpoints funcionales. Tests de SPEC-01 de cron en verde.
 
 ---
@@ -85,7 +85,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (ownership validation, row locking), `solana` (verificar que no hay tx on-chain confirmada)
 - **Objetivo**: Implementar `POST /api/claims/[claimId]/cancel` con validación de propiedad del usuario, bloqueo de fila, verificación de que no hay transferencia on-chain confirmada y transición `CLAIM_REQUESTED -> CANCELED`.
 - **Archivos a Crear**:
-  - `app/api/claims/[claimId]/cancel/route.ts`
+  - `apps/web/src/app/api/claims/[claimId]/cancel/route.ts` (Layer 2 — Application/API: Next.js route)
 - **DoD de SPEC-03**: Endpoint funcional. Tests de SPEC-01 de cancelación en verde.
 
 ---

@@ -69,10 +69,10 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-02-page-route`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `architect` (Gate 1 — SSR boundary validation)
-- **Objetivo**: Crear la ruta `app/admin/treasury/squads/page.tsx` como Server Component que carga el DTO server-side con `proposalStatus`, `threshold`, `approvals`, `onChainDates`, `dbDates`.
+- **Objetivo**: Crear la ruta `apps/web/src/app/admin/treasury/squads/page.tsx` como Server Component que carga el DTO server-side con `proposalStatus`, `threshold`, `approvals`, `onChainDates`, `dbDates`.
 - **Archivos a Crear**:
-  - `app/admin/treasury/squads/page.tsx`
-  - `app/admin/treasury/squads/loading.tsx`
+  - `apps/web/src/app/admin/treasury/squads/page.tsx` (Layer 1 — Presentation: Server Component)
+  - `apps/web/src/app/admin/treasury/squads/loading.tsx` (Layer 1 — Presentation: Skeleton loading)
 - **DoD de SPEC-02**: Ruta montando con datos server-side; shell determinístico sin hydration mismatch.
 
 ---
@@ -81,9 +81,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Branch**: `SPEC/jaymusicmachine-BRI-8-s02-03-console-ui`
 - **Subagente ejecutor**: `frontend`
 - **Subagentes de apoyo**: `state` (React Query hooks, wallet context), `qa` (verificar assertions en verde)
-- **Objetivo**: Implementar `squads-multisig-console.tsx` con el Header Governance Card, Audit Warning Banner, toggle global "Expandir Todos / Ocultar Todos", filas minimalistas con chevrons desplegables (Wallet Origen, Wallet Pago, Asset Pubkey, Mint Date, Fee Breakdown, Badge Override).
+- **Objetivo**: Implementar la consola multisig con el Header Governance Card, Audit Warning Banner, toggle global "Expandir Todos / Ocultar Todos", filas minimalistas con chevrons desplegables (Wallet Origen, Wallet Pago, Asset Pubkey, Mint Date, Fee Breakdown, Badge Override).
 - **Archivos a Crear**:
-  - `components/admin/squads-multisig-console.tsx`
+  - `apps/web/src/features/admin/presentation/treasury-console.tsx` (Layer 1 — Presentation: FDD feature component)
 - **DoD de SPEC-03**: Todos los tests de SPEC-01 en verde. La UI renderiza correctamente la alerta de auditoría, las filas y los controles globales.
 
 ---
@@ -94,7 +94,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `state` (navegación y query invalidation)
 - **Objetivo**: Actualizar `distributions-console.tsx` para agregar el botón **"Crear Propuesta Marco Squads"** en corridas finalizadas que redirige a `/admin/treasury/squads?runId={id}`.
 - **Archivos a Modificar**:
-  - `components/admin/distributions-console.tsx`
+  - `apps/web/src/features/admin/presentation/distributions-console.tsx` (Layer 1 — Presentation: FDD feature component)
 - **DoD de SPEC-04**: Botón redirige correctamente; tests de SPEC-01 del botón en verde.
 
 ---

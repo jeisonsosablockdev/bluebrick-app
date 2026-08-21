@@ -84,7 +84,7 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (validar transiciones y optimistic locking), `db` (queries y locking)
 - **Objetivo**: Implementar la lógica de negocio del servicio de overrides: validación de address Solana, normalización de `case_number`, transiciones `PENDING -> APPROVED | REJECTED | EXPIRED`, optimistic locking/version e idempotencia.
 - **Archivos a Crear**:
-  - `lib/claims/payout-override-service.ts`
+  - `apps/web/src/features/staking-distribution/application/payout-override-service.ts` (Layer 2 — Application: domain orchestration service)
 - **DoD de SPEC-03**: Servicio de dominio compilando. Tests de SPEC-01 para las transiciones de estado en verde.
 
 ---
@@ -95,9 +95,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 - **Subagentes de apoyo**: `security` (validación Zod, permisos), `state` (React Query invalidation)
 - **Objetivo**: Implementar los endpoints API REST con esquemas Zod y actualizar `compliance-console.tsx` con el formulario de resolución de caso.
 - **Archivos a Crear/Modificar**:
-  - `app/api/admin/compliance/overrides/route.ts`
-  - `app/api/admin/compliance/overrides/[id]/approve/route.ts`
-  - `components/admin/compliance-console.tsx`
+  - `apps/web/src/app/api/admin/compliance/overrides/route.ts` (Layer 2 — Application/API: REST endpoint)
+  - `apps/web/src/app/api/admin/compliance/overrides/[id]/approve/route.ts` (Layer 2 — Application/API: REST endpoint)
+  - `apps/web/src/features/admin/presentation/compliance-console.tsx` (Layer 1 — Presentation: FDD feature component)
 - **DoD de SPEC-04**: Endpoints funcionando con validación Zod. Tests de SPEC-01 de la API en verde.
 
 ---
