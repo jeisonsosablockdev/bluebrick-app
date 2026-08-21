@@ -124,6 +124,7 @@
     "esbuild": "^0.28.0",
     "eslint": "9.21.0",
     "eslint-config-next": "^16.2.4",
+    "fast-check": "^4.9.0",
     "jsdom": "^29.1.0",
     "playwright-core": "^1.59.1",
     "postcss": "8.5.3",
