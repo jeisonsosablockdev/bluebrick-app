@@ -136,6 +136,32 @@ No se fija N-de-M, integrantes ni vault index por inferencia del wallet conectad
 | Cluster | `devnet` | ✅ Definido |
 | Squads V4 Program ID | `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` | ✅ RPC confirmado (`owner` del account Multisig) |
 | Multisig PDA | `rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD` | ✅ RPC confirmado (264 bytes, 2728320 lamports) |
+| `PAYOUT_SETTLEMENT_PROGRAM_ID` | `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` (Desplegado en Devnet Slot 486049609, Sig: `spygfgaiCNA...`) | ✅ **DESPLEGADO Y VERIFICADO EN DEVNET** |
+| `TREASURY_POLICY_PDA` | Derivable con seeds: `[b"treasury_policy", multisig_pda]` contra `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` | 🟢 Listo para inicialización en propuesta Squads (SPEC-06) |
+| Clave pública Attester A | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (Wallet CLI / Attestation Signer A) | 🟢 Configurada |
+| Clave pública Attester B | `AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi` (Attestation Signer B independiente) | 🟢 Configurada |
+| Emergency Pause Authority | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (Rotable por Squads Vault) | 🟢 Configurada |
+
+### 2.2 Secuencia de Despliegue e Inicialización Canónica
+
+> 1. ✅ **Completado**: Squads Multisig v4 configurado en Devnet (`rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD`, Vault `D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB`).
+> 2. ✅ **Completado**: Desplegar `payout_settlement` en Devnet — `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` (Slot 486049609).
+> 3. **SPEC-06**: Crear propuesta Squads `initialize_policy` ejecutada por la Vault `D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB` (índice 0).
+> 4. **SPEC-06**: Crear y fondear ATA de la Vault para USDC Devnet (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`).
+
+```env
+# Variables de entorno verificadas para Devnet
+SQUADS_PROGRAM_ID=SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf
+SQUADS_CREATE_KEY=AZGhDBuomd6cRf1LZoUNfk4fWn6HpoZjmp8dzZibZK7c
+SQUADS_MULTISIG_PDA=rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD
+SQUADS_VAULT_PDA=D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB
+PAYOUT_SETTLEMENT_PROGRAM_ID=HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE
+PAYOUT_USDC_MINT=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+PAYOUT_TOKEN_PROGRAM=TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+```
+
+| Campo | Valor | Estado |
+| --- | --- | --- |
 | Multisig `create_key` | `AZGhDBuomd6cRf1LZoUNfk4fWn6HpoZjmp8dzZibZK7c` | ✅ RPC decodificado + re-derivación verificada (bump=253) |
 | Multisig `config_authority` | `null` (Pubkey::default — 32 zero bytes) | ✅ RPC confirmado — Squad solo se reconfigura por sí mismo |
 | Vault index | `0` | ✅ Definido |

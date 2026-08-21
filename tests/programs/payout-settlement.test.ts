@@ -34,7 +34,7 @@ import {
  */
 describe('SPEC-04 Anchor Program payout_settlement Contract Specification (@spec SPEC-015-PROGRAM-SETTLEMENT)', () => {
   const SETTLEMENT_PROGRAM_ID = address(
-    process.env.PAYOUT_SETTLEMENT_PROGRAM_ID || 'J2xccRtuG43drESLYznHhLhQkLTdfepcKYbiQ9BsJVaf'
+    process.env.PAYOUT_SETTLEMENT_PROGRAM_ID || 'HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE'
   );
 
   const CANONICAL_MINT = address('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // USDC Devnet
