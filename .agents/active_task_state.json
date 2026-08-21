@@ -2,22 +2,22 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-015-01",
-  "spec_id": "SPEC-03",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s01-03-payout-snapshot",
+  "spec_id": "SPEC-04",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s01-04-settlement-program",
   "parent_branch": "feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims",
-  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
+  "current_phase": "PHASE_5_TESTS_RED",
   "human_design_approval": {
     "approved": true,
     "timestamp": "2026-08-20T21:12:53-05:00"
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-20T21:33:05-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-20T21:38:39-05:00" },
     "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-20T21:08:51-05:00" },
     "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:19:40-05:00" },
     "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:12:53-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-20T21:25:50-05:00", "note": "10 authentic unit tests in tests/lib/payout-snapshot.test.ts" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-20T21:38:16-05:00", "note": "Implemented payout-leaf.ts (191B leaf, Helium Merkle, 147B snapshotHash) — 10/10 tests GREEN" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-20T21:38:26-05:00", "note": "pnpm validate:architecture passed cleanly" },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": false },
     "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
