@@ -211,9 +211,9 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/rfc
 | SPEC-02 (SDK) | PDA derivation, Multisig, Proposal y Vault Transaction | [Accounts reference](https://docs.squads.so/main/development/reference/accounts) |
 | SPEC-02 (SDK) | Program ID Devnet y API de TypeScript | [TypeScript overview](https://docs.squads.so/main/development/typescript/overview) |
 | SPEC-03 (Snapshot) | Hashing, encoding, proof y modelo de amenaza | `SOLUTION-ARCHITECTURE.md` §Contrato de snapshot y doble verificación |
-| SPEC-04/05 (Program) | Merkle Tree verification, CPI signer, SPL Token allowlist | `solana-dev` + Goki/Helium Architecture Reference |
-| SPEC-06 (Proposal) | Crear/ejecutar Vault Transaction y votos | [TypeScript instructions](https://docs.squads.so/main/development/typescript/instructions) |
 | SPEC-07 (Cranker) | RPC, simulación, confirmación y cuentas no confiables | `solana-dev` §Agent safety guardrails |
+| SPEC-08 (Clean Code) | Auditoría de Clean Code, In-Code Commentary y Tipado Estricto | `clean-code` §Implementation Checklist |
+| SPEC-09 (Fuzzing) | Property-Based Fuzzing con fast-check y validación de invariantes | `solana-dev` §Security & Invariants |
 
 ---
 
