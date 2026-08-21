@@ -12,7 +12,7 @@
   "snapshotVersion": 1,
   "rulesVersion": 1,
   "mint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-  "tokenProgram": "TokenkegQfeZyiNwAJYbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   "itemCount": 3,
   "totalAmountMinor": "7000000",
   "snapshotPreimageHex": "62726964733a736e617073686f743a763101000000550e8400e29b41d4a7164466554400004644a7c98c594662497884ea6bdfb91b4fea6cabd69573bb96c60396308f7128c0cf6a00000000000300000001003b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9",
