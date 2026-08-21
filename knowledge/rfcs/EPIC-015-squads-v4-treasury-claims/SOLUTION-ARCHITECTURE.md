@@ -136,11 +136,39 @@ No se fija N-de-M, integrantes ni vault index por inferencia del wallet conectad
 | Cluster | `devnet` | ✅ Definido |
 | Squads V4 Program ID | `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf` | ✅ RPC confirmado (`owner` del account Multisig) |
 | Multisig PDA | `rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD` | ✅ RPC confirmado (264 bytes, 2728320 lamports) |
-| `PAYOUT_SETTLEMENT_PROGRAM_ID` | `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` (Desplegado en Devnet Slot 486049609, Sig: `spygfgaiCNA...`) | ✅ **DESPLEGADO Y VERIFICADO EN DEVNET** |
-| `TREASURY_POLICY_PDA` | Derivable con seeds: `[b"treasury_policy", multisig_pda]` contra `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` | 🟢 Listo para inicialización en propuesta Squads (SPEC-06) |
+| Multisig `create_key` | `AZGhDBuomd6cRf1LZoUNfk4fWn6HpoZjmp8dzZibZK7c` | ✅ RPC decodificado + re-derivación verificada (bump=253) |
+| Multisig `config_authority` | `null` (Pubkey::default — 32 zero bytes) | ✅ RPC confirmado — Squad solo se reconfigura por sí mismo |
+| Vault index | `0` | ✅ Definido |
+| Vault PDA | `D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB` | ✅ Re-derivación verificada (bump=250) |
+| Threshold | `2` de `4` miembros | ✅ RPC decodificado (u16 LE = 2) |
+| `time_lock` | **`0` segundos** (ejecución inmediata tras quórum) | ✅ RPC decodificado (u32 LE = 0) |
+| `transaction_index` | `0` (ninguna propuesta creada aún) | ✅ RPC decodificado |
+| Member 1 | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` — CLI Wallet Dev | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
+| Member 2 | `AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi` — Firmante Gobernanza 1 | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
+| Member 3 | `D4gcC27mX7qMqMGaszHdEjMLE3poC4jcpxm5nsGKPpRF` — Firmante Gobernanza 2 | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
+| Member 4 | `DhJ5pUo513rUARqDTy9W7AXaG4ET9ryX78iHxUP4YBgU` — Phantom Operador/Admin | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
+| Mint autorizado V1 | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` (USDC Devnet) | ✅ Definido |
+| Token Program autorizado V1 | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` (SPL Token clásico) | ✅ Definido |
+| Tokens adicionales | Ninguno | ✅ Definido; SOL y Token-2022 quedan prohibidos en V1 |
+| `PAYOUT_SETTLEMENT_PROGRAM_ID` | `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` | ✅ **DESPLEGADO EN DEVNET** |
+| `TREASURY_POLICY_PDA` | Derivable: `[b"treasury_policy", multisig_pda]` | 🟢 Listo para inicialización en propuesta Squads (SPEC-06) |
 | Clave pública Attester A | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (Wallet CLI / Attestation Signer A) | 🟢 Configurada |
 | Clave pública Attester B | `AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi` (Attestation Signer B independiente) | 🟢 Configurada |
 | Emergency Pause Authority | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (Rotable por Squads Vault) | 🟢 Configurada |
+
+### 2.1.1 📋 Evidencia On-Chain del Despliegue de `payout_settlement` (Devnet)
+
+| Atributo On-Chain | Valor Verificado en RPC |
+| :--- | :--- |
+| **Cluster** | `Solana Devnet` |
+| **Program ID** | [`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE`](https://explorer.solana.com/address/HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE?cluster=devnet) |
+| **ProgramData Address** | `Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuzQpF1D71K` |
+| **Program Owner** | `BPFLoaderUpgradeab1e11111111111111111111111` |
+| **Upgrade Authority** | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` (CLI Wallet) |
+| **Slot de Despliegue** | `486049609` |
+| **Firma de Transacción (Deploy Tx)** | `spygfgaiCNA9DMtyPfkhuYuX9FyPY6nZeqG9ZWPDtUCRnAqyxw6BC6CTZXvrkoUYTJUwhp58t3xA7tryKz8oE7R` |
+| **Tamaño del Bytecode** | `263,200 bytes` (257 KB) |
+| **Rent-Exemption Bloqueado** | `1.83307608 SOL` |
 
 ### 2.2 Secuencia de Despliegue e Inicialización Canónica
 
@@ -159,28 +187,6 @@ PAYOUT_SETTLEMENT_PROGRAM_ID=HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE
 PAYOUT_USDC_MINT=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
 PAYOUT_TOKEN_PROGRAM=TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
 ```
-
-| Campo | Valor | Estado |
-| --- | --- | --- |
-| Multisig `create_key` | `AZGhDBuomd6cRf1LZoUNfk4fWn6HpoZjmp8dzZibZK7c` | ✅ RPC decodificado + re-derivación verificada (bump=253) |
-| Multisig `config_authority` | `null` (Pubkey::default — 32 zero bytes) | ✅ RPC confirmado — Squad solo se reconfigura por sí mismo |
-| Vault index | `0` | ✅ Definido |
-| Vault PDA | `D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB` | ✅ Re-derivación verificada (bump=250); account aún sin fondear (value=null) |
-| Threshold | `2` de `4` miembros | ✅ RPC decodificado (u16 LE = 2) |
-| `time_lock` | **`0` segundos** (ejecución inmediata tras quórum) | ✅ RPC decodificado (u32 LE = 0) |
-| `transaction_index` | `0` (ninguna propuesta creada aún) | ✅ RPC decodificado |
-| Member 1 | `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd` — CLI Wallet Dev | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
-| Member 2 | `AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi` — Firmante Gobernanza 1 | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
-| Member 3 | `D4gcC27mX7qMqMGaszHdEjMLE3poC4jcpxm5nsGKPpRF` — Firmante Gobernanza 2 | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
-| Member 4 | `DhJ5pUo513rUARqDTy9W7AXaG4ET9ryX78iHxUP4YBgU` — Phantom Operador/Admin | ✅ RPC confirmado: permisos `7` (Propose \| Vote \| Execute) |
-| Mint autorizado V1 | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` (USDC Devnet) | ✅ Definido |
-| Token Program autorizado V1 | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` (SPL Token clásico) | ✅ Definido |
-| Tokens adicionales | Ninguno | ✅ Definido; SOL y Token-2022 quedan prohibidos en V1 |
-| `PAYOUT_SETTLEMENT_PROGRAM_ID` | **Pendiente de despliegue Devnet real** — requiere `anchor build && anchor deploy --provider.cluster devnet` | 🔴 Bloqueante para SPEC-04+ |
-| `TREASURY_POLICY_PDA` | **Derivable pero no inicializable aún** — seeds: `[b"treasury_policy", keccak256(b"brids-devnet-gov-treasury")]`; no puede crearse hasta que `payout_settlement` esté desplegado y se ejecute `initialize_policy` como propuesta Squads | 🔴 Bloqueante para SPEC-06; depende de `PAYOUT_SETTLEMENT_PROGRAM_ID` |
-| `PAYOUT_ATTESTER_A_PUBKEY` | **Pendiente de generación de keypair dedicado** — identidad del calculador de snapshots; debe ser custodia independiente del operador y del cranker | 🟡 Bloqueante para `initialize_policy`; puede generarse con `solana-keygen grind` antes de deploy |
-| `PAYOUT_ATTESTER_B_PUBKEY` | **Pendiente de generación de keypair dedicado** — identidad del verificador independiente; no puede coincidir con Attester A ni con ningún member del multisig | 🟡 Bloqueante para `initialize_policy`; puede generarse antes de deploy |
-| `EMERGENCY_PAUSE_AUTHORITY_PUBKEY` | **Pendiente de generación de keypair dedicado y aprobación on-chain** — se registrará en `TreasuryPolicy` mediante propuesta Squads N-de-M (`initialize_policy` o `update_policy`); la clave puede ser custodiada por el operador pero solo sirve para `pause_run` | 🟡 Bloqueante para fast-pause; depende de `initialize_policy` |
 
 > [!WARNING]
 > **Timelock actual = 0 segundos.** El multisig Devnet no tiene time lock configurado. Para el EPIC-015 de treasury claims, el target de diseño es `900` segundos (15 min) para propuestas de tesorería, lo cual requiere una propuesta Squads de reconfiguración (`configTransactionCreate` con `changeTimeLock`) antes de operar runs en producción Devnet. Para los primeros SPECs de TDD y desarrollo, `time_lock=0` es aceptable; la activación del timelock se documenta como prerequisito de la etapa de integración E2E.
