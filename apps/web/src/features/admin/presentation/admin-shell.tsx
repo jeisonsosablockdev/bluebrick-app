@@ -1,19 +1,27 @@
 "use client";
 
+/**
+ * =========================================================================================
+ * Layer 1: Presentation Layer — Admin Shell Layout
+ * Component: AdminShell
+ * Description: Master administrative navigation shell with high-fidelity dark glassmorphic
+ *              sidebar, responsive mobile drawer, and dynamic breadcrumbs.
+ * =========================================================================================
+ */
+
 import { usePathname } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { Suspense, useMemo, useState } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import {
-  AdminNavigation,
+  AdminNavigationSectionBlock,
   buildAdminNavigation,
   resolveCurrentAdminLabel
 } from "@/features/admin/presentation/admin-shell-navigation";
 import { MainTopNavigationModal } from "@/components/main-top-navigation-modal";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 type AdminShellProps = {
   authenticatedPublicKey: string;
@@ -31,12 +39,27 @@ function AdminSidebarHeader({
   action?: ReactNode;
 }): ReactElement {
   return (
-    <div className="admin-sidebar-header space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{title}</p>
+    <div className="space-y-3 border-b border-white/10 pb-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-emerald-500 text-xs font-bold text-slate-950 shadow-md">
+            🛡️
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-white">{title}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] text-emerald-400 font-mono">Devnet Cluster</span>
+            </div>
+          </div>
+        </div>
         {action}
       </div>
-      <p className="admin-sidebar-wallet text-xs">{walletLabel}</p>
+
+      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs">
+        <span className="text-[10px] text-slate-400 font-mono">Operator</span>
+        <span className="font-mono text-[11px] font-semibold text-cyan-300 truncate max-w-[130px]">{walletLabel}</span>
+      </div>
     </div>
   );
 }
@@ -47,11 +70,10 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const adminNav = useMemo(() => buildAdminNavigation(t), [t]);
-
   const currentLabel = useMemo(() => resolveCurrentAdminLabel(pathname, adminNav), [adminNav, pathname]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden py-6 md:py-8">
+    <main className="min-h-screen overflow-x-hidden py-6 md:py-8 bg-slate-950 text-slate-100">
       <div className="mx-auto mb-4 max-w-6xl px-4 md:px-6">
         <Suspense fallback={null}>
           <MainTopNavigationModal
@@ -64,77 +86,91 @@ export function AdminShell({ authenticatedPublicKey, walletLabel, children }: Ad
         </Suspense>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[270px,1fr] lg:gap-6">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 lg:grid lg:grid-cols-[260px,1fr] lg:gap-6">
+        {/* Desktop Sleek Sidebar */}
         <aside className="hidden lg:block">
-          <Card className="glass-surface admin-sidebar sticky top-6 flex h-[calc(100vh-3rem)] flex-col bg-transparent p-4">
+          <div className="sticky top-6 flex h-[calc(100vh-3rem)] flex-col rounded-3xl border border-white/10 bg-slate-900/90 p-4 shadow-2xl backdrop-blur-2xl">
             <AdminSidebarHeader
               title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
               walletLabel={walletLabel}
             />
-            <div className="admin-sidebar-scroll no-scrollbar mt-4 flex-1 overflow-y-auto pr-1">
-              <AdminNavigation pathname={pathname} sections={adminNav} />
+            <div className="no-scrollbar mt-3 flex-1 overflow-y-auto pr-1 space-y-4">
+              {adminNav.map((section) => (
+                <AdminNavigationSectionBlock
+                  key={section.section}
+                  section={section}
+                  pathname={pathname}
+                />
+              ))}
             </div>
-          </Card>
+          </div>
         </aside>
 
-        <section className="space-y-5">
+        {/* Main Content Area */}
+        <section className="space-y-6">
           <header className="space-y-3 border-b border-white/10 pb-4">
             <div className="flex items-center justify-between gap-2">
               <Button
                 aria-label={t({ en: "Open admin menu", es: "Abrir menu admin", pt: "Abrir menu admin" })}
-                className="min-h-11 min-w-11 px-0 lg:hidden"
+                className="min-h-10 px-3 text-xs lg:hidden border border-white/10 bg-white/5"
                 variant="ghost"
                 onClick={() => setIsDrawerOpen(true)}
               >
-                {t({ en: "Menu", es: "Menu", pt: "Menu" })}
+                ☰ {t({ en: "Menu", es: "Menú", pt: "Menu" })}
               </Button>
-              <div className="ml-auto rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-white/80">{walletLabel}</div>
+              <div className="ml-auto rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 font-mono text-xs text-cyan-300">
+                {walletLabel}
+              </div>
             </div>
-            <nav aria-label="breadcrumb" className="text-xs text-white/60">
-              <span className="text-white/80">{t({ en: "Admin", es: "Admin", pt: "Admin" })}</span>
-              <span className="px-1">/</span>
-              <span>{currentLabel}</span>
+            <nav aria-label="breadcrumb" className="text-xs text-slate-400">
+              <span className="text-slate-300 font-medium">{t({ en: "Admin", es: "Admin", pt: "Admin" })}</span>
+              <span className="px-2 text-slate-600">/</span>
+              <span className="text-cyan-400 font-semibold">{currentLabel}</span>
             </nav>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
-                {t({ en: "Administrative operations", es: "Operacion administrativa", pt: "Operacao administrativa" })}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+                {t({ en: "Administrative operations", es: "Operación Administrativa", pt: "Operacao Administrativa" })}
               </p>
-              <h1 className="text-2xl font-semibold text-white">{currentLabel}</h1>
+              <h1 className="text-2xl font-bold text-white tracking-tight sm:text-3xl">{currentLabel}</h1>
             </div>
           </header>
 
-          <RouteTransition routeKey={pathname} className="space-y-5" mode="navigation-origin">
+          <RouteTransition routeKey={pathname} className="space-y-6" mode="navigation-origin">
             {children}
           </RouteTransition>
         </section>
       </div>
 
+      {/* Mobile Drawer */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden flex">
           <button
             aria-label={t({ en: "Close admin menu", es: "Cerrar menu admin", pt: "Fechar menu admin" })}
-            className="absolute inset-0 bg-black/70"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />
-          <aside className="glass-surface admin-sidebar relative flex h-full w-[88%] max-w-sm flex-col rounded-r-3xl border-l-0 bg-transparent p-4">
+          <aside className="relative z-10 flex h-full w-[85%] max-w-xs flex-col border-r border-white/10 bg-slate-950 p-4 shadow-2xl">
             <AdminSidebarHeader
               title={t({ en: "Admin Console", es: "Consola Admin", pt: "Console Admin" })}
               walletLabel={walletLabel}
               action={(
-                <Button className="min-h-11" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
-                  {t({ en: "Close", es: "Cerrar", pt: "Fechar" })}
+                <Button className="h-8 px-2 text-xs" variant="ghost" onClick={() => setIsDrawerOpen(false)}>
+                  ✕
                 </Button>
               )}
             />
 
-            <div className="admin-sidebar-scroll no-scrollbar mt-4 flex-1 overflow-y-auto pr-1">
-              <AdminNavigation
-                onNavigate={() => setIsDrawerOpen(false)}
-                pathname={pathname}
-                sectionKeyPrefix="mobile"
-                sections={adminNav}
-              />
+            <div className="no-scrollbar mt-3 flex-1 overflow-y-auto pr-1 space-y-4">
+              {adminNav.map((section) => (
+                <AdminNavigationSectionBlock
+                  key={`mobile-${section.section}`}
+                  section={section}
+                  pathname={pathname}
+                  onNavigate={() => setIsDrawerOpen(false)}
+                  sectionKeyPrefix="mobile"
+                />
+              ))}
             </div>
           </aside>
         </div>
