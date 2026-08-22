@@ -10,13 +10,26 @@
 use anchor_lang::prelude::*;
 
 pub mod errors;
+pub mod instructions;
 pub mod state;
+
+use instructions::*;
 
 declare_id!("HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE");
 
 #[program]
 pub mod project_config_notary {
     use super::*;
+
+    /// Initializes a new ProjectConfig PDA bound to a Metaplex Core collection
+    pub fn initialize_project_config(
+        ctx: Context<InitializeProjectConfig>,
+        start_at: i64,
+        end_at: i64,
+        vault_index: u8,
+    ) -> Result<()> {
+        instructions::initialize::handler(ctx, start_at, end_at, vault_index)
+    }
 
     /// Health ping returning program version
     pub fn ping(_ctx: Context<PingContext>) -> Result<()> {
