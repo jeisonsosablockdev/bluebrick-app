@@ -1,3 +1,16 @@
+/**
+ * =========================================================================================
+ * Layer 1: Presentation Layer — Compliance Administration Console
+ * Module: compliance-console.tsx
+ * Description: Administrative interface for KYC/AML verification reviews, wallet status control,
+ *              audit trails, and two-step payout wallet reassignment (overrides) with case linking.
+ * Invariants:
+ *  - Sober /profile visual hierarchy: zero emojis/emoticons in headers/buttons.
+ *  - Mandatory case_number linking for all payout override submissions.
+ *  - Client-side optimistic locking and error handling with clear localized messages.
+ * =========================================================================================
+ */
+
 "use client";
 
 import type { ReactElement } from "react";
@@ -24,11 +37,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
+/**
+ * Properties for the ComplianceConsole component.
+ */
 type ComplianceConsoleProps = {
+  /** Initial paginated compliance queue data pre-rendered on the server */
   initialData: ListComplianceCasesResult | null;
+  /** Optional initial status filter parameter */
   initialStatus?: ComplianceStatus;
 };
 
+/** Available status filter options for the compliance verification queue */
 const STATUS_OPTIONS: Array<{ value: "all" | ComplianceStatus; label: string }> = [
   { value: "all", label: "all" },
   { value: "pending_kyc", label: "pending_kyc" },
@@ -39,10 +58,17 @@ const STATUS_OPTIONS: Array<{ value: "all" | ComplianceStatus; label: string }> 
   { value: "suspended", label: "suspended" }
 ];
 
+/**
+ * Normalizes filter selection for API consumption.
+ */
 function normalizeStatusFilter(value: "all" | ComplianceStatus): ComplianceStatus | null {
   return value === "all" ? null : value;
 }
 
+/**
+ * Returns Tailwind pill badge CSS classes according to compliance status.
+ * @param value Current compliance state
+ */
 function statusBadgeClass(value: ComplianceStatus): string {
   if (value === "fully_verified") {
     return "bg-emerald-500/20 text-emerald-200";
@@ -55,6 +81,9 @@ function statusBadgeClass(value: ComplianceStatus): string {
   return "bg-amber-500/20 text-amber-200";
 }
 
+/**
+ * Truncates base58 address string with ellipsis in the middle.
+ */
 function truncateMiddle(value: string, left = 6, right = 6): string {
   if (!value || value.length <= left + right + 3) {
     return value;
@@ -63,6 +92,9 @@ function truncateMiddle(value: string, left = 6, right = 6): string {
   return `${value.slice(0, left)}...${value.slice(-right)}`;
 }
 
+/**
+ * Formats ISO date string to human-readable timestamp.
+ */
 function formatDate(value: string | null | undefined): string {
   if (!value) {
     return "n/a";
@@ -76,10 +108,17 @@ function formatDate(value: string | null | undefined): string {
   return parsed.toISOString().replace("T", " ").slice(0, 16);
 }
 
+/**
+ * Normalizes empty pagination cursor tokens.
+ */
 function normalizeCursorToken(value: string): string | null {
   return value ? value : null;
 }
 
+/**
+ * ComplianceConsole Component
+ * Layer 1 Presentation console providing KYC/AML review queues and payout override case resolutions.
+ */
 export function ComplianceConsole({ initialData, initialStatus }: ComplianceConsoleProps): ReactElement {
   const { t } = useI18n();
   const [statusFilter, setStatusFilter] = useState<"all" | ComplianceStatus>(initialStatus ?? "all");
@@ -117,11 +156,13 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   const [overrideSuccess, setOverrideSuccess] = useState<string | null>(null);
   const [isOverrideSubmitting, setIsOverrideSubmitting] = useState(false);
 
+  // Step 1: Memoize pending cases count for compliance metrics
   const pendingCount = useMemo(() => {
     const items = queue?.items ?? [];
     return items.filter((item) => item.complianceStatus !== "fully_verified").length;
   }, [queue]);
 
+  // Step 2: Fetch compliance queue with status filter and pagination cursor
   const loadQueue = useCallback(async (input?: { status?: "all" | ComplianceStatus; cursor?: string | null }) => {
     const requestedStatus = input?.status ?? statusFilter;
     const requestedCursor = typeof input?.cursor === "undefined" ? currentCursor : input.cursor;
@@ -142,6 +183,7 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, [currentCursor, statusFilter]);
 
+  // Step 3: Fetch single wallet compliance case details, notes, and audit events
   const loadDetail = useCallback(async (walletPublicKey: string) => {
     setSelectedWallet(walletPublicKey);
     setIsDetailLoading(true);
@@ -160,6 +202,7 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, []);
 
+  // Step 4: Refresh case notes list for active case
   const refreshNotes = useCallback(async (walletPublicKey: string) => {
     setIsNotesLoading(true);
     setNotesError(null);
@@ -173,12 +216,14 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, []);
 
+  // Step 5: Effect to load initial queue if not preloaded on server
   useEffect(() => {
     if (!initialData) {
       void loadQueue({ status: statusFilter, cursor: currentCursor });
     }
   }, [currentCursor, initialData, loadQueue, statusFilter]);
 
+  // Step 6: Unified error boundary and runner for admin actions
   const runAction = useCallback(async (label: string, work: () => Promise<void>) => {
     setActionState(label);
     setIsActionRunning(true);
@@ -637,6 +682,7 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
                 setOverrideError(null);
 
                 try {
+                  // Step 1: Submit override request to Application API Layer
                   const response = await fetch("/api/admin/compliance/overrides", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -648,16 +694,20 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
                     })
                   });
 
+                  // Step 2: Validate API response payload
                   const payload = await response.json();
                   if (!response.ok || !payload.ok) {
                     throw new Error(payload.error?.message ?? "Failed to create override request.");
                   }
 
+                  // Step 3: Display success feedback and dismiss modal
                   setOverrideSuccess(`Override ${payload.data.id} registrado exitosamente en estado PENDING.`);
                   setIsOverrideModalOpen(false);
                 } catch (err) {
+                  // Step 4: Capture error message and display to administrator
                   setOverrideError(err instanceof Error ? err.message : "Error inesperado.");
                 } finally {
+                  // Step 5: Reset submitting state
                   setIsOverrideSubmitting(false);
                 }
               }}
