@@ -120,15 +120,15 @@ export async function prepareSquadsVoteTransaction(
   const notaryPubkey = new PublicKey(notaryPda);
   const notaryProgramPubkey = new PublicKey(PROJECT_CONFIG_NOTARY_PROGRAM_ID.toString());
 
-  // Step 4: Construct the on-chain governance vote instruction
-  // Discriminator for notary ping / governance validation
+  // Step 4: Construct the on-chain governance vote / ping instruction
+  // Anchor discriminator for ping instruction: sha256("global:ping")[0..8]
+  const pingDiscriminator = Buffer.from([173, 0, 94, 236, 73, 133, 225, 153]);
   const voteInstruction = new TransactionInstruction({
     programId: notaryProgramPubkey,
     keys: [
-      { pubkey: signerPubkey, isSigner: true, isWritable: true },
-      { pubkey: notaryPubkey, isSigner: false, isWritable: false }
+      { pubkey: signerPubkey, isSigner: true, isWritable: true }
     ],
-    data: Buffer.from([235, 237, 244, 28, 140, 169, 137, 219]) // Anchor discriminator for ping / audit vote
+    data: pingDiscriminator
   });
 
   // Step 5: Compile VersionedTransaction message

@@ -48,27 +48,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { proposalId, signerWallet, signedTransactionBase64 } = parsed.data;
 
-    let txSignature = "";
-    let solscanUrl = "";
-    let slot = 0;
-
-    // Step 2: If a signed transaction was submitted, broadcast to Solana Devnet
-    if (signedTransactionBase64) {
-      try {
-        const broadcastResult = await broadcastSignedTransaction(signedTransactionBase64);
-        txSignature = broadcastResult.txSignature;
-        solscanUrl = broadcastResult.solscanUrl;
-        slot = broadcastResult.slot;
-      } catch (broadcastErr) {
-        // If broadcast fails with non-critical RPC error in mock test environment, handle gracefully
-        const errMsg = broadcastErr instanceof Error ? broadcastErr.message : "Error al transmitir transacción.";
-        txSignature = `devnet-tx-${Date.now()}`;
-        solscanUrl = getSolscanTransactionUrl(txSignature);
-      }
-    } else {
-      txSignature = `devnet-tx-${Date.now()}`;
-      solscanUrl = getSolscanTransactionUrl(txSignature);
+    // Step 2: Validate and broadcast real signed transaction to Solana Devnet
+    if (!signedTransactionBase64) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "MISSING_SIGNED_TRANSACTION",
+          message: "Se requiere la transacción firmada criptográficamente por la wallet para transmitir a Solana Devnet."
+        },
+        { status: 400 }
+      );
     }
+
+    const broadcastResult = await broadcastSignedTransaction(signedTransactionBase64);
+    const txSignature = broadcastResult.txSignature;
+    const solscanUrl = broadcastResult.solscanUrl;
+    const slot = broadcastResult.slot;
 
     // Step 3: Retrieve the date change proposal and update on-chain status
     const proposal = getDateChangeProposal(proposalId);
