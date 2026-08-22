@@ -28,6 +28,7 @@ export type ClaimStatus =
   | "executed"
   | "failed"
   | "expired"
+  | "canceled"
   | "clawback_to_treasury";
 
 export type DistributionClaimRecord = {
@@ -356,6 +357,76 @@ export async function submitPayoutOverride(input: {
         }),
         claimId,
         walletPublicKey
+      ]
+    );
+
+    return mapClaimRow(rows[0]!);
+  });
+}
+
+/**
+ * Cancels an active user claim request.
+ * What: Transitions pending claim request to canceled state.
+ * How: Verifies caller owns the claim, locks row FOR UPDATE, enforces cancellable status, updates status to 'canceled', and logs audit event.
+ */
+export async function cancelClaimQuote(input: {
+  claimId: string;
+  userWallet: string;
+}): Promise<DistributionClaimRecord> {
+  const { claimId, userWallet } = input;
+
+  return withDbClient(async (client) => {
+    // Step 1: Query claim with row lock FOR UPDATE
+    const { rows: existingRows } = await client.query<DistributionClaimRow>(
+      `SELECT * FROM distribution_claims WHERE id = $1 FOR UPDATE`,
+      [claimId]
+    );
+
+    if (existingRows.length === 0) {
+      throw new ClaimFlowError("CLAIM_NOT_FOUND", `Claim quote not found: ${claimId}`);
+    }
+
+    const claim = existingRows[0]!;
+
+    // Step 2: Enforce ownership check
+    if (claim.wallet_public_key !== userWallet && claim.payout_wallet !== userWallet) {
+      throw new ClaimFlowError("FORBIDDEN_OWNERSHIP", "You do not own this claim request.");
+    }
+
+    // Step 3: Enforce cancellable state (only quote_created or claim_requested can be cancelled)
+    if (!["quote_created", "claim_requested"].includes(claim.status)) {
+      throw new ClaimFlowError(
+        "INVALID_CLAIM_STATUS",
+        `Cannot cancel claim in status '${claim.status}'. Only pending claims can be cancelled.`
+      );
+    }
+
+    // Step 4: Update status to 'canceled'
+    const { rows } = await client.query<DistributionClaimRow>(
+      `UPDATE distribution_claims
+       SET status = 'canceled',
+           updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [claimId]
+    );
+
+    // Step 5: Insert immutable audit log event
+    await client.query(
+      `INSERT INTO claim_or_payout_events (
+         id, event_type, claim_id, run_id, wallet, amount_minor, token_mint, reason, metadata
+       ) VALUES ($1, 'CLAIM_CANCELED_BY_USER', $2, $3, $4, $5, '', 'user_cancellation', $6)`,
+      [
+        generateUuidV7(),
+        claim.id,
+        claim.run_id,
+        userWallet,
+        claim.net_amount_minor.toString(),
+        JSON.stringify({
+          canceledBy: userWallet,
+          previousStatus: claim.status,
+          canceledAt: new Date().toISOString()
+        })
       ]
     );
 
