@@ -1,28 +1,44 @@
-//! Layer: Layer 4 — Infrastructure / Smart Contracts
-//! Module: update_project_dates instruction for Project Config Notary program
+//! =========================================================================================
+//! Layer: Layer 4 — Infrastructure / Smart Contracts (Solana Anchor Runtime)
+//! Program: project_config_notary
+//! Instruction: update_project_dates
 //!
-//! What: Updates notarized start and end dates for a project configuration.
-//! How: Validates 3-Layer Squads Vault PDA signer check via CPI and enforces new_start_at <= new_end_at.
+//! 🏛️ PROPÓSITO:
+//! Actualiza de forma segura y notarizada las fechas de inicio (`start_at`) y fin (`end_at`)
+//! de un proyecto inmobiliario en su PDA Notario on-chain.
+//!
+//! 🛡️ REGLAS DE SEGURIDAD & MODELO DE 3 CAPAS:
+//! 1. `authority_vault` DEBE ser un firmante (`Signer`). Dado que es un PDA sin clave privada,
+//!    esta firma SOLO puede originarse mediante una invocación Cross-Program (CPI) ejecutada
+//!    por el programa de Squads v4 tras haber alcanzado el quórum del comité multisig.
+//! 2. `has_one = authority_vault`: Verifica que la Vault firmante coincida con la registrada en el PDA.
+//! 3. `has_one = multisig`: Verifica que el multisig coincida con el registrado en el PDA.
+//! 4. `has_one = collection_address`: Verifica que la colección pertenezca a este PDA.
+//! 5. Re-derivación en tiempo de ejecución: Re-deriva la Vault PDA contra `SQUADS_V4_PROGRAM_ID`.
+//! 6. Invariante temporal: `new_start_at <= new_end_at`.
+//! =========================================================================================
 
 use anchor_lang::prelude::*;
 
 use crate::errors::ProjectConfigError;
 use crate::state::{ProjectConfigState, PROJECT_CONFIG_SEED, SQUADS_V4_PROGRAM_ID};
 
+/// Estructura de cuentas validadas para la actualización de fechas notarizadas
 #[derive(Accounts)]
 pub struct UpdateProjectDates<'info> {
-    /// Squads Vault PDA executing this update instruction via CPI
+    /// 🏛️ Vault PDA de Squads v4 ejecutando esta actualización mediante CPI
+    /// Esta cuenta DEBE ser firmante (`Signer`). Nadie puede falsificar su firma sin la aprobación de Squads.
     pub authority_vault: Signer<'info>,
 
-    /// Squads Multisig Account matching configuration state
-    /// CHECK: Validated against state.multisig and SQUADS_V4_PROGRAM_ID owner check
+    /// 🤝 Cuenta Multisig de Squads v4
+    /// CHECK: Validado en el handler contra `state.multisig` y comprobación de owner de Squads v4.
     pub multisig_account: UncheckedAccount<'info>,
 
-    /// Metaplex Core Collection Pubkey associated with this project
-    /// CHECK: Validated against state.collection_address
+    /// 🎨 Dirección de la Colección Metaplex Core del proyecto
+    /// CHECK: Validado en constraints de Anchor contra `state.collection_address`.
     pub collection_address: UncheckedAccount<'info>,
 
-    /// Project configuration account to update
+    /// 📝 Cuenta PDA Notario que se actualizará
     #[account(
         mut,
         seeds = [PROJECT_CONFIG_SEED, collection_address.key().as_ref()],
@@ -34,6 +50,7 @@ pub struct UpdateProjectDates<'info> {
     pub project_config: Account<'info, ProjectConfigState>,
 }
 
+/// Evento de auditoría emitido en la blockchain cuando las fechas son modificadas exitosamente
 #[event]
 pub struct ProjectDatesUpdated {
     pub collection_address: Pubkey,
@@ -46,30 +63,30 @@ pub struct ProjectDatesUpdated {
     pub timestamp: i64,
 }
 
-/// Updates start and end dates of a ProjectConfig PDA under strict Squads Vault authority.
+/// Manejador de la instrucción `update_project_dates`
 ///
-/// Step-by-Step Logic:
-/// // Step 1: Validate new date range invariant (new_start_at <= new_end_at).
-/// // Step 2: Validate that multisig_account is owned by Squads v4 program ID.
-/// // Step 3: Re-derive expected Squads Vault PDA and assert authority_vault matches.
-/// // Step 4: Record previous values, apply updates, increment version, update timestamp.
-/// // Step 5: Emit ProjectDatesUpdated event.
+/// Lógica Paso a Paso:
+/// // Paso 1: Validar que el nuevo rango de fechas sea coherente (new_start_at <= new_end_at).
+/// // Paso 2: Validar que multisig_account sea propiedad del program ID de Squads v4.
+/// // Paso 3: Re-derivar la Vault PDA esperada y verificar que coincida exactamente con authority_vault.
+/// // Paso 4: Guardar valores anteriores para auditoría, aplicar nuevas fechas e incrementar versión.
+/// // Paso 5: Emitir evento público ProjectDatesUpdated en Solana.
 pub fn handler(
     ctx: Context<UpdateProjectDates>,
     new_start_at: i64,
     new_end_at: i64,
 ) -> Result<()> {
-    // Step 1: Validate date range
+    // Paso 1: Validar coherencia temporal
     require!(new_start_at <= new_end_at, ProjectConfigError::InvalidDateRange);
 
-    // Step 2: Validate Squads Multisig Account Owner
+    // Paso 2: Validar que la cuenta multisig sea de Squads v4
     require_keys_eq!(
         *ctx.accounts.multisig_account.owner,
         SQUADS_V4_PROGRAM_ID,
         ProjectConfigError::InvalidMultisigAccount
     );
 
-    // Step 3: Re-derive Squads Vault PDA
+    // Paso 3: Re-derivar la Vault PDA de Squads v4 y asegurar autenticidad
     let config = &mut ctx.accounts.project_config;
     let (expected_vault_pda, _) = Pubkey::find_program_address(
         &[
@@ -87,7 +104,7 @@ pub fn handler(
         ProjectConfigError::UnauthorizedAuthority
     );
 
-    // Step 4: Apply date update and increment version
+    // Paso 4: Aplicar cambios de fechas, incrementar versión y actualizar timestamp
     let clock = Clock::get()?;
     let now = clock.unix_timestamp;
 
@@ -99,7 +116,7 @@ pub fn handler(
     config.version = config.version.saturating_add(1);
     config.updated_at = now;
 
-    // Step 5: Emit audit event
+    // Paso 5: Emitir evento inmutable de auditoría en la blockchain
     emit!(ProjectDatesUpdated {
         collection_address: config.collection_address,
         authority_vault: config.authority_vault,

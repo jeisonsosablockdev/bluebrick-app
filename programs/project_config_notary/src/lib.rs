@@ -1,11 +1,20 @@
-//! Layer: Layer 4 — Infrastructure / Smart Contracts
+//! =========================================================================================
+//! Layer: Layer 4 — Infrastructure / Smart Contracts (Solana Anchor Framework)
 //! Program: project_config_notary
-//! Description: Squads v4 Authorized On-Chain Project Configuration & Dates Notary Program
+//! Program ID: HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE
 //!
-//! Security Invariants:
-//! - Canonical PDA derivation: `[b"project_config", collection_address]`.
-//! - Strict 3-Layer Squads Vault PDA verification for all write operations.
-//! - Enforces `start_at <= end_at` date invariant.
+//! 🏛️ RESUMEN ARQUITECTÓNICO DEL PROGRAMA NOTARIO:
+//! Este programa de Solana es el custodio inmutable de los parámetros y fechas oficiales
+//! de los proyectos tokenizados en BRIDS.
+//!
+//! 🔐 GARANTÍAS CRIPTOGRÁFICAS PRINCIPALES:
+//! 1. PDA Canónico: `[b"project_config", collection_address]`.
+//! 2. Modelo de 3 Capas de Autenticación de Squads v4:
+//!    - Verificación de firmante: `authority_vault` debe firmar la transacción.
+//!    - Re-derivación en runtime: Se verifica matemáticamente que la Vault PDA pertenezca al multisig de Squads.
+//!    - Verificación de Owner: Se verifica que el multisig pertenezca al programa oficial de Squads v4.
+//! 3. Invariante de Rango: `start_at <= end_at` (evita fechas ilógicas o manipuladas).
+//! =========================================================================================
 
 use anchor_lang::prelude::*;
 
@@ -21,7 +30,8 @@ declare_id!("HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE");
 pub mod project_config_notary {
     use super::*;
 
-    /// Initializes a new ProjectConfig PDA bound to a Metaplex Core collection
+    /// 📝 Inicializa un nuevo PDA Notario vinculado a una colección Metaplex Core.
+    /// Registra las fechas iniciales de operación (`start_at`, `end_at`) y la autoridad de Squads.
     pub fn initialize_project_config(
         ctx: Context<InitializeProjectConfig>,
         start_at: i64,
@@ -31,7 +41,8 @@ pub mod project_config_notary {
         instructions::initialize::handler(ctx, start_at, end_at, vault_index)
     }
 
-    /// Updates notarized start and end dates under Squads Vault authority
+    /// 🔄 Actualiza las fechas notarizadas de inicio y fin.
+    /// Exclusivamente ejecutable mediante CPI firmado por la Vault PDA de Squads v4.
     pub fn update_project_dates(
         ctx: Context<UpdateProjectDates>,
         new_start_at: i64,
@@ -40,13 +51,14 @@ pub mod project_config_notary {
         instructions::update_dates::handler(ctx, new_start_at, new_end_at)
     }
 
-    /// Health ping returning program version
+    /// 🩺 Endpoint de salud / ping del programa Notario.
     pub fn ping(_ctx: Context<PingContext>) -> Result<()> {
         msg!("project_config_notary::ping ok");
         Ok(())
     }
 }
 
+/// Contexto de cuentas para la instrucción de comprobación de salud (ping)
 #[derive(Accounts)]
 pub struct PingContext<'info> {
     pub signer: Signer<'info>,

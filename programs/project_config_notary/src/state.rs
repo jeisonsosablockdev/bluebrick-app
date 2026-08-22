@@ -1,55 +1,83 @@
-//! Layer: Layer 4 — Infrastructure / Smart Contracts
-//! Module: State definitions and account layout for Project Config Notary program
+//! =========================================================================================
+//! Layer: Layer 4 — Infrastructure / Smart Contracts (Solana Anchor Runtime)
+//! Program: project_config_notary
+//! Module: state
 //!
-//! What: Declares ProjectConfigState account storage, size constants, and PDA seeds.
-//! How: Uses Anchor account macro with explicit 134-byte account layout.
+//! 🏛️ PROPÓSITO ARQUITECTÓNICO:
+//! Este archivo define el estado del PDA Notario On-Chain (`ProjectConfigState`) para cada proyecto
+//! inmobiliario/tokenizado en BRIDS. Actúa como la fuente inmutable y canónica de las fechas oficiales
+//! de inicio y fin de operaciones/rendimientos.
+//!
+//! 🛡️ MODELO DE SEGURIDAD ZERO-TRUST:
+//! 1. Derivación Canónica: `[b"project_config", collection_address]`. Cada colección Metaplex Core
+//!    tiene exactamente UN PDA Notario determinístico en toda la red de Solana.
+//! 2. Autoridad Exclusiva de Squads v4: La modificación de las fechas (`update_project_dates`)
+//!    SOLO puede ser ejecutada por la Vault PDA de Squads v4 (`authority_vault`).
+//! 3. Invariante de Fechas: Se garantiza matemáticamente que `start_at <= end_at`.
+//! =========================================================================================
 
 use anchor_lang::prelude::*;
 
-/// Canonical seed for ProjectConfig PDA derivation: `[b"project_config", collection_address]`
+/// Semilla canónica de texto para la derivación determinística del PDA: `[b"project_config", collection_address]`
 pub const PROJECT_CONFIG_SEED: &[u8] = b"project_config";
 
-/// Canonical Squads v4 Program ID on Solana Devnet and Mainnet-Beta
+/// Dirección del Programa Oficial de Squads Protocol v4 en Solana Devnet y Mainnet-Beta.
+/// Program ID: `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`
 pub const SQUADS_V4_PROGRAM_ID: Pubkey = pubkey!("SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf");
 
-/// Account representing the on-chain notarized configuration for a real-world asset project.
+/// Cuenta de Estado On-Chain que almacena la configuración notarizada del proyecto en Solana.
 ///
-/// Account Storage Layout:
-/// - Discriminator:       8 bytes
-/// - authority_vault:    32 bytes (Squads Vault PDA authorized to modify config)
-/// - multisig:           32 bytes (Squads Multisig PDA)
-/// - vault_index:         1 byte  (Squads Vault index, default 0)
-/// - collection_address: 32 bytes (Metaplex Core Collection Pubkey)
-/// - start_at:            8 bytes (Unix timestamp for project active start)
-/// - end_at:              8 bytes (Unix timestamp for project active completion)
-/// - version:             4 bytes (Configuration version counter)
-/// - updated_at:          8 bytes (Unix timestamp of last authorized update)
-/// - bump:                1 byte  (PDA bump seed)
-/// Total Size: 134 Bytes
+/// 📦 DISTRIBUCIÓN EXACTA DE MEMORIA (134 Bytes):
+/// - Discriminador Anchor:    8 bytes (identificador de tipo de cuenta)
+/// - authority_vault:        32 bytes (Vault PDA de Squads con autoridad exclusiva de firma)
+/// - multisig:               32 bytes (Cuenta Multisig de Squads v4 de BRIDS)
+/// - vault_index:             1 byte  (Índice de la bóveda dentro del multisig, ej. 0)
+/// - collection_address:     32 bytes (Dirección pública de la colección Metaplex Core)
+/// - start_at:                8 bytes (Timestamp Unix i64: Fecha de inicio de rendimientos)
+/// - end_at:                  8 bytes (Timestamp Unix i64: Fecha de finalización del proyecto)
+/// - version:                 4 bytes (Contador u32 incremental de auditoría por cada cambio)
+/// - updated_at:              8 bytes (Timestamp Unix i64 del último cambio autorizado)
+/// - bump:                    1 byte  (Semilla bump del PDA para validación de curva)
+/// ----------------------------------------------------------------------------------------
+/// Total Size = 8 + 32 + 32 + 1 + 32 + 8 + 8 + 4 + 8 + 1 = 134 Bytes
 #[account]
 #[derive(Default)]
 pub struct ProjectConfigState {
-    /// Squads Vault PDA authorized to perform configuration updates via CPI
+    /// 🏛️ Vault PDA de Squads v4 (`D9i1XNftRp...`)
+    /// Es la ÚNICA cuenta autorizada para emitir modificaciones sobre este PDA mediante CPI.
     pub authority_vault: Pubkey,
-    /// Parent Squads Multisig PDA
+
+    /// 🤝 Cuenta Multisig de Squads v4 (`rVKwqnxyq2...`)
+    /// Propietaria de la Vault. Se valida on-chain que su owner sea el programa de Squads v4.
     pub multisig: Pubkey,
-    /// Squads Vault index associated with this authority
+
+    /// 🔢 Índice de la bóveda en Squads (típicamente 0)
     pub vault_index: u8,
-    /// Metaplex Core Collection Address of the tokenized asset
+
+    /// 🎨 Dirección de la Colección Metaplex Core del proyecto
+    /// Sirve como semilla determinística para vincular el NFT con su Notario on-chain.
     pub collection_address: Pubkey,
-    /// Unix timestamp when the project yield/operations period starts
+
+    /// 📅 Fecha de Inicio Oficial (Timestamp Unix en Segundos)
+    /// Define el momento exacto a partir del cual los inversores acumulan rendimientos de staking.
     pub start_at: i64,
-    /// Unix timestamp when the project yield/operations period ends
+
+    /// 🏁 Fecha de Finalización Oficial (Timestamp Unix en Segundos)
+    /// Define el cierre del proyecto o ciclo de inversión.
     pub end_at: i64,
-    /// Incremental version counter tracking updates
+
+    /// 📈 Versión de Auditoría (Incrementa con cada actualización)
+    /// Permite a los indexadores y al motor de dispersión detectar cambios históricos.
     pub version: u32,
-    /// Unix timestamp of the most recent on-chain modification
+
+    /// ⏱️ Timestamp Unix del último cambio registrado on-chain
     pub updated_at: i64,
-    /// PDA bump seed
+
+    /// 🔑 Semilla bump para la verificación criptográfica del PDA en el runtime de Solana
     pub bump: u8,
 }
 
 impl ProjectConfigState {
-    /// Total storage size in bytes including the 8-byte Anchor account discriminator
+    /// Tamaño total en bytes requerido para asignar la cuenta en Solana (incluyendo discriminador)
     pub const LEN: usize = 8 + 32 + 32 + 1 + 32 + 8 + 8 + 4 + 8 + 1; // 134 bytes
 }

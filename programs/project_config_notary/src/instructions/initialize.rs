@@ -1,29 +1,40 @@
-//! Layer: Layer 4 — Infrastructure / Smart Contracts
-//! Module: initialize_project_config instruction for Project Config Notary program
+//! =========================================================================================
+//! Layer: Layer 4 — Infrastructure / Smart Contracts (Solana Anchor Runtime)
+//! Program: project_config_notary
+//! Instruction: initialize_project_config
 //!
-//! What: Initializes on-chain ProjectConfigState PDA bound to a Metaplex collection.
-//! How: Validates 3-Layer Squads Vault PDA derivation and enforces start_at <= end_at.
+//! 🏛️ PROPÓSITO:
+//! Inicializa por primera vez la cuenta PDA Notario (`[b"project_config", collection_address]`)
+//! para una colección Metaplex Core en Solana.
+//!
+//! 🛡️ REGLAS DE SEGURIDAD & MODELO DE 3 CAPAS:
+//! 1. La cuenta creadora (`authority_vault`) debe ser firmante mediante CPI desde Squads v4.
+//! 2. Se verifica que `multisig_account` pertenezca al programa oficial de Squads v4.
+//! 3. Se re-deriva la Vault PDA de Squads on-chain para asegurar que coincida con `authority_vault`.
+//! 4. Se asegura que la fecha de inicio no sea posterior a la fecha de finalización (`start_at <= end_at`).
+//! =========================================================================================
 
 use anchor_lang::prelude::*;
 
 use crate::errors::ProjectConfigError;
 use crate::state::{ProjectConfigState, PROJECT_CONFIG_SEED, SQUADS_V4_PROGRAM_ID};
 
+/// Estructura de Cuentas requeridas para inicializar el PDA Notario
 #[derive(Accounts)]
 #[instruction(start_at: i64, end_at: i64, vault_index: u8)]
 pub struct InitializeProjectConfig<'info> {
-    /// Squads Vault PDA acting as the authorized creator via CPI
+    /// 🏛️ Vault PDA de Squads v4 actuando como autoridad creadora mediante CPI
     pub authority_vault: Signer<'info>,
 
-    /// Squads Multisig Account (must be owned by Squads v4 program)
-    /// CHECK: Validated against SQUADS_V4_PROGRAM_ID owner check and PDA re-derivation
+    /// 🤝 Cuenta Multisig de Squads v4 (debe pertenecer a `SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`)
+    /// CHECK: Validado en el handler contra el owner oficial de Squads v4 y re-derivación de la Vault PDA.
     pub multisig_account: UncheckedAccount<'info>,
 
-    /// Metaplex Core Collection Pubkey associated with this project
-    /// CHECK: Canonical pubkey used as seed for PDA derivation
+    /// 🎨 Dirección pública de la Colección Metaplex Core vinculada al proyecto
+    /// CHECK: Clave pública canónica utilizada como semilla para la derivación del PDA.
     pub collection_address: UncheckedAccount<'info>,
 
-    /// Project configuration account to initialize
+    /// 📝 Cuenta PDA Notario que se crea y asigna en Solana (134 bytes)
     #[account(
         init,
         payer = payer,
@@ -33,14 +44,15 @@ pub struct InitializeProjectConfig<'info> {
     )]
     pub project_config: Account<'info, ProjectConfigState>,
 
-    /// Rent payer for the project_config account creation
+    /// 💳 Pagador de la renta SOL para la asignación de la cuenta en Solana
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    /// System program for account allocation
+    /// ⚙️ Programa del Sistema de Solana para la creación física de cuentas
     pub system_program: Program<'info, System>,
 }
 
+/// Evento de auditoría emitido tras la inicialización exitosa del PDA Notario
 #[event]
 pub struct ProjectConfigInitialized {
     pub collection_address: Pubkey,
@@ -53,31 +65,31 @@ pub struct ProjectConfigInitialized {
     pub timestamp: i64,
 }
 
-/// Initializes a new ProjectConfig PDA bound to a specific NFT collection.
+/// Manejador de la instrucción `initialize_project_config`
 ///
-/// Step-by-Step Logic:
-/// // Step 1: Validate date range invariant (start_at <= end_at).
-/// // Step 2: Validate that multisig_account is owned by Squads v4 program ID.
-/// // Step 3: Re-derive expected Squads Vault PDA and assert authority_vault matches.
-/// // Step 4: Populate ProjectConfigState fields and record bump seed.
-/// // Step 5: Emit ProjectConfigInitialized event.
+/// Lógica Paso a Paso:
+/// // Paso 1: Validar la invariante de rango temporal (start_at <= end_at).
+/// // Paso 2: Validar que multisig_account pertenezca al program ID de Squads v4.
+/// // Paso 3: Re-derivar determinísticamente la Vault PDA de Squads y comprobar que authority_vault coincida.
+/// // Paso 4: Poblar el estado on-chain del ProjectConfigState y almacenar la semilla bump.
+/// // Paso 5: Emitir el evento de auditoría ProjectConfigInitialized.
 pub fn handler(
     ctx: Context<InitializeProjectConfig>,
     start_at: i64,
     end_at: i64,
     vault_index: u8,
 ) -> Result<()> {
-    // Step 1: Validate date range
+    // Paso 1: Validar invariante de fechas (la fecha de inicio debe ser anterior o igual al fin)
     require!(start_at <= end_at, ProjectConfigError::InvalidDateRange);
 
-    // Step 2: Validate Squads Multisig Account Owner
+    // Paso 2: Validar que la cuenta multisig sea legalmente propiedad del programa de Squads v4
     require_keys_eq!(
         *ctx.accounts.multisig_account.owner,
         SQUADS_V4_PROGRAM_ID,
         ProjectConfigError::InvalidMultisigAccount
     );
 
-    // Step 3: Re-derive Squads Vault PDA [b"multisig", multisig_pda, b"vault", &[vault_index]]
+    // Paso 3: Re-derivar la Vault PDA esperada de Squads v4 para asegurar autenticidad
     let (expected_vault_pda, _) = Pubkey::find_program_address(
         &[
             b"multisig",
@@ -94,7 +106,7 @@ pub fn handler(
         ProjectConfigError::UnauthorizedAuthority
     );
 
-    // Step 4: Populate state
+    // Paso 4: Asignar y guardar los datos en la cuenta de estado on-chain
     let clock = Clock::get()?;
     let now = clock.unix_timestamp;
 
@@ -109,7 +121,7 @@ pub fn handler(
     config.updated_at = now;
     config.bump = ctx.bumps.project_config;
 
-    // Step 5: Emit audit event
+    // Paso 5: Emitir evento público indexable en Solana
     emit!(ProjectConfigInitialized {
         collection_address: config.collection_address,
         authority_vault: config.authority_vault,
