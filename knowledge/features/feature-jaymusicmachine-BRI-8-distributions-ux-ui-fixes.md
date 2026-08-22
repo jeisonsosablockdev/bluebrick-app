@@ -12,10 +12,10 @@ Administrators need an intuitive, error-free interface to configure yield distri
 3. `/admin/collections/[id]` includes an interactive on-chain notary panel (`AdminCollectionNotaryDatesPanel`) with calendar date pickers, proposal audit persistence, and multisig status badges.
 4. `/admin/treasury` and `/admin/treasury/squads` are updated to Next.js 16 App Router best practices, querying real active distribution runs and live date change proposals without static mock fixtures.
 5. All validations, typechecks, and tests pass cleanly with 100% adherence to 4-layer FDD architecture and mandatory in-code commentary standards.
-6. All date change proposals are cryptographically sealed with deterministic SHA-256 hashes (`proposal_hash = sha256(...)`), binding proposed dates and justification to the on-chain Solana Memo vote transactions and preventing any intermediate tampering.
+6. All date change proposals are created natively on-chain in Squads Protocol v4 (`SQDS4ep65T...`) via `proposalCreate` and sealed with Keccak-256 hashes (`proposal_hash = keccak256(...)`) per SOLUTION-ARCHITECTURE.md, using the backend purely as a transitory UI cache.
 
 ## What gaps exist today
-- Cryptographic proposal hashing and integrity validation must be linked across Domain, API, Infrastructure, and Presentation layers.
+- Native Squads v4 `proposalCreate` and `proposalApprove` instructions must be wired to collection date requests and multisig governance.
 
 ## What questions remain open
-- None; user explicitly approved SPEC-10 implementation.
+- None; user explicitly directed to implement native Squads v4 proposal creation with Keccak-256.
