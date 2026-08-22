@@ -115,7 +115,7 @@ export function AdminCollectionNotaryDatesPanel({
 
       setIsLoading(true);
       try {
-        const target = collectionAddress || collectionId;
+        const target = collectionId || collectionAddress;
         const res = await fetch(`/api/admin/collections/${target}/date-change-request`);
         if (res.ok) {
           const data = await res.json();
@@ -161,7 +161,7 @@ export function AdminCollectionNotaryDatesPanel({
       const proposedStartAt = new Date(`${proposedStartDate}T00:00:00.000Z`).toISOString();
       const proposedEndAt = new Date(`${proposedEndDate}T23:59:59.000Z`).toISOString();
 
-      const target = collectionAddress || collectionId;
+      const target = collectionId || collectionAddress;
       const res = await fetch(`/api/admin/collections/${target}/date-change-request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

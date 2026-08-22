@@ -14,6 +14,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getDateChangeProposal, saveDateChangeProposal } from "@/features/admin/infrastructure/date-change-proposal-store";
+
 const dateChangeRequestSchema = z.object({
   proposedStartAt: z.string().datetime({ message: "proposedStartAt must be a valid ISO datetime" }),
   proposedEndAt: z.string().datetime({ message: "proposedEndAt must be a valid ISO datetime" }),
@@ -68,18 +70,23 @@ export async function POST(
     const now = new Date().toISOString();
     const requestId = `dcr_${Date.now()}`;
 
-    // Return audit record intent with status PENDING_MULTISIG
+    const proposal = {
+      requestId,
+      collectionId,
+      status: "PENDING_MULTISIG" as const,
+      proposedStartAt,
+      proposedEndAt,
+      justification,
+      createdAt: now
+    };
+
+    // Step 1: Persist proposal to audit store
+    saveDateChangeProposal(proposal);
+
+    // Step 2: Return audit record intent with status PENDING_MULTISIG
     return NextResponse.json({
       ok: true,
-      data: {
-        requestId,
-        collectionId,
-        status: "PENDING_MULTISIG",
-        proposedStartAt,
-        proposedEndAt,
-        justification,
-        createdAt: now
-      }
+      data: proposal
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
@@ -105,10 +112,12 @@ export async function GET(
       );
     }
 
+    const pending = getDateChangeProposal(collectionId);
+
     return NextResponse.json({
       ok: true,
       collectionId,
-      data: null // Returns null when no proposal has been registered in audit cache
+      data: pending
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
