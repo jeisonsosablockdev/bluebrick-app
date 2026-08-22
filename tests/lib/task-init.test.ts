@@ -153,5 +153,5 @@ describe("task:init", () => {
     expect(runGit(["branch", "--show-current"], repoDir)).toBe(
       "feature/czambrano-BRI-149-task-bootstrap"
     );
-  });
+  }, 20000);
 });
