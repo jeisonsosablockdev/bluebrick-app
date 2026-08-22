@@ -48,6 +48,10 @@ export type UpdatePayoutOverrideDbInput = {
   approvalTxSignature?: string;
 };
 
+/**
+ * ¿QUÉ HACE?: Mapea una fila cruda de PostgreSQL a la estructura tipada `PayoutOverrideRow`.
+ * ¿CÓMO LO HACE?: Parsea tipos (números, fechas ISO, nulos) de forma segura.
+ */
 function mapRow(row: Record<string, unknown>): PayoutOverrideRow {
   return {
     id: String(row.id),
@@ -67,7 +71,8 @@ function mapRow(row: Record<string, unknown>): PayoutOverrideRow {
 }
 
 /**
- * Inserts a new PENDING payout override record into database.
+ * ¿QUÉ HACE?: Inserta un nuevo registro de override en la tabla `distribution_payout_overrides` con estado inicial 'PENDING' y versión 1.
+ * ¿CÓMO LO HACE?: Ejecuta un `INSERT ... RETURNING *` parametrizado dentro del pool de conexiones PostgreSQL.
  */
 export async function createPayoutOverrideRecord(input: CreatePayoutOverrideDbInput): Promise<PayoutOverrideRow> {
   return withDbClient(async (client) => {
@@ -94,7 +99,8 @@ export async function createPayoutOverrideRecord(input: CreatePayoutOverrideDbIn
 }
 
 /**
- * Retrieves a single payout override record by its ID.
+ * ¿QUÉ HACE?: Busca y retorna un registro de override individual a partir de su ID único (`OVR-...`).
+ * ¿CÓMO LO HACE?: Ejecuta una consulta `SELECT * WHERE id = $1 LIMIT 1` y retorna `null` si no existe coincidencia.
  */
 export async function getPayoutOverrideById(id: string): Promise<PayoutOverrideRow | null> {
   return withDbClient(async (client) => {
@@ -106,7 +112,8 @@ export async function getPayoutOverrideById(id: string): Promise<PayoutOverrideR
 }
 
 /**
- * Lists all PENDING payout overrides for the administrative compliance queue.
+ * ¿QUÉ HACE?: Obtiene todos los overrides pendientes de aprobación para la cola de cumplimiento.
+ * ¿CÓMO LO HACE?: Ejecuta `SELECT * WHERE status = 'PENDING' ORDER BY created_at DESC` aprovechando el índice `idx_payout_overrides_status`.
  */
 export async function listPendingPayoutOverrides(): Promise<PayoutOverrideRow[]> {
   return withDbClient(async (client) => {
@@ -121,7 +128,8 @@ export async function listPendingPayoutOverrides(): Promise<PayoutOverrideRow[]>
 }
 
 /**
- * Finds the active APPROVED override for a specific original wallet.
+ * ¿QUÉ HACE?: Busca el override aprobado más reciente para una wallet original.
+ * ¿CÓMO LO HACE?: Consulta `WHERE original_wallet = $1 AND status = 'APPROVED' ORDER BY updated_at DESC LIMIT 1` usando el índice compuesto `idx_payout_overrides_lookup`.
  */
 export async function findApprovedOverrideForWallet(originalWallet: string): Promise<PayoutOverrideRow | null> {
   return withDbClient(async (client) => {
@@ -138,8 +146,11 @@ export async function findApprovedOverrideForWallet(originalWallet: string): Pro
 }
 
 /**
- * Performs an atomic optimistic concurrency status update.
- * Returns null if version does not match expectedVersion (conflict).
+ * ¿QUÉ HACE?: Actualiza el estado de un override aplicando bloqueo optimista de concurrencia (`optimistic locking`).
+ * ¿CÓMO LO HACE?:
+ *  - Ejecuta un `UPDATE ... WHERE id = $5 AND version = $6 RETURNING *`.
+ *  - Incrementa la versión automáticamente (`version = version + 1`).
+ *  - Si ninguna fila coincide con la versión esperada (conflicto concurrente), la consulta retorna 0 filas y la función devuelve `null`.
  */
 export async function updatePayoutOverrideStatus(
   input: UpdatePayoutOverrideDbInput

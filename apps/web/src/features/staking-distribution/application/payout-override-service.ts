@@ -51,12 +51,17 @@ export type ApprovePayoutOverrideInput = {
 };
 
 /**
- * Requests a new payout override in PENDING status.
+ * ¿QUÉ HACE?: Registra una nueva solicitud de reasignación de wallet de pago en estado PENDING.
+ * ¿CÓMO LO HACE?:
+ *  - Valida y normaliza el número de expediente (`case_number` en mayúsculas).
+ *  - Valida que ambas direcciones (`originalWallet` y `requestedWallet`) sean claves públicas base58 de Solana válidas.
+ *  - Comprueba que la nueva wallet sea distinta a la original.
+ *  - Genera un ID único `OVR-...` y persiste el registro en PostgreSQL mediante la capa de infraestructura.
  */
 export async function requestPayoutOverride(
   input: RequestPayoutOverrideInput
 ): Promise<PayoutOverrideRow> {
-  // Step 1: Validate and normalize case number
+  // Step 1: Validar y normalizar número de caso / expediente
   let normalizedCase: string;
   try {
     normalizedCase = normalizeCaseNumber(input.caseNumber);
@@ -68,7 +73,7 @@ export async function requestPayoutOverride(
     );
   }
 
-  // Step 2: Validate Solana address format for original wallet
+  // Step 2: Validar formato Base58 de Solana para la wallet original
   if (!isValidSolanaAddress(input.originalWallet)) {
     throw new PayoutOverrideServiceError(
       "ERR_INVALID_SOLANA_ADDRESS",
@@ -77,7 +82,7 @@ export async function requestPayoutOverride(
     );
   }
 
-  // Step 3: Validate Solana address format for requested wallet
+  // Step 3: Validar formato Base58 de Solana para la wallet solicitada
   if (!isValidSolanaAddress(input.requestedWallet)) {
     throw new PayoutOverrideServiceError(
       "ERR_INVALID_SOLANA_ADDRESS",
@@ -86,7 +91,7 @@ export async function requestPayoutOverride(
     );
   }
 
-  // Step 4: Ensure requested wallet is distinct from original
+  // Step 4: Garantizar que la nueva wallet no sea idéntica a la original
   if (input.originalWallet.trim() === input.requestedWallet.trim()) {
     throw new PayoutOverrideServiceError(
       "ERR_SAME_WALLET_OVERRIDE",
@@ -95,7 +100,7 @@ export async function requestPayoutOverride(
     );
   }
 
-  // Step 5: Ensure reason is provided
+  // Step 5: Asegurar motivo legal / justificación de cumplimiento
   if (!input.reason || input.reason.trim() === "") {
     throw new PayoutOverrideServiceError(
       "ERR_REASON_REQUIRED",
@@ -104,13 +109,13 @@ export async function requestPayoutOverride(
     );
   }
 
-  // Step 6: Persist in database via repository
+  // Step 6: Persistir en base de datos PostgreSQL en estado PENDING
   const id = `OVR-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
   return createPayoutOverrideRecord({
     id,
     originalWallet: input.originalWallet.trim(),
     requestedWallet: input.requestedWallet.trim(),
-    effectiveWallet: input.originalWallet.trim(), // Stays original while PENDING
+    effectiveWallet: input.originalWallet.trim(), // Permanece en la original hasta ser APPROVED
     caseNumber: normalizedCase,
     reason: input.reason.trim(),
     requestedBy: input.requestedBy.trim()
@@ -118,12 +123,17 @@ export async function requestPayoutOverride(
 }
 
 /**
- * Approves a pending payout override with multisig execution proof and optimistic locking.
+ * ¿QUÉ HACE?: Aprueba una solicitud de override pendiente vinculando la firma de la transacción on-chain.
+ * ¿CÓMO LO HACE?:
+ *  - Aplica el Contrato de Supersesión: rechaza si el lote de distribución ya fue sellado (`isRunSealed = true`).
+ *  - Exige la firma de prueba on-chain (`approvalTxSignature`).
+ *  - Ejecuta una actualización atómica en PostgreSQL con control optimista de versiones (`expectedVersion`).
+ *  - Si otra sesión modificó el registro simultáneamente, lanza `ERR_CONCURRENT_MODIFICATION`.
  */
 export async function approvePayoutOverrideWithMultisig(
   input: ApprovePayoutOverrideInput
 ): Promise<PayoutOverrideRow> {
-  // Step 1: Enforce supersession contract: sealed runs cannot be modified
+  // Step 1: Aplicar invariante de inmutabilidad post-sellado
   if (input.isRunSealed) {
     throw new PayoutOverrideServiceError(
       "ERR_SEALED_RUN_IMMUTABLE",
@@ -132,7 +142,7 @@ export async function approvePayoutOverrideWithMultisig(
     );
   }
 
-  // Step 2: Validate execution signature
+  // Step 2: Validar firma de prueba de ejecución on-chain
   if (!input.approvalTxSignature || input.approvalTxSignature.trim() === "") {
     throw new PayoutOverrideServiceError(
       "ERR_EXECUTION_PROOF_REQUIRED",
@@ -141,7 +151,7 @@ export async function approvePayoutOverrideWithMultisig(
     );
   }
 
-  // Step 3: Fetch existing record
+  // Step 3: Recuperar registro actual
   const existing = await getPayoutOverrideById(input.overrideId);
   if (!existing) {
     throw new PayoutOverrideServiceError(
@@ -151,7 +161,7 @@ export async function approvePayoutOverrideWithMultisig(
     );
   }
 
-  // Step 4: Validate state transition (only PENDING can be approved)
+  // Step 4: Validar transición de estado (solo PENDING puede transicionar a APPROVED)
   if (existing.status !== "PENDING") {
     throw new PayoutOverrideServiceError(
       "ERR_INVALID_STATE_TRANSITION",
@@ -160,7 +170,7 @@ export async function approvePayoutOverrideWithMultisig(
     );
   }
 
-  // Step 5: Perform atomic update with optimistic locking
+  // Step 5: Ejecutar actualización atómica con bloqueo optimista
   const updated = await updatePayoutOverrideStatus({
     id: input.overrideId,
     status: "APPROVED",
@@ -182,14 +192,16 @@ export async function approvePayoutOverrideWithMultisig(
 }
 
 /**
- * Lists pending overrides for the compliance queue.
+ * ¿QUÉ HACE?: Lista todos los overrides en estado PENDING para la cola de resolución de compliance.
+ * ¿CÓMO LO HACE?: Delega la consulta ordenada por fecha a `listPendingPayoutOverrides()`.
  */
 export async function listPendingOverridesForCompliance(): Promise<PayoutOverrideRow[]> {
   return listPendingPayoutOverrides();
 }
 
 /**
- * Resolves the destination payout address for a given holder wallet.
+ * ¿QUÉ HACE?: Resuelve la dirección de destino final para el pago de rendimientos de un titular.
+ * ¿CÓMO LO HACE?: Busca si existe un override en estado `APPROVED` para la wallet. Si existe, retorna `effective_wallet`; si no, retorna la wallet titular original.
  */
 export async function resolveActivePayoutWallet(holderWallet: string): Promise<string> {
   const approved = await findApprovedOverrideForWallet(holderWallet);

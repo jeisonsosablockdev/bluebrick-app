@@ -66,8 +66,9 @@ function normalizeStatusFilter(value: "all" | ComplianceStatus): ComplianceStatu
 }
 
 /**
- * Returns Tailwind pill badge CSS classes according to compliance status.
- * @param value Current compliance state
+ * ¿QUÉ HACE?: Retorna las clases CSS de Tailwind para pintar el badge de estado.
+ * ¿CÓMO LO HACE?: Evalúa si el estado es verificado (verde esmeralda), restringido/suspendido (rojo suave) o pendiente (ámbar).
+ * @param value Estado actual de cumplimiento del usuario
  */
 function statusBadgeClass(value: ComplianceStatus): string {
   if (value === "fully_verified") {
@@ -82,7 +83,8 @@ function statusBadgeClass(value: ComplianceStatus): string {
 }
 
 /**
- * Truncates base58 address string with ellipsis in the middle.
+ * ¿QUÉ HACE?: Acorta una dirección pública de Solana para mostrarla en pantalla sin saturar la interfaz.
+ * ¿CÓMO LO HACE?: Conserva los primeros y últimos caracteres (ej: `3tW8...iATd`) insertando puntos suspensivos en el centro.
  */
 function truncateMiddle(value: string, left = 6, right = 6): string {
   if (!value || value.length <= left + right + 3) {
@@ -93,7 +95,8 @@ function truncateMiddle(value: string, left = 6, right = 6): string {
 }
 
 /**
- * Formats ISO date string to human-readable timestamp.
+ * ¿QUÉ HACE?: Formatea marcas de tiempo ISO a una fecha legible en formato `YYYY-MM-DD HH:mm`.
+ * ¿CÓMO LO HACE?: Parsea la cadena con `new Date()`, valida si es válida y extrae la porción de fecha y hora.
  */
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -109,7 +112,8 @@ function formatDate(value: string | null | undefined): string {
 }
 
 /**
- * Normalizes empty pagination cursor tokens.
+ * ¿QUÉ HACE?: Limpia el cursor de paginación para evitar enviar strings vacíos al backend.
+ * ¿CÓMO LO HACE?: Retorna el valor si tiene contenido, o `null` si está vacío o indefinido.
  */
 function normalizeCursorToken(value: string): string | null {
   return value ? value : null;
@@ -117,7 +121,13 @@ function normalizeCursorToken(value: string): string | null {
 
 /**
  * ComplianceConsole Component
- * Layer 1 Presentation console providing KYC/AML review queues and payout override case resolutions.
+ * 
+ * ¿QUÉ HACE?: Renderiza la consola administrativa integral de cumplimiento (KYC, AML, suspensiones y reasignación de wallets de pago).
+ * ¿CÓMO LO HACE?:
+ *  - Presenta la lista de casos pendientes con filtros de estado y paginación por cursor.
+ *  - Permite seleccionar un caso individual para inspeccionar su perfil, notas internas y eventos de auditoría.
+ *  - Ofrece acciones de decisión KYC/AML y suspensión de cuentas.
+ *  - Despliega un modal interactivo para solicitar reasignaciones de wallet de pago (overrides) vinculando obligatoriamente un número de caso.
  */
 export function ComplianceConsole({ initialData, initialStatus }: ComplianceConsoleProps): ReactElement {
   const { t } = useI18n();
@@ -156,13 +166,16 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   const [overrideSuccess, setOverrideSuccess] = useState<string | null>(null);
   const [isOverrideSubmitting, setIsOverrideSubmitting] = useState(false);
 
-  // Step 1: Memoize pending cases count for compliance metrics
+  // Step 1: Calcular métrica de casos pendientes en cola (excluyendo los completamente verificados)
   const pendingCount = useMemo(() => {
     const items = queue?.items ?? [];
     return items.filter((item) => item.complianceStatus !== "fully_verified").length;
   }, [queue]);
 
-  // Step 2: Fetch compliance queue with status filter and pagination cursor
+  /**
+   * ¿QUÉ HACE?: Carga la lista paginada de casos de cumplimiento según el filtro de estado seleccionado.
+   * ¿CÓMO LO HACE?: Llama a `fetchComplianceCasesQueue()` pasando el estado normalizado y el cursor actual.
+   */
   const loadQueue = useCallback(async (input?: { status?: "all" | ComplianceStatus; cursor?: string | null }) => {
     const requestedStatus = input?.status ?? statusFilter;
     const requestedCursor = typeof input?.cursor === "undefined" ? currentCursor : input.cursor;
@@ -183,7 +196,10 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, [currentCursor, statusFilter]);
 
-  // Step 3: Fetch single wallet compliance case details, notes, and audit events
+  /**
+   * ¿QUÉ HACE?: Obtiene el detalle completo del caso de una wallet específica seleccionada por el admin.
+   * ¿CÓMO LO HACE?: Consulta `fetchComplianceCaseDetail(walletPublicKey)` y actualiza el estado de detalle y notas.
+   */
   const loadDetail = useCallback(async (walletPublicKey: string) => {
     setSelectedWallet(walletPublicKey);
     setIsDetailLoading(true);
@@ -202,7 +218,10 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, []);
 
-  // Step 4: Refresh case notes list for active case
+  /**
+   * ¿QUÉ HACE?: Recarga la lista de notas de auditoría del caso actualmente abierto.
+   * ¿CÓMO LO HACE?: Invoca `fetchComplianceCaseNotes()` limitando a las 50 notas más recientes.
+   */
   const refreshNotes = useCallback(async (walletPublicKey: string) => {
     setIsNotesLoading(true);
     setNotesError(null);
@@ -216,14 +235,17 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, []);
 
-  // Step 5: Effect to load initial queue if not preloaded on server
+  // Step 5: Carga automática en cliente si la página no vino pre-cargada desde el servidor
   useEffect(() => {
     if (!initialData) {
       void loadQueue({ status: statusFilter, cursor: currentCursor });
     }
   }, [currentCursor, initialData, loadQueue, statusFilter]);
 
-  // Step 6: Unified error boundary and runner for admin actions
+  /**
+   * ¿QUÉ HACE?: Ejecuta acciones administrativas (suspensión, verificación) con control de carga y manejo de errores centralizado.
+   * ¿CÓMO LO HACE?: Activa el indicador de acción, ejecuta la función asíncrona recibida y captura excepciones para mostrarlas en la UI.
+   */
   const runAction = useCallback(async (label: string, work: () => Promise<void>) => {
     setActionState(label);
     setIsActionRunning(true);
