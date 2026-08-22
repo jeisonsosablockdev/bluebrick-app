@@ -9,7 +9,14 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/session-
 
 # Session Model
 
-Last Updated: 2026-07-22
+Last Updated: 2026-08-22
+
+## EPIC-015 Squads v4 Treasury Claims & Admin UI Session Boundary
+- Admin routes for payout exceptions and governance (`/api/admin/payout-runs/[id]/*`, `/api/admin/collections/[id]/date-change-request`) require server-verified admin SIWS sessions via `getRequestRole(request)`.
+- No new session cookies, nonces, or tokens are introduced.
+- Date change requests create auditable `PENDING_MULTISIG` intent records without mutating session state or database timestamps directly.
+- All on-chain execution for treasury disbursements, claim cancellations, and date updates requires real Squads v4 multisig CPI on Solana Devnet.
+
 
 ## BRI-182 4-Layer Architecture Alignment
 - Re-located auth session state store to Layer 2 (`/lib/state/auth-store.ts`) and updated all session route imports to canonical 4-layer paths.

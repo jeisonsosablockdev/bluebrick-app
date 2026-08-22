@@ -9,7 +9,14 @@ resource: https://github.com/jeisonsosablockdev/brids/blob/develop/docs/auth-flo
 
 # Auth Flow (Hybrid WorkOS + SIWS)
 
-Last Updated: 2026-07-22
+Last Updated: 2026-08-22
+
+## EPIC-015 Squads v4 Treasury Claims & Admin UI Auth Boundary
+- Admin routes (`/api/admin/payout-runs/[id]/reject`, `/api/admin/payout-runs/[id]/veto`, `/api/admin/payout-runs/[id]/circuit-breaker`, `/api/admin/collections/[id]/date-change-request`) require authenticated admin sessions resolved via `getRequestRole(request)`.
+- Investor claim routes require authenticated SIWS wallet session matching the claim recipient wallet.
+- Direct HTTP mutation of project dates is strictly rejected with HTTP 400 (`IMMUTABLE_PROJECT_DATE_FIELD`). Project dates are governed on-chain via Squads multisig and ProjectConfig PDA.
+- Emergency circuit breaker and run rejection are server-gated and require admin role authority.
+
 
 ## BRI-182 4-Layer Architecture Alignment
 - Re-located auth state stores to Layer 2 (`/lib/state/auth-store.ts`, `/lib/state/auth-state.ts`) and updated all API routes in `/app/api/auth/` to import from canonical 4-layer paths.
