@@ -41,16 +41,28 @@
 - Implemented `GET /api/admin/treasury/summary` and `POST /api/admin/treasury/circuit-breaker`.
 - Modernized `TreasuryConsole` and `AdminTreasuryPage` with Next.js 16 best practices, mandatory in-code commentary, and wallet modal auto-trigger.
 
-### `SPEC-08: Dynamic Squads Multisig Console Integration & Zero Mock Data` [ACTIVE]
+### `SPEC-08: Dynamic Squads Multisig Console Integration & Zero Mock Data` [COMPLETED]
 - **TDD Contract**: Component & unit tests in `tests/components/squads-multisig-console.test.ts` and `tests/features/admin/squads-multisig-console.test.tsx` verifying dynamic proposal loading, empty state rendering, real on-chain date comparison, and wallet vote integration without mock fixtures.
 - **Layer 1 — Presentation**:
-  - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Eliminate `DEFAULT_MOCK_PROPOSAL` and fake fallback public keys. Connect dynamic fetcher to live runs/proposals API (`/api/admin/distributions/runs/[id]` and `/api/admin/treasury/squads/proposals`). Provide sober empty state and automatic wallet modal connection.
+  - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Eliminated `DEFAULT_MOCK_PROPOSAL` and fake fallback public keys. Connected dynamic fetcher to live runs/proposals API (`/api/admin/distributions/runs/[id]` and `/api/admin/treasury/squads/proposals`). Provided sober empty state and automatic wallet modal connection.
 - **Layer 2 — Application / API**:
   - `apps/web/src/app/api/admin/treasury/squads/proposals/route.ts`: Endpoint returning real Squads v4 multisig proposals and active distribution run batches.
 - **Layer 3 — Domain**:
-  - `apps/web/src/features/admin/domain/squads-multisig-types.ts`: Pure domain entities (`SquadsProposalDTO`) and pure evaluators (`evaluateDateAuditWarning`, `evaluateQuorumStatus`).
+  - `apps/web/src/features/admin/domain/squads-multisig-types.ts`: Pure domain entities (`SquadsProposalDTO`) and pure evaluators (`evaluateDateAuditWarning`, `evaluateQuorumStatus`, `evaluateUnifiedMultisigAction`).
 
-### `SPEC-09: Final Clean Code Audit & Monorepo Validation (refactor-clean)`
+### `SPEC-09: Real Solana Devnet On-Chain Voting & Notary Transaction Execution` [ACTIVE]
+- **TDD Contract**: Unit and integration tests for transaction assembly, client-side Phantom wallet signing, Devnet RPC submission, and Solscan transaction link rendering.
+- **Layer 4 — Infrastructure**:
+  - `apps/web/src/lib/solana-kit/transactions/squads-vote-transaction.ts`: Constructs `VersionedTransaction` for Solana Devnet with recent blockhash and PDA derivation.
+- **Layer 2 — Application / API**:
+  - `apps/web/src/app/api/admin/treasury/squads/prepare-vote/route.ts`: Prepares unsigned base64 `VersionedTransaction` with live Devnet blockhash.
+  - `apps/web/src/app/api/admin/treasury/squads/vote/route.ts`: Receives signed transaction, broadcasts to Solana Devnet RPC via `sendRawTransaction`, confirms transaction on-chain, and records audit proof.
+- **Layer 3 — Domain**:
+  - `apps/web/src/features/admin/domain/squads-multisig-types.ts`: Typed domain definitions for on-chain transaction signatures, slot numbers, and Solscan URLs.
+- **Layer 1 — Presentation**:
+  - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Integrated with `signTransaction` from wallet adapter, triggering Phantom signature popup, Devnet gas payment, and rendering green success banner with direct Solscan Devnet transaction link.
+
+### `SPEC-10: Final Clean Code Audit & Monorepo Validation (refactor-clean)`
 - Final validation pass, English in-code commentary audit, and 100% `pnpm validate` verification across monorepo.
 
 ## 3. Verification Plan

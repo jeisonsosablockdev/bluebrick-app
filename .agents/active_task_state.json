@@ -2,22 +2,21 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-08",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s08-dynamic-squads-console",
+  "spec_id": "SPEC-09",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s09-onchain-squads-voting",
   "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
+  "current_phase": "PHASE_2_DOCS_FILLED",
   "human_design_approval": {
-    "approved": true,
-    "timestamp": "2026-08-22T14:06:07-05:00"
+    "approved": false
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T13:58:00-05:00" },
-    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T13:58:00-05:00" },
-    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T13:58:15-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-22T14:06:07-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T14:06:27-05:00", "note": "Created tests/features/admin/squads-multisig-console.test.tsx in RED phase" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T14:07:04-05:00", "note": "Implemented dynamic Squads Proposals API, updated SquadsMultisigConsole with empty state and wallet modal auto-trigger, and enforced mandatory in-code commentary" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T19:09:00Z", "note": "Architect Gate 2 APPROVED" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T14:55:26-05:00" },
+    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T14:55:40-05:00" },
+    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T14:56:52-05:00" },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": false },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": false },
     "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
