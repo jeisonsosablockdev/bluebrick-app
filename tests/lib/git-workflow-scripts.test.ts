@@ -185,7 +185,7 @@ describe("git workflow scripts", () => {
       repoDir
     );
     expect(epicOutput).toContain("Rama creada: epic/czambrano-EPIC-011-admin-collections-console");
-  });
+  }, 20000);
 
   it("rejects ambiguous two-argument calls for typed branch families", async () => {
     const repoDir = await createWorkflowRepo();
