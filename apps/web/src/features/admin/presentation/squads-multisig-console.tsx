@@ -334,6 +334,31 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
               </div>
             )}
           </div>
+
+          {/* Direct Governance Voting Controls */}
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-amber-500/20">
+            <Button
+              variant="outline"
+              disabled={isVoting || hasUserApproved || dto.executed}
+              onClick={handleVoteApprove}
+              className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20 text-xs px-3.5 py-1.5 min-h-8"
+            >
+              {isVoting
+                ? "Registrando Firma..."
+                : hasUserApproved
+                ? "Ya Has Aprobado"
+                : "Aprobar Cambio de Fechas (Votar)"}
+            </Button>
+
+            <Button
+              variant="primary"
+              disabled={isExecuting || !quorum?.canExecute}
+              onClick={handleExecute}
+              className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs px-3.5 py-1.5 min-h-8"
+            >
+              {isExecuting ? "Ejecutando..." : "Ejecutar en Devnet"}
+            </Button>
+          </div>
         </div>
       )}
 
