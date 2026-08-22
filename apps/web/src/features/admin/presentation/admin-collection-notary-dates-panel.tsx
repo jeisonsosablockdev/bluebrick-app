@@ -51,9 +51,9 @@ export function AdminCollectionNotaryDatesPanel({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Proposal form state
-  const [proposedStartAt, setProposedStartAt] = useState<string>("2026-08-01T00:00:00.000Z");
-  const [proposedEndAt, setProposedEndAt] = useState<string>("2026-08-31T23:59:59.000Z");
+  // Proposal form state (YYYY-MM-DD for date picker)
+  const [proposedStartDate, setProposedStartDate] = useState<string>("2026-08-01");
+  const [proposedEndDate, setProposedEndDate] = useState<string>("2026-08-31");
   const [justification, setJustification] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [proposalSuccessMessage, setProposalSuccessMessage] = useState<string | null>(null);
@@ -77,6 +77,12 @@ export function AdminCollectionNotaryDatesPanel({
           const data = await res.json();
           if (data.ok && data.onChainState && isMounted) {
             setOnChainState(data.onChainState);
+            if (data.onChainState.startAtUnixSeconds) {
+              setProposedStartDate(new Date(Number(data.onChainState.startAtUnixSeconds) * 1000).toISOString().slice(0, 10));
+            }
+            if (data.onChainState.endAtUnixSeconds) {
+              setProposedEndDate(new Date(Number(data.onChainState.endAtUnixSeconds) * 1000).toISOString().slice(0, 10));
+            }
           }
         }
       } catch {
@@ -103,6 +109,9 @@ export function AdminCollectionNotaryDatesPanel({
     setIsSubmitting(true);
 
     try {
+      const proposedStartAt = new Date(`${proposedStartDate}T00:00:00.000Z`).toISOString();
+      const proposedEndAt = new Date(`${proposedEndDate}T23:59:59.000Z`).toISOString();
+
       const target = collectionAddress || collectionId;
       const res = await fetch(`/api/admin/collections/${target}/date-change-request`, {
         method: "POST",
@@ -266,27 +275,35 @@ export function AdminCollectionNotaryDatesPanel({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                    {localize(locale, { en: "Proposed Start Date", es: "Fecha Inicio Propuesta", pt: "Data Início Proposta" })}
+                    {localize(locale, {
+                      en: "Construction / Operating Start Date",
+                      es: "Fecha de inicio de construcción / operación",
+                      pt: "Data de início da construção / operação"
+                    })}
                   </label>
                   <input
                     required
-                    type="text"
-                    value={proposedStartAt}
-                    onChange={(e) => setProposedStartAt(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-neutral-900/90 px-3 py-2 text-xs font-mono text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    type="date"
+                    value={proposedStartDate}
+                    onChange={(e) => setProposedStartDate(e.target.value)}
+                    className="w-full rounded-lg border border-white/15 bg-neutral-900/90 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 [color-scheme:dark]"
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                    {localize(locale, { en: "Proposed End Date", es: "Fecha Fin Propuesta", pt: "Data Fim Proposta" })}
+                    {localize(locale, {
+                      en: "Estimated Delivery / End Date",
+                      es: "Fecha estimada de entrega / cierre",
+                      pt: "Data estimada de entrega / encerramento"
+                    })}
                   </label>
                   <input
                     required
-                    type="text"
-                    value={proposedEndAt}
-                    onChange={(e) => setProposedEndAt(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-neutral-900/90 px-3 py-2 text-xs font-mono text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    type="date"
+                    value={proposedEndDate}
+                    onChange={(e) => setProposedEndDate(e.target.value)}
+                    className="w-full rounded-lg border border-white/15 bg-neutral-900/90 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 [color-scheme:dark]"
                   />
                 </div>
               </div>
