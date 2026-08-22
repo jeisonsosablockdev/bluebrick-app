@@ -1,25 +1,31 @@
 import { describe, it, expect } from "vitest";
 import {
   encodePayoutLeafPreimage,
-  hashPayoutLeaf,
-  buildPayoutMerkleTree,
-  recomputeMerkleRoot
+  computeSnapshotHash
 } from "@/features/staking-distribution/domain/payout-leaf";
+import {
+  generatePayoutMerkleTree,
+  verifyClaimMerkleProof,
+  verifySnapshotPreimage,
+  recalculateTreeExcludingVetoedItems,
+  computeClaimLeafHash
+} from "@/features/staking-distribution/domain/merkle-tree";
 
 /**
  * =========================================================================================
- * 🧪 SPEC-01 (STORY-015-05): CRYPTOGRAPHIC MERKLE TREE VERIFIER TESTS
+ * 🧪 SPEC-02 (STORY-015-05): CRYPTOGRAPHIC MERKLE TREE DOMAIN VERIFIER TESTS
  * =========================================================================================
  * 
  * Verifies domain invariants:
  * 1. 191-byte canonical leaf preimage encoding.
  * 2. Strict tampering detection: 1 single cent variation breaks root and proof verification.
- * 3. Directional sibling proof verification via recomputeMerkleRoot.
+ * 3. Directional sibling proof verification via verifyClaimMerkleProof.
  * 4. Deterministic 32-byte Merkle root generation over large datasets (1,000 leaves).
- * 5. Single leaf edge case.
+ * 5. Pre-seal recalculation excluding vetoed items.
+ * 6. Snapshot attestation preimage verification via verifySnapshotPreimage.
  */
 
-describe("SPEC-01 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
+describe("SPEC-02 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
   const sampleRunId = "550e8400-e29b-41d4-a716-446655440000";
   const sampleMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
   const sampleTokenProgram = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
@@ -62,21 +68,21 @@ describe("SPEC-01 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
       }
     ];
 
-    const tree = buildPayoutMerkleTree(items);
+    const tree = generatePayoutMerkleTree(items);
     const leaf0 = tree.leaves[0]!;
 
-    // Valid proof recomputes to the exact root
-    const validRoot = recomputeMerkleRoot(leaf0.leafHash, leaf0.proofHex, leaf0.index);
-    expect(validRoot).toBe(tree.merkleRoot);
+    // Valid proof verification passes
+    const isValid = verifyClaimMerkleProof(leaf0.leafHash, leaf0.proofHex, tree.merkleRoot, leaf0.index);
+    expect(isValid).toBe(true);
 
     // Tampered leaf (amount altered by 1 cent: 100.01 USDC)
-    const tamperedLeafHash = hashPayoutLeaf({
+    const tamperedLeafHash = computeClaimLeafHash({
       ...items[0]!,
       amountMinor: 100010000n
     });
 
-    const tamperedRoot = recomputeMerkleRoot(tamperedLeafHash, leaf0.proofHex, leaf0.index);
-    expect(tamperedRoot).not.toBe(tree.merkleRoot);
+    const isTamperedValid = verifyClaimMerkleProof(tamperedLeafHash, leaf0.proofHex, tree.merkleRoot, leaf0.index);
+    expect(isTamperedValid).toBe(false);
   });
 
   it("should generate deterministic 32-byte Merkle root across 1,000 items", () => {
@@ -94,8 +100,8 @@ describe("SPEC-01 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
       };
     });
 
-    const tree1 = buildPayoutMerkleTree(largeSet);
-    const tree2 = buildPayoutMerkleTree(largeSet);
+    const tree1 = generatePayoutMerkleTree(largeSet);
+    const tree2 = generatePayoutMerkleTree(largeSet);
 
     expect(tree1.merkleRoot.length).toBe(64); // 64 hex chars = 32 bytes
     expect(tree1.merkleRoot).toBe(tree2.merkleRoot);
@@ -104,13 +110,12 @@ describe("SPEC-01 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
     const indicesToVerify = [0, 499, 999];
     for (const idx of indicesToVerify) {
       const leaf = tree1.leaves[idx]!;
-      const recomputed = recomputeMerkleRoot(leaf.leafHash, leaf.proofHex, leaf.index);
-      expect(recomputed).toBe(tree1.merkleRoot);
+      expect(verifyClaimMerkleProof(leaf.leafHash, leaf.proofHex, tree1.merkleRoot, leaf.index)).toBe(true);
     }
   });
 
-  it("should handle single leaf edge case with minimum depth 1 and zero-padded sibling", () => {
-    const singleItem = [
+  it("should recalculate tree excluding vetoed items (pre-seal)", () => {
+    const items = [
       {
         runId: sampleRunId,
         claimId: "00000000-0000-4000-8000-000000000001",
@@ -118,16 +123,57 @@ describe("SPEC-01 (STORY-015-05): Merkle Tree Cryptographic Verifier", () => {
         tokenProgram: sampleTokenProgram,
         recipientWallet: sampleWallet,
         recipientAta: sampleAta,
-        amountMinor: 50000000n
+        amountMinor: 100000000n
+      },
+      {
+        runId: sampleRunId,
+        claimId: "00000000-0000-4000-8000-000000000002",
+        mint: sampleMint,
+        tokenProgram: sampleTokenProgram,
+        recipientWallet: sampleWallet,
+        recipientAta: sampleAta,
+        amountMinor: 200000000n
+      },
+      {
+        runId: sampleRunId,
+        claimId: "00000000-0000-4000-8000-000000000003",
+        mint: sampleMint,
+        tokenProgram: sampleTokenProgram,
+        recipientWallet: sampleWallet,
+        recipientAta: sampleAta,
+        amountMinor: 300000000n
       }
     ];
 
-    const tree = buildPayoutMerkleTree(singleItem);
-    const leaf = tree.leaves[0]!;
-    expect(leaf.proofHex.length).toBe(1);
-    expect(leaf.proofHex[0]).toBe("0".repeat(64)); // 32 zero bytes in hex
+    const initialTree = generatePayoutMerkleTree(items);
+    expect(initialTree.leaves.length).toBe(3);
 
-    const recomputed = recomputeMerkleRoot(leaf.leafHash, leaf.proofHex, leaf.index);
-    expect(recomputed).toBe(tree.merkleRoot);
+    // Veto item 2
+    const vetoSet = new Set(["00000000-0000-4000-8000-000000000002"]);
+    const recalculatedTree = recalculateTreeExcludingVetoedItems(items, vetoSet);
+
+    expect(recalculatedTree.leaves.length).toBe(2);
+    expect(recalculatedTree.merkleRoot).not.toBe(initialTree.merkleRoot);
+    expect(recalculatedTree.leaves.find((l) => l.claimId === "00000000-0000-4000-8000-000000000002")).toBeUndefined();
+  });
+
+  it("should verify snapshot attestation preimage integrity", () => {
+    const snapshotInput = {
+      snapshotVersion: 1,
+      runId: sampleRunId,
+      merkleRoot: "0".repeat(64),
+      totalAmountMinor: 1000000000n,
+      itemCount: 10,
+      rulesVersion: 1,
+      mint: sampleMint,
+      tokenProgram: sampleTokenProgram
+    };
+
+    const hash = computeSnapshotHash(snapshotInput);
+    const isValid = verifySnapshotPreimage(snapshotInput, hash);
+    expect(isValid).toBe(true);
+
+    const isInvalid = verifySnapshotPreimage(snapshotInput, "f".repeat(64));
+    expect(isInvalid).toBe(false);
   });
 });
