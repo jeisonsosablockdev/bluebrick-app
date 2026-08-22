@@ -11,7 +11,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { listDateChangeProposals } from "@/features/admin/infrastructure/date-change-proposal-store";
+import {
+  clearDateChangeProposals,
+  deleteDateChangeProposal,
+  getDateChangeProposal,
+  listDateChangeProposals
+} from "@/features/admin/infrastructure/date-change-proposal-store";
 
 /**
  * GET /api/admin/treasury/squads/proposals
@@ -68,6 +73,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const message = error instanceof Error ? error.message : "Failed to load squads proposals.";
     return NextResponse.json(
       { ok: false, error: "LOAD_FAILED", message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/admin/treasury/squads/proposals
+ */
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const url = new URL(request.url);
+    const runId = url.searchParams.get("runId");
+
+    if (runId) {
+      deleteDateChangeProposal(runId);
+    } else {
+      clearDateChangeProposals();
+    }
+
+    return NextResponse.json({
+      ok: true,
+      message: runId ? `Propuesta ${runId} eliminada.` : "Todas las propuestas han sido eliminadas."
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete squads proposal.";
+    return NextResponse.json(
+      { ok: false, error: "DELETE_FAILED", message },
       { status: 500 }
     );
   }

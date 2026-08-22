@@ -1,1 +1,1 @@
-export { GET } from "@/app/api/admin/treasury/squads/proposals/route";
+export { GET, DELETE } from "@/app/api/admin/treasury/squads/proposals/route";

@@ -43,3 +43,19 @@ export function getDateChangeProposal(collectionIdOrAddress: string): PendingDat
 export function listDateChangeProposals(): PendingDateProposal[] {
   return Array.from(proposalStore.values());
 }
+
+/**
+ * Deletes a date change proposal for a collection ID or collection address.
+ */
+export function deleteDateChangeProposal(collectionIdOrAddress: string): boolean {
+  if (!collectionIdOrAddress) return false;
+  const key = collectionIdOrAddress.toLowerCase();
+  return proposalStore.delete(key);
+}
+
+/**
+ * Clears all stored date change proposals.
+ */
+export function clearDateChangeProposals(): void {
+  proposalStore.clear();
+}
