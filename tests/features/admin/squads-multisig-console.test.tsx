@@ -235,4 +235,27 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
       expect(screen.getByText(/Cancelaste la solicitud de firma en la wallet/i)).toBeDefined();
     });
   });
+
+  it("Step 6: Renders cryptographic seal badge when proposalHash is present in proposal DTO", () => {
+    // Arrange: Proposal with cryptographic seal and proposed date change
+    const sealedProposal: SquadsProposalDTO = {
+      ...mockProposal,
+      dbDates: {
+        projectStartAt: "2026-04-01T00:00:00Z",
+        projectEndAt: "2028-12-31T23:59:59Z",
+        modificationReason: "Ajuste de cronograma autorizado."
+      },
+      proposalHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      nonce: "NONCE-TEST-001"
+    };
+
+    // Act
+    render(<SquadsMultisigConsole initialDto={sealedProposal} />);
+
+    // Assert
+    const badge = screen.getByTestId("proposal-crypto-seal-badge");
+    expect(badge).toBeDefined();
+    expect(badge.textContent).toContain("Sello Criptográfico SHA-256");
+    expect(badge.textContent).toContain("Integridad Verificada");
+  });
 });

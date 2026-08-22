@@ -41,6 +41,8 @@ export type PendingDateProposal = {
   approvals?: string[];
   txSignature?: string;
   solscanUrl?: string;
+  proposalHash?: string;
+  nonce?: string;
 };
 
 type AdminCollectionNotaryDatesPanelProps = {

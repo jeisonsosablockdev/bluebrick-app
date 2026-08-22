@@ -174,14 +174,17 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
     try {
       const signerWallet = publicKey.toBase58();
 
-      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC
+      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC with cryptographic proposal seal
       const prepareRes = await fetch("/api/admin/treasury/squads/prepare-vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposalId: dto.runId,
           signerWallet,
-          collectionAddress: dto.treasuryPolicyPda || dto.vaultPda
+          collectionAddress: dto.treasuryPolicyPda || dto.vaultPda,
+          newStartAt: dto.dbDates.projectStartAt,
+          newEndAt: dto.dbDates.projectEndAt,
+          proposalHash: dto.proposalHash
         })
       });
 
@@ -383,6 +386,19 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
               <div className="sm:col-span-2 border-t border-amber-500/10 pt-2 mt-1">
                 <span className="text-muted-foreground text-[11px] block">Motivo / Justificación:</span>
                 <span className="text-foreground italic">{dto.dbDates.modificationReason}</span>
+              </div>
+            )}
+
+            {dto.proposalHash && (
+              <div
+                data-testid="proposal-crypto-seal-badge"
+                className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-amber-500/10 pt-2 mt-1 text-[11px]"
+              >
+                <span className="text-muted-foreground">Sello Criptográfico SHA-256:</span>
+                <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {dto.proposalHash.slice(0, 10)}...{dto.proposalHash.slice(-8)} (Integridad Verificada)
+                </span>
               </div>
             )}
           </div>

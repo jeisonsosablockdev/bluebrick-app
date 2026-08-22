@@ -12,10 +12,10 @@ Administrators need an intuitive, error-free interface to configure yield distri
 3. `/admin/collections/[id]` includes an interactive on-chain notary panel (`AdminCollectionNotaryDatesPanel`) with calendar date pickers, proposal audit persistence, and multisig status badges.
 4. `/admin/treasury` and `/admin/treasury/squads` are updated to Next.js 16 App Router best practices, querying real active distribution runs and live date change proposals without static mock fixtures.
 5. All validations, typechecks, and tests pass cleanly with 100% adherence to 4-layer FDD architecture and mandatory in-code commentary standards.
+6. All date change proposals are cryptographically sealed with deterministic SHA-256 hashes (`proposal_hash = sha256(...)`), binding proposed dates and justification to the on-chain Solana Memo vote transactions and preventing any intermediate tampering.
 
 ## What gaps exist today
-- `/admin/treasury/squads` currently uses a hardcoded `DEFAULT_MOCK_PROPOSAL` with sample beneficiaries and fallback pubkeys.
-- Dynamic proposal querying needs to load real on-chain/database proposal state or render a clean empty state when no active proposal exists.
+- Cryptographic proposal hashing and integrity validation must be linked across Domain, API, Infrastructure, and Presentation layers.
 
 ## What questions remain open
-- None; user explicitly approved merging SPEC-07 and starting SPEC-08 to eliminate mock data from `/admin/treasury/squads`.
+- None; user explicitly approved SPEC-10 implementation.

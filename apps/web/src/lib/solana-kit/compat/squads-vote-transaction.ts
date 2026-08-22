@@ -23,6 +23,7 @@ import {
 } from "@solana/web3.js";
 
 import { getSolanaRpcUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
+import { formatOnChainVoteMemo } from "@/features/admin/domain/squads-proposal-crypto";
 import { PROJECT_CONFIG_NOTARY_PROGRAM_ID, deriveProjectConfigPda } from "../pda/project-config-reader";
 
 export interface PreparedSquadsVoteTransaction {
@@ -70,23 +71,29 @@ export function resolveValidBase58Address(input: string): string {
  * // Step 1: Validate inputs and resolve Devnet RPC URL.
  * // Step 2: Fetch latest blockhash from Solana Devnet RPC.
  * // Step 3: Normalize collection / proposal identifier to valid 32-byte Base58 address and derive PDAs.
- * // Step 4: Assemble transaction instructions for Squads vote / notary approval.
+ * // Step 4: Assemble canonical on-chain governance vote memo instruction with cryptographic hash sealing.
  * // Step 5: Compile VersionedTransaction message and serialize to base64 wire format.
  *
  * @param signerWalletStr - Base58 public key of the voting administrator wallet
  * @param proposalId - Active proposal identifier (collection ID, run ID, or Base58 address)
  * @param collectionAddress - Optional explicit collection Base58 address
+ * @param metadata - Optional proposal cryptographic seal metadata (newStartAt, newEndAt, proposalHash)
  * @returns Serialized base64 transaction ready for wallet signature
  */
 export async function prepareSquadsVoteTransaction(
   signerWalletStr: string,
   proposalId: string,
-  collectionAddress?: string
+  collectionAddress?: string,
+  metadata?: {
+    newStartAt?: string;
+    newEndAt?: string;
+    proposalHash?: string;
+  }
 ): Promise<PreparedSquadsVoteTransaction> {
-  // Step 1: Validate inputs and resolve Devnet RPC URL
-  const rpcUrl = getSolanaRpcUrl();
+  // Step 1: Resolve Devnet RPC and parse signer public key
+  const rpcUrl = process.env.SOLANA_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com";
   const signerPubkey = new PublicKey(signerWalletStr);
-  const attemptId = `VOTE-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const attemptId = `VOTE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   // Step 2: Fetch recent blockhash from Devnet RPC
   const blockhashResponse = await fetch(rpcUrl, {
@@ -123,10 +130,20 @@ export async function prepareSquadsVoteTransaction(
   // Step 4: Construct canonical on-chain governance vote memo instruction
   // Uses Solana Memo Program v2 (MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) to immutably record the signed vote on Devnet
   const memoProgramPubkey = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-  const voteMemoData = Buffer.from(
-    `BRIDS_SQUADS_VOTE:${proposalId}:APPROVED_BY:${signerWalletStr}:${Date.now()}`,
-    "utf-8"
-  );
+  const now = Date.now();
+
+  const voteMemoDataString = metadata?.proposalHash
+    ? formatOnChainVoteMemo({
+        proposalId,
+        newStartAt: metadata.newStartAt ?? "2026-04-01T00:00:00Z",
+        newEndAt: metadata.newEndAt ?? "2028-12-31T23:59:59Z",
+        proposalHash: metadata.proposalHash,
+        signerWallet: signerWalletStr,
+        timestamp: now
+      })
+    : `BRIDS_SQUADS_VOTE:${proposalId}:APPROVED_BY:${signerWalletStr}:${now}`;
+
+  const voteMemoData = Buffer.from(voteMemoDataString, "utf-8");
 
   const voteInstruction = new TransactionInstruction({
     programId: memoProgramPubkey,

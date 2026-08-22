@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { verifyProposalIntegrity } from "@/features/admin/domain/squads-proposal-crypto";
 import {
   getDateChangeProposal,
   saveDateChangeProposal
@@ -23,7 +24,7 @@ import { getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
 const VoteSchema = z.object({
   proposalId: z.string().min(1, { message: "Proposal ID is required" }),
   signerWallet: z.string().min(32, { message: "signerWallet must be a valid Solana public key" }),
-  signedTransactionBase64: z.string().optional()
+  signedTransactionBase64: z.string().min(1, { message: "signedTransactionBase64 is required" })
 });
 
 /**
@@ -48,25 +49,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { proposalId, signerWallet, signedTransactionBase64 } = parsed.data;
 
-    // Step 2: Validate and broadcast real signed transaction to Solana Devnet
-    if (!signedTransactionBase64) {
-      return NextResponse.json(
+    // Step 2: Retrieve the date change proposal and verify cryptographic integrity
+    const proposal = getDateChangeProposal(proposalId);
+
+    if (proposal && proposal.proposalHash && proposal.nonce) {
+      const integrity = verifyProposalIntegrity(
         {
-          ok: false,
-          error: "MISSING_SIGNED_TRANSACTION",
-          message: "Se requiere la transacción firmada criptográficamente por la wallet para transmitir a Solana Devnet."
+          collectionAddress: proposal.collectionId,
+          proposedStartAt: proposal.proposedStartAt,
+          proposedEndAt: proposal.proposedEndAt,
+          justification: proposal.justification,
+          nonce: proposal.nonce
         },
-        { status: 400 }
+        proposal.proposalHash
       );
+
+      if (!integrity.isValid) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "ERR_PROPOSAL_TAMPERING_DETECTED",
+            message: "Fallo de integridad criptográfica: Los parámetros de la propuesta fueron alterados respecto a su sello SHA-256."
+          },
+          { status: 400 }
+        );
+      }
     }
 
+    // Step 3: Broadcast real signed transaction to Solana Devnet
     const broadcastResult = await broadcastSignedTransaction(signedTransactionBase64);
     const txSignature = broadcastResult.txSignature;
     const solscanUrl = broadcastResult.solscanUrl;
     const slot = broadcastResult.slot;
 
-    // Step 3: Retrieve the date change proposal and update approvals state
-    const proposal = getDateChangeProposal(proposalId);
+    // Step 4: Update approvals state and evaluate quorum
     const threshold = 2; // Squads 2-of-4 threshold
 
     if (proposal) {

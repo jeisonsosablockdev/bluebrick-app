@@ -23,6 +23,8 @@ export type SquadsProposalDTO = {
   txSignature?: string;
   solscanUrl?: string;
   confirmedSlot?: number;
+  proposalHash?: string;
+  nonce?: string;
   onChainDates: {
     projectStartAt: string;
     projectEndAt: string;

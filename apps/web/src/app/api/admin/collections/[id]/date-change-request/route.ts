@@ -14,6 +14,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { computeProposalPayloadHash } from "@/features/admin/domain/squads-proposal-crypto";
 import { getDateChangeProposal, saveDateChangeProposal } from "@/features/admin/infrastructure/date-change-proposal-store";
 
 const dateChangeRequestSchema = z.object({
@@ -69,6 +70,16 @@ export async function POST(
 
     const now = new Date().toISOString();
     const requestId = `dcr_${Date.now()}`;
+    const nonce = `NONCE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    // Step 1: Compute deterministic cryptographic proposal hash (SHA-256)
+    const proposalHash = computeProposalPayloadHash({
+      collectionAddress: collectionId,
+      proposedStartAt,
+      proposedEndAt,
+      justification,
+      nonce
+    });
 
     const proposal = {
       requestId,
@@ -77,10 +88,12 @@ export async function POST(
       proposedStartAt,
       proposedEndAt,
       justification,
-      createdAt: now
+      createdAt: now,
+      proposalHash,
+      nonce
     };
 
-    // Step 1: Persist proposal to audit store
+    // Step 2: Persist proposal to audit store
     saveDateChangeProposal(proposal);
 
     // Step 2: Return audit record intent with status PENDING_MULTISIG

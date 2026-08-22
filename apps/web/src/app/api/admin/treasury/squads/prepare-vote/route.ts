@@ -17,7 +17,10 @@ import { prepareSquadsVoteTransaction } from "@/lib/solana-kit/compat/squads-vot
 const PrepareVoteSchema = z.object({
   proposalId: z.string().min(1, { message: "proposalId is required" }),
   signerWallet: z.string().min(32, { message: "signerWallet must be a valid Solana public key" }),
-  collectionAddress: z.string().optional()
+  collectionAddress: z.string().optional(),
+  newStartAt: z.string().optional(),
+  newEndAt: z.string().optional(),
+  proposalHash: z.string().optional()
 });
 
 /**
@@ -40,10 +43,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { proposalId, signerWallet, collectionAddress } = parsed.data;
+    const { proposalId, signerWallet, collectionAddress, newStartAt, newEndAt, proposalHash } = parsed.data;
 
-    // Step 2: Prepare unsigned VersionedTransaction
-    const prepared = await prepareSquadsVoteTransaction(signerWallet, proposalId, collectionAddress);
+    // Step 2: Prepare unsigned VersionedTransaction with cryptographic proposal seal
+    const prepared = await prepareSquadsVoteTransaction(
+      signerWallet,
+      proposalId,
+      collectionAddress,
+      { newStartAt, newEndAt, proposalHash }
+    );
 
     return NextResponse.json({
       ok: true,

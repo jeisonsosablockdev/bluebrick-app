@@ -59,6 +59,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         executed: approvals.length >= threshold,
         txSignature: latest.txSignature,
         solscanUrl: latest.solscanUrl,
+        proposalHash: latest.proposalHash,
+        nonce: latest.nonce,
         onChainDates: {
           projectStartAt: "2026-03-15T00:00:00Z",
           projectEndAt: "2028-12-31T23:59:59Z"
