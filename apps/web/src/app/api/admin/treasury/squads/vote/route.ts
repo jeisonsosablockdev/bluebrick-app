@@ -81,6 +81,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       } else {
         proposal.status = "PENDING_MULTISIG";
       }
+      proposal.txSignature = txSignature;
+      proposal.solscanUrl = solscanUrl;
       saveDateChangeProposal(proposal);
 
       const message = quorumReached
