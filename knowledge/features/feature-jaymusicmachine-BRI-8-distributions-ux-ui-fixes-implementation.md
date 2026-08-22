@@ -50,10 +50,10 @@
 - **Layer 3 — Domain**:
   - `apps/web/src/features/admin/domain/squads-multisig-types.ts`: Pure domain entities (`SquadsProposalDTO`) and pure evaluators (`evaluateDateAuditWarning`, `evaluateQuorumStatus`, `evaluateUnifiedMultisigAction`).
 
-### `SPEC-09: Real Solana Devnet On-Chain Voting & Notary Transaction Execution` [ACTIVE]
-- **TDD Contract**: Unit and integration tests for transaction assembly, client-side Phantom wallet signing, Devnet RPC submission, and Solscan transaction link rendering.
+### `SPEC-09: Real Solana Devnet On-Chain Voting & Notary Transaction Execution` [COMPLETED]
+- **TDD Contract**: Unit and integration tests for transaction assembly, client-side Phantom wallet signing, Devnet RPC submission, and Solscan transaction link rendering in `tests/features/admin/squads-multisig-console.test.tsx` and `tests/lib/squads-vote-transaction.test.ts`.
 - **Layer 4 — Infrastructure**:
-  - `apps/web/src/lib/solana-kit/transactions/squads-vote-transaction.ts`: Constructs `VersionedTransaction` for Solana Devnet with recent blockhash and PDA derivation.
+  - `apps/web/src/lib/solana-kit/compat/squads-vote-transaction.ts`: Constructs `VersionedTransaction` for Solana Devnet with recent blockhash and PDA derivation.
 - **Layer 2 — Application / API**:
   - `apps/web/src/app/api/admin/treasury/squads/prepare-vote/route.ts`: Prepares unsigned base64 `VersionedTransaction` with live Devnet blockhash.
   - `apps/web/src/app/api/admin/treasury/squads/vote/route.ts`: Receives signed transaction, broadcasts to Solana Devnet RPC via `sendRawTransaction`, confirms transaction on-chain, and records audit proof.

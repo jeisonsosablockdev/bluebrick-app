@@ -20,6 +20,9 @@ export type SquadsProposalDTO = {
   membersCount: number;
   approvedMembers: string[];
   executed: boolean;
+  txSignature?: string;
+  solscanUrl?: string;
+  confirmedSlot?: number;
   onChainDates: {
     projectStartAt: string;
     projectEndAt: string;

@@ -22,6 +22,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
+import { getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
+import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
   evaluateUnifiedMultisigAction,
@@ -58,12 +63,12 @@ function formatUsdcAmount(amountMinorStr: string): string {
 /**
  * Main Presentation Component: SquadsMultisigConsole
  */
-export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConsoleProps): ReactElement {
+export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultisigConsoleProps): ReactElement {
   const { t } = useI18n();
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, signTransaction } = useWallet();
 
   // Step 1: Initialize component state with dynamic props or null
-  const [dto, setDto] = useState<SquadsProposalDTO | null>(initialDto ?? null);
+  const [dto, setDto] = useState<SquadsProposalDTO | null>(initialDto);
   const [isLoading, setIsLoading] = useState<boolean>(!initialDto);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [allExpanded, setAllExpanded] = useState<boolean>(false);
@@ -71,51 +76,45 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Step 2: Fetch active proposal data from API if not provided in initialDto
+  // Step 2: Sync initialDto if provided
+  useEffect(() => {
+    if (initialDto) {
+      setDto(initialDto);
+      setIsLoading(false);
+    }
+  }, [initialDto]);
+
+  // Step 3: Fetch active proposal data from API if not provided in initialDto
   useEffect(() => {
     let active = true;
 
     async function loadProposalData() {
-      if (initialDto !== undefined) {
-        setIsLoading(false);
-        return;
-      }
+      if (initialDto) return;
 
       setIsLoading(true);
+      setErrorMessage(null);
       try {
-        const endpoint = runId
-          ? `/api/admin/distributions/runs/${runId}`
+        const targetUrl = runId
+          ? `/api/admin/distributions/runs/${encodeURIComponent(runId)}`
           : "/api/admin/treasury/squads/proposals";
 
-        const response = await fetch(endpoint);
-        if (!response.ok) return;
+        const response = await fetch(targetUrl);
+        const json = await response.json();
 
-        const payload = await response.json();
-        if (active && payload.ok && payload.data) {
-          if (runId) {
-            setDto((prev) => ({
-              runId: payload.data.id,
-              treasuryPolicyPda: payload.data.treasuryPolicyPda ?? "",
-              multisigPda: payload.data.multisigPda ?? "",
-              vaultPda: payload.data.vaultPda ?? "",
-              threshold: payload.data.threshold ?? 2,
-              membersCount: payload.data.membersCount ?? 4,
-              approvedMembers: payload.data.approvedMembers ?? [],
-              executed: payload.data.status === "finalized",
-              onChainDates: payload.data.onChainDates ?? null,
-              dbDates: {
-                projectStartAt: payload.data.periodStartAt ?? prev?.dbDates.projectStartAt ?? "",
-                projectEndAt: payload.data.periodEndAt ?? prev?.dbDates.projectEndAt ?? "",
-                modificationReason: payload.data.blockedReason ?? undefined
-              },
-              beneficiaries: payload.data.beneficiaries ?? []
-            }));
-          } else {
-            setDto(payload.data);
-          }
+        if (!active) return;
+
+        if (response.ok && json.data) {
+          const raw = json.data;
+          const parsedDto: SquadsProposalDTO = Array.isArray(raw) ? raw[0] : raw;
+          setDto(parsedDto ?? null);
+        } else {
+          setDto(null);
         }
-      } catch {
-        // Fallback safely to empty state
+      } catch (err) {
+        if (active) {
+          setErrorMessage(err instanceof Error ? err.message : "Error al cargar la propuesta multisig.");
+          setDto(null);
+        }
       } finally {
         if (active) {
           setIsLoading(false);
@@ -130,15 +129,15 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     };
   }, [runId, initialDto]);
 
-  // Step 3: Evaluate date audit status and quorum
+  // Step 4: Evaluate date audit status and quorum
   const dateAudit = useMemo(() => (dto ? evaluateDateAuditWarning(dto) : null), [dto]);
   const quorum = useMemo(() => (dto ? evaluateQuorumStatus(dto) : null), [dto]);
 
-  // Step 4: Check current connected user wallet
+  // Step 5: Check current connected user wallet
   const userPubkey = publicKey ? publicKey.toBase58() : null;
   const unifiedAction = useMemo(() => (dto ? evaluateUnifiedMultisigAction(dto, userPubkey) : null), [dto, userPubkey]);
 
-  // Step 5: Toggle single row expansion
+  // Step 6: Toggle single row expansion
   const toggleRow = (claimId: string) => {
     setExpandedRows((prev) => ({
       ...prev,
@@ -146,7 +145,7 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     }));
   };
 
-  // Step 6: Toggle all rows expansion
+  // Step 7: Toggle all rows expansion
   const toggleAll = () => {
     if (!dto) return;
     const nextState = !allExpanded;
@@ -158,9 +157,9 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     setExpandedRows(newExpanded);
   };
 
-  // Step 7: Handle single unified action (vote only OR vote + execute automatically)
+  // Step 8: Handle single unified action (Real Solana Devnet On-Chain Transaction)
   const handleUnifiedAction = async () => {
-    // Step 7a: If wallet is not connected, open BRIDS native wallet modal for reconnection
+    // Step 8a: If wallet is not connected, open BRIDS native wallet modal for reconnection
     if (!publicKey || !connected) {
       dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
@@ -175,7 +174,8 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     try {
       const signerWallet = publicKey.toBase58();
 
-      const res = await fetch("/api/admin/treasury/squads/vote", {
+      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC
+      const prepareRes = await fetch("/api/admin/treasury/squads/prepare-vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -184,19 +184,52 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
         })
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message ?? "Error al procesar la acción multisig.");
+      const prepareJson = await prepareRes.json();
+      if (!prepareRes.ok || !prepareJson.data?.transactionBase64) {
+        throw new Error(prepareJson.message ?? "Error al preparar la transacción en Solana Devnet.");
       }
 
-      // Step 7b: Update local DTO state with the resulting execution
+      // Step 8c: Request wallet cryptographic signature (Phantom / Solflare popup)
+      let signedTransactionBase64: string | undefined;
+      if (signTransaction) {
+        const rawBytes = Buffer.from(prepareJson.data.transactionBase64, "base64");
+        const unsignedTx = deserializeLegacyVersionedTransaction(new Uint8Array(rawBytes));
+        const signedTx = await signTransaction(unsignedTx);
+        const signedBytes = serializeLegacyVersionedTransaction(signedTx);
+        signedTransactionBase64 = Buffer.from(signedBytes).toString("base64");
+      }
+
+      // Step 8d: Broadcast signed transaction to Solana Devnet RPC
+      const res = await fetch("/api/admin/treasury/squads/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposalId: dto.runId,
+          signerWallet,
+          signedTransactionBase64
+        })
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message ?? "Error al procesar la acción multisig en Solana Devnet.");
+      }
+
+      // Step 8e: Update local DTO state with on-chain execution proof and Solscan link
       const isExecuted = json.data?.executed ?? Boolean(unifiedAction?.willReachQuorum);
+      const txSignature = json.data?.txSignature;
+      const solscanUrl = json.data?.solscanUrl ?? (txSignature ? getSolscanTransactionUrl(txSignature) : undefined);
+      const confirmedSlot = json.data?.slot;
+
       setDto((prev) =>
         prev
           ? {
               ...prev,
               approvedMembers: Array.from(new Set([...prev.approvedMembers, signerWallet])),
-              executed: isExecuted
+              executed: isExecuted,
+              txSignature,
+              solscanUrl,
+              confirmedSlot
             }
           : null
       );
@@ -204,17 +237,26 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
       setActionSuccessMessage(
         json.data?.message ??
           (isExecuted
-            ? `Quórum alcanzado (2/2): Propuesta aprobada y ejecutada exitosamente en Squads v4 Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`
-            : `Voto registrado exitosamente en Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`)
+            ? `Quórum alcanzado (2/2): Propuesta aprobada y ejecutada exitosamente en Solana Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`
+            : `Voto registrado exitosamente en Solana Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`)
       );
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error al procesar la acción multisig.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al procesar la acción multisig.";
+      if (
+        msg.toLowerCase().includes("user rejected") ||
+        msg.toLowerCase().includes("rejected the request") ||
+        msg.toLowerCase().includes("user cancel")
+      ) {
+        setErrorMessage("Cancelaste la solicitud de firma en la wallet.");
+      } else {
+        setErrorMessage(msg);
+      }
     } finally {
       setIsProcessingAction(false);
     }
   };
 
-  // Step 8: Render loading state
+  // Step 9: Render loading state
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -358,10 +400,28 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
         </div>
       )}
 
-      {/* Action Notification */}
+      {/* Action Notification with Solscan On-Chain Proof */}
       {actionSuccessMessage && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-400 text-sm">
-          {actionSuccessMessage}
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-400 text-sm space-y-2">
+          <div>{actionSuccessMessage}</div>
+          {dto.solscanUrl && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-emerald-500/20 text-xs">
+              <span className="text-emerald-300/80">Verificación On-Chain:</span>
+              <a
+                href={dto.solscanUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-mono text-emerald-300 hover:text-emerald-100 transition-colors"
+              >
+                Ver Transacción en Solscan Devnet ↗
+              </a>
+              {dto.confirmedSlot ? (
+                <span className="text-[11px] font-mono text-emerald-400/70">
+                  (Slot: {dto.confirmedSlot})
+                </span>
+              ) : null}
+            </div>
+          )}
         </div>
       )}
 
