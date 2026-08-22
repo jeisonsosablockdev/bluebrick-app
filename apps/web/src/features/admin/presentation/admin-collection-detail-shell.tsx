@@ -7,6 +7,7 @@ import { AdminCollectionDetailHero } from "@/features/admin/presentation/admin-c
 import { AdminCollectionDetailSections } from "@/features/admin/presentation/admin-collection-detail-sections";
 import { AdminCollectionDocumentsEditor } from "@/features/admin/presentation/admin-collection-documents-editor";
 import { AdminCollectionLocationEditor } from "@/features/admin/presentation/admin-collection-location-editor";
+import { AdminCollectionNotaryDatesPanel } from "@/features/admin/presentation/admin-collection-notary-dates-panel";
 import { AdminCollectionPropertyInformationEditor } from "@/features/admin/presentation/admin-collection-property-information-editor";
 import { AdminCollectionSummaryEditor } from "@/features/admin/presentation/admin-collection-summary-editor";
 import type { AdminCollectionBlockchainPanel } from "@/lib/admin/collection-blockchain-panel";
@@ -103,6 +104,11 @@ export function AdminCollectionDetailShell({
           </h3>
         </div>
         <AdminCollectionBlockchainBasePanel blockchain={blockchain} locale={locale} />
+        <AdminCollectionNotaryDatesPanel
+          collectionId={content.entryId}
+          collectionAddress={blockchain.baseAddresses.collectionAddress}
+          locale={locale}
+        />
       </section>
       <DetailShellFooter locale={locale} />
     </div>
