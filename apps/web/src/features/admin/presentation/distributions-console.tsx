@@ -288,7 +288,7 @@ export function DistributionsConsole(): ReactElement {
 
         {runsState.status === "ready" && filteredRuns.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/75">
-            {t({ en: "No distribution runs found", es: "No se encontraron corridas de distribución", pt: "Nenhum lote encontrado" })}
+            {t({ en: "No distribution runs yet", es: "No hay corridas de distribución aún", pt: "Nenhum lote ainda" })}
           </div>
         ) : null}
 
