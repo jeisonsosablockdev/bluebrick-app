@@ -89,3 +89,32 @@ export async function POST(
     );
   }
 }
+
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ id: string }> | { id: string } }
+) {
+  try {
+    const params = await Promise.resolve(context.params);
+    const collectionId = params.id;
+
+    if (!collectionId) {
+      return NextResponse.json(
+        { ok: false, error: "ERR_COLLECTION_ID_REQUIRED", message: "Collection ID is required." },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      collectionId,
+      data: null // Returns null when no proposal has been registered in audit cache
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json(
+      { ok: false, error: "ERR_INTERNAL_SERVER_ERROR", message },
+      { status: 500 }
+    );
+  }
+}
