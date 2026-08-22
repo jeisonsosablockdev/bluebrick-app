@@ -1,14 +1,21 @@
 import { describe, it, expect } from "vitest";
 
+import {
+  PROJECT_CONFIG_ACCOUNT_SIZE,
+  deriveProjectConfigPda,
+  decodeProjectConfigAccountData
+} from "@/lib/solana-kit/pda/project-config-reader";
+
 /**
  * =========================================================================================
- * 🧪 SPEC-01 (STORY-015-07): DISTRIBUTION ENGINE ON-CHAIN PDA NOTARY READ TESTS
+ * 🧪 SPEC-03 (STORY-015-07): DISTRIBUTION ENGINE ON-CHAIN PDA NOTARY READ TESTS
  * =========================================================================================
  * 
  * Verifies domain invariants:
  * 1. On-Chain PDA Notary is the strict single source of truth for project start/end dates.
  * 2. Database changes to dates are ignored when on-chain PDA is present.
  * 3. RPC query failure fails closed (throws error, blocks calculation; zero fallback to DB).
+ * 4. Deserializes 134-byte ProjectConfigState account layout with millisecond conversions.
  */
 
 export interface OnChainProjectConfigData {
@@ -19,11 +26,6 @@ export interface OnChainProjectConfigData {
   version: number;
 }
 
-/**
- * Pure calculation adapter simulating distribution period resolution.
- * What: Derives calculation boundaries strictly from on-chain PDA state.
- * How: Asserts PDA validity, converts Unix seconds to ISO/BigInt, rejects stale/missing RPC data.
- */
 export function resolveDistributionPeriodFromPda(params: {
   collectionAddress: string;
   onChainConfig: OnChainProjectConfigData | null;
@@ -45,7 +47,7 @@ export function resolveDistributionPeriodFromPda(params: {
   };
 }
 
-describe("SPEC-01 (STORY-015-07): Distribution Engine On-Chain PDA Read Contract", () => {
+describe("SPEC-03 (STORY-015-07): Distribution Engine On-Chain PDA Read Contract", () => {
   const sampleCollection = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
   const validOnChainConfig: OnChainProjectConfigData = {
     collectionAddress: sampleCollection,
@@ -54,6 +56,31 @@ describe("SPEC-01 (STORY-015-07): Distribution Engine On-Chain PDA Read Contract
     endAtUnixSeconds: 1755900000n,
     version: 1
   };
+
+  it("should derive deterministic ProjectConfig PDA for given collection address", async () => {
+    const { pdaAddress, bump } = await deriveProjectConfigPda(sampleCollection);
+    expect(pdaAddress).toBeTruthy();
+    expect(bump).toBeGreaterThanOrEqual(0);
+  });
+
+  it("should decode raw 134-byte binary buffer into typed ProjectConfigPdaState", () => {
+    const buffer = new Uint8Array(PROJECT_CONFIG_ACCOUNT_SIZE);
+    const view = new DataView(buffer.buffer);
+
+    // Set timestamps and version
+    view.setBigInt64(105, 1755800000n, true); // start_at
+    view.setBigInt64(113, 1755900000n, true); // end_at
+    view.setUint32(121, 2, true);              // version
+    view.setBigInt64(125, 1755850000n, true); // updated_at
+    view.setUint8(133, 255);                  // bump
+
+    const decoded = decodeProjectConfigAccountData(buffer);
+    expect(decoded.startAtUnixSeconds).toBe(1755800000n);
+    expect(decoded.endAtUnixSeconds).toBe(1755900000n);
+    expect(decoded.version).toBe(2);
+    expect(decoded.updatedAtUnixSeconds).toBe(1755850000n);
+    expect(decoded.bump).toBe(255);
+  });
 
   it("should derive distribution period strictly from on-chain PDA", () => {
     const result = resolveDistributionPeriodFromPda({
