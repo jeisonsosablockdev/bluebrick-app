@@ -30,11 +30,11 @@ Last Generated: 2026-08-21T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 554 |
+| Archived | 556 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 552 |
+| Archived status | 554 |
 
 ## Inbox
 
@@ -479,12 +479,14 @@ Last Generated: 2026-08-21T00:00:00.000Z
 | index | archived | none | [playbooks](knowledge/operations/playbooks/index.md) | n/a |
 | marketplace-listing-management | archived | none | [Marketplace Listing Management](knowledge/operations/playbooks/marketplace-listing-management.md) | n/a |
 | stake-event-reconciliation | archived | none | [Stake Event Reconciliation](knowledge/operations/playbooks/stake-event-reconciliation.md) | n/a |
+| treasury-claims-and-notary-governance | archived | none | [Treasury Claims & On-Chain Notary Governance Playbook](knowledge/operations/playbooks/treasury-claims-and-notary-governance.md) | n/a |
 | backup-restore | archived | none | [Backup and Restore](knowledge/operations/procedures/backup-restore.md) | n/a |
 | candy-machine-deploy-validation | archived | none | [Candy Machine Deploy Validation](knowledge/operations/procedures/candy-machine-deploy-validation.md) | n/a |
 | devnet-authority-lifecycle | archived | none | [DevNet Authority Lifecycle Proof](knowledge/operations/procedures/devnet-authority-lifecycle.md) | n/a |
 | health-checks-monitoring | archived | none | [Health Checks and Monitoring](knowledge/operations/procedures/health-checks-monitoring.md) | n/a |
 | index | archived | none | [procedures](knowledge/operations/procedures/index.md) | n/a |
 | purchase-trace-verification | archived | none | [Purchase Trace Verification](knowledge/operations/procedures/purchase-trace-verification.md) | n/a |
+| squads-v4-treasury-claims-operation | archived | none | [Squads v4 Treasury Claims & On-Chain Notary Operational Procedure](knowledge/operations/procedures/squads-v4-treasury-claims-operation.md) | n/a |
 | db-migration-rollback | archived | none | [Database Migration Rollback](knowledge/operations/runbooks/db-migration-rollback.md) | n/a |
 | incident-data-freshness-alert | archived | none | [Incident Response - Data Freshness Alert](knowledge/operations/runbooks/incident-data-freshness-alert.md) | n/a |
 | incident-solana-deployment | archived | none | [Incident Response - Solana Program Deployment](knowledge/operations/runbooks/incident-solana-deployment.md) | n/a |
