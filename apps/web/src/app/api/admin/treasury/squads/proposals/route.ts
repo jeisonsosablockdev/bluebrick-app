@@ -18,19 +18,28 @@ import { listDateChangeProposals } from "@/features/admin/infrastructure/date-ch
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // Step 1: Query active date change proposals in PENDING_MULTISIG status
-    const allProposals = listDateChangeProposals();
-    const pendingMultisig = allProposals.filter((p) => p.status === "PENDING_MULTISIG");
+    // Step 1: Query specific proposal by runId query param or retrieve active PENDING_MULTISIG proposals
+    const url = new URL(request.url);
+    const runIdParam = url.searchParams.get("runId");
 
-    // Step 2: Return active proposal payload if present, or null if no pending multisig
-    if (pendingMultisig.length === 0) {
+    let latest = runIdParam ? getDateChangeProposal(runIdParam) : null;
+
+    if (!latest) {
+      const allProposals = listDateChangeProposals();
+      const pendingMultisig = allProposals.filter((p) => p.status === "PENDING_MULTISIG");
+      latest = pendingMultisig.length > 0 ? pendingMultisig[pendingMultisig.length - 1] : (allProposals.length > 0 ? allProposals[allProposals.length - 1] : null);
+    }
+
+    // Step 2: Return active proposal payload if present, or null if no proposals exist
+    if (!latest) {
       return NextResponse.json({
         ok: true,
         data: null
       });
     }
 
-    const latest = pendingMultisig[0];
+    const approvals = latest.approvals ?? [];
+    const threshold = 2;
 
     return NextResponse.json({
       ok: true,
@@ -39,10 +48,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         treasuryPolicyPda: "Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuzQpF1D71K",
         multisigPda: "rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD",
         vaultPda: "D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB",
-        threshold: 2,
+        threshold,
         membersCount: 4,
-        approvedMembers: latest.approvals ?? [],
-        executed: (latest.approvals ?? []).length >= 2,
+        approvedMembers: approvals,
+        executed: approvals.length >= threshold,
         onChainDates: {
           projectStartAt: "2026-03-15T00:00:00Z",
           projectEndAt: "2028-12-31T23:59:59Z"
