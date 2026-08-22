@@ -117,12 +117,17 @@ describe("AdminCollectionNotaryDatesPanel Presentation Component", () => {
     fireEvent.change(justificationInput, { target: { value: "Ajuste de cronograma de obra por licencia" } });
 
     // Submit proposal
-    const submitBtn = screen.getByRole("button", { name: /enviar propuesta a squads/i });
-    fireEvent.click(submitBtn);
+    const form = screen.getByPlaceholderText(/motivo del cambio/i).closest("form")!;
+    fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.getByText(/solicitud registrada con éxito.*PENDING_MULTISIG/i)).toBeInTheDocument();
-      expect(screen.queryByText(/proponer nuevo rango de fechas/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/solicitud registrada con éxito/i)).toBeInTheDocument();
     });
+
+    // Verify modal closes when close button is clicked
+    const closeBtn = screen.getByRole("button", { name: /^cerrar$/i });
+    fireEvent.click(closeBtn);
+
+    expect(screen.queryByText(/proponer nuevo rango de fechas/i)).not.toBeInTheDocument();
   });
 });

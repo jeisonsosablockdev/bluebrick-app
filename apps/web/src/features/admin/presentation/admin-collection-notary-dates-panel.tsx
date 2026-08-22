@@ -18,7 +18,7 @@
  */
 
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -58,6 +58,25 @@ export function AdminCollectionNotaryDatesPanel({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [proposalSuccessMessage, setProposalSuccessMessage] = useState<string | null>(null);
   const [proposalErrorMessage, setProposalErrorMessage] = useState<string | null>(null);
+
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function closeModal() {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
+    setIsModalOpen(false);
+  }
+
+  // Cleanup auto-close timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, []);
 
   // Step 1: Fetch on-chain Notary PDA state on mount
   useEffect(() => {
@@ -136,7 +155,14 @@ export function AdminCollectionNotaryDatesPanel({
       });
 
       setProposalSuccessMessage(successMsg);
-      setIsModalOpen(false);
+
+      // Auto-close modal after 10 seconds
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+      autoCloseTimerRef.current = setTimeout(() => {
+        setIsModalOpen(false);
+      }, 10000);
     } catch (err) {
       setProposalErrorMessage(err instanceof Error ? err.message : "Error inesperado al enviar propuesta.");
     } finally {
@@ -146,8 +172,8 @@ export function AdminCollectionNotaryDatesPanel({
 
   return (
     <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-white/[0.03] to-transparent p-5 space-y-4">
-      {/* Success Notification Banner on Main Card */}
-      {proposalSuccessMessage ? (
+      {/* Success Notification Banner on Main Card (when modal is closed) */}
+      {!isModalOpen && proposalSuccessMessage ? (
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-300 flex items-center justify-between">
           <span>{proposalSuccessMessage}</span>
           <button
@@ -247,7 +273,7 @@ export function AdminCollectionNotaryDatesPanel({
           <button
             aria-label="Cerrar diálogo"
             className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
+            onClick={closeModal}
             type="button"
           />
 
@@ -269,7 +295,7 @@ export function AdminCollectionNotaryDatesPanel({
                   })}
                 </p>
               </div>
-              <Button className="min-h-8 px-3 text-xs" variant="ghost" onClick={() => setIsModalOpen(false)}>
+              <Button className="min-h-8 px-3 text-xs" variant="ghost" onClick={closeModal}>
                 ✕
               </Button>
             </div>
@@ -342,7 +368,7 @@ export function AdminCollectionNotaryDatesPanel({
                   type="button"
                   variant="outline"
                   className="min-h-10 text-xs"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeModal}
                 >
                   {localize(locale, { en: "Close", es: "Cerrar", pt: "Fechar" })}
                 </Button>
