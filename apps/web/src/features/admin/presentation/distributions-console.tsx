@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CreateDistributionModal } from "@/features/admin/presentation/create-distribution-modal";
 import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
 type DistributionRunStatus = "draft" | "blocked" | "finalized" | "failed";
@@ -113,32 +114,26 @@ export function DistributionsConsole(): ReactElement {
   const showTreasuryLink = isReleaseControlledRouteVisible("/admin/treasury");
   const [selected, setSelected] = useState<DistributionRun | null>(null);
   const [runsState, setRunsState] = useState<DistributionRunsState>(initialState);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [successRunId, setSuccessRunId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  useEffect(() => {
-    let active = true;
-
-    async function loadRuns(): Promise<void> {
-      try {
-        const runs = await fetchDistributionRuns();
-        if (active) {
-          setRunsState({ status: "ready", runs, error: null });
-        }
-      } catch (error) {
-        if (active) {
-          setRunsState({
-            status: "error",
-            runs: [],
-            error: error instanceof Error ? error.message : "Could not load distribution runs.",
-          });
-        }
-      }
+  const loadRuns = async () => {
+    try {
+      setRunsState((prev) => ({ status: "loading", runs: prev.runs, error: null }));
+      const runs = await fetchDistributionRuns();
+      setRunsState({ status: "ready", runs, error: null });
+    } catch (error) {
+      setRunsState({
+        status: "error",
+        runs: [],
+        error: error instanceof Error ? error.message : "Could not load distribution runs.",
+      });
     }
+  };
 
+  useEffect(() => {
     void loadRuns();
-    return () => {
-      active = false;
-    };
   }, []);
 
   // Compute KPI metrics from loaded runs
@@ -164,6 +159,14 @@ export function DistributionsConsole(): ReactElement {
 
   return (
     <div className="space-y-4">
+      {/* Success Notification Banner */}
+      {successRunId ? (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-300 flex items-center justify-between">
+          <span>✓ {t({ en: "Distribution run created successfully:", es: "Corrida de distribución creada exitosamente:", pt: "Lote criado com sucesso:" })} <span className="font-mono">{successRunId}</span></span>
+          <button type="button" onClick={() => setSuccessRunId(null)} className="text-emerald-400 hover:text-white">✕</button>
+        </div>
+      ) : null}
+
       {/* 1. Top KPI Metrics Grid — Matching /profile Exactly */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {/* KPI 1 */}
@@ -238,7 +241,7 @@ export function DistributionsConsole(): ReactElement {
             <Button
               className="min-h-11"
               variant="primary"
-              onClick={() => alert("El modal de creación interactivo se conectará en SPEC-05")}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               {t({ en: "+ New Distribution", es: "+ Nueva Distribución", pt: "+ Nova Distribuicao" })}
             </Button>
@@ -398,6 +401,16 @@ export function DistributionsConsole(): ReactElement {
           </aside>
         </div>
       ) : null}
+
+      {/* 5. Create Distribution Run Modal Dialog */}
+      <CreateDistributionModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(newRunId) => {
+          setSuccessRunId(newRunId);
+          void loadRuns();
+        }}
+      />
     </div>
   );
 }
