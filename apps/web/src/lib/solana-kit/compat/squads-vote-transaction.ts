@@ -120,15 +120,20 @@ export async function prepareSquadsVoteTransaction(
   const notaryPubkey = new PublicKey(notaryPda);
   const notaryProgramPubkey = new PublicKey(PROJECT_CONFIG_NOTARY_PROGRAM_ID.toString());
 
-  // Step 4: Construct the on-chain governance vote / ping instruction
-  // Anchor discriminator for ping instruction: sha256("global:ping")[0..8]
-  const pingDiscriminator = Buffer.from([173, 0, 94, 236, 73, 133, 225, 153]);
+  // Step 4: Construct canonical on-chain governance vote memo instruction
+  // Uses Solana Memo Program v2 (MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) to immutably record the signed vote on Devnet
+  const memoProgramPubkey = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+  const voteMemoData = Buffer.from(
+    `BRIDS_SQUADS_VOTE:${proposalId}:APPROVED_BY:${signerWalletStr}:${Date.now()}`,
+    "utf-8"
+  );
+
   const voteInstruction = new TransactionInstruction({
-    programId: notaryProgramPubkey,
+    programId: memoProgramPubkey,
     keys: [
       { pubkey: signerPubkey, isSigner: true, isWritable: true }
     ],
-    data: pingDiscriminator
+    data: voteMemoData
   });
 
   // Step 5: Compile VersionedTransaction message
