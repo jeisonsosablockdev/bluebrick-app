@@ -29,6 +29,14 @@ vi.mock("@/lib/release-module-visibility", () => ({
   isReleaseControlledRouteVisible: () => true
 }));
 
+// Mock useWallet
+vi.mock("@solana/wallet-adapter-react", () => ({
+  useWallet: () => ({
+    publicKey: null,
+    connected: false
+  })
+}));
+
 describe("TreasuryConsole Component (SPEC-07)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

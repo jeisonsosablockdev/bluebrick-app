@@ -20,6 +20,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactElement } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export interface TreasuryMovement {
  */
 export function TreasuryConsole(): ReactElement {
   const { t } = useI18n();
+  const { publicKey } = useWallet();
   const showDistributionsLink = isReleaseControlledRouteVisible("/admin/distributions");
   const showSquadsLink = isReleaseControlledRouteVisible("/admin/treasury");
 
@@ -132,15 +134,17 @@ export function TreasuryConsole(): ReactElement {
         body: JSON.stringify({ reason: "Rejected by admin from Treasury Console" })
       });
 
-      const json = await res.json();
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const json = isJson ? await res.json() : null;
+
       if (!res.ok) {
-        throw new Error(json.error?.message ?? "Failed to reject proposal");
+        throw new Error(json?.error?.message ?? `Error al rechazar propuesta (${res.status})`);
       }
 
       setActiveRun((prev) => (prev ? { ...prev, status: "blocked" } : null));
-      setActionMessage("Proposal successfully rejected and unblocked.");
+      setActionMessage("Propuesta rechazada y corrida bloqueada exitosamente.");
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error rejecting proposal");
+      setErrorMessage(err instanceof Error ? err.message : "Error rechazando propuesta");
     } finally {
       setIsRejecting(false);
     }
@@ -160,17 +164,19 @@ export function TreasuryConsole(): ReactElement {
         body: JSON.stringify({ itemId, reason: "Vetoed by admin from Treasury Console" })
       });
 
-      const json = await res.json();
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const json = isJson ? await res.json() : null;
+
       if (!res.ok) {
-        throw new Error(json.error?.message ?? "Failed to veto item");
+        throw new Error(json?.error?.message ?? `Error al vetar ítem (${res.status})`);
       }
 
       setItems((prev) =>
         prev.map((item) => (item.id === itemId ? { ...item, status: "vetoed" } : item))
       );
-      setActionMessage(`Item ${itemId} vetoed successfully.`);
+      setActionMessage(`Ítem ${itemId} vetado exitosamente.`);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error vetoing item");
+      setErrorMessage(err instanceof Error ? err.message : "Error vetando ítem");
     } finally {
       setVetoingItemId(null);
     }
@@ -183,25 +189,33 @@ export function TreasuryConsole(): ReactElement {
     setErrorMessage(null);
 
     try {
+      const signerWallet = publicKey ? publicKey.toBase58() : undefined;
       const res = await fetch("/api/admin/treasury/circuit-breaker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reason: "Emergency pause triggered by admin operator",
-          triggeredAt: new Date().toISOString()
+          reason: "Parada de emergencia 1-de-M activada por operador administrador",
+          triggeredAt: new Date().toISOString(),
+          signerWallet
         })
       });
 
-      const json = await res.json();
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const json = isJson ? await res.json() : null;
+
       if (!res.ok) {
-        throw new Error(json.error?.message ?? "Failed to trigger circuit breaker");
+        throw new Error(json?.message ?? json?.error?.message ?? `Error al activar parada (${res.status})`);
       }
 
       setCircuitBreakerActive(true);
       setPausePayload(json.data ?? json);
-      setActionMessage("Emergency fast pause activated across treasury settlement.");
+      setActionMessage(
+        signerWallet
+          ? `Parada de emergencia activada y firmada con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}`
+          : "Parada de emergencia activada exitosamente en el motor de tesorería."
+      );
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error activating circuit breaker");
+      setErrorMessage(err instanceof Error ? err.message : "Error activando parada de emergencia");
     } finally {
       setIsTriggeringCircuitBreaker(false);
     }
