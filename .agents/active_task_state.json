@@ -1,27 +1,23 @@
 {
   "version": "1.0.0",
   "task_id": "BRI-8",
-  "story_id": "STORY-015-04",
-  "spec_id": "SPEC-05",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s04-05-refactor-clean",
+  "story_id": "STORY-015-05",
+  "spec_id": "SPEC-01",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s05-01-tdd",
   "parent_branch": "feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "current_phase": "PHASE_5_TESTS_RED",
   "human_design_approval": {
     "approved": true,
     "timestamp": "2026-08-20T21:19:40-05:00"
   },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-21T22:30:34-05:00"
-  },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-21T22:28:38-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-21T22:30:54-05:00" },
     "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-07-25T20:33:00-05:00" },
     "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:19:40-05:00" },
     "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:19:40-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-21T22:11:22-05:00", "note": "All regression test suites passing" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-21T22:29:34-05:00", "note": "Clean code audit and refactor pass completed with 1606/1606 tests green" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-21T22:29:59-05:00", "note": "Architect Gate 2 APPROVED" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-21T22:30:34-05:00" }
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
