@@ -296,16 +296,44 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
       {dateAudit?.isWarning && (
         <div
           data-testid="date-audit-warning-banner"
-          className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200 text-sm space-y-1"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 text-amber-200 text-sm space-y-3"
         >
-          <div className="flex items-center gap-2 font-semibold text-amber-400">
-            <span className="h-2 w-2 rounded-full bg-amber-400" />
-            Advertencia de Auditoría de Fechas del Proyecto
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-semibold text-amber-400">
+              <span className="h-2 w-2 rounded-full bg-amber-400" />
+              Solicitud de Cambio de Fechas On-Chain Pendiente de Aprobación Multisig
+            </div>
+            <Link href={`/admin/collections/${dto.runId}`}>
+              <Button variant="outline" className="border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-xs px-3 py-1 min-h-7">
+                Ver Colección
+              </Button>
+            </Link>
           </div>
-          <p className="text-xs text-amber-200/80">
-            Las fechas de cálculo del período difieren del registro inmutable del Notario On-Chain.
-            Motivo: <span className="font-mono">{dateAudit.reason}</span>
-          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2 text-xs bg-black/20 p-3 rounded-lg border border-amber-500/20">
+            <div>
+              <span className="text-muted-foreground block text-[11px]">Fechas On-Chain Actuales:</span>
+              <span className="font-mono text-foreground font-medium">
+                {dto.onChainDates?.projectStartAt ? dto.onChainDates.projectStartAt.slice(0, 10) : "N/A"} →{" "}
+                {dto.onChainDates?.projectEndAt ? dto.onChainDates.projectEndAt.slice(0, 10) : "N/A"}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-muted-foreground block text-[11px]">Fechas Nuevas Propuestas:</span>
+              <span className="font-mono text-amber-300 font-medium">
+                {dto.dbDates.projectStartAt ? dto.dbDates.projectStartAt.slice(0, 10) : "N/A"} →{" "}
+                {dto.dbDates.projectEndAt ? dto.dbDates.projectEndAt.slice(0, 10) : "N/A"}
+              </span>
+            </div>
+
+            {dto.dbDates.modificationReason && (
+              <div className="sm:col-span-2 border-t border-amber-500/10 pt-2 mt-1">
+                <span className="text-muted-foreground text-[11px] block">Motivo / Justificación:</span>
+                <span className="text-foreground italic">{dto.dbDates.modificationReason}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
