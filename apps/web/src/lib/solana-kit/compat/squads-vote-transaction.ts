@@ -42,22 +42,46 @@ export interface BroadcastVoteResult {
 }
 
 /**
+ * Resolves a valid base58 Solana public key from an address or proposal ID.
+ * If the input is already a valid base58 public key (32..44 characters), returns it directly.
+ * Otherwise, derives a deterministic base58 public key from the string identifier.
+ *
+ * @param input - Address string or proposal identifier
+ * @returns Valid base58-encoded address string
+ */
+export function resolveValidBase58Address(input: string): string {
+  const trimmed = input.trim();
+  const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+  if (base58Regex.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Derive deterministic 32-byte public key from input string
+  const buffer = new Uint8Array(32);
+  const encoded = new TextEncoder().encode(trimmed);
+  buffer.set(encoded.subarray(0, 32));
+  return new PublicKey(buffer).toBase58();
+}
+
+/**
  * Prepares an unsigned VersionedTransaction for an administrator vote on Solana Devnet.
  *
  * Step-by-Step Logic:
- * // Step 1: Validate cluster and resolve RPC endpoint.
+ * // Step 1: Validate inputs and resolve Devnet RPC URL.
  * // Step 2: Fetch latest blockhash from Solana Devnet RPC.
- * // Step 3: Derive deterministic PDA addresses for Squads v4 and Notary program.
+ * // Step 3: Normalize collection / proposal identifier to valid 32-byte Base58 address and derive PDAs.
  * // Step 4: Assemble transaction instructions for Squads vote / notary approval.
  * // Step 5: Compile VersionedTransaction message and serialize to base64 wire format.
  *
  * @param signerWalletStr - Base58 public key of the voting administrator wallet
- * @param proposalId - Active proposal identifier (collection ID or run ID)
+ * @param proposalId - Active proposal identifier (collection ID, run ID, or Base58 address)
+ * @param collectionAddress - Optional explicit collection Base58 address
  * @returns Serialized base64 transaction ready for wallet signature
  */
 export async function prepareSquadsVoteTransaction(
   signerWalletStr: string,
-  proposalId: string
+  proposalId: string,
+  collectionAddress?: string
 ): Promise<PreparedSquadsVoteTransaction> {
   // Step 1: Validate inputs and resolve Devnet RPC URL
   const rpcUrl = getSolanaRpcUrl();
@@ -87,8 +111,12 @@ export async function prepareSquadsVoteTransaction(
     throw new Error("ERR_RPC_BLOCKHASH_FETCH_FAILED: No se pudo obtener el blockhash reciente de Solana Devnet.");
   }
 
-  // Step 3: Derive deterministic PDAs
-  const { pdaAddress: notaryPda } = await deriveProjectConfigPda(proposalId);
+  // Step 3: Normalize address to valid Base58 public key and derive deterministic PDAs
+  const targetCollection = collectionAddress
+    ? resolveValidBase58Address(collectionAddress)
+    : resolveValidBase58Address(proposalId);
+
+  const { pdaAddress: notaryPda } = await deriveProjectConfigPda(targetCollection);
   const notaryPubkey = new PublicKey(notaryPda);
   const notaryProgramPubkey = new PublicKey(PROJECT_CONFIG_NOTARY_PROGRAM_ID.toString());
 

@@ -108,4 +108,37 @@ describe("Layer 4: Squads Vote Transaction Builder (SPEC-09)", () => {
     expect(result.solscanUrl).toContain("solscan.io/tx/");
     expect(result.solscanUrl).toContain("cluster=devnet");
   });
+
+  it("Step 4: Normalizes non-base58 24-character run IDs without throwing Base58 length error", async () => {
+    // Arrange: 24-character alphanumeric run ID
+    const NON_BASE58_RUN_ID = "RUN-2026-08-20-001";
+    expect(NON_BASE58_RUN_ID.length).toBeLessThan(32);
+
+    global.fetch = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const body = JSON.parse((init?.body as string) || "{}");
+      if (body.method === "getLatestBlockhash") {
+        return {
+          ok: true,
+          json: async () => ({
+            jsonrpc: "2.0",
+            result: {
+              value: {
+                blockhash: "EkSnNWgrAwhHfF5Q81eZ4A8Yn16yvBQp4qWq7Z4q6XyZ",
+                lastValidBlockHeight: 300000000
+              }
+            }
+          })
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    // Act
+    const result = await prepareSquadsVoteTransaction(CANONICAL_SIGNER, NON_BASE58_RUN_ID);
+
+    // Assert: Prepared transaction succeeds without Base58 string length error
+    expect(result.proposalId).toBe(NON_BASE58_RUN_ID);
+    expect(result.transactionBase64).toBeDefined();
+    expect(typeof result.transactionBase64).toBe("string");
+  });
 });

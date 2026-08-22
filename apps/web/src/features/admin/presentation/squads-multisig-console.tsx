@@ -180,7 +180,8 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposalId: dto.runId,
-          signerWallet
+          signerWallet,
+          collectionAddress: dto.treasuryPolicyPda || dto.vaultPda
         })
       });
 
