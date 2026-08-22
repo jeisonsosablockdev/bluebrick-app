@@ -20,8 +20,8 @@ Record the Candy Machine deploy system baseline for the BRI-8 squads v4 treasury
 
 ## Iteration Metadata
 
-- Date: 2026-08-21
-- Branch: `feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims`
+- Date: 2026-08-22
+- Branch: `SPEC/jaymusicmachine-BRI-8`
 - Base branch: `develop`
 - PR: `N/A - Active Branch`
 - Final merged PR: `N/A`

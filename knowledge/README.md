@@ -30,11 +30,11 @@ Last Generated: 2026-08-21T00:00:00.000Z
 | Observations | 12 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 556 |
+| Archived | 558 |
 | Observed status | 22 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 554 |
+| Archived status | 556 |
 
 ## Inbox
 
@@ -317,6 +317,8 @@ Last Generated: 2026-08-21T00:00:00.000Z
 | feature-jaymusicmachine-BRI-184-test-suite-for-harnessing | archived | none | [feature-jaymusicmachine-BRI-184-test-suite-for-harnessing](knowledge/features/feature-jaymusicmachine-BRI-184-test-suite-for-harnessing.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
+| feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation | archived | none | [feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation](knowledge/features/feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation.md) | n/a |
+| feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes | archived | none | [feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes](knowledge/features/feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes.md) | n/a |
 | feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |
