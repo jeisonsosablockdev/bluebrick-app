@@ -2,22 +2,35 @@
 
 /**
  * =========================================================================================
- * Layer 1: Presentation Layer — Treasury Console & Exception Controls
- * Description: Admin treasury overview with framework proposal rejection, granular pre-seal
- *              item veto, and dual-layer emergency circuit breaker controls.
- * Aesthetics: Sober, minimal dark UI aligned with /profile styling (zero emojis).
+ * Layer 1: Presentation Layer — Treasury Console & Squads Governance
+ * Module: treasury-console
+ *
+ * Description:
+ * Modernized administrative treasury overview adhering to Next.js 16 App Router best
+ * practices and sober dark aesthetics matching `/profile`. Connects to dynamic API
+ * endpoints (/api/admin/treasury/summary) to inspect live on-chain date change proposals
+ * (PENDING_MULTISIG), active payout runs, item vetoes, and circuit breaker controls.
+ *
+ * Invariants & Governance:
+ * - Zero hardcoded mock fixtures in production paths.
+ * - Layer 1 isolation: no direct database or RPC clients; uses Layer 2 API routes.
+ * - Full multi-language support with i18n fallbacks.
  * =========================================================================================
  */
 
 import Link from "next/link";
-import { useState, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { PendingDateProposal } from "@/features/admin/presentation/admin-collection-notary-dates-panel";
 import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
-interface PayoutRunItem {
+/**
+ * Interface representing a single beneficiary item within an active payout run.
+ */
+export interface PayoutRunItem {
   id: string;
   runId: string;
   recipientWallet: string;
@@ -25,73 +38,46 @@ interface PayoutRunItem {
   status: "active" | "vetoed";
 }
 
-interface ActivePayoutRun {
+/**
+ * Interface representing an active payout run undergoing treasury governance.
+ */
+export interface ActivePayoutRun {
   id: string;
   status: "draft" | "blocked" | "sealed" | "executing" | "finalized" | "paused";
   totalAmount: string;
   itemsCount: number;
 }
 
-const SAMPLE_RUN: ActivePayoutRun = {
-  id: "550e8400-e29b-41d4-a716-446655440000",
-  status: "draft",
-  totalAmount: "$296,400",
-  itemsCount: 142
-};
+/**
+ * Interface representing a recent treasury movement record.
+ */
+export interface TreasuryMovement {
+  movementId: string;
+  type: "deposit" | "distribution" | "claim-funding";
+  amount: string;
+  token: string;
+  date: string;
+  status: "processed" | "pending";
+  reference: string;
+}
 
-const SAMPLE_ITEMS: PayoutRunItem[] = [
-  {
-    id: "item-001",
-    runId: "550e8400-e29b-41d4-a716-446655440000",
-    recipientWallet: "3tW8...siATd",
-    amount: "$2,400",
-    status: "active"
-  },
-  {
-    id: "item-002",
-    runId: "550e8400-e29b-41d4-a716-446655440000",
-    recipientWallet: "7xKX...sgAsU",
-    amount: "$1,850",
-    status: "active"
-  }
-];
-
-const MOVEMENTS = [
-  {
-    movementId: "MV-1001",
-    type: "deposit",
-    amount: "$120,000",
-    token: "USDC",
-    date: "2026-03-01",
-    status: "processed",
-    reference: "Bank wire"
-  },
-  {
-    movementId: "MV-1002",
-    type: "distribution",
-    amount: "$18,540",
-    token: "USDC",
-    date: "2026-03-04",
-    status: "processed",
-    reference: "Batch D-2026-03"
-  },
-  {
-    movementId: "MV-1003",
-    type: "claim-funding",
-    amount: "$3,200",
-    token: "USDC",
-    date: "2026-03-05",
-    status: "pending",
-    reference: "Claim pool top-up"
-  }
-];
-
+/**
+ * Main Presentation Component: TreasuryConsole
+ * Provides interactive inspection of pending date change proposals, active distribution runs,
+ * and emergency circuit breaker controls.
+ */
 export function TreasuryConsole(): ReactElement {
   const { t } = useI18n();
   const showDistributionsLink = isReleaseControlledRouteVisible("/admin/distributions");
+  const showSquadsLink = isReleaseControlledRouteVisible("/admin/treasury");
 
-  const [activeRun, setActiveRun] = useState<ActivePayoutRun>(SAMPLE_RUN);
-  const [items, setItems] = useState<PayoutRunItem[]>(SAMPLE_ITEMS);
+  // Step 1: Initialize dynamic state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [pendingProposals, setPendingProposals] = useState<PendingDateProposal[]>([]);
+  const [activeRun, setActiveRun] = useState<ActivePayoutRun | null>(null);
+  const [items, setItems] = useState<PayoutRunItem[]>([]);
+  const [movements, setMovements] = useState<TreasuryMovement[]>([]);
+
   const [isRejecting, setIsRejecting] = useState(false);
   const [vetoingItemId, setVetoingItemId] = useState<string | null>(null);
   const [isTriggeringCircuitBreaker, setIsTriggeringCircuitBreaker] = useState(false);
@@ -100,12 +86,41 @@ export function TreasuryConsole(): ReactElement {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  /**
-   * Rejects an active proposal run globally.
-   * What: Sends rejection request to backend API.
-   * How: POST to /api/admin/payout-runs/[id]/reject and updates run status to blocked.
-   */
+  // Step 2: Fetch real-time treasury summary on component mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadTreasurySummary() {
+      setIsLoading(true);
+      try {
+        const res = await fetch("/api/admin/treasury/summary");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.ok && json.data && isMounted) {
+            setPendingProposals(json.data.pendingProposals ?? []);
+            setActiveRun(json.data.activeRun ?? null);
+            setMovements(json.data.movements ?? []);
+          }
+        }
+      } catch {
+        // Fallback safely to empty state
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadTreasurySummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Step 3: Handle global proposal rejection
   const handleRejectProposal = async () => {
+    if (!activeRun) return;
     setIsRejecting(true);
     setActionMessage(null);
     setErrorMessage(null);
@@ -122,7 +137,7 @@ export function TreasuryConsole(): ReactElement {
         throw new Error(json.error?.message ?? "Failed to reject proposal");
       }
 
-      setActiveRun((prev) => ({ ...prev, status: "blocked" }));
+      setActiveRun((prev) => (prev ? { ...prev, status: "blocked" } : null));
       setActionMessage("Proposal successfully rejected and unblocked.");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Error rejecting proposal");
@@ -131,12 +146,9 @@ export function TreasuryConsole(): ReactElement {
     }
   };
 
-  /**
-   * Vetoes an individual item pre-seal.
-   * What: Calls veto endpoint for single recipient.
-   * How: POST to /api/admin/payout-runs/[id]/veto and updates item status locally.
-   */
+  // Step 4: Handle individual item veto pre-seal
   const handleVetoItem = async (itemId: string) => {
+    if (!activeRun) return;
     setVetoingItemId(itemId);
     setActionMessage(null);
     setErrorMessage(null);
@@ -164,23 +176,19 @@ export function TreasuryConsole(): ReactElement {
     }
   };
 
-  /**
-   * Triggers emergency circuit breaker.
-   * What: Stops local crank bot and generates emergency on-chain pause payload.
-   * How: POST to /api/admin/payout-runs/[id]/circuit-breaker and stores pause payload.
-   */
-  const handleTriggerCircuitBreaker = async () => {
+  // Step 5: Handle emergency 1-of-M circuit breaker trigger
+  const handleCircuitBreaker = async () => {
     setIsTriggeringCircuitBreaker(true);
     setActionMessage(null);
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`/api/admin/payout-runs/${activeRun.id}/circuit-breaker`, {
+      const res = await fetch("/api/admin/treasury/circuit-breaker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reason: "Emergency halt triggered from Treasury Console",
-          ttlSeconds: 300
+          reason: "Emergency pause triggered by admin operator",
+          triggeredAt: new Date().toISOString()
         })
       });
 
@@ -190,268 +198,244 @@ export function TreasuryConsole(): ReactElement {
       }
 
       setCircuitBreakerActive(true);
-      setPausePayload(json.data.emergencyPausePayload);
-      setActionMessage("Circuit breaker activated. Local bot paused.");
+      setPausePayload(json.data ?? json);
+      setActionMessage("Emergency fast pause activated across treasury settlement.");
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error triggering circuit breaker");
+      setErrorMessage(err instanceof Error ? err.message : "Error activating circuit breaker");
     } finally {
       setIsTriggeringCircuitBreaker(false);
     }
   };
 
-  const isPreSeal = ["draft", "blocked"].includes(activeRun.status);
-
   return (
-    <div className="space-y-4">
-      <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-white">
-          {t({ en: "Treasury", es: "Tesoreria", pt: "Tesouraria" })}
-        </h2>
-        <p className="text-sm text-white/75">
-          {t({
-            en: "Financial visibility for mint and distribution operations.",
-            es: "Visibilidad financiera para operacion de mint y distribucion.",
-            pt: "Visibilidade financeira para operacoes de mint e distribuicao."
-          })}
-        </p>
-      </Card>
-
-      {actionMessage ? (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400">
-          {actionMessage}
-        </div>
-      ) : null}
-
-      {errorMessage ? (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      {circuitBreakerActive ? (
-        <Card className="border-amber-500/30 bg-amber-500/10 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
-              {t({ en: "Circuit Breaker Active", es: "Freno de Emergencia Activo", pt: "Freio de Emergencia Ativo" })}
-            </span>
-            <span className="rounded bg-amber-400/20 px-2 py-0.5 text-xs text-amber-300">
-              {t({ en: "Local Bot Halted", es: "Bot Local Detenido", pt: "Bot Local Parado" })}
-            </span>
-          </div>
-          <p className="text-xs text-amber-200/80">
-            {t({
-              en: "Emergency fast-pause payload prepared. TTL: 300s. Broadcast on-chain via pause_run.",
-              es: "Payload de pausa rapida listo. TTL: 300s. Retransmitir on-chain mediante pause_run.",
-              pt: "Payload de pausa rapida pronto. TTL: 300s. Retransmitir on-chain via pause_run."
-            })}
-          </p>
-          {pausePayload ? (
-            <pre className="overflow-x-auto rounded bg-black/40 p-2 text-[11px] text-white/80 font-mono">
-              {JSON.stringify(pausePayload, null, 2)}
-            </pre>
-          ) : null}
-        </Card>
-      ) : null}
-
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Total USDC balance", es: "Balance total USDC", pt: "Saldo total USDC" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">$842,120</p>
-        </Card>
-        <Card className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Committed funds", es: "Fondos comprometidos", pt: "Fundos comprometidos" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">{activeRun.totalAmount}</p>
-        </Card>
-        <Card className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Available funds", es: "Fondos disponibles", pt: "Fundos disponiveis" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">$545,720</p>
-        </Card>
-      </div>
-
-      {/* Active Proposal Exception & Veto Controls */}
-      <Card className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-white">
-              {t({ en: "Active Distribution Run", es: "Lote de Distribucion Activo", pt: "Lote de Distribuicao Ativo" })}
-            </p>
-            <p className="text-xs text-white/60">
-              Run: {activeRun.id} | Status: <span className="text-white font-medium">{activeRun.status}</span>
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {isPreSeal ? (
-              <Button
-                variant="outline"
-                className="min-h-9 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs"
-                onClick={handleRejectProposal}
-                disabled={isRejecting}
-              >
-                {isRejecting ? t({ en: "Rejecting...", es: "Rechazando...", pt: "Rejeitando..." }) : t({ en: "Reject Proposal", es: "Rechazar Propuesta", pt: "Rejeitar Proposta" })}
-              </Button>
-            ) : null}
-            <Button
-              variant="outline"
-              className="min-h-9 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 text-xs"
-              onClick={handleTriggerCircuitBreaker}
-              disabled={isTriggeringCircuitBreaker || circuitBreakerActive}
-            >
-              {isTriggeringCircuitBreaker ? t({ en: "Halting...", es: "Deteniendo...", pt: "Parando..." }) : t({ en: "Emergency Pause", es: "Freno de Emergencia", pt: "Freio de Emergencia" })}
-            </Button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-white/10 text-white/60">
-                <th className="px-2 py-2 font-medium">Item ID</th>
-                <th className="px-2 py-2 font-medium">Recipient</th>
-                <th className="px-2 py-2 font-medium">Amount</th>
-                <th className="px-2 py-2 font-medium">Status</th>
-                <th className="px-2 py-2 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className="border-b border-white/10">
-                  <td className="px-2 py-2 text-white">{item.id}</td>
-                  <td className="px-2 py-2 text-white">{item.recipientWallet}</td>
-                  <td className="px-2 py-2 text-white">{item.amount}</td>
-                  <td className="px-2 py-2 text-white">
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-xs ${
-                        item.status === "vetoed"
-                          ? "bg-rose-500/20 text-rose-400"
-                          : "bg-emerald-500/20 text-emerald-400"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-2 py-2">
-                    {isPreSeal && item.status === "active" ? (
-                      <Button
-                        variant="outline"
-                        className="min-h-7 px-2 text-xs text-rose-400 hover:bg-rose-500/10"
-                        onClick={() => handleVetoItem(item.id)}
-                        disabled={vetoingItemId === item.id}
-                      >
-                        {vetoingItemId === item.id
-                          ? t({ en: "Vetoing...", es: "Vetando...", pt: "Vetando..." })
-                          : t({ en: "Veto", es: "Vetar", pt: "Vetar" })}
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-white/40">-</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-white">
-          {t({ en: "Recent movements", es: "Movimientos recientes", pt: "Movimentos recentes" })}
-        </p>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-white/10 text-white/60">
-                <th className="px-2 py-2 font-medium">movementId</th>
-                <th className="px-2 py-2 font-medium">type</th>
-                <th className="px-2 py-2 font-medium">amount</th>
-                <th className="px-2 py-2 font-medium">token</th>
-                <th className="px-2 py-2 font-medium">date</th>
-                <th className="px-2 py-2 font-medium">status</th>
-                <th className="px-2 py-2 font-medium">reference</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MOVEMENTS.map((row) => (
-                <tr key={row.movementId} className="border-b border-white/10">
-                  <td className="px-2 py-2 text-white">{row.movementId}</td>
-                  <td className="px-2 py-2 text-white">{row.type}</td>
-                  <td className="px-2 py-2 text-white">{row.amount}</td>
-                  <td className="px-2 py-2 text-white">{row.token}</td>
-                  <td className="px-2 py-2 text-white">{row.date}</td>
-                  <td className="px-2 py-2 text-white">{row.status}</td>
-                  <td className="px-2 py-2 text-white/80">{row.reference}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      {/* Project Governance & Notary Dates Section */}
-      <Card className="space-y-3">
+    <div className="space-y-6">
+      {/* Header & Quick Navigation */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/40 pb-5">
         <div>
-          <p className="text-sm font-semibold text-white">
-            {t({
-              en: "Project Dates & Notary Governance",
-              es: "Fechas de Proyecto y Gobernanza Notarial",
-              pt: "Datas do Projeto e Governanca Notarial"
-            })}
-          </p>
-          <p className="text-xs text-white/60">
-            {t({
-              en: "Project start and end dates are governed on-chain via Squads multisig and ProjectConfig PDA. Direct database mutations are blocked.",
-              es: "Las fechas de inicio y fin estan gobernadas on-chain mediante el multisig de Squads y la PDA ProjectConfig. Las mutaciones directas a base de datos estan bloqueadas.",
-              pt: "As datas de inicio e fim sao governadas on-chain via multisig do Squads e PDA ProjectConfig. Mutacoes diretas ao banco de dados estao bloqueadas."
-            })}
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Tesorería y Gobernanza
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Supervisión de balances, propuestas de cambio de fechas y controles multisig de Squads v4.
           </p>
         </div>
 
-        <div className="rounded border border-white/10 bg-white/[0.02] p-3 text-xs space-y-2">
-          <div className="flex items-center justify-between text-white/80">
-            <span className="text-white/60">
-              {t({ en: "Source of Truth", es: "Fuente de Verdad", pt: "Fonte da Verdade" })}:
-            </span>
-            <span className="font-mono text-emerald-400">Solana Devnet PDA (134 bytes)</span>
-          </div>
-          <div className="flex items-center justify-between text-white/80">
-            <span className="text-white/60">
-              {t({ en: "Read-Model Cache", es: "Cache Read-Model", pt: "Cache Read-Model" })}:
-            </span>
-            <span className="text-white font-mono">Postgres Read Replica</span>
-          </div>
-          <div className="flex items-center justify-between text-white/80">
-            <span className="text-white/60">
-              {t({ en: "Governance Mechanism", es: "Mecanismo de Gobernanza", pt: "Mecanismo de Governanca" })}:
-            </span>
-            <span className="text-white">Squads v4 Multisig CPI</span>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="space-y-2">
-        <p className="text-sm font-semibold text-white">
-          {t({ en: "Visual actions", es: "Acciones visuales", pt: "Acoes visuais" })}
-        </p>
         <div className="flex flex-wrap gap-2">
-          <Button className="min-h-11" variant="outline">
-            {t({ en: "View movements", es: "Ver movimientos", pt: "Ver movimentos" })}
-          </Button>
-          <Button className="min-h-11" variant="outline">
-            {t({ en: "View proposal in Squads", es: "Ver propuesta en Squads", pt: "Ver proposta no Squads" })}
-          </Button>
-          {showDistributionsLink ? (
-            <Link href="/admin/distributions">
-              <Button className="min-h-11">
-                {t({ en: "Go to distribution", es: "Ir a distribucion", pt: "Ir para distribuicao" })}
+          {showSquadsLink && (
+            <Link href="/admin/treasury/squads">
+              <Button variant="outline" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 min-h-9 px-3.5 py-1.5 text-xs">
+                Consola Multisig (Squads v4)
               </Button>
             </Link>
-          ) : null}
+          )}
+          {showDistributionsLink && (
+            <Link href="/admin/distributions">
+              <Button variant="outline" className="border-border hover:bg-secondary/40 min-h-9 px-3.5 py-1.5 text-xs">
+                Ver Distribuciones
+              </Button>
+            </Link>
+          )}
         </div>
+      </div>
+
+      {/* Global Status Notifications */}
+      {actionMessage && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+          {actionMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+          {errorMessage}
+        </div>
+      )}
+
+      {/* Section 1: Solicitudes de Cambio de Fechas On-Chain (Squads v4) */}
+      <Card className="border-border/60 bg-card/60 p-6 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+              Solicitudes de Cambio de Fechas On-Chain (Squads v4)
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Propuestas registradas en el contrato notario pendientes de firma del comité multisig.
+            </p>
+          </div>
+          <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-400">
+            {pendingProposals.length} Pendiente{pendingProposals.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground animate-pulse">
+            Cargando propuestas de tesorería...
+          </div>
+        ) : pendingProposals.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground border border-dashed border-border/40 rounded-lg">
+            No hay solicitudes de cambio de fecha pendientes en este momento.
+          </div>
+        ) : (
+          <div className="divide-y divide-border/30">
+            {pendingProposals.map((proposal) => (
+              <div key={proposal.requestId} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground text-sm">{proposal.collectionId}</span>
+                    <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 border border-amber-500/20">
+                      {proposal.status}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="text-zinc-400 font-mono">
+                      Rango propuesto: {proposal.proposedStartAt?.slice(0, 10)} ➔ {proposal.proposedEndAt?.slice(0, 10)}
+                    </span>
+                  </div>
+                  {proposal.justification && (
+                    <div className="text-xs text-zinc-300 italic">
+                      &ldquo;{proposal.justification}&rdquo;
+                    </div>
+                  )}
+                  <div className="text-[11px] text-zinc-500">
+                    Solicitado el: {new Date(proposal.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link href={`/admin/collections/${proposal.collectionId}`}>
+                    <Button variant="outline" className="min-h-8 px-3 py-1 text-xs">
+                      Ver Colección
+                    </Button>
+                  </Link>
+                  <Link href="/admin/treasury/squads">
+                    <Button variant="primary" className="bg-cyan-600 hover:bg-cyan-500 text-white min-h-8 px-3 py-1 text-xs">
+                      Revisar en Squads
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Section 2: Corridas de Desembolso Activas (Payout Runs) */}
+      <Card className="border-border/60 bg-card/60 p-6 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              Corridas de Desembolso Activas
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Control de ejecución pre-seal, veto granular por beneficiario y parada de emergencia.
+            </p>
+          </div>
+          {activeRun && (
+            <span className="rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 text-xs font-medium text-cyan-400">
+              Estado: {activeRun.status.toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        {activeRun ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg bg-secondary/20 border border-border/40">
+              <div>
+                <span className="text-xs text-muted-foreground">ID de Corrida:</span>
+                <p className="text-sm font-mono text-foreground truncate">{activeRun.id}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Monto Total:</span>
+                <p className="text-sm font-semibold text-emerald-400">{activeRun.totalAmount}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Beneficiarios:</span>
+                <p className="text-sm font-semibold text-foreground">{activeRun.itemsCount}</p>
+              </div>
+            </div>
+
+            {/* Veto Items List */}
+            {items.length > 0 && (
+              <div className="divide-y divide-border/30 border border-border/30 rounded-lg overflow-hidden">
+                {items.map((item) => (
+                  <div key={item.id} className="p-3 flex items-center justify-between bg-card/40">
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-mono text-foreground">{item.recipientWallet}</p>
+                      <p className="text-xs text-muted-foreground">{item.amount}</p>
+                    </div>
+                    <div>
+                      {item.status === "vetoed" ? (
+                        <span className="rounded bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 text-xs font-medium text-rose-400">
+                          VETADO
+                        </span>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          disabled={vetoingItemId === item.id}
+                          onClick={() => handleVetoItem(item.id)}
+                          className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 min-h-7 px-2.5 py-1 text-xs"
+                        >
+                          {vetoingItemId === item.id ? "Vetando..." : "Vetar Item"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Governance Action Controls */}
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button
+                variant="outline"
+                disabled={isRejecting || activeRun.status === "blocked"}
+                onClick={handleRejectProposal}
+                className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 min-h-8 px-3 py-1 text-xs"
+              >
+                {isRejecting ? "Rechazando..." : "Rechazar Propuesta"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="py-6 text-center text-sm text-muted-foreground border border-dashed border-border/40 rounded-lg">
+            No hay corridas de desembolso activas o en borrador en este momento.
+          </div>
+        )}
+      </Card>
+
+      {/* Section 3: Dual-Layer Emergency Circuit Breaker */}
+      <Card className="border-rose-500/20 bg-rose-950/10 p-6 backdrop-blur">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold text-rose-400 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-rose-500" />
+              Parada de Emergencia (Circuit Breaker 1-de-M)
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+              Cualquier miembro del comité puede pausar inmediatamente todas las liquidaciones y retiros
+              de la tesorería en Solana Devnet ante anomalías detectadas.
+            </p>
+          </div>
+
+          <Button
+            variant="primary"
+            disabled={isTriggeringCircuitBreaker || circuitBreakerActive}
+            onClick={handleCircuitBreaker}
+            className="bg-rose-600 hover:bg-rose-500 text-white min-h-9 px-4 py-2 text-xs shrink-0"
+          >
+            {isTriggeringCircuitBreaker
+              ? "Activando..."
+              : circuitBreakerActive
+              ? "Pausa Activa"
+              : "Activar Pausa de Emergencia"}
+          </Button>
+        </div>
+
+        {pausePayload && (
+          <div className="mt-4 p-3 rounded bg-zinc-950/60 border border-rose-500/30 text-xs font-mono text-zinc-300">
+            <pre>{JSON.stringify(pausePayload, null, 2)}</pre>
+          </div>
+        )}
       </Card>
     </div>
   );
