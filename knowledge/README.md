@@ -21,17 +21,17 @@ Commands:
 - `npm run knowledge:drift`
 - `npm run validate:knowledge`
 
-Last Generated: 2026-08-21T00:00:00.000Z
+Last Generated: 2026-08-22T00:00:00.000Z
 
 ## Snapshot
 
 | Metric | Count |
 | --- | ---: |
-| Observations | 12 |
+| Observations | 13 |
 | Proposals | 3 |
 | Reports | 5 |
 | Archived | 558 |
-| Observed status | 22 |
+| Observed status | 23 |
 | Triaged status | 0 |
 | Promoted status | 0 |
 | Archived status | 556 |
@@ -52,6 +52,7 @@ Last Generated: 2026-08-21T00:00:00.000Z
 | KNOW-2026-07-001 | observed | guide | [Candy Machine deploy iteration 2026-07-22 BRI-182](knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md) | BRI-182 |
 | KNOW-2026-08-001 | observed | guide | [Candy Machine deploy iteration 2026-08-11 BRI-186](knowledge/inbox/candy-machine-deploy-iteration-2026-08-11-bri-186.md) | BRI-186 |
 | KNOW-2026-08-002 | observed | guide | [Candy Machine deploy iteration 2026-08-16 BRI-8](knowledge/inbox/candy-machine-deploy-iteration-2026-08-16-bri-8.md) | BRI-8 |
+| KNOW-2026-08-003 | observed | guide | [Candy Machine deploy iteration 2026-08-22 BRI-8 distributions UX/UI fixes](knowledge/inbox/candy-machine-deploy-iteration-2026-08-22-bri-8-distributions-ux-ui-fixes.md) | BRI-8 |
 
 ## Promotion Proposals
 
