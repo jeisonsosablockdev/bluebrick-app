@@ -109,6 +109,14 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   const [suspensionReason, setSuspensionReason] = useState("");
   const [noteText, setNoteText] = useState("");
 
+  const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
+  const [overrideRequestedWallet, setOverrideRequestedWallet] = useState("");
+  const [overrideCaseNumber, setOverrideCaseNumber] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
+  const [overrideError, setOverrideError] = useState<string | null>(null);
+  const [overrideSuccess, setOverrideSuccess] = useState<string | null>(null);
+  const [isOverrideSubmitting, setIsOverrideSubmitting] = useState(false);
+
   const pendingCount = useMemo(() => {
     const items = queue?.items ?? [];
     return items.filter((item) => item.complianceStatus !== "fully_verified").length;
@@ -551,9 +559,170 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
                 <p className="text-sm text-white/80">{`flags: ${detail.amlFlags.map((flag) => flag.code).join(", ") || "none"}`}</p>
               </div>
             </div>
+
+            {/* Payout Override Governance Section */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {t({ en: "Payout Wallet Reassignment (Override)", es: "Reasignación de Wallet de Pago (Override)", pt: "Reatribuicao de Carteira de Pagamento" })}
+                  </p>
+                  <p className="text-xs text-white/60">
+                    {t({
+                      en: "Reassign destination yield claims to an authorized compliance wallet with mandatory case number.",
+                      es: "Reasigna los reclamos de rendimientos a una wallet autorizada con número de caso obligatorio.",
+                      pt: "Reatribua os rendimentos a uma carteira autorizada com numero de caso obrigatorio."
+                    })}
+                  </p>
+                </div>
+                <Button
+                  className="min-h-11"
+                  variant="outline"
+                  onClick={() => {
+                    setOverrideRequestedWallet("");
+                    setOverrideCaseNumber("");
+                    setOverrideReason("");
+                    setOverrideError(null);
+                    setOverrideSuccess(null);
+                    setIsOverrideModalOpen(true);
+                  }}
+                >
+                  {t({ en: "Request Payout Override", es: "Solicitar Reasignación de Wallet", pt: "Solicitar Reatribuicao" })}
+                </Button>
+              </div>
+
+              {overrideSuccess ? (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+                  {overrideSuccess}
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </Card>
+
+      {/* Payout Override Submission Modal */}
+      {isOverrideModalOpen && detail ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            aria-label={t({ en: "Close dialog", es: "Cerrar diálogo", pt: "Fechar diálogo" })}
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setIsOverrideModalOpen(false)}
+            type="button"
+          />
+
+          <Card className="relative z-10 w-full max-w-lg space-y-4 rounded-3xl border border-white/15 bg-panel/95 p-6 shadow-2xl backdrop-blur-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <h3 className="text-base font-semibold text-white">
+                  {t({ en: "Wallet Reassignment Request", es: "Solicitud de Reasignación de Wallet", pt: "Solicitacao de Reatribuicao" })}
+                </h3>
+                <p className="text-xs text-white/60 font-mono truncate">{detail.walletPublicKey}</p>
+              </div>
+              <Button className="min-h-9 px-3 text-xs" variant="ghost" onClick={() => setIsOverrideModalOpen(false)}>
+                ✕
+              </Button>
+            </div>
+
+            {overrideError ? (
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">
+                {overrideError}
+              </div>
+            ) : null}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsOverrideSubmitting(true);
+                setOverrideError(null);
+
+                try {
+                  const response = await fetch("/api/admin/compliance/overrides", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      originalWallet: detail.walletPublicKey,
+                      requestedWallet: overrideRequestedWallet,
+                      caseNumber: overrideCaseNumber,
+                      reason: overrideReason
+                    })
+                  });
+
+                  const payload = await response.json();
+                  if (!response.ok || !payload.ok) {
+                    throw new Error(payload.error?.message ?? "Failed to create override request.");
+                  }
+
+                  setOverrideSuccess(`Override ${payload.data.id} registrado exitosamente en estado PENDING.`);
+                  setIsOverrideModalOpen(false);
+                } catch (err) {
+                  setOverrideError(err instanceof Error ? err.message : "Error inesperado.");
+                } finally {
+                  setIsOverrideSubmitting(false);
+                }
+              }}
+              className="space-y-3"
+            >
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-wider text-white/60 font-medium">
+                  {t({ en: "Case Number (Mandatory)", es: "Número de Caso (Obligatorio)", pt: "Numero de Caso" })}
+                </label>
+                <Input
+                  required
+                  placeholder="CASE-2026-0891"
+                  value={overrideCaseNumber}
+                  onChange={(e) => setOverrideCaseNumber(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-wider text-white/60 font-medium">
+                  {t({ en: "New Destination Wallet (Solana)", es: "Nueva Wallet Destino (Solana)", pt: "Nova Carteira Destino" })}
+                </label>
+                <Input
+                  required
+                  placeholder="AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi"
+                  value={overrideRequestedWallet}
+                  onChange={(e) => setOverrideRequestedWallet(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-wider text-white/60 font-medium">
+                  {t({ en: "Justification / Legal Reason", es: "Motivo / Justificación Legal", pt: "Justificativa Legal" })}
+                </label>
+                <textarea
+                  required
+                  className="glass-control min-h-20 w-full rounded-xl px-3 py-2 text-xs text-white"
+                  placeholder={t({ en: "Explain reason for wallet override...", es: "Explica el motivo del cambio de wallet...", pt: "Explique o motivo..." })}
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t border-white/10 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isOverrideSubmitting}
+                  onClick={() => setIsOverrideModalOpen(false)}
+                >
+                  {t({ en: "Cancel", es: "Cancelar", pt: "Cancelar" })}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isOverrideSubmitting}
+                >
+                  {isOverrideSubmitting
+                    ? t({ en: "Submitting...", es: "Enviando...", pt: "Enviando..." })
+                    : t({ en: "Submit Override Request", es: "Enviar Solicitud de Override", pt: "Enviar Solicitacao" })}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      ) : null}
     </div>
   );
 }
