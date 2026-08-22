@@ -37,6 +37,13 @@ vi.mock("@solana/wallet-adapter-react", () => ({
   })
 }));
 
+// Mock useWalletModal
+vi.mock("@solana/wallet-adapter-react-ui", () => ({
+  useWalletModal: () => ({
+    setVisible: vi.fn()
+  })
+}));
+
 describe("TreasuryConsole Component (SPEC-07)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

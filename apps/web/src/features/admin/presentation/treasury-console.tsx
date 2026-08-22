@@ -21,6 +21,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactElement } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,8 @@ export interface TreasuryMovement {
  */
 export function TreasuryConsole(): ReactElement {
   const { t } = useI18n();
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
   const showDistributionsLink = isReleaseControlledRouteVisible("/admin/distributions");
   const showSquadsLink = isReleaseControlledRouteVisible("/admin/treasury");
 
@@ -122,8 +124,8 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 3: Handle global proposal rejection
   const handleRejectProposal = async () => {
-    if (!publicKey) {
-      setErrorMessage("Debes conectar tu wallet de Solana para firmar el rechazo de la propuesta.");
+    if (!publicKey || !connected) {
+      setWalletModalVisible(true);
       return;
     }
     if (!activeRun) return;
@@ -159,8 +161,8 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 4: Handle individual item veto pre-seal
   const handleVetoItem = async (itemId: string) => {
-    if (!publicKey) {
-      setErrorMessage("Debes conectar tu wallet de Solana para firmar el veto del ítem.");
+    if (!publicKey || !connected) {
+      setWalletModalVisible(true);
       return;
     }
     if (!activeRun) return;
@@ -199,8 +201,8 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 5: Handle emergency 1-of-M circuit breaker trigger
   const handleCircuitBreaker = async () => {
-    if (!publicKey) {
-      setErrorMessage("Debes conectar tu wallet de Solana para autorizar y firmar la parada de emergencia.");
+    if (!publicKey || !connected) {
+      setWalletModalVisible(true);
       return;
     }
 
@@ -248,13 +250,9 @@ export function TreasuryConsole(): ReactElement {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Tesorería y Gobernanza
             </h1>
-            {publicKey ? (
-              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-                🟢 {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
-              </span>
-            ) : (
-              <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-400">
-                🔴 Wallet Requerida
+            {publicKey && connected && (
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-mono text-emerald-400">
+                ● {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
               </span>
             )}
           </div>
