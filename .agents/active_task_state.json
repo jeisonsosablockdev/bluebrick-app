@@ -2,26 +2,22 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-015-03",
-  "spec_id": "SPEC-04",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s03-04-api-ui",
+  "spec_id": "SPEC-05",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s03-05-refactor-clean",
   "parent_branch": "feature/jaymusicmachine-BRI-8-squads-v4-treasury-claims",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "current_phase": "PHASE_5_TESTS_RED",
   "human_design_approval": {
     "approved": true,
     "timestamp": "2026-08-20T21:19:40-05:00"
   },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-21T22:05:29-05:00"
-  },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-21T21:51:45-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-21T22:05:50-05:00" },
     "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-07-25T20:33:00-05:00" },
     "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:19:40-05:00" },
     "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-20T21:19:40-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-21T21:43:33-05:00", "note": "Created API route tests with 5 assertions" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-21T21:54:32-05:00", "note": "REST endpoints and UI modal implemented and passing all tests" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-21T22:02:11-05:00", "note": "Architect Gate 2 APPROVED" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-21T22:05:29-05:00" }
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
