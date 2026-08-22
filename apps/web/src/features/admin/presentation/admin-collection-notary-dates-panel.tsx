@@ -129,13 +129,14 @@ export function AdminCollectionNotaryDatesPanel({
         throw new Error(data.message || "Error al enviar la solicitud de cambio de fecha.");
       }
 
-      setProposalSuccessMessage(
-        localize(locale, {
-          en: `Solicitud registrada con éxito. Estado: ${data.data?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
-          es: `Solicitud registrada con éxito. Estado: ${data.data?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
-          pt: `Solicitação registrada com sucesso. Status: ${data.data?.status || "PENDING_MULTISIG"}. O comitê da Squads revisará a proposta.`
-        })
-      );
+      const successMsg = localize(locale, {
+        en: `Solicitud registrada con éxito. Estado: ${data.data?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
+        es: `Solicitud registrada con éxito. Estado: ${data.data?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
+        pt: `Solicitação registrada com sucesso. Status: ${data.data?.status || "PENDING_MULTISIG"}. O comitê da Squads revisará a proposta.`
+      });
+
+      setProposalSuccessMessage(successMsg);
+      setIsModalOpen(false);
     } catch (err) {
       setProposalErrorMessage(err instanceof Error ? err.message : "Error inesperado al enviar propuesta.");
     } finally {
@@ -145,6 +146,20 @@ export function AdminCollectionNotaryDatesPanel({
 
   return (
     <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-white/[0.03] to-transparent p-5 space-y-4">
+      {/* Success Notification Banner on Main Card */}
+      {proposalSuccessMessage ? (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-300 flex items-center justify-between">
+          <span>{proposalSuccessMessage}</span>
+          <button
+            type="button"
+            className="text-emerald-400 hover:text-white ml-2 text-xs"
+            onClick={() => setProposalSuccessMessage(null)}
+          >
+            ✕
+          </button>
+        </div>
+      ) : null}
+
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>

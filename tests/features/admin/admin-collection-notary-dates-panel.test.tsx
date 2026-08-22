@@ -122,6 +122,7 @@ describe("AdminCollectionNotaryDatesPanel Presentation Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/solicitud registrada con éxito.*PENDING_MULTISIG/i)).toBeInTheDocument();
+      expect(screen.queryByText(/proponer nuevo rango de fechas/i)).not.toBeInTheDocument();
     });
   });
 });
