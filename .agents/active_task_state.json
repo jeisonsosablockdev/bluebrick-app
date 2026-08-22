@@ -2,26 +2,22 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-01",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s01-project-selector",
+  "spec_id": "SPEC-02",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s02-project-selector-card",
   "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
   "human_design_approval": {
     "approved": true,
     "timestamp": "2026-08-22T01:14:35-05:00"
   },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-22T01:22:27-05:00"
-  },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T01:00:37-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T01:22:47-05:00" },
     "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T01:01:02-05:00" },
     "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:01:05-05:00" },
     "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:14:35-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T01:14:56-05:00", "note": "Created tests/features/admin/project-distribution-view-model.test.ts in RED phase" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T01:15:41-05:00", "note": "Created domain view model and application hook with 6/6 tests green" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T01:16:06-05:00", "note": "Architect Gate 2 APPROVED" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:22:27-05:00" }
+    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T01:23:35-05:00", "note": "Created tests/features/admin/project-selector-card.test.tsx in RED phase" },
+    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T01:24:30-05:00", "note": "Created ProjectSelectorCard component with 4/4 tests green" },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T01:25:03-05:00", "note": "Architect Gate 2 APPROVED" },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
