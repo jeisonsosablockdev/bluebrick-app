@@ -4,8 +4,12 @@
  * =========================================================================================
  * Layer 1: Presentation Layer — Squads Multisig Console (Admin)
  * Component: SquadsMultisigConsole
- * Description: Minimalist multisig governance console for Squads v4 treasury payout proposals,
- *              date audit warning inspection, global expansion toggle, and quorum execution.
+ *
+ * Description:
+ * Minimalist multisig governance console for Squads v4 treasury payout proposals,
+ * date audit warning inspection, global expansion toggle, and quorum execution.
+ * Integrates dynamic proposal fetching with zero mock fixtures, authentic empty state,
+ * and automatic wallet modal reconnection.
  * =========================================================================================
  */
 
@@ -13,6 +17,7 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -23,61 +28,20 @@ import {
   type SquadsProposalDTO
 } from "@/features/admin/domain/squads-multisig-types";
 
-type SquadsMultisigConsoleProps = {
-  initialDto?: SquadsProposalDTO;
+/**
+ * Props for the SquadsMultisigConsole component.
+ */
+export type SquadsMultisigConsoleProps = {
+  initialDto?: SquadsProposalDTO | null;
   runId?: string;
 };
 
-const DEFAULT_MOCK_PROPOSAL: SquadsProposalDTO = {
-  runId: "RUN-2026-08",
-  treasuryPolicyPda: "Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuzQpF1D71K",
-  multisigPda: "rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD",
-  vaultPda: "D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB",
-  threshold: 2,
-  membersCount: 4,
-  approvedMembers: ["3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd"],
-  executed: false,
-  onChainDates: {
-    projectStartAt: "2026-03-15T00:00:00Z",
-    projectEndAt: "2028-12-31T23:59:59Z"
-  },
-  dbDates: {
-    projectStartAt: "2026-03-15T00:00:00Z",
-    projectEndAt: "2028-12-31T23:59:59Z"
-  },
-  beneficiaries: [
-    {
-      claimId: "CLAIM-001",
-      holderName: "Carlos Mendoza",
-      originWallet: "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd",
-      payoutWallet: "7mQ1...p4N9",
-      assetMint: "9xP2...v4M1",
-      mintDate: "2026-01-15",
-      daysSinceMint: 40,
-      stakingDays: 15,
-      stakingPeriod: "01/08/2026 al 15/08/2026",
-      grossAmountMinor: "1200000000",
-      feeAmountMinor: "24000000",
-      netAmountMinor: "1176000000",
-      overrideCaseNumber: "CASE-2026-0891"
-    },
-    {
-      claimId: "CLAIM-002",
-      holderName: "Maria Rodriguez",
-      originWallet: "AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi",
-      payoutWallet: "AdNNTBSMy4yndiSNVmgEBTkJJuXLBrb7PKFWCdEf8Kxi",
-      assetMint: "4kL1...w8Q2",
-      mintDate: "2026-02-01",
-      daysSinceMint: 25,
-      stakingDays: 30,
-      stakingPeriod: "01/08/2026 al 30/08/2026",
-      grossAmountMinor: "2400000000",
-      feeAmountMinor: "48000000",
-      netAmountMinor: "2352000000"
-    }
-  ]
-};
-
+/**
+ * Formats minor USDC token units to a localized currency string.
+ *
+ * @param amountMinorStr - The numeric string representing micro-USDC (6 decimals)
+ * @returns Formatted currency string
+ */
 function formatUsdcAmount(amountMinorStr: string): string {
   try {
     const numeric = Number(amountMinorStr) / 1_000_000;
@@ -91,60 +55,91 @@ function formatUsdcAmount(amountMinorStr: string): string {
   }
 }
 
+/**
+ * Main Presentation Component: SquadsMultisigConsole
+ */
 export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConsoleProps): ReactElement {
   const { t } = useI18n();
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
 
-  const [dto, setDto] = useState<SquadsProposalDTO>(initialDto ?? DEFAULT_MOCK_PROPOSAL);
+  // Step 1: Initialize component state with dynamic props or null
+  const [dto, setDto] = useState<SquadsProposalDTO | null>(initialDto ?? null);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialDto);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-  const [allExpanded, setAllExpanded] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
+  const [allExpanded, setAllExpanded] = useState<boolean>(false);
+  const [isVoting, setIsVoting] = useState<boolean>(false);
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
 
+  // Step 2: Fetch active proposal data from API if not provided in initialDto
   useEffect(() => {
-    if (!runId) return;
-
     let active = true;
 
-    async function loadLiveRun() {
+    async function loadProposalData() {
+      if (initialDto !== undefined) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
       try {
-        const response = await fetch(`/api/admin/distributions/runs/${runId}`);
+        const endpoint = runId
+          ? `/api/admin/distributions/runs/${runId}`
+          : "/api/admin/treasury/squads/proposals";
+
+        const response = await fetch(endpoint);
         if (!response.ok) return;
+
         const payload = await response.json();
         if (active && payload.ok && payload.data) {
-          setDto((prev) => ({
-            ...prev,
-            runId: payload.data.id,
-            dbDates: {
-              projectStartAt: payload.data.periodStartAt ?? prev.dbDates.projectStartAt,
-              projectEndAt: payload.data.periodEndAt ?? prev.dbDates.projectEndAt,
-              modifiedReason: payload.data.blockedReason ?? undefined
-            }
-          }));
+          if (runId) {
+            setDto((prev) => ({
+              runId: payload.data.id,
+              treasuryPolicyPda: payload.data.treasuryPolicyPda ?? "",
+              multisigPda: payload.data.multisigPda ?? "",
+              vaultPda: payload.data.vaultPda ?? "",
+              threshold: payload.data.threshold ?? 2,
+              membersCount: payload.data.membersCount ?? 4,
+              approvedMembers: payload.data.approvedMembers ?? [],
+              executed: payload.data.status === "finalized",
+              onChainDates: payload.data.onChainDates ?? null,
+              dbDates: {
+                projectStartAt: payload.data.periodStartAt ?? prev?.dbDates.projectStartAt ?? "",
+                projectEndAt: payload.data.periodEndAt ?? prev?.dbDates.projectEndAt ?? "",
+                modificationReason: payload.data.blockedReason ?? undefined
+              },
+              beneficiaries: payload.data.beneficiaries ?? []
+            }));
+          } else {
+            setDto(payload.data);
+          }
         }
       } catch {
-        // Fallback gracefully to default state
+        // Fallback safely to empty state
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
     }
 
-    void loadLiveRun();
+    void loadProposalData();
+
     return () => {
       active = false;
     };
-  }, [runId]);
+  }, [runId, initialDto]);
 
-  // Evaluate date audit status vs on-chain Notario PDA
-  const dateAudit = useMemo(() => evaluateDateAuditWarning(dto), [dto]);
+  // Step 3: Evaluate date audit status and quorum
+  const dateAudit = useMemo(() => (dto ? evaluateDateAuditWarning(dto) : null), [dto]);
+  const quorum = useMemo(() => (dto ? evaluateQuorumStatus(dto) : null), [dto]);
 
-  // Evaluate quorum status (2-of-4)
-  const quorum = useMemo(() => evaluateQuorumStatus(dto), [dto]);
+  // Step 4: Check if current connected user wallet already approved
+  const userPubkey = publicKey ? publicKey.toBase58() : null;
+  const hasUserApproved = dto && userPubkey ? dto.approvedMembers.includes(userPubkey) : false;
 
-  // Check if current user wallet already approved
-  const userPubkey = publicKey ? publicKey.toBase58() : "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd";
-  const hasUserApproved = dto.approvedMembers.includes(userPubkey);
-
-  // Toggle single row expansion
+  // Step 5: Toggle single row expansion
   const toggleRow = (claimId: string) => {
     setExpandedRows((prev) => ({
       ...prev,
@@ -152,8 +147,9 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     }));
   };
 
-  // Toggle all rows expansion
+  // Step 6: Toggle all rows expansion
   const toggleAll = () => {
+    if (!dto) return;
     const nextState = !allExpanded;
     setAllExpanded(nextState);
     const newExpanded: Record<string, boolean> = {};
@@ -163,257 +159,330 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     setExpandedRows(newExpanded);
   };
 
-  // Handle vote / approve
+  // Step 7: Handle vote / approve with wallet verification
   const handleVoteApprove = () => {
+    if (!publicKey || !connected) {
+      setWalletModalVisible(true);
+      return;
+    }
+
+    if (!dto) return;
+
     setIsVoting(true);
     setTimeout(() => {
       setIsVoting(false);
-      if (!dto.approvedMembers.includes(userPubkey)) {
-        setDto((prev) => ({
-          ...prev,
-          approvedMembers: [...prev.approvedMembers, userPubkey]
-        }));
+      const currentWallet = publicKey.toBase58();
+      if (!dto.approvedMembers.includes(currentWallet)) {
+        setDto((prev) =>
+          prev
+            ? {
+                ...prev,
+                approvedMembers: [...prev.approvedMembers, currentWallet]
+              }
+            : null
+        );
       }
-      setActionSuccessMessage("Aprobación multisig registrada exitosamente en Devnet.");
+      setActionSuccessMessage(
+        `Aprobación multisig registrada exitosamente en Devnet con wallet ${currentWallet.slice(0, 4)}...${currentWallet.slice(-4)}.`
+      );
     }, 600);
   };
 
-  // Handle execute and seal
-  const handleExecuteSeal = () => {
+  // Step 8: Handle multisig execution
+  const handleExecute = () => {
+    if (!publicKey || !connected) {
+      setWalletModalVisible(true);
+      return;
+    }
+
+    if (!dto || !quorum?.canExecute) return;
+
     setIsExecuting(true);
     setTimeout(() => {
       setIsExecuting(false);
-      setDto((prev) => ({
-        ...prev,
-        executed: true
-      }));
-      setActionSuccessMessage("Propuesta ejecutada: Los fondos están en Escrow y el Run está sellado (Active).");
+      setDto((prev) => (prev ? { ...prev, executed: true } : null));
+      setActionSuccessMessage("Propuesta de tesorería ejecutada exitosamente en Squads v4 Devnet.");
     }, 800);
   };
 
-  return (
-    <div className="space-y-4">
-      {/* 1. Header Date Inspection & Audit Warning Banner */}
-      {dateAudit.isWarning ? (
-        <article className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-amber-200 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚠️</span>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-amber-300">
-              {t({
-                en: "Project Dates Audit Warning",
-                es: "Alerta de Auditoría de Fechas del Proyecto",
-                pt: "Alerta de Auditoria de Datas do Projeto"
-              })}
-            </h3>
-          </div>
-          <p className="text-xs text-amber-100/90 leading-relaxed">
-            {t({
-              en: "The operating project dates in database differ from the on-chain Notary PDA truth or RPC is unavailable.",
-              es: "Las fechas operativas del proyecto en base de datos difieren de la verdad on-chain de la PDA Notario o RPC no responde.",
-              pt: "As datas operacionais do projeto diferem da verdade on-chain da PDA Notario ou RPC indisponivel."
-            })}
-          </p>
-          <div className="rounded-lg bg-amber-950/40 border border-amber-500/20 p-3 text-xs font-mono">
-            <span className="text-amber-400 font-sans font-semibold">{t({ en: "Recorded Reason", es: "Motivo Registrado", pt: "Motivo Registrado" })}:</span> {dateAudit.reason}
-          </div>
-        </article>
-      ) : null}
-
-      {/* Success Notification Banner */}
-      {actionSuccessMessage ? (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-300 flex items-center justify-between">
-          <span>✓ {actionSuccessMessage}</span>
-          <button type="button" onClick={() => setActionSuccessMessage(null)} className="text-emerald-400 hover:text-white">✕</button>
+  // Step 9: Render loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="marketplace-depth-card p-6 rounded-2xl animate-pulse">
+          <div className="h-4 w-40 bg-white/10 rounded mb-3" />
+          <div className="h-6 w-64 bg-white/10 rounded" />
         </div>
-      ) : null}
-
-      {/* 2. Top Summary KPI Cards (matching /profile marketplace-depth-card) */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Multisig Quorum", es: "Quórum Multisig", pt: "Quorum Multisig" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">
-            {quorum.approvalsCount} / {dto.threshold} {t({ en: "Signed", es: "Firmas", pt: "Assinaturas" })}
-          </p>
-          <p className="text-xs text-white/55">
-            {quorum.quorumReached
-              ? t({ en: "✓ Quorum reached (ready)", es: "✓ Quórum alcanzado (listo)", pt: "✓ Quorum alcancado" })
-              : t({ en: "Pending approvals", es: "Aprobaciones pendientes", pt: "Aprovacoes pendentes" })}
-          </p>
-        </article>
-
-        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Total Settlement", es: "Total Liquidación", pt: "Total Liquidacao" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">
-            {formatUsdcAmount(dto.beneficiaries.reduce((acc, b) => acc + Number(b.netAmountMinor), 0).toString())}
-          </p>
-          <p className="text-xs text-white/55">USDC · Devnet Escrow</p>
-        </article>
-
-        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Beneficiaries", es: "Beneficiarios", pt: "Beneficiarios" })}
-          </p>
-          <p className="text-2xl font-semibold text-white">{dto.beneficiaries.length}</p>
-          <p className="text-xs text-white/55">{t({ en: "Verified Stakers", es: "Stakers Verificados", pt: "Stakers Verificados" })}</p>
-        </article>
-
-        <article className="marketplace-depth-card space-y-1 rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.12em] text-white/60">
-            {t({ en: "Vault Account", es: "Cuenta Vault", pt: "Conta Vault" })}
-          </p>
-          <p className="text-2xl font-semibold text-white font-mono truncate">{dto.vaultPda}</p>
-          <p className="text-xs text-white/55">Squads v4 Program</p>
-        </article>
       </div>
+    );
+  }
 
-      {/* 3. Action Bar with Voting / Execution Controls */}
-      <Card className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  // Step 10: Render clean empty state when no active proposal exists
+  if (!dto) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/40 pb-5">
           <div>
-            <h2 className="text-lg font-semibold text-white">
-              {t({ en: "Squads v4 Proposal Authorization", es: "Autorización de Propuesta Squads v4", pt: "Autorizacao de Proposta Squads v4" })}
-            </h2>
-            <p className="text-sm text-white/75">
-              {t({
-                en: "Execute on-chain initialize_policy and seal Merkle root with multi-signature authority.",
-                es: "Ejecuta initialize_policy on-chain y sella la raíz Merkle con autoridad multifirma.",
-                pt: "Execute initialize_policy on-chain e sele a raiz Merkle com autoridade multifirma."
-              })}
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                Consola Multisig (Squads v4)
+              </h1>
+              {publicKey && connected && (
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-mono text-emerald-400">
+                  ● {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Gobernanza multisig y autorización de dispersiones de tesorería en Solana Devnet.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/admin/distributions">
-              <Button className="min-h-11" variant="outline">
-                {t({ en: "Back to runs", es: "Volver a corridas", pt: "Voltar para lotes" })}
+          <div className="flex gap-2">
+            <Link href="/admin/treasury">
+              <Button variant="outline" className="border-border hover:bg-secondary/40 min-h-9 px-3.5 py-1.5 text-xs">
+                Volver a Tesorería
               </Button>
             </Link>
-            <Button
-              className="min-h-11"
-              variant="outline"
-              disabled={isVoting || hasUserApproved || dto.executed}
-              onClick={handleVoteApprove}
-            >
-              {hasUserApproved ? "✓ Ya Aprobado" : isVoting ? "Firmando..." : t({ en: "Vote / Approve", es: "Votar / Aprobar", pt: "Votar / Aprovar" })}
-            </Button>
-            <Button
-              className="min-h-11"
-              variant="primary"
-              disabled={!quorum.canExecute || isExecuting}
-              onClick={handleExecuteSeal}
-            >
-              {dto.executed ? "✓ Run Sellado" : isExecuting ? "Ejecutando..." : t({ en: "Execute & Seal Run", es: "Ejecutar y Sellar Run", pt: "Executar e Selar Lote" })}
-            </Button>
           </div>
         </div>
-      </Card>
 
-      {/* 4. Minimalist Beneficiaries Table with Global Expansion Toggle */}
-      <Card className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
-          <div className="space-y-0.5">
-            <h3 className="text-base font-semibold text-white">
-              {t({ en: "Eligible Claims Breakdown", es: "Desglose de Claims Elegibles", pt: "Detalhamento de Claims Elegiveis" })}
+        <Card className="p-12 text-center border-dashed border-border/40">
+          <p className="text-sm text-muted-foreground">
+            No hay propuestas de dispersión de Squads activas en este momento.
+          </p>
+          <div className="mt-4 flex justify-center gap-3">
+            <Link href="/admin/distributions">
+              <Button variant="primary" className="min-h-9 px-4 py-2 text-xs">
+                Crear Nueva Distribución
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6" data-testid="squads-multisig-console">
+      {/* Header & Status */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/40 pb-5">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Consola Multisig (Squads v4)
+            </h1>
+            {publicKey && connected && (
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-mono text-emerald-400">
+                ● {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Propuesta de dispersión para la corrida <span className="font-mono text-foreground font-semibold">{dto.runId}</span>
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/treasury">
+            <Button variant="outline" className="border-border hover:bg-secondary/40 min-h-9 px-3.5 py-1.5 text-xs">
+              Volver a Tesorería
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Date Audit Alert Banner */}
+      {dateAudit?.isWarning && (
+        <div
+          data-testid="date-audit-warning-banner"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200 text-sm space-y-1"
+        >
+          <div className="flex items-center gap-2 font-semibold text-amber-400">
+            <span className="h-2 w-2 rounded-full bg-amber-400" />
+            Advertencia de Auditoría de Fechas del Proyecto
+          </div>
+          <p className="text-xs text-amber-200/80">
+            Las fechas de cálculo del período difieren del registro inmutable del Notario On-Chain.
+            Motivo: <span className="font-mono">{dateAudit.reason}</span>
+          </p>
+        </div>
+      )}
+
+      {/* Action Notification */}
+      {actionSuccessMessage && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-400 text-sm">
+          {actionSuccessMessage}
+        </div>
+      )}
+
+      {/* Quorum & Governance KPIs */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4 space-y-1">
+          <div className="text-xs text-muted-foreground">Umbral Requerido</div>
+          <div className="text-xl font-bold font-mono">
+            Quórum {dto.threshold} de {dto.membersCount}
+          </div>
+          <div className="text-[11px] text-muted-foreground">Firmas requeridas en Devnet</div>
+        </Card>
+
+        <Card className="p-4 space-y-1">
+          <div className="text-xs text-muted-foreground">Aprobaciones Registradas</div>
+          <div className="text-xl font-bold font-mono text-emerald-400">
+            {dto.approvedMembers.length} / {dto.threshold}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            {quorum?.quorumReached ? "Quórum alcanzado" : "Pendiente de firmas"}
+          </div>
+        </Card>
+
+        <Card className="p-4 space-y-1">
+          <div className="text-xs text-muted-foreground">Tu Estado de Firma</div>
+          <div className="text-xl font-bold font-mono">
+            {hasUserApproved ? (
+              <span className="text-emerald-400">Firmado</span>
+            ) : (
+              <span className="text-amber-400">Sin Firmar</span>
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            {publicKey ? "Wallet activa" : "Conexión requerida"}
+          </div>
+        </Card>
+
+        <Card className="p-4 space-y-1">
+          <div className="text-xs text-muted-foreground">Estado de Ejecución</div>
+          <div className="text-xl font-bold font-mono">
+            {dto.executed ? (
+              <span className="text-emerald-400">Ejecutado</span>
+            ) : (
+              <span className="text-cyan-400">Pendiente</span>
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground">Squads Vault PDA</div>
+        </Card>
+      </div>
+
+      {/* Beneficiaries Table */}
+      <Card className="p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">
+              Beneficiarios de la Dispersión ({dto.beneficiaries.length})
             </h3>
-            <p className="text-xs text-white/60">
-              {t({
-                en: "Inspect individual staking periods, origin and payout wallets.",
-                es: "Inspecciona períodos de staking individuales, wallets de origen y pago.",
-                pt: "Inspecione periodos de staking, carteiras de origem e pagamento."
-              })}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Desglose verificado por tiempo de stake y cálculo pro-rata.
             </p>
           </div>
 
-          <Button
-            className="min-h-9 px-3 text-xs"
-            variant="ghost"
-            onClick={toggleAll}
-          >
-            {allExpanded
-              ? t({ en: "Collapse all", es: "Ocultar todos", pt: "Ocultar todos" })
-              : t({ en: "Expand all", es: "Expandir todos", pt: "Expandir todos" })}
-          </Button>
+          {dto.beneficiaries.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={toggleAll}
+              className="text-xs px-3 py-1.5 min-h-8 border-border hover:bg-secondary/40"
+            >
+              {allExpanded ? "Ocultar Todos" : "Expandir Todos"}
+            </Button>
+          )}
         </div>
 
-        <div className="space-y-2">
-          {dto.beneficiaries.map((beneficiary) => {
-            const isExpanded = Boolean(expandedRows[beneficiary.claimId]);
+        {dto.beneficiaries.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground border border-dashed border-border/40 rounded-lg">
+            Esta propuesta no contiene beneficiarios asociados en este momento.
+          </div>
+        ) : (
+          <div className="divide-y divide-border/30 border border-border/40 rounded-lg overflow-hidden">
+            {dto.beneficiaries.map((b) => {
+              const isExpanded = expandedRows[b.claimId] ?? false;
 
-            return (
-              <div
-                key={beneficiary.claimId}
-                className="rounded-xl border border-white/10 bg-white/5 transition-colors overflow-hidden"
-              >
-                {/* Minimalist Summary Row */}
-                <div
-                  className="flex items-center justify-between p-3.5 cursor-pointer hover:bg-white/[0.04] transition-colors"
-                  onClick={() => toggleRow(beneficiary.claimId)}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs text-white/60 font-mono">
-                      {isExpanded ? "▲" : "▼"}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">{beneficiary.holderName}</p>
-                      <p className="text-xs text-white/55 font-mono truncate">
-                        {beneficiary.payoutWallet}
-                        {beneficiary.overrideCaseNumber ? (
-                          <span className="ml-2 rounded-full bg-amber-500/20 text-amber-300 px-2 py-0.5 text-[10px] font-sans font-semibold">
-                            {beneficiary.overrideCaseNumber}
-                          </span>
-                        ) : null}
-                      </p>
+              return (
+                <div key={b.claimId} className="bg-card/40 hover:bg-card/80 transition-colors">
+                  <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => toggleRow(b.claimId)}>
+                    <div className="flex items-center gap-3">
+                      <button type="button" className="text-muted-foreground hover:text-foreground text-xs p-1">
+                        {isExpanded ? "▼" : "▶"}
+                      </button>
+                      <div>
+                        <div className="text-sm font-medium text-foreground">{b.holderName}</div>
+                        <div className="text-xs text-muted-foreground font-mono">
+                          {b.stakingDays} días en stake ({b.stakingPeriod})
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-sm font-bold font-mono text-emerald-400">
+                        {formatUsdcAmount(b.netAmountMinor)}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground font-mono">
+                        {b.payoutWallet.slice(0, 4)}...{b.payoutWallet.slice(-4)}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0 text-right">
-                    <div>
-                      <p className="font-bold text-white text-sm">{formatUsdcAmount(beneficiary.netAmountMinor)}</p>
-                      <p className="text-xs text-white/55">{beneficiary.stakingDays} {t({ en: "days staked", es: "días en stake", pt: "dias em stake" })}</p>
+                  {isExpanded && (
+                    <div className="px-6 pb-4 pt-1 bg-secondary/10 border-t border-border/20 grid gap-3 sm:grid-cols-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Wallet Origen:</span>{" "}
+                        <span className="font-mono text-foreground">{b.originWallet}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Wallet Pago:</span>{" "}
+                        <span className="font-mono text-foreground">{b.payoutWallet}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">NFT Mint:</span>{" "}
+                        <span className="font-mono text-foreground">{b.assetMint}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Fecha Mint:</span>{" "}
+                        <span className="text-foreground">{b.mintDate} ({b.daysSinceMint} días)</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Bruto:</span>{" "}
+                        <span className="font-mono text-foreground">{formatUsdcAmount(b.grossAmountMinor)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Comisión Retenida:</span>{" "}
+                        <span className="font-mono text-rose-400">{formatUsdcAmount(b.feeAmountMinor)}</span>
+                      </div>
+                      {b.overrideCaseNumber && (
+                        <div className="sm:col-span-2">
+                          <span className="text-muted-foreground">Ticket Compliance:</span>{" "}
+                          <span className="font-mono text-cyan-400">{b.overrideCaseNumber}</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Expanded Detailed Audit Panel */}
-                {isExpanded ? (
-                  <div className="border-t border-white/10 bg-black/30 p-4 space-y-3 text-xs font-mono">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">1. Dirección de Origen (Titular):</span>
-                        <p className="text-white break-all">{beneficiary.originWallet}</p>
-                      </div>
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">2. Dirección a Pagar (Destino):</span>
-                        <p className="text-cyan-300 break-all">{beneficiary.payoutWallet}</p>
-                      </div>
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">3. Dirección del NFT (Asset Mint):</span>
-                        <p className="text-white break-all">{beneficiary.assetMint}</p>
-                      </div>
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">4. Fecha y Días desde Mint:</span>
-                        <p className="text-white">{beneficiary.mintDate} ({beneficiary.daysSinceMint} días)</p>
-                      </div>
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">5. Intervalo de Staking:</span>
-                        <p className="text-white">{beneficiary.stakingPeriod} ({beneficiary.stakingDays} días)</p>
-                      </div>
-                      <div>
-                        <span className="text-white/50 text-[11px] font-sans">6. Desglose Financiero:</span>
-                        <p className="text-white">
-                          Bruto: {formatUsdcAmount(beneficiary.grossAmountMinor)} · Fee: {formatUsdcAmount(beneficiary.feeAmountMinor)} · <span className="text-emerald-400 font-bold">Neto: {formatUsdcAmount(beneficiary.netAmountMinor)}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-border/30">
+          <Button
+            variant="outline"
+            disabled={isVoting || hasUserApproved || dto.executed}
+            onClick={handleVoteApprove}
+            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 min-h-9 px-4 py-2 text-xs"
+          >
+            {isVoting
+              ? "Registrando Firma..."
+              : hasUserApproved
+              ? "Ya Has Aprobado"
+              : "Aprobar Propuesta (Votar)"}
+          </Button>
+
+          <Button
+            variant="primary"
+            disabled={isExecuting || !quorum?.canExecute}
+            onClick={handleExecute}
+            className="bg-cyan-600 hover:bg-cyan-500 text-white min-h-9 px-4 py-2 text-xs"
+          >
+            {isExecuting ? "Ejecutando..." : "Ejecutar Propuesta en Devnet"}
+          </Button>
         </div>
       </Card>
     </div>

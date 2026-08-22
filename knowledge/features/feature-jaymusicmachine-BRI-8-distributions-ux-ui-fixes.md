@@ -10,12 +10,12 @@ Administrators need an intuitive, error-free interface to configure yield distri
 1. `CreateDistributionModal` includes a visual project selector dropdown/list loading verified properties from `/api/admin/collections`.
 2. Selecting a project displays its thumbnail image (`coverImageUrl`), property title (`title`), property ID (`entryId`), and on-chain notary dates.
 3. `/admin/collections/[id]` includes an interactive on-chain notary panel (`AdminCollectionNotaryDatesPanel`) with calendar date pickers, proposal audit persistence, and multisig status badges.
-4. `/admin/treasury` and `/admin/treasury/squads` are updated to Next.js 16 App Router best practices, querying real active distribution runs and live date change proposals from the proposal store.
+4. `/admin/treasury` and `/admin/treasury/squads` are updated to Next.js 16 App Router best practices, querying real active distribution runs and live date change proposals without static mock fixtures.
 5. All validations, typechecks, and tests pass cleanly with 100% adherence to 4-layer FDD architecture and mandatory in-code commentary standards.
 
 ## What gaps exist today
-- `/admin/treasury` currently uses hardcoded sample fixtures (`SAMPLE_RUN`, `SAMPLE_ITEMS`, `MOVEMENTS`).
-- The treasury overview does not display real pending date change proposals registered from `/admin/collections/[id]`.
+- `/admin/treasury/squads` currently uses a hardcoded `DEFAULT_MOCK_PROPOSAL` with sample beneficiaries and fallback pubkeys.
+- Dynamic proposal querying needs to load real on-chain/database proposal state or render a clean empty state when no active proposal exists.
 
 ## What questions remain open
-- None; user explicitly requested adding a SPEC to connect real data and modernize `/admin/treasury` with Next.js 16 best practices and in-code commentary.
+- None; user explicitly approved merging SPEC-07 and starting SPEC-08 to eliminate mock data from `/admin/treasury/squads`.

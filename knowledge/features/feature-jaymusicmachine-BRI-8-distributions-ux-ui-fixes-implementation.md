@@ -37,15 +37,21 @@
 ### `SPEC-06: Clean Code Audit & Monorepo Validation (refactor-clean)` [COMPLETED]
 - Monorepo clean code pass and develop sync.
 
-### `SPEC-07: Dynamic Treasury Console Integration with Real Proposals & Next.js 16 Best Practices` [ACTIVE]
-- **TDD Contract**: Component & unit tests in `tests/features/admin/treasury-console.test.tsx` verifying dynamic proposal loading, real active runs, and Next.js 16 compatibility.
-- **Implementation**:
-  - `apps/web/src/app/api/admin/treasury/summary/route.ts`: Dynamic API endpoint returning real active runs, pending date proposals, and treasury movements.
-  - `apps/web/src/features/admin/presentation/treasury-console.tsx`: Updated Treasury console adhering to Next.js 16 App Router best practices, SSR-friendly data structures, real proposal inspection cards, and mandatory in-code commentary.
-  - `apps/web/src/app/admin/treasury/page.tsx`: Server component with proper async metadata and Suspense boundaries.
+### `SPEC-07: Dynamic Treasury Console Integration with Real Proposals & Next.js 16 Best Practices` [COMPLETED]
+- Implemented `GET /api/admin/treasury/summary` and `POST /api/admin/treasury/circuit-breaker`.
+- Modernized `TreasuryConsole` and `AdminTreasuryPage` with Next.js 16 best practices, mandatory in-code commentary, and wallet modal auto-trigger.
 
-### `SPEC-08: Final Clean Code Audit & Monorepo Validation (refactor-clean)`
-- Final validation pass, English commentary audit, and 100% `pnpm validate` verification.
+### `SPEC-08: Dynamic Squads Multisig Console Integration & Zero Mock Data` [ACTIVE]
+- **TDD Contract**: Component & unit tests in `tests/components/squads-multisig-console.test.ts` and `tests/features/admin/squads-multisig-console.test.tsx` verifying dynamic proposal loading, empty state rendering, real on-chain date comparison, and wallet vote integration without mock fixtures.
+- **Layer 1 — Presentation**:
+  - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Eliminate `DEFAULT_MOCK_PROPOSAL` and fake fallback public keys. Connect dynamic fetcher to live runs/proposals API (`/api/admin/distributions/runs/[id]` and `/api/admin/treasury/squads/proposals`). Provide sober empty state and automatic wallet modal connection.
+- **Layer 2 — Application / API**:
+  - `apps/web/src/app/api/admin/treasury/squads/proposals/route.ts`: Endpoint returning real Squads v4 multisig proposals and active distribution run batches.
+- **Layer 3 — Domain**:
+  - `apps/web/src/features/admin/domain/squads-multisig-types.ts`: Pure domain entities (`SquadsProposalDTO`) and pure evaluators (`evaluateDateAuditWarning`, `evaluateQuorumStatus`).
+
+### `SPEC-09: Final Clean Code Audit & Monorepo Validation (refactor-clean)`
+- Final validation pass, English in-code commentary audit, and 100% `pnpm validate` verification across monorepo.
 
 ## 3. Verification Plan
 - `pnpm test` (all unit, hook, and component tests passing green).
