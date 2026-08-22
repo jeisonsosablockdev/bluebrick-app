@@ -2,26 +2,22 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-04",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s04-clean-code-audit",
+  "spec_id": "SPEC-05",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s05-collection-dates-notary-ui",
   "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
   "human_design_approval": {
     "approved": true,
-    "timestamp": "2026-08-22T01:14:35-05:00"
-  },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-22T01:53:30-05:00"
+    "timestamp": "2026-08-22T11:31:46-05:00"
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T01:47:37-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T11:32:03-05:00" },
     "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T01:01:02-05:00" },
     "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:01:05-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:14:35-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T01:47:37-05:00", "note": "Refactor-clean phase; validating test suite" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T01:49:48-05:00", "note": "Refactoring & knowledge index sync completed" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T01:50:47-05:00", "note": "Architect Gate 2 & Full pnpm validate APPROVED" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:53:30-05:00" }
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-22T11:31:46-05:00" },
+    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T11:32:19-05:00", "note": "Created tests/features/admin/admin-collection-notary-dates-panel.test.tsx in RED phase" },
+    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T11:33:03-05:00", "note": "Created AdminCollectionNotaryDatesPanel component with 2/2 tests green" },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T11:33:32-05:00", "note": "Architect Gate 2 APPROVED" },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
