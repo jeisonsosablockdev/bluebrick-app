@@ -21,7 +21,7 @@ import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
   type SquadsProposalDTO
-} from "@/tests/components/squads-multisig-console.test";
+} from "@/features/admin/domain/squads-multisig-types";
 
 type SquadsMultisigConsoleProps = {
   initialDto?: SquadsProposalDTO;
