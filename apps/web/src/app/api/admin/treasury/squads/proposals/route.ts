@@ -41,8 +41,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         vaultPda: "D9i1XNftRpB68WTYrpCau5fEYYS2eiJa8Q738N5idSXB",
         threshold: 2,
         membersCount: 4,
-        approvedMembers: [],
-        executed: false,
+        approvedMembers: latest.approvals ?? [],
+        executed: (latest.approvals ?? []).length >= 2,
         onChainDates: {
           projectStartAt: "2026-03-15T00:00:00Z",
           projectEndAt: "2028-12-31T23:59:59Z"

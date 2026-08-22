@@ -38,6 +38,7 @@ export type PendingDateProposal = {
   proposedEndAt: string;
   justification: string;
   createdAt: string;
+  approvals?: string[];
 };
 
 type AdminCollectionNotaryDatesPanelProps = {

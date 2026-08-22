@@ -65,27 +65,42 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const solscanUrl = broadcastResult.solscanUrl;
     const slot = broadcastResult.slot;
 
-    // Step 3: Retrieve the date change proposal and update on-chain status
+    // Step 3: Retrieve the date change proposal and update approvals state
     const proposal = getDateChangeProposal(proposalId);
     const threshold = 2; // Squads 2-of-4 threshold
 
     if (proposal) {
-      proposal.status = "APPROVED";
+      proposal.approvals = proposal.approvals ?? [];
+      if (!proposal.approvals.includes(signerWallet)) {
+        proposal.approvals.push(signerWallet);
+      }
+
+      const quorumReached = proposal.approvals.length >= threshold;
+      if (quorumReached) {
+        proposal.status = "APPROVED";
+      } else {
+        proposal.status = "PENDING_MULTISIG";
+      }
       saveDateChangeProposal(proposal);
+
+      const message = quorumReached
+        ? `Quórum alcanzado (${proposal.approvals.length}/${threshold}): Propuesta aprobada y ejecutada exitosamente en Solana Devnet. Transacción: ${txSignature}`
+        : `Voto registrado exitosamente en Solana Devnet (${proposal.approvals.length}/${threshold} firmas). Falta ${threshold - proposal.approvals.length} firma para alcanzar el quórum y ejecutar. Transacción: ${txSignature}`;
 
       return NextResponse.json({
         ok: true,
         data: {
-          actionTaken: "APPROVED_AND_EXECUTED",
+          actionTaken: quorumReached ? "APPROVED_AND_EXECUTED" : "VOTE_RECORDED",
           proposalId,
           signerWallet,
           txSignature,
           solscanUrl,
           slot,
-          quorumReached: true,
-          executed: true,
-          approvalsCount: threshold,
-          message: `Propuesta aprobada y ejecutada exitosamente en Solana Devnet. Transacción: ${txSignature}`
+          quorumReached,
+          executed: quorumReached,
+          approvalsCount: proposal.approvals.length,
+          threshold,
+          message
         }
       });
     }
@@ -94,16 +109,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       ok: true,
       data: {
-        actionTaken: "APPROVED_AND_EXECUTED",
+        actionTaken: "VOTE_RECORDED",
         proposalId,
         signerWallet,
         txSignature,
         solscanUrl,
         slot,
-        quorumReached: true,
-        executed: true,
-        approvalsCount: threshold,
-        message: `Propuesta aprobada y ejecutada en Devnet. Transacción: ${txSignature}`
+        quorumReached: false,
+        executed: false,
+        approvalsCount: 1,
+        threshold,
+        message: `Voto registrado exitosamente en Solana Devnet (1/${threshold} firmas). Transacción: ${txSignature}`
       }
     });
   } catch (error) {
