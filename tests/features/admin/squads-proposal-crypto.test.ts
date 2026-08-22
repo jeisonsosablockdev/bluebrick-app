@@ -5,15 +5,15 @@
  *
  * Layer: Layer 3 (Domain) & Layer 4 (Infrastructure) Verification
  * Scope: Pure cryptographic hash calculation, deterministic canonicalization,
- *        tampering detection, and on-chain vote memo formatting.
+ *        tampering detection, and on-chain vote memo formatting via Keccak-256.
  *
  * Invariants Tested:
- * 1. Determinism: Identical inputs strictly produce identical 64-char hex SHA-256 digests.
+ * 1. Determinism: Identical inputs strictly produce identical 64-char hex Keccak-256 digests.
  * 2. Avalanche Effect: Changing any parameter (timestamps, address, justification) alters hash.
  * 3. Tamper Resistance: verifyProposalIntegrity returns valid: false when payload is mutated.
  * 4. Memo Formatting: formatOnChainVoteMemo produces canonical Solana Memo Program v2 payload.
  *
- * @spec BRI-8 (SPEC-10)
+ * @spec BRI-8 (SPEC-10) / EPIC-015 SOLUTION-ARCHITECTURE
  * =========================================================================================
  */
 
@@ -26,7 +26,7 @@ import {
   type ProposalSealPayload
 } from "@/features/admin/domain/squads-proposal-crypto";
 
-describe("SPEC-10 (BRI-8): Cryptographic Proposal Sealing & Integrity Verification", () => {
+describe("SPEC-10 (BRI-8): Cryptographic Proposal Sealing & Integrity Verification (Keccak-256)", () => {
   const CANONICAL_PAYLOAD: ProposalSealPayload = {
     collectionAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     proposedStartAt: "2026-04-01T00:00:00.000Z",
@@ -35,8 +35,8 @@ describe("SPEC-10 (BRI-8): Cryptographic Proposal Sealing & Integrity Verificati
     nonce: "NONCE-2026-08-22-001"
   };
 
-  describe("A. Deterministic SHA-256 Proposal Hash Calculation", () => {
-    it("should compute a valid 64-character lowercase hex SHA-256 hash", () => {
+  describe("A. Deterministic Keccak-256 Proposal Hash Calculation", () => {
+    it("should compute a valid 64-character lowercase hex Keccak-256 hash", () => {
       // Arrange & Act
       const hash = computeProposalPayloadHash(CANONICAL_PAYLOAD);
 

@@ -394,7 +394,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
                 data-testid="proposal-crypto-seal-badge"
                 className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-amber-500/10 pt-2 mt-1 text-[11px]"
               >
-                <span className="text-muted-foreground">Sello Criptográfico SHA-256:</span>
+                <span className="text-muted-foreground">Sello Criptográfico (Keccak-256):</span>
                 <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {dto.proposalHash.slice(0, 10)}...{dto.proposalHash.slice(-8)} (Integridad Verificada)

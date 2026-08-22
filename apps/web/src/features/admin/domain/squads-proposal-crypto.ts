@@ -3,10 +3,10 @@
  * Layer 3: Domain Layer — Squads Proposal Cryptographic Sealing & Invariant Verification
  * Module: squads-proposal-crypto
  *
- * 🏛️ ARCHITECTURAL ROLE:
- * Pure domain logic responsible for computing deterministic SHA-256 cryptographic hashes
- * over proposed project date changes, asserting payload integrity, and formatting
- * canonical on-chain vote memo strings for Solana Devnet.
+ * 🏛️ ARCHITECTURAL CONTEXT & CANONICAL STANDARD:
+ * Aligns strictly with EPIC-015 SOLUTION-ARCHITECTURE.md and Solana Native Syscalls.
+ * Uses Keccak-256 (`solana_program::keccak::hashv` / `@noble/hashes/sha3`) for pure off-chain
+ * proposal sealing and on-chain governance verification.
  *
  * 🛡️ SECURITY INVARIANTS:
  * 1. Determinism: Hash computation is strictly deterministic and idempotent.
@@ -14,14 +14,15 @@
  *    or nonce results in an avalanche mismatch, invalidating the proposal execution.
  * 3. Pure Functional Domain: Zero React, zero UI, zero DB/RPC network dependencies.
  *
- * @spec BRI-8 (SPEC-10)
+ * @spec BRI-8 (SPEC-10) / EPIC-015 SOLUTION-ARCHITECTURE
  * =========================================================================================
  */
 
-import { createHash } from "crypto";
+import { keccak_256 } from "@noble/hashes/sha3";
+import { bytesToHex } from "@noble/hashes/utils";
 
 /**
- * Payload interface required to compute the deterministic SHA-256 proposal seal.
+ * Payload interface required to compute the deterministic Keccak-256 proposal seal.
  */
 export type ProposalSealPayload = {
   /** Canonical Solana Metaplex Core collection address (Base58) */
@@ -42,24 +43,24 @@ export type ProposalSealPayload = {
 export type ProposalIntegrityResult = {
   /** True if computed hash matches expected hash */
   isValid: boolean;
-  /** Computed SHA-256 hex digest */
+  /** Computed Keccak-256 hex digest */
   computedHash: string;
-  /** Expected SHA-256 hex digest provided for comparison */
+  /** Expected Keccak-256 hex digest provided for comparison */
   expectedHash: string;
   /** Specific failure reason if invalid, null otherwise */
   reason: "HASH_MISMATCH_TAMPERING_DETECTED" | null;
 };
 
 /**
- * Computes a deterministic, lowercase 64-character hex SHA-256 hash from proposal payload parameters.
+ * Computes a deterministic, lowercase 64-character hex Keccak-256 hash from proposal payload parameters.
  *
  * Step-by-Step Logic:
- * // Step 1: Normalize all fields to lowercase or trimmed canonical strings.
+ * // Step 1: Normalize all fields to canonical strings.
  * // Step 2: Assemble canonical pre-image buffer with deterministic delimiters.
- * // Step 3: Compute SHA-256 digest and return hex string.
+ * // Step 3: Compute Keccak-256 digest and return hex string.
  *
  * @param payload - Raw proposal seal payload
- * @returns 64-character lowercase hex SHA-256 digest
+ * @returns 64-character lowercase hex Keccak-256 digest
  */
 export function computeProposalPayloadHash(payload: ProposalSealPayload): string {
   // Step 1: Normalize inputs to prevent formatting discrepancies
@@ -79,8 +80,9 @@ export function computeProposalPayloadHash(payload: ProposalSealPayload): string
     canonicalNonce
   ].join("|");
 
-  // Step 3: Generate SHA-256 hash
-  return createHash("sha256").update(preImage, "utf-8").digest("hex").toLowerCase();
+  // Step 3: Generate Keccak-256 hash via @noble/hashes/sha3
+  const buffer = new TextEncoder().encode(preImage);
+  return bytesToHex(keccak_256(buffer)).toLowerCase();
 }
 
 /**

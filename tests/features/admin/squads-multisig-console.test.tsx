@@ -255,7 +255,7 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
     // Assert
     const badge = screen.getByTestId("proposal-crypto-seal-badge");
     expect(badge).toBeDefined();
-    expect(badge.textContent).toContain("Sello Criptográfico SHA-256");
+    expect(badge.textContent).toContain("Sello Criptográfico (Keccak-256)");
     expect(badge.textContent).toContain("Integridad Verificada");
   });
 });
