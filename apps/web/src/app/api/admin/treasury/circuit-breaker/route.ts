@@ -5,7 +5,7 @@
  *
  * Description:
  * Activates global emergency circuit breaker across treasury settlement operations.
- * Freezes background settlement workers and produces emergency pause audit record.
+ * Enforces mandatory connected Solana wallet signature (signerWallet public key).
  * =========================================================================================
  */
 
@@ -13,9 +13,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const CircuitBreakerSchema = z.object({
-  reason: z.string().min(1).max(1000),
+  reason: z.string().min(1, { message: "Reason is required" }).max(1000),
   triggeredAt: z.string().datetime().optional(),
-  signerWallet: z.string().optional()
+  signerWallet: z.string().min(32, { message: "signerWallet must be a valid Solana public key" })
 });
 
 /**
@@ -23,7 +23,7 @@ const CircuitBreakerSchema = z.object({
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // Step 1: Validate request body
+    // Step 1: Validate request body requiring signerWallet
     const body = await request.json();
     const parsed = CircuitBreakerSchema.safeParse(body);
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           ok: false,
           error: "INVALID_REQUEST_BODY",
-          message: "Validation failed for emergency circuit breaker request."
+          message: "Se requiere una wallet de Solana conectada para autorizar y firmar la parada de emergencia."
         },
         { status: 400 }
       );
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         status: "PAUSED",
         reason: parsed.data.reason,
         triggeredAt,
-        signerWallet: parsed.data.signerWallet ?? "Admin Operator",
+        signerWallet: parsed.data.signerWallet,
         settlementWorkersStopped: true,
         onChainStatus: "EMERGENCY_PAUSED"
       }

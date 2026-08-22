@@ -122,6 +122,10 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 3: Handle global proposal rejection
   const handleRejectProposal = async () => {
+    if (!publicKey) {
+      setErrorMessage("Debes conectar tu wallet de Solana para firmar el rechazo de la propuesta.");
+      return;
+    }
     if (!activeRun) return;
     setIsRejecting(true);
     setActionMessage(null);
@@ -131,7 +135,10 @@ export function TreasuryConsole(): ReactElement {
       const res = await fetch(`/api/admin/payout-runs/${activeRun.id}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: "Rejected by admin from Treasury Console" })
+        body: JSON.stringify({
+          reason: "Rejected by admin from Treasury Console",
+          signerWallet: publicKey.toBase58()
+        })
       });
 
       const isJson = res.headers.get("content-type")?.includes("application/json");
@@ -142,7 +149,7 @@ export function TreasuryConsole(): ReactElement {
       }
 
       setActiveRun((prev) => (prev ? { ...prev, status: "blocked" } : null));
-      setActionMessage("Propuesta rechazada y corrida bloqueada exitosamente.");
+      setActionMessage(`Propuesta rechazada y firmada con wallet ${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}.`);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Error rechazando propuesta");
     } finally {
@@ -152,6 +159,10 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 4: Handle individual item veto pre-seal
   const handleVetoItem = async (itemId: string) => {
+    if (!publicKey) {
+      setErrorMessage("Debes conectar tu wallet de Solana para firmar el veto del ítem.");
+      return;
+    }
     if (!activeRun) return;
     setVetoingItemId(itemId);
     setActionMessage(null);
@@ -161,7 +172,11 @@ export function TreasuryConsole(): ReactElement {
       const res = await fetch(`/api/admin/payout-runs/${activeRun.id}/veto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, reason: "Vetoed by admin from Treasury Console" })
+        body: JSON.stringify({
+          itemId,
+          reason: "Vetoed by admin from Treasury Console",
+          signerWallet: publicKey.toBase58()
+        })
       });
 
       const isJson = res.headers.get("content-type")?.includes("application/json");
@@ -174,7 +189,7 @@ export function TreasuryConsole(): ReactElement {
       setItems((prev) =>
         prev.map((item) => (item.id === itemId ? { ...item, status: "vetoed" } : item))
       );
-      setActionMessage(`Ítem ${itemId} vetado exitosamente.`);
+      setActionMessage(`Ítem ${itemId} vetado y firmado con wallet ${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}.`);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Error vetando ítem");
     } finally {
@@ -184,12 +199,17 @@ export function TreasuryConsole(): ReactElement {
 
   // Step 5: Handle emergency 1-of-M circuit breaker trigger
   const handleCircuitBreaker = async () => {
+    if (!publicKey) {
+      setErrorMessage("Debes conectar tu wallet de Solana para autorizar y firmar la parada de emergencia.");
+      return;
+    }
+
     setIsTriggeringCircuitBreaker(true);
     setActionMessage(null);
     setErrorMessage(null);
 
     try {
-      const signerWallet = publicKey ? publicKey.toBase58() : undefined;
+      const signerWallet = publicKey.toBase58();
       const res = await fetch("/api/admin/treasury/circuit-breaker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,9 +230,7 @@ export function TreasuryConsole(): ReactElement {
       setCircuitBreakerActive(true);
       setPausePayload(json.data ?? json);
       setActionMessage(
-        signerWallet
-          ? `Parada de emergencia activada y firmada con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}`
-          : "Parada de emergencia activada exitosamente en el motor de tesorería."
+        `Parada de emergencia activada y firmada con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}`
       );
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Error activando parada de emergencia");
@@ -226,9 +244,20 @@ export function TreasuryConsole(): ReactElement {
       {/* Header & Quick Navigation */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/40 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Tesorería y Gobernanza
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Tesorería y Gobernanza
+            </h1>
+            {publicKey ? (
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                🟢 {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+              </span>
+            ) : (
+              <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-400">
+                🔴 Wallet Requerida
+              </span>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground mt-1">
             Supervisión de balances, propuestas de cambio de fechas y controles multisig de Squads v4.
           </p>
@@ -441,7 +470,9 @@ export function TreasuryConsole(): ReactElement {
               ? "Activando..."
               : circuitBreakerActive
               ? "Pausa Activa"
-              : "Activar Pausa de Emergencia"}
+              : publicKey
+              ? "Activar Pausa de Emergencia (1-de-M)"
+              : "Conectar Wallet para Pausar"}
           </Button>
         </div>
 
