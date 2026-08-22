@@ -22,14 +22,16 @@
 | Step | Goal | Gemini Action |
 | --- | --- | --- |
 | 1 | Detect frontend scope | Create `implementation_plan.md` identifying routes, UI surfaces, and motion intent. |
-| 2 | Define boundaries | Document SSR/client split and Motion 12 syntax rules. |
+| 2 | Define boundaries | Document SSR/client split and Motion 12 syntax rules. Consult `node_modules/next/dist/docs/01-app/`. |
 | 3 | Review auth/privileges | Spawn `security` subagent to review trust-boundary gaps. |
 | 4 | Implement | Write code using `replace_file_content` ensuring diff is local to touched surface. |
-| 5 | Run QA | Use `run_command` for Playwright/Synpress tests. Send to background. Spawn `qa` subagent if visual checks via MCP are needed. |
-| 6 | Review | Perform a clean-code audit and log findings in `walkthrough.md`. |
+| 5 | Live Runtime Loop | Use the `next-dev-loop` skill with `next-devtools-mcp` to trigger `compile_route` and check `get_errors` / compilation issues on the running dev server (`pnpm dev:turbo`). |
+| 6 | Run QA | Use `run_command` for Playwright/Synpress tests. Send to background. Spawn `qa` subagent if visual checks via MCP are needed. |
+| 7 | Review | Perform a clean-code audit and log findings in `walkthrough.md`. |
 
 ## Required Evidence in Walkthrough
 - Test coverage updates
+- `next-devtools-mcp` and `next-dev-loop` live verification logs
 - Playwright/Synpress background task logs
 - MCP or browser artifacts for critical flows
 - Motion 12 tooling notes

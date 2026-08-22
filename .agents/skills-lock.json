@@ -7,6 +7,18 @@
       "skillPath": "skills/explain-like-socrates/SKILL.md",
       "computedHash": "cee8e366b69735214dad0b1ae7b522dc899a84261479a113565c4a433a1a70cd"
     },
+    "next-cache-components-optimizer": {
+      "source": "vercel/next.js",
+      "sourceType": "github",
+      "skillPath": "skills/next-cache-components-optimizer/SKILL.md",
+      "computedHash": "8f2fd64a377e3e63af43ab738d3071fc1108dd9bd0ca8c4c2443e31736614d9b"
+    },
+    "next-dev-loop": {
+      "source": "vercel/next.js",
+      "sourceType": "github",
+      "skillPath": "skills/next-dev-loop/SKILL.md",
+      "computedHash": "39eadc98511c19d689589cfc6ee113b1ad36fa7c3b1192f073afa87ecf723364"
+    },
     "solana-dev": {
       "source": "solana-foundation/solana-dev-skill",
       "sourceType": "github",

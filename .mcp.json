@@ -1,24 +1,8 @@
 {
   "mcpServers": {
-    "solana-mcp-server": {
-      "type": "http",
-      "url": "https://mcp.solana.com/mcp"
-    },
-    "solana-mcp-sse": {
-      "type": "sse",
-      "url": "https://mcp.solana.com/sse"
-    },
-    "helius": {
+    "next-devtools": {
       "command": "npx",
-      "args": ["helius-mcp@latest"]
-    },
-    "linear": {
-      "command": "node",
-      "args": ["--import", "tsx", "./scripts/linear-mcp-server.ts"]
-    },
-    "workos-docs": {
-      "command": "npx",
-      "args": ["-y", "@workos/mcp-docs-server"]
+      "args": ["-y", "next-devtools-mcp@latest"]
     }
   }
 }

@@ -40,7 +40,7 @@
 - Solana-related work: prefer Solana Developer MCP tools over model memory. Use `list_sections` first for non-trivial Solana questions, `get_documentation` for canonical source/framework/library docs, and `Solana_Documentation_Search` or `Solana_Expert__Ask_For_Help` for narrow how-to, errors, or API usage.
 - Solana program Rust: whenever writing or modifying it, run `program_autofixer`, apply fixes, and repeat until `require_another_tool_call_after_fixing` is false.
 - `/programs` or on-chain runtime changes: `.agents/workflows/blockchain-cycle.md`
-- `/app`, `components`, auth flows, or browser-critical routes: `.agents/workflows/frontend-cycle.md`
+- `/app`, `components`, auth flows, or browser-critical routes: `.agents/workflows/frontend-cycle.md`. Next.js App Router implementations must consult version-accurate bundled documentation at `node_modules/next/dist/docs/` and verify live runtime state via `next-devtools-mcp` and `next-dev-loop`.
 - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any provider-specific tooling references explicit in the governing artifact.
 - Mint, metadata, collection, royalty, or Metaplex scope: `.agents/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.agents/workflows/mainnet-hardening.md`

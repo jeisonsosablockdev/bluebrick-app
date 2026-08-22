@@ -30,11 +30,11 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | Observations | 11 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 530 |
+| Archived | 533 |
 | Observed status | 21 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 528 |
+| Archived status | 531 |
 
 ## Inbox
 
@@ -318,6 +318,8 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
+| feature-nextjs-ai-agents-integration-implementation | archived | none | [Feature Next.js AI Agents and DevTools MCP Implementation](knowledge/features/feature-nextjs-ai-agents-integration-implementation.md) | n/a |
+| feature-nextjs-ai-agents-integration | archived | none | [Feature Next.js AI Agents and DevTools MCP Integration](knowledge/features/feature-nextjs-ai-agents-integration.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
 | feature-admin-collection-documents-ui-remake | archived | none | [Feature Admin Collection Documents Ui Remake](knowledge/features/other/feature-admin-collection-documents-ui-remake.md) | n/a |
 | feature-app-checkout-dual-crypto-airwallex | archived | none | [Feature App Checkout Dual Crypto Airwallex](knowledge/features/other/feature-app-checkout-dual-crypto-airwallex.md) | n/a |
@@ -459,6 +461,7 @@ Last Generated: 2026-08-11T00:00:00.000Z
 | linear-developer-identity-and-documentation-protocol | archived | none | [Linear Developer Identity And Documentation Protocol](knowledge/guides/linear-developer-identity-and-documentation-protocol.md) | n/a |
 | linear-mcp-bridge | archived | none | [Linear Mcp BRI-dge](knowledge/guides/linear-mcp-bridge.md) | n/a |
 | linear-single-issue-slice-planning | archived | none | [Linear Single Issue Slice Planning](knowledge/guides/linear-single-issue-slice-planning.md) | n/a |
+| next-devtools-mcp | archived | none | [next-devtools-mcp](knowledge/guides/next-devtools-mcp.md) | n/a |
 | operability-observability-security-deploy | archived | none | [Operability Observability Security Deploy](knowledge/guides/operability-observability-security-deploy.md) | n/a |
 | route-architecture-and-templates | archived | none | [Route Architecture And Templates](knowledge/guides/route-architecture-and-templates.md) | n/a |
 | solana-kit-migration-recipes | archived | none | [Solana Kit Migration Recipes](knowledge/guides/solana-kit-migration-recipes.md) | n/a |

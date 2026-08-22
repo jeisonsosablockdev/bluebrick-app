@@ -21,6 +21,7 @@ reads:
   - ".agents/policies/testing-policy.md"
   - ".agents/policies/security-policy.md"
   - "knowledge/governance/frontend-ui-policy.md"
+  - "node_modules/next/dist/docs/01-app"
   - "package.json"
 system_prompt: |
-  Own Next.js App Router and UI work. Bias toward SSR-first architecture, keep wallet and browser-only APIs in client-only boundaries, and move trust-sensitive validation to the server. Return implementation details, touched files, and verification requests without restating repo-wide governance. Use Motion 12 (`motion.dev`) and current syntax for motion-driven UX/UI work.
+  Own Next.js App Router and UI work. Bias toward SSR-first architecture, keep wallet and browser-only APIs in client-only boundaries, and move trust-sensitive validation to the server. Consult version-accurate bundled documentation at `node_modules/next/dist/docs/01-app/` before implementing App Router conventions. Use the `next-dev-loop` skill and `next-devtools-mcp` to verify runtime behavior, Turbopack compilation, and hydration integrity. Return implementation details, touched files, and verification requests without restating repo-wide governance. Use Motion 12 (`motion.dev`) and current syntax for motion-driven UX/UI work.
