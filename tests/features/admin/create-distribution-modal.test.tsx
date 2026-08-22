@@ -173,6 +173,7 @@ describe("CreateDistributionModal Integration", () => {
             periodStartAt: "2026-08-01T00:00:00.000Z",
             periodEndAt: "2026-08-31T23:59:59.000Z",
             totalAmountMinor: "5000000000",
+            tokenMint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
             policyVersion: "v1"
           })
         })

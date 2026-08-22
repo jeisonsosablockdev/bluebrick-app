@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T12:35:06.945Z",
+  "generatedAt": "2026-08-22T06:00:35.850Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -72,6 +72,12 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/api/index.md"
+    },
+    {
+      "id": "knowledge/api/ios-integration-guide.md",
+      "type": "governance",
+      "label": "ios-integration-guide",
+      "path": "knowledge/api/ios-integration-guide.md"
     },
     {
       "id": "knowledge/api/rpc/index.md",
@@ -188,6 +194,12 @@
       "path": "knowledge/architecture/solana-stack.md"
     },
     {
+      "id": "knowledge/architecture/squads-treasury-security-design.md",
+      "type": "governance",
+      "label": "squads-treasury-security-design",
+      "path": "knowledge/architecture/squads-treasury-security-design.md"
+    },
+    {
       "id": "knowledge/architecture/stake-audit.md",
       "type": "governance",
       "label": "stake-audit",
@@ -198,6 +210,12 @@
       "type": "governance",
       "label": "state-machine",
       "path": "knowledge/architecture/state-machine.md"
+    },
+    {
+      "id": "knowledge/architecture/third-party-integrations.md",
+      "type": "governance",
+      "label": "third-party-integrations",
+      "path": "knowledge/architecture/third-party-integrations.md"
     },
     {
       "id": "knowledge/architecture/threat-model.md",
@@ -1460,6 +1478,18 @@
       "path": "knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md"
     },
     {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims",
+      "path": "knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims.md"
+    },
+    {
       "id": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md",
       "type": "feature",
       "label": "feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation",
@@ -1470,6 +1500,30 @@
       "type": "feature",
       "label": "feature-jeisonsosa-BRI-12-solanakit-wallet-connection",
       "path": "knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BRI-186-monorepo-fdd-architecture",
+      "path": "knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md"
+    },
+    {
+      "id": "knowledge/features/feature-squads-v4-treasury-claims-bri-8-implementation.md",
+      "type": "feature",
+      "label": "feature-squads-v4-treasury-claims-bri-8-implementation",
+      "path": "knowledge/features/feature-squads-v4-treasury-claims-bri-8-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-squads-v4-treasury-claims-bri-8.md",
+      "type": "feature",
+      "label": "feature-squads-v4-treasury-claims-bri-8",
+      "path": "knowledge/features/feature-squads-v4-treasury-claims-bri-8.md"
     },
     {
       "id": "knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md",
@@ -2174,6 +2228,12 @@
       "path": "knowledge/fixes/other/index.md"
     },
     {
+      "id": "knowledge/governance/clean-code-folder-structure.md",
+      "type": "governance",
+      "label": "clean-code-folder-structure",
+      "path": "knowledge/governance/clean-code-folder-structure.md"
+    },
+    {
       "id": "knowledge/governance/documentation-policy.md",
       "type": "governance",
       "label": "documentation-policy",
@@ -2208,6 +2268,12 @@
       "type": "governance",
       "label": "licenses-report",
       "path": "knowledge/governance/licenses-report.md"
+    },
+    {
+      "id": "knowledge/governance/monorepo-symlink-deprecation-guide.md",
+      "type": "governance",
+      "label": "monorepo-symlink-deprecation-guide",
+      "path": "knowledge/governance/monorepo-symlink-deprecation-guide.md"
     },
     {
       "id": "knowledge/governance/nft-policy.md",
@@ -2384,6 +2450,18 @@
       "path": "knowledge/inbox/candy-machine-deploy-iteration-2026-07-22-bri-182.md"
     },
     {
+      "id": "knowledge/inbox/candy-machine-deploy-iteration-2026-08-11-bri-186.md",
+      "type": "governance",
+      "label": "candy-machine-deploy-iteration-2026-08-11-bri-186",
+      "path": "knowledge/inbox/candy-machine-deploy-iteration-2026-08-11-bri-186.md"
+    },
+    {
+      "id": "knowledge/inbox/candy-machine-deploy-iteration-2026-08-16-bri-8.md",
+      "type": "governance",
+      "label": "candy-machine-deploy-iteration-2026-08-16-bri-8",
+      "path": "knowledge/inbox/candy-machine-deploy-iteration-2026-08-16-bri-8.md"
+    },
+    {
       "id": "knowledge/index.md",
       "type": "governance",
       "label": "index",
@@ -2450,6 +2528,12 @@
       "path": "knowledge/operations/playbooks/stake-event-reconciliation.md"
     },
     {
+      "id": "knowledge/operations/playbooks/treasury-claims-and-notary-governance.md",
+      "type": "governance",
+      "label": "treasury-claims-and-notary-governance",
+      "path": "knowledge/operations/playbooks/treasury-claims-and-notary-governance.md"
+    },
+    {
       "id": "knowledge/operations/procedures/backup-restore.md",
       "type": "governance",
       "label": "backup-restore",
@@ -2486,6 +2570,12 @@
       "path": "knowledge/operations/procedures/purchase-trace-verification.md"
     },
     {
+      "id": "knowledge/operations/procedures/squads-v4-treasury-claims-operation.md",
+      "type": "governance",
+      "label": "squads-v4-treasury-claims-operation",
+      "path": "knowledge/operations/procedures/squads-v4-treasury-claims-operation.md"
+    },
+    {
       "id": "knowledge/operations/runbooks/db-migration-rollback.md",
       "type": "governance",
       "label": "db-migration-rollback",
@@ -2520,6 +2610,12 @@
       "type": "governance",
       "label": "vercel-deployment-rollback",
       "path": "knowledge/operations/runbooks/vercel-deployment-rollback.md"
+    },
+    {
+      "id": "knowledge/operations/squads-devnet-multisig.md",
+      "type": "governance",
+      "label": "squads-devnet-multisig",
+      "path": "knowledge/operations/squads-devnet-multisig.md"
     },
     {
       "id": "knowledge/proposals/automation/README.md",
@@ -3302,6 +3398,114 @@
       "path": "knowledge/rfcs/EPIC-014-stake-distribution-traceability/STORY-014-04-treasury-claims.md"
     },
     {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/QA-AND-FUZZING-REPORT.md",
+      "type": "governance",
+      "label": "QA-AND-FUZZING-REPORT",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/QA-AND-FUZZING-REPORT.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/README.md",
+      "type": "governance",
+      "label": "README",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/README.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md",
+      "type": "governance",
+      "label": "SOLUTION-ARCHITECTURE",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/SOLUTION-ARCHITECTURE.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-01-delegated-allowance-execution-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md",
+      "type": "governance",
+      "label": "STORY-015-01-delegated-allowance-execution",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-01-delegated-allowance-execution.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-02-admin-distributions-treasury-ui-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui.md",
+      "type": "governance",
+      "label": "STORY-015-02-admin-distributions-treasury-ui",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-02-admin-distributions-treasury-ui.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-03-payout-overrides-governance-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance.md",
+      "type": "governance",
+      "label": "STORY-015-03-payout-overrides-governance",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-03-payout-overrides-governance.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-04-cron-monitors-and-claim-cancellation-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation.md",
+      "type": "governance",
+      "label": "STORY-015-04-cron-monitors-and-claim-cancellation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-04-cron-monitors-and-claim-cancellation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-05-exception-handling-veto-and-circuit-breaker-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker.md",
+      "type": "governance",
+      "label": "STORY-015-05-exception-handling-veto-and-circuit-breaker",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-05-exception-handling-veto-and-circuit-breaker.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-06-onchain-project-config-pda-program-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program.md",
+      "type": "governance",
+      "label": "STORY-015-06-onchain-project-config-pda-program",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-06-onchain-project-config-pda-program.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance-implementation.md",
+      "type": "governance",
+      "label": "STORY-015-07-onchain-project-dates-notary-governance-implementation",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance-implementation.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance.md",
+      "type": "governance",
+      "label": "STORY-015-07-onchain-project-dates-notary-governance",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/STORY-015-07-onchain-project-dates-notary-governance.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md",
+      "type": "governance",
+      "label": "squads-v4-documentation-reference",
+      "path": "knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/squads-v4-documentation-reference.md"
+    },
+    {
       "id": "knowledge/rfcs/index.md",
       "type": "governance",
       "label": "index",
@@ -3521,6 +3725,11 @@
   "edges": [
     {
       "source": "AGENTS.md",
+      "target": "knowledge/governance/clean-code-folder-structure.md",
+      "relation": "governs"
+    },
+    {
+      "source": "AGENTS.md",
       "target": "knowledge/governance/documentation-policy.md",
       "relation": "governs"
     },
@@ -3547,6 +3756,11 @@
     {
       "source": "AGENTS.md",
       "target": "knowledge/governance/licenses-report.md",
+      "relation": "governs"
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "knowledge/governance/monorepo-symlink-deprecation-guide.md",
       "relation": "governs"
     },
     {

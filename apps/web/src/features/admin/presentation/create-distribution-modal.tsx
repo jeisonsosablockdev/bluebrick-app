@@ -89,6 +89,9 @@ export function CreateDistributionModal({
       // Step 4: Convert USDC amount into minor units (6 decimals for SPL Token)
       const totalAmountMinor = (Number(totalAmountUsdc) * 1_000_000).toString();
 
+      const DEFAULT_USDC_MINT =
+        process.env.NEXT_PUBLIC_PAYOUT_USDC_MINT || "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+
       const response = await fetch("/api/admin/distributions/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,6 +102,7 @@ export function CreateDistributionModal({
           periodStartAt,
           periodEndAt,
           totalAmountMinor,
+          tokenMint: DEFAULT_USDC_MINT,
           policyVersion: "v1"
         })
       });
