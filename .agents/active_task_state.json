@@ -2,26 +2,21 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-06",
-  "branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "parent_branch": "develop",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "spec_id": "SPEC-07",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s07-dynamic-treasury-console",
+  "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
+  "current_phase": "PHASE_4_HUMAN_DESIGN_APPROVED",
   "human_design_approval": {
-    "approved": true,
-    "timestamp": "2026-08-22T11:31:46-05:00"
-  },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-22T12:44:29-05:00"
+    "approved": false
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T12:13:56-05:00" },
-    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T01:01:02-05:00" },
-    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T01:01:05-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-22T11:31:46-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-22T12:13:56-05:00", "note": "Clean code audit and monorepo validation phase" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-22T12:13:56-05:00", "note": "All clean-code, SOLID, and commentary standards verified" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-22T12:13:43-05:00", "note": "Architect Gate 2 APPROVED" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-22T12:44:29-05:00" }
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-22T13:06:25-05:00" },
+    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-22T13:05:44-05:00" },
+    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-22T18:06:22Z" },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": false },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
