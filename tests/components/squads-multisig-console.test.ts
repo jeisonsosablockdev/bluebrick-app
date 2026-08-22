@@ -15,8 +15,6 @@ import {
   type SquadsProposalDTO
 } from "@/features/admin/domain/squads-multisig-types";
 
-export { evaluateDateAuditWarning, evaluateQuorumStatus, type SquadsProposalDTO };
-
 describe('SPEC-02: Squads Multisig Console & Governance Contracts', () => {
   const baseMockDto: SquadsProposalDTO = {
     runId: 'RUN-2026-08-TEST',
