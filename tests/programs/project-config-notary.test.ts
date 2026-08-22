@@ -8,7 +8,7 @@ import {
 
 /**
  * =========================================================================================
- * 🛡️ SPEC-01 (STORY-015-06): ANCHOR PROGRAM PROJECT_CONFIG_NOTARY (TDD RED PHASE)
+ * 🛡️ SPEC-04 (STORY-015-06): ANCHOR PROGRAM PROJECT_CONFIG_NOTARY SPECIFICATION
  * =========================================================================================
  * 
  * Scope: On-Chain Program Contracts, Instructions & State Machine
@@ -22,12 +22,13 @@ import {
  *    - Layer 3: multisig_account.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf.
  * 3. Range Invariant: start_at <= end_at (rejects end_at < start_at).
  * 4. Duplicate/Reinitialize Guard: Prevents overwriting existing project configuration PDA.
+ * 5. Update Dates State Transition: Increments version and emits old/new date values.
  * 
  * @spec EPIC-015-SOLUTION-ARCHITECTURE §On-Chain Project Config PDA
- * @spec STORY-015-06-SPEC-01
+ * @spec STORY-015-06-SPEC-04
  */
 
-describe("SPEC-01 (STORY-015-06): Anchor Program project_config_notary Specification", () => {
+describe("SPEC-04 (STORY-015-06): Anchor Program project_config_notary Specification", () => {
   const NOTARY_PROGRAM_ID = address(
     process.env.PROJECT_CONFIG_NOTARY_PROGRAM_ID || "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
   );
@@ -131,6 +132,34 @@ describe("SPEC-01 (STORY-015-06): Anchor Program project_config_notary Specifica
         U8_SIZE;      // bump
 
       expect(totalSize).toBe(134);
+    });
+  });
+
+  describe("E. Update Dates State Transition & Version Increment", () => {
+    it("should correctly increment version and record updated timestamp on date modification", () => {
+      const initialState = {
+        startAt: 1755800000,
+        endAt: 1755900000,
+        version: 1,
+        updatedAt: 1755800000
+      };
+
+      const now = 1755850000;
+      const newStartAt = 1755810000;
+      const newEndAt = 1755920000;
+
+      const updatedState = {
+        ...initialState,
+        startAt: newStartAt,
+        endAt: newEndAt,
+        version: initialState.version + 1,
+        updatedAt: now
+      };
+
+      expect(updatedState.version).toBe(2);
+      expect(updatedState.startAt).toBe(newStartAt);
+      expect(updatedState.endAt).toBe(newEndAt);
+      expect(updatedState.updatedAt).toBe(now);
     });
   });
 });

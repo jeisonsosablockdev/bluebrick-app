@@ -31,6 +31,15 @@ pub mod project_config_notary {
         instructions::initialize::handler(ctx, start_at, end_at, vault_index)
     }
 
+    /// Updates notarized start and end dates under Squads Vault authority
+    pub fn update_project_dates(
+        ctx: Context<UpdateProjectDates>,
+        new_start_at: i64,
+        new_end_at: i64,
+    ) -> Result<()> {
+        instructions::update_dates::handler(ctx, new_start_at, new_end_at)
+    }
+
     /// Health ping returning program version
     pub fn ping(_ctx: Context<PingContext>) -> Result<()> {
         msg!("project_config_notary::ping ok");
