@@ -12,6 +12,7 @@ import { describe, it, expect } from 'vitest';
 import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
+  evaluateUnifiedMultisigAction,
   type SquadsProposalDTO
 } from "@/features/admin/domain/squads-multisig-types";
 
@@ -113,5 +114,32 @@ describe('SPEC-02: Squads Multisig Console & Governance Contracts', () => {
 
     const executed = evaluateQuorumStatus(executedDto);
     expect(executed.canExecute).toBe(false);
+  });
+
+  it('should evaluate unified multisig action based on threshold progress', () => {
+    // 0 approvals -> Action is VOTE_ONLY (1 vote will not reach threshold 2)
+    const zeroApprovalsDto: SquadsProposalDTO = {
+      ...baseMockDto,
+      approvedMembers: [],
+    };
+    const actionZero = evaluateUnifiedMultisigAction(zeroApprovalsDto, 'NewSignerWallet111111111111111111111111');
+    expect(actionZero.type).toBe('VOTE_ONLY');
+    expect(actionZero.disabled).toBe(false);
+    expect(actionZero.willReachQuorum).toBe(false);
+
+    // 1 approval -> Next vote WILL reach threshold 2 -> VOTE_AND_EXECUTE
+    const oneApprovalDto: SquadsProposalDTO = {
+      ...baseMockDto,
+      approvedMembers: ['3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd'],
+    };
+    const actionOne = evaluateUnifiedMultisigAction(oneApprovalDto, 'SecondSignerWallet22222222222222222222');
+    expect(actionOne.type).toBe('VOTE_AND_EXECUTE');
+    expect(actionOne.disabled).toBe(false);
+    expect(actionOne.willReachQuorum).toBe(true);
+
+    // User already approved -> ALREADY_APPROVED
+    const actionAlreadyApproved = evaluateUnifiedMultisigAction(oneApprovalDto, '3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd');
+    expect(actionAlreadyApproved.type).toBe('ALREADY_APPROVED');
+    expect(actionAlreadyApproved.disabled).toBe(true);
   });
 });

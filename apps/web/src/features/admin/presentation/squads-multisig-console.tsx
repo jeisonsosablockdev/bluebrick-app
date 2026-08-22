@@ -7,9 +7,8 @@
  *
  * Description:
  * Minimalist multisig governance console for Squads v4 treasury payout proposals,
- * date audit warning inspection, global expansion toggle, and quorum execution.
- * Integrates dynamic proposal fetching with zero mock fixtures, authentic empty state,
- * and automatic wallet modal reconnection.
+ * date audit warning inspection, global expansion toggle, and single-button unified execution.
+ * Evaluates quorum progress and performs automated 1-signature or 2-signature execution flow.
  * =========================================================================================
  */
 
@@ -25,6 +24,7 @@ import { Card } from "@/components/ui/card";
 import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
+  evaluateUnifiedMultisigAction,
   type SquadsProposalDTO
 } from "@/features/admin/domain/squads-multisig-types";
 
@@ -68,9 +68,9 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
   const [isLoading, setIsLoading] = useState<boolean>(!initialDto);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [allExpanded, setAllExpanded] = useState<boolean>(false);
-  const [isVoting, setIsVoting] = useState<boolean>(false);
-  const [isExecuting, setIsExecuting] = useState<boolean>(false);
+  const [isProcessingAction, setIsProcessingAction] = useState<boolean>(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Step 2: Fetch active proposal data from API if not provided in initialDto
   useEffect(() => {
@@ -135,9 +135,9 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
   const dateAudit = useMemo(() => (dto ? evaluateDateAuditWarning(dto) : null), [dto]);
   const quorum = useMemo(() => (dto ? evaluateQuorumStatus(dto) : null), [dto]);
 
-  // Step 4: Check if current connected user wallet already approved
+  // Step 4: Check current connected user wallet
   const userPubkey = publicKey ? publicKey.toBase58() : null;
-  const hasUserApproved = dto && userPubkey ? dto.approvedMembers.includes(userPubkey) : false;
+  const unifiedAction = useMemo(() => (dto ? evaluateUnifiedMultisigAction(dto, userPubkey) : null), [dto, userPubkey]);
 
   // Step 5: Toggle single row expansion
   const toggleRow = (claimId: string) => {
@@ -159,53 +159,63 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     setExpandedRows(newExpanded);
   };
 
-  // Step 7: Handle vote / approve with wallet verification
-  const handleVoteApprove = () => {
+  // Step 7: Handle single unified action (vote only OR vote + execute automatically)
+  const handleUnifiedAction = async () => {
+    // Step 7a: If wallet is not connected, open wallet connection modal
     if (!publicKey || !connected) {
       setWalletModalVisible(true);
       return;
     }
 
-    if (!dto) return;
+    if (!dto || unifiedAction?.disabled) return;
 
-    setIsVoting(true);
-    setTimeout(() => {
-      setIsVoting(false);
-      const currentWallet = publicKey.toBase58();
-      if (!dto.approvedMembers.includes(currentWallet)) {
-        setDto((prev) =>
-          prev
-            ? {
-                ...prev,
-                approvedMembers: [...prev.approvedMembers, currentWallet]
-              }
-            : null
-        );
+    setIsProcessingAction(true);
+    setActionSuccessMessage(null);
+    setErrorMessage(null);
+
+    try {
+      const signerWallet = publicKey.toBase58();
+
+      const res = await fetch("/api/admin/treasury/squads/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposalId: dto.runId,
+          signerWallet
+        })
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message ?? "Error al procesar la acción multisig.");
       }
-      setActionSuccessMessage(
-        `Aprobación multisig registrada exitosamente en Devnet con wallet ${currentWallet.slice(0, 4)}...${currentWallet.slice(-4)}.`
+
+      // Step 7b: Update local DTO state with the resulting execution
+      const isExecuted = json.data?.executed ?? Boolean(unifiedAction?.willReachQuorum);
+      setDto((prev) =>
+        prev
+          ? {
+              ...prev,
+              approvedMembers: Array.from(new Set([...prev.approvedMembers, signerWallet])),
+              executed: isExecuted
+            }
+          : null
       );
-    }, 600);
-  };
 
-  // Step 8: Handle multisig execution
-  const handleExecute = () => {
-    if (!publicKey || !connected) {
-      setWalletModalVisible(true);
-      return;
+      setActionSuccessMessage(
+        json.data?.message ??
+          (isExecuted
+            ? `Quórum alcanzado (2/2): Propuesta aprobada y ejecutada exitosamente en Squads v4 Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`
+            : `Voto registrado exitosamente en Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`)
+      );
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Error al procesar la acción multisig.");
+    } finally {
+      setIsProcessingAction(false);
     }
-
-    if (!dto || !quorum?.canExecute) return;
-
-    setIsExecuting(true);
-    setTimeout(() => {
-      setIsExecuting(false);
-      setDto((prev) => (prev ? { ...prev, executed: true } : null));
-      setActionSuccessMessage("Propuesta de tesorería ejecutada exitosamente en Squads v4 Devnet.");
-    }, 800);
   };
 
-  // Step 9: Render loading state
+  // Step 8: Render loading state
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -217,7 +227,7 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
     );
   }
 
-  // Step 10: Render clean empty state when no active proposal exists
+  // Step 9: Render clean empty state when no active proposal exists
   if (!dto) {
     return (
       <div className="space-y-6">
@@ -335,28 +345,15 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
             )}
           </div>
 
-          {/* Direct Governance Voting Controls */}
+          {/* Direct Single Unified Governance Control */}
           <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-amber-500/20">
             <Button
-              variant="outline"
-              disabled={isVoting || hasUserApproved || dto.executed}
-              onClick={handleVoteApprove}
-              className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20 text-xs px-3.5 py-1.5 min-h-8"
-            >
-              {isVoting
-                ? "Registrando Firma..."
-                : hasUserApproved
-                ? "Ya Has Aprobado"
-                : "Aprobar Cambio de Fechas (Votar)"}
-            </Button>
-
-            <Button
               variant="primary"
-              disabled={isExecuting || !quorum?.canExecute}
-              onClick={handleExecute}
-              className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs px-3.5 py-1.5 min-h-8"
+              disabled={isProcessingAction || unifiedAction?.disabled}
+              onClick={handleUnifiedAction}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 min-h-8"
             >
-              {isExecuting ? "Ejecutando..." : "Ejecutar en Devnet"}
+              {isProcessingAction ? "Procesando Firma..." : unifiedAction?.label ?? "Aprobar Propuesta"}
             </Button>
           </div>
         </div>
@@ -366,6 +363,13 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
       {actionSuccessMessage && (
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-400 text-sm">
           {actionSuccessMessage}
+        </div>
+      )}
+
+      {/* Error Notification */}
+      {errorMessage && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-400 text-sm">
+          {errorMessage}
         </div>
       )}
 
@@ -385,14 +389,14 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
             {dto.approvedMembers.length} / {dto.threshold}
           </div>
           <div className="text-[11px] text-muted-foreground">
-            {quorum?.quorumReached ? "Quórum alcanzado" : "Pendiente de firmas"}
+            {quorum?.quorumReached ? "Quórum alcanzado" : `Faltan ${Math.max(0, dto.threshold - dto.approvedMembers.length)} firma(s)`}
           </div>
         </Card>
 
         <Card className="p-4 space-y-1">
           <div className="text-xs text-muted-foreground">Tu Estado de Firma</div>
           <div className="text-xl font-bold font-mono">
-            {hasUserApproved ? (
+            {userPubkey && dto.approvedMembers.includes(userPubkey) ? (
               <span className="text-emerald-400">Firmado</span>
             ) : (
               <span className="text-amber-400">Sin Firmar</span>
@@ -513,28 +517,15 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
           </div>
         )}
 
-        {/* Action Controls */}
+        {/* Single Unified Action Control */}
         <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-border/30">
           <Button
-            variant="outline"
-            disabled={isVoting || hasUserApproved || dto.executed}
-            onClick={handleVoteApprove}
-            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 min-h-9 px-4 py-2 text-xs"
-          >
-            {isVoting
-              ? "Registrando Firma..."
-              : hasUserApproved
-              ? "Ya Has Aprobado"
-              : "Aprobar Propuesta (Votar)"}
-          </Button>
-
-          <Button
             variant="primary"
-            disabled={isExecuting || !quorum?.canExecute}
-            onClick={handleExecute}
-            className="bg-cyan-600 hover:bg-cyan-500 text-white min-h-9 px-4 py-2 text-xs"
+            disabled={isProcessingAction || unifiedAction?.disabled}
+            onClick={handleUnifiedAction}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white min-h-9 px-5 py-2 text-xs"
           >
-            {isExecuting ? "Ejecutando..." : "Ejecutar Propuesta en Devnet"}
+            {isProcessingAction ? "Procesando Firma..." : unifiedAction?.label ?? "Aprobar Propuesta"}
           </Button>
         </div>
       </Card>

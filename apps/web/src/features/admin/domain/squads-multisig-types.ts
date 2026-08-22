@@ -5,7 +5,8 @@
  *
  * Description:
  * Pure domain entities and evaluation functions for Squads v4 treasury governance,
- * date audit verification against on-chain Notary PDA state, and quorum validation.
+ * date audit verification against on-chain Notary PDA state, quorum validation,
+ * and unified single-action multi-signature determination.
  * Zero framework, zero UI, zero DB/RPC dependencies.
  * =========================================================================================
  */
@@ -93,5 +94,56 @@ export function evaluateQuorumStatus(dto: SquadsProposalDTO): {
     quorumReached,
     approvalsCount,
     canExecute
+  };
+}
+
+/**
+ * Unified multisig action evaluation result.
+ */
+export type UnifiedMultisigAction =
+  | { type: "ALREADY_EXECUTED"; label: "Propuesta Ejecutada"; disabled: true; willReachQuorum: false }
+  | { type: "ALREADY_APPROVED"; label: "Ya Has Aprobado"; disabled: true; willReachQuorum: false }
+  | { type: "VOTE_ONLY"; label: "Aprobar Propuesta (Votar)"; disabled: false; willReachQuorum: false }
+  | { type: "VOTE_AND_EXECUTE"; label: "Aprobar y Ejecutar en Devnet"; disabled: false; willReachQuorum: true };
+
+/**
+ * Pure state machine determining the single action button flow for the connected user.
+ *
+ * @param dto - Current proposal state
+ * @param userPubkey - Connected signer public key, or null
+ * @returns Unified action configuration
+ */
+export function evaluateUnifiedMultisigAction(
+  dto: SquadsProposalDTO,
+  userPubkey: string | null
+): UnifiedMultisigAction {
+  // Step 1: Check if already executed
+  if (dto.executed) {
+    return { type: "ALREADY_EXECUTED", label: "Propuesta Ejecutada", disabled: true, willReachQuorum: false };
+  }
+
+  // Step 2: Check if current connected user already voted
+  if (userPubkey && dto.approvedMembers.includes(userPubkey)) {
+    return { type: "ALREADY_APPROVED", label: "Ya Has Aprobado", disabled: true, willReachQuorum: false };
+  }
+
+  // Step 3: Check if this user's vote will fulfill the required threshold (e.g. 2-of-4)
+  const projectedApprovals = dto.approvedMembers.length + 1;
+  const willReachQuorum = projectedApprovals >= dto.threshold;
+
+  if (willReachQuorum) {
+    return {
+      type: "VOTE_AND_EXECUTE",
+      label: "Aprobar y Ejecutar en Devnet",
+      disabled: false,
+      willReachQuorum: true
+    };
+  }
+
+  return {
+    type: "VOTE_ONLY",
+    label: "Aprobar Propuesta (Votar)",
+    disabled: false,
+    willReachQuorum: false
   };
 }

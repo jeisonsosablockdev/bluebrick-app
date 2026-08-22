@@ -10,6 +10,7 @@
  * 1. Clean empty state rendering when no proposal is active (zero hardcoded mock data).
  * 2. Dynamic proposal rendering from API or initial DTO.
  * 3. Automatic wallet connection modal trigger on unauthenticated vote attempts.
+ * 4. Single-button unified action calculation and execution flow.
  * =========================================================================================
  */
 
@@ -128,8 +129,9 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
     // Act
     render(<SquadsMultisigConsole initialDto={mockProposal} />);
 
-    const voteButton = screen.getByRole("button", { name: /Aprobar Propuesta/i });
-    fireEvent.click(voteButton);
+    const buttons = screen.getAllByRole("button", { name: /Aprobar/i });
+    expect(buttons.length).toBeGreaterThan(0);
+    fireEvent.click(buttons[0]);
 
     // Assert: setWalletModalVisible was invoked
     expect(mockSetWalletModalVisible).toHaveBeenCalledWith(true);
