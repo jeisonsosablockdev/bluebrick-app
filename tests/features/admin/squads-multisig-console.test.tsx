@@ -9,7 +9,7 @@
  * Tests the Squads Multisig Console component (/admin/treasury/squads) verifying:
  * 1. Clean empty state rendering when no proposal is active (zero hardcoded mock data).
  * 2. Dynamic proposal rendering from API or initial DTO.
- * 3. Automatic wallet connection modal trigger on unauthenticated vote attempts.
+ * 3. Automatic BRIDS wallet connection modal trigger on unauthenticated vote attempts.
  * 4. Single-button unified action calculation and execution flow.
  * =========================================================================================
  */
@@ -32,7 +32,11 @@ vi.mock("@/lib/release-module-visibility", () => ({
   isReleaseControlledRouteVisible: () => true
 }));
 
-const mockSetWalletModalVisible = vi.fn();
+const mockDispatchOpenWalletModal = vi.fn();
+vi.mock("@/lib/auth-ui-events", () => ({
+  dispatchOpenWalletModal: (args: unknown) => mockDispatchOpenWalletModal(args)
+}));
+
 let mockWalletState = {
   publicKey: null as { toBase58: () => string } | null,
   connected: false
@@ -41,13 +45,6 @@ let mockWalletState = {
 // Mock useWallet
 vi.mock("@solana/wallet-adapter-react", () => ({
   useWallet: () => mockWalletState
-}));
-
-// Mock useWalletModal
-vi.mock("@solana/wallet-adapter-react-ui", () => ({
-  useWalletModal: () => ({
-    setVisible: mockSetWalletModalVisible
-  })
 }));
 
 const mockProposal: SquadsProposalDTO = {
@@ -125,7 +122,7 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
     expect(screen.getByText(/Quórum 2 de 4/i)).toBeDefined();
   });
 
-  it("Step 3: Triggers wallet connection modal when attempting to vote without connected wallet", async () => {
+  it("Step 3: Triggers BRIDS wallet connection modal when attempting to vote without connected wallet", async () => {
     // Act
     render(<SquadsMultisigConsole initialDto={mockProposal} />);
 
@@ -133,7 +130,7 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
     expect(buttons.length).toBeGreaterThan(0);
     fireEvent.click(buttons[0]);
 
-    // Assert: setWalletModalVisible was invoked
-    expect(mockSetWalletModalVisible).toHaveBeenCalledWith(true);
+    // Assert: dispatchOpenWalletModal was invoked
+    expect(mockDispatchOpenWalletModal).toHaveBeenCalledWith({ loginMethod: "wallet" });
   });
 });

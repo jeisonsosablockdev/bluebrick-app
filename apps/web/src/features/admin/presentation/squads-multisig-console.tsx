@@ -16,11 +16,11 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
@@ -61,7 +61,6 @@ function formatUsdcAmount(amountMinorStr: string): string {
 export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConsoleProps): ReactElement {
   const { t } = useI18n();
   const { publicKey, connected } = useWallet();
-  const { setVisible: setWalletModalVisible } = useWalletModal();
 
   // Step 1: Initialize component state with dynamic props or null
   const [dto, setDto] = useState<SquadsProposalDTO | null>(initialDto ?? null);
@@ -161,9 +160,9 @@ export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConso
 
   // Step 7: Handle single unified action (vote only OR vote + execute automatically)
   const handleUnifiedAction = async () => {
-    // Step 7a: If wallet is not connected, open wallet connection modal
+    // Step 7a: If wallet is not connected, open BRIDS native wallet modal for reconnection
     if (!publicKey || !connected) {
-      setWalletModalVisible(true);
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
     }
 

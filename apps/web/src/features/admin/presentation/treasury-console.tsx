@@ -21,11 +21,11 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactElement } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import type { PendingDateProposal } from "@/features/admin/presentation/admin-collection-notary-dates-panel";
 import { isReleaseControlledRouteVisible } from "@/lib/release-module-visibility";
 
@@ -71,7 +71,6 @@ export interface TreasuryMovement {
 export function TreasuryConsole(): ReactElement {
   const { t } = useI18n();
   const { publicKey, connected } = useWallet();
-  const { setVisible: setWalletModalVisible } = useWalletModal();
   const showDistributionsLink = isReleaseControlledRouteVisible("/admin/distributions");
   const showSquadsLink = isReleaseControlledRouteVisible("/admin/treasury");
 
@@ -125,7 +124,7 @@ export function TreasuryConsole(): ReactElement {
   // Step 3: Handle global proposal rejection
   const handleRejectProposal = async () => {
     if (!publicKey || !connected) {
-      setWalletModalVisible(true);
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
     }
     if (!activeRun) return;
@@ -162,7 +161,7 @@ export function TreasuryConsole(): ReactElement {
   // Step 4: Handle individual item veto pre-seal
   const handleVetoItem = async (itemId: string) => {
     if (!publicKey || !connected) {
-      setWalletModalVisible(true);
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
     }
     if (!activeRun) return;
@@ -202,7 +201,7 @@ export function TreasuryConsole(): ReactElement {
   // Step 5: Handle emergency 1-of-M circuit breaker trigger
   const handleCircuitBreaker = async () => {
     if (!publicKey || !connected) {
-      setWalletModalVisible(true);
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
       return;
     }
 
