@@ -1,73 +1,81 @@
 import { describe, it, expect } from "vitest";
 
+import {
+  assertNoImmutableDateFieldsInPatchPayload,
+  IMMUTABLE_PROJECT_DATE_FIELDS
+} from "@/features/admin/domain/collection-patch-validator";
+import {
+  parseAdminCollectionPatchPayload,
+  AdminCollectionPatchPayloadError
+} from "@/lib/admin/collection-patch-payload";
+
 /**
  * =========================================================================================
- * 🧪 SPEC-01 (STORY-015-07): COLLECTION PATCH IMMUTABLE DATES VALIDATOR TESTS
+ * 🧪 SPEC-02 (STORY-015-07): COLLECTION PATCH IMMUTABLE DATES VALIDATOR TESTS
  * =========================================================================================
  * 
  * Verifies domain invariants:
  * 1. HTTP PATCH payload to collections strictly rejects project date fields.
- * 2. Attempts to patch start_at, end_at, projectStartAt, projectEndAt fail with 400 IMMUTABLE_PROJECT_DATE_FIELD.
+ * 2. parseAdminCollectionPatchPayload throws IMMUTABLE_PROJECT_DATE_FIELD.
  */
 
-export const IMMUTABLE_PROJECT_DATE_FIELDS = [
-  "projectStartAt",
-  "projectEndAt",
-  "startAt",
-  "endAt",
-  "project_start_at",
-  "project_end_at"
-] as const;
+describe("SPEC-02 (STORY-015-07): Collection Patch Immutable Dates Validator", () => {
+  it("should declare all 6 canonical immutable project date field names", () => {
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("projectStartAt");
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("projectEndAt");
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("startAt");
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("endAt");
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("project_start_at");
+    expect(IMMUTABLE_PROJECT_DATE_FIELDS).toContain("project_end_at");
+  });
 
-/**
- * Asserts that no immutable date fields are present in a collection patch payload.
- * What: Validates collection update payload against immutable date governance rules.
- * How: Scans payload keys against IMMUTABLE_PROJECT_DATE_FIELDS and throws error if present.
- */
-export function validateCollectionPatchPayloadForDates(payload: Record<string, unknown>): void {
-  for (const field of IMMUTABLE_PROJECT_DATE_FIELDS) {
-    if (field in payload && payload[field] !== undefined) {
-      throw new Error(
-        `IMMUTABLE_PROJECT_DATE_FIELD: Cannot modify '${field}' via HTTP API. Project dates are governed on-chain via Squads multisig and ProjectConfig PDA.`
-      );
-    }
-  }
-}
-
-describe("SPEC-01 (STORY-015-07): Collection Patch Immutable Dates Validator", () => {
   it("should pass when valid editable sections are provided without date fields", () => {
     const validPayload = {
       section: "propertyInformation",
-      propertyInformation: "Updated luxury condominium details"
+      data: {
+        propertyInformation: "Updated luxury condominium details"
+      }
     };
 
-    expect(() => validateCollectionPatchPayloadForDates(validPayload)).not.toThrow();
+    const parsed = parseAdminCollectionPatchPayload(validPayload);
+    expect(parsed.section).toBe("propertyInformation");
+    expect(parsed.propertyInformation).toBe("Updated luxury condominium details");
   });
 
-  it("should reject payloads containing projectStartAt with IMMUTABLE_PROJECT_DATE_FIELD", () => {
+  it("should reject payloads containing top-level projectStartAt with IMMUTABLE_PROJECT_DATE_FIELD", () => {
     const payload = {
       section: "propertyInformation",
-      projectStartAt: "2026-04-01T00:00:00Z"
+      projectStartAt: "2026-04-01T00:00:00Z",
+      data: {
+        propertyInformation: "Some text"
+      }
     };
 
-    expect(() => validateCollectionPatchPayloadForDates(payload)).toThrowError(
-      "IMMUTABLE_PROJECT_DATE_FIELD"
+    expect(() => parseAdminCollectionPatchPayload(payload)).toThrowError(
+      AdminCollectionPatchPayloadError
     );
+
+    try {
+      parseAdminCollectionPatchPayload(payload);
+    } catch (err: any) {
+      expect(err.code).toBe("IMMUTABLE_PROJECT_DATE_FIELD");
+    }
   });
 
-  it("should reject payloads containing projectEndAt or startAt/endAt with IMMUTABLE_PROJECT_DATE_FIELD", () => {
-    expect(() =>
-      validateCollectionPatchPayloadForDates({
-        section: "summary",
+  it("should reject payloads containing nested projectEndAt inside data with IMMUTABLE_PROJECT_DATE_FIELD", () => {
+    const payload = {
+      section: "summary",
+      data: {
+        fractionalInvestmentSummary: "Summary text",
         projectEndAt: "2026-12-31T00:00:00Z"
-      })
-    ).toThrowError("IMMUTABLE_PROJECT_DATE_FIELD");
+      }
+    };
 
-    expect(() =>
-      validateCollectionPatchPayloadForDates({
-        section: "summary",
-        startAt: 1755800000
-      })
-    ).toThrowError("IMMUTABLE_PROJECT_DATE_FIELD");
+    try {
+      parseAdminCollectionPatchPayload(payload);
+      expect.unreachable("Should have thrown error");
+    } catch (err: any) {
+      expect(err.code).toBe("IMMUTABLE_PROJECT_DATE_FIELD");
+    }
   });
 });

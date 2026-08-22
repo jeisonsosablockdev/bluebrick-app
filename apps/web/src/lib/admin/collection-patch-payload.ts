@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import { normalizeAdminCollectionLocationForm } from "@/lib/admin/admin-collection-location-form";
+import {
+  assertNoImmutableDateFieldsInPatchPayload,
+  CollectionDateImmutabilityError
+} from "@/features/admin/domain/collection-patch-validator";
 import type {
   CollectionBootstrapDocumentItem,
   CollectionBootstrapGoogleMapsPlace,
@@ -17,7 +21,8 @@ export type AdminCollectionPatchSection =
 
 export type AdminCollectionPatchPayloadErrorCode =
   | "INVALID_COLLECTION_PAYLOAD"
-  | "IMMUTABLE_COVER_FIELD";
+  | "IMMUTABLE_COVER_FIELD"
+  | "IMMUTABLE_PROJECT_DATE_FIELD";
 
 export type AdminCollectionPatchUpdate = {
   section: AdminCollectionPatchSection;
@@ -216,6 +221,20 @@ function toValidationMessage(error: z.ZodError): string {
 }
 
 export function parseAdminCollectionPatchPayload(payload: unknown): AdminCollectionPatchUpdate {
+  if (payload && typeof payload === "object") {
+    try {
+      assertNoImmutableDateFieldsInPatchPayload(payload as Record<string, unknown>);
+      if ("data" in payload && payload.data && typeof payload.data === "object") {
+        assertNoImmutableDateFieldsInPatchPayload(payload.data as Record<string, unknown>);
+      }
+    } catch (error) {
+      if (error instanceof CollectionDateImmutabilityError) {
+        throw new AdminCollectionPatchPayloadError("IMMUTABLE_PROJECT_DATE_FIELD", error.message);
+      }
+      throw error;
+    }
+  }
+
   if (containsImmutableCoverField(payload)) {
     throw new AdminCollectionPatchPayloadError(
       "IMMUTABLE_COVER_FIELD",
