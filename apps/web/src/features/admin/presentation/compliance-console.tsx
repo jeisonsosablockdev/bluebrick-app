@@ -66,9 +66,9 @@ function normalizeStatusFilter(value: "all" | ComplianceStatus): ComplianceStatu
 }
 
 /**
- * ¿QUÉ HACE?: Retorna las clases CSS de Tailwind para pintar el badge de estado.
- * ¿CÓMO LO HACE?: Evalúa si el estado es verificado (verde esmeralda), restringido/suspendido (rojo suave) o pendiente (ámbar).
- * @param value Estado actual de cumplimiento del usuario
+ * Returns Tailwind pill badge classes based on compliance status.
+ * What: Maps compliance state to badge colors.
+ * How: Evaluates status (green for verified, red for restricted, amber for pending).
  */
 function statusBadgeClass(value: ComplianceStatus): string {
   if (value === "fully_verified") {
@@ -83,8 +83,9 @@ function statusBadgeClass(value: ComplianceStatus): string {
 }
 
 /**
- * ¿QUÉ HACE?: Acorta una dirección pública de Solana para mostrarla en pantalla sin saturar la interfaz.
- * ¿CÓMO LO HACE?: Conserva los primeros y últimos caracteres (ej: `3tW8...iATd`) insertando puntos suspensivos en el centro.
+ * Truncates base58 Solana address for concise UI display.
+ * What: Formats public key string with ellipsis.
+ * How: Keeps first/last N characters (e.g. 3tW8...iATd).
  */
 function truncateMiddle(value: string, left = 6, right = 6): string {
   if (!value || value.length <= left + right + 3) {
@@ -95,8 +96,9 @@ function truncateMiddle(value: string, left = 6, right = 6): string {
 }
 
 /**
- * ¿QUÉ HACE?: Formatea marcas de tiempo ISO a una fecha legible en formato `YYYY-MM-DD HH:mm`.
- * ¿CÓMO LO HACE?: Parsea la cadena con `new Date()`, valida si es válida y extrae la porción de fecha y hora.
+ * Formats ISO date string to readable YYYY-MM-DD HH:mm.
+ * What: Converts timestamp to human-readable date.
+ * How: Parses ISO string with Date object and slices date/time parts.
  */
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -112,8 +114,9 @@ function formatDate(value: string | null | undefined): string {
 }
 
 /**
- * ¿QUÉ HACE?: Limpia el cursor de paginación para evitar enviar strings vacíos al backend.
- * ¿CÓMO LO HACE?: Retorna el valor si tiene contenido, o `null` si está vacío o indefinido.
+ * Normalizes empty pagination cursor tokens.
+ * What: Sanitizes cursor string for API calls.
+ * How: Returns string or null if empty.
  */
 function normalizeCursorToken(value: string): string | null {
   return value ? value : null;
@@ -121,13 +124,8 @@ function normalizeCursorToken(value: string): string | null {
 
 /**
  * ComplianceConsole Component
- * 
- * ¿QUÉ HACE?: Renderiza la consola administrativa integral de cumplimiento (KYC, AML, suspensiones y reasignación de wallets de pago).
- * ¿CÓMO LO HACE?:
- *  - Presenta la lista de casos pendientes con filtros de estado y paginación por cursor.
- *  - Permite seleccionar un caso individual para inspeccionar su perfil, notas internas y eventos de auditoría.
- *  - Ofrece acciones de decisión KYC/AML y suspensión de cuentas.
- *  - Despliega un modal interactivo para solicitar reasignaciones de wallet de pago (overrides) vinculando obligatoriamente un número de caso.
+ * What: Administrative console for KYC/AML reviews and payout wallet reassignments.
+ * How: Fetches compliance queues, renders case details, and provides override submission modals.
  */
 export function ComplianceConsole({ initialData, initialStatus }: ComplianceConsoleProps): ReactElement {
   const { t } = useI18n();
@@ -166,15 +164,16 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   const [overrideSuccess, setOverrideSuccess] = useState<string | null>(null);
   const [isOverrideSubmitting, setIsOverrideSubmitting] = useState(false);
 
-  // Step 1: Calcular métrica de casos pendientes en cola (excluyendo los completamente verificados)
+  // Step 1: Calculate pending review cases count
   const pendingCount = useMemo(() => {
     const items = queue?.items ?? [];
     return items.filter((item) => item.complianceStatus !== "fully_verified").length;
   }, [queue]);
 
   /**
-   * ¿QUÉ HACE?: Carga la lista paginada de casos de cumplimiento según el filtro de estado seleccionado.
-   * ¿CÓMO LO HACE?: Llama a `fetchComplianceCasesQueue()` pasando el estado normalizado y el cursor actual.
+   * Fetches paginated compliance queue based on status filter.
+   * What: Loads compliance cases.
+   * How: Calls fetchComplianceCasesQueue with status filter and cursor.
    */
   const loadQueue = useCallback(async (input?: { status?: "all" | ComplianceStatus; cursor?: string | null }) => {
     const requestedStatus = input?.status ?? statusFilter;
@@ -197,8 +196,9 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   }, [currentCursor, statusFilter]);
 
   /**
-   * ¿QUÉ HACE?: Obtiene el detalle completo del caso de una wallet específica seleccionada por el admin.
-   * ¿CÓMO LO HACE?: Consulta `fetchComplianceCaseDetail(walletPublicKey)` y actualiza el estado de detalle y notas.
+   * Loads detailed profile and audit events for a selected wallet.
+   * What: Fetches case detail.
+   * How: Calls fetchComplianceCaseDetail and populates state.
    */
   const loadDetail = useCallback(async (walletPublicKey: string) => {
     setSelectedWallet(walletPublicKey);
@@ -219,8 +219,9 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   }, []);
 
   /**
-   * ¿QUÉ HACE?: Recarga la lista de notas de auditoría del caso actualmente abierto.
-   * ¿CÓMO LO HACE?: Invoca `fetchComplianceCaseNotes()` limitando a las 50 notas más recientes.
+   * Reloads audit notes for current wallet case.
+   * What: Refreshes notes.
+   * How: Calls fetchComplianceCaseNotes with 50 notes limit.
    */
   const refreshNotes = useCallback(async (walletPublicKey: string) => {
     setIsNotesLoading(true);
@@ -235,7 +236,7 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
     }
   }, []);
 
-  // Step 5: Carga automática en cliente si la página no vino pre-cargada desde el servidor
+  // Step 5: Load initial queue if not provided by server
   useEffect(() => {
     if (!initialData) {
       void loadQueue({ status: statusFilter, cursor: currentCursor });
@@ -243,8 +244,9 @@ export function ComplianceConsole({ initialData, initialStatus }: ComplianceCons
   }, [currentCursor, initialData, loadQueue, statusFilter]);
 
   /**
-   * ¿QUÉ HACE?: Ejecuta acciones administrativas (suspensión, verificación) con control de carga y manejo de errores centralizado.
-   * ¿CÓMO LO HACE?: Activa el indicador de acción, ejecuta la función asíncrona recibida y captura excepciones para mostrarlas en la UI.
+   * Wraps administrative action with loading indicator and error boundary.
+   * What: Executes async admin action.
+   * How: Sets loading state, awaits promise, and catches errors.
    */
   const runAction = useCallback(async (label: string, work: () => Promise<void>) => {
     setActionState(label);

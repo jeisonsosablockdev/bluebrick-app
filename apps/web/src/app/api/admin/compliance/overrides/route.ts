@@ -25,8 +25,9 @@ const RequestOverrideSchema = z.object({
 });
 
 /**
- * ¿QUÉ HACE?: Construye una respuesta JSON tipada de error HTTP estandarizada.
- * ¿CÓMO LO HACE?: Empaqueta `{ error: { code, message, details } }` con el código de estado HTTP correspondiente.
+ * Constructs a standardized JSON error response.
+ * What: Formats HTTP error payload.
+ * How: Returns NextResponse with error code, message, and details.
  */
 function errorResponse(status: number, code: string, message: string, details?: Record<string, unknown>): NextResponse {
   return NextResponse.json(
@@ -42,8 +43,9 @@ function errorResponse(status: number, code: string, message: string, details?: 
 }
 
 /**
- * ¿QUÉ HACE?: Retorna una respuesta exitosa con header Content-Type application/json.
- * ¿CÓMO LO HACE?: Serializa el payload a JSON y define el status HTTP (default 200).
+ * Returns a JSON response with proper headers.
+ * What: Formats success payload.
+ * How: Serializes payload to JSON string.
  */
 function jsonResponse(payload: unknown, status = 200): NextResponse {
   return new NextResponse(JSON.stringify(payload), {
@@ -55,8 +57,9 @@ function jsonResponse(payload: unknown, status = 200): NextResponse {
 }
 
 /**
- * ¿QUÉ HACE?: Extrae el identificador público del administrador que realiza la petición.
- * ¿CÓMO LO HACE?: Inspecciona la sesión criptográfica autenticada en `getRequestRole(request)` y valida que el rol sea 'admin'.
+ * Resolves authenticated admin actor identifier.
+ * What: Retrieves admin identity.
+ * How: Inspects cryptographic session with getRequestRole.
  */
 function getAdminActorId(request: NextRequest): string | null {
   const role = getRequestRole(request);
@@ -69,22 +72,18 @@ function getAdminActorId(request: NextRequest): string | null {
 
 /**
  * GET /api/admin/compliance/overrides
- * 
- * ¿QUÉ HACE?: Lista todas las solicitudes de override en estado PENDING para la cola de cumplimiento.
- * ¿CÓMO LO HACE?:
- *  - Valida autenticación y rol de administrador (403 si falla).
- *  - Consulta el servicio de aplicación `listPendingOverridesForCompliance()`.
- *  - Retorna un JSON `{ ok: true, data: [...] }`.
+ * What: Lists pending payout overrides for compliance queue.
+ * How: Enforces admin auth and calls listPendingOverridesForCompliance.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  // Step 1: Verificar autorización de administrador
+  // Step 1: Enforce admin authorization
   const actorId = getAdminActorId(request);
   if (!actorId) {
     return errorResponse(403, "FORBIDDEN", "Admin role is required.");
   }
 
   try {
-    // Step 2: Obtener overrides pendientes desde la capa de aplicación
+    // Step 2: Fetch pending overrides from application service
     const pendingOverrides = await listPendingOverridesForCompliance();
 
     return jsonResponse({
@@ -99,23 +98,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 /**
  * POST /api/admin/compliance/overrides
- * 
- * ¿QUÉ HACE?: Crea una nueva solicitud de reasignación de wallet de pago en estado PENDING.
- * ¿CÓMO LO HACE?:
- *  - Valida sesión de admin.
- *  - Valida el cuerpo JSON contra el esquema Zod `RequestOverrideSchema`.
- *  - Invoca `requestPayoutOverride()` en la capa de aplicación.
- *  - Retorna el registro creado con HTTP 201 Created.
+ * What: Submits a new payout override request in PENDING status.
+ * How: Validates body with Zod and invokes requestPayoutOverride.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  // Step 1: Verificar autorización de administrador
+  // Step 1: Enforce admin authorization
   const actorId = getAdminActorId(request);
   if (!actorId) {
     return errorResponse(403, "FORBIDDEN", "Admin role is required.");
   }
 
   try {
-    // Step 2: Parsear y validar el payload con Zod
+    // Step 2: Parse and validate JSON payload with Zod
     const body = await request.json();
     const parsed = RequestOverrideSchema.safeParse(body);
 
@@ -125,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    // Step 3: Invocar servicio de dominio para persistir en estado PENDING
+    // Step 3: Request override via application domain service
     const override = await requestPayoutOverride({
       originalWallet: parsed.data.originalWallet,
       requestedWallet: parsed.data.requestedWallet,

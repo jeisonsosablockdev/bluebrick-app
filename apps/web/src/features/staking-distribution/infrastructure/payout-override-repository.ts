@@ -49,8 +49,9 @@ export type UpdatePayoutOverrideDbInput = {
 };
 
 /**
- * ¿QUÉ HACE?: Mapea una fila cruda de PostgreSQL a la estructura tipada `PayoutOverrideRow`.
- * ¿CÓMO LO HACE?: Parsea tipos (números, fechas ISO, nulos) de forma segura.
+ * Maps raw PostgreSQL row to typed PayoutOverrideRow.
+ * What: Converts database record to domain entity.
+ * How: Coerces dates, numbers, and strings safely.
  */
 function mapRow(row: Record<string, unknown>): PayoutOverrideRow {
   return {
@@ -71,8 +72,9 @@ function mapRow(row: Record<string, unknown>): PayoutOverrideRow {
 }
 
 /**
- * ¿QUÉ HACE?: Inserta un nuevo registro de override en la tabla `distribution_payout_overrides` con estado inicial 'PENDING' y versión 1.
- * ¿CÓMO LO HACE?: Ejecuta un `INSERT ... RETURNING *` parametrizado dentro del pool de conexiones PostgreSQL.
+ * Inserts a new PENDING payout override record.
+ * What: Persists override request in PostgreSQL.
+ * How: Executes parameterized INSERT returning entity.
  */
 export async function createPayoutOverrideRecord(input: CreatePayoutOverrideDbInput): Promise<PayoutOverrideRow> {
   return withDbClient(async (client) => {
@@ -99,8 +101,9 @@ export async function createPayoutOverrideRecord(input: CreatePayoutOverrideDbIn
 }
 
 /**
- * ¿QUÉ HACE?: Busca y retorna un registro de override individual a partir de su ID único (`OVR-...`).
- * ¿CÓMO LO HACE?: Ejecuta una consulta `SELECT * WHERE id = $1 LIMIT 1` y retorna `null` si no existe coincidencia.
+ * Retrieves a single payout override record by ID.
+ * What: Fetches override by primary key.
+ * How: Queries database with SELECT WHERE id = $1.
  */
 export async function getPayoutOverrideById(id: string): Promise<PayoutOverrideRow | null> {
   return withDbClient(async (client) => {
@@ -112,8 +115,9 @@ export async function getPayoutOverrideById(id: string): Promise<PayoutOverrideR
 }
 
 /**
- * ¿QUÉ HACE?: Obtiene todos los overrides pendientes de aprobación para la cola de cumplimiento.
- * ¿CÓMO LO HACE?: Ejecuta `SELECT * WHERE status = 'PENDING' ORDER BY created_at DESC` aprovechando el índice `idx_payout_overrides_status`.
+ * Lists all PENDING payout overrides for compliance review.
+ * What: Queries pending queue records.
+ * How: Selects rows where status = 'PENDING' ordered by created_at DESC.
  */
 export async function listPendingPayoutOverrides(): Promise<PayoutOverrideRow[]> {
   return withDbClient(async (client) => {
@@ -128,8 +132,9 @@ export async function listPendingPayoutOverrides(): Promise<PayoutOverrideRow[]>
 }
 
 /**
- * ¿QUÉ HACE?: Busca el override aprobado más reciente para una wallet original.
- * ¿CÓMO LO HACE?: Consulta `WHERE original_wallet = $1 AND status = 'APPROVED' ORDER BY updated_at DESC LIMIT 1` usando el índice compuesto `idx_payout_overrides_lookup`.
+ * Finds the latest APPROVED override for a wallet.
+ * What: Fetches active approved override.
+ * How: Queries WHERE original_wallet = $1 AND status = 'APPROVED' ordered by updated_at DESC.
  */
 export async function findApprovedOverrideForWallet(originalWallet: string): Promise<PayoutOverrideRow | null> {
   return withDbClient(async (client) => {
@@ -146,11 +151,9 @@ export async function findApprovedOverrideForWallet(originalWallet: string): Pro
 }
 
 /**
- * ¿QUÉ HACE?: Actualiza el estado de un override aplicando bloqueo optimista de concurrencia (`optimistic locking`).
- * ¿CÓMO LO HACE?:
- *  - Ejecuta un `UPDATE ... WHERE id = $5 AND version = $6 RETURNING *`.
- *  - Incrementa la versión automáticamente (`version = version + 1`).
- *  - Si ninguna fila coincide con la versión esperada (conflicto concurrente), la consulta retorna 0 filas y la función devuelve `null`.
+ * Updates payout override status with optimistic concurrency control.
+ * What: Transitions override state with version check.
+ * How: Executes UPDATE WHERE id = $5 AND version = $6, increments version, returns null on conflict.
  */
 export async function updatePayoutOverrideStatus(
   input: UpdatePayoutOverrideDbInput

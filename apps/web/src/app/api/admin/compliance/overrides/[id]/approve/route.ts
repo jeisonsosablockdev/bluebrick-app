@@ -60,27 +60,21 @@ function getAdminActorId(request: NextRequest): string | null {
 
 /**
  * POST /api/admin/compliance/overrides/[id]/approve
- * 
- * ¿QUÉ HACE?: Aprueba un override pendiente aplicando la firma on-chain de autorización y el control optimista de versiones.
- * ¿CÓMO LO HACE?:
- *  - Valida el rol de admin del solicitante.
- *  - Resuelve el parámetro de ruta `id` del override.
- *  - Valida el payload con Zod (`expectedVersion`, `approvalTxSignature`, `isRunSealed`).
- *  - Invoca `approvePayoutOverrideWithMultisig()` para actualizar atómicamente la DB a estado `APPROVED`.
- *  - Retorna el registro actualizado o 409 si hubo conflicto concurrente o el lote de distribución ya fue sellado.
+ * What: Approves a pending override with on-chain signature proof.
+ * How: Validates expectedVersion and signature with Zod, then executes approvePayoutOverrideWithMultisig.
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  // Step 1: Validar autorización de administrador
+  // Step 1: Enforce admin authorization
   const actorId = getAdminActorId(request);
   if (!actorId) {
     return errorResponse(403, "FORBIDDEN", "Admin role is required.");
   }
 
   try {
-    // Step 2: Resolver parámetros asíncronos de la ruta dinámica
+    // Step 2: Resolve dynamic route parameters
     const { id } = await context.params;
 
-    // Step 3: Validar el cuerpo de la petición con el esquema Zod
+    // Step 3: Validate request body with Zod
     const body = await request.json();
     const parsed = ApproveOverrideSchema.safeParse(body);
 
@@ -90,7 +84,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       });
     }
 
-    // Step 4: Ejecutar la aprobación en el servicio de aplicación
+    // Step 4: Execute approval in application domain service
     const approved = await approvePayoutOverrideWithMultisig({
       overrideId: id,
       expectedVersion: parsed.data.expectedVersion,
