@@ -1,93 +1,75 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
+
+import { POST } from "../../apps/web/src/app/api/admin/collections/[id]/date-change-request/route";
 
 /**
  * =========================================================================================
- * 🧪 SPEC-01 (STORY-015-07): DATE CHANGE REQUEST ENDPOINT CONTRACT TESTS
+ * 🧪 SPEC-04 (STORY-015-07): DATE CHANGE REQUEST ENDPOINT INTEGRATION TESTS
  * =========================================================================================
  * 
- * Verifies domain invariants:
- * 1. POST /api/admin/collections/[id]/date-change-request requires admin role.
- * 2. Creates an audit intent record with status PENDING_MULTISIG.
- * 3. Does NOT modify collection project dates in database directly.
+ * Verifies API route behavior:
+ * 1. POST /api/admin/collections/[id]/date-change-request validates collectionId and body.
+ * 2. Enforces proposedStartAt <= proposedEndAt with HTTP 400.
+ * 3. Returns status PENDING_MULTISIG and does not alter database dates directly.
  */
 
-export type DateChangeRequestPayload = {
-  collectionId: string;
-  proposedStartAt: string;
-  proposedEndAt: string;
-  justification: string;
-  requesterPubkey: string;
-};
-
-export type DateChangeRequestResult = {
-  requestId: string;
-  collectionId: string;
-  status: "PENDING_MULTISIG";
-  proposedStartAt: string;
-  proposedEndAt: string;
-  justification: string;
-  createdAt: string;
-};
-
-/**
- * Processes a project date change request.
- * What: Creates a PENDING_MULTISIG intent without modifying canonical on-chain state or DB dates.
- * How: Validates date range, asserts admin authorization, and generates audit record.
- */
-export function recordDateChangeRequest(
-  payload: DateChangeRequestPayload,
-  nowIso: string = new Date().toISOString()
-): DateChangeRequestResult {
-  const startMs = Date.parse(payload.proposedStartAt);
-  const endMs = Date.parse(payload.proposedEndAt);
-
-  if (Number.isNaN(startMs) || Number.isNaN(endMs)) {
-    throw new Error("ERR_INVALID_DATE_FORMAT: Proposed dates must be valid ISO-8601 strings.");
-  }
-
-  if (endMs < startMs) {
-    throw new Error("ERR_INVALID_DATE_RANGE: proposedEndAt cannot be earlier than proposedStartAt.");
-  }
-
-  return {
-    requestId: "dcr-001",
-    collectionId: payload.collectionId,
-    status: "PENDING_MULTISIG",
-    proposedStartAt: payload.proposedStartAt,
-    proposedEndAt: payload.proposedEndAt,
-    justification: payload.justification,
-    createdAt: nowIso
-  };
-}
-
-describe("SPEC-01 (STORY-015-07): Date Change Request Governance Contract", () => {
-  it("should record a PENDING_MULTISIG date change request with valid date range", () => {
-    const now = new Date().toISOString();
-    const result = recordDateChangeRequest(
-      {
-        collectionId: "col-123",
+describe("SPEC-04 (STORY-015-07): Date Change Request Route Handler", () => {
+  it("should return 200 OK and PENDING_MULTISIG for valid date change proposal", async () => {
+    const request = new Request("http://localhost:3000/api/admin/collections/col-123/date-change-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         proposedStartAt: "2026-06-01T00:00:00Z",
         proposedEndAt: "2027-06-01T00:00:00Z",
-        justification: "Project construction delivery delayed by 2 months due to permitting",
-        requesterPubkey: "admin-key-123"
-      },
-      now
-    );
+        justification: "Project construction delayed by 2 months"
+      })
+    });
 
-    expect(result.status).toBe("PENDING_MULTISIG");
-    expect(result.collectionId).toBe("col-123");
-    expect(result.createdAt).toBe(now);
+    const response = await POST(request, { params: Promise.resolve({ id: "col-123" }) });
+    expect(response.status).toBe(200);
+
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.data.status).toBe("PENDING_MULTISIG");
+    expect(body.data.collectionId).toBe("col-123");
+    expect(body.data.proposedStartAt).toBe("2026-06-01T00:00:00Z");
   });
 
-  it("should reject date change request when endAt < startAt", () => {
-    expect(() =>
-      recordDateChangeRequest({
-        collectionId: "col-123",
+  it("should return 400 Bad Request when end date is before start date", async () => {
+    const request = new Request("http://localhost:3000/api/admin/collections/col-123/date-change-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         proposedStartAt: "2027-06-01T00:00:00Z",
         proposedEndAt: "2026-06-01T00:00:00Z",
-        justification: "Invalid range",
-        requesterPubkey: "admin-key-123"
+        justification: "Invalid inverted range"
       })
-    ).toThrowError("ERR_INVALID_DATE_RANGE");
+    });
+
+    const response = await POST(request, { params: Promise.resolve({ id: "col-123" }) });
+    expect(response.status).toBe(400);
+
+    const body = await response.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("ERR_INVALID_DATE_RANGE");
+  });
+
+  it("should return 400 Bad Request when justification is too short or missing", async () => {
+    const request = new Request("http://localhost:3000/api/admin/collections/col-123/date-change-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proposedStartAt: "2026-06-01T00:00:00Z",
+        proposedEndAt: "2027-06-01T00:00:00Z",
+        justification: "abc"
+      })
+    });
+
+    const response = await POST(request, { params: Promise.resolve({ id: "col-123" }) });
+    expect(response.status).toBe(400);
+
+    const body = await response.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("ERR_INVALID_REQUEST_BODY");
   });
 });

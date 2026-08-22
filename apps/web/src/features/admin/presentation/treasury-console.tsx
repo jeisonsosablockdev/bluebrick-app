@@ -392,6 +392,47 @@ export function TreasuryConsole(): ReactElement {
         </div>
       </Card>
 
+      {/* Project Governance & Notary Dates Section */}
+      <Card className="space-y-3">
+        <div>
+          <p className="text-sm font-semibold text-white">
+            {t({
+              en: "Project Dates & Notary Governance",
+              es: "Fechas de Proyecto y Gobernanza Notarial",
+              pt: "Datas do Projeto e Governanca Notarial"
+            })}
+          </p>
+          <p className="text-xs text-white/60">
+            {t({
+              en: "Project start and end dates are governed on-chain via Squads multisig and ProjectConfig PDA. Direct database mutations are blocked.",
+              es: "Las fechas de inicio y fin estan gobernadas on-chain mediante el multisig de Squads y la PDA ProjectConfig. Las mutaciones directas a base de datos estan bloqueadas.",
+              pt: "As datas de inicio e fim sao governadas on-chain via multisig do Squads e PDA ProjectConfig. Mutacoes diretas ao banco de dados estao bloqueadas."
+            })}
+          </p>
+        </div>
+
+        <div className="rounded border border-white/10 bg-white/[0.02] p-3 text-xs space-y-2">
+          <div className="flex items-center justify-between text-white/80">
+            <span className="text-white/60">
+              {t({ en: "Source of Truth", es: "Fuente de Verdad", pt: "Fonte da Verdade" })}:
+            </span>
+            <span className="font-mono text-emerald-400">Solana Devnet PDA (134 bytes)</span>
+          </div>
+          <div className="flex items-center justify-between text-white/80">
+            <span className="text-white/60">
+              {t({ en: "Read-Model Cache", es: "Cache Read-Model", pt: "Cache Read-Model" })}:
+            </span>
+            <span className="text-white font-mono">Postgres Read Replica</span>
+          </div>
+          <div className="flex items-center justify-between text-white/80">
+            <span className="text-white/60">
+              {t({ en: "Governance Mechanism", es: "Mecanismo de Gobernanza", pt: "Mecanismo de Governanca" })}:
+            </span>
+            <span className="text-white">Squads v4 Multisig CPI</span>
+          </div>
+        </div>
+      </Card>
+
       <Card className="space-y-2">
         <p className="text-sm font-semibold text-white">
           {t({ en: "Visual actions", es: "Acciones visuales", pt: "Acoes visuais" })}
