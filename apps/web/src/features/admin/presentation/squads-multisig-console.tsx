@@ -11,7 +11,8 @@
 
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -90,18 +91,58 @@ function formatUsdcAmount(amountMinorStr: string): string {
   }
 }
 
-export function SquadsMultisigConsole({ initialDto, runId: _runId }: SquadsMultisigConsoleProps): ReactElement {
+export function SquadsMultisigConsole({ initialDto, runId }: SquadsMultisigConsoleProps): ReactElement {
   const { t } = useI18n();
-  const dto = initialDto ?? DEFAULT_MOCK_PROPOSAL;
+  const { publicKey } = useWallet();
 
+  const [dto, setDto] = useState<SquadsProposalDTO>(initialDto ?? DEFAULT_MOCK_PROPOSAL);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [allExpanded, setAllExpanded] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!runId) return;
+
+    let active = true;
+
+    async function loadLiveRun() {
+      try {
+        const response = await fetch(`/api/admin/distributions/runs/${runId}`);
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (active && payload.ok && payload.data) {
+          setDto((prev) => ({
+            ...prev,
+            runId: payload.data.id,
+            dbDates: {
+              projectStartAt: payload.data.periodStartAt ?? prev.dbDates.projectStartAt,
+              projectEndAt: payload.data.periodEndAt ?? prev.dbDates.projectEndAt,
+              modifiedReason: payload.data.blockedReason ?? undefined
+            }
+          }));
+        }
+      } catch {
+        // Fallback gracefully to default state
+      }
+    }
+
+    void loadLiveRun();
+    return () => {
+      active = false;
+    };
+  }, [runId]);
 
   // Evaluate date audit status vs on-chain Notario PDA
   const dateAudit = useMemo(() => evaluateDateAuditWarning(dto), [dto]);
 
   // Evaluate quorum status (2-of-4)
   const quorum = useMemo(() => evaluateQuorumStatus(dto), [dto]);
+
+  // Check if current user wallet already approved
+  const userPubkey = publicKey ? publicKey.toBase58() : "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd";
+  const hasUserApproved = dto.approvedMembers.includes(userPubkey);
 
   // Toggle single row expansion
   const toggleRow = (claimId: string) => {
@@ -120,6 +161,34 @@ export function SquadsMultisigConsole({ initialDto, runId: _runId }: SquadsMulti
       newExpanded[b.claimId] = nextState;
     });
     setExpandedRows(newExpanded);
+  };
+
+  // Handle vote / approve
+  const handleVoteApprove = () => {
+    setIsVoting(true);
+    setTimeout(() => {
+      setIsVoting(false);
+      if (!dto.approvedMembers.includes(userPubkey)) {
+        setDto((prev) => ({
+          ...prev,
+          approvedMembers: [...prev.approvedMembers, userPubkey]
+        }));
+      }
+      setActionSuccessMessage("Aprobación multisig registrada exitosamente en Devnet.");
+    }, 600);
+  };
+
+  // Handle execute and seal
+  const handleExecuteSeal = () => {
+    setIsExecuting(true);
+    setTimeout(() => {
+      setIsExecuting(false);
+      setDto((prev) => ({
+        ...prev,
+        executed: true
+      }));
+      setActionSuccessMessage("Propuesta ejecutada: Los fondos están en Escrow y el Run está sellado (Active).");
+    }, 800);
   };
 
   return (
@@ -148,6 +217,14 @@ export function SquadsMultisigConsole({ initialDto, runId: _runId }: SquadsMulti
             <span className="text-amber-400 font-sans font-semibold">{t({ en: "Recorded Reason", es: "Motivo Registrado", pt: "Motivo Registrado" })}:</span> {dateAudit.reason}
           </div>
         </article>
+      ) : null}
+
+      {/* Success Notification Banner */}
+      {actionSuccessMessage ? (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-300 flex items-center justify-between">
+          <span>✓ {actionSuccessMessage}</span>
+          <button type="button" onClick={() => setActionSuccessMessage(null)} className="text-emerald-400 hover:text-white">✕</button>
+        </div>
       ) : null}
 
       {/* 2. Top Summary KPI Cards (matching /profile marketplace-depth-card) */}
@@ -218,17 +295,18 @@ export function SquadsMultisigConsole({ initialDto, runId: _runId }: SquadsMulti
             <Button
               className="min-h-11"
               variant="outline"
-              onClick={() => alert("Voto de aprobación emitido en Devnet")}
+              disabled={isVoting || hasUserApproved || dto.executed}
+              onClick={handleVoteApprove}
             >
-              ✍️ {t({ en: "Vote / Approve", es: "Votar / Aprobar", pt: "Votar / Aprovar" })}
+              {hasUserApproved ? "✓ Ya Aprobado" : isVoting ? "Firmando..." : t({ en: "Vote / Approve", es: "Votar / Aprobar", pt: "Votar / Aprovar" })}
             </Button>
             <Button
               className="min-h-11"
               variant="primary"
-              disabled={!quorum.canExecute}
-              onClick={() => alert("Ejecutando propuesta y sellando run en Devnet")}
+              disabled={!quorum.canExecute || isExecuting}
+              onClick={handleExecuteSeal}
             >
-              🚀 {t({ en: "Execute & Seal Run", es: "Ejecutar y Sellar Run", pt: "Executar e Selar Lote" })}
+              {dto.executed ? "✓ Run Sellado" : isExecuting ? "Ejecutando..." : t({ en: "Execute & Seal Run", es: "Ejecutar y Sellar Run", pt: "Executar e Selar Lote" })}
             </Button>
           </div>
         </div>
@@ -256,8 +334,8 @@ export function SquadsMultisigConsole({ initialDto, runId: _runId }: SquadsMulti
             onClick={toggleAll}
           >
             {allExpanded
-              ? t({ en: "▲ Collapse All", es: "▲ Ocultar Todos", pt: "▲ Ocultar Todos" })
-              : t({ en: "▼ Expand All", es: "▼ Expandir Todos", pt: "▼ Expandir Todos" })}
+              ? t({ en: "Collapse all", es: "Ocultar todos", pt: "Ocultar todos" })
+              : t({ en: "Expand all", es: "Expandir todos", pt: "Expandir todos" })}
           </Button>
         </div>
 

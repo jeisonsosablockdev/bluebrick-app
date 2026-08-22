@@ -12,6 +12,7 @@ import {
   blockDistributionRun,
   createDistributionDraft as createDistributionDraftRecord,
   finalizeDistributionRun,
+  getDistributionRunById,
   listDistributionRuns,
   replaceDistributionItems,
   type DistributionRunRecord
@@ -100,6 +101,10 @@ export class DistributionServiceError extends Error {
 
 export async function listDistributionRunsForAdmin(): Promise<DistributionRunRecord[]> {
   return listDistributionRuns();
+}
+
+export async function getDistributionRunDetailForAdmin(runId: string): Promise<DistributionRunRecord | null> {
+  return getDistributionRunById(runId);
 }
 
 export async function createDistributionRunDraft(
