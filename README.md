@@ -5,7 +5,7 @@ This README includes an auto-generated snapshot of project documentation.
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-22 03:16:36 UTC
+Updated: 2026-08-22 03:25:20 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
