@@ -8,6 +8,7 @@ skip-lint = false
 
 [programs.devnet]
 payout_settlement = "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
+project_config_notary = "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
 
 [registry]
 url = "https://api.apr.dev"
