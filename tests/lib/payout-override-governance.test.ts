@@ -1,8 +1,20 @@
 import { describe, it, expect } from "vitest";
 
+import {
+  type PayoutOverrideStatus,
+  type PayoutOverrideEntity,
+  type CreateOverrideInput,
+  type ApproveOverrideInput,
+  isValidSolanaAddress,
+  normalizeCaseNumber,
+  createPayoutOverride,
+  approvePayoutOverride,
+  resolveEffectivePayoutWallet
+} from "@/features/staking-distribution/domain/payout-override-rules";
+
 /**
  * =========================================================================================
- * 🧪 SPEC-01 (STORY-015-03): PAYOUT OVERRIDES GOVERNANCE CONTRACT TESTS (RED Phase)
+ * 🧪 SPEC-01 (STORY-015-03): PAYOUT OVERRIDES GOVERNANCE CONTRACT TESTS
  * =========================================================================================
  * 
  * Tests the domain invariants for two-step wallet payout reassignments:
@@ -12,144 +24,8 @@ import { describe, it, expect } from "vitest";
  * 4. Payout engine resolution: only APPROVED overrides take effect.
  * 5. Optimistic concurrency locking (version increments).
  * 6. Immutability post-seal (Supersession contract).
+ * =========================================================================================
  */
-
-export type PayoutOverrideStatus = "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED";
-
-export type PayoutOverrideEntity = {
-  id: string;
-  originalWallet: string;
-  requestedWallet: string;
-  effectiveWallet: string;
-  caseNumber: string;
-  status: PayoutOverrideStatus;
-  version: number;
-  reason: string;
-  requestedBy: string;
-  approvedBy?: string;
-  approvalTxSignature?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreateOverrideInput = {
-  originalWallet: string;
-  requestedWallet: string;
-  caseNumber: string;
-  reason: string;
-  requestedBy: string;
-};
-
-export type ApproveOverrideInput = {
-  override: PayoutOverrideEntity;
-  approvedBy: string;
-  approvalTxSignature: string;
-  expectedVersion: number;
-  isRunSealed?: boolean;
-};
-
-/**
- * Validates a base58 Solana public key.
- */
-export function isValidSolanaAddress(address: string): boolean {
-  if (!address || typeof address !== "string") return false;
-  const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-  return base58Regex.test(address.trim());
-}
-
-/**
- * Normalizes case numbers into clean uppercase strings (e.g. "case-2026-001" -> "CASE-2026-001").
- */
-export function normalizeCaseNumber(caseNumber: string): string {
-  if (!caseNumber || typeof caseNumber !== "string" || caseNumber.trim() === "") {
-    throw new Error("ERR_CASE_NUMBER_REQUIRED: case_number is required and cannot be empty.");
-  }
-  return caseNumber.trim().toUpperCase();
-}
-
-/**
- * Pure domain evaluator for creating a new payout override.
- */
-export function createPayoutOverride(input: CreateOverrideInput): PayoutOverrideEntity {
-  const normalizedCase = normalizeCaseNumber(input.caseNumber);
-
-  if (!isValidSolanaAddress(input.originalWallet)) {
-    throw new Error("ERR_INVALID_SOLANA_ADDRESS: originalWallet is not a valid Solana address.");
-  }
-
-  if (!isValidSolanaAddress(input.requestedWallet)) {
-    throw new Error("ERR_INVALID_SOLANA_ADDRESS: requestedWallet is not a valid Solana address.");
-  }
-
-  if (input.originalWallet.trim() === input.requestedWallet.trim()) {
-    throw new Error("ERR_SAME_WALLET_OVERRIDE: requestedWallet cannot be identical to originalWallet.");
-  }
-
-  return {
-    id: `OVR-${Date.now()}`,
-    originalWallet: input.originalWallet.trim(),
-    requestedWallet: input.requestedWallet.trim(),
-    effectiveWallet: input.originalWallet.trim(), // Stays original until APPROVED
-    caseNumber: normalizedCase,
-    status: "PENDING",
-    version: 1,
-    reason: input.reason.trim(),
-    requestedBy: input.requestedBy.trim(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-}
-
-/**
- * Pure domain evaluator for approving a payout override.
- */
-export function approvePayoutOverride(input: ApproveOverrideInput): PayoutOverrideEntity {
-  const { override, approvedBy, approvalTxSignature, expectedVersion, isRunSealed } = input;
-
-  // Invariant 1: Supersession contract: cannot modify payouts for already sealed runs
-  if (isRunSealed) {
-    throw new Error("ERR_SEALED_RUN_IMMUTABLE: Cannot approve override for an already sealed run.");
-  }
-
-  // Invariant 2: Optimistic concurrency locking
-  if (override.version !== expectedVersion) {
-    throw new Error("ERR_CONCURRENT_MODIFICATION: Version mismatch. The override was modified by another actor.");
-  }
-
-  // Invariant 3: Valid state transitions
-  if (override.status !== "PENDING") {
-    throw new Error(`ERR_INVALID_STATE_TRANSITION: Cannot approve override in state ${override.status}.`);
-  }
-
-  // Invariant 4: Mandatory execution proof
-  if (!approvalTxSignature || approvalTxSignature.trim() === "") {
-    throw new Error("ERR_EXECUTION_PROOF_REQUIRED: approvalTxSignature is required for multisig authorization.");
-  }
-
-  return {
-    ...override,
-    effectiveWallet: override.requestedWallet, // Effective wallet switches on approval
-    status: "APPROVED",
-    version: override.version + 1,
-    approvedBy: approvedBy.trim(),
-    approvalTxSignature: approvalTxSignature.trim(),
-    updatedAt: new Date().toISOString()
-  };
-}
-
-/**
- * Resolves destination payout address considering active overrides.
- */
-export function resolveEffectivePayoutWallet(
-  holderWallet: string,
-  overrides: PayoutOverrideEntity[]
-): string {
-  const approvedOverride = overrides.find(
-    (o) => o.originalWallet === holderWallet && o.status === "APPROVED"
-  );
-
-  return approvedOverride ? approvedOverride.effectiveWallet : holderWallet;
-}
 
 describe("SPEC-01 (STORY-015-03): Payout Overrides Governance Flow Contracts", () => {
   const validOriginal = "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd";

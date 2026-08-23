@@ -18,7 +18,7 @@ import {
 import {
   isValidSolanaAddress,
   normalizeCaseNumber
-} from "@/tests/lib/payout-override-governance.test";
+} from "@/features/staking-distribution/domain/payout-override-rules";
 
 export class PayoutOverrideServiceError extends Error {
   readonly code: string;

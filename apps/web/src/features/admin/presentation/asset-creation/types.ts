@@ -273,14 +273,7 @@ export function createInitialAssetCreationState(draftId: string): AssetCreationS
       financialDocs: { ...initialUploadUiState.financialDocs },
       propertyImages: { ...initialUploadUiState.propertyImages }
     },
-    uploadRefs: {
-      coverImage: [],
-      galleryImages: [],
-      brochureFile: [],
-      legalDocs: [],
-      financialDocs: [],
-      propertyImages: []
-    },
+    uploadRefs: { ...initialUploadRefsState },
     mintQuantity: "1",
     showMintSetup: false,
     deployCompletedData: null,

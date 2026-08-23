@@ -55,7 +55,7 @@ export function selectDerivedMintQuantityFromType(form: AssetForm): number | nul
     return null;
   }
 
-  return Math.floor(parsed);
+  return toSafeNonNegativeInteger(parsed);
 }
 
 export function selectMintQuantityValue(state: AssetCreationState): number {
