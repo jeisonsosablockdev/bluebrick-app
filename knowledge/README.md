@@ -30,11 +30,11 @@ Last Generated: 2026-08-22T00:00:00.000Z
 | Observations | 13 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 561 |
+| Archived | 562 |
 | Observed status | 23 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 559 |
+| Archived status | 560 |
 
 ## Inbox
 
@@ -320,6 +320,7 @@ Last Generated: 2026-08-22T00:00:00.000Z
 | feature-jaymusicmachine-BRI-185-lightpanda-integration | archived | none | [feature-jaymusicmachine-BRI-185-lightpanda-integration](knowledge/features/feature-jaymusicmachine-BRI-185-lightpanda-integration.md) | n/a |
 | feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation | archived | none | [feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation](knowledge/features/feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes | archived | none | [feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes](knowledge/features/feature-jaymusicmachine-BRI-8-distributions-ux-ui-fixes.md) | n/a |
+| feature-jaymusicmachine-BRI-8-squads-notary-architecture | archived | none | [feature-jaymusicmachine-BRI-8-squads-notary-architecture](knowledge/features/feature-jaymusicmachine-BRI-8-squads-notary-architecture.md) | n/a |
 | feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims-implementation.md) | n/a |
 | feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims | archived | none | [feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims](knowledge/features/feature-jaymusicmachine-BRI-8-squads-v4-treasury-claims.md) | n/a |
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection-implementation.md) | n/a |

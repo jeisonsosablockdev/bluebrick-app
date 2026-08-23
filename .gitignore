@@ -28,4 +28,6 @@ opencode.json
 target
 **/target
 programs/**/target
+.tmp.driveupload
+**/.tmp.driveupload
 

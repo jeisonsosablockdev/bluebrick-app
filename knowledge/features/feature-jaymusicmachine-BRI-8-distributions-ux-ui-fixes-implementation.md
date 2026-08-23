@@ -62,16 +62,40 @@
 - **Layer 1 — Presentation**:
   - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Integrated with `signTransaction` from wallet adapter, triggering Phantom signature popup, Devnet gas payment, and rendering green success banner with direct Solscan Devnet transaction link.
 
-### `SPEC-10: Native Squads Protocol v4 Governance, 0.10 USDC Platform Fee & Test Inversion Elimination` [COMPLETED]
-- Replaced ad-hoc local sealing with native `@sqds/multisig` SDK integration.
-- Added 0.10 USDC platform governance fee transfer badge and pipeline.
-- Decoupled production code from test exports (`payout-override-rules.ts`).
+### `SPEC-10: 100% Native Squads Protocol v4 Governance, Notary PDA CPI & On-Chain Proposal Tracking` [COMPLETED]
+- **Elimination of Artificial Quorum Memos**: Completely removed legacy memo vote builders and migrated to 100% native `@sqds/multisig` (Squads Protocol v4) on Solana Devnet (`rVKwqnxyq2RuU4sTBdXhifrZB9oY9mGoqw5oA6EHKaD`).
+- **Atomic Proposal Creation**: In `/admin/collections/[id]` (`AdminCollectionNotaryDatesPanel`), proposing a date change compiles an atomic `VersionedTransaction` combining `vaultTransactionCreate` + `proposalCreate` with 0.10 USDC platform governance fee, signed cryptographically with Phantom/Solflare and broadcasted to Devnet.
+- **Deterministic Proposal Hash & Real-Time Tracking**: Captured and persisted the on-chain Proposal PDA Hash (`squadsProposalPda`), Creation TX Hash (`txSignature`), and `transactionIndex`. Rendered direct Solscan Devnet links and a 1-click action button `[Ir a Votar en Consola Squads ➔]` in the collection pending banner.
+- **Two-Phase Governance Execution**:
+  1. `proposalApprove`: Members vote until reaching threshold (2/2), transitioning status from `Active` to `Approved`.
+  2. `vaultTransactionExecute`: Prepares and executes the CPI from the Squads Vault (`D9i1XNft...`) directly to the Notary Program (`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE`), updating on-chain operating dates and transitioning status to `Executed`.
+- **Interactive Multi-Proposal Switcher**: Modernized `SquadsMultisigConsole` (`/admin/treasury/squads`) with interactive tabs for all on-chain proposals, prioritizing active/approved proposals over past executed ones.
+- **Strict Clean Code & Test Governance**: Audited and eliminated all forbidden `export` statements in test suites across `tests/`.
 
 ### `SPEC-11: Unified Anchor Program Architecture & On-Chain Notary PDA Upgrade` [COMPLETED]
 - Canonical Program ID: `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` on Solana Devnet.
 - Integrated `initialize_project_config` and `update_project_dates` instructions into unified Anchor program with `settle_claim`, `seal_run`, and `initialize_policy`.
 - Added 3-layer Squads Vault authentication and 134-byte Notary PDA on-chain account structure.
 - Verified on Devnet with live CLI tooling (`scripts/solana-squads-notary-cli.ts`).
+
+### `SPEC-12: Clean Code Audit, SOLID Refactoring & Canonical Documentation (refactor-clean)` [IN_PROGRESS]
+- **SOLID & Clean Code Principles (`code-refactoring-refactor-clean`)**:
+  - **Single Responsibility Principle (SRP)**: Extract long, multi-concern handlers (e.g. `handleProposalSubmit` and `handleUnifiedAction`) into dedicated, testable domain/application helpers.
+  - **Explicit Abstraction & Meaningful Names**: Replace cryptic variables and inline type assertions with self-documenting, strongly-typed domain primitives.
+  - **Zero Dead Code & Import Sanitization**: Clean up obsolete imports, test residue, leftover route files, and non-whitelisted artifacts.
+- **Mandatory In-Code Commentary Governance**:
+  - Verify that every `.ts`, `.tsx`, `.rs`, `.sql` file modified under BRI-8 includes:
+    1. Layer Role Header comment (`Layer 1: Presentation`, `Layer 2: Application`, etc.).
+    2. JSDoc/TSDoc blocks on all exported functions, types, and constants.
+    3. Step-by-step logic indicators (`// Step N: ...`).
+    4. Invariant and cryptographic security explanations (zero magic code).
+- **Canonical Architecture Documentation**:
+  - Write the canonical end-to-end integration manual for Squads Protocol v4 + Notary PDA in `knowledge/features/feature-jaymusicmachine-BRI-8-squads-notary-architecture.md`, detailing:
+    - 2-Phase multisig lifecycle (`proposalCreate` -> `proposalApprove` -> `vaultTransactionExecute`).
+    - Deterministic Proposal PDA derivation and Solscan Devnet audit traceability.
+    - CPI execution directly to Anchor Notary Program (`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE`).
+- **Full CI & Harness Verification**:
+  - Run all unit tests, typechecks, architecture linters, and harness suites (`pnpm validate`) to guarantee 100% clean pass.
 
 ## 3. Verification Plan
 - `pnpm test` (all unit, hook, and component tests passing green).

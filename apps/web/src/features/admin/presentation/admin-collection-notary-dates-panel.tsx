@@ -32,10 +32,7 @@ import { Card } from "@/components/ui/card";
 import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import { localize, type AppLocale } from "@/lib/i18n";
 import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
-import {
-  deserializeLegacyVersionedTransaction,
-  serializeLegacyVersionedTransaction
-} from "@/lib/solana-kit/compat/web3-transactions";
+import { submitDateChangeProposal } from "@/features/admin/application/squads-proposal-service";
 import type { ProjectConfigPdaState } from "@/lib/solana-kit/pda/project-config-reader";
 
 export type PendingDateProposal = {
@@ -185,9 +182,7 @@ export function AdminCollectionNotaryDatesPanel({
     return () => {
       isMounted = false;
     };
-  }, [collectionAddress, collectionId]);
-
-  // Step 2: Handle Proposal Submission
+  }, [collectionAddress, collectionId]);  // Step 2: Handle Proposal Submission via SRP Application Service
   async function handleProposalSubmit(e: React.FormEvent) {
     e.preventDefault();
     setProposalErrorMessage(null);
@@ -209,68 +204,18 @@ export function AdminCollectionNotaryDatesPanel({
     setIsSubmitting(true);
 
     try {
-      const proposedStartAt = new Date(`${proposedStartDate}T00:00:00.000Z`).toISOString();
-      const proposedEndAt = new Date(`${proposedEndDate}T23:59:59.000Z`).toISOString();
-
-      const signerWallet = publicKey.toBase58();
-      const target = collectionId || collectionAddress;
-      const targetCollection = collectionAddress || (collectionId && collectionId.length > 30 ? collectionId : "9xP2v4M1Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuz");
-
-      const res = await fetch(`/api/admin/collections/${target}/date-change-request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proposedStartAt,
-          proposedEndAt,
-          justification,
-          requesterWallet: signerWallet,
-          collectionAddress: targetCollection
-        })
+      // Step 2b: Delegate transaction assembly, signing, and broadcast to application service
+      const result = await submitDateChangeProposal({
+        collectionId,
+        collectionAddress,
+        proposedStartDate,
+        proposedEndDate,
+        justification,
+        signerWallet: publicKey.toBase58(),
+        signTransaction
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.message || "Error al enviar la solicitud de cambio de fecha.");
-      }
-
-      if (!data.preparedTx?.transactionBase64) {
-        throw new Error(data.message || "No se pudo preparar la transacción on-chain de Squads v4 para firmar.");
-      }
-
-      if (!signTransaction) {
-        throw new Error("Tu wallet conectada no soporta firma criptográfica de transacciones.");
-      }
-
-      // Step 2b: Request Phantom / Solflare wallet cryptographic signature
-      const rawBytes = Buffer.from(data.preparedTx.transactionBase64, "base64");
-      const unsignedTx = deserializeLegacyVersionedTransaction(new Uint8Array(rawBytes));
-      const signedTx = await signTransaction(unsignedTx);
-      const signedBytes = serializeLegacyVersionedTransaction(signedTx);
-      const signedBase64 = Buffer.from(signedBytes).toString("base64");
-
-      // Step 2c: Broadcast signed transaction to Solana Devnet RPC
-      const broadcastRes = await fetch("/api/admin/treasury/squads/vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proposalId: data.data.requestId,
-          signerWallet,
-          signedTransactionBase64: signedBase64
-        })
-      });
-
-      const broadcastData = await broadcastRes.json();
-      if (!broadcastRes.ok) {
-        throw new Error(broadcastData.message || "Error al emitir propuesta a Solana Devnet.");
-      }
-
-      const proposalData = data.data as PendingDateProposal;
-      if (broadcastData.data?.txSignature) {
-        proposalData.txSignature = broadcastData.data.txSignature;
-        proposalData.solscanUrl = broadcastData.data.solscanUrl;
-      }
-      setPendingProposal(proposalData);
+      setPendingProposal(result.proposal);
 
       const successMsg = localize(locale, {
         en: `Solicitud registrada con éxito. Emitida a Squads v4 en Solana Devnet.`,
@@ -289,15 +234,7 @@ export function AdminCollectionNotaryDatesPanel({
       }, 10000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error inesperado al enviar propuesta.";
-      if (
-        msg.toLowerCase().includes("user rejected") ||
-        msg.toLowerCase().includes("rejected the request") ||
-        msg.toLowerCase().includes("user cancel")
-      ) {
-        setProposalErrorMessage("Cancelaste la solicitud de firma en la wallet.");
-      } else {
-        setProposalErrorMessage(msg);
-      }
+      setProposalErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
     }

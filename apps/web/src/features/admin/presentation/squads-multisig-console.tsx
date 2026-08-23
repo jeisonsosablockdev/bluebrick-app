@@ -21,11 +21,8 @@ import { useI18n } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
-import {
-  deserializeLegacyVersionedTransaction,
-  serializeLegacyVersionedTransaction
-} from "@/lib/solana-kit/compat/web3-transactions";
 import { getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
+import { dispatchMultisigAction } from "@/features/admin/application/squads-proposal-service";
 import {
   evaluateDateAuditWarning,
   evaluateQuorumStatus,
@@ -175,89 +172,42 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
       const signerWallet = publicKey.toBase58();
       const isExecuteAction = unifiedAction?.type === "READY_TO_EXECUTE";
 
-      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC for Squads v4
-      const prepareRes = await fetch("/api/admin/treasury/squads/prepare-vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proposalId: dto.runId,
-          transactionIndex: dto.transactionIndex,
-          signerWallet,
-          collectionAddress: dto.treasuryPolicyPda || dto.vaultPda,
-          newStartAt: dto.dbDates.projectStartAt,
-          newEndAt: dto.dbDates.projectEndAt,
-          action: isExecuteAction ? "EXECUTE" : "VOTE"
-        })
+      // Step 8b: Delegate transaction assembly, signing, and broadcast to application service
+      const result = await dispatchMultisigAction({
+        proposalId: dto.runId,
+        transactionIndex: dto.transactionIndex,
+        signerWallet,
+        action: isExecuteAction ? "EXECUTE" : "VOTE",
+        signTransaction,
+        collectionAddress: dto.treasuryPolicyPda || dto.vaultPda,
+        projectStartAt: dto.dbDates.projectStartAt,
+        projectEndAt: dto.dbDates.projectEndAt
       });
 
-      const prepareJson = await prepareRes.json();
-      if (!prepareRes.ok || !prepareJson.data?.transactionBase64) {
-        throw new Error(prepareJson.message ?? "Error al preparar la transacción en Solana Devnet.");
-      }
-
-      // Step 8c: Request wallet cryptographic signature (Phantom / Solflare popup)
-      let signedTransactionBase64: string | undefined;
-      if (signTransaction) {
-        const rawBytes = Buffer.from(prepareJson.data.transactionBase64, "base64");
-        const unsignedTx = deserializeLegacyVersionedTransaction(new Uint8Array(rawBytes));
-        const signedTx = await signTransaction(unsignedTx);
-        const signedBytes = serializeLegacyVersionedTransaction(signedTx);
-        signedTransactionBase64 = Buffer.from(signedBytes).toString("base64");
-      }
-
-      // Step 8d: Broadcast signed transaction to Solana Devnet RPC
-      const res = await fetch("/api/admin/treasury/squads/vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proposalId: dto.runId,
-          signerWallet,
-          signedTransactionBase64
-        })
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message ?? "Error al procesar la acción multisig en Solana Devnet.");
-      }
-
-      // Step 8e: Update local DTO state with on-chain execution proof and Solscan link
-      const isExecuted = isExecuteAction || json.data?.executed === true;
-      const txSignature = json.data?.txSignature;
-      const solscanUrl = json.data?.solscanUrl ?? (txSignature ? getSolscanTransactionUrl(txSignature) : undefined);
-      const confirmedSlot = json.data?.slot;
-
+      // Step 8c: Update local DTO state with on-chain execution proof and Solscan link
       setDto((prev) =>
         prev
           ? {
               ...prev,
               approvedMembers: isExecuteAction ? prev.approvedMembers : Array.from(new Set([...prev.approvedMembers, signerWallet])),
-              executed: isExecuted,
-              status: isExecuted ? "Executed" : (prev.approvedMembers.length + 1 >= prev.threshold ? "Approved" : "Active"),
-              txSignature,
-              solscanUrl,
-              confirmedSlot
+              executed: result.isExecuted,
+              status: result.isExecuted ? "Executed" : (prev.approvedMembers.length + 1 >= prev.threshold ? "Approved" : "Active"),
+              txSignature: result.txSignature,
+              solscanUrl: result.solscanUrl ?? (result.txSignature ? getSolscanTransactionUrl(result.txSignature) : undefined),
+              confirmedSlot: result.slot
             }
           : null
       );
 
       setActionSuccessMessage(
-        json.data?.message ??
-          (isExecuted
-            ? `Ejecución completada exitosamente en Solana Devnet. Fechas del PDA Notario actualizadas. Transacción: ${txSignature}`
+        result.message ??
+          (result.isExecuted
+            ? `Ejecución completada exitosamente en Solana Devnet. Fechas del PDA Notario actualizadas. Transacción: ${result.txSignature}`
             : `Voto registrado exitosamente en Solana Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`)
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al procesar la acción multisig.";
-      if (
-        msg.toLowerCase().includes("user rejected") ||
-        msg.toLowerCase().includes("rejected the request") ||
-        msg.toLowerCase().includes("user cancel")
-      ) {
-        setErrorMessage("Cancelaste la solicitud de firma en la wallet.");
-      } else {
-        setErrorMessage(msg);
-      }
+      setErrorMessage(msg);
     } finally {
       setIsProcessingAction(false);
     }
