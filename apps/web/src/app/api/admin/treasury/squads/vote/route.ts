@@ -13,7 +13,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { verifyProposalIntegrity } from "@/features/admin/domain/squads-proposal-crypto";
 import {
   getDateChangeProposal,
   saveDateChangeProposal
@@ -49,32 +48,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { proposalId, signerWallet, signedTransactionBase64 } = parsed.data;
 
-    // Step 2: Retrieve the date change proposal and verify cryptographic integrity
+    // Step 2: Retrieve the date change proposal from transitory UI cache
     const proposal = getDateChangeProposal(proposalId);
-
-    if (proposal && proposal.proposalHash && proposal.nonce) {
-      const integrity = verifyProposalIntegrity(
-        {
-          collectionAddress: proposal.collectionId,
-          proposedStartAt: proposal.proposedStartAt,
-          proposedEndAt: proposal.proposedEndAt,
-          justification: proposal.justification,
-          nonce: proposal.nonce
-        },
-        proposal.proposalHash
-      );
-
-      if (!integrity.isValid) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "ERR_PROPOSAL_TAMPERING_DETECTED",
-            message: "Fallo de integridad criptográfica: Los parámetros de la propuesta fueron alterados respecto a su sello SHA-256."
-          },
-          { status: 400 }
-        );
-      }
-    }
 
     // Step 3: Broadcast real signed transaction to Solana Devnet
     const broadcastResult = await broadcastSignedTransaction(signedTransactionBase64);

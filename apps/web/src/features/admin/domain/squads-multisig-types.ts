@@ -23,8 +23,11 @@ export type SquadsProposalDTO = {
   txSignature?: string;
   solscanUrl?: string;
   confirmedSlot?: number;
-  proposalHash?: string;
-  nonce?: string;
+  requesterWallet?: string;
+  feeUsdc?: string;
+  squadsProposalPda?: string;
+  squadsVaultTxPda?: string;
+  transactionIndex?: string;
   onChainDates: {
     projectStartAt: string;
     projectEndAt: string;

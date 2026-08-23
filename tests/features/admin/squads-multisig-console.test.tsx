@@ -236,26 +236,26 @@ describe("SquadsMultisigConsole Component (SPEC-08)", () => {
     });
   });
 
-  it("Step 6: Renders cryptographic seal badge when proposalHash is present in proposal DTO", () => {
-    // Arrange: Proposal with cryptographic seal and proposed date change
-    const sealedProposal: SquadsProposalDTO = {
+  it("Step 6: Renders Squads governance badge and fee details for date change proposal", () => {
+    // Arrange: Proposal with proposed date change and requester wallet
+    const proposalWithDates: SquadsProposalDTO = {
       ...mockProposal,
       dbDates: {
         projectStartAt: "2026-04-01T00:00:00Z",
         projectEndAt: "2028-12-31T23:59:59Z",
         modificationReason: "Ajuste de cronograma autorizado."
       },
-      proposalHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      nonce: "NONCE-TEST-001"
+      requesterWallet: "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd",
+      feeUsdc: "0.10"
     };
 
     // Act
-    render(<SquadsMultisigConsole initialDto={sealedProposal} />);
+    render(<SquadsMultisigConsole initialDto={proposalWithDates} />);
 
     // Assert
-    const badge = screen.getByTestId("proposal-crypto-seal-badge");
+    const badge = screen.getByTestId("proposal-squads-governance-badge");
     expect(badge).toBeDefined();
-    expect(badge.textContent).toContain("Sello Criptográfico (Keccak-256)");
-    expect(badge.textContent).toContain("Integridad Verificada");
+    expect(badge.textContent).toContain("Solicitado por");
+    expect(badge.textContent).toContain("0.10 USDC");
   });
 });

@@ -23,7 +23,6 @@ import {
 } from "@solana/web3.js";
 
 import { getSolanaRpcUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
-import { formatOnChainVoteMemo } from "@/features/admin/domain/squads-proposal-crypto";
 import { PROJECT_CONFIG_NOTARY_PROGRAM_ID, deriveProjectConfigPda } from "../pda/project-config-reader";
 
 export interface PreparedSquadsVoteTransaction {
@@ -132,17 +131,7 @@ export async function prepareSquadsVoteTransaction(
   const memoProgramPubkey = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
   const now = Date.now();
 
-  const voteMemoDataString = metadata?.proposalHash
-    ? formatOnChainVoteMemo({
-        proposalId,
-        newStartAt: metadata.newStartAt ?? "2026-04-01T00:00:00Z",
-        newEndAt: metadata.newEndAt ?? "2028-12-31T23:59:59Z",
-        proposalHash: metadata.proposalHash,
-        signerWallet: signerWalletStr,
-        timestamp: now
-      })
-    : `BRIDS_SQUADS_VOTE:${proposalId}:APPROVED_BY:${signerWalletStr}:${now}`;
-
+  const voteMemoDataString = `BRIDS_SQUADS_VOTE:${proposalId}:APPROVED_BY:${signerWalletStr}:${now}`;
   const voteMemoData = Buffer.from(voteMemoDataString, "utf-8");
 
   const voteInstruction = new TransactionInstruction({

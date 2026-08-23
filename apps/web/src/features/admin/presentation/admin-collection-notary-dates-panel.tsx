@@ -41,8 +41,11 @@ export type PendingDateProposal = {
   approvals?: string[];
   txSignature?: string;
   solscanUrl?: string;
-  proposalHash?: string;
-  nonce?: string;
+  requesterWallet?: string;
+  feeUsdc?: string;
+  squadsProposalPda?: string;
+  squadsVaultTxPda?: string;
+  transactionIndex?: string;
 };
 
 type AdminCollectionNotaryDatesPanelProps = {
@@ -459,6 +462,18 @@ export function AdminCollectionNotaryDatesPanel({
                   placeholder="Motivo del cambio de fechas operativas..."
                   className="w-full rounded-lg border border-white/15 bg-neutral-900/90 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
+              </div>
+
+              {/* Platform Governance Fee Notice */}
+              <div className="flex items-center justify-between rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3.5 py-2 text-xs">
+                <span className="text-neutral-300">
+                  {localize(locale, {
+                    en: "Platform Governance Fee",
+                    es: "Tarifa de Gobernanza de Plataforma",
+                    pt: "Taxa de Governança da Plataforma"
+                  })}
+                </span>
+                <span className="font-mono font-semibold text-indigo-400">0.10 USDC</span>
               </div>
 
               <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-3">

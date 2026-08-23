@@ -14,13 +14,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { computeProposalPayloadHash } from "@/features/admin/domain/squads-proposal-crypto";
 import { getDateChangeProposal, saveDateChangeProposal } from "@/features/admin/infrastructure/date-change-proposal-store";
 
 const dateChangeRequestSchema = z.object({
   proposedStartAt: z.string().datetime({ message: "proposedStartAt must be a valid ISO datetime" }),
   proposedEndAt: z.string().datetime({ message: "proposedEndAt must be a valid ISO datetime" }),
-  justification: z.string().trim().min(5, { message: "Justification must be at least 5 characters" })
+  justification: z.string().trim().min(5, { message: "Justification must be at least 5 characters" }),
+  requesterWallet: z.string().optional()
 });
 
 export async function POST(
@@ -52,7 +52,7 @@ export async function POST(
       );
     }
 
-    const { proposedStartAt, proposedEndAt, justification } = parsed.data;
+    const { proposedStartAt, proposedEndAt, justification, requesterWallet } = parsed.data;
 
     const startMs = Date.parse(proposedStartAt);
     const endMs = Date.parse(proposedEndAt);
@@ -70,16 +70,6 @@ export async function POST(
 
     const now = new Date().toISOString();
     const requestId = `dcr_${Date.now()}`;
-    const nonce = `NONCE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-    // Step 1: Compute deterministic cryptographic proposal hash (SHA-256)
-    const proposalHash = computeProposalPayloadHash({
-      collectionAddress: collectionId,
-      proposedStartAt,
-      proposedEndAt,
-      justification,
-      nonce
-    });
 
     const proposal = {
       requestId,
@@ -89,11 +79,11 @@ export async function POST(
       proposedEndAt,
       justification,
       createdAt: now,
-      proposalHash,
-      nonce
+      requesterWallet: requesterWallet ?? "Comité",
+      feeUsdc: "0.10"
     };
 
-    // Step 2: Persist proposal to audit store
+    // Step 2: Persist proposal to transitory UI read cache
     saveDateChangeProposal(proposal);
 
     // Step 2: Return audit record intent with status PENDING_MULTISIG

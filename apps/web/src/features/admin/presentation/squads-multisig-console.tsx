@@ -174,7 +174,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
     try {
       const signerWallet = publicKey.toBase58();
 
-      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC with cryptographic proposal seal
+      // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC for Squads v4
       const prepareRes = await fetch("/api/admin/treasury/squads/prepare-vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -183,8 +183,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
           signerWallet,
           collectionAddress: dto.treasuryPolicyPda || dto.vaultPda,
           newStartAt: dto.dbDates.projectStartAt,
-          newEndAt: dto.dbDates.projectEndAt,
-          proposalHash: dto.proposalHash
+          newEndAt: dto.dbDates.projectEndAt
         })
       });
 
@@ -389,18 +388,22 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
               </div>
             )}
 
-            {dto.proposalHash && (
-              <div
-                data-testid="proposal-crypto-seal-badge"
-                className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-amber-500/10 pt-2 mt-1 text-[11px]"
-              >
-                <span className="text-muted-foreground">Sello Criptográfico (Keccak-256):</span>
-                <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {dto.proposalHash.slice(0, 10)}...{dto.proposalHash.slice(-8)} (Integridad Verificada)
+            {/* Requester & Fee Details */}
+            <div
+              data-testid="proposal-squads-governance-badge"
+              className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-amber-500/10 pt-2 mt-1 text-[11px]"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Solicitado por:</span>
+                <span className="font-mono text-foreground">
+                  {dto.requesterWallet ? `${dto.requesterWallet.slice(0, 4)}...${dto.requesterWallet.slice(-4)}` : "Comité"}
                 </span>
               </div>
-            )}
+              <span className="font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 inline-flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                Fee: 0.10 USDC (On-Chain)
+              </span>
+            </div>
           </div>
 
           {/* Direct Single Unified Governance Control */}
