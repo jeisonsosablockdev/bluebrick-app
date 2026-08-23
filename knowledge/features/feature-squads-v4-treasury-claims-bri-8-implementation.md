@@ -38,8 +38,27 @@ graph TD
 * [`squads-proposals.ts`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/apps/web/src/features/staking-distribution/infrastructure/squads-proposals.ts): Squads v4 PDA derivation and CPI proposal builders.
 * [`programs/payout_settlement/`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/programs/payout_settlement/src/lib.rs): Anchor program deployed on Solana Devnet (`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE`).
 
-## 2. On-Chain Invariants & Proofs
+## 3. SPEC-11: Unified Anchor Program Architecture & On-Chain Notary PDA Upgrade
 
-* **Deployed Program ID:** `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` (Slot `486180563`).
-* **Test Suite Coverage:** 59 unit/integration tests + 4,500 property-based fuzzing runs across Enfoques A, B y C.
-* **Audit Report:** [`QA-AND-FUZZING-REPORT.md`](file:///Users/jaymusicmachine/Documents/Desarrollo/brids/knowledge/rfcs/EPIC-015-squads-v4-treasury-claims/QA-AND-FUZZING-REPORT.md).
+### Canonical Unified Program Details
+* **Canonical Program ID:** `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` (Devnet)
+* **Upgrade Authority:** `3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd`
+* **Unified Instructions:**
+  1. `initialize_policy`: Sets up Squads v4 multisig binding and dual attester keys for payouts.
+  2. `update_policy`: Updates payout attesters or emergency pause authority.
+  3. `initialize_run`: Creates draft payout run and escrow ATA.
+  4. `seal_run`: Verifies exact escrow funding and activates payout run.
+  5. `settle_claim`: Settles individual Merkle proof claims with ClaimReceipt PDA.
+  6. `initialize_project_config`: Initializes `[b"project_config", collection_address]` PDA with `start_at` and `end_at` dates and binds Squads v4 Vault.
+  7. `update_project_dates`: Updates notarized project dates via Squads v4 Vault CPI.
+  8. `ping`: Health check instruction.
+
+### On-Chain PDA & Security Invariants
+* **PDA Seed Layout:** `[b"project_config", collection_address.as_ref()]`
+* **Account Size:** 134 bytes (8 discriminator + 32 authority_vault + 32 multisig + 1 vault_index + 32 collection_address + 8 start_at + 8 end_at + 4 version + 8 updated_at + 1 bump)
+* **3-Layer Squads Vault Authentication:**
+  - Layer 1: Signer check (`authority_vault.is_signer == true`).
+  - Layer 2: Mathematical PDA re-derivation against Squads v4 (`[b"multisig", multisig.key().as_ref(), b"vault", &[vault_index]]`).
+  - Layer 3: Multisig program owner check (`multisig.owner == SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`).
+* **Range Invariant:** `start_at <= end_at` enforced on initialization and updates.
+

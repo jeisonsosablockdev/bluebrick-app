@@ -102,6 +102,7 @@ export function TreasuryConsole(): ReactElement {
           if (json.ok && json.data && isMounted) {
             setPendingProposals(json.data.pendingProposals ?? []);
             setActiveRun(json.data.activeRun ?? null);
+            setItems(json.data.items ?? []);
             setMovements(json.data.movements ?? []);
           }
         }
@@ -142,7 +143,7 @@ export function TreasuryConsole(): ReactElement {
         })
       });
 
-      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const isJson = res.headers?.get?.("content-type")?.includes("application/json") ?? true;
       const json = isJson ? await res.json() : null;
 
       if (!res.ok) {
@@ -180,7 +181,7 @@ export function TreasuryConsole(): ReactElement {
         })
       });
 
-      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const isJson = res.headers?.get?.("content-type")?.includes("application/json") ?? true;
       const json = isJson ? await res.json() : null;
 
       if (!res.ok) {
@@ -221,7 +222,7 @@ export function TreasuryConsole(): ReactElement {
         })
       });
 
-      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const isJson = res.headers?.get?.("content-type")?.includes("application/json") ?? true;
       const json = isJson ? await res.json() : null;
 
       if (!res.ok) {

@@ -107,4 +107,53 @@ pub mod payout_settlement {
             merkle_proof,
         )
     }
+
+    /**
+     * Initializes the canonical ProjectConfig PDA for a tokenized Metaplex Core collection.
+     * Registers initial operational dates (start_at, end_at) and binds Squads v4 authority.
+     */
+    pub fn initialize_project_config(
+        ctx: Context<InitializeProjectConfig>,
+        start_at: i64,
+        end_at: i64,
+        vault_index: u8,
+    ) -> Result<()> {
+        instructions::initialize_project_config::initialize_project_config(
+            ctx,
+            start_at,
+            end_at,
+            vault_index,
+        )
+    }
+
+    /**
+     * Updates the notarized project start and end dates on its canonical ProjectConfig PDA.
+     * Exclusively executable via CPI signed by the Squads v4 Vault PDA.
+     */
+    pub fn update_project_dates(
+        ctx: Context<UpdateProjectDates>,
+        new_start_at: i64,
+        new_end_at: i64,
+    ) -> Result<()> {
+        instructions::update_project_dates::update_project_dates(
+            ctx,
+            new_start_at,
+            new_end_at,
+        )
+    }
+
+    /**
+     * Health check endpoint verifying on-chain program responsiveness.
+     */
+    pub fn ping(_ctx: Context<PingContext>) -> Result<()> {
+        msg!("payout_settlement::ping ok (unified notary + settlement)");
+        Ok(())
+    }
 }
+
+/// Context for the ping / health check instruction
+#[derive(Accounts)]
+pub struct PingContext<'info> {
+    pub signer: Signer<'info>,
+}
+

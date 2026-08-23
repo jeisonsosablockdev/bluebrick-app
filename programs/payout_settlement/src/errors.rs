@@ -55,4 +55,17 @@ pub enum PayoutSettlementError {
 
     #[msg("Emergency pause authority signature invalid or expired")]
     UnauthorizedEmergencyPause,
+
+    #[msg("Invalid date range: start_at must be less than or equal to end_at")]
+    InvalidDateRange,
+
+    #[msg("Account provided is not owned by the official Squads v4 program")]
+    InvalidMultisigAccount,
+
+    #[msg("Caller is not authorized to perform this operation")]
+    UnauthorizedAuthority,
+
+    #[msg("The vault PDA derived from the multisig does not match the authority vault")]
+    InvalidSquadsVaultSigner,
 }
+

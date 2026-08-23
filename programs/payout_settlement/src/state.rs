@@ -132,6 +132,7 @@ impl PayoutRun {
  * Seeds: [b"claim_receipt", run_id.as_ref(), claim_id.as_ref()]
  */
 #[account]
+#[derive(Default)]
 pub struct ClaimReceipt {
   /// Run ID UUID bytes
   pub run_id: [u8; 16],
@@ -148,5 +149,52 @@ impl ClaimReceipt {
         + 16 // run_id
         + 16 // claim_id
         + 8  // settled_at
+        + 1; // bump
+}
+
+
+/// Canonical text seed for deterministic ProjectConfig PDA derivation: `[b"project_config", collection_address]`
+pub const PROJECT_CONFIG_SEED: &[u8] = b"project_config";
+
+/**
+ * Account: ProjectConfigState
+ * 
+ * On-chain notary custody state for tokenized project operational dates and collection metadata.
+ * Seeds: [b"project_config", collection_address.as_ref()]
+ * Total Size: 134 bytes
+ */
+#[account]
+#[derive(Default)]
+pub struct ProjectConfigState {
+    /// Squads v4 Vault PDA (D9i1XNftRp...) with exclusive CPI modification authority
+    pub authority_vault: Pubkey,
+    /// Squads v4 Multisig State Account
+    pub multisig: Pubkey,
+    /// Squads Vault Index (typically 0)
+    pub vault_index: u8,
+    /// Metaplex Core Collection public address
+    pub collection_address: Pubkey,
+    /// Official start timestamp (Unix seconds)
+    pub start_at: i64,
+    /// Official completion timestamp (Unix seconds)
+    pub end_at: i64,
+    /// Monotonically increasing audit version
+    pub version: u32,
+    /// Unix timestamp of last authorized update
+    pub updated_at: i64,
+    /// PDA bump seed
+    pub bump: u8,
+}
+
+impl ProjectConfigState {
+    pub const LEN: usize = 8 // Discriminator
+        + 32 // authority_vault
+        + 32 // multisig
+        + 1  // vault_index
+        + 32 // collection_address
+        + 8  // start_at
+        + 8  // end_at
+        + 4  // version
+        + 8  // updated_at
         + 1; // bump
 }

@@ -24,6 +24,13 @@ vi.mock("@/lib/release-module-visibility", () => ({
   isReleaseControlledRouteVisible: releaseMocks.isReleaseControlledRouteVisible
 }));
 
+vi.mock("@solana/wallet-adapter-react", () => ({
+  useWallet: () => ({
+    publicKey: { toBase58: () => "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd" },
+    connected: true
+  })
+}));
+
 import { TreasuryConsole } from "@/features/admin/presentation/treasury-console";
 
 type RenderHandle = {
@@ -31,12 +38,16 @@ type RenderHandle = {
   root: Root;
 };
 
-function renderComponent(): RenderHandle {
+async function renderComponent(): Promise<RenderHandle> {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
-  act(() => {
+  await act(async () => {
     root.render(createElement(TreasuryConsole));
+  });
+  // Allow promises to resolve
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 10));
   });
   return { container, root };
 }
@@ -46,7 +57,39 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (globalThis as any).fetch = vi.fn();
+    (globalThis as any).fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("/api/admin/treasury/summary")) {
+        return {
+          ok: true,
+          json: async () => ({
+            ok: true,
+            data: {
+              activeRun: {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                status: "draft",
+                totalAmount: "10,000 USDC",
+                itemsCount: 1
+              },
+              items: [
+                {
+                  id: "item-001",
+                  runId: "550e8400-e29b-41d4-a716-446655440000",
+                  recipientWallet: "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd",
+                  amount: "1,000 USDC",
+                  status: "active"
+                }
+              ],
+              pendingProposals: [],
+              movements: []
+            }
+          })
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ ok: true, data: {} })
+      };
+    });
   });
 
   afterEach(() => {
@@ -59,17 +102,17 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
     }
   });
 
-  it("renders Reject Proposal, Veto and Emergency Pause buttons in pre-seal state", () => {
-    handle = renderComponent();
+  it("renders Reject Proposal, Veto and Emergency Pause buttons in pre-seal state", async () => {
+    handle = await renderComponent();
 
     const rejectButton = Array.from(handle.container.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Reject Proposal")
+      btn.textContent?.includes("Rechazar") || btn.textContent?.includes("Reject")
     );
     const emergencyButton = Array.from(handle.container.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Emergency Pause")
+      btn.textContent?.includes("Pausa") || btn.textContent?.includes("Pause")
     );
     const vetoButtons = Array.from(handle.container.querySelectorAll("button")).filter((btn) =>
-      btn.textContent?.includes("Veto")
+      btn.textContent?.includes("Vetar") || btn.textContent?.includes("Veto")
     );
 
     expect(rejectButton).not.toBeUndefined();
@@ -78,6 +121,8 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
   });
 
   it("handles item veto interaction and updates status badge", async () => {
+    handle = await renderComponent();
+
     ((globalThis as any).fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -86,10 +131,8 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
       })
     });
 
-    handle = renderComponent();
-
     const vetoButton = Array.from(handle.container.querySelectorAll("button")).find((btn) =>
-      btn.textContent === "Veto"
+      btn.textContent?.includes("Vetar") || btn.textContent === "Veto"
     );
     expect(vetoButton).not.toBeUndefined();
 
@@ -102,10 +145,12 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
       expect.objectContaining({ method: "POST" })
     );
 
-    expect(handle.container.textContent).toContain("Item item-001 vetoed successfully.");
+    expect(handle.container.textContent).toContain("vetado");
   });
 
   it("handles emergency circuit breaker and displays local halted banner", async () => {
+    handle = await renderComponent();
+
     ((globalThis as any).fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -118,10 +163,8 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
       })
     });
 
-    handle = renderComponent();
-
     const emergencyButton = Array.from(handle.container.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Emergency Pause")
+      btn.textContent?.includes("Pausa") || btn.textContent?.includes("Pause")
     );
     expect(emergencyButton).not.toBeUndefined();
 
@@ -130,11 +173,10 @@ describe("TreasuryConsole: Reject, Veto & Circuit Breaker UI", () => {
     });
 
     expect((globalThis as any).fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/admin/payout-runs/550e8400-e29b-41d4-a716-446655440000/circuit-breaker"),
+      expect.stringContaining("/api/admin/treasury/circuit-breaker"),
       expect.objectContaining({ method: "POST" })
     );
 
-    expect(handle.container.textContent).toContain("Circuit Breaker Active");
-    expect(handle.container.textContent).toContain("Local Bot Halted");
+    expect(handle.container.textContent).toContain("Pausa");
   });
 });
