@@ -30,11 +30,11 @@ Last Generated: 2026-08-22T00:00:00.000Z
 | Observations | 13 |
 | Proposals | 3 |
 | Reports | 5 |
-| Archived | 558 |
+| Archived | 561 |
 | Observed status | 23 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 556 |
+| Archived status | 559 |
 
 ## Inbox
 
@@ -326,6 +326,8 @@ Last Generated: 2026-08-22T00:00:00.000Z
 | feature-jeisonsosa-BRI-12-solanakit-wallet-connection | archived | none | [feature-jeisonsosa-BRI-12-solanakit-wallet-connection](knowledge/features/feature-jeisonsosa-BRI-12-solanakit-wallet-connection.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md) | n/a |
 | feature-jeisonsosa-BRI-186-monorepo-fdd-architecture | archived | none | [feature-jeisonsosa-BRI-186-monorepo-fdd-architecture](knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture.md) | n/a |
+| feature-nextjs-ai-agents-integration-implementation | archived | none | [Feature Next.js AI Agents and DevTools MCP Implementation](knowledge/features/feature-nextjs-ai-agents-integration-implementation.md) | n/a |
+| feature-nextjs-ai-agents-integration | archived | none | [Feature Next.js AI Agents and DevTools MCP Integration](knowledge/features/feature-nextjs-ai-agents-integration.md) | n/a |
 | FEAT-BRI-8-SOLUTION | archived | none | [Feature Implementation: Squads v4 Treasury Claims & Delegated Allowance Settlement](knowledge/features/feature-squads-v4-treasury-claims-bri-8-implementation.md) | n/a |
 | FEAT-BRI-8-PROBLEM | archived | none | [Feature: Squads v4 Treasury Claims & Delegated Allowance Settlement](knowledge/features/feature-squads-v4-treasury-claims-bri-8.md) | n/a |
 | feature-admin-collection-documents-ui-remake-implementation | archived | none | [Feature Admin Collection Documents Ui Remake Implementation](knowledge/features/other/feature-admin-collection-documents-ui-remake-implementation.md) | n/a |
@@ -469,6 +471,7 @@ Last Generated: 2026-08-22T00:00:00.000Z
 | linear-developer-identity-and-documentation-protocol | archived | none | [Linear Developer Identity And Documentation Protocol](knowledge/guides/linear-developer-identity-and-documentation-protocol.md) | n/a |
 | linear-mcp-bridge | archived | none | [Linear Mcp BRI-dge](knowledge/guides/linear-mcp-bridge.md) | n/a |
 | linear-single-issue-slice-planning | archived | none | [Linear Single Issue Slice Planning](knowledge/guides/linear-single-issue-slice-planning.md) | n/a |
+| next-devtools-mcp | archived | none | [next-devtools-mcp](knowledge/guides/next-devtools-mcp.md) | n/a |
 | operability-observability-security-deploy | archived | none | [Operability Observability Security Deploy](knowledge/guides/operability-observability-security-deploy.md) | n/a |
 | route-architecture-and-templates | archived | none | [Route Architecture And Templates](knowledge/guides/route-architecture-and-templates.md) | n/a |
 | solana-kit-migration-recipes | archived | none | [Solana Kit Migration Recipes](knowledge/guides/solana-kit-migration-recipes.md) | n/a |
