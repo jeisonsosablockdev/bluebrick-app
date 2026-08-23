@@ -12,10 +12,10 @@ Administrators need an intuitive, error-free interface to configure yield distri
 3. `/admin/collections/[id]` includes an interactive on-chain notary panel (`AdminCollectionNotaryDatesPanel`) with calendar date pickers, proposal audit persistence, and multisig status badges.
 4. `/admin/treasury` and `/admin/treasury/squads` are updated to Next.js 16 App Router best practices, querying real active distribution runs and live date change proposals without static mock fixtures.
 5. All validations, typechecks, and tests pass cleanly with 100% adherence to 4-layer FDD architecture and mandatory in-code commentary standards.
-6. All date change proposals are created natively on-chain in Squads Protocol v4 (`SQDS4ep65T...`) via `proposalCreate` and sealed with Keccak-256 hashes (`proposal_hash = keccak256(...)`) per SOLUTION-ARCHITECTURE.md, using the backend purely as a transitory UI cache.
+6. All date change proposals are created natively on-chain in Squads Protocol v4 (`SQDS4ep65T...`) with a 0.10 USDC platform governance fee, and on-chain quorum execution triggers CPI directly to the Notary PDA program (`project_config_notary`), persisting UI metadata solely as a transitory read cache.
 
 ## What gaps exist today
-- Native Squads v4 `proposalCreate` and `proposalApprove` instructions must be wired to collection date requests and multisig governance.
+- Native Squads v4 `vaultTransactionCreate`, 0.1 USDC platform fee transfer, and Notary execution trigger must be wired to collection date requests and multisig governance.
 
 ## What questions remain open
-- None; user explicitly directed to implement native Squads v4 proposal creation with Keccak-256.
+- None; user explicitly directed to eliminate ad-hoc local cryptographic sealing and rely strictly on Squads v4 on-chain governance with 0.1 USDC fee and Notary PDA execution trigger.
