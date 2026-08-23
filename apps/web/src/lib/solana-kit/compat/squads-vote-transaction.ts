@@ -91,7 +91,7 @@ export async function prepareSquadsVoteTransaction(
   }
 ): Promise<PreparedSquadsVoteTransaction> {
   // Step 1: Resolve Devnet RPC and parse signer public key
-  const rpcUrl = process.env.SOLANA_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com";
+  const rpcUrl = getSolanaRpcUrl();
   const signerPubkey = new PublicKey(signerWalletStr);
   const attemptId = `VOTE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
@@ -202,8 +202,9 @@ export async function broadcastSignedTransaction(
         signedTransactionBase64,
         {
           encoding: "base64",
+          skipPreflight: true,
           preflightCommitment: "confirmed",
-          maxRetries: 3
+          maxRetries: 5
         }
       ]
     })
