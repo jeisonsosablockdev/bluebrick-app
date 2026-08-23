@@ -706,6 +706,32 @@ export async function listDistributionItemsByWallet(walletPublicKey: string): Pr
   });
 }
 
+/**
+ * Lists all distribution item records associated with a specific distribution run ID.
+ *
+ * @param runId - The distribution run identifier
+ * @returns Array of distribution item records
+ */
+export async function listDistributionItemsByRunId(runId: string): Promise<DistributionItemRecord[]> {
+  const id = assertNonEmpty(runId, "runId");
+
+  if (!isDatabaseConfigured()) {
+    return inMemoryItemsByRunId.get(id) ?? [];
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query<DistributionItemRow>(
+      `SELECT ${itemColumns}
+       FROM distribution_items
+       WHERE run_id = $1
+       ORDER BY amount_minor DESC, id ASC`,
+      [id]
+    );
+
+    return result.rows.map((row) => mapItemRow(row));
+  });
+}
+
 export async function blockDistributionRun(input: BlockDistributionRunInput): Promise<DistributionRunRecord> {
   const runId = assertNonEmpty(input.runId, "runId");
   const blockedReason = assertNonEmpty(input.blockedReason, "blockedReason");

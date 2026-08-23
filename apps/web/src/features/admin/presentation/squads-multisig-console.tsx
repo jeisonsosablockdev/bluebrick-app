@@ -92,7 +92,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
       setErrorMessage(null);
       try {
         const targetUrl = runId
-          ? `/api/admin/distributions/runs/${encodeURIComponent(runId)}`
+          ? `/api/admin/treasury/squads/proposals?runId=${encodeURIComponent(runId)}`
           : "/api/admin/treasury/squads/proposals";
 
         const response = await fetch(targetUrl);

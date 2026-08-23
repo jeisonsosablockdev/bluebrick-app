@@ -78,24 +78,25 @@
 - Added 3-layer Squads Vault authentication and 134-byte Notary PDA on-chain account structure.
 - Verified on Devnet with live CLI tooling (`scripts/solana-squads-notary-cli.ts`).
 
-### `SPEC-12: Clean Code Audit, SOLID Refactoring & Canonical Documentation (refactor-clean)` [IN_PROGRESS]
+### `SPEC-12: Clean Code Audit, SOLID Refactoring & Canonical Documentation (refactor-clean)` [COMPLETED]
 - **SOLID & Clean Code Principles (`code-refactoring-refactor-clean`)**:
-  - **Single Responsibility Principle (SRP)**: Extract long, multi-concern handlers (e.g. `handleProposalSubmit` and `handleUnifiedAction`) into dedicated, testable domain/application helpers.
-  - **Explicit Abstraction & Meaningful Names**: Replace cryptic variables and inline type assertions with self-documenting, strongly-typed domain primitives.
-  - **Zero Dead Code & Import Sanitization**: Clean up obsolete imports, test residue, leftover route files, and non-whitelisted artifacts.
+  - **Single Responsibility Principle (SRP)**: Extracted long, multi-concern handlers into dedicated, testable domain/application helper `squads-proposal-service.ts`.
+  - **Explicit Abstraction & Meaningful Names**: Replaced cryptic variables and inline type assertions with self-documenting, strongly-typed domain primitives.
+  - **Zero Dead Code & Import Sanitization**: Cleaned up obsolete imports, test residue, and non-whitelisted artifacts.
 - **Mandatory In-Code Commentary Governance**:
-  - Verify that every `.ts`, `.tsx`, `.rs`, `.sql` file modified under BRI-8 includes:
-    1. Layer Role Header comment (`Layer 1: Presentation`, `Layer 2: Application`, etc.).
-    2. JSDoc/TSDoc blocks on all exported functions, types, and constants.
-    3. Step-by-step logic indicators (`// Step N: ...`).
-    4. Invariant and cryptographic security explanations (zero magic code).
+  - Verified that every `.ts`, `.tsx`, `.rs`, `.sql` file modified under BRI-8 includes layer annotations, JSDoc/TSDoc blocks, step-by-step logic indicators (`// Step N: ...`), and invariant explanations.
 - **Canonical Architecture Documentation**:
-  - Write the canonical end-to-end integration manual for Squads Protocol v4 + Notary PDA in `knowledge/features/feature-jaymusicmachine-BRI-8-squads-notary-architecture.md`, detailing:
-    - 2-Phase multisig lifecycle (`proposalCreate` -> `proposalApprove` -> `vaultTransactionExecute`).
-    - Deterministic Proposal PDA derivation and Solscan Devnet audit traceability.
-    - CPI execution directly to Anchor Notary Program (`HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE`).
+  - Documented the complete native Squads Protocol v4 + Notary PDA architecture in `knowledge/features/feature-jaymusicmachine-BRI-8-squads-notary-architecture.md`.
 - **Full CI & Harness Verification**:
-  - Run all unit tests, typechecks, architecture linters, and harness suites (`pnpm validate`) to guarantee 100% clean pass.
+  - Ran all unit tests, typechecks, architecture linters, and harness suites (`pnpm validate`) with 100% clean pass.
+
+### `SPEC-13: Distribution Run Squads Proposal Resolver & Console Integration` [IN_PROGRESS]
+- **Layer 2 — Application / API**:
+  - Update `apps/web/src/app/api/admin/treasury/squads/proposals/route.ts` to accept `?runId=<distributionRunId>`, fetch the corresponding `DistributionRunRecord` from `distribution-repository.ts`, map items into beneficiaries, and return a valid `SquadsProposalDTO`.
+- **Layer 1 — Presentation**:
+  - Update `apps/web/src/features/admin/presentation/squads-multisig-console.tsx` to route `runId` query parameter directly to `/api/admin/treasury/squads/proposals?runId=...` instead of the raw entity endpoint, ensuring seamless rendering and sober empty state when 0 items exist.
+- **TDD Contract**:
+  - Unit and integration tests verifying `GET /api/admin/treasury/squads/proposals?runId=...` correctly returns the distribution run proposal and renders inside `SquadsMultisigConsole`.
 
 ## 3. Verification Plan
 - `pnpm test` (all unit, hook, and component tests passing green).

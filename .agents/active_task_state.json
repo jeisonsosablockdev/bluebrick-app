@@ -2,26 +2,22 @@
   "version": "1.0.0",
   "task_id": "BRI-8",
   "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-12",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s12-clean-code-audit-docs",
+  "spec_id": "SPEC-13",
+  "branch": "SPEC/jaymusicmachine-BRI-8-s13-distribution-run-squads-view",
   "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
   "human_design_approval": {
     "approved": true,
-    "timestamp": "2026-08-23T02:30:45-05:00"
-  },
-  "human_merge_approval": {
-    "approved": true,
-    "timestamp": "2026-08-23T10:12:06-05:00"
+    "timestamp": "2026-08-23T10:50:14-05:00"
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-23T02:25:48-05:00" },
-    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-23T02:25:55-05:00" },
-    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-23T02:30:40-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-23T02:30:45-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-23T02:31:44-05:00", "note": "Created 5 TDD unit tests for SquadsProposalService (SRP application service)" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-23T02:32:15-05:00" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-23T02:34:20-05:00" },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true, "timestamp": "2026-08-23T10:12:06-05:00" }
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-23T10:50:22-05:00" },
+    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-23T10:50:30-05:00" },
+    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-23T10:50:35-05:00" },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-23T10:50:14-05:00" },
+    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-23T10:50:54-05:00", "note": "Created TDD test for GET /api/admin/treasury/squads/proposals with ?runId" },
+    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-23T10:53:15-05:00" },
+    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-23T10:55:02-05:00" },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }

@@ -17,6 +17,8 @@ import {
   getDateChangeProposal,
   listDateChangeProposals
 } from "@/features/admin/infrastructure/date-change-proposal-store";
+import { getDistributionRunDetailForAdmin } from "@/features/staking-distribution/application/distribution-service";
+import { listDistributionItemsByRunId } from "@/features/staking-distribution/infrastructure/distribution-repository";
 import {
   fetchSquadsNativeProposals,
   fetchSquadsMultisigState,
@@ -53,6 +55,66 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       selectedNative = activeOrApproved || nativeProposals[0];
     }
 
+    // Step 2: Check if runIdParam matches a Distribution Run in database
+    let runRecord = null;
+    if (runIdParam) {
+      try {
+        runRecord = await getDistributionRunDetailForAdmin(runIdParam);
+      } catch {
+        // Fallback to date change proposal
+      }
+    }
+
+    if (runRecord) {
+      const runItems = await listDistributionItemsByRunId(runRecord.id).catch(() => []);
+      const beneficiaries = runItems.map((item) => ({
+        claimId: item.id,
+        wallet: item.walletPublicKey,
+        amountMinor: item.amountMinor.toString(),
+        amountUsdcFormatted: `$${(Number(item.amountMinor) / 1_000_000).toFixed(2)}`,
+        frozenDays: Math.round(Number(item.frozenSeconds) / 86400),
+        caseNumber: (item.itemPayload as { caseNumber?: string })?.caseNumber
+      }));
+
+      const threshold = selectedNative?.threshold ?? 2;
+      const approvedMembers = selectedNative?.approved ?? [];
+      const isExecuted = runRecord.status === "finalized" || (selectedNative ? selectedNative.status === "Executed" : false);
+      const txIndex = selectedNative ? selectedNative.transactionIndex : "1";
+
+      return NextResponse.json({
+        ok: true,
+        data: {
+          runId: runRecord.id,
+          transactionIndex: txIndex,
+          proposalPda: selectedNative?.proposalPda,
+          treasuryPolicyPda: runRecord.collectionAddress,
+          multisigPda: SQUADS_DEVNET_MULTISIG_PDA,
+          vaultPda: SQUADS_DEVNET_VAULT_PDA,
+          threshold,
+          membersCount: selectedNative?.totalMembers ?? 4,
+          approvedMembers,
+          executed: isExecuted,
+          status: isExecuted ? "Executed" : (selectedNative?.status || (approvedMembers.length >= threshold ? "Approved" : "Active")),
+          txSignature: selectedNative?.proposalPda,
+          solscanUrl: selectedNative?.proposalPda ? getSolscanTransactionUrl(selectedNative.proposalPda) : undefined,
+          requesterWallet: runRecord.createdByActorId,
+          feeUsdc: (Number(runRecord.totalAmountMinor) / 1_000_000).toFixed(2),
+          onChainDates: {
+            projectStartAt: runRecord.periodStartAt,
+            projectEndAt: runRecord.periodEndAt
+          },
+          dbDates: {
+            projectStartAt: runRecord.periodStartAt,
+            projectEndAt: runRecord.periodEndAt,
+            modificationReason: `Dispersión de rendimientos período ${runRecord.periodKey} (${runRecord.propertyId})`
+          },
+          beneficiaries,
+          nativeProposals
+        }
+      });
+    }
+
+    // Step 3: Check stored date change proposals
     let latestStored = runIdParam ? getDateChangeProposal(runIdParam) : null;
     if (!latestStored) {
       const allProposals = listDateChangeProposals();
@@ -60,7 +122,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       latestStored = pendingMultisig.length > 0 ? pendingMultisig[pendingMultisig.length - 1] : (allProposals.length > 0 ? allProposals[allProposals.length - 1] : null);
     }
 
-    // Step 2: Return null if neither native nor stored proposals exist
+    // Step 4: Return null if neither native nor stored proposals exist
     if (!selectedNative && !latestStored) {
       return NextResponse.json({
         ok: true,
