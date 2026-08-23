@@ -62,8 +62,16 @@
 - **Layer 1 — Presentation**:
   - `apps/web/src/features/admin/presentation/squads-multisig-console.tsx`: Integrated with `signTransaction` from wallet adapter, triggering Phantom signature popup, Devnet gas payment, and rendering green success banner with direct Solscan Devnet transaction link.
 
-### `SPEC-10: Final Clean Code Audit & Monorepo Validation (refactor-clean)`
-- Final validation pass, English in-code commentary audit, and 100% `pnpm validate` verification across monorepo.
+### `SPEC-10: Native Squads Protocol v4 Governance, 0.10 USDC Platform Fee & Test Inversion Elimination` [COMPLETED]
+- Replaced ad-hoc local sealing with native `@sqds/multisig` SDK integration.
+- Added 0.10 USDC platform governance fee transfer badge and pipeline.
+- Decoupled production code from test exports (`payout-override-rules.ts`).
+
+### `SPEC-11: Unified Anchor Program Architecture & On-Chain Notary PDA Upgrade` [COMPLETED]
+- Canonical Program ID: `HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE` on Solana Devnet.
+- Integrated `initialize_project_config` and `update_project_dates` instructions into unified Anchor program with `settle_claim`, `seal_run`, and `initialize_policy`.
+- Added 3-layer Squads Vault authentication and 134-byte Notary PDA on-chain account structure.
+- Verified on Devnet with live CLI tooling (`scripts/solana-squads-notary-cli.ts`).
 
 ## 3. Verification Plan
 - `pnpm test` (all unit, hook, and component tests passing green).
