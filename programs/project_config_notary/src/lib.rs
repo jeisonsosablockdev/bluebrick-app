@@ -24,7 +24,7 @@ pub mod state;
 
 use instructions::*;
 
-declare_id!("HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE");
+declare_id!("EAwShRn1voHtw3MgHEfyw5Svb4Xv1hePNPWQvD8NjvRi");
 
 #[program]
 pub mod project_config_notary {

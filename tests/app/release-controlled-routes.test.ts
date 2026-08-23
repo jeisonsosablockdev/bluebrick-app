@@ -74,8 +74,8 @@ function setNodeEnv(value: string | undefined): void {
 
 async function loadSyncPages() {
   const [treasury, distributions] = await Promise.all([
-    import("@/app/admin/treasury/page"),
-    import("@/app/admin/distributions/page")
+    import("../../apps/web/src/app/admin/treasury/page"),
+    import("../../apps/web/src/app/admin/distributions/page")
   ]);
 
   return {

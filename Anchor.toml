@@ -7,15 +7,15 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-payout_settlement = "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
-project_config_notary = "HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE"
+payout_settlement = "Bin3MC6Fqu5pTc5iMjFUYN4naYFir5fzp7iwGi3ag3iJ"
+project_config_notary = "EAwShRn1voHtw3MgHEfyw5Svb4Xv1hePNPWQvD8NjvRi"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"
-wallet = "/Users/jaymusicmachine/my-solana-wallet.json"
+wallet = "~/my-solana-wallet.json"
 
 [scripts]
 test = "vitest run tests/programs/payout-settlement.test.ts"

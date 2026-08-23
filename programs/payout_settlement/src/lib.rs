@@ -13,7 +13,7 @@ pub mod instructions;
 
 use instructions::*;
 
-declare_id!("HLp7YXKZZ8uPuzwN3CtuDxtgYoWhc5Fb1FHj5bHEe9zE");
+declare_id!("Bin3MC6Fqu5pTc5iMjFUYN4naYFir5fzp7iwGi3ag3iJ");
 
 #[program]
 pub mod payout_settlement {
