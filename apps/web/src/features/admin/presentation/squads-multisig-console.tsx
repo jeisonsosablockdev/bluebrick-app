@@ -173,6 +173,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
 
     try {
       const signerWallet = publicKey.toBase58();
+      const isExecuteAction = unifiedAction?.type === "READY_TO_EXECUTE";
 
       // Step 8b: Prepare unsigned VersionedTransaction from Devnet RPC for Squads v4
       const prepareRes = await fetch("/api/admin/treasury/squads/prepare-vote", {
@@ -180,10 +181,12 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposalId: dto.runId,
+          transactionIndex: dto.transactionIndex,
           signerWallet,
           collectionAddress: dto.treasuryPolicyPda || dto.vaultPda,
           newStartAt: dto.dbDates.projectStartAt,
-          newEndAt: dto.dbDates.projectEndAt
+          newEndAt: dto.dbDates.projectEndAt,
+          action: isExecuteAction ? "EXECUTE" : "VOTE"
         })
       });
 
@@ -219,7 +222,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
       }
 
       // Step 8e: Update local DTO state with on-chain execution proof and Solscan link
-      const isExecuted = json.data?.executed ?? Boolean(unifiedAction?.willReachQuorum);
+      const isExecuted = isExecuteAction || json.data?.executed === true;
       const txSignature = json.data?.txSignature;
       const solscanUrl = json.data?.solscanUrl ?? (txSignature ? getSolscanTransactionUrl(txSignature) : undefined);
       const confirmedSlot = json.data?.slot;
@@ -228,8 +231,9 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
         prev
           ? {
               ...prev,
-              approvedMembers: Array.from(new Set([...prev.approvedMembers, signerWallet])),
+              approvedMembers: isExecuteAction ? prev.approvedMembers : Array.from(new Set([...prev.approvedMembers, signerWallet])),
               executed: isExecuted,
+              status: isExecuted ? "Executed" : (prev.approvedMembers.length + 1 >= prev.threshold ? "Approved" : "Active"),
               txSignature,
               solscanUrl,
               confirmedSlot
@@ -240,7 +244,7 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
       setActionSuccessMessage(
         json.data?.message ??
           (isExecuted
-            ? `Quórum alcanzado (2/2): Propuesta aprobada y ejecutada exitosamente en Solana Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`
+            ? `Ejecución completada exitosamente en Solana Devnet. Fechas del PDA Notario actualizadas. Transacción: ${txSignature}`
             : `Voto registrado exitosamente en Solana Devnet con wallet ${signerWallet.slice(0, 4)}...${signerWallet.slice(-4)}.`)
       );
     } catch (err: unknown) {
@@ -333,8 +337,48 @@ export function SquadsMultisigConsole({ initialDto = null, runId }: SquadsMultis
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Propuesta de dispersión para la corrida <span className="font-mono text-foreground font-semibold">{dto.runId}</span>
+            Propuesta de dispersión para la corrida <span className="font-mono text-foreground font-semibold">{dto.runId}</span> (Tx Index #{dto.transactionIndex ?? "1"})
           </p>
+
+          {/* On-Chain Proposals Switcher */}
+          {dto.nativeProposals && dto.nativeProposals.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-border/20">
+              <span className="text-xs font-medium text-muted-foreground">Propuestas Squads v4:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {dto.nativeProposals.map((np) => {
+                  const isSelected = np.transactionIndex === dto.transactionIndex;
+                  const badgeColor =
+                    np.status === "Executed"
+                      ? "bg-neutral-800/80 text-neutral-400 border-neutral-700"
+                      : np.status === "Approved"
+                      ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+                  return (
+                    <button
+                      key={np.transactionIndex}
+                      type="button"
+                      onClick={() => {
+                        setIsLoading(true);
+                        fetch(`/api/admin/treasury/squads/proposals?index=${np.transactionIndex}`)
+                          .then((res) => res.json())
+                          .then((json) => {
+                            if (json.data) setDto(json.data);
+                          })
+                          .finally(() => setIsLoading(false));
+                      }}
+                      className={`rounded-lg border px-2.5 py-1 text-xs font-mono transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/20 text-white font-bold ring-1 ring-primary"
+                          : `${badgeColor} hover:opacity-80`
+                      }`}
+                    >
+                      Tx #{np.transactionIndex} ({np.status})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">

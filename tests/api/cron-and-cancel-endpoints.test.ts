@@ -14,9 +14,9 @@ import crypto from "node:crypto";
  * 5. Reentrant idempotency for cron execution.
  */
 
-export type ClaimState = "UNCLAIMED" | "CLAIM_REQUESTED" | "EXECUTED" | "EXPIRED" | "CANCELED" | "RETAINED_COMPLIANCE";
+type ClaimState = "UNCLAIMED" | "CLAIM_REQUESTED" | "EXECUTED" | "EXPIRED" | "CANCELED" | "RETAINED_COMPLIANCE";
 
-export type DistributionClaimEntity = {
+type DistributionClaimEntity = {
   id: string;
   runId: string;
   holderWallet: string;
@@ -36,7 +36,7 @@ export type DistributionClaimEntity = {
  * What: Authenticates cron requests.
  * How: Compares bearer authorization header with server secret using crypto.timingSafeEqual.
  */
-export function verifyCronAuthorization(authHeader: string | null | undefined, expectedSecret: string): boolean {
+function verifyCronAuthorization(authHeader: string | null | undefined, expectedSecret: string): boolean {
   if (!authHeader || !expectedSecret) return false;
   if (!authHeader.startsWith("Bearer ")) return false;
 
@@ -53,7 +53,7 @@ export function verifyCronAuthorization(authHeader: string | null | undefined, e
  * What: Expires stale claim requests.
  * How: Filters claims in CLAIM_REQUESTED status where (now - requestedAt) > 48 hours.
  */
-export function processClaimsExpiry(
+function processClaimsExpiry(
   claims: DistributionClaimEntity[],
   nowIso: string,
   cutoffHours = 48
@@ -86,7 +86,7 @@ export function processClaimsExpiry(
  * What: Retains long-unclaimed yields for compliance review.
  * How: Filters claims in UNCLAIMED status where age >= 365 days.
  */
-export function processComplianceTtl(
+function processComplianceTtl(
   claims: DistributionClaimEntity[],
   nowIso: string,
   cutoffDays = 365
@@ -119,7 +119,7 @@ export function processComplianceTtl(
  * What: Allows user to cancel pending claim request.
  * How: Validates ownership and enforces that only CLAIM_REQUESTED claims can be cancelled.
  */
-export function cancelClaimRequest(
+function cancelClaimRequest(
   claim: DistributionClaimEntity,
   requesterWallet: string,
   nowIso: string

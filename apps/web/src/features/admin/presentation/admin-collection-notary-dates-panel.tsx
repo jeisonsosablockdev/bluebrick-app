@@ -24,10 +24,18 @@
 
 import type { ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { dispatchOpenWalletModal } from "@/lib/auth-ui-events";
 import { localize, type AppLocale } from "@/lib/i18n";
+import { getSolscanAccountUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
+import {
+  deserializeLegacyVersionedTransaction,
+  serializeLegacyVersionedTransaction
+} from "@/lib/solana-kit/compat/web3-transactions";
 import type { ProjectConfigPdaState } from "@/lib/solana-kit/pda/project-config-reader";
 
 export type PendingDateProposal = {
@@ -71,12 +79,32 @@ function truncateAddress(addr: string): string {
   return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
+function useSafeWallet() {
+  try {
+    const wallet = useWallet();
+    let pk = null;
+    let signTx = undefined;
+    let isConnected = false;
+    try {
+      pk = wallet.publicKey;
+      signTx = wallet.signTransaction;
+      isConnected = Boolean(wallet.connected);
+    } catch {
+      // Wallet provider context not present in isolation
+    }
+    return { publicKey: pk, signTransaction: signTx, connected: isConnected };
+  } catch {
+    return { publicKey: null, signTransaction: undefined, connected: false };
+  }
+}
+
 export function AdminCollectionNotaryDatesPanel({
   collectionId,
   collectionAddress,
   locale,
   initialPendingProposal = null
 }: AdminCollectionNotaryDatesPanelProps): ReactElement {
+  const { publicKey, signTransaction, connected } = useSafeWallet();
   const [onChainState, setOnChainState] = useState<ProjectConfigPdaState | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -124,7 +152,8 @@ export function AdminCollectionNotaryDatesPanel({
       setIsLoading(true);
       try {
         const target = collectionId || collectionAddress;
-        const res = await fetch(`/api/admin/collections/${target}/date-change-request`);
+        const query = collectionAddress ? `?collectionAddress=${encodeURIComponent(collectionAddress)}` : "";
+        const res = await fetch(`/api/admin/collections/${target}/date-change-request${query}`);
         if (res.ok) {
           const data = await res.json();
           if (data.ok && isMounted) {
@@ -137,13 +166,13 @@ export function AdminCollectionNotaryDatesPanel({
                 setProposedEndDate(new Date(Number(data.onChainState.endAtUnixSeconds) * 1000).toISOString().slice(0, 10));
               }
             }
-            if (data.data && data.data.status === "PENDING_MULTISIG") {
+            if (data.data) {
               setPendingProposal(data.data);
             }
           }
         }
       } catch {
-        // Fallback safely on error
+        // Fail gracefully to default state
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -163,20 +192,39 @@ export function AdminCollectionNotaryDatesPanel({
     e.preventDefault();
     setProposalErrorMessage(null);
     setProposalSuccessMessage(null);
+
+    // Step 2a: Enforce wallet connection for on-chain signing
+    if (!publicKey || !connected) {
+      dispatchOpenWalletModal({ loginMethod: "wallet" });
+      setProposalErrorMessage(
+        localize(locale, {
+          en: "Please connect your Solana wallet to sign the proposal in Squads Multisig.",
+          es: "Por favor conecta tu wallet de Solana para firmar la propuesta en Squads Multisig.",
+          pt: "Por favor conecte sua carteira Solana para assinar a proposta no Squads Multisig."
+        })
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const proposedStartAt = new Date(`${proposedStartDate}T00:00:00.000Z`).toISOString();
       const proposedEndAt = new Date(`${proposedEndDate}T23:59:59.000Z`).toISOString();
 
+      const signerWallet = publicKey.toBase58();
       const target = collectionId || collectionAddress;
+      const targetCollection = collectionAddress || (collectionId && collectionId.length > 30 ? collectionId : "9xP2v4M1Bay3rtZ9nhDR6CgpiHKnSdCiksuFUHz7ttuz");
+
       const res = await fetch(`/api/admin/collections/${target}/date-change-request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposedStartAt,
           proposedEndAt,
-          justification
+          justification,
+          requesterWallet: signerWallet,
+          collectionAddress: targetCollection
         })
       });
 
@@ -186,13 +234,48 @@ export function AdminCollectionNotaryDatesPanel({
         throw new Error(data.message || "Error al enviar la solicitud de cambio de fecha.");
       }
 
+      if (!data.preparedTx?.transactionBase64) {
+        throw new Error(data.message || "No se pudo preparar la transacción on-chain de Squads v4 para firmar.");
+      }
+
+      if (!signTransaction) {
+        throw new Error("Tu wallet conectada no soporta firma criptográfica de transacciones.");
+      }
+
+      // Step 2b: Request Phantom / Solflare wallet cryptographic signature
+      const rawBytes = Buffer.from(data.preparedTx.transactionBase64, "base64");
+      const unsignedTx = deserializeLegacyVersionedTransaction(new Uint8Array(rawBytes));
+      const signedTx = await signTransaction(unsignedTx);
+      const signedBytes = serializeLegacyVersionedTransaction(signedTx);
+      const signedBase64 = Buffer.from(signedBytes).toString("base64");
+
+      // Step 2c: Broadcast signed transaction to Solana Devnet RPC
+      const broadcastRes = await fetch("/api/admin/treasury/squads/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposalId: data.data.requestId,
+          signerWallet,
+          signedTransactionBase64: signedBase64
+        })
+      });
+
+      const broadcastData = await broadcastRes.json();
+      if (!broadcastRes.ok) {
+        throw new Error(broadcastData.message || "Error al emitir propuesta a Solana Devnet.");
+      }
+
       const proposalData = data.data as PendingDateProposal;
+      if (broadcastData.data?.txSignature) {
+        proposalData.txSignature = broadcastData.data.txSignature;
+        proposalData.solscanUrl = broadcastData.data.solscanUrl;
+      }
       setPendingProposal(proposalData);
 
       const successMsg = localize(locale, {
-        en: `Solicitud registrada con éxito. Estado: ${proposalData?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
-        es: `Solicitud registrada con éxito. Estado: ${proposalData?.status || "PENDING_MULTISIG"}. El comité de Squads revisará la propuesta.`,
-        pt: `Solicitação registrada com sucesso. Status: ${proposalData?.status || "PENDING_MULTISIG"}. O comitê da Squads revisará a proposta.`
+        en: `Solicitud registrada con éxito. Emitida a Squads v4 en Solana Devnet.`,
+        es: `Solicitud registrada con éxito. Emitida a Squads v4 en Solana Devnet.`,
+        pt: `Solicitação registrada com sucesso. Emitida para Squads v4 na Solana Devnet.`
       });
 
       setProposalSuccessMessage(successMsg);
@@ -204,10 +287,33 @@ export function AdminCollectionNotaryDatesPanel({
       autoCloseTimerRef.current = setTimeout(() => {
         setIsModalOpen(false);
       }, 10000);
-    } catch (err) {
-      setProposalErrorMessage(err instanceof Error ? err.message : "Error inesperado al enviar propuesta.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error inesperado al enviar propuesta.";
+      if (
+        msg.toLowerCase().includes("user rejected") ||
+        msg.toLowerCase().includes("rejected the request") ||
+        msg.toLowerCase().includes("user cancel")
+      ) {
+        setProposalErrorMessage("Cancelaste la solicitud de firma en la wallet.");
+      } else {
+        setProposalErrorMessage(msg);
+      }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  // Step 2b: Handle Proposal Dismissal
+  async function handleDismissProposal() {
+    try {
+      const target = collectionId || collectionAddress;
+      const query = collectionAddress ? `?collectionAddress=${encodeURIComponent(collectionAddress)}` : "";
+      await fetch(`/api/admin/collections/${target}/date-change-request${query}`, {
+        method: "DELETE"
+      });
+      setPendingProposal(null);
+    } catch {
+      // Fail gracefully
     }
   }
 
@@ -227,10 +333,20 @@ export function AdminCollectionNotaryDatesPanel({
                 pt: "Pendente de Aprovação Multisig (Squads v4)"
               })}
             </span>
-            <span className="font-mono text-xs text-amber-200/80">
-              {localize(locale, { en: "Requested on", es: "Solicitado el", pt: "Solicitado em" })}:{" "}
-              {pendingProposal?.createdAt ? new Date(pendingProposal.createdAt).toLocaleDateString() : "Recientemente"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-amber-200/80">
+                {localize(locale, { en: "Requested on", es: "Solicitado el", pt: "Solicitado em" })}:{" "}
+                {pendingProposal?.createdAt ? new Date(pendingProposal.createdAt).toLocaleDateString() : "Recientemente"}
+              </span>
+              <button
+                type="button"
+                onClick={handleDismissProposal}
+                className="text-amber-400 hover:text-white text-xs underline ml-2 transition-colors"
+                title="Descartar propuesta"
+              >
+                {localize(locale, { en: "Dismiss", es: "Descartar", pt: "Descartar" })}
+              </button>
+            </div>
           </div>
 
           {/* Caso 2 & 3: Comparación de Fechas en el Banner */}
@@ -248,6 +364,47 @@ export function AdminCollectionNotaryDatesPanel({
                 &ldquo;{pendingProposal.justification}&rdquo;
               </p>
             ) : null}
+
+            {/* Hash de Propuesta y Seguimiento On-Chain */}
+            <div className="mt-2.5 pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-3">
+                {pendingProposal?.squadsProposalPda && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] text-amber-300/70">Hash Propuesta:</span>
+                    <a
+                      href={getSolscanAccountUrl(pendingProposal.squadsProposalPda)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[11px] text-indigo-300 underline hover:text-white"
+                      title={pendingProposal.squadsProposalPda}
+                    >
+                      {truncateAddress(pendingProposal.squadsProposalPda)}
+                    </a>
+                  </div>
+                )}
+                {pendingProposal?.txSignature && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] text-amber-300/70">TX Creación:</span>
+                    <a
+                      href={getSolscanTransactionUrl(pendingProposal.txSignature)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[11px] text-emerald-300 underline hover:text-white"
+                      title={pendingProposal.txSignature}
+                    >
+                      {truncateAddress(pendingProposal.txSignature)}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                href={`/admin/treasury/squads?index=${pendingProposal?.transactionIndex || "1"}`}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-3 py-1 text-xs font-medium text-amber-200 hover:bg-amber-500/30 hover:text-white transition-all w-fit"
+              >
+                <span>{localize(locale, { en: "Vote in Squads Console ➔", es: "Ir a Votar en Consola Squads ➔", pt: "Votar no Console Squads ➔" })}</span>
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}

@@ -9,14 +9,14 @@ import { describe, it, expect } from 'vitest';
  * to the Squads v4 treasury console (/admin/treasury/squads?runId=...).
  */
 
-export function buildSquadsProposalUrl(runId: string | null | undefined): string | null {
+function buildSquadsProposalUrl(runId: string | null | undefined): string | null {
   if (!runId || runId.trim() === '') {
     return null;
   }
   return `/admin/treasury/squads?runId=${encodeURIComponent(runId.trim())}`;
 }
 
-export function isSquadsButtonVisible(runStatus: 'draft' | 'blocked' | 'finalized' | 'failed'): boolean {
+function isSquadsButtonVisible(runStatus: 'draft' | 'blocked' | 'finalized' | 'failed'): boolean {
   // Proposals in Squads can only be launched or inspected once the snapshot is drafted or finalized
   return runStatus === 'draft' || runStatus === 'finalized';
 }

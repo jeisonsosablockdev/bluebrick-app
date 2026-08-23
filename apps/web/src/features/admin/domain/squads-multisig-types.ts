@@ -28,6 +28,15 @@ export type SquadsProposalDTO = {
   squadsProposalPda?: string;
   squadsVaultTxPda?: string;
   transactionIndex?: string;
+  status?: "Draft" | "Active" | "Approved" | "Executed" | "Rejected" | "Cancelled";
+  nativeProposals?: Array<{
+    transactionIndex: string;
+    proposalPda: string;
+    status: string;
+    approved: string[];
+    threshold: number;
+    totalMembers: number;
+  }>;
   onChainDates: {
     projectStartAt: string;
     projectEndAt: string;
@@ -110,7 +119,8 @@ export function evaluateQuorumStatus(dto: SquadsProposalDTO): {
  */
 export type UnifiedMultisigAction =
   | { type: "ALREADY_EXECUTED"; label: "Propuesta Ejecutada"; disabled: true; willReachQuorum: false }
-  | { type: "ALREADY_APPROVED"; label: "Ya Has Aprobado"; disabled: true; willReachQuorum: false }
+  | { type: "READY_TO_EXECUTE"; label: "Ejecutar en Solana Devnet"; disabled: false; willReachQuorum: true }
+  | { type: "ALREADY_APPROVED"; label: "Ya Has Aprobado (Esperando quórum)"; disabled: true; willReachQuorum: false }
   | { type: "VOTE_ONLY"; label: "Aprobar Propuesta (Votar)"; disabled: false; willReachQuorum: false }
   | { type: "VOTE_AND_EXECUTE"; label: "Aprobar y Ejecutar en Devnet"; disabled: false; willReachQuorum: true };
 
@@ -130,12 +140,22 @@ export function evaluateUnifiedMultisigAction(
     return { type: "ALREADY_EXECUTED", label: "Propuesta Ejecutada", disabled: true, willReachQuorum: false };
   }
 
-  // Step 2: Check if current connected user already voted
-  if (userPubkey && dto.approvedMembers.includes(userPubkey)) {
-    return { type: "ALREADY_APPROVED", label: "Ya Has Aprobado", disabled: true, willReachQuorum: false };
+  // Step 2: Check if quorum is already reached and proposal is ready for execution
+  if (dto.approvedMembers.length >= dto.threshold) {
+    return {
+      type: "READY_TO_EXECUTE",
+      label: "Ejecutar en Solana Devnet",
+      disabled: false,
+      willReachQuorum: true
+    };
   }
 
-  // Step 3: Check if this user's vote will fulfill the required threshold (e.g. 2-of-4)
+  // Step 3: Check if current connected user already voted
+  if (userPubkey && dto.approvedMembers.includes(userPubkey)) {
+    return { type: "ALREADY_APPROVED", label: "Ya Has Aprobado (Esperando quórum)", disabled: true, willReachQuorum: false };
+  }
+
+  // Step 4: Check if this user's vote will fulfill the required threshold (e.g. 2-of-4)
   const projectedApprovals = dto.approvedMembers.length + 1;
   const willReachQuorum = projectedApprovals >= dto.threshold;
 

@@ -18,7 +18,7 @@ import {
  * 4. Deserializes 134-byte ProjectConfigState account layout with millisecond conversions.
  */
 
-export interface OnChainProjectConfigData {
+interface OnChainProjectConfigData {
   collectionAddress: string;
   authorityVault: string;
   startAtUnixSeconds: bigint;
@@ -26,7 +26,7 @@ export interface OnChainProjectConfigData {
   version: number;
 }
 
-export function resolveDistributionPeriodFromPda(params: {
+function resolveDistributionPeriodFromPda(params: {
   collectionAddress: string;
   onChainConfig: OnChainProjectConfigData | null;
   dbFallbackDates?: { startAt: string; endAt: string };

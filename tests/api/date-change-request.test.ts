@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, afterAll, describe, it, expect } from "vitest";
 
 import { POST } from "../../apps/web/src/app/api/admin/collections/[id]/date-change-request/route";
+import { clearDateChangeProposals } from "../../apps/web/src/features/admin/infrastructure/date-change-proposal-store";
 
 /**
  * =========================================================================================
@@ -14,6 +15,13 @@ import { POST } from "../../apps/web/src/app/api/admin/collections/[id]/date-cha
  */
 
 describe("SPEC-04 (STORY-015-07): Date Change Request Route Handler", () => {
+  afterEach(() => {
+    clearDateChangeProposals();
+  });
+
+  afterAll(() => {
+    clearDateChangeProposals();
+  });
   it("should return 200 OK and PENDING_MULTISIG for valid date change proposal", async () => {
     const request = new Request("http://localhost:3000/api/admin/collections/col-123/date-change-request", {
       method: "POST",

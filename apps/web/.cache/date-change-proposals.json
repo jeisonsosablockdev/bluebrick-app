@@ -1,30 +1,21 @@
 [
   {
-    "requestId": "dcr_1787443337670",
+    "requestId": "dcr_1787468987459",
     "collectionId": "fix-flip-brandon-117-666",
     "status": "APPROVED",
-    "proposedStartAt": "2026-08-01T00:00:00.000Z",
-    "proposedEndAt": "2026-08-31T23:59:59.000Z",
-    "justification": "test squad 01",
-    "createdAt": "2026-08-23T00:56:56.948Z",
-    "proposalHash": "4bf0ac43238d9ff885d8db7d74d48a594fc3fdf1ee09194fb4507d7518eaf61f",
-    "nonce": "NONCE-1787443337670-WH06JY",
+    "proposedStartAt": "2026-07-30T00:00:00.000Z",
+    "proposedEndAt": "2026-08-23T23:59:59.000Z",
+    "justification": "test 07",
+    "createdAt": "2026-08-23T07:09:47.459Z",
+    "requesterWallet": "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd",
+    "feeUsdc": "0.10",
+    "proposalPda": "2BRVYy8mx97iArfdzjye1fNha9re8Jq5LMgM83QuX9dF",
+    "transactionIndex": "4",
     "approvals": [
       "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd",
       "DhJ5pUo513rUARqDTy9W7AXaG4ET9ryX78iHxUP4YBgU"
     ],
-    "txSignature": "5UA1ryr25sGJnAQxVCVN48LvQUh7XhhSLecuDbuSL43i8Jp2VgWtdGu3iRsgJiLZvRkXqU4ai2GgQ1RZYb26gUF5",
-    "solscanUrl": "https://solscan.io/tx/5UA1ryr25sGJnAQxVCVN48LvQUh7XhhSLecuDbuSL43i8Jp2VgWtdGu3iRsgJiLZvRkXqU4ai2GgQ1RZYb26gUF5?cluster=devnet"
-  },
-  {
-    "requestId": "dcr_1787449422840",
-    "collectionId": "col-123",
-    "status": "PENDING_MULTISIG",
-    "proposedStartAt": "2026-06-01T00:00:00Z",
-    "proposedEndAt": "2027-06-01T00:00:00Z",
-    "justification": "Project construction delayed by 2 months",
-    "createdAt": "2026-08-23T01:43:42.837Z",
-    "requesterWallet": "Comité",
-    "feeUsdc": "0.10"
+    "txSignature": "367FuZx6Pqw2YBGWeV6yikUjLbRyrdkBE2aMX5iFNC9Uu5wNX7sKesCYNtnWJzojehcJLcD7LCbHLYPYJYPX9sJ2",
+    "solscanUrl": "https://solscan.io/tx/367FuZx6Pqw2YBGWeV6yikUjLbRyrdkBE2aMX5iFNC9Uu5wNX7sKesCYNtnWJzojehcJLcD7LCbHLYPYJYPX9sJ2?cluster=devnet"
   }
 ]

@@ -12,9 +12,9 @@ import { describe, it, expect } from "vitest";
  * 4. Dual-layer circuit breaker (local bot stop + emergency pause payload with nonce & TTL <= 300s).
  */
 
-export type PayoutRunState = "draft" | "blocked" | "sealed" | "executing" | "finalized" | "paused";
+type PayoutRunState = "draft" | "blocked" | "sealed" | "executing" | "finalized" | "paused";
 
-export type PayoutRunItemEntity = {
+type PayoutRunItemEntity = {
   id: string;
   runId: string;
   walletPublicKey: string;
@@ -24,7 +24,7 @@ export type PayoutRunItemEntity = {
   vetoedBy?: string | null;
 };
 
-export type EmergencyPausePayload = {
+type EmergencyPausePayload = {
   runId: string;
   policyPda: string;
   programId: string;
@@ -37,7 +37,7 @@ export type EmergencyPausePayload = {
  * What: Validates pre-seal veto rule.
  * How: Throws error if run is sealed or finalized.
  */
-export function executeItemVeto(
+function executeItemVeto(
   runStatus: PayoutRunState,
   item: PayoutRunItemEntity,
   adminActorId: string,
@@ -60,7 +60,7 @@ export function executeItemVeto(
  * What: Constructs pause_run verification message.
  * How: Validates TTL <= 300s and encodes nonce.
  */
-export function buildEmergencyPausePayload(params: {
+function buildEmergencyPausePayload(params: {
   runId: string;
   policyPda: string;
   programId: string;

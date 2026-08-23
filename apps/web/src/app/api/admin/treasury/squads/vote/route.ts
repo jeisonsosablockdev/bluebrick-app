@@ -17,7 +17,7 @@ import {
   getDateChangeProposal,
   saveDateChangeProposal
 } from "@/features/admin/infrastructure/date-change-proposal-store";
-import { broadcastSignedTransaction } from "@/lib/solana-kit/compat/squads-vote-transaction";
+import { broadcastSignedTransaction } from "@/lib/solana-kit/compat/squads-v4-client";
 import { getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
 
 const VoteSchema = z.object({
@@ -77,20 +77,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       saveDateChangeProposal(proposal);
 
       const message = quorumReached
-        ? `Quórum alcanzado (${proposal.approvals.length}/${threshold}): Propuesta aprobada y ejecutada exitosamente en Solana Devnet. Transacción: ${txSignature}`
-        : `Voto registrado exitosamente en Solana Devnet (${proposal.approvals.length}/${threshold} firmas). Falta ${threshold - proposal.approvals.length} firma para alcanzar el quórum y ejecutar. Transacción: ${txSignature}`;
+        ? `Quórum alcanzado (${proposal.approvals.length}/${threshold}): Propuesta aprobada exitosamente en Solana Devnet. Lista para ejecutar en Squads Vault. Transacción de Aprobación: ${txSignature}`
+        : `Voto registrado exitosamente en Solana Devnet (${proposal.approvals.length}/${threshold} firmas). Falta ${threshold - proposal.approvals.length} firma para alcanzar el quórum. Transacción: ${txSignature}`;
 
       return NextResponse.json({
         ok: true,
         data: {
-          actionTaken: quorumReached ? "APPROVED_AND_EXECUTED" : "VOTE_RECORDED",
+          actionTaken: quorumReached ? "APPROVED" : "VOTE_RECORDED",
           proposalId,
           signerWallet,
           txSignature,
           solscanUrl,
           slot,
           quorumReached,
-          executed: quorumReached,
+          executed: false,
           approvalsCount: proposal.approvals.length,
           threshold,
           message

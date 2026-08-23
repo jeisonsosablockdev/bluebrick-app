@@ -18,6 +18,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AdminCollectionNotaryDatesPanel } from "@/features/admin/presentation/admin-collection-notary-dates-panel";
 
+vi.mock("@solana/wallet-adapter-react", () => ({
+  useWallet: vi.fn(() => ({
+    publicKey: { toBase58: () => "3tW8Jp3QAMqY2KM27KgddizUyS7rvc7hEsbwCU8siATd" },
+    signTransaction: vi.fn(async (tx) => tx),
+    connected: true
+  }))
+}));
+
+vi.mock("@/lib/solana-kit/compat/web3-transactions", () => ({
+  deserializeLegacyVersionedTransaction: vi.fn(() => ({})),
+  serializeLegacyVersionedTransaction: vi.fn(() => new Uint8Array([1, 2, 3]))
+}));
+
 describe("AdminCollectionNotaryDatesPanel Presentation Component", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -136,6 +149,19 @@ describe("AdminCollectionNotaryDatesPanel Presentation Component", () => {
   it("opens request modal and submits date change proposal with calendar inputs and timer", async () => {
     global.fetch = vi.fn().mockImplementation(async (url: string, options?: RequestInit) => {
       if (options?.method === "POST") {
+        if (url.includes("/vote")) {
+          return {
+            ok: true,
+            json: async () => ({
+              ok: true,
+              data: {
+                txSignature: "5K6xV8mN4pQ1t9Z2yB3wR7uA8sD4fG6hJ1kL3mO5pQ7r",
+                solscanUrl: "https://solscan.io/tx/5K6xV8mN4pQ1t9Z2yB3wR7uA8sD4fG6hJ1kL3mO5pQ7r?cluster=devnet"
+              }
+            })
+          };
+        }
+
         return {
           ok: true,
           json: async () => ({
@@ -147,7 +173,12 @@ describe("AdminCollectionNotaryDatesPanel Presentation Component", () => {
               proposedStartAt: "2026-08-01T00:00:00.000Z",
               proposedEndAt: "2026-08-31T23:59:59.000Z",
               justification: "Ajuste de cronograma de obra por licencia",
-              createdAt: "2026-08-22T11:45:00.000Z"
+              createdAt: "2026-08-22T11:45:00.000Z",
+              proposalPda: "CNrV6YyCpz4KcczFwGmjQ7NqKujm1CiVpxJS1KdhYvZ4",
+              transactionIndex: "4"
+            },
+            preparedTx: {
+              transactionBase64: "AQ=="
             }
           })
         };

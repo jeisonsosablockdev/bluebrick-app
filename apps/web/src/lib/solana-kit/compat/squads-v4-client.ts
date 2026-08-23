@@ -19,16 +19,18 @@
  * =========================================================================================
  */
 
+import crypto from "node:crypto";
 import {
   Connection,
   PublicKey,
+  SystemProgram,
   TransactionInstruction,
   TransactionMessage,
   VersionedTransaction
 } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 
-import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
+import { getSolanaRpcUrl, getSolscanTransactionUrl } from "@/lib/infrastructure/solana";
 import {
   deriveProjectConfigPda,
   PROJECT_CONFIG_NOTARY_PROGRAM_ID
@@ -164,6 +166,102 @@ export async function fetchSquadsMultisigState(
     staleTransactionIndex: BigInt(accountInfo.staleTransactionIndex.toString()),
     members: accountInfo.members.map((m) => m.key.toBase58())
   };
+}
+
+/**
+ * On-chain Squads Proposal Data Transfer Object
+ */
+export type SquadsNativeProposalDTO = {
+  transactionIndex: string;
+  proposalPda: string;
+  vaultTransactionPda: string;
+  status: "Draft" | "Active" | "Approved" | "Executed" | "Rejected" | "Cancelled";
+  approved: string[];
+  rejected: string[];
+  cancelled: string[];
+  threshold: number;
+  totalMembers: number;
+  members: string[];
+  executionTime?: number;
+};
+
+export type BroadcastResult = {
+  txSignature: string;
+  slot: number;
+  solscanUrl: string;
+  confirmed: boolean;
+};
+
+/**
+ * Queries all native on-chain Proposals from Squads v4 for the target multisig.
+ *
+ * Step-by-Step Logic:
+ * // Step 1: Fetch Multisig account to know the latest transactionIndex and members.
+ * // Step 2: Iterate and fetch Proposal accounts for each transaction index.
+ * // Step 3: Map into typed SquadsNativeProposalDTO array with status strings.
+ *
+ * @param multisigAddress - Multisig account address
+ * @returns Array of SquadsNativeProposalDTO
+ */
+export async function fetchSquadsNativeProposals(
+  multisigAddress: string = SQUADS_DEVNET_MULTISIG_PDA
+): Promise<SquadsNativeProposalDTO[]> {
+  const rpcUrl = getSolanaRpcUrl();
+  const connection = new Connection(rpcUrl, "confirmed");
+  const multisigPubkey = new PublicKey(multisigAddress);
+  const programPubkey = new PublicKey(SQUADS_V4_PROGRAM_ID);
+
+  const msInfo = await multisig.accounts.Multisig.fromAccountAddress(connection, multisigPubkey);
+  const totalTx = Number(msInfo.transactionIndex.toString());
+  const members = msInfo.members.map((m) => m.key.toBase58());
+  const threshold = msInfo.threshold;
+
+  const proposals: SquadsNativeProposalDTO[] = [];
+
+  for (let i = 1; i <= totalTx; i++) {
+    const txIndex = BigInt(i);
+    try {
+      const [proposalPda] = multisig.getProposalPda({
+        multisigPda: multisigPubkey,
+        transactionIndex: txIndex,
+        programId: programPubkey
+      });
+
+      const [vaultTxPda] = multisig.getTransactionPda({
+        multisigPda: multisigPubkey,
+        index: txIndex,
+        programId: programPubkey
+      });
+
+      const propAccount = await multisig.accounts.Proposal.fromAccountAddress(connection, proposalPda);
+
+      let statusStr: SquadsNativeProposalDTO["status"] = "Active";
+      const kind = (propAccount.status as { __kind?: string })?.__kind;
+      if (kind === "Draft") statusStr = "Draft";
+      else if (kind === "Approved") statusStr = "Approved";
+      else if (kind === "Executed") statusStr = "Executed";
+      else if (kind === "Rejected") statusStr = "Rejected";
+      else if (kind === "Cancelled") statusStr = "Cancelled";
+      else if (kind === "Active") statusStr = "Active";
+
+      proposals.push({
+        transactionIndex: txIndex.toString(),
+        proposalPda: proposalPda.toBase58(),
+        vaultTransactionPda: vaultTxPda.toBase58(),
+        status: statusStr,
+        approved: propAccount.approved.map((a) => a.toBase58()),
+        rejected: propAccount.rejected.map((r) => r.toBase58()),
+        cancelled: propAccount.cancelled.map((c) => c.toBase58()),
+        threshold,
+        totalMembers: members.length,
+        members
+      });
+    } catch {
+      // If a proposal account doesn't exist for index i, skip silently
+    }
+  }
+
+  return proposals.reverse();
 }
 
 /**
@@ -347,11 +445,17 @@ export async function prepareSquadsDateChangeProposalTransaction(params: {
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
   const attemptId = `PROP-NOTARY-CREATE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-  // Step 2: Build inner CPI Instruction targeting project_config_notary
-  const updateDatesIxData = Buffer.alloc(24);
-  Buffer.from([127, 205, 226, 86, 187, 203, 232, 111]).copy(updateDatesIxData, 0);
-  updateDatesIxData.writeBigInt64LE(newStartAtUnixSeconds, 8);
-  updateDatesIxData.writeBigInt64LE(newEndAtUnixSeconds, 16);
+  // Step 2: Check if Notary PDA is already initialized
+  const { pdaAddress: projectConfigPda } = await deriveProjectConfigPda(
+    collectionAddress,
+    PROJECT_CONFIG_NOTARY_PROGRAM_ID
+  );
+  const projectConfigPubkey = new PublicKey(projectConfigPda);
+  const collectionPubkey = new PublicKey(collectionAddress);
+  const unifiedProgramPubkey = new PublicKey(PROJECT_CONFIG_NOTARY_PROGRAM_ID.toString());
+
+  const pdaAccount = await connection.getAccountInfo(projectConfigPubkey);
+  const pdaExists = pdaAccount !== null;
 
   const [vaultPda] = multisig.getVaultPda({
     multisigPda: multisigPubkey,
@@ -359,23 +463,61 @@ export async function prepareSquadsDateChangeProposalTransaction(params: {
     programId: programPubkey
   });
 
-  const { pdaAddress: projectConfigPda } = await deriveProjectConfigPda(collectionAddress);
+  let innerInstruction: TransactionInstruction;
 
-  const notaryInstruction = new TransactionInstruction({
-    programId: new PublicKey(PROJECT_CONFIG_NOTARY_PROGRAM_ID),
-    keys: [
-      { pubkey: vaultPda, isSigner: true, isWritable: false },
-      { pubkey: multisigPubkey, isSigner: false, isWritable: false },
-      { pubkey: new PublicKey(collectionAddress), isSigner: false, isWritable: false },
-      { pubkey: new PublicKey(projectConfigPda), isSigner: false, isWritable: true }
-    ],
-    data: updateDatesIxData
-  });
+  if (!pdaExists) {
+    // initialize_project_config discriminator: sha256("global:initialize_project_config")[0..8]
+    const initDiscriminator = crypto
+      .createHash("sha256")
+      .update("global:initialize_project_config")
+      .digest()
+      .subarray(0, 8);
+    const initData = Buffer.alloc(8 + 8 + 8 + 1);
+    initDiscriminator.copy(initData, 0);
+    initData.writeBigInt64LE(newStartAtUnixSeconds, 8);
+    initData.writeBigInt64LE(newEndAtUnixSeconds, 16);
+    initData.writeUInt8(vaultIndex, 24);
+
+    innerInstruction = new TransactionInstruction({
+      programId: unifiedProgramPubkey,
+      keys: [
+        { pubkey: vaultPda, isSigner: true, isWritable: false },
+        { pubkey: multisigPubkey, isSigner: false, isWritable: false },
+        { pubkey: collectionPubkey, isSigner: false, isWritable: false },
+        { pubkey: projectConfigPubkey, isSigner: false, isWritable: true },
+        { pubkey: vaultPda, isSigner: true, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
+      ],
+      data: initData
+    });
+  } else {
+    // update_project_dates discriminator: sha256("global:update_project_dates")[0..8]
+    const updateDiscriminator = crypto
+      .createHash("sha256")
+      .update("global:update_project_dates")
+      .digest()
+      .subarray(0, 8);
+    const updateData = Buffer.alloc(8 + 8 + 8);
+    updateDiscriminator.copy(updateData, 0);
+    updateData.writeBigInt64LE(newStartAtUnixSeconds, 8);
+    updateData.writeBigInt64LE(newEndAtUnixSeconds, 16);
+
+    innerInstruction = new TransactionInstruction({
+      programId: unifiedProgramPubkey,
+      keys: [
+        { pubkey: vaultPda, isSigner: true, isWritable: false },
+        { pubkey: multisigPubkey, isSigner: false, isWritable: false },
+        { pubkey: collectionPubkey, isSigner: false, isWritable: false },
+        { pubkey: projectConfigPubkey, isSigner: false, isWritable: true }
+      ],
+      data: updateData
+    });
+  }
 
   const innerVaultMessage = new TransactionMessage({
     payerKey: vaultPda,
     recentBlockhash: blockhash,
-    instructions: [notaryInstruction]
+    instructions: [innerInstruction]
   });
 
   // Step 3: Build native Squads vaultTransactionCreate instruction
@@ -426,7 +568,7 @@ export async function prepareSquadsDateChangeProposalTransaction(params: {
 /**
  * Assembles an unsigned VersionedTransaction containing the native Squads v4 `vaultTransactionExecute` instruction.
  * When broadcast, Squads Protocol CPI-calls the `project_config_notary` program on Solana Devnet,
- * writing the newly approved dates and requester into the on-chain Notary PDA.
+ * writing the newly approved dates into the on-chain Notary PDA.
  *
  * @param params - Execution trigger parameters
  * @returns PreparedSquadsTransactionResult
@@ -482,6 +624,48 @@ export async function prepareSquadsVaultTransactionExecute(params: {
     proposalPda,
     transactionIndex: transactionIndex.toString(),
     signerWallet: memberWallet
+  };
+}
+
+/**
+ * Broadcasts a wallet-signed VersionedTransaction to Solana Devnet RPC and waits for confirmation.
+ *
+ * @param signedTransactionBase64 - Base64 encoded signed wire transaction
+ * @returns Broadcast result with signature, slot, and Solscan URL
+ */
+export async function broadcastSignedTransaction(
+  signedTransactionBase64: string
+): Promise<BroadcastResult> {
+  const rpcUrl = getSolanaRpcUrl();
+  const connection = new Connection(rpcUrl, "confirmed");
+
+  const txBytes = Buffer.from(signedTransactionBase64, "base64");
+  const versionedTx = VersionedTransaction.deserialize(txBytes);
+
+  const txSignature = await connection.sendRawTransaction(versionedTx.serialize(), {
+    skipPreflight: false,
+    preflightCommitment: "confirmed"
+  });
+
+  const confirmation = await connection.confirmTransaction(txSignature, "confirmed");
+
+  if (confirmation.value.err) {
+    throw new Error(`TRANSACTION_EXECUTION_FAILED: ${JSON.stringify(confirmation.value.err)}`);
+  }
+
+  const txDetails = await connection.getTransaction(txSignature, {
+    maxSupportedTransactionVersion: 0,
+    commitment: "confirmed"
+  });
+
+  const slot = txDetails?.slot ?? 0;
+  const solscanUrl = getSolscanTransactionUrl(txSignature);
+
+  return {
+    txSignature,
+    slot,
+    solscanUrl,
+    confirmed: true
   };
 }
 
