@@ -1,36 +1,31 @@
 /**
  * @file apps/web/src/app/auth/login/route.ts
  * @description Layer 2: Application - WorkOS AuthKit Sign-in Redirect Route Handler.
- * Generates PKCE authorization URL and redirects user to Google / WorkOS sign-in page.
+ * Generates PKCE authorization URL and redirects user directly to Google OAuth / WorkOS sign-in page.
  */
 
 import { redirect } from "next/navigation";
 import { getSignInUrl } from "@workos-inc/authkit-nextjs";
 
 export async function GET(): Promise<void> {
-  // Step 1: Check if WorkOS credentials are fully configured
-  const isConfigured = Boolean(
-    process.env.WORKOS_COOKIE_PASSWORD &&
-    process.env.WORKOS_CLIENT_ID &&
-    process.env.WORKOS_API_KEY
-  );
-
-  if (!isConfigured) {
-    // Invariant: In development or demo mode without WorkOS keys, smoothly fall back to dashboard
-    redirect("/dashboard");
-  }
-
   let authorizationUrl: string | null = null;
 
   try {
-    // Step 2: Obtain PKCE authorization URL from AuthKit SDK
-    authorizationUrl = await getSignInUrl();
+    // Step 1: Request PKCE-sealed Google OAuth authorization URL from WorkOS AuthKit
+    authorizationUrl = await getSignInUrl({
+      provider: "GoogleOAuth",
+    } as Parameters<typeof getSignInUrl>[0]);
   } catch (error) {
-    console.warn("WorkOS sign-in redirect fallback:", error);
-    redirect("/dashboard");
+    try {
+      // Step 2: Fallback to general AuthKit sign-in URL if provider param is handled at dashboard level
+      authorizationUrl = await getSignInUrl();
+    } catch (fallbackError) {
+      console.warn("WorkOS getSignInUrl fallback:", error, fallbackError);
+      redirect("/dashboard");
+    }
   }
 
-  // Step 3: Redirect to WorkOS Google / AuthKit login
+  // Step 3: Redirect user directly to Google / WorkOS OAuth screen
   if (authorizationUrl) {
     redirect(authorizationUrl);
   }
