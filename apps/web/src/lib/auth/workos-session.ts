@@ -19,17 +19,34 @@ const DEFAULT_DEMO_INVESTOR: DbUser = {
 };
 
 /**
+ * Checks if WorkOS credentials are fully configured in the environment.
+ */
+function isWorkOsEnvironmentReady(): boolean {
+  return Boolean(
+    process.env.WORKOS_COOKIE_PASSWORD &&
+    process.env.WORKOS_API_KEY &&
+    process.env.WORKOS_CLIENT_ID
+  );
+}
+
+/**
  * Retrieves the currently authenticated investor session, synchronizing JIT to database.
+ * If WorkOS environment variables are not yet provided, gracefully returns the demo investor.
  */
 export async function getAuthenticatedInvestor(
   userRepo: UserRepository = new UserRepository()
 ): Promise<DbUser> {
+  // Step 1: Guard against missing WorkOS credentials in local development or demo mode
+  if (!isWorkOsEnvironmentReady()) {
+    return DEFAULT_DEMO_INVESTOR;
+  }
+
   try {
-    // Step 1: Query WorkOS session from Next.js request context
+    // Step 2: Query WorkOS session from Next.js request context
     const auth = await withAuth();
 
-    if (auth.user) {
-      // Step 2: Synchronize WorkOS claims to Neon PostgreSQL
+    if (auth?.user) {
+      // Step 3: Synchronize WorkOS claims to Neon PostgreSQL
       return await syncWorkOsUserPipeline(
         {
           id: auth.user.id,
@@ -46,7 +63,7 @@ export async function getAuthenticatedInvestor(
     console.warn("WorkOS session not available, defaulting to demo investor profile.", error);
   }
 
-  // Step 3: Return default demo investor
+  // Step 4: Return default demo investor
   return DEFAULT_DEMO_INVESTOR;
 }
 
