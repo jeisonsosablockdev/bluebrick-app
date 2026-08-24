@@ -1,23 +1,23 @@
 {
   "version": "1.0.0",
-  "task_id": "BRI-8",
-  "story_id": "STORY-UX-UI-FIXES",
-  "spec_id": "SPEC-13",
-  "branch": "SPEC/jaymusicmachine-BRI-8-s13-distribution-run-squads-view",
-  "parent_branch": "feature/jaymusicmachine-BRI-8-distributions-ux-ui-fixes",
-  "current_phase": "PHASE_7_ARCHITECT_GATE_2_VALIDATED",
+  "task_id": "BBC-006",
+  "story_id": "BBC-6",
+  "spec_id": "SPEC-01",
+  "branch": "SPEC/jaymusicmachine-BBC-6-s01-landing-entrypoint-mock-login",
+  "parent_branch": "feature/jaymusicmachine-BBC-6-user-investment-dashboard",
+  "current_phase": "PHASE_7_VALIDATED",
   "human_design_approval": {
     "approved": true,
-    "timestamp": "2026-08-23T10:50:14-05:00"
+    "timestamp": "2026-08-23T23:01:51-05:00"
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-23T10:50:22-05:00" },
-    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-23T10:50:30-05:00" },
-    "PHASE_3_ARCHITECT_GATE_1_APPROVED": { "completed": true, "timestamp": "2026-08-23T10:50:35-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-23T10:50:14-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-23T10:50:54-05:00", "note": "Created TDD test for GET /api/admin/treasury/squads/proposals with ?runId" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-23T10:53:15-05:00" },
-    "PHASE_7_ARCHITECT_GATE_2_VALIDATED": { "completed": true, "timestamp": "2026-08-23T10:55:02-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-23T23:00:05-05:00" },
+    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-23T23:00:10-05:00" },
+    "PHASE_3_ARCHITECT_GATE1": { "completed": true, "timestamp": "2026-08-23T23:01:55-05:00" },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-23T23:01:51-05:00" },
+    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-23T23:02:15-05:00" },
+    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-23T23:02:40-05:00" },
+    "PHASE_7_VALIDATED": { "completed": true, "timestamp": "2026-08-23T23:03:46-05:00" },
     "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
