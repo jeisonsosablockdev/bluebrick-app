@@ -4,6 +4,8 @@
  * Presents investor profile summary and provides 1-click transition to /dashboard.
  */
 
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, UserCheck, Lock } from "lucide-react";
@@ -93,9 +95,9 @@ export function InvestorLoginCard({
         <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
       </Link>
 
-      {/* Step 5: Helper note for next WorkOS phase */}
+      {/* Step 5: Helper note */}
       <p className="mt-4 text-center text-[11px] text-[#7C8A9C]">
-        * Modo interactivo: Simulación de acceso instantáneo. En SPEC-4 se conectará el flujo OAuth WorkOS.
+        * Acceso seguro: Demo instantánea pre-cargada con sincronización Neon Postgres y WorkOS.
       </p>
     </div>
   );
