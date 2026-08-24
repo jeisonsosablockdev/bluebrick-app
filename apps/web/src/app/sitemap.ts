@@ -1,18 +1,26 @@
 /**
  * @file apps/web/src/app/sitemap.ts
- * @description Layer 1: Presentation - Dynamic Sitemap route handler.
+ * @description Layer 1: Presentation - Next.js App Router Dynamic Sitemap Generator.
+ * Generates search engine indexing entries for BlueBrick public routes.
  */
 
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Step 1: Return starter URL entry
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bluebrick-app.vercel.app";
+
   return [
     {
-      url: "https://localhost:3000",
+      url: `${baseUrl}/`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/dashboard`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 1,
+      priority: 0.8,
     },
   ];
 }
