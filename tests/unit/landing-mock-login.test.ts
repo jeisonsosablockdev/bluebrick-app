@@ -50,10 +50,11 @@ describe("SPEC-1: Landing Page & Mock Login Entrypoint (@spec BBC-6-SPEC-1)", ()
       expect(screen.getByText(/Inversionista Privada/i)).toBeInTheDocument();
       expect(screen.getByText("SM")).toBeInTheDocument();
 
-      // Assert: One-click entry button targeting /dashboard
-      const loginButton = screen.getByRole("link", { name: /Entrar al Dashboard/i });
-      expect(loginButton).toBeInTheDocument();
-      expect(loginButton).toHaveAttribute("href", "/dashboard");
+      // Assert: Google sign-in button and Demo entry targeting /dashboard
+      expect(screen.getByText(/Continuar con Google/i)).toBeInTheDocument();
+      const demoLink = screen.getByRole("link", { name: /Demo/i });
+      expect(demoLink).toBeInTheDocument();
+      expect(demoLink).toHaveAttribute("href", "/dashboard");
     });
   });
 });
