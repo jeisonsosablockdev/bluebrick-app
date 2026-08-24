@@ -10,7 +10,7 @@
     "dev": "next dev apps/web -p 3001 --webpack",
     "predev:turbo": "node ./scripts/db-migrate-if-configured.js",
     "dev:turbo": "next dev apps/web -p 3001 --turbo",
-    "build": "next build apps/web --webpack && (rm -rf .next && cp -R apps/web/.next .next || true)",
+    "build": "next build apps/web --webpack",
     "start": "next start apps/web",
     "db:migrate": "node ./scripts/db-migrate.js",
     "db:migrate:check": "node ./scripts/db-migrate.js --check",
