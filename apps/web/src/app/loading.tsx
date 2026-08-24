@@ -1,7 +1,13 @@
+/**
+ * @file apps/web/src/app/loading.tsx
+ * @description Layer 1: Presentation - Starter loading boundary skeleton.
+ */
+
 export default function Loading() {
+  // Step 1: Render loading spinner centered in page
   return (
-    <main className="mx-auto max-w-6xl p-6 md:p-10">
-      <div className="h-72 animate-pulse rounded-3xl bg-slate-800/60" />
-    </main>
+    <div className="flex min-h-screen items-center justify-center bg-neutral-950">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+    </div>
   );
 }

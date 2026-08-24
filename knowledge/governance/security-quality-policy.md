@@ -26,15 +26,15 @@ Run ALL:
 
 ⸻
 
-🧪 STORY-LEVEL UNIT TEST GATES (MANDATORY)
+🧪 STORY & SPEC LEVEL TDD & REFACTOR GATES (MANDATORY)
 
-For every story:
-	•	Start with unit tests first (TDD RED) before implementation code.
-	•	Keep unit tests updated as acceptance criteria evolve.
-	•	Before marking the story complete, run and pass unit tests.
-	•	Before commit/PR, run full quality gate (`npm test` + `npm run validate`, or equivalent stack commands).
+For every SPEC:
+	•	**Phase 1 (RED)**: Start with comprehensive failing unit/integration tests using the `tdd-primal` skill before touching production implementation.
+	•	**Phase 2 (GREEN)**: Assigned specialist subagent implements production code with mandatory in-code commentary until all tests pass.
+	•	**Phase 3 (REFACTOR)**: Execute a clean-code refactoring pass using the `code-refactoring-refactor-clean` skill to eliminate debt, maintain single responsibility, and ensure zero dead code.
+	•	Run full quality gate (`pnpm validate`) before Gate 2 review and human acceptance.
 
-If tests are missing or failing → story is incomplete.
+If tests are missing or failing → SPEC is incomplete.
 
 ⸻
 

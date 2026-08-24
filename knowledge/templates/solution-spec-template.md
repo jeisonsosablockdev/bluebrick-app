@@ -15,13 +15,13 @@
      4. Infrastructure Layer (db repositories, Solana kit, external APIs) -->
 
 ## 3. Atomic Slices & Logical Sequence
-<!-- Desglose cronológico y atómico de SPECs. Cada SPEC debe ser autocontenida y secuencial.
+<!-- Desglose cronológico y atómico de SPECs de negocio / verticales. Cada SPEC debe ser autocontenida y secuencial.
      REGLAS DE OBLIGATORIEDAD DE SLICES:
-     1. El primer slice (SPEC-1) debe estar dedicado a TDD (definir infraestructura de pruebas y escribir tests en fallo / RED).
-     2. El último slice (SPEC-N) debe estar dedicado a refactoring y limpieza (Clean Code Audit / refactor-clean). -->
-- **SPEC-1 (TDD)**: [Descripción del diseño de pruebas y assertions en RED] (Rama: `SPEC/${OWNER}-${ISSUE}-s01-tdd`)
-- **SPEC-2**: [Título del primer incremento de lógica] (Rama: `SPEC/${OWNER}-${ISSUE}-s02-...`)
-- **SPEC-3 (Clean Code & Refactor)**: [Auditoría de código, remoción de dead code y refactoring] (Rama: `SPEC/${OWNER}-${ISSUE}-s03-refactor-clean`)
+     1. Cada SPEC individual ejecuta internamente su propio ciclo Red-Green-Refactor completo.
+     2. Cada SPEC inicia con tests en fallo (RED) usando el skill 'tdd-primal', continúa con la implementación (GREEN) y finaliza con refactoring (REFACTOR) usando el skill 'code-refactoring-refactor-clean'.
+     3. No crear SPECs separadas exclusivas de solo-tests o solo-refactor. -->
+- **SPEC-1**: [Título del primer incremento de lógica / vertical slice] (Rama: `SPEC/${OWNER}-${ISSUE}-s01-...`)
+- **SPEC-2**: [Título del segundo incremento de lógica / vertical slice] (Rama: `SPEC/${OWNER}-${ISSUE}-s02-...`)
 
 ## 4. TDD (Test-Driven Development) Strategy
 <!-- Detalla el plan de pruebas que se creará ANTES de implementar el código (Fase RED). -->

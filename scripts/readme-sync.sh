@@ -110,6 +110,6 @@ fi
 
 rm -f "$TMP_BLOCK" "$TMP_README"
 
-git -C "$ROOT_DIR" add README.md
+git -C "$ROOT_DIR" add README.md 2>/dev/null || true
 
 echo "✅ README sincronizado con documentación"

@@ -1,9 +1,16 @@
+/**
+ * @file apps/web/src/app/robots.ts
+ * @description Layer 1: Presentation - Robots metadata route handler.
+ */
+
 import type { MetadataRoute } from "next";
 
-import { buildRobotsPolicy } from "@/lib/seo";
-
 export default function robots(): MetadataRoute.Robots {
-  return buildRobotsPolicy({
-    isProduction: process.env.NODE_ENV === "production"
-  });
+  // Step 1: Return open crawling rules
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+    },
+  };
 }

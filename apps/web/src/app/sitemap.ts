@@ -1,7 +1,18 @@
+/**
+ * @file apps/web/src/app/sitemap.ts
+ * @description Layer 1: Presentation - Dynamic Sitemap route handler.
+ */
+
 import type { MetadataRoute } from "next";
 
-import { buildPublicSitemap } from "@/lib/seo";
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  return buildPublicSitemap();
+  // Step 1: Return starter URL entry
+  return [
+    {
+      url: "https://localhost:3000",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1,
+    },
+  ];
 }

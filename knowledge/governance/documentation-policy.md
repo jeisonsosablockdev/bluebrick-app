@@ -149,10 +149,11 @@ Decision-complete rule:
 	•	The missing decision must be documented and resolved before code slices open.
 
 SPEC rule:
-	•	For multi-SPEC initiatives, the first SPEC is mandatory and comes before delivery SPECs.
-	•	La primera SPEC de la iniciativa debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED).
-	•	La última SPEC de la iniciativa debe estar dedicada estrictamente a limpieza y refactorización (Clean Code Audit / refactor-clean).
-	•	The first SPEC owns the artifact pair, the atomic SPEC map, the test-plan-first contract, and RFC creation or update when RFC applies.
+	•	Every individual SPEC (in both single and multi-SPEC initiatives) must internally execute the full Red-Green-Refactor cycle.
+	•	Cada SPEC inicia obligatoriamente diseñando y escribiendo los tests en fallo (fase RED) usando el skill `tdd-primal` antes de tocar código de producción.
+	•	Cada SPEC culmina obligatoriamente con una auditoría y refactorización de código limpio (fase REFACTOR) usando el skill `code-refactoring-refactor-clean`.
+	•	Está estrictamente prohibido crear SPECs separadas exclusivas de solo-tests o solo-refactor.
+	•	Cada SPEC es dueña de su par de artefactos (problem/solution), el diseño de pruebas en RED, su implementación GREEN y su pase de refactoring limpio.
 
 Linear sync rule:
 	•	Linear is updated from the artifact.

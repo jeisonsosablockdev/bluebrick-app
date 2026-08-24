@@ -28,21 +28,6 @@
       "@/*": [
         "./apps/web/src/*",
         "./*"
-      ],
-      "@/features/*": [
-        "./apps/web/src/features/*"
-      ],
-      "@core/*": [
-        "./apps/web/src/lib/core/*"
-      ],
-      "@software/*": [
-        "./apps/web/src/lib/software/*"
-      ],
-      "@knowledge/*": [
-        "./apps/web/src/lib/knowledge/*"
-      ],
-      "@regulatory/*": [
-        "./apps/web/src/lib/regulatory/*"
       ]
     }
   },

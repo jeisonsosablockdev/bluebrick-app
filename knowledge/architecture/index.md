@@ -1,28 +1,21 @@
 ---
 type: ADR
-title: Index
-description: Index - migrated from knowledge/
-tags: [architecture]
-timestamp: 2026-07-20T04:23:56Z
-resource: https://github.com/jeisonsosablockdev/brids/blob/develop/knowledge/architecture/index.md
+title: Architecture Decision Records Index
+description: Index of canonical architecture specifications, ADRs, state machines, and threat models.
+tags: [architecture, index]
+timestamp: 2026-08-23T00:00:00Z
+resource: local
 ---
 
+# Architecture Index
 
-# Architecture
-
-System architecture documents, ADRs, and design decisions.
-
-## Architecture Decision Records (ADRs)
-
-* [RFC New Epic 010: AI Discovery Infrastructure](adr-rfc-new-epic-010-ai-discovery.md)
-* [Rotation Spec](adr-rotation-spec.md)
-* [Authority Model](adr-authority-model.md)
-* [State Machine](adr-state-machine.md)
-
-## System Design
-
-* [Solana Stack Overview](solana-stack-overview.md)
-* [Squads Treasury Security Design](squads-treasury-security-design.md)
-* [Content as Code Architecture](content-as-code-architecture.md)
-* [Route Architecture and Templates](route-architecture-templates.md)
-* [Semantic Layer for Entities](semantic-layer-entities.md)
+- [Architecture Overview](./architecture-overview.md)
+- [State Machine](./state-machine.md)
+- [Authentication Flow](./auth-flow.md)
+- [Session Model](./session-model.md)
+- [Authority Model](./authority-model.md)
+- [Devnet Proof](./devnet-proof.md)
+- [NFT Specification](./nft-spec.md)
+- [Solana Stack](./solana-stack.md)
+- [Threat Model](./threat-model.md)
+- [Toolchain Policy](./toolchain-policy.md)

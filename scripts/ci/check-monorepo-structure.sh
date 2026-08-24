@@ -26,6 +26,7 @@ content
 knowledge
 artifacts
 node_modules
+target
 .next
 .git
 .github
@@ -35,6 +36,7 @@ node_modules
 .vercel
 .npm-cache
 .cache-synpress
+.pnpm-store
 "
 
 echo "== Monorepo Structure Check =="

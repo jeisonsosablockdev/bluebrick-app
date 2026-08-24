@@ -9,7 +9,11 @@
 - Any implementation, verification, or release-readiness task
 
 ## Antigravity Execution Constraints
-- Start with targeted tests first; untested implementation is not complete.
+- **Autonomous Red-Green-Refactor Cycle**: Every single SPEC (single or multi-SPEC) must internally execute the full TDD cycle:
+  1. **RED**: Design and write failing tests first using the `tdd-primal` skill before touching production code.
+  2. **GREEN**: Implement production code until tests pass.
+  3. **REFACTOR**: Always run a clean-code refactoring pass using the `code-refactoring-refactor-clean` skill before Gate 2 review.
+- Do NOT create separate test-only or refactor-only SPECs.
 - When the work uses the artifact-driven SPEC model, define the test-plan-first contract in the `implementation_plan.md` artifact before executing.
 - `pnpm validate` is mandatory before completion. Execute it via `run_command`. If it takes too long, set a lower `WaitMsBeforeAsync` to send it to the background.
 - Database schema or persistence changes require `pnpm validate:db`; pending tracked migrations block completion.

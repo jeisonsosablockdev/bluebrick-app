@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-test("home page renders the core shell", async ({ page }) => {
-  await page.goto("/");
-
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("main")).toBeVisible();
-  await expect(page.locator("section").first()).toBeVisible();
+test.describe("Next.js App Router Smoke Test", () => {
+  test("home page loads successfully and renders title", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveTitle(/Next.js \+ Solana Starter/);
+    await expect(page.locator("h1")).toBeVisible();
+  });
 });

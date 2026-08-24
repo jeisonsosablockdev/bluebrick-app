@@ -9,7 +9,6 @@ export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: "./tests/artifacts",
   timeout: 45_000,
-  // Keep smoke E2E deterministic in Next.js dev mode to avoid compile-time navigation aborts.
   workers: 1,
   expect: {
     timeout: 10_000
@@ -24,25 +23,16 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "playwright-smoke",
+      name: "chromium",
       testMatch: /.*\.pw\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         headless: true
       }
-    },
-    {
-      name: "synpress-phantom",
-      testMatch: /.*\.synpress\.spec\.(ts|js|mjs)/,
-      use: {
-        browserName: "chromium",
-        headless: process.env.HEADLESS === "true" || Boolean(process.env.CI),
-        viewport: { width: 1280, height: 720 }
-      }
     }
   ],
   webServer: {
-    command: `npm run dev -- --hostname ${host} --port ${port}`,
+    command: `pnpm dev -- --hostname ${host} --port ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000

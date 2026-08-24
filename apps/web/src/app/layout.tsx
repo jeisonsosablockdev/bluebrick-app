@@ -1,55 +1,28 @@
+/**
+ * @file apps/web/src/app/layout.tsx
+ * @description Layer 1: Presentation - Root Layout for Next.js App Router.
+ * Configures base metadata, HTML shell, and global context providers.
+ */
+
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
-import { AppProviders } from "@/app/providers";
-import { AppSplashScreen } from "@/components/brand/app-splash-screen";
-import { ClientAnalytics } from "@/components/observability/client-analytics";
-import { DEFAULT_LOCALE } from "@/lib/i18n";
-import { createRootMetadata } from "@/lib/seo";
-import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY } from "@/lib/theme";
-
+import { Providers } from "./providers";
 import "./globals.css";
-import "mapbox-gl/dist/mapbox-gl.css";
 
-export const metadata: Metadata = createRootMetadata({
-  title: "BRIDS",
-  description: "AI discovery infrastructure and public platform pages for BRIDS."
-});
+export const metadata: Metadata = {
+  title: "Next.js + Solana Starter",
+  description: "High-performance Web3 starter with 4-Layer Architecture and Autonomous Governance",
+};
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const themeInitScript = `
-    (function () {
-      try {
-        var storedTheme = window.localStorage.getItem("${THEME_STORAGE_KEY}");
-        var nextTheme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "${DEFAULT_THEME_MODE}";
-        document.documentElement.setAttribute("data-theme", nextTheme);
-      } catch (_error) {
-        document.documentElement.setAttribute("data-theme", "${DEFAULT_THEME_MODE}");
-      }
-    })();
-  `;
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Step 1: Wrap app contents in HTML shell with dark theme and providers
   return (
-    <html lang={DEFAULT_LOCALE} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <noscript>
-          <style>{`
-            main { opacity: 1 !important; }
-            .app-splash { display: none !important; }
-          `}</style>
-        </noscript>
-      </head>
-      <body>
-        <Suspense fallback={null}>
-          <ClientAnalytics />
-        </Suspense>
-        <AppProviders>
-          <AppSplashScreen />
-          {children}
-        </AppProviders>
-        <SpeedInsights />
+    <html lang="en" className="dark">
+      <body className="bg-neutral-950 text-neutral-100 antialiased selection:bg-blue-500 selection:text-white">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

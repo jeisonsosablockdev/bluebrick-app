@@ -33,7 +33,10 @@
 - For new fixes, require:
   - `knowledge/fixes/fix-<slug>.md`
   - `knowledge/fixes/fix-<slug>-implementation.md`
-- For multi-SPEC work, require the first SPEC before delivery SPECs. La primera SPEC debe estar dedicada estrictamente a TDD (diseñar y escribir los tests en fallo / RED) y la última SPEC debe estar dedicada estrictamente a Limpieza y Refactorización (Clean Code Audit / refactor-clean).
+- For all SPEC work (single or multi-SPEC), do NOT create isolated test-only or refactor-only SPECs. Instead, EVERY individual SPEC MUST follow the complete internal Red-Green-Refactor cycle:
+  1. **RED (TDD)**: Always start the SPEC by designing and writing comprehensive failing tests using the `tdd-primal` skill before writing production code.
+  2. **GREEN (Implementation)**: Assigned specialist subagent implements production code with mandatory in-code commentary until all tests pass.
+  3. **REFACTOR (Clean Code)**: Always finish the SPEC by executing a clean code refactoring audit using the `code-refactoring-refactor-clean` skill to eliminate debt and optimize structure before Gate 2 validation.
 - Load only the matching `.agents/workflows/*.md` and `.agents/policies/*.md`.
 
 ## Workflow Routing
@@ -64,18 +67,18 @@
 - `reviewer`: explicit clean-code audit, in-code commentary verification, duplication, naming, dead-code, governance, and final completion gate.
 
 ## Harness & Lifecycle Enforcement (`.agents/hooks.json`)
-- Development lifecycle events (`pre_branch`, `post_init`, `pre_commit`, `preflight`) and domain scopes (`solana`, `app`, `api`, `db`, `nft`, `shared`) automatically enforce subagent delegation per `.agents/hooks.json` via `task-init.sh`.
+- **Canonical Entrypoint Workflow**: Every single task, issue, feature, fix, or SPEC MUST strictly follow the lifecycle defined in `.agents/workflows/spec-execution-cycle.md`.
 - **Double-Gatekeeper Protocol**:
-  1. **Gate 1 (Pre-Implementation Architecture Review)**: `architect` must inspect and approve the projected 4-layer file paths and imports in the Solution Spec before writing code.
+  1. **Gate 1 (Pre-Implementation Architecture Review & Initial Scaffolding)**: `architect` inspects and approves the projected 4-layer file paths in the Solution Spec, and **physically creates/scaffolds those files** with proper layer headers, interface/type contracts, and minimal stubs before code implementation begins.
   2. **Gate 2 (Post-Implementation Diff Audit)**: `architect` audits the written diff, enforcing strict layer isolation, zero forbidden patterns (`@solana/web3.js` v1, `class`, `new Connection()`), clean monorepo root, and mandatory in-code commentary/indicators.
 - **Idempotent 8-Phase Task Lifecycle & Dual Human Gates**:
   1. **BOOTSTRAP**: `./scripts/task-init.sh` initializes branch and state tracker `.agents/active_task_state.json`.
   2. **DOCS FILLED**: Populate governing dual artifacts without placeholders (`<!-- Describir... -->`).
-  3. **ARCHITECT GATE 1**: `architect` approves 4-layer architecture design in Solution Spec.
-  4. **🛑 HUMAN DESIGN APPROVAL**: Stop & wait for explicit user approval of design BEFORE writing code.
-  5. **TESTS RED**: Write unit tests first before writing production implementation.
-  6. **CODE GREEN**: Assigned specialist subagent implements production code with mandatory in-code commentary.
-  7. **ARCHITECT GATE 2 & VALIDATION**: `architect` audits written diff (layer isolation + code comments) and `pnpm validate` passes cleanly.
+  3. **ARCHITECT GATE 1 & SCAFFOLDING**: `architect` approves 4-layer architecture design and creates initial physical file scaffolding.
+  4. **🛑 HUMAN DESIGN APPROVAL**: Stop & wait for explicit user approval of design and scaffolded files BEFORE writing logic.
+  5. **TESTS RED (TDD-PRIMAL)**: Design and write comprehensive failing tests first using the `tdd-primal` skill against scaffolded contracts.
+  6. **CODE GREEN**: Assigned specialist subagent implements production code with mandatory in-code commentary until tests pass.
+  7. **REFACTOR & ARCHITECT GATE 2**: Execute clean-code refactoring pass using the `code-refactoring-refactor-clean` skill, `architect` audits written diff (layer isolation + code comments), and `pnpm validate` passes cleanly.
   8. **🛑 HUMAN MERGE ACCEPTANCE**: Stop & wait for explicit user authorization BEFORE merging to `develop`.
 - **Automatic Post-Human Acceptance PR Execution**: Upon receiving explicit Human Acceptance, the agent MUST automatically run `pnpm pr:auto` (`scripts/ci/pr-auto.sh`) to generate `pr-body.md`, infer labels (`scope:*`, `type:*`, `risk:*`), push the branch, open/update the PR, and apply GitHub labels via `gh api`.
 

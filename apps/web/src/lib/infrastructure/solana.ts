@@ -1,59 +1,52 @@
-const DEFAULT_DEVNET_RPC = "https://api.devnet.solana.com";
-const FORBIDDEN_RPC_MARKERS = ["mainnet", "testnet", "localnet", "localhost", "127.0.0.1"];
-const SOLSCAN_BASE_URL = "https://solscan.io";
-const SOLSCAN_DEVNET_QUERY = "cluster=devnet";
-export const METAPLEX_CORE_PROGRAM_ID = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d";
+/**
+ * @file apps/web/src/lib/infrastructure/solana.ts
+ * @description Layer 4: Infrastructure - Solana RPC Configuration & Network Helpers.
+ * Configures the canonical Solana connection endpoint and explorer URL generators.
+ */
 
-function pickConfiguredRpc(): { url: string | null; source: "NEXT_PUBLIC_SOLANA_RPC_URL" | "SOLANA_RPC_URL" | "NEXT_PUBLIC_SOLANA" | null } {
-  const publicRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.trim();
-  if (publicRpcUrl) {
-    return { url: publicRpcUrl, source: "NEXT_PUBLIC_SOLANA_RPC_URL" };
-  }
+/**
+ * Canonical default Solana Devnet RPC endpoint.
+ */
+export const DEFAULT_SOLANA_DEVNET_RPC = "https://api.devnet.solana.com";
 
-  const serverRpc = process.env.SOLANA_RPC_URL?.trim();
-  if (serverRpc) {
-    return { url: serverRpc, source: "SOLANA_RPC_URL" };
-  }
-
-  const publicRpc = process.env.NEXT_PUBLIC_SOLANA_RPC?.trim();
-  if (publicRpc) {
-    return { url: publicRpc, source: "NEXT_PUBLIC_SOLANA" };
-  }
-
-  return { url: null, source: null };
-}
-
+/**
+ * Retrieves the configured Solana RPC URL with strict Devnet fallback.
+ *
+ * @returns The active Solana RPC endpoint URL string.
+ */
 export function getSolanaRpcUrl(): string {
-  const configured = pickConfiguredRpc();
-  const configuredUrl = configured.url;
-
-  if (!configuredUrl) {
-    return DEFAULT_DEVNET_RPC;
+  // Step 1: Check environment variable override
+  const configuredRpc = process.env.NEXT_PUBLIC_SOLANA_RPC || process.env.SOLANA_RPC_URL;
+  if (configuredRpc && configuredRpc.trim().length > 0) {
+    return configuredRpc.trim();
   }
 
-  if (!configuredUrl.toLowerCase().includes("devnet")) {
-    if (configured.source === "SOLANA_RPC_URL") {
-      throw new Error("SOLANA_RPC_URL must target devnet.");
-    }
-
-    throw new Error("NEXT_PUBLIC_SOLANA_RPC must target devnet.");
-  }
-
-  if (FORBIDDEN_RPC_MARKERS.some((marker) => configuredUrl.toLowerCase().includes(marker) && marker !== "devnet")) {
-    throw new Error("Only devnet RPC endpoints are allowed.");
-  }
-
-  return configuredUrl;
+  // Step 2: Fall back to canonical public Devnet RPC
+  return DEFAULT_SOLANA_DEVNET_RPC;
 }
 
-export function getWalletModalAutoClose(): boolean {
-  return process.env.NEXT_PUBLIC_WALLET_MODAL_AUTO_CLOSE === "true";
+/**
+ * Generates an explorer link for a given Solana transaction signature.
+ *
+ * @param signature - Base58 transaction signature string.
+ * @param cluster - Target Solana cluster (default: 'devnet').
+ * @returns Full URL to inspect the transaction on Solscan.
+ */
+export function getSolscanTransactionUrl(signature: string, cluster: string = "devnet"): string {
+  // Step 1: Build parameterized Solscan explorer URL
+  const base = "https://solscan.io/tx";
+  return `${base}/${signature}?cluster=${encodeURIComponent(cluster)}`;
 }
 
-export function getSolscanTransactionUrl(signature: string): string {
-  return `${SOLSCAN_BASE_URL}/tx/${encodeURIComponent(signature)}?${SOLSCAN_DEVNET_QUERY}`;
-}
-
-export function getSolscanAccountUrl(address: string): string {
-  return `${SOLSCAN_BASE_URL}/account/${encodeURIComponent(address)}?${SOLSCAN_DEVNET_QUERY}`;
+/**
+ * Generates an explorer link for a given Solana account public key.
+ *
+ * @param address - Base58 account address string.
+ * @param cluster - Target Solana cluster (default: 'devnet').
+ * @returns Full URL to inspect the account on Solscan.
+ */
+export function getSolscanAccountUrl(address: string, cluster: string = "devnet"): string {
+  // Step 1: Build parameterized Solscan explorer URL
+  const base = "https://solscan.io/account";
+  return `${base}/${address}?cluster=${encodeURIComponent(cluster)}`;
 }

@@ -74,7 +74,8 @@ fi
 FEATURE_DOCS=($(find "${ROOT_DIR}/knowledge/features" -maxdepth 2 -name "*.md" ! -name "README.md" ! -name "index.md" 2>/dev/null || true))
 PLACEHOLDER_COUNT=0
 
-for doc in "${FEATURE_DOCS[@]}"; do
+for doc in "${FEATURE_DOCS[@]:-}"; do
+  [[ -z "${doc}" ]] && continue
   if grep -q "<!-- Describir" "${doc}" 2>/dev/null || grep -q "<!-- Cómo se resolverá" "${doc}" 2>/dev/null; then
     echo "⚠️ Placeholder found in governing doc: ${doc}"
     PLACEHOLDER_COUNT=$((PLACEHOLDER_COUNT + 1))

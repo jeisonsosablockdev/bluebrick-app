@@ -1,262 +1,102 @@
-# 🏛️ BRIDS Clean Code & Folder Structure Specification
-*(Governance Standard for Feature-Driven Design, 4-Layer Architecture & Monorepo Workspaces)*
+# 🏛️ Clean Code & Folder Structure Specification
+*(Governance Standard for 4-Layer Architecture & Monorepo Workspaces)*
 
 ---
 
 ## 1. Visión General y Filosofía de Diseño
 
-Esta especificación define la estructura canónica de directorios y reglas de encapsulamiento para el proyecto **BRIDS**. Combina dos patrones arquitectónicos principales:
+Esta especificación define la estructura canónica de directorios y reglas de encapsulamiento para el monorepo **Next.js + Solana**:
 
-1. **Monorepo Workspaces (Nivel Macro)**: Aislamiento estricto entre el código on-chain en Rust (`programs/`), la aplicación web en Next.js (`apps/web/`), el harness de agentes e IA (`.agents/`), y los clientes autogenerados (`packages/`).
-2. **Feature-Driven Design / FDD + 4 Capas Funcionales (Nivel Micro)**: Organización del código frontend/backend por **Vertical Slices de Negocio** (`src/features/[feature_name]/`), sustituyendo la organización tradicional por tipo de archivo técnico.
+1. **Monorepo Workspaces (Nivel Macro)**: Organización estructurada mediante `pnpm-workspace.yaml` centrada en la aplicación web (`apps/web/`), el harness de agentes e IA (`.agents/`), los scripts de automatización (`scripts/`), la base de conocimiento (`knowledge/`) y la suite de pruebas (`tests/`).
+2. **Arquitectura Funcional en 4 Capas (Nivel Micro)**: Organización modular en `apps/web/src/` con estricto desacoplamiento y flujo unidireccional de dependencias:
+   - **Capa 1: Presentación** (`src/app`, `src/components`)
+   - **Capa 2: Aplicación / Consumo** (`src/lib/hooks`, `src/lib/state`)
+   - **Capa 3: Dominio / Pipelines** (`src/lib/pipelines`)
+   - **Capa 4: Infraestructura y Utilidades** (`src/lib/infrastructure`, `src/lib/utils.ts`)
 
 ---
 
 ## 2. Mapa Completo de Carpetas de la Arquitectura
 
 ```text
-brids/                                    <-- Raíz del Monorepo (pnpm-workspace.yaml)
-├── programs/                             <-- 🔒 SOLANA SMART CONTRACTS (Rust / Anchor)
-│   ├── brids-protocol/
-│   │   ├── src/lib.rs                    <-- Lógica del programa en Rust
-│   │   └── Cargo.toml
-│   └── Anchor.toml
-│
-├── apps/                                 <-- 🌐 APLICACIONES Y MICROFRONTENDS
+/                                         <-- Raíz del Monorepo (pnpm-workspace.yaml)
+├── apps/                                 <-- 🌐 APLICACIONES
 │   └── web/                              <-- Next.js 16+ App Router
-│       ├── app/                          <-- Thin App Router (Solo Rutas, Layouts y Providers)
-│       │   ├── (dashboard)/
-│       │   ├── admin/
-│       │   ├── marketplace/
-│       │   ├── layout.tsx
-│       │   └── providers.tsx
-│       │
-│       └── src/                          <-- Código Fuente de la App Web
-│           ├── features/                 <-- 🎯 VERTICAL SLICES (Feature-Driven Design)
-│           │   │
-│           │   ├── landing/              <-- 🌐 1. SECCIÓN LANDING & CONTENIDO PÚBLICO
-│           │   │   ├── index.ts          <-- Public API Boundary
-│           │   │   ├── presentation/     <-- Dark Hero, Splash Screen, SEO Layouts, Motion 12
-│           │   │   ├── application/      <-- Static Loaders, Editorial DTOs, SEO Metadata
-│           │   │   ├── domain/           <-- Structured Data Models (JSON-LD, AI Discovery)
-│           │   │   └── infrastructure/   <-- Content as Code / CMS Repositories
-│           │   │
-│           │   ├── marketplace/            <-- 🛒 2. SECCIÓN MARKETPLACE & CATÁLOGO DE INMUEBLES
-│           │   │   ├── index.ts          <-- Public API Boundary
-│           │   │   ├── presentation/     <-- Visualizador 3D, Mapas Mapbox, Deal Economics
-│           │   │   ├── application/      <-- Hooks de Selección de Inmueble, Filtros
-│           │   │   ├── domain/           <-- Reglas de Inversión, Precios
-│           │   │   └── infrastructure/   <-- Repositorios DB Marketplace, Metaplex RPC Adapters
-│           │   │
-│           │   ├── checkout-payment/     <-- 💳 3. MÓDULO AUTÓNOMO CHECKOUT & PASARELAS DE PAGO
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vistas /checkout y /checkout/success)
-│           │   │   ├── presentation/     <-- CheckoutPageClient, PaymentMethodSelector, Recibo Exitoso
-│           │   │   ├── application/      <-- Acciones de Pago Crypto (Solana) y Fiat (Airwallex), Créditos
-│           │   │   ├── domain/           <-- Anti-bot Limits, Claves de Idempotencia de Compra
-│           │   │   └── infrastructure/   <-- Airwallex Client, Solana Purchase Adapter, Attempt Repositories
-│           │   │
-│           │   ├── recurring-deposits/   <-- 💵 4. MÓDULO AUTÓNOMO RECARGAS RECURRENTES FIAT (LITTIO / SPHERE)
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Controles de Recarga Recurrente)
-│           │   │   ├── presentation/     <-- RecurringTopupCard, ScheduleSelector, LittioSubscriptionManager
-│           │   │   ├── application/      <-- setupRecurringDepositAction, processRecurringTopupWebhookAction
-│           │   │   ├── domain/           <-- RecurringScheduleRules, TopupInvariants
-│           │   │   └── infrastructure/   <-- Littio Client, Sphere Solana Adapter, Subscription Repository
-│           │   │
-│           │   ├── offline-recovery/     <-- 🛡️ 5. MÓDULO AUTÓNOMO RECUPERACIÓN OFFLINE & ANCHOR NOTARY
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Modal de Recuperación y Queue Offline)
-│           │   │   ├── presentation/     <-- RecoveryPromptModal, InterruptedTransactionCard, SyncBadge
-│           │   │   ├── application/      <-- recoverInterruptedTransactionAction, submitAnchorNotaryProofAction
-│           │   │   ├── domain/           <-- RecoveryPayloadInvariants, AnchorNotaryRules, OfflineSessionState
-│           │   │   └── infrastructure/   <-- AnchorNotaryRpcClient, IndexedDbSignatureStore, RecoveryRepo
-│           │   │
-│           │   ├── profile/                <-- 👤 4. SECCIÓN PERFIL & KYC IDENTIDAD
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vista /profile/perfil)
-│           │   │   ├── presentation/     <-- ProfileFormCard, KycIdentityStatusCard
-│           │   │   ├── application/      <-- saveProfileDetailsAction, completeKycAction
-│           │   │   ├── domain/           <-- UserProfile Model, KycStatusInvariants
-│           │   │   └── infrastructure/   <-- User DB Repository, Kyc Provider Adapter
-│           │   │
-│           │   ├── investor-portfolio/   <-- 📈 5. MÓDULO AUTÓNOMO PORTAFOLIO DE INVERSIÓN & HOLDINGS
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vista /profile/portfolio)
-│           │   │   ├── presentation/     <-- PortfolioOverviewWidget, HoldingsBreakdownChart
-│           │   │   ├── application/      <-- fetchInvestorHoldingsQuery, calculatePortfolioReturnQuery
-│           │   │   ├── domain/           <-- InvestorHolding Model, AssetValuationRules
-│           │   │   └── infrastructure/   <-- Solana DAS Layer Indexer RPC, On-Chain Fetchers
-│           │   │
-│           │   ├── referral-marketing/   <-- 🎁 6. MÓDULO AUTÓNOMO SISTEMA DE REFERIDOS Y RECOMPENSAS
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vista /profile/referrals)
-│           │   │   ├── presentation/     <-- ReferralLinkCard, CommissionMetricsWidget
-│           │   │   ├── application/      <-- generateReferralCodeAction, trackReferralCommissionAction
-│           │   │   ├── domain/           <-- ReferralTierRules, MultiLevelCommissionRules
-│           │   │   └── infrastructure/   <-- Referral DB Repository, Commission Ledger
-│           │   │
-│           │   ├── educational-resources/<-- 📚 7. MÓDULO AUTÓNOMO BLOG & AI DISCOVERY EDITORIAL
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vistas /resources, /knowledge, /platform)
-│           │   │   ├── presentation/     <-- ResourcePageTemplate, ArticleCardGrid, ArticleJsonLd
-│           │   │   ├── application/      <-- getResourceBySlug, getAllResourcesQuery
-│           │   │   ├── domain/           <-- ArticleEntity, EditorialSeoContracts
-│           │   │   └── infrastructure/   <-- ContentAsCodeLoader, RssAiFeedGenerator
-│           │   │
-│           │   ├── pwa-notifications/    <-- 📱 8. MÓDULO AUTÓNOMO PWA & NOTIFICACIONES WEB PUSH
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Banner PWA, Bell de Notificaciones)
-│           │   │   ├── presentation/     <-- PwaInstallBanner, WebPushNotificationModal, PushCampaignConsole
-│           │   │   ├── application/      <-- subscribeToWebPushAction, sendPushCampaignAction, usePwaPrompt
-│           │   │   ├── domain/           <-- PushPayloadRules, PwaInstallabilityInvariants
-│           │   │   └── infrastructure/   <-- WebPushVapidAdapter, PushSubscriptionRepository, ServiceWorker
-│           │   │
-│           │   ├── admin/                <-- ⚙️ 8. ADMIN SHELL & SYSTEM OPERATIONS
-│           │   │   ├── index.ts          <-- Public API Boundary
-│           │   │   ├── presentation/     <-- Admin Layout Shell, Navigation Sidebar, Audit Logs UI
-│           │   │   ├── application/      <-- System Monitoring Actions, Admin Operations
-│           │   │   ├── domain/           <-- Admin Authority Rules, System Audit Invariants
-│           │   │   └── infrastructure/   <-- Authority Registry, Webhook Repositories
-│           │   │
-│           │   ├── property-management/  <-- 🏠 5. MÓDULO AUTÓNOMO GESTIÓN Y EDICIÓN DE PROPIEDADES
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Editores de Inmuebles)
-│           │   │   ├── presentation/     <-- PropertyInformationEditor, DocumentsEditor, SummaryEditor
-│           │   │   ├── application/      <-- savePropertyDetailsAction, uploadPropertyDocumentsAction
-│           │   │   ├── domain/           <-- RealEstateAsset Model, Document Validation Rules
-│           │   │   └── infrastructure/   <-- Property DB Repository, Pinata IPFS Upload Adapter
-│           │   │
-│           │   ├── staking-distribution/ <-- 💰 6. MÓDULO AUTÓNOMO STAKING & SQUADS V4 CLAIMS
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Widgets para Admin y Profile)
-│           │   │   ├── presentation/     <-- AdminDistributionConsole, InvestorClaimsWidget
-│           │   │   ├── application/      <-- executeDistributionAction, claimDividendsAction
-│           │   │   ├── domain/           <-- Algoritmos de Prorrateo, Reglas Squads Vault
-│           │   │   └── infrastructure/   <-- Squads v4 RPC Adapter, Repositorios de Historial
-│           │   │
-│           │   ├── nft-minting/          <-- 🎨 7. MÓDULO AUTÓNOMO METAPLEX CORE MINTING & CANDY MACHINE
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Notaría & Candy Machine UI)
-│           │   │   ├── presentation/     <-- AdminCandyMachineConsole, NotarySigningCard
-│           │   │   ├── application/      <-- createCollectionMintAction, executeCandyMachineMintAction
-│           │   │   ├── domain/           <-- Anchor Notary Rules, Metaplex Core Collection Plugins
-│           │   │   └── infrastructure/   <-- Umi / Metaplex Core RPC Adapters, IPFS Metadata Repositories
-│           │   │
-│           │   ├── asset-freeze-control/ <-- 🔒 8. MÓDULO AUTÓNOMO FREEZE & THAW POLICIES
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Controles de Freeze/Thaw)
-│           │   │   ├── presentation/     <-- FreezeThawControlCard, PermanentFreezePolicyUi
-│           │   │   ├── application/      <-- freezeAssetAction, thawAssetAction, setPermanentFreezeAction
-│           │   │   ├── domain/           <-- FreezeInvariants, Metaplex Core Freeze Plugin Rules
-│           │   │   └── infrastructure/   <-- Freeze Authority RPC Client, On-Chain State Fetcher
-│           │   │
-│           │   ├── transparency-portal/  <-- 📊 9. MÓDULO AUTÓNOMO TRANSPARENCIA Y ESTRATEGIA
-│           │   │   ├── index.ts          <-- Public API Boundary (Exporta Vista /transparencia)
-│           │   │   ├── presentation/     <-- TransparencyContent, InvestmentModelsSection
-│           │   │   ├── application/      <-- fetchPublicMetricsAction, getInvestmentModelsQuery
-│           │   │   ├── domain/           <-- InvestmentModelRules, TransparencyMetricsModel
-│           │   │   └── infrastructure/   <-- Public On-Chain Metrics RPC, Financial Models Repository
-│           │   │
-│           │   └── shared/               <-- 📦 RECURSOS COMPARTIDOS (Cross-Cutting Infrastructure)
-│           │       ├── ui/               <-- UI Kit Componentes globales, Modo Oscuro/Claro, Motion 12
-│           │       ├── wallet/           <-- Conexión de Red & Wallet Standard (@solana/kit, Wallet Modal)
-│           │       ├── auth/             <-- SISTEMA DE AUTENTICACIÓN HÍBRIDA Y AUTORIZACIÓN
-│           │       │   ├── siws/         <-- 🔐 Sign-In With Solana (Firma Criptográfica)
-│           │       │   ├── workos/       <-- 📧 Login OAuth/OIDC WorkOS (Email / Social Fiat)
-│           │       │   ├── reconciliation/<-- 🔗 Reconciliador Híbrido (Vinculación Wallet ↔ Email)
-│           │       │   └── rbac/         <-- 🛡️ RBAC Global Guards (Admin, Operator, Investor Roles)
-│           │       ├── i18n/             <-- 🌐 Internacionalización (useI18n, LocaleProvider, localize)
-│           │       └── infrastructure/   <-- INFRAESTRUCTURA Y ADAPTADORES COMPARTIDOS
-│           │           ├── db/           <-- Cliente Drizzle PostgreSQL y Esquemas Base
-│           │           ├── solana-rpc/   <-- Cliente RPC Base Solana y Providers
-│           │           ├── squads/       <-- Cliente SDK Squads v4 Multisig (@squads/v4)
-│           │           ├── metaplex/     <-- INTEGRACIÓN METAPLEX CORE Y DAS LAYER
-│           │           │   ├── das-fetcher/ <-- 🔍 Lectura Indexada (DAS API: getAssetsByOwner/Group)
-│           │           │   └── core-writer/ <-- ✍️ Escritura On-Chain (Umi + mpl-core + Candy Machine)
-│           │           └── ipfs/         <-- Cliente Upload Pinata IPFS
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/
+│           ├── app/                      <-- Capa 1: Thin App Router (Rutas, Layouts, Providers)
+│           │   ├── layout.tsx
+│           │   ├── page.tsx
+│           │   ├── providers.tsx
+│           │   ├── loading.tsx
+│           │   ├── error.tsx
+│           │   └── not-found.tsx
 │           │
-├── .agents/                              <-- 🤖 HARNESS DE IA Y AGENTES (Antigravity)
-│   ├── agents/                           <-- Perfiles YAML de Subagentes (architect, solana, etc.)
-│   ├── graph.json                        <-- Grafo de conocimiento topológico de la app
-│   └── hooks.json                        <-- Reglas de lifecycle y Double-Gatekeeper Protocol
+│           ├── components/               <-- Capa 1: Componentes UI Atómicos y Wrappers
+│           │   ├── ui/                   <-- Button, Card, Inputs
+│           │   ├── wallet/               <-- WalletConnectButton, WalletRuntimeProvider
+│           │   ├── theme/                <-- ThemeToggle
+│           │   └── motion/               <-- MotionProvider
+│           │
+│           └── lib/                      <-- Lógica Central y 4 Capas Funcionales
+│               ├── hooks/                <-- Capa 2: Custom React Hooks (useSolanaWallet)
+│               ├── state/                <-- Capa 2: Estado del Cliente y Preferencias
+│               ├── pipelines/            <-- Capa 3: Pipelines de Dominio y Validación
+│               ├── infrastructure/       <-- Capa 4: RPC Solana Devnet & Conectores
+│               └── utils.ts              <-- Capa 4: Helpers de Formato y Clases
 │
-└── packages/                             <-- 📦 LIBRERÍAS INTERNAS COMPARTIDAS
-    └── solana-client/                    <-- Cliente @solana/kit autogenerado desde IDL Anchor
+├── .agents/                              <-- 🤖 HARNESS DE GOBERNANZA DE AGENTES
+│   ├── agents/                           <-- Definiciones de especialistas (architect, solana, qa, etc.)
+│   ├── policies/                         <-- Políticas de gobernanza no negociables
+│   ├── workflows/                        <-- Ciclos de desarrollo y macros
+│   └── hooks.json                        <-- Hooks declarativos del ciclo de vida
+│
+├── knowledge/                            <-- 📚 OPEN KNOWLEDGE FORMAT (OKF)
+│   ├── governance/                       <-- Políticas de monorepo, git, seguridad y calidad
+│   ├── architecture/                     <-- ADRs, diagramas de flujo y state machines
+│   ├── features/                         <-- Artefactos duales de requerimientos/soluciones
+│   ├── fixes/                            <-- Artefactos duales de resolución de bugs
+│   ├── api/                              <-- Catálogo de rutas, esquemas y RPC
+│   ├── database/                         <-- Modelos de datos y esquemas de persistencia
+│   ├── security/                         <-- Modelos de amenazas, auditorías y cumplimiento
+│   └── templates/                        <-- Plantillas canónicas para desarrollo
+│
+├── scripts/                              <-- ⚙️ SCRIPTS DE AUTOMATIZACIÓN Y CI
+│   ├── ci/                               <-- Validadores de arquitectura, licencias y ciclo de vida
+│   └── task-init.sh                      <-- Inicializador canónico de ramas y tareas
+│
+└── tests/                                <-- 🧪 SUITE DE TESTING CENTRALIZADA
+    ├── harness/                          <-- Pruebas automatizadas de gobernanza de agentes
+    └── setup/                            <-- Configuración de Vitest
 ```
 
 ---
 
-## 3. Matriz Estricta de Permisos de Importación (Import Matrix)
+## 3. Reglas de Importación e Invariantes de Aislamiento
 
-Para mantener la independencia y la modularidad del código, se aplican dos reglas de importación fundamentales:
-
-### Regla A: Jerarquía Vertical de Capas (Dentro de una Feature)
-```text
-Layer 1: Presentation  --->  Layer 2: Application  --->  Layer 3: Domain  <--- Layer 4: Infrastructure
-```
-1. **Presentation Layer (`presentation/`)**:
-   - ✅ Puede importar: `application/`, `shared/ui`
-   - ❌ **PROHIBIDO**: Importar `domain/` directamente, `infrastructure/`, `@solana/kit` o conexiones de DB.
-2. **Application Layer (`application/`)**:
-   - ✅ Puede importar: `domain/`, `infrastructure/` (vía interfaces/repositorios)
-   - ❌ **PROHIBIDO**: Importar componentes JSX/React de `presentation/`.
-3. **Domain Layer (`domain/`)**:
-   - ✅ Puede importar: `@solana/kit`, Zod, utilidades puras de TypeScript.
-   - ❌ **PROHIBIDO**: Importar React, Next.js, HTML, UI, Prisma, Drizzle, PostgreSQL o HTTP clients. Debe ser 100% agnóstico a frameworks.
-4. **Infrastructure Layer (`infrastructure/`)**:
-   - ✅ Puede importar: PostgreSQL, Drizzle, Solana RPC, SDKs de terceros (Resend, Pinata).
-   - ❌ **PROHIBIDO**: Importar componentes JSX o React Hooks.
-
-### Regla B: Encapsulamiento Horizontal entre Features (Public API Boundary)
-```text
-Feature A  --->  features/B/index.ts (Public API)  --->  Feature B Internals
-```
-* Una feature `features/nft-minting` **solo puede importar** de otra feature `features/auth` a través del archivo de entrada público: `features/auth/index.ts`.
-* ❌ **PROHIBIDO**: Importaciones profundas dentro de las tripas de otra feature (ej: `import { SecretButton } from '@/features/auth/presentation/components/SecretButton'`).
+1. **Flujo de Dependencias Unidireccional**:
+   - `Layer 1 (Presentación)` -> Puede importar de `Layer 2`, `Layer 3` y `Layer 4`.
+   - `Layer 2 (Aplicación)` -> Puede importar de `Layer 3` y `Layer 4`.
+   - `Layer 3 (Dominio)` -> Puede importar de `Layer 4`.
+   - `Layer 4 (Infraestructura)` -> No depende de ninguna capa superior.
+2. **Prohibición de Acceso a DB Directo en UI**:
+   - Los componentes de presentación y hooks tienen estrictamente prohibido importar drivers de base de datos (`pg`, clientes SQL directos).
+3. **Solana Devnet Only**:
+   - Todos los conectores y configuraciones de RPC deben apuntar exclusivamente a Devnet.
+4. **Comentarios Obligatorios en Código**:
+   - Cada archivo debe incluir encabezado de capa, bloques TSDoc/JSDoc y pasos numerados (`// Step N:`).
+5. **Estrategia de Testing Colocalizado en FDD**:
+   - Los tests unitarios y de integración de cada Vertical Slice se escriben colocalizados junto al archivo que prueban (`*.test.ts`, `*.test.tsx`). La carpeta centralizada `tests/` se reserva para el harness de gobernanza (`tests/harness/`) y pruebas E2E de navegador (`tests/e2e/`).
 
 ---
 
-## 4. Convenciones de Código y Patrones de Sintaxis
+## 4. Estándar Canónico de Comentarios y Nomenclatura
 
-1. **Functional-First over OOP**:
-   - Prohibido el uso de la palabra clave `class` para modelos o controladores.
-   - Toda la lógica se expresa mediante **Funciones Puras** y composición con `pipe()` de TypeScript.
-2. **Solana Modern Stack**:
-   - Prohibido importar `@solana/web3.js` (v1).
-   - Prohibido instanciar objetos imperativos como `new Connection()` o `new Transaction()`.
-   - Uso obligatorio de la suite funcional `@solana/kit` (`@solana/client`, `@solana/transaction-messages`).
-3. **Validación Zod Obligatoria**:
-   - Toda Server Action o endpoint de entrada debe validar sus DTOs con esquemas Zod en la capa de `application/dtos/`.
+### 4.1. Estándar Canónico de Comentarios e Indicaciones en el Código
 
----
-
-## 4.1. Estándar Canónico de Comentarios e Indicaciones en el Código (In-Code Commentary)
-
-Todo código producido o modificado en el repositorio debe ser autoexplicativo, estructurado y contener comentarios e indicaciones explícitas de lo que se está haciendo. Esta regla es canónica y de obligatorio cumplimiento:
-
-1. **Encabezado de Archivo / Módulo (File Header)**:
-   - Todo archivo `.ts`, `.tsx`, `.rs` o `.sql` debe incluir en la cabecera un comentario que declare:
-     - **Capa Arquitectónica**: (ej. `Layer 1: Presentation`, `Layer 2: Application`, `Layer 3: Domain`, `Layer 4: Infrastructure`, `On-Chain Program`).
-     - **Propósito y Responsabilidad**: Descripción concisa de la intención del archivo y qué invariantes o reglas de negocio resuelve.
-     - **Límites de Importación**: Declaración de dependencias permitidas y prohibidas según la matriz de capas.
-
-2. **Documentación de Contratos e Interfaces (JSDoc / TSDoc / Rust `///`)**:
-   - Cada función pública/exportada, hook, Server Action, pipeline, endpoint y estructura de datos debe documentarse con:
-     - Propósito y caso de uso.
-     - Descripción de cada parámetro `@param` y retorno `@returns`.
-     - Invariantes de seguridad, precondiciones y posibles errores / excepciones lanzadas (`@throws`).
-
-3. **Secuenciación y Trazabilidad Paso a Paso (`// Step N: ...`)**:
-   - En funciones complejas, composición de transacciones (`@solana/kit`), pipelines de cálculo o mutaciones de estado, el código debe desglosarse con comentarios secuenciales explícitos:
-     - `// Step 1: Validar entradas y DTOs mediante esquemas Zod`
-     - `// Step 2: Derivar PDAs o cuentas requeridas con semillas canónicas`
-     - `// Step 3: Construir y firmar mensaje de transacción`
-     - `// Step 4: Persistir idempotencia y emitir eventos`
-
-4. **Anotación de Invariantes de Seguridad y Negocio**:
-   - Todo check de autoridad, verificación de firma criptográfica, derivación de PDA, validación de anti-bot o cálculo financiero debe incluir un comentario explicativo indicando *qué invariante se está protegiendo* y *por qué*.
-
-5. **Prohibición de Código Opaco ("Zero Magic Code")**:
-   - Queda estrictamente prohibido el código sin comentarios contextuales o con lógica implícita no documentada. La ausencia de comentarios explicativos es motivo de bloqueo inmediato en las revisiones de código y gates de CI.
-
----
-
-## 5. Instrucciones de Inyección para el Agente `architect`
-
-Cuando el subagente `architect` ejecute sus revisiones de **Gatekeeper 1 (Pre-Code)** o **Gatekeeper 2 (Post-Code)**, debe verificar:
-
-1. **Grafo de Grafo de Conocimiento**: Consultar `.agents/graph.json` para verificar la topología del archivo modificado.
-2. **Ubicación Física del Archivo**: Validar que si el archivo reside en `apps/web/src/features/[name]/presentation/`, no contenga ningún import de `@solana/kit`, `pg`, `drizzle` ni `infrastructure`.
-3. **Barrels de Importación**: Validar que los imports entre carpetas de `features/` pasen exclusivamente por el `index.ts` raíz de la feature correspondiente.
-4. **Validación de Whitelist**: Asegurar que no se creen carpetas fuera de la estructura de Monorepo Whitelist.
-5. **Auditoría de Comentarios e Indicaciones en Código**: En Gatekeeper 2, auditar que el diff contenga encabezados de capa, contratos JSDoc/TSDoc/Rust doc y comentarios secuenciales paso a paso explicando la lógica implementada.
-
+Todo artefacto de código (`.ts`, `.tsx`, `.rs`, `.sql`) debe incluir obligatoriamente:
+1. **Encabezado de Archivo / Módulo**: Declarar explícitamente el rol de capa (`Layer 1: Presentation`, `Layer 2: Application`, `Layer 3: Domain`, `Layer 4: Infrastructure`) y la descripción del archivo.
+2. **Bloques JSDoc / TSDoc / Rust doc**: Documentar exhaustivamente cada función, interfaz, tipo, hook y struct con `@param`, `@returns` y descripción de excepciones.
+3. **Indicadores de Lógica Paso a Paso (`// Step N: ...`)**: Comentarios inline estructurados que enumeren secuencialmente cada paso de la lógica de negocio o pipeline.
+4. **Explicación de Invariantes de Seguridad y Dominio**: Comentarios claros sobre límites de confianza, validaciones de esquema y derivaciones.

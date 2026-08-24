@@ -1,20 +1,18 @@
 ---
-type: Reference Index
-title: endpoints
-description: Index for endpoints
-tags: [reference, index, endpoints]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/knowledge/api/endpoints
+type: ADR
+title: API Endpoints Index
+description: Index of API route handlers, HTTP methods, authentication requirements, and status codes.
+tags: [api, endpoints, routes]
+timestamp: 2026-08-23T00:00:00Z
+resource: local
 ---
 
-# endpoints
+# API Endpoints
 
-## Contents
-* [admin-assets](admin-assets.md)
-* [auth](auth.md)
-* [collections](collections.md)
-* [marketplace](marketplace.md)
-* [mint-orchestrator](mint-orchestrator.md)
-* [purchase-flow](purchase-flow.md)
-* [stake-distribution](stake-distribution.md)
-* [webhooks](webhooks.md)
+## Endpoints Catalog
+
+| Method | Path | Auth Required | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | No | System health and RPC connectivity probe |
+
+<!-- Add new endpoint specifications as markdown files under knowledge/api/endpoints/ -->

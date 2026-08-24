@@ -23,9 +23,11 @@ export interface EvaluationResult {
  * Clean and normalize license identifier string.
  */
 
-function normalizeLicense(rawLicense: string): string {
+function normalizeLicense(rawLicense: any): string {
   if (!rawLicense) return 'UNKNOWN';
-  return rawLicense.trim();
+  if (typeof rawLicense === 'string') return rawLicense.trim();
+  if (typeof rawLicense === 'object' && rawLicense.type) return String(rawLicense.type).trim();
+  return String(rawLicense).trim();
 }
 
 /**

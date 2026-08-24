@@ -1,2 +1,0 @@
-ALTER TABLE user_profiles
-ADD COLUMN state_province VARCHAR(100) DEFAULT NULL;

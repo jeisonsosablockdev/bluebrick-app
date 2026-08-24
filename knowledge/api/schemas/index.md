@@ -1,15 +1,14 @@
 ---
-type: Reference Index
-title: schemas
-description: Index for schemas
-tags: [reference, index, schemas]
-timestamp: 2026-06-16T00:00:00Z
-resource: https://github.com/jeisonsosablockdev/brids/tree/develop/knowledge/knowledge/api/schemas
+type: ADR
+title: API Schemas Index
+description: Request and response validation contracts, Zod/Valibot schemas, and DTO definitions.
+tags: [api, schemas, validation]
+timestamp: 2026-08-23T00:00:00Z
+resource: local
 ---
 
-# schemas
+# API Schemas
 
-## Contents
-* [content-frontmatter.schema.json](content-frontmatter.schema.json)
-* [marketplace-entry](marketplace-entry.md)
-* [purchase-webhook-events](purchase-webhook-events.md)
+Index of data validation schemas and contract definitions.
+
+<!-- Add new schema definitions as markdown files or JSON schemas under knowledge/api/schemas/ -->

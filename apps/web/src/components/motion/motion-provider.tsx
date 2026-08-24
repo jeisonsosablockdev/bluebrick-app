@@ -1,18 +1,18 @@
+/**
+ * @file apps/web/src/components/motion/motion-provider.tsx
+ * @description Layer 1: Presentation - Motion 12 Configuration Provider.
+ */
+
 "use client";
 
-import type { ReactNode } from "react";
+import React from "react";
 import { MotionConfig } from "motion/react";
 
-import { MOTION_DEFAULT_TRANSITION } from "@/lib/motion";
-
-type MotionProviderProps = {
-  children: ReactNode;
-};
+export interface MotionProviderProps {
+  children: React.ReactNode;
+}
 
 export function MotionProvider({ children }: MotionProviderProps) {
-  return (
-    <MotionConfig reducedMotion="user" transition={MOTION_DEFAULT_TRANSITION}>
-      {children}
-    </MotionConfig>
-  );
+  // Step 1: Wrap children with MotionConfig respecting user preference
+  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
 }

@@ -1,19 +1,23 @@
+/**
+ * @file apps/web/src/components/ui/card.tsx
+ * @description Layer 1: Presentation - Reusable Atomic Card Container Component.
+ */
+
+import React from "react";
 import { cn } from "@/lib/utils";
 
-type CardProps = React.HTMLAttributes<HTMLElement> & {
-  id?: string;
-  className?: string;
-  children: React.ReactNode;
-};
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Card({ id, className, children, ...props }: CardProps) {
+export function Card({ className, children, ...props }: CardProps) {
   return (
-    <article
-      id={id}
-      className={cn("glass-interactive-card rounded-2xl border border-white/10 bg-panel p-5", className)}
+    <div
+      className={cn(
+        "rounded-xl border border-gray-800 bg-gray-900/60 p-6 shadow-sm backdrop-blur-sm",
+        className
+      )}
       {...props}
     >
       {children}
-    </article>
+    </div>
   );
 }
