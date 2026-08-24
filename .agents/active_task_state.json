@@ -2,22 +2,22 @@
   "version": "1.0.0",
   "task_id": "BBC-006",
   "story_id": "BBC-6",
-  "spec_id": "SPEC-04",
-  "branch": "SPEC/jaymusicmachine-BBC-6-s04-workos-auth-session",
+  "spec_id": "SPEC-05",
+  "branch": "SPEC/jaymusicmachine-BBC-6-s05-seo-sem-performance",
   "parent_branch": "feature/jaymusicmachine-BBC-6-user-investment-dashboard",
   "current_phase": "PHASE_7_VALIDATED",
   "human_design_approval": {
     "approved": true,
-    "timestamp": "2026-08-23T23:28:50-05:00"
+    "timestamp": "2026-08-24T00:11:08-05:00"
   },
   "phases": {
-    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-23T23:28:58-05:00" },
-    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-23T23:29:00-05:00" },
-    "PHASE_3_ARCHITECT_GATE1": { "completed": true, "timestamp": "2026-08-23T23:29:05-05:00" },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-23T23:28:50-05:00" },
-    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-23T23:29:17-05:00" },
-    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-23T23:29:50-05:00" },
-    "PHASE_7_VALIDATED": { "completed": true, "timestamp": "2026-08-23T23:52:48-05:00" },
+    "PHASE_1_BOOTSTRAP": { "completed": true, "timestamp": "2026-08-24T00:12:02-05:00" },
+    "PHASE_2_DOCS_FILLED": { "completed": true, "timestamp": "2026-08-24T00:12:05-05:00" },
+    "PHASE_3_ARCHITECT_GATE1": { "completed": true, "timestamp": "2026-08-24T00:12:10-05:00" },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true, "timestamp": "2026-08-24T00:11:08-05:00" },
+    "PHASE_5_TESTS_RED": { "completed": true, "timestamp": "2026-08-24T00:13:00-05:00" },
+    "PHASE_6_CODE_GREEN": { "completed": true, "timestamp": "2026-08-24T00:13:15-05:00" },
+    "PHASE_7_VALIDATED": { "completed": true, "timestamp": "2026-08-24T00:13:30-05:00" },
     "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
