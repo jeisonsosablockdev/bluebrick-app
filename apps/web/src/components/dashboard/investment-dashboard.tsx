@@ -1,92 +1,85 @@
 /**
  * @file apps/web/src/components/dashboard/investment-dashboard.tsx
- * @description Layer 1: Presentation - Complete BlueBrick Investor Dashboard Component.
- * Pixel-accurate implementation matching reference design with TopNav, Hero, Donut Chart, Carousel, Table, and Opportunities Banner.
+ * @description Layer 1: Presentation - Institutional Investment Dashboard Component.
+ * Implements dark luxury theme, responsive mobile-first grids, Recharts portfolio donut,
+ * investment carousel, interactive details table, and Vercel Blob avatar uploader.
  */
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
-  Building2,
-  Home,
-  Warehouse,
-  Store,
-  MapPin,
+  TrendingUp,
+  Activity,
+  CheckCircle2,
+  Wallet,
   Clock,
+  MapPin,
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
-  Wallet,
-  TrendingUp,
-  CheckCircle2,
-  Activity,
   Sparkles,
+  Home,
+  Building2,
+  Warehouse,
+  LandPlot,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip as ReTooltip,
-} from "recharts";
-
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
+import { useCountUp } from "@/lib/hooks/use-count-up";
+import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
 import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
-import { AvatarUploadModal } from "../profile/avatar-upload-modal";
-import { useCountUp } from "@/lib/hooks/use-count-up";
-import { formatUsdCurrency, formatRoiPercentage } from "@/lib/pipelines/dashboard-metrics";
+import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
-import type { PortfolioItem } from "@/lib/types/db";
+import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
+const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#1A523D"];
 const FONT_LINK =
-  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap";
 
-const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#3F7D63"];
-
-function PropertyIcon({
-  type,
-  name,
-  size = 16,
-  color = "#7C8A9C",
-}: {
-  type: string;
-  name: string;
-  size?: number;
-  color?: string;
-}): React.JSX.Element {
-  if (name.toLowerCase().includes("lote")) return <Store size={size} color={color} />;
-  if (type === "Residencial") return <Home size={size} color={color} />;
-  if (type === "Comercial") return <Building2 size={size} color={color} />;
-  if (type === "Industrial") return <Warehouse size={size} color={color} />;
-  return <Building2 size={size} color={color} />;
+export interface InvestmentDashboardProps {
+  initialData: DashboardViewModel;
 }
 
-function navBtnStyle(side: "left" | "right"): React.CSSProperties {
+function navBtnStyle(dir: "left" | "right"): React.CSSProperties {
   return {
     position: "absolute",
     top: "50%",
-    [side]: -16,
+    [dir]: -16,
     transform: "translateY(-50%)",
     width: 36,
     height: 36,
     borderRadius: "50%",
-    border: "1px solid rgba(237,241,245,0.15)",
-    background: "#111B2E",
-    color: "#EDF1F5",
+    background: "#0A1220",
+    border: "1px solid rgba(237,241,245,0.18)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+    color: "#EDF1F5",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
     zIndex: 10,
   };
 }
 
-export interface InvestmentDashboardProps {
-  initialData: DashboardViewModel;
+function PropertyIcon({
+  type,
+  name,
+  size,
+  color,
+}: {
+  type: string;
+  name: string;
+  size: number;
+  color: string;
+}): React.JSX.Element {
+  if (name.includes("Lote") || type === "Lote") return <LandPlot size={size} color={color} />;
+  if (name.includes("Bodega") || type === "Industrial") return <Warehouse size={size} color={color} />;
+  if (name.includes("Torre") || type === "Comercial") return <Building2 size={size} color={color} />;
+  return <Home size={size} color={color} />;
 }
 
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
@@ -105,24 +98,24 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.investor.avatarUrl);
 
-  const properties = initialData.properties;
+  const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
 
   // Step 2: Compute summary and projected earnings
-  const totalInvested = useMemo(() => properties.reduce((s, p) => s + p.investedAmount, 0), [properties]);
+  const totalInvested = useMemo(() => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount, 0), [properties]);
   const weightedRoi = useMemo(() => {
     if (totalInvested === 0) return 0;
-    const sum = properties.reduce((s, p) => s + p.roi * p.investedAmount, 0);
+    const sum = properties.reduce((s: number, p: PortfolioItem) => s + p.roi * p.investedAmount, 0);
     return sum / totalInvested;
   }, [properties, totalInvested]);
 
   const projectedEarnings = useMemo(
-    () => properties.reduce((s, p) => s + p.investedAmount * (p.roi / 100), 0),
+    () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
     [properties]
   );
 
-  const activeCount = properties.filter((p) => p.status === "activa").length;
-  const concludedCount = properties.filter((p) => p.status === "concluida").length;
+  const activeCount = properties.filter((p: PortfolioItem) => p.status === "activa").length;
+  const concludedCount = properties.filter((p: PortfolioItem) => p.status === "concluida").length;
 
   // Step 3: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
@@ -130,7 +123,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
 
   // Step 4: Calculate allocation pie data
   const pieData = useMemo(() => {
-    return properties.map((p) => ({
+    return properties.map((p: PortfolioItem) => ({
       name: p.propertyName,
       value: totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0,
     }));
@@ -156,22 +149,14 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         paddingBottom: "64px",
       }}
     >
-      {/* ---------- TOP NAV ---------- */}
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "22px 32px",
-          borderBottom: "1px solid rgba(237,241,245,0.08)",
-        }}
-      >
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "14px", textDecoration: "none" }}>
+      {/* ---------- TOP NAV (STICKY & RESPONSIVE) ---------- */}
+      <header className="dash-sticky-header">
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
           <BlueBrickMark />
           <span
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: 700,
               letterSpacing: "0.06em",
               color: "#EDF1F5",
@@ -181,7 +166,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           </span>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
               {initialData.investor.firstName} {initialData.investor.lastName}
@@ -207,6 +192,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#EDF1F5",
               cursor: "pointer",
               overflow: "hidden",
+              flexShrink: 0,
             }}
             title="Cambiar avatar"
           >
@@ -214,21 +200,25 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
-              <span>{initialData.investor.firstName[0]}{initialData.investor.lastName[0]}</span>
+              <span>
+                {initialData.investor.firstName[0]}
+                {initialData.investor.lastName[0]}
+              </span>
             )}
           </button>
         </div>
       </header>
 
-      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "0 32px" }}>
-        {/* ---------- HERO ---------- */}
-        <section style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: 24, marginTop: 36 }}>
+      <main className="dash-main-container">
+        {/* ---------- HERO SECTION (RESPONSIVE STACKED ON MOBILE) ---------- */}
+        <section className="dash-hero-grid">
+          {/* Card 1: Patrimonio Invertido Total */}
           <div
             style={{
               background: "linear-gradient(160deg,#111B2E 0%,#0D1526 100%)",
               border: "1px solid rgba(237,241,245,0.07)",
               borderRadius: 20,
-              padding: "32px",
+              padding: "28px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -252,9 +242,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 style={{
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontWeight: 500,
-                  fontSize: "clamp(38px,5vw,58px)",
-                  lineHeight: 1,
+                  fontSize: "clamp(34px, 7vw, 56px)",
+                  lineHeight: 1.1,
                   color: "#EDF1F5",
+                  wordBreak: "break-word",
                 }}
               >
                 {formatUsdCurrency(Math.round(animatedTotal))}
@@ -275,15 +266,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               </div>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                gap: 24,
-                marginTop: 28,
-                paddingTop: 20,
-                borderTop: "1px solid rgba(237,241,245,0.08)",
-              }}
-            >
+            <div className="dash-stat-chips-container">
               <StatChip icon={Activity} label="Activas" value={activeCount} color="#57B98C" />
               <StatChip icon={CheckCircle2} label="Concluidas" value={concludedCount} color="#E8495F" />
               <StatChip
@@ -296,6 +279,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             </div>
           </div>
 
+          {/* Card 2: Distribución del Portafolio */}
           <div
             style={{
               background: "#111B2E",
@@ -312,24 +296,24 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 color: "#7C8A9C",
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
-                marginBottom: 4,
+                marginBottom: 16,
               }}
             >
               Distribución del portafolio
             </div>
-            <div style={{ display: "flex", alignItems: "center", flex: 1 }}>
-              <div style={{ width: "55%", height: 190 }}>
+            <div className="dash-distribution-body">
+              <div style={{ width: "100%", maxWidth: 220, height: 180 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={pieData}
                       dataKey="value"
-                      innerRadius={52}
-                      outerRadius={80}
+                      innerRadius={50}
+                      outerRadius={78}
                       paddingAngle={3}
                       stroke="none"
                     >
-                      {pieData.map((entry, idx) => (
+                      {pieData.map((_entry, idx: number) => (
                         <Cell key={`cell-${idx}`} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -346,8 +330,8 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-                {properties.map((p, idx) => {
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
+                {properties.map((p: PortfolioItem, idx: number) => {
                   const allocation = totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0;
                   return (
                     <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
@@ -369,9 +353,9 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {p.propertyName.length > 20 ? p.propertyName.slice(0, 19) + "…" : p.propertyName}
+                        {p.propertyName}
                       </span>
-                      <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+                      <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace", flexShrink: 0 }}>
                         {allocation}%
                       </span>
                     </div>
@@ -382,11 +366,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           </div>
         </section>
 
-        {/* ---------- CAROUSEL ---------- */}
+        {/* ---------- CAROUSEL (RESPONSIVE) ---------- */}
         {activeProperty && (
           <section style={{ marginTop: 40 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
-              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 500, margin: 0 }}>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, margin: 0 }}>
                 Mis inversiones
               </h2>
               <span style={{ fontSize: 12, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -395,34 +379,26 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             </div>
 
             <div style={{ position: "relative" }}>
-              <div
-                style={{
-                  borderRadius: 20,
-                  overflow: "hidden",
-                  border: "1px solid rgba(237,241,245,0.08)",
-                  display: "grid",
-                  gridTemplateColumns: "1.1fr 1fr",
-                  minHeight: 260,
-                }}
-              >
+              <div className="dash-carousel-card-grid">
                 <div
                   style={{
                     background: activeProperty.gradient,
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    padding: 28,
+                    padding: 24,
                     position: "relative",
+                    minHeight: 140,
                   }}
                 >
                   <PropertyIcon
                     type={activeProperty.propertyType}
                     name={activeProperty.propertyName}
-                    size={30}
+                    size={28}
                     color="rgba(237,241,245,0.85)"
                   />
                   <div>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, color: "#EDF1F5", lineHeight: 1.15 }}>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, color: "#EDF1F5", lineHeight: 1.15 }}>
                       {activeProperty.propertyName}
                     </div>
                     <div
@@ -444,11 +420,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 <div
                   style={{
                     background: "#111B2E",
-                    padding: 28,
+                    padding: 24,
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    gap: 18,
+                    gap: 16,
                   }}
                 >
                   <StatusBadge status={activeProperty.status} />
@@ -483,7 +459,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             </div>
 
             <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 14 }}>
-              {properties.map((p, idx) => (
+              {properties.map((p: PortfolioItem, idx: number) => (
                 <button
                   key={p.id}
                   onClick={() => setCarouselIndex(idx)}
@@ -503,66 +479,68 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           </section>
         )}
 
-        {/* ---------- TABLE ---------- */}
+        {/* ---------- TABLE (RESPONSIVE HORIZONTAL SCROLL) ---------- */}
         <section style={{ marginTop: 44 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 500, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, marginBottom: 16 }}>
             Detalle del portafolio
           </h2>
-          <div style={{ border: "1px solid rgba(237,241,245,0.08)", borderRadius: 16, overflow: "hidden" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
-                padding: "12px 20px",
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "#7C8A9C",
-                background: "rgba(237,241,245,0.03)",
-              }}
-            >
-              <span>Proyecto</span>
-              <span>Invertido</span>
-              <span>ROI</span>
-              <span>Estado</span>
-              <span>Timing</span>
+          <div className="dash-table-wrapper">
+            <div className="dash-table-content">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
+                  padding: "12px 20px",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#7C8A9C",
+                  background: "rgba(237,241,245,0.03)",
+                }}
+              >
+                <span>Proyecto</span>
+                <span>Invertido</span>
+                <span>ROI</span>
+                <span>Estado</span>
+                <span>Timing</span>
+              </div>
+              {properties.map((p: PortfolioItem, idx: number) => {
+                return (
+                  <div
+                    key={p.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
+                      padding: "16px 20px",
+                      fontSize: 13.5,
+                      alignItems: "center",
+                      borderTop: "1px solid rgba(237,241,245,0.06)",
+                      background: idx % 2 === 0 ? "transparent" : "rgba(237,241,245,0.015)",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
+                      {p.propertyName}
+                    </span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUsdCurrency(p.investedAmount)}</span>
+                    <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
+                    <span>
+                      <StatusBadge status={p.status} compact />
+                    </span>
+                    <span style={{ color: "#7C8A9C" }}>{p.timing}</span>
+                  </div>
+                );
+              })}
             </div>
-            {properties.map((p, idx) => {
-              return (
-                <div
-                  key={p.id}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
-                    padding: "16px 20px",
-                    fontSize: 13.5,
-                    alignItems: "center",
-                    borderTop: "1px solid rgba(237,241,245,0.06)",
-                    background: idx % 2 === 0 ? "transparent" : "rgba(237,241,245,0.015)",
-                  }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
-                    {p.propertyName}
-                  </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUsdCurrency(p.investedAmount)}</span>
-                  <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
-                  <span>
-                    <StatusBadge status={p.status} compact />
-                  </span>
-                  <span style={{ color: "#7C8A9C" }}>{p.timing}</span>
-                </div>
-              );
-            })}
           </div>
         </section>
 
-        {/* ---------- OPPORTUNITIES BANNER ---------- */}
+        {/* ---------- OPPORTUNITIES BANNER (RESPONSIVE) ---------- */}
         <section
           style={{
             marginTop: 48,
             borderRadius: 22,
-            padding: "36px",
+            padding: "28px",
             background: "linear-gradient(135deg,#16223B 0%,#101A2E 55%,#1F0E14 100%)",
             border: "1px solid rgba(196,18,48,0.25)",
             position: "relative",
@@ -597,7 +575,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           <h2
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 30,
+              fontSize: "clamp(22px, 5vw, 28px)",
               fontWeight: 500,
               maxWidth: 560,
               margin: "0 0 8px 0",
@@ -606,24 +584,24 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           >
             Tu capital concluido ya está listo para trabajar de nuevo.
           </h2>
-          <p style={{ color: "#7C8A9C", maxWidth: 520, fontSize: 14, marginBottom: 28 }}>
+          <p style={{ color: "#7C8A9C", maxWidth: 520, fontSize: 13.5, marginBottom: 24, lineHeight: 1.5 }}>
             Reinvierte las ganancias de tus proyectos concluidos en estas oportunidades seleccionadas por nuestro
             equipo, con retornos estimados superiores al promedio de tu portafolio actual.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
-            {initialData.reinvestmentOpportunities.map((o) => (
+          <div className="dash-opportunities-grid">
+            {initialData.reinvestmentOpportunities.map((o: DbReinvestmentOpportunity) => (
               <div
                 key={o.id}
                 style={{
                   background: "rgba(10,21,18,0.5)",
                   border: "1px solid rgba(237,241,245,0.08)",
                   borderRadius: 14,
-                  padding: 18,
+                  padding: 16,
                 }}
               >
                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{o.title}</div>
-                <div style={{ fontSize: 12, color: "#7C8A9C", marginBottom: 14 }}>{o.city}</div>
+                <div style={{ fontSize: 12, color: "#7C8A9C", marginBottom: 12 }}>{o.city}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "#57B98C", fontWeight: 700 }}>ROI est. {o.projectedRoi}%</span>
                   <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -644,7 +622,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#0A1220",
               border: "none",
               borderRadius: 10,
-              padding: "14px 26px",
+              padding: "12px 24px",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",

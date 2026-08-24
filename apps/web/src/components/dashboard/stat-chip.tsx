@@ -15,9 +15,9 @@ export interface StatChipProps {
 }
 
 export function StatChip({ icon: Icon, label, value, color, wide }: StatChipProps): React.JSX.Element {
-  // Step 1: Render exact design-tokenized sub-chip item
+  // Step 1: Render design-tokenized sub-chip item with responsive column spanning
   return (
-    <div style={{ flex: wide ? 1.4 : 1, minWidth: 0 }}>
+    <div className={wide ? "dash-stat-chip-wide" : ""} style={{ flex: wide ? 1.4 : 1, minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, color, marginBottom: 4 }}>
         <Icon size={14} />
         <span style={{ fontSize: 11, color: "#7C8A9C", textTransform: "uppercase", letterSpacing: "0.06em" }}>
