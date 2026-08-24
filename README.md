@@ -5,21 +5,21 @@ High-performance Next.js 16 and Solana monorepo starter with 4-Layer Functional 
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-24 03:17:38 UTC
+Updated: 2026-08-24 03:28:13 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
-| [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | not set | 2026-08-21 56ef66fa |
-| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | not set | 2026-08-22 423e1ae9 |
-| [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | not set | 2026-08-21 56ef66fa |
-| [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | not set | 2026-08-21 56ef66fa |
-| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-07-25 93d7cab5 |
-| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | not set | 2026-08-21 56ef66fa |
-| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | not set | 2026-08-22 423e1ae9 |
-| [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-07-19 35801116 |
-| [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | not set | 2026-08-21 56ef66fa |
-| [`threat-model.md`](./knowledge/architecture/threat-model.md) | blockchain | not set | 2026-08-21 56ef66fa |
-| [`toolchain-policy.md`](./knowledge/architecture/toolchain-policy.md) | general | not set | 2026-06-16 ea2ee147 |
+| [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | not set | 2026-08-23 a69db56b |
+| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | not set | 2026-08-23 a69db56b |
+| [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | not set | 2026-08-23 a69db56b |
+| [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | not set | 2026-08-23 a69db56b |
+| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-08-23 a69db56b |
+| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | not set | 2026-08-23 a69db56b |
+| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | not set | 2026-08-23 a69db56b |
+| [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-08-23 a69db56b |
+| [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | not set | 2026-08-23 a69db56b |
+| [`threat-model.md`](./knowledge/architecture/threat-model.md) | blockchain | not set | 2026-08-23 a69db56b |
+| [`toolchain-policy.md`](./knowledge/architecture/toolchain-policy.md) | general | not set | 2026-08-23 a69db56b |
 
 ### Required Docs by Change Type
 - Blockchain (/programs): `knowledge/architecture/architecture-overview.md`, `knowledge/architecture/authority-model.md`, `knowledge/architecture/state-machine.md`, `knowledge/architecture/threat-model.md`, `knowledge/architecture/devnet-proof.md`
