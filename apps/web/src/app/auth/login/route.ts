@@ -11,21 +11,12 @@ export async function GET(): Promise<void> {
   let authorizationUrl: string | null = null;
 
   try {
-    // Step 1: Request PKCE-sealed Google OAuth authorization URL from WorkOS AuthKit
-    authorizationUrl = await getSignInUrl({
-      provider: "GoogleOAuth",
-    } as Parameters<typeof getSignInUrl>[0]);
+    authorizationUrl = await getSignInUrl();
   } catch (error) {
-    try {
-      // Step 2: Fallback to general AuthKit sign-in URL if provider param is handled at dashboard level
-      authorizationUrl = await getSignInUrl();
-    } catch (fallbackError) {
-      console.warn("WorkOS getSignInUrl fallback:", error, fallbackError);
-      redirect("/dashboard");
-    }
+    console.error("WorkOS getSignInUrl error:", error);
+    redirect("/dashboard");
   }
 
-  // Step 3: Redirect user directly to Google / WorkOS OAuth screen
   if (authorizationUrl) {
     redirect(authorizationUrl);
   }
