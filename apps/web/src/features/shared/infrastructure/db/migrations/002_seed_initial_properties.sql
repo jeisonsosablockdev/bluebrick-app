@@ -102,29 +102,29 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO reinvestment_opportunities (id, title, city, projected_roi, min_investment, days_left, gradient)
 VALUES
   (
-    'opp_calle_93',
-    'Edificio Calle 93',
-    'Bogotá, Colombia',
-    16.50,
-    30000.00,
+    'opp_green_tower',
+    'Green Tower',
+    'Medellín',
+    16.00,
+    8000.00,
     3,
-    'linear-gradient(135deg,#C41230 0%,#111B2E 100%)'
-  ),
-  (
-    'opp_centro_logistico',
-    'Centro Logístico Medellín',
-    'Medellín, Colombia',
-    14.00,
-    20000.00,
-    7,
     'linear-gradient(135deg,#2F8F6B 0%,#111B2E 100%)'
   ),
   (
-    'opp_campestre_anapoima',
-    'Condominio Campestre Anapoima',
-    'Cundinamarca, Colombia',
-    15.20,
-    15000.00,
+    'opp_costa_azul',
+    'Complejo Costa Azul',
+    'Cartagena',
+    19.00,
+    12000.00,
+    7,
+    'linear-gradient(135deg,#C41230 0%,#111B2E 100%)'
+  ),
+  (
+    'opp_funza',
+    'Parque Logístico Funza',
+    'Funza',
+    13.00,
+    6500.00,
     12,
     'linear-gradient(135deg,#57B98C 0%,#0D1526 100%)'
   )

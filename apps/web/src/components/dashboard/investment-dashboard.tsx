@@ -1,0 +1,676 @@
+/**
+ * @file apps/web/src/components/dashboard/investment-dashboard.tsx
+ * @description Layer 1: Presentation - Complete BlueBrick Investor Dashboard Component.
+ * Pixel-accurate implementation matching reference design with TopNav, Hero, Donut Chart, Carousel, Table, and Opportunities Banner.
+ */
+
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import {
+  Building2,
+  Home,
+  Warehouse,
+  Store,
+  MapPin,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+  Wallet,
+  TrendingUp,
+  CheckCircle2,
+  Activity,
+  Sparkles,
+} from "lucide-react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as ReTooltip,
+} from "recharts";
+
+import { BlueBrickMark } from "./blue-brick-mark";
+import { StatChip } from "./stat-chip";
+import { MetricRow } from "./metric-row";
+import { StatusBadge } from "./status-badge";
+import { AvatarUploadModal } from "../profile/avatar-upload-modal";
+import { useCountUp } from "@/lib/hooks/use-count-up";
+import type { DashboardViewModel } from "@/lib/types/dashboard";
+import type { PortfolioItem } from "@/lib/types/db";
+
+const FONT_LINK =
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
+
+const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#3F7D63"];
+
+function formatUSD(n: number): string {
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+}
+
+function PropertyIcon({
+  type,
+  name,
+  size = 16,
+  color = "#7C8A9C",
+}: {
+  type: string;
+  name: string;
+  size?: number;
+  color?: string;
+}): React.JSX.Element {
+  if (name.toLowerCase().includes("lote")) return <Store size={size} color={color} />;
+  if (type === "Residencial") return <Home size={size} color={color} />;
+  if (type === "Comercial") return <Building2 size={size} color={color} />;
+  if (type === "Industrial") return <Warehouse size={size} color={color} />;
+  return <Building2 size={size} color={color} />;
+}
+
+function navBtnStyle(side: "left" | "right"): React.CSSProperties {
+  return {
+    position: "absolute",
+    top: "50%",
+    [side]: -16,
+    transform: "translateY(-50%)",
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    border: "1px solid rgba(237,241,245,0.15)",
+    background: "#111B2E",
+    color: "#EDF1F5",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    zIndex: 10,
+  };
+}
+
+export interface InvestmentDashboardProps {
+  initialData: DashboardViewModel;
+}
+
+export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
+  // Step 1: Inject Google Fonts dynamically on mount
+  useEffect(() => {
+    if (typeof document !== "undefined" && !document.getElementById("dash-fonts")) {
+      const link = document.createElement("link");
+      link.id = "dash-fonts";
+      link.rel = "stylesheet";
+      link.href = FONT_LINK;
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  const [carouselIndex, setCarouselIndex] = useState<number>(0);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.investor.avatarUrl);
+
+  const properties = initialData.properties;
+  const maxIndex = Math.max(0, properties.length - 1);
+
+  // Step 2: Compute summary and projected earnings
+  const totalInvested = useMemo(() => properties.reduce((s, p) => s + p.investedAmount, 0), [properties]);
+  const weightedRoi = useMemo(() => {
+    if (totalInvested === 0) return 0;
+    const sum = properties.reduce((s, p) => s + p.roi * p.investedAmount, 0);
+    return sum / totalInvested;
+  }, [properties, totalInvested]);
+
+  const projectedEarnings = useMemo(
+    () => properties.reduce((s, p) => s + p.investedAmount * (p.roi / 100), 0),
+    [properties]
+  );
+
+  const activeCount = properties.filter((p) => p.status === "activa").length;
+  const concludedCount = properties.filter((p) => p.status === "concluida").length;
+
+  // Step 3: Animated count-up hook values
+  const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
+  const animatedRoi = useCountUp(weightedRoi, { durationMs: 1400, decimals: 1 });
+
+  // Step 4: Calculate allocation pie data
+  const pieData = useMemo(() => {
+    return properties.map((p) => ({
+      name: p.propertyName,
+      value: totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0,
+    }));
+  }, [properties, totalInvested]);
+
+  function prevCard() {
+    setCarouselIndex((i) => (i === 0 ? maxIndex : i - 1));
+  }
+  function nextCard() {
+    setCarouselIndex((i) => (i === maxIndex ? 0 : i + 1));
+  }
+
+  const activeProperty: PortfolioItem | undefined = properties[carouselIndex] || properties[0];
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(1200px 600px at 15% -10%, rgba(196,18,48,0.08), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47,143,107,0.10), transparent), #0A1220",
+        fontFamily: "'Inter', sans-serif",
+        color: "#EDF1F5",
+        paddingBottom: "64px",
+      }}
+    >
+      {/* ---------- TOP NAV ---------- */}
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "22px 32px",
+          borderBottom: "1px solid rgba(237,241,245,0.08)",
+        }}
+      >
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "14px", textDecoration: "none" }}>
+          <BlueBrickMark />
+          <span
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 19,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              color: "#EDF1F5",
+            }}
+          >
+            BLUE BRICK
+          </span>
+        </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
+              {initialData.investor.firstName} {initialData.investor.lastName}
+            </div>
+            <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+              {initialData.investor.tier} · desde 2021
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAvatarModalOpen(true)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg,#2F8F6B,#173F30)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 600,
+              fontSize: 14,
+              border: "1px solid rgba(196,18,48,0.4)",
+              color: "#EDF1F5",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+            title="Cambiar avatar"
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span>{initialData.investor.firstName[0]}{initialData.investor.lastName[0]}</span>
+            )}
+          </button>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "0 32px" }}>
+        {/* ---------- HERO ---------- */}
+        <section style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: 24, marginTop: 36 }}>
+          <div
+            style={{
+              background: "linear-gradient(160deg,#111B2E 0%,#0D1526 100%)",
+              border: "1px solid rgba(237,241,245,0.07)",
+              borderRadius: 20,
+              padding: "32px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#7C8A9C",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  marginBottom: 6,
+                }}
+              >
+                Patrimonio invertido total
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 500,
+                  fontSize: "clamp(38px,5vw,58px)",
+                  lineHeight: 1,
+                  color: "#EDF1F5",
+                }}
+              >
+                {formatUSD(Math.round(animatedTotal))}
+              </div>
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  color: "#57B98C",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                <TrendingUp size={16} />
+                ROI promedio ponderado: {animatedRoi.toFixed(1)}%
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 24,
+                marginTop: 28,
+                paddingTop: 20,
+                borderTop: "1px solid rgba(237,241,245,0.08)",
+              }}
+            >
+              <StatChip icon={Activity} label="Activas" value={activeCount} color="#57B98C" />
+              <StatChip icon={CheckCircle2} label="Concluidas" value={concludedCount} color="#E8495F" />
+              <StatChip
+                icon={Wallet}
+                label="Ganancia proyectada"
+                value={formatUSD(Math.round(projectedEarnings))}
+                color="#C41230"
+                wide
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: "#111B2E",
+              border: "1px solid rgba(237,241,245,0.07)",
+              borderRadius: 20,
+              padding: "28px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 12,
+                color: "#7C8A9C",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                marginBottom: 4,
+              }}
+            >
+              Distribución del portafolio
+            </div>
+            <div style={{ display: "flex", alignItems: "center", flex: 1 }}>
+              <div style={{ width: "55%", height: 190 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      innerRadius={52}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      stroke="none"
+                    >
+                      {pieData.map((entry, idx) => (
+                        <Cell key={`cell-${idx}`} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <ReTooltip
+                      contentStyle={{
+                        background: "#0A1220",
+                        border: "1px solid rgba(237,241,245,0.15)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontFamily: "Inter, sans-serif",
+                      }}
+                      formatter={(v) => [`${v}%`, "Asignación"]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+                {properties.map((p, idx) => {
+                  const allocation = totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0;
+                  return (
+                    <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                      <span
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: 3,
+                          background: PIE_COLORS[idx % PIE_COLORS.length],
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          color: "#EDF1F5",
+                          flex: 1,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {p.propertyName.length > 20 ? p.propertyName.slice(0, 19) + "…" : p.propertyName}
+                      </span>
+                      <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+                        {allocation}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- CAROUSEL ---------- */}
+        {activeProperty && (
+          <section style={{ marginTop: 40 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 500, margin: 0 }}>
+                Mis inversiones
+              </h2>
+              <span style={{ fontSize: 12, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+                {carouselIndex + 1} / {properties.length}
+              </span>
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <div
+                style={{
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  border: "1px solid rgba(237,241,245,0.08)",
+                  display: "grid",
+                  gridTemplateColumns: "1.1fr 1fr",
+                  minHeight: 260,
+                }}
+              >
+                <div
+                  style={{
+                    background: activeProperty.gradient,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    padding: 28,
+                    position: "relative",
+                  }}
+                >
+                  <PropertyIcon
+                    type={activeProperty.propertyType}
+                    name={activeProperty.propertyName}
+                    size={30}
+                    color="rgba(237,241,245,0.85)"
+                  />
+                  <div>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, color: "#EDF1F5", lineHeight: 1.15 }}>
+                      {activeProperty.propertyName}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 13,
+                        color: "rgba(237,241,245,0.75)",
+                      }}
+                    >
+                      <MapPin size={14} />
+                      {activeProperty.city}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: "#111B2E",
+                    padding: 28,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    gap: 18,
+                  }}
+                >
+                  <StatusBadge status={activeProperty.status} />
+                  <MetricRow label="Monto invertido" value={formatUSD(activeProperty.investedAmount)} />
+                  <MetricRow label="ROI estimado" value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
+                  <MetricRow
+                    label={activeProperty.status === "activa" ? "Fecha de retorno" : "Fecha de cierre"}
+                    value={activeProperty.timing}
+                    icon={Clock}
+                  />
+                  {activeProperty.status === "activa" && (
+                    <div style={{ height: 6, borderRadius: 4, background: "rgba(237,241,245,0.08)", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${Math.max(8, 100 - activeProperty.monthsLeft * 10)}%`,
+                          background: "linear-gradient(90deg,#2F8F6B,#57B98C)",
+                          borderRadius: 4,
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button onClick={prevCard} aria-label="Anterior" style={navBtnStyle("left")}>
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={nextCard} aria-label="Siguiente" style={navBtnStyle("right")}>
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 14 }}>
+              {properties.map((p, idx) => (
+                <button
+                  key={p.id}
+                  onClick={() => setCarouselIndex(idx)}
+                  aria-label={`Ir a ${p.propertyName}`}
+                  style={{
+                    width: idx === carouselIndex ? 22 : 8,
+                    height: 8,
+                    borderRadius: 4,
+                    border: "none",
+                    cursor: "pointer",
+                    background: idx === carouselIndex ? "#C41230" : "rgba(237,241,245,0.18)",
+                    transition: "all 0.25s ease",
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ---------- TABLE ---------- */}
+        <section style={{ marginTop: 44 }}>
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 500, marginBottom: 16 }}>
+            Detalle del portafolio
+          </h2>
+          <div style={{ border: "1px solid rgba(237,241,245,0.08)", borderRadius: 16, overflow: "hidden" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
+                padding: "12px 20px",
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#7C8A9C",
+                background: "rgba(237,241,245,0.03)",
+              }}
+            >
+              <span>Proyecto</span>
+              <span>Invertido</span>
+              <span>ROI</span>
+              <span>Estado</span>
+              <span>Timing</span>
+            </div>
+            {properties.map((p, idx) => {
+              return (
+                <div
+                  key={p.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
+                    padding: "16px 20px",
+                    fontSize: 13.5,
+                    alignItems: "center",
+                    borderTop: "1px solid rgba(237,241,245,0.06)",
+                    background: idx % 2 === 0 ? "transparent" : "rgba(237,241,245,0.015)",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
+                    {p.propertyName}
+                  </span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUSD(p.investedAmount)}</span>
+                  <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
+                  <span>
+                    <StatusBadge status={p.status} compact />
+                  </span>
+                  <span style={{ color: "#7C8A9C" }}>{p.timing}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ---------- OPPORTUNITIES BANNER ---------- */}
+        <section
+          style={{
+            marginTop: 48,
+            borderRadius: 22,
+            padding: "36px",
+            background: "linear-gradient(135deg,#16223B 0%,#101A2E 55%,#1F0E14 100%)",
+            border: "1px solid rgba(196,18,48,0.25)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: -60,
+              right: -60,
+              width: 220,
+              height: 220,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(196,18,48,0.18), transparent 70%)",
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <Sparkles size={16} color="#E8495F" />
+            <span
+              style={{
+                fontSize: 12,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#E8495F",
+                fontWeight: 600,
+              }}
+            >
+              Nuevas oportunidades para {initialData.investor.firstName}
+            </span>
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 30,
+              fontWeight: 500,
+              maxWidth: 560,
+              margin: "0 0 8px 0",
+              color: "#EDF1F5",
+            }}
+          >
+            Tu capital concluido ya está listo para trabajar de nuevo.
+          </h2>
+          <p style={{ color: "#7C8A9C", maxWidth: 520, fontSize: 14, marginBottom: 28 }}>
+            Reinvierte las ganancias de tus proyectos concluidos en estas oportunidades seleccionadas por nuestro
+            equipo, con retornos estimados superiores al promedio de tu portafolio actual.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
+            {initialData.reinvestmentOpportunities.map((o) => (
+              <div
+                key={o.id}
+                style={{
+                  background: "rgba(10,21,18,0.5)",
+                  border: "1px solid rgba(237,241,245,0.08)",
+                  borderRadius: 14,
+                  padding: 18,
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{o.title}</div>
+                <div style={{ fontSize: 12, color: "#7C8A9C", marginBottom: 14 }}>{o.city}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                  <span style={{ color: "#57B98C", fontWeight: 700 }}>ROI est. {o.projectedRoi}%</span>
+                  <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+                    desde {formatUSD(o.minInvestment)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "linear-gradient(135deg,#E8495F,#C41230)",
+              color: "#0A1220",
+              border: "none",
+              borderRadius: 10,
+              padding: "14px 26px",
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: "pointer",
+              boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
+            }}
+          >
+            Reinvertir ahora
+            <ArrowUpRight size={17} />
+          </button>
+        </section>
+      </main>
+
+      {/* Avatar Upload Modal */}
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        userId={initialData.investor.id}
+        onUploadSuccess={(newUrl) => setAvatarUrl(newUrl)}
+      />
+    </div>
+  );
+}
