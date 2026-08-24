@@ -38,6 +38,7 @@ import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
 import { AvatarUploadModal } from "../profile/avatar-upload-modal";
 import { useCountUp } from "@/lib/hooks/use-count-up";
+import { formatUsdCurrency, formatRoiPercentage } from "@/lib/pipelines/dashboard-metrics";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem } from "@/lib/types/db";
 
@@ -45,14 +46,6 @@ const FONT_LINK =
   "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
 
 const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#3F7D63"];
-
-function formatUSD(n: number): string {
-  return n.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
-}
 
 function PropertyIcon({
   type,
@@ -264,7 +257,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   color: "#EDF1F5",
                 }}
               >
-                {formatUSD(Math.round(animatedTotal))}
+                {formatUsdCurrency(Math.round(animatedTotal))}
               </div>
               <div
                 style={{
@@ -296,7 +289,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               <StatChip
                 icon={Wallet}
                 label="Ganancia proyectada"
-                value={formatUSD(Math.round(projectedEarnings))}
+                value={formatUsdCurrency(Math.round(projectedEarnings))}
                 color="#C41230"
                 wide
               />
@@ -459,7 +452,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   }}
                 >
                   <StatusBadge status={activeProperty.status} />
-                  <MetricRow label="Monto invertido" value={formatUSD(activeProperty.investedAmount)} />
+                  <MetricRow label="Monto invertido" value={formatUsdCurrency(activeProperty.investedAmount)} />
                   <MetricRow label="ROI estimado" value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
                   <MetricRow
                     label={activeProperty.status === "activa" ? "Fecha de retorno" : "Fecha de cierre"}
@@ -552,7 +545,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                     <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
                     {p.propertyName}
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUSD(p.investedAmount)}</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUsdCurrency(p.investedAmount)}</span>
                   <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
                   <span>
                     <StatusBadge status={p.status} compact />
@@ -634,7 +627,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "#57B98C", fontWeight: 700 }}>ROI est. {o.projectedRoi}%</span>
                   <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-                    desde {formatUSD(o.minInvestment)}
+                    desde {formatUsdCurrency(o.minInvestment)}
                   </span>
                 </div>
               </div>
