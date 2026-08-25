@@ -30,6 +30,8 @@ if [[ "${ISSUE_ID}" == "BBC-7" ]]; then
 ## Summary
 Este Pull Request introduce el subagente especializado **AI Architect (\`ai-architect\`)** y el **AI-Augmented Ingestion Pipeline & Schema Alignment Workflow (\`ai-cycle.md\`)** para gobernar los flujos de ingesta de datos externos, alineación semántica y contratos de datos en el monorepo.
 
+- Feature-Flag Strategy: Gobernanza de agentes y pipelines modular; arquitectura y workflows desacoplados.
+
 ### 🚀 Principales Cambios y Logros:
 1. **Subagente AI Architect**:
    - Definición en \`.agents/agents/ai-architect.yaml\` y registro en runtime en Google Antigravity SDK.
