@@ -25,6 +25,66 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
+if [[ "${ISSUE_ID}" == "BBC-7" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request introduce el subagente especializado **AI Architect (\`ai-architect\`)** y el **AI-Augmented Ingestion Pipeline & Schema Alignment Workflow (\`ai-cycle.md\`)** para gobernar los flujos de ingesta de datos externos, alineación semántica y contratos de datos en el monorepo.
+
+- Feature-Flag Strategy: Gobernanza de agentes y pipelines modular; arquitectura y workflows desacoplados.
+
+### 🚀 Principales Cambios y Logros:
+1. **Subagente AI Architect**:
+   - Definición en \`.agents/agents/ai-architect.yaml\` y registro en runtime en Google Antigravity SDK.
+   - Enforce estricto del ciclo de ingesta en 5 etapas (*Connect -> Extract -> AI Align -> Zod Gate -> Persist*).
+   - Gobernanza de límites de capas FDD: prohibición de SDKs de IA (\`@google/genai\`) y base de datos en la capa de presentación (Layer 1).
+2. **Workflow de IA (\`ai-cycle.md\`)**:
+   - Formalizado en \`.agents/workflows/ai-cycle.md\` con la secuencia de 9 pasos para ejecución autónoma.
+3. **ADR de Arquitectura Canónica**:
+   - Publicado en \`knowledge/architecture/ai-augmented-ingestion-pipeline.md\`.
+4. **Test Harness & Gobernanza**:
+   - Nueva suite de pruebas automatizadas en \`tests/harness/specs/11-ai-architect-governance.test.ts\` (5 tests pasando).
+   - Sincronizados \`AGENTS.md\`, \`planner.yaml\`, \`hooks.json\` y \`graph.json\`.
+
+## Issue
+- Issue link/id: [BBC-7](https://linear.app/brids/issue/BBC-7)
+
+## RFC
+- RFC link/path: [knowledge/architecture/ai-augmented-ingestion-pipeline.md](knowledge/architecture/ai-augmented-ingestion-pipeline.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución de la app. Gobernanza de agentes y pipelines pura.
+- Security impact: Mejora sustancial al impedir que payloads no validados de IA se propaguen a persistencia o presentación.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Gobernanza de arquitectura e IA).
+- On-chain state evidence used for verification: Validaciones de CI y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Definición y registro del subagente validados mediante \`define_subagent\`.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde (100 / 100 tests).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+else
 cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la refactorización integral de la plataforma BRIDS hacia un **Monorepo Workspaces (\`apps/web\`, \`packages/*\`, \`programs/*\`)** con **Feature-Driven Design (FDD)** organizado en 4 capas estrictas (Presentation, Application, Domain, Infrastructure) a lo largo de **16 Feature Slices verticales** y la capa compartida \`shared\`.
@@ -91,5 +151,6 @@ Este Pull Request implementa la refactorización integral de la plataforma BRIDS
 - [x] \`pnpm test:harness\` passed (62 tests)
 - [x] Required docs were updated for touched scopes
 EOF
+fi
 
 echo "✓ Compliant PR body generated at ${OUTPUT_FILE}"

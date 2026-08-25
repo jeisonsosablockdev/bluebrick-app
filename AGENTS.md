@@ -47,6 +47,7 @@
 - Motion-driven UX/UI delivery slices must keep Motion 12 (`motion.dev`), current `motion` syntax, and any provider-specific tooling references explicit in the governing artifact.
 - Mint, metadata, collection, royalty, or Metaplex scope: `.agents/workflows/nft-cycle.md`
 - Release hardening or security-critical rollout: `.agents/workflows/mainnet-hardening.md`
+- AI ingestion, schema alignment, data contracts, or document pipelines: `.agents/workflows/ai-cycle.md`
 - Explicit `refactor/*` work, clean-code debt slices, or behavior-preserving structural changes: `.agents/workflows/refactor-cycle.md`
 - Responsive or critical browser QA: `.agents/workflows/responsive-qa.md`
 - `/db`, `lib/db`, persistence repositories, or `scripts/db-*`: choose dominant runtime workflow, then add `qa`, `docs`, and `reviewer`; enforce DB migration gate from `testing-policy`.
@@ -55,6 +56,7 @@
 ## Agent Specialists (`.agents/agents/*.yaml`)
 - `planner`: detect scope, require Linear/artifact preconditions, activate workflows, delegate, aggregate evidence, enforce Definition of Done and in-code commentary standards across subagents.
 - `architect`: Monorepo root directory structure guardian and strict 4-Layered Functional Web3 Architect for Solana & Next.js (Presentation, Application/Consumption, Domain/Pipelines, Infrastructure separation, `@solana/kit` enforcement, zero legacy web3.js v1, in-code layer annotation & commentary audit).
+- `ai-architect`: AI-Augmented Ingestion Pipeline Guardian, Schema Alignment Architect, and strict 4-Layer Feature-Driven Design (FDD) Monorepo Structure Enforcer.
 - `solana`: Solana/Anchor/devnet execution, runtime constraints, RPC and account-state proof, explicit Rust doc comments, and step-by-step transaction pipeline annotations.
 - `frontend`: Next.js App Router, SSR-first boundaries, client-wallet isolation, UI implementation, component header comments, and step-by-step hook/action commentary.
 - `api`: REST/GraphQL/tRPC endpoints, Zod validation, webhooks, third-party integrations (Resend, Brevo, QStash, Pinata, GCS), and endpoint documentation.
