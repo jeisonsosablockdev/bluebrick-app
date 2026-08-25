@@ -52,6 +52,10 @@
       "primary": "nft",
       "supporting": ["solana", "architect"]
     },
+    "ai": {
+      "primary": "ai-architect",
+      "supporting": ["api", "db", "docs"]
+    },
     "shared": {
       "primary": "architect",
       "supporting": ["reviewer", "docs"]

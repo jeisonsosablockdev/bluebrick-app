@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T03:39:11.649Z",
+  "generatedAt": "2026-08-25T05:03:50.255Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -36,6 +36,12 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/api/schemas/index.md"
+    },
+    {
+      "id": "knowledge/architecture/ai-augmented-ingestion-pipeline.md",
+      "type": "governance",
+      "label": "ai-augmented-ingestion-pipeline",
+      "path": "knowledge/architecture/ai-augmented-ingestion-pipeline.md"
     },
     {
       "id": "knowledge/architecture/architecture-overview.md",
@@ -114,6 +120,42 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/database/models/index.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-6-user-investment-dashboard",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard.md"
     },
     {
       "id": "knowledge/governance/clean-code-folder-structure.md",
@@ -288,6 +330,42 @@
       "type": "governance",
       "label": "log",
       "path": "knowledge/log.md"
+    },
+    {
+      "id": "knowledge/reports/governance-drift-2026-08-25.md",
+      "type": "governance",
+      "label": "governance-drift-2026-08-25",
+      "path": "knowledge/reports/governance-drift-2026-08-25.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/README.md",
+      "type": "governance",
+      "label": "README",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/README.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-drive-connectivity-and-storage.md",
+      "type": "governance",
+      "label": "STORY-001-01-drive-connectivity-and-storage",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-drive-connectivity-and-storage.md"
+    },
+    {
+      "id": "knowledge/rfcs/templates/EPIC-README.template.md",
+      "type": "governance",
+      "label": "EPIC-README.template",
+      "path": "knowledge/rfcs/templates/EPIC-README.template.md"
+    },
+    {
+      "id": "knowledge/rfcs/templates/STORY.template.md",
+      "type": "governance",
+      "label": "STORY.template",
+      "path": "knowledge/rfcs/templates/STORY.template.md"
+    },
+    {
+      "id": "knowledge/rfcs/templates/index.md",
+      "type": "governance",
+      "label": "index",
+      "path": "knowledge/rfcs/templates/index.md"
     },
     {
       "id": "knowledge/security/index.md",
