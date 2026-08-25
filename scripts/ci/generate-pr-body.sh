@@ -149,5 +149,6 @@ Este Pull Request implementa la refactorización integral de la plataforma BRIDS
 - [x] \`pnpm test:harness\` passed (62 tests)
 - [x] Required docs were updated for touched scopes
 EOF
+fi
 
 echo "✓ Compliant PR body generated at ${OUTPUT_FILE}"
