@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-7",
-  "branch": "feature/jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
+  "branch": "SPEC/jaymusicmachine-BBC-7-story-15-operational-guide-and-fixes",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
