@@ -33,15 +33,17 @@ The solution introduces a specialized AI Architecture governance layer and canon
 - **SPEC-1**: AI Ingestion Pipeline & Schema Alignment Canonical ADR (`knowledge/architecture/ai-augmented-ingestion-pipeline.md`).
 - **SPEC-2**: AI Architect Subagent Specification & Antigravity SDK Configuration (`.agents/agents/ai-architect.yaml` and runtime `define_subagent`).
 - **SPEC-3**: Monorepo Governance Alignment (`AGENTS.md`, `planner.yaml`, `.agents/graph.json`).
+- **SPEC-4**: AI Ingestion Pipeline RFC Suite (`knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/` with 14 stories, `STORY-001-01` implemented).
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)
-- **Test File Path**: `tests/harness/agent-ai-architect.test.ts`
-- **Command**: `pnpm test tests/harness`
+- **Test File Path**: `tests/harness/agent-ai-architect.test.ts`, `apps/web/src/features/ai-ingestion/infrastructure/google-service-account-adapter.test.ts`
+- **Command**: `pnpm test`
 - **Assertion Goals**:
   1. Verify that `.agents/agents/ai-architect.yaml` satisfies all schema properties (scope, layers, syntax rules, commentary requirements).
   2. Verify that monorepo whitelist and 4-layer boundary checks enforce AI pipeline path isolation.
   3. Verify runtime subagent tool permissions and registration.
+  4. Verify that `GoogleServiceAccountAdapter` passes all 14 adversarial security, concurrency, and error boundary tests.
 
 ## 5. Local Definition of Done (DoD)
 - [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.

@@ -1,6 +1,6 @@
 # Governance Drift Report
 
-Generated: 2026-08-25T04:49:07.860Z
+Generated: 2026-08-25T05:12:03.660Z
 
 | Check | Result | Details |
 | --- | --- | --- |
