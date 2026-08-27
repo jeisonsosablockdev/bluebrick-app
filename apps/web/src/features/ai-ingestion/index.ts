@@ -7,6 +7,7 @@
 
 // Layer 2: Application Services
 export * from './application/services/differential-sync-service';
+export * from './application/services/video-ingestion-service';
 
 // Layer 3: Domain Ports, Models, Policies, Math, Types & Schemas
 export * from './domain/ports/google-auth-port';
@@ -14,6 +15,7 @@ export * from './domain/ports/drive-changes-port';
 export * from './domain/ports/blob-storage-port';
 export * from './domain/ports/image-processor-port';
 export * from './domain/ports/focal-point-port';
+export * from './domain/ports/video-tagger-port';
 export * from './domain/policies/image-quality-policy';
 export * from './domain/math/smart-crop-calculator';
 export * from './domain/models/sync-event-models';
@@ -28,3 +30,4 @@ export * from './infrastructure/google-drive-changes-adapter';
 export * from './infrastructure/vercel-blob-adapter';
 export * from './infrastructure/sharp-image-processor-adapter';
 export * from './infrastructure/gemini-focal-point-adapter';
+export * from './infrastructure/gemini-video-tagger-adapter';
