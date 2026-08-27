@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-7",
-  "branch": "SPEC/jaymusicmachine-BBC-7-story-09-excel-spreadsheets-ingestion",
+  "branch": "SPEC/jaymusicmachine-BBC-7-story-10-confidence-scoring-engine",
   "current_phase": "PHASE_1_BOOTSTRAP",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

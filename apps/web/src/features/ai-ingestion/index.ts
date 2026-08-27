@@ -9,7 +9,7 @@
 export * from './application/services/differential-sync-service';
 export * from './application/services/video-ingestion-service';
 
-// Layer 3: Domain Ports, Models, Policies, Math, Validators, Utils, Types & Schemas
+// Layer 3: Domain Ports, Models, Policies, Math, Validators, Scoring, Utils, Types & Schemas
 export * from './domain/ports/google-auth-port';
 export * from './domain/ports/drive-changes-port';
 export * from './domain/ports/blob-storage-port';
@@ -21,6 +21,8 @@ export * from './domain/ports/spreadsheet-parser-port';
 export * from './domain/policies/image-quality-policy';
 export * from './domain/math/smart-crop-calculator';
 export * from './domain/validators/nit-validator';
+export * from './domain/scoring/confidence-scoring-engine';
+export * from './domain/scoring/anomaly-detector';
 export * from './domain/utils/excel-date-converter';
 export * from './domain/models/sync-event-models';
 export * from './domain/schemas/canonical-client-schema';
