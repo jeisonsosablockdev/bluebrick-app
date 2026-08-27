@@ -7,10 +7,12 @@
 
 // Layer 1: Presentation Components
 export * from './presentation/components/project-media-gallery';
+export * from './presentation/components/hitl-split-viewer';
 
-// Layer 2: Application Services & RSC Queries
+// Layer 2: Application Services, Actions & RSC Queries
 export * from './application/services/differential-sync-service';
 export * from './application/services/video-ingestion-service';
+export * from './application/actions/hitl-review-actions';
 export * from './application/queries/get-dashboard-data-query';
 
 // Layer 3: Domain Ports, Models, Policies, Math, Validators, Scoring, Utils, Types & Schemas
