@@ -330,4 +330,30 @@ describe('GoogleServiceAccountAdapter - Adversarial TDD Suite', () => {
       }
     });
   });
+
+  describe('5. Direct Access Token (Local Dev & ADC Support)', () => {
+    it('should serve directAccessToken directly when configured without signing RSA JWT', async () => {
+      const adapter = new GoogleServiceAccountAdapter({
+        directAccessToken: 'ya29.direct-dev-access-token',
+      });
+
+      const result = await adapter.getAccessToken();
+      expect(result.token).toBe('ya29.direct-dev-access-token');
+      expect(result.tokenType).toBe('Bearer');
+    });
+
+    it('should read GOOGLE_ACCESS_TOKEN from process.env if config is empty', async () => {
+      const originalEnv = process.env.GOOGLE_ACCESS_TOKEN;
+      process.env.GOOGLE_ACCESS_TOKEN = 'ya29.env-injected-token';
+
+      try {
+        const adapter = new GoogleServiceAccountAdapter({});
+        const result = await adapter.getAccessToken();
+        expect(result.token).toBe('ya29.env-injected-token');
+        expect(result.tokenType).toBe('Bearer');
+      } finally {
+        process.env.GOOGLE_ACCESS_TOKEN = originalEnv;
+      }
+    });
+  });
 });

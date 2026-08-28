@@ -27,9 +27,11 @@ import {
  */
 export interface ServiceAccountConfig {
   /** The client email of the Google Service Account (e.g. name@project.iam.gserviceaccount.com) */
-  readonly clientEmail: string;
+  readonly clientEmail?: string;
   /** The RSA private key in PEM or Base64 format */
-  readonly privateKey: string;
+  readonly privateKey?: string;
+  /** Direct Bearer token string (e.g. from gcloud auth print-access-token for local dev) */
+  readonly directAccessToken?: string;
   /** The OAuth2 token endpoint URL (default: https://oauth2.googleapis.com/token) */
   readonly tokenEndpoint?: string;
   /** Proactive buffer in seconds to refresh before token expiry (default: 300s) */
@@ -97,7 +99,8 @@ export function sanitizePrivateKey(rawKey: string): string {
 export class GoogleServiceAccountAdapter implements IGoogleAuthProviderPort {
   private cachedToken: AccessTokenPayload | null = null;
   private inFlightPromise: Promise<AccessTokenPayload> | null = null;
-  private readonly config: {
+  private readonly directToken?: string;
+  private readonly config?: {
     clientEmail: string;
     privateKey: string;
     tokenEndpoint: string;
@@ -110,8 +113,16 @@ export class GoogleServiceAccountAdapter implements IGoogleAuthProviderPort {
    * 
    * @param config - The service account configuration options
    */
-  constructor(config: ServiceAccountConfig) {
-    // Step 1: Validate required parameters
+  constructor(config: ServiceAccountConfig = {}) {
+    const directToken = config?.directAccessToken || process.env.GOOGLE_ACCESS_TOKEN;
+
+    // Step 1: If direct token is provided, use it directly (ideal for local ADC / gcloud tokens)
+    if (directToken && directToken.trim() !== '') {
+      this.directToken = directToken.trim();
+      return;
+    }
+
+    // Step 2: Validate required Service Account parameters
     if (!config?.clientEmail || typeof config.clientEmail !== 'string' || config.clientEmail.trim() === '') {
       throw new GoogleAuthDomainError(
         'MISSING_CREDENTIALS',
@@ -126,7 +137,7 @@ export class GoogleServiceAccountAdapter implements IGoogleAuthProviderPort {
       );
     }
 
-    // Step 2: Sanitize the private key
+    // Step 3: Sanitize the private key
     const sanitizedKey = sanitizePrivateKey(config.privateKey);
 
     this.config = {
@@ -145,8 +156,17 @@ export class GoogleServiceAccountAdapter implements IGoogleAuthProviderPort {
    * @param forceRefresh - If true, bypasses the active cache
    */
   public async getAccessToken(forceRefresh = false): Promise<AccessTokenPayload> {
+    // Step 1: Handle direct bearer token mode
+    if (this.directToken) {
+      return {
+        token: this.directToken,
+        tokenType: 'Bearer',
+        expiresAtUtc: Date.now() + 3600 * 1000,
+      };
+    }
+
     const now = Date.now();
-    const expiryThresholdMs = this.config.clockSkewBufferSeconds * 1000;
+    const expiryThresholdMs = (this.config?.clockSkewBufferSeconds ?? 300) * 1000;
 
     // Step 1: Check active memory cache if not force refreshing
     if (!forceRefresh && this.cachedToken && (this.cachedToken.expiresAtUtc - expiryThresholdMs > now)) {
@@ -183,6 +203,13 @@ export class GoogleServiceAccountAdapter implements IGoogleAuthProviderPort {
    * Constructs the signed RS256 JWT assertion and exchanges it for an OAuth2 token.
    */
   private async requestNewOAuthToken(): Promise<AccessTokenPayload> {
+    if (!this.config) {
+      throw new GoogleAuthDomainError(
+        'MISSING_CREDENTIALS',
+        'Google Service Account credentials are not configured'
+      );
+    }
+
     // Step 1: Construct signed RS256 JWT with clock-drift compensation (-30s iat)
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: 'RS256', typ: 'JWT' };
