@@ -1,35 +1,18 @@
 /**
  * @file apps/web/src/components/wallet/wallet-runtime-provider.tsx
- * @description Layer 1: Presentation - Solana Wallet Adapter Context Provider.
- * Configures connection and wallet modal providers for client components.
+ * @description Layer 1: Presentation - Application Wallet Context Wrapper (Passthrough).
+ * Clean passthrough provider without external Solana wallet adapter dependencies.
  */
 
 "use client";
 
-import React, { useMemo } from "react";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
-
-import "@solana/wallet-adapter-react-ui/styles.css";
+import React from "react";
 
 export interface WalletRuntimeProviderProps {
   children: React.ReactNode;
 }
 
 export function WalletRuntimeProvider({ children }: WalletRuntimeProviderProps) {
-  // Step 1: Memoize Solana RPC Endpoint
-  const endpoint = useMemo(() => getSolanaRpcUrl(), []);
-
-  // Step 2: Initialize supported wallet adapters (Devnet)
-  // Wallets supporting the Wallet Standard (like Phantom) are automatically detected and added.
-  const wallets = useMemo(() => [], []);
-
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
-  );
+  // Step 1: Render child tree directly without Solana wallet adapter overhead
+  return <>{children}</>;
 }
