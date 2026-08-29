@@ -33,24 +33,28 @@ The solution introduces a specialized AI Architecture governance layer and canon
 - **SPEC-1**: AI Ingestion Pipeline & Schema Alignment Canonical ADR (`knowledge/architecture/ai-augmented-ingestion-pipeline.md`).
 - **SPEC-2**: AI Architect Subagent Specification & Antigravity SDK Configuration (`.agents/agents/ai-architect.yaml` and runtime `define_subagent`).
 - **SPEC-3**: Monorepo Governance Alignment (`AGENTS.md`, `planner.yaml`, `.agents/graph.json`).
+- **SPEC-4**: AI Ingestion Pipeline RFC Suite (`knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/` with 14 stories, `STORY-001-01` through `STORY-001-14` fully implemented and tested).
+- **SPEC-5**: Comprehensive Operations Manual & Setup Guide (`knowledge/operations/ai-ingestion-operations-guide.md`).
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)
-- **Test File Path**: `tests/harness/agent-ai-architect.test.ts`
-- **Command**: `pnpm test tests/harness`
+- **Test Suite**: 204 unit and integration tests across all 14 pipeline stories covering Google Auth, Zod contracts, Drive polling, Blob CDN, Sharp image optimizer, Gemini focal crop, Gemini video tagger, Gemini PDF extractor, SheetJS normalizer, Scoring 80/20 engine, Neon DDL, Idempotent repositories, Dashboard server views, and HITL server actions.
+- **Command**: `pnpm test`
 - **Assertion Goals**:
   1. Verify that `.agents/agents/ai-architect.yaml` satisfies all schema properties (scope, layers, syntax rules, commentary requirements).
   2. Verify that monorepo whitelist and 4-layer boundary checks enforce AI pipeline path isolation.
   3. Verify runtime subagent tool permissions and registration.
+  4. Verify that all 14 ingestion stories pass all unit, integration, and security edge case tests.
 
 ## 5. Local Definition of Done (DoD)
-- [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.
-- [ ] La suite de pruebas de regresión pasa al 100% (verde).
-- [ ] `pnpm validate` se ejecuta con 0 errores y 0 warnings.
-- [ ] La documentación de arquitectura canónica (`ai-augmented-ingestion-pipeline.md`) y artefactos duales están actualizados sin placeholders.
-- [ ] Aprobación explícita del humano registrada.
+- [x] Todas las 14 historias de EPIC-001 implementadas y validadas en ramas SPEC individuales.
+- [x] La suite de pruebas de regresión pasa al 100% (204/204 tests en verde).
+- [x] `pnpm validate` se ejecuta con 0 errores y 0 warnings.
+- [x] La documentación de arquitectura canónica y guía operativa (`ai-ingestion-operations-guide.md`) están completadas sin placeholders.
+- [x] Aprobación explícita del humano registrada (Human Acceptance otorgada por el usuario para merge).
 
 ## 6. Spec Artifact Traceability
 - **Problem Spec**: [feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md)
 - **Solution Spec**: [feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation.md)
+- **Operations Guide**: [ai-ingestion-operations-guide.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/operations/ai-ingestion-operations-guide.md)
 - **Linear Issue**: [Linear Ticket #BBC-7](https://linear.app/brids-app/issue/BBC-7)

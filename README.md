@@ -5,11 +5,11 @@ High-performance Next.js 16 and Solana monorepo starter with 4-Layer Functional 
 <!-- DOCS-AUTO:START -->
 ## Documentation Snapshot (Auto-generated)
 
-Updated: 2026-08-25 05:04:09 UTC
+Updated: 2026-08-29 15:46:14 UTC
 
 | Document | Scope | Last Updated | Last Commit |
 | --- | --- | --- | --- |
-| [`ai-augmented-ingestion-pipeline.md`](./knowledge/architecture/ai-augmented-ingestion-pipeline.md) | general | not set | not committed |
+| [`ai-augmented-ingestion-pipeline.md`](./knowledge/architecture/ai-augmented-ingestion-pipeline.md) | general | not set | 2026-08-25 45aea084 |
 | [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | not set | 2026-08-23 a69db56b |
 | [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | not set | 2026-08-23 a69db56b |
 | [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | not set | 2026-08-23 a69db56b |
