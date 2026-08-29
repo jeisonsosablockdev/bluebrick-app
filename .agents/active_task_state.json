@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-7",
-  "branch": "SPEC/jaymusicmachine-BBC-7-story-15-operational-guide-and-fixes",
-  "current_phase": "PHASE_7_VALIDATED",
+  "branch": "feature/jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
+  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
     "PHASE_2_DOCS_FILLED": { "completed": true },
@@ -11,6 +11,6 @@
     "PHASE_5_TESTS_RED": { "completed": true },
     "PHASE_6_CODE_GREEN": { "completed": true },
     "PHASE_7_VALIDATED": { "completed": true },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true }
   }
 }
