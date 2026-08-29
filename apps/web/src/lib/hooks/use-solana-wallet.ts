@@ -1,7 +1,7 @@
 /**
  * @file apps/web/src/lib/hooks/use-solana-wallet.ts
  * @description Layer 2: Application / Consumption - Custom hook for Solana wallet state.
- * Wraps @solana/wallet-adapter-react to provide structured wallet properties.
+ * Exposes decoupled wallet state contract for UI presentation.
  */
 
 "use client";
@@ -30,7 +30,7 @@ export interface UseSolanaWalletResult {
  * @returns {UseSolanaWalletResult} Formatted wallet state and control methods.
  */
 export function useSolanaWallet(): UseSolanaWalletResult {
-  // Step 1: Return clean disconnected state without requiring @solana/wallet-adapter context
+  // Step 1: Return clean disconnected state with zero external wallet adapter dependencies
   return {
     connected: false,
     connecting: false,

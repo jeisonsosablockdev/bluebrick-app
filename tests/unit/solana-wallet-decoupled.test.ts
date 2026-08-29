@@ -1,7 +1,7 @@
 /**
  * @file tests/unit/solana-wallet-decoupled.test.ts
  * @description Layer 1 & 2: Unit tests verifying that Solana wallet components and hooks
- * do not depend on @solana/wallet-adapter runtime providers.
+ * remain decoupled with zero runtime wallet adapter providers.
  */
 
 import { describe, it, expect } from "vitest";
