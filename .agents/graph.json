@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-25T05:03:50.255Z",
+  "generatedAt": "2026-08-29T19:40:07.122Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -156,6 +156,18 @@
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard",
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md",
+      "type": "fix",
+      "label": "fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation",
+      "path": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes.md",
+      "type": "fix",
+      "label": "fix-jeisonsosa-BBC-008-digest-implementation-fixes",
+      "path": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes.md"
     },
     {
       "id": "knowledge/governance/clean-code-folder-structure.md",
@@ -332,6 +344,12 @@
       "path": "knowledge/log.md"
     },
     {
+      "id": "knowledge/operations/ai-ingestion-operations-guide.md",
+      "type": "governance",
+      "label": "ai-ingestion-operations-guide",
+      "path": "knowledge/operations/ai-ingestion-operations-guide.md"
+    },
+    {
       "id": "knowledge/reports/governance-drift-2026-08-25.md",
       "type": "governance",
       "label": "governance-drift-2026-08-25",
@@ -344,10 +362,88 @@
       "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/README.md"
     },
     {
-      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-drive-connectivity-and-storage.md",
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-service-account-auth.md",
       "type": "governance",
-      "label": "STORY-001-01-drive-connectivity-and-storage",
-      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-drive-connectivity-and-storage.md"
+      "label": "STORY-001-01-service-account-auth",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-service-account-auth.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-02-schema-alignment-contracts.md",
+      "type": "governance",
+      "label": "STORY-001-02-schema-alignment-contracts",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-02-schema-alignment-contracts.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-03-drive-changes-polling.md",
+      "type": "governance",
+      "label": "STORY-001-03-drive-changes-polling",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-03-drive-changes-polling.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-04-blob-storage-connector.md",
+      "type": "governance",
+      "label": "STORY-001-04-blob-storage-connector",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-04-blob-storage-connector.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-05-image-quality-gate.md",
+      "type": "governance",
+      "label": "STORY-001-05-image-quality-gate",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-05-image-quality-gate.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-06-smart-focal-crop.md",
+      "type": "governance",
+      "label": "STORY-001-06-smart-focal-crop",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-06-smart-focal-crop.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-07-video-ingestion-tagging.md",
+      "type": "governance",
+      "label": "STORY-001-07-video-ingestion-tagging",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-07-video-ingestion-tagging.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-08-pdf-contracts-ingestion.md",
+      "type": "governance",
+      "label": "STORY-001-08-pdf-contracts-ingestion",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-08-pdf-contracts-ingestion.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-09-excel-spreadsheets-ingestion.md",
+      "type": "governance",
+      "label": "STORY-001-09-excel-spreadsheets-ingestion",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-09-excel-spreadsheets-ingestion.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-10-confidence-scoring-engine.md",
+      "type": "governance",
+      "label": "STORY-001-10-confidence-scoring-engine",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-10-confidence-scoring-engine.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-11-db-schemas-migrations.md",
+      "type": "governance",
+      "label": "STORY-001-11-db-schemas-migrations",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-11-db-schemas-migrations.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-12-idempotency-upsert-repositories.md",
+      "type": "governance",
+      "label": "STORY-001-12-idempotency-upsert-repositories",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-12-idempotency-upsert-repositories.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-13-dashboard-server-views.md",
+      "type": "governance",
+      "label": "STORY-001-13-dashboard-server-views",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-13-dashboard-server-views.md"
+    },
+    {
+      "id": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-14-hitl-review-panel.md",
+      "type": "governance",
+      "label": "STORY-001-14-hitl-review-panel",
+      "path": "knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-14-hitl-review-panel.md"
     },
     {
       "id": "knowledge/rfcs/templates/EPIC-README.template.md",

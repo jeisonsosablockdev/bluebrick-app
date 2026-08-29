@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-7",
-  "branch": "feature/jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "task_id": "BBC-008",
+  "branch": "SPEC/jeisonsosa-BBC-008-s02-fix-file-digest",
+  "current_phase": "PHASE_1_BOOTSTRAP",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
-    "PHASE_2_DOCS_FILLED": { "completed": true },
-    "PHASE_3_ARCHITECT_GATE1": { "completed": true },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true },
-    "PHASE_5_TESTS_RED": { "completed": true },
-    "PHASE_6_CODE_GREEN": { "completed": true },
-    "PHASE_7_VALIDATED": { "completed": true },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true }
+    "PHASE_2_DOCS_FILLED": { "completed": false },
+    "PHASE_3_ARCHITECT_GATE1": { "completed": false },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": false },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }

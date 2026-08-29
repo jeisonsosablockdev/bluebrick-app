@@ -9,7 +9,6 @@
 import React, { useMemo } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { getSolanaRpcUrl } from "@/lib/infrastructure/solana";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -23,7 +22,8 @@ export function WalletRuntimeProvider({ children }: WalletRuntimeProviderProps) 
   const endpoint = useMemo(() => getSolanaRpcUrl(), []);
 
   // Step 2: Initialize supported wallet adapters (Devnet)
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+  // Wallets supporting the Wallet Standard (like Phantom) are automatically detected and added.
+  const wallets = useMemo(() => [], []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
