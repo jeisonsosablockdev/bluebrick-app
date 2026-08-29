@@ -18,8 +18,8 @@
    - Patch file storage/retrieval implementations that participate in the digest pipeline.
 
 ## 3. Atomic Slices & Logical Sequence
-- **SPEC-1**: Fix Database Name Resolution in `UserRepository` to avoid WorkOS login fallback (Rama: `SPEC/jeisonsosa-BBC-008-s01-fix-login-db`)
-- **SPEC-2**: Audit and patch file digest bugs across the ingestion pipeline (Rama: `SPEC/jeisonsosa-BBC-008-s02-fix-file-digest`)
+- **SPEC-1**: Fix Database Name Resolution and WorkOS Middleware Session Handling in `UserRepository` & `DashboardPage` (Rama: `SPEC/jeisonsosa-BBC-008-s01-fix-login-db`)
+- **SPEC-2**: Remove Solana Wallet Adapters and Clean Up Presentation / Hook Dependencies (Rama: `SPEC/jeisonsosa-BBC-008-s02-remove-solana-adapters`)
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)
