@@ -10,6 +10,11 @@ import React from "react";
 import { useSolanaWallet } from "@/lib/hooks/use-solana-wallet";
 import { Button } from "../ui/button";
 
+/**
+ * Renders the Solana wallet connection trigger or active connected status pill.
+ *
+ * @returns {React.JSX.Element} The rendered wallet button or connected address display.
+ */
 export function WalletConnectButton() {
   const { connected, connecting, formattedAddress, disconnect } = useSolanaWallet();
 
