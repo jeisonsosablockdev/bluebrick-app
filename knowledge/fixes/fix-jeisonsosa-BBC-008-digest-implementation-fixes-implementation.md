@@ -8,14 +8,14 @@
 - **Security Auditor**: `security` (where applicable)
 
 ## 2. Solution Overview & 4-Layer Architecture
-1. **Presentation Layer**: No UI changes expected unless surfacing new error states for file uploads.
-2. **Application/Consumption Layer**: Ensure upload/digest actions map properly to the underlying API logic.
+1. **Presentation Layer**: No direct UI changes.
+2. **Application/Consumption Layer**: 
+   - Migrate Edge middleware entrypoint from `apps/web/src/middleware.ts` to `apps/web/src/proxy.ts` conforming to Next.js 16 conventions.
+   - Maintain AuthKit session cookie inspection and transparent token refreshing.
 3. **Domain/Pipelines/Services Layer**: 
-   - Refactor the digest logic for file processing to handle edge cases, empty states, and corrupted data gracefully.
-   - Remove hardcoded database values (`neondb`) from connection configuration.
+   - Maintain user synchronization pipeline intact.
 4. **Infrastructure Layer**: 
-   - Update `UserRepository.findById` and Database connection instance to dynamically use the `DATABASE_URL` instead of static database name.
-   - Patch file storage/retrieval implementations that participate in the digest pipeline.
+   - Prune legacy wallet adapter dependencies.
 
 ## 3. Atomic Slices & Logical Sequence
 - **SPEC-1**: Fix Database Name Resolution and WorkOS Middleware Session Handling in `UserRepository` & `DashboardPage` (Rama: `SPEC/jeisonsosa-BBC-008-s01-fix-login-db`)
@@ -24,9 +24,9 @@
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)
-- **Test File Path**: `apps/web/src/lib/infrastructure/db/repositories/__tests__/user-repository.test.ts` and `apps/web/src/lib/pipelines/__tests__/digest.test.ts`
+- **Test File Path**: `tests/unit/workos-auth-structural.test.ts`
 - **Command**: `pnpm test`
-- **Assertion Goals**: Verify `UserRepository.findById` queries properly without throwing "database neondb does not exist". Verify that file digest algorithms correctly handle all file inputs without throwing unhandled exceptions.
+- **Assertion Goals**: Verify `apps/web/src/proxy.ts` physically exists on disk and `apps/web/src/middleware.ts` is deleted (avoiding Next.js 16 E900 conflict). Ensure `withAuth` and routes continue to function seamlessly.
 
 ## 5. Local Definition of Done (DoD)
 - [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.

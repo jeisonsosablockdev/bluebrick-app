@@ -1,13 +1,21 @@
 /**
- * @file apps/web/src/middleware.ts
- * @description Layer 2: Application - WorkOS AuthKit Next.js 16 Edge Middleware.
+ * @file apps/web/src/proxy.ts
+ * @description Layer 2: Application - WorkOS AuthKit Next.js 16 Edge Proxy.
  * Secures application routes and handles transparent session token refreshing when WorkOS credentials are configured.
+ * Conforms to Next.js 16 proxy file convention.
  */
 
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
 
-export default async function middleware(request: NextRequest, event: NextFetchEvent) {
+/**
+ * Next.js 16 Edge Proxy handler for transparent session authentication.
+ *
+ * @param request - Inbound HTTP request from Next.js runtime.
+ * @param event - Next.js fetch event for background tasks.
+ * @returns {Promise<NextResponse>} Processed downstream response with session headers.
+ */
+export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   // Step 1: Detect if WorkOS credentials are fully configured in the environment
   const isWorkOsConfigured = Boolean(
     process.env.WORKOS_COOKIE_PASSWORD &&
