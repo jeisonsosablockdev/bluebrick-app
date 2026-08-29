@@ -20,6 +20,7 @@
 ## 3. Atomic Slices & Logical Sequence
 - **SPEC-1**: Fix Database Name Resolution and WorkOS Middleware Session Handling in `UserRepository` & `DashboardPage` (Rama: `SPEC/jeisonsosa-BBC-008-s01-fix-login-db`)
 - **SPEC-2**: Remove Solana Wallet Adapters and Clean Up Presentation / Hook Dependencies (Rama: `SPEC/jeisonsosa-BBC-008-s02-remove-solana-adapters`)
+- **SPEC-3**: Migrate `middleware.ts` to `proxy.ts` conforming to Next.js 16 conventions (Rama: `SPEC/jeisonsosa-BBC-008-s03-migrate-middleware-to-proxy`)
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (Fase RED)
