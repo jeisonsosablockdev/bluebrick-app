@@ -139,14 +139,18 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   let concludedCount = 1;
 
   try {
-    // Step 2: Query user profile from Neon PostgreSQL
-    const dbUser = await userRepo.findById("user_sofia_martinez");
+    const { getAuthenticatedInvestor } = await import("@/lib/auth/workos-session");
+    const authenticatedInvestor = await getAuthenticatedInvestor(userRepo);
+    investor = authenticatedInvestor;
+
+    // Step 2: Query user profile from Neon PostgreSQL (redundant if getAuthenticatedInvestor works, but keeping for invariant check)
+    const dbUser = await userRepo.findById(investor.id);
     if (dbUser) {
       investor = dbUser;
     }
 
     // Step 3: Query live portfolio metrics from Neon PostgreSQL
-    const summary = await investmentRepo.getPortfolioSummary("user_sofia_martinez");
+    const summary = await investmentRepo.getPortfolioSummary(investor.id);
     if (summary && summary.items.length > 0) {
       properties = summary.items;
       totalInvested = summary.totalInvested;
