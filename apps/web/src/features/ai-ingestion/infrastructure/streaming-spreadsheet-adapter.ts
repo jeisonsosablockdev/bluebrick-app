@@ -93,22 +93,38 @@ export class StreamingSpreadsheetAdapter implements ISpreadsheetParserPort {
         continue;
       }
 
-      // Step 2: Extract and sanitize headers
-      const rawHeaderRow = rawRows[0] || [];
+      // Step 2: Dynamically detect header row within first 10 rows (handles title/description preambles)
+      let headerRowIndex = 0;
+      let colMap = this.mapHeaderColumns(
+        (rawRows[0] || []).slice(0, MAX_SPREADSHEET_COLUMNS).map((h) => String(sanitizeSpreadsheetCell(h) ?? '').trim())
+      );
+      let bestScore = Object.keys(colMap).length;
+
+      for (let r = 1; r < Math.min(rawRows.length, 10); r++) {
+        const candidateHeaders = (rawRows[r] || [])
+          .slice(0, MAX_SPREADSHEET_COLUMNS)
+          .map((h) => String(sanitizeSpreadsheetCell(h) ?? '').trim());
+        const candidateMap = this.mapHeaderColumns(candidateHeaders);
+        const score = Object.keys(candidateMap).length;
+        if (score > bestScore) {
+          bestScore = score;
+          headerRowIndex = r;
+          colMap = candidateMap;
+        }
+      }
+
+      const rawHeaderRow = rawRows[headerRowIndex] || [];
       const headers = rawHeaderRow
         .slice(0, MAX_SPREADSHEET_COLUMNS)
         .map((h) => String(sanitizeSpreadsheetCell(h) ?? '').trim());
 
-      // Step 3: Find column index mappings using header keywords
-      const colMap = this.mapHeaderColumns(headers);
-
-      // Step 4: Enforce row safety limits (max 5000 rows)
-      const dataRows = rawRows.slice(1, MAX_SPREADSHEET_ROWS + 1);
+      // Step 3: Enforce row safety limits (max 5000 rows starting after detected header)
+      const dataRows = rawRows.slice(headerRowIndex + 1, headerRowIndex + 1 + MAX_SPREADSHEET_ROWS);
       const extractedClients: CanonicalClient[] = [];
 
       for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex++) {
         const row = dataRows[rowIndex] || [];
-        const client = this.parseClientRow(row, colMap, headers, filename, sheetName, rowIndex + 2);
+        const client = this.parseClientRow(row, colMap, headers, filename, sheetName, headerRowIndex + rowIndex + 2);
         if (client) {
           extractedClients.push(client);
         }
