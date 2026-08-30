@@ -25,7 +25,7 @@ describe("SPEC-4: WorkOS User Sync Pipeline (@spec BBC-6-SPEC-4)", () => {
       firstName: "Sofía",
       lastName: "Martínez",
       avatarUrl: "https://workos.img/avatar.png",
-      tier: "Inversionista Privada",
+      tier: "Inversionista Privado",
       createdAt: new Date(),
     });
 
@@ -45,7 +45,7 @@ describe("SPEC-4: WorkOS User Sync Pipeline (@spec BBC-6-SPEC-4)", () => {
       firstName: "Sofía",
       lastName: "Martínez",
       avatarUrl: "https://workos.img/avatar.png",
-      tier: "Inversionista Privada",
+      tier: "Inversionista Privado",
     });
   });
 
@@ -62,7 +62,7 @@ describe("SPEC-4: WorkOS User Sync Pipeline (@spec BBC-6-SPEC-4)", () => {
       firstName: "Inversionista",
       lastName: "BlueBrick",
       avatarUrl: null,
-      tier: "Inversionista Privada",
+      tier: "Inversionista Privado",
       createdAt: new Date(),
     });
 
@@ -80,7 +80,7 @@ describe("SPEC-4: WorkOS User Sync Pipeline (@spec BBC-6-SPEC-4)", () => {
       firstName: "Inversionista",
       lastName: "BlueBrick",
       avatarUrl: null,
-      tier: "Inversionista Privada",
+      tier: "Inversionista Privado",
     });
     expect(syncedInvestor.firstName).toBe("Inversionista");
   });

@@ -43,7 +43,7 @@ export default function HomePage(): React.JSX.Element {
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
           <InvestorLoginCard
             investorName="Sofía Martínez"
-            tier="Inversionista Privada"
+            tier="Inversionista Privado"
             initials="SM"
           />
         </div>
