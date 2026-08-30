@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-10",
-  "branch": "feature/jeisonsosa-BBC-10-email-auth-and-logout",
+  "task_id": "BBC-12",
+  "branch": "feature/jaymusicmachine-BBC-12-seo-favicon-web-discovery",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

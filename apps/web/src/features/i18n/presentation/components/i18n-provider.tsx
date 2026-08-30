@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { createContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useState, useCallback, useMemo, useEffect } from "react";
 import {
   DEFAULT_LOCALE,
   type SupportedLocale,
@@ -42,18 +42,26 @@ export interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, initialLocale }: I18nProviderProps): React.JSX.Element {
-  // Step 1: Initialize locale with initial prop, stored cookie, or browser detector
-  const [locale, setLocaleState] = useState<SupportedLocale>(() => {
-    if (initialLocale) return initialLocale;
-    const saved = cookieLocaleAdapter.getLocale();
-    if (saved) return saved;
-    if (typeof window !== "undefined") {
-      return browserLocaleDetector.detectLocale();
-    }
-    return DEFAULT_LOCALE;
-  });
+  // Step 1: Initialize locale with deterministic value to guarantee matching SSR and Client initial render
+  const [locale, setLocaleState] = useState<SupportedLocale>(initialLocale || DEFAULT_LOCALE);
 
-  // Step 2: Handle switching locale and syncing across cookies & storage
+  // Step 2: Synchronize stored cookie or browser preferred language only after initial mount
+  useEffect(() => {
+    if (initialLocale) return;
+    const saved = cookieLocaleAdapter.getLocale();
+    if (saved) {
+      if (saved !== locale) {
+        setLocaleState(saved);
+      }
+      return;
+    }
+    const detected = browserLocaleDetector.detectLocale();
+    if (detected && detected !== locale) {
+      setLocaleState(detected);
+    }
+  }, [initialLocale, locale]);
+
+  // Step 3: Handle switching locale and syncing across cookies & storage
   const setLocale = useCallback((newLocale: SupportedLocale) => {
     setLocaleState(newLocale);
     cookieLocaleAdapter.setLocale(newLocale);

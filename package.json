@@ -47,7 +47,6 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@cfworker/json-schema": "^4.1.1",
     "@metaplex-foundation/mpl-core": "^1.7.0",
     "@metaplex-foundation/mpl-core-candy-machine": "^0.3.0",
     "@metaplex-foundation/umi": "^1.5.1",
@@ -72,7 +71,6 @@
     "server-only": "^0.0.1",
     "sharp": "^0.35.4",
     "tweetnacl": "^1.0.3",
-    "valibot": "^1.4.2",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },

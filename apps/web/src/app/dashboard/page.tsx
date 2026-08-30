@@ -13,8 +13,18 @@ import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { DbUser, PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
 export const metadata: Metadata = {
-  title: "Dashboard de Inversionista | BlueBrick",
-  description: "Portafolio de inversión inmobiliaria fraccionada y rendimientos en BlueBrick.",
+  title: "Panel de Inversión (Demo) | BlueBrick",
+  description:
+    "Monitorea el portafolio de inversión inmobiliaria fraccionada, rendimientos mensuales y oportunidades activas en BlueBrick.",
+  alternates: {
+    canonical: "/dashboard",
+  },
+  openGraph: {
+    title: "Panel de Inversión (Demo) | BlueBrick",
+    description:
+      "Portafolio institucional de inversiones inmobiliarias fraccionadas con dividendos mensuales y métricas en tiempo real.",
+    url: "/dashboard",
+  },
 };
 
 const DEFAULT_INVESTOR: DbUser = {

@@ -23,7 +23,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@/app": path.resolve(currentDirPath, "app"),
+      "@/app": path.resolve(currentDirPath, "apps/web/src/app"),
       "@/scripts": path.resolve(currentDirPath, "scripts"),
       "@/tests": path.resolve(currentDirPath, "tests"),
       "@": path.resolve(currentDirPath, "apps/web/src"),
