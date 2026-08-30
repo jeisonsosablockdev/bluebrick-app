@@ -102,6 +102,13 @@ export interface Dictionary {
     emailLoginButton: string;
     disclaimerNote: string;
   };
+  logoutModal: {
+    title: string;
+    description: string;
+    dontAskAgain: string;
+    confirmButton: string;
+    cancelButton: string;
+  };
   dashboard: {
     totalInvested: string;
     weightedRoi: string;

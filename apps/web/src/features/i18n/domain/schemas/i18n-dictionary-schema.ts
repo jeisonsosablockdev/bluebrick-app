@@ -114,6 +114,17 @@ export const WalletTokensSchema = z.object({
 });
 
 /**
+ * Logout Modal tokens schema.
+ */
+export const LogoutModalTokensSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  dontAskAgain: z.string().min(1),
+  confirmButton: z.string().min(1),
+  cancelButton: z.string().min(1),
+});
+
+/**
  * Complete Dictionary Schema enforcing all required token namespaces.
  */
 export const DictionarySchema = z.object({
@@ -121,6 +132,7 @@ export const DictionarySchema = z.object({
   nav: NavTokensSchema,
   landing: LandingTokensSchema,
   loginCard: LoginCardTokensSchema,
+  logoutModal: LogoutModalTokensSchema,
   dashboard: DashboardTokensSchema,
   wallet: WalletTokensSchema,
 });

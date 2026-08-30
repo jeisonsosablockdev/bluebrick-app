@@ -44,6 +44,13 @@ export const pt: Dictionary = {
     emailLoginButton: "Entrar com E-mail",
     disclaimerNote: "* Plataforma de Investimentos BlueBrick · Acesso demo instantâneo ou federado.",
   },
+  logoutModal: {
+    title: "Encerrar sessão?",
+    description: "Tem certeza de que deseja sair da sua conta? Você precisará entrar novamente para acessar seu portfólio.",
+    dontAskAgain: "Não perguntar novamente",
+    confirmButton: "Sair",
+    cancelButton: "Cancelar",
+  },
   dashboard: {
     totalInvested: "Patrimônio total investido",
     weightedRoi: "ROI médio ponderado: {roi}%",

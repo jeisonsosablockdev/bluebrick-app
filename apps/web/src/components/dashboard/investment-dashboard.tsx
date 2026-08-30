@@ -35,6 +35,7 @@ import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
+import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
 import { useI18n, LocaleSwitcher } from "@/features/i18n";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
@@ -102,10 +103,42 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
 
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.investor.avatarUrl);
 
   const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
+
+  // Step 3: Handle logout initiation checking "Don't ask again" preference
+  const handleLogoutClick = async () => {
+    try {
+      const skipConfirm =
+        typeof window !== "undefined" &&
+        localStorage.getItem("bluebrick_skip_logout_confirm") === "true";
+      if (skipConfirm) {
+        setIsLoggingOut(true);
+        await signOutAction();
+        return;
+      }
+    } catch (e) {
+      console.warn("Could not read logout preference from localStorage", e);
+    }
+    setIsLogoutModalOpen(true);
+  };
+
+  // Step 4: Handle modal confirmation with optional preference persistence
+  const handleConfirmLogout = async (dontAskAgain: boolean) => {
+    try {
+      if (dontAskAgain && typeof window !== "undefined") {
+        localStorage.setItem("bluebrick_skip_logout_confirm", "true");
+      }
+    } catch (e) {
+      console.warn("Could not save logout preference to localStorage", e);
+    }
+    setIsLoggingOut(true);
+    await signOutAction();
+  };
 
   // Step 3: Use pre-computed server metrics directly to eliminate client recalculation overhead
   const totalInvested = initialData.totalInvested;
@@ -190,9 +223,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           {/* Explicit Session Logout Button */}
           <button
             type="button"
-            onClick={async () => {
-              await signOutAction();
-            }}
+            onClick={handleLogoutClick}
             className="dash-logout-btn"
             title={t("common.logout") || "Cerrar sesión"}
             aria-label={t("common.logout") || "Cerrar sesión"}
@@ -668,6 +699,14 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         onClose={() => setIsAvatarModalOpen(false)}
         userId={initialData.investor.id}
         onUploadSuccess={(newUrl) => setAvatarUrl(newUrl)}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+        isSubmitting={isLoggingOut}
       />
     </div>
   );
