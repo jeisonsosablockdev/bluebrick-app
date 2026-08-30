@@ -7,7 +7,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getSignInUrl, signOut } from "@workos-inc/authkit-nextjs";
+import { cookies } from "next/headers";
+import { getSignInUrl } from "@workos-inc/authkit-nextjs";
 
 /**
  * Initiates universal email / passwordless / SSO sign-in flow via WorkOS AuthKit.
@@ -34,8 +35,27 @@ export async function signInWithEmailAction(): Promise<void> {
 
 /**
  * Server action for terminating authenticated investor session.
+ * Reliably removes WorkOS session and PKCE cookies locally and redirects back to the landing page.
  */
 export async function signOutAction(): Promise<void> {
-  // Step 1: Invoke WorkOS signOut to clear encrypted session cookie
-  await signOut();
+  // Step 1: Access Next.js cookies store
+  const cookieStore = await cookies();
+
+  // Step 2: Delete session cookie and any auth-related cookies
+  const allCookies = cookieStore.getAll();
+  for (const cookie of allCookies) {
+    if (
+      cookie.name === "wos-session" ||
+      cookie.name === "workos-access-token" ||
+      cookie.name.startsWith("wos-pkce") ||
+      cookie.name.includes("workos")
+    ) {
+      cookieStore.delete(cookie.name);
+    }
+  }
+  cookieStore.delete("wos-session");
+  cookieStore.delete("workos-access-token");
+
+  // Step 3: Redirect user cleanly back to landing page
+  redirect("/");
 }
