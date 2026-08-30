@@ -8,16 +8,14 @@ Institutional and private real estate investors frequently use corporate email d
 
 ## What outcome is expected
 1. The login card on the landing page displays a universal email authentication entrypoint ("Continuar con Correo Electrónico" / "Sign in with Email" / "Entrar com E-mail") with a clean, luxury mail icon (`Mail` from `lucide-react`), initiating WorkOS AuthKit's universal email / magic link / SSO hosted flow.
-2. An elegant and accessible logout button (`LogOut` from `lucide-react`) is integrated into the dashboard header alongside the investor profile and locale switcher.
-3. Clicking logout invokes the `signOutAction()` server action to securely invalidate the encrypted WorkOS session cookie and redirect the user back to the landing page.
-4. Full multi-language support (Spanish, English, Portuguese) for all new auth tokens across the dictionary schema.
-5. 100% test coverage including unit tests, structural tests, and UI integration tests with zero regression.
+2. The sign-in flow enforces fresh re-authentication via standard OIDC `maxAge: 0` (`getSignInUrl({ maxAge: 0 })`), ensuring users are always prompted for their credentials on new login attempts after a session is closed.
+3. An elegant and accessible logout button (`LogOut` from `lucide-react`) is integrated into the dashboard header alongside the investor profile and locale switcher, with responsive mobile optimization (`.dash-user-text-container`, `.dash-logout-btn`).
+4. Clicking logout invokes `signOutAction()` / `/auth/logout` to synchronously and cleanly clear all local session and PKCE cookies (`wos-session`, `workos-access-token`, `wos-pkce-*`) from Next.js cookie store and immediately redirect back to `/` without external redirect errors.
+5. Full multi-language support (Spanish, English, Portuguese) for all new auth tokens across the dictionary schema (`common.logout`, `loginCard.emailLoginButton`).
+6. 100% test coverage including unit tests, structural tests, and UI integration tests with zero regression.
 
 ## What gaps exist today
-- `InvestorLoginCard` hardcodes Google iconography and text strings.
-- `apps/web/src/lib/auth/actions.ts` explicitly requests `provider: "GoogleOAuth"`.
-- `apps/web/src/components/dashboard/investment-dashboard.tsx` header lacks a logout action button.
-- Missing localized dictionary keys for universal email login and logout actions in `es.ts`, `en.ts`, and `pt.ts`.
+- Solved in BBC-10: Replaced Google-only button with universal email login, added dashboard header logout button, local cookie clearance mechanism, `maxAge: 0` re-auth, and complete i18n support.
 
 ## What questions remain open
-- None. The WorkOS AuthKit Next.js integration already supports universal email authentication natively via `getSignInUrl()` without explicit provider overrides.
+- None. The WorkOS AuthKit Next.js integration supports universal email authentication with `maxAge: 0`, and local session termination handles clean redirects to `/`.
