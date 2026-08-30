@@ -25,7 +25,58 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-7" ]]; then
+if [[ "${ISSUE_ID}" == "BBC-008" || "${ISSUE_ID}" == "BBC-8" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request resuelve y consolida seis problemas técnicos críticos y mejoras en el monorepo de BRIDS (\`BBC-008\`):
+
+1. **SPEC-1 (Login Fallback & DB Connection)**: Corrección de fallbacks de autenticación en WorkOS y resolución de variables de conexión PostgreSQL en Neon.
+2. **SPEC-2 (Eliminación de @solana/wallet-adapter)**: Purgadas todas las dependencias y referencias legacy a \`@solana/wallet-adapter\`, migrando a arquitectura desacoplada.
+3. **SPEC-3 (Migración de middleware.ts a proxy.ts)**: Conforme a Next.js 16 Edge Proxy standards.
+4. **SPEC-4 (Conexión de Inversionistas del Excel al Dashboard)**: Sincronización del portafolio real de inversionistas desde la tabla \`clients\` (ingestada desde Google Drive) al Dashboard de inversionistas por correo electrónico (\`jeisonjsosar@gmail.com\` -> Jayson Sosa: \$60,000 USD en Carrollwood y Bush Garden, Tampa).
+5. **SPEC-5 (Oportunidades de Reinversión Exclusivas del Excel)**: Purga total de proyectos demo semilla (\`opp_green_tower\`, \`opp_costa_azul\`, \`opp_funza\`) y consumo exclusivo de la pestaña \`Oportunidades\` del Excel (\`MULBERRY\` a 16.0% ROI y \$24,500 ticket mínimo).
+6. **SPEC-6 (Clean Code Refactor & Ponytail Simplifications)**: Modularización pura de \`InvestmentRepository\` (\`parseRoiPercentage\`, \`parseMonetaryAmount\`, \`resolveItemGradient\`, \`calculatePortfolioMetrics\`), tipado estricto (\`RawClientInvestment\`, \`ClientMetadata\`, \`DbClientRow\`) sin \`any\`, y optimización de render en el cliente.
+
+## Issue
+- Issue link/id: [BBC-008](https://linear.app/brids/issue/BBC-008)
+
+## RFC
+- RFC link/path: [knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md](knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 229 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Consultas parametrizadas (\$1), cero riesgo de SQL Injection, credenciales y secretos aislados en el servidor.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Flujo de ingesta, repositorio y Dashboard).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosablockdev
+- Manual test evidence:
+  - Verificación visual en \`http://localhost:3001/dashboard\` confirmando el portafolio real (\$60,000 USD, 2 proyectos) y la tarjeta de reinversión exclusiva de MULBERRY.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde (229 / 229 tests unitarios, 53 / 53 tests de harness).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/fixes/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-7" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request introduce el subagente especializado **AI Architect (\`ai-architect\`)** y el **AI-Augmented Ingestion Pipeline & Schema Alignment Workflow (\`ai-cycle.md\`)** para gobernar los flujos de ingesta de datos externos, alineación semántica y contratos de datos en el monorepo.
