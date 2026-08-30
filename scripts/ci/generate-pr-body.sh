@@ -30,6 +30,8 @@ if [[ "${ISSUE_ID}" == "BBC-008" || "${ISSUE_ID}" == "BBC-8" ]]; then
 ## Summary
 Este Pull Request resuelve y consolida seis problemas técnicos críticos y mejoras en el monorepo de BRIDS (\`BBC-008\`):
 
+- Feature-Flag Strategy: Desacoplamiento modular en 6 SPECs atómicos con fallback resiliente a base de datos.
+
 1. **SPEC-1 (Login Fallback & DB Connection)**: Corrección de fallbacks de autenticación en WorkOS y resolución de variables de conexión PostgreSQL en Neon.
 2. **SPEC-2 (Eliminación de @solana/wallet-adapter)**: Purgadas todas las dependencias y referencias legacy a \`@solana/wallet-adapter\`, migrando a arquitectura desacoplada.
 3. **SPEC-3 (Migración de middleware.ts a proxy.ts)**: Conforme a Next.js 16 Edge Proxy standards.
