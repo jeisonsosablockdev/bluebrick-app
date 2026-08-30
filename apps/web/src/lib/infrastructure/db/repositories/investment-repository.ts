@@ -42,52 +42,74 @@ export class InvestmentRepository {
         const clientRows = clientRes.rows || [];
 
         if (clientRows.length > 0) {
-          const items: PortfolioItem[] = clientRows.map((c, idx) => {
-            const meta = (typeof c.metadata === "object" && c.metadata !== null) ? c.metadata : {};
-            const projectName = String(meta.project || c.name || "Inversión Inmobiliaria");
-            const rawCity = String(meta.city || "TAMPA");
+          const client = clientRows[0];
+          const meta = (typeof client.metadata === "object" && client.metadata !== null) ? client.metadata : {};
+          const rawInvestments = Array.isArray(meta.allInvestments) && meta.allInvestments.length > 0
+            ? meta.allInvestments
+            : clientRows.map((r) => ({
+                id_inversion: r.tax_id,
+                nombre_proyecto: (r.metadata as any)?.project || r.name,
+                ciudad: (r.metadata as any)?.city || "TAMPA",
+                monto_invertido: r.contract_amount,
+                roi_pct: (r.metadata as any)?.roi,
+                estado: r.status,
+              }));
+
+          const gradients = [
+            "linear-gradient(135deg,#2F8F6B 0%,#173F30 100%)",
+            "linear-gradient(135deg,#C41230 0%,#4A0F1A 100%)",
+            "linear-gradient(135deg,#57B98C 0%,#0A1220 100%)",
+            "linear-gradient(135deg,#E8495F 0%,#3B1018 100%)",
+          ];
+
+          const items: PortfolioItem[] = rawInvestments.map((inv: any, idx: number) => {
+            const projectName = String(inv.nombre_proyecto || inv.project || client.name || "Inversión Inmobiliaria");
+            const rawCity = String(inv.ciudad || inv.city || "TAMPA");
             const city = rawCity.toUpperCase() === "TAMPA" ? "TAMPA" : rawCity;
 
-            // Cleanly parse ROI whether formatted as "15.0%", 15, or "15"
+            // Cleanly parse ROI whether decimal 0.16, percent "16.0%", or number 16
             let parsedRoi = 15.0;
-            if (meta.roi !== undefined && meta.roi !== null) {
-              const rawRoiStr = String(meta.roi).replace("%", "").trim();
-              const numRoi = parseFloat(rawRoiStr);
-              if (!Number.isNaN(numRoi)) {
-                parsedRoi = numRoi;
+            const rawRoi = inv.roi_pct ?? inv.roi;
+            if (rawRoi !== undefined && rawRoi !== null) {
+              if (typeof rawRoi === "number") {
+                parsedRoi = rawRoi <= 1 && rawRoi > 0 ? Number((rawRoi * 100).toFixed(1)) : rawRoi;
+              } else {
+                const rawRoiStr = String(rawRoi).replace("%", "").trim();
+                const numRoi = parseFloat(rawRoiStr);
+                if (!Number.isNaN(numRoi)) {
+                  parsedRoi = numRoi <= 1 && numRoi > 0 ? Number((numRoi * 100).toFixed(1)) : numRoi;
+                }
               }
             }
 
             // Cleanly parse invested amount
             let parsedAmount = 0;
-            if (c.contract_amount !== undefined && c.contract_amount !== null) {
-              const numAmt = parseFloat(String(c.contract_amount).replace(/[$,]/g, ""));
+            const rawAmt = inv.monto_invertido ?? client.contract_amount;
+            if (rawAmt !== undefined && rawAmt !== null) {
+              const numAmt = parseFloat(String(rawAmt).replace(/[$,]/g, ""));
               if (!Number.isNaN(numAmt)) {
                 parsedAmount = numAmt;
               }
             }
 
-            // Assign standard aesthetic gradients for portfolio cards
-            const gradients = [
-              "linear-gradient(135deg,#2F8F6B 0%,#173F30 100%)",
-              "linear-gradient(135deg,#C41230 0%,#4A0F1A 100%)",
-              "linear-gradient(135deg,#57B98C 0%,#0A1220 100%)",
-              "linear-gradient(135deg,#E8495F 0%,#3B1018 100%)",
-            ];
-            const gradient = gradients[idx % gradients.length];
+            const invState = String(inv.estado || client.status || "Activa").toLowerCase();
+            const status = invState.includes("conclu") ? "concluida" : "activa";
+            const timing = inv.fecha_timing
+              ? new Date(inv.fecha_timing).toLocaleDateString("es-ES", { month: "long", year: "numeric" })
+              : "Noviembre 2026";
 
             return {
-              id: c.id,
-              propertyId: c.tax_id || `prop_${c.id.slice(0, 8)}`,
+              id: `${client.id}_${inv.id_inversion || idx}`,
+              propertyId: inv.id_inversion || client.tax_id || `prop_${idx}`,
               propertyName: projectName,
               city,
               propertyType: "Residencial",
               investedAmount: parsedAmount,
               roi: parsedRoi,
-              status: c.status === "ACTIVE" ? "activa" : "concluida",
-              timing: "Noviembre 2026",
+              status,
+              timing,
               monthsLeft: 4,
-              gradient,
+              gradient: gradients[idx % gradients.length],
             };
           });
 
