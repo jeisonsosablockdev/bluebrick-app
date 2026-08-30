@@ -18,6 +18,7 @@ export const en: Dictionary = {
     learnMore: "Learn more",
     language: "Language",
     selectLanguage: "Select language",
+    logout: "Sign out",
   },
   nav: {
     dashboard: "Dashboard",
@@ -40,8 +41,15 @@ export const en: Dictionary = {
     tierLabel: "Private Investor",
     activeProjectsCount: "{count} Active Projects",
     enterDashboardButton: "Enter Dashboard",
-    googleLoginButton: "Sign in with Google",
+    emailLoginButton: "Sign in with Email",
     disclaimerNote: "* BlueBrick Investment Platform · Instant demo or federated access.",
+  },
+  logoutModal: {
+    title: "Sign out?",
+    description: "Are you sure you want to sign out of your account? You will need to re-enter your credentials to access your portfolio.",
+    dontAskAgain: "Don't ask again",
+    confirmButton: "Sign out",
+    cancelButton: "Cancel",
   },
   dashboard: {
     totalInvested: "Total Invested Capital",

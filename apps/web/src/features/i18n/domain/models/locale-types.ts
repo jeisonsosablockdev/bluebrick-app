@@ -77,6 +77,7 @@ export interface Dictionary {
     learnMore: string;
     language: string;
     selectLanguage: string;
+    logout: string;
   };
   nav: {
     dashboard: string;
@@ -98,8 +99,15 @@ export interface Dictionary {
     tierLabel: string;
     activeProjectsCount: string;
     enterDashboardButton: string;
-    googleLoginButton: string;
+    emailLoginButton: string;
     disclaimerNote: string;
+  };
+  logoutModal: {
+    title: string;
+    description: string;
+    dontAskAgain: string;
+    confirmButton: string;
+    cancelButton: string;
   };
   dashboard: {
     totalInvested: string;

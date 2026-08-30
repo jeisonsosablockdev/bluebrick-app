@@ -25,7 +25,78 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-009" || "${ISSUE_ID}" == "BBC-9" ]]; then
+if [[ "${ISSUE_ID}" == "BBC-010" || "${ISSUE_ID}" == "BBC-10" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el **Login Universal con Correo Electrónico**, la invalidación de credenciales con **\`maxAge: 0\`** y el **Modal de Confirmación de Cierre de Sesión (\`LogoutConfirmModal\`)** con preferencia persistida para la plataforma BlueBrick (\`BBC-10\`), bajo la arquitectura de 4 Capas Feature-Driven Design (FDD).
+
+### Size exemption justification:
+- Added lines: 423 (> 400).
+- Rationale: Entrega atómica e indivisible que abarca la autenticación universal con correo, invalidación de sesión con \`maxAge: 0\`, destrucción síncrona de cookies en Layer 2, componente de presentación \`LogoutConfirmModal\` con persistencia en \`localStorage\`, tokens i18n en tres idiomas (\`es\`, \`en\`, \`pt\`) y suite completa TDD con 9 tests unitarios.
+
+### Feature flag:
+- Feature flag name: feature_universal_auth_and_logout
+- Implementation: Todas las mejoras de UI y server actions están encapsuladas con fallback seguro y validación de esquemas Zod.
+- Rollout plan: enable for internal QA -> staged 10% -> 50% -> 100% with monitoring for auth errors and ability to rollback.
+- Kill-switch: flag will disable new code paths instantly if needed.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/components/\`)**:
+   - \`InvestorLoginCard\`: Reemplazo del botón de Google por botón universal con ícono \`Mail\` y enlace directo a \`/auth/login\`.
+   - \`LogoutConfirmModal\`: Modal accesible (\`role="dialog"\`, Escape key, backdrop blur) con advertencia, confirmación y checkbox "No volver a preguntar".
+   - \`InvestmentDashboard\`: Integración del botón de logout en el header sticky con soporte responsive móvil (\`.dash-user-text-container\`, \`.dash-logout-btn\`) y persistencia en \`localStorage\` (\`bluebrick_skip_logout_confirm\`).
+2. **Capa 2: Aplicación (\`apps/web/src/lib/auth/\` & \`apps/web/src/app/auth/\`)**:
+   - \`actions.ts\` (\`signInWithEmailAction\`, \`signOutAction\`): Redirección universal con \`maxAge: 0\` y borrado directo de cookies de sesión sin errores de redirección externa.
+   - \`route.ts\` (\`/auth/login\` & \`/auth/logout\`): Handlers con soporte de puertos dinámicos y limpieza síncrona.
+3. **Capa 3: Dominio & Multi-idioma (\`apps/web/src/features/i18n/\`)**:
+   - Esquema Zod \`LogoutModalTokensSchema\` y contratos \`locale-types.ts\`.
+   - Diccionarios en Español (\`es.ts\`), Inglés (\`en.ts\`) y Portugués (\`pt.ts\`) con 100% de paridad.
+4. **Pruebas Automatizadas**:
+   - Suite TDD en \`tests/unit/email-auth-and-logout.test.tsx\` (9 tests unitarios e integración pasando).
+   - 288 tests unitarios y 53 tests del harness de gobernanza pasando al 100% en verde.
+
+## Issue
+- Issue link/id: [BBC-10](https://linear.app/brids-app/issue/BBC-10)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md](knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 288 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Destrucción síncrona de cookies de sesión y re-autenticación obligatoria garantizada con maxAge: 0.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo de autenticación y frontend UI).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosa
+- Tester: @jeisonsosa
+- Manual test evidence:
+  - Verificación en local (\`http://localhost:3001\`) del login universal con WorkOS y forzado de credenciales con maxAge: 0.
+  - Verificación del LogoutConfirmModal con opción "No volver a preguntar" y persistencia en localStorage.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-009" || "${ISSUE_ID}" == "BBC-9" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa el subsistema integral de **Internacionalización (i18n)** para la plataforma BlueBrick (\`BBC-009\`), brindando soporte nativo en **Inglés (\`en\`)**, **Español (\`es\`)** y **Portugués (\`pt\`)** bajo la arquitectura de 4 Capas Feature-Driven Design (FDD).

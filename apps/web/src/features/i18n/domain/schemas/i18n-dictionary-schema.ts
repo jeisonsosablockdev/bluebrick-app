@@ -21,6 +21,7 @@ export const CommonTokensSchema = z.object({
   learnMore: z.string().min(1),
   language: z.string().min(1),
   selectLanguage: z.string().min(1),
+  logout: z.string().min(1),
 });
 
 /**
@@ -54,7 +55,7 @@ export const LoginCardTokensSchema = z.object({
   tierLabel: z.string().min(1),
   activeProjectsCount: z.string().min(1),
   enterDashboardButton: z.string().min(1),
-  googleLoginButton: z.string().min(1),
+  emailLoginButton: z.string().min(1),
   disclaimerNote: z.string().min(1),
 });
 
@@ -113,6 +114,17 @@ export const WalletTokensSchema = z.object({
 });
 
 /**
+ * Logout Modal tokens schema.
+ */
+export const LogoutModalTokensSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  dontAskAgain: z.string().min(1),
+  confirmButton: z.string().min(1),
+  cancelButton: z.string().min(1),
+});
+
+/**
  * Complete Dictionary Schema enforcing all required token namespaces.
  */
 export const DictionarySchema = z.object({
@@ -120,6 +132,7 @@ export const DictionarySchema = z.object({
   nav: NavTokensSchema,
   landing: LandingTokensSchema,
   loginCard: LoginCardTokensSchema,
+  logoutModal: LogoutModalTokensSchema,
   dashboard: DashboardTokensSchema,
   wallet: WalletTokensSchema,
 });

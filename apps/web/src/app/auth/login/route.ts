@@ -16,13 +16,14 @@ export async function GET(request: NextRequest): Promise<void> {
   let authorizationUrl: string | null = null;
 
   try {
-    // Step 2: Request PKCE sign-in URL with explicit redirect URI matching the active port
+    // Step 2: Request PKCE sign-in URL with explicit redirect URI and maxAge: 0 to force fresh authentication
     authorizationUrl = await getSignInUrl({
       redirectUri,
-    } as Parameters<typeof getSignInUrl>[0]);
+      maxAge: 0,
+    });
   } catch (error) {
     try {
-      authorizationUrl = await getSignInUrl();
+      authorizationUrl = await getSignInUrl({ maxAge: 0 });
     } catch (fallbackErr) {
       console.error("WorkOS getSignInUrl error:", error, fallbackErr);
       redirect("/dashboard");

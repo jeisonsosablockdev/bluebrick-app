@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T00:07:35.222Z",
+  "generatedAt": "2026-08-30T02:53:59.865Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -144,6 +144,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-009-internationalization-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-009-internationalization",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",
