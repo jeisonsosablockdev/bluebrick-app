@@ -15,9 +15,107 @@ export class InvestmentRepository {
 
   /**
    * Retrieves full aggregated portfolio summary for an investor.
+   * Prioritizes resolving the investor's active record from the `clients` table (ingested from Excel) by email.
+   * Falls back to `user_investments` (demo portfolio) if email is omitted or not found in `clients`.
+   *
+   * @param userEmailOrId - User email (primary lookup) or userId.
+   * @param fallbackUserId - Optional fallback userId for user_investments table.
+   * @returns {Promise<PortfolioSummary>} Aggregated portfolio summary and items.
    */
-  async getPortfolioSummary(userId: string): Promise<PortfolioSummary> {
-    // Step 1: Join user_investments with properties
+  async getPortfolioSummary(
+    userEmailOrId?: string | null,
+    fallbackUserId?: string | null
+  ): Promise<PortfolioSummary> {
+    const isEmail = typeof userEmailOrId === "string" && userEmailOrId.includes("@");
+    const sanitizedEmail = isEmail ? userEmailOrId.trim().toLowerCase() : null;
+
+    // Step 1: Primary lookup — Search in `clients` table by sanitized email
+    if (sanitizedEmail) {
+      const clientQuery = `
+        SELECT id, name, tax_id, email, phone, contract_amount, status, metadata, created_at
+        FROM clients
+        WHERE LOWER(TRIM(email)) = $1 AND status = 'ACTIVE'
+        ORDER BY created_at DESC;
+      `;
+      try {
+        const clientRes = await this.db.query(clientQuery, [sanitizedEmail]);
+        const clientRows = clientRes.rows || [];
+
+        if (clientRows.length > 0) {
+          const items: PortfolioItem[] = clientRows.map((c, idx) => {
+            const meta = (typeof c.metadata === "object" && c.metadata !== null) ? c.metadata : {};
+            const projectName = String(meta.project || c.name || "Inversión Inmobiliaria");
+            const rawCity = String(meta.city || "TAMPA");
+            const city = rawCity.toUpperCase() === "TAMPA" ? "TAMPA" : rawCity;
+
+            // Cleanly parse ROI whether formatted as "15.0%", 15, or "15"
+            let parsedRoi = 15.0;
+            if (meta.roi !== undefined && meta.roi !== null) {
+              const rawRoiStr = String(meta.roi).replace("%", "").trim();
+              const numRoi = parseFloat(rawRoiStr);
+              if (!Number.isNaN(numRoi)) {
+                parsedRoi = numRoi;
+              }
+            }
+
+            // Cleanly parse invested amount
+            let parsedAmount = 0;
+            if (c.contract_amount !== undefined && c.contract_amount !== null) {
+              const numAmt = parseFloat(String(c.contract_amount).replace(/[$,]/g, ""));
+              if (!Number.isNaN(numAmt)) {
+                parsedAmount = numAmt;
+              }
+            }
+
+            // Assign standard aesthetic gradients for portfolio cards
+            const gradients = [
+              "linear-gradient(135deg,#2F8F6B 0%,#173F30 100%)",
+              "linear-gradient(135deg,#C41230 0%,#4A0F1A 100%)",
+              "linear-gradient(135deg,#57B98C 0%,#0A1220 100%)",
+              "linear-gradient(135deg,#E8495F 0%,#3B1018 100%)",
+            ];
+            const gradient = gradients[idx % gradients.length];
+
+            return {
+              id: c.id,
+              propertyId: c.tax_id || `prop_${c.id.slice(0, 8)}`,
+              propertyName: projectName,
+              city,
+              propertyType: "Residencial",
+              investedAmount: parsedAmount,
+              roi: parsedRoi,
+              status: c.status === "ACTIVE" ? "activa" : "concluida",
+              timing: "Noviembre 2026",
+              monthsLeft: 4,
+              gradient,
+            };
+          });
+
+          const totalInvested = items.reduce((sum, item) => sum + item.investedAmount, 0);
+          const activeCount = items.filter((item) => item.status === "activa").length;
+          const concludedCount = items.filter((item) => item.status === "concluida").length;
+          const weightedRoi =
+            totalInvested > 0
+              ? items.reduce((sum, item) => sum + (item.investedAmount * item.roi), 0) / totalInvested
+              : 0;
+
+          return {
+            userId: sanitizedEmail,
+            totalInvested,
+            weightedRoi: Number(weightedRoi.toFixed(1)),
+            activeCount,
+            concludedCount,
+            items,
+          };
+        }
+      } catch (err) {
+        // Invariant: Log client query issue and gracefully proceed to fallback
+        console.warn("Could not query clients table, proceeding to fallback.", err);
+      }
+    }
+
+    // Step 2: Fallback lookup — Query user_investments JOIN properties for userId or default seed
+    const effectiveUserId = fallbackUserId || (!isEmail && userEmailOrId ? userEmailOrId : null) || "user_sofia_martinez";
     const query = `
       SELECT
         ui.id AS investment_id,
@@ -37,10 +135,10 @@ export class InvestmentRepository {
       ORDER BY ui.invested_amount DESC;
     `;
 
-    const res = await this.db.query(query, [userId]);
+    const res = await this.db.query(query, [effectiveUserId]);
     const rows = res.rows || [];
 
-    // Step 2: Map database items
+    // Step 3: Map fallback database items
     const items: PortfolioItem[] = rows.map((r) => ({
       id: r.investment_id,
       propertyId: r.property_id,
@@ -55,19 +153,18 @@ export class InvestmentRepository {
       gradient: r.gradient,
     }));
 
-    // Step 3: Compute aggregate portfolio metrics
+    // Step 4: Compute fallback aggregate portfolio metrics
     const totalInvested = items.reduce((sum, item) => sum + item.investedAmount, 0);
     const activeCount = items.filter((item) => item.status === "activa").length;
     const concludedCount = items.filter((item) => item.status === "concluida").length;
 
-    // Step 4: Calculate capital-weighted ROI
     const weightedRoi =
       totalInvested > 0
         ? items.reduce((sum, item) => sum + (item.investedAmount * item.roi), 0) / totalInvested
         : 0;
 
     return {
-      userId,
+      userId: effectiveUserId,
       totalInvested,
       weightedRoi,
       activeCount,

@@ -3,29 +3,6 @@
 High-performance Next.js 16 and Solana monorepo starter with 4-Layer Functional Architecture, Autonomous Agent Governance Harness, and Solana Devnet integration.
 
 <!-- DOCS-AUTO:START -->
-## Documentation Snapshot (Auto-generated)
-
-Updated: 2026-08-29 20:33:32 UTC
-
-| Document | Scope | Last Updated | Last Commit |
-| --- | --- | --- | --- |
-| [`ai-augmented-ingestion-pipeline.md`](./knowledge/architecture/ai-augmented-ingestion-pipeline.md) | general | not set | 2026-08-25 45aea084 |
-| [`architecture-overview.md`](./knowledge/architecture/architecture-overview.md) | general | not set | 2026-08-23 a69db56b |
-| [`auth-flow.md`](./knowledge/architecture/auth-flow.md) | frontend/auth | not set | 2026-08-23 a69db56b |
-| [`authority-model.md`](./knowledge/architecture/authority-model.md) | blockchain | not set | 2026-08-23 a69db56b |
-| [`devnet-proof.md`](./knowledge/architecture/devnet-proof.md) | blockchain | not set | 2026-08-23 a69db56b |
-| [`index.md`](./knowledge/architecture/index.md) | general | not set | 2026-08-23 a69db56b |
-| [`nft-spec.md`](./knowledge/architecture/nft-spec.md) | nft | not set | 2026-08-23 a69db56b |
-| [`session-model.md`](./knowledge/architecture/session-model.md) | frontend/auth | not set | 2026-08-23 a69db56b |
-| [`solana-stack.md`](./knowledge/architecture/solana-stack.md) | general | not set | 2026-08-23 a69db56b |
-| [`state-machine.md`](./knowledge/architecture/state-machine.md) | blockchain | not set | 2026-08-23 a69db56b |
-| [`threat-model.md`](./knowledge/architecture/threat-model.md) | blockchain | not set | 2026-08-23 a69db56b |
-| [`toolchain-policy.md`](./knowledge/architecture/toolchain-policy.md) | general | not set | 2026-08-23 a69db56b |
-
-### Required Docs by Change Type
-- Blockchain (/programs): `knowledge/architecture/architecture-overview.md`, `knowledge/architecture/authority-model.md`, `knowledge/architecture/state-machine.md`, `knowledge/architecture/threat-model.md`, `knowledge/architecture/devnet-proof.md`
-- Frontend/Auth (/app): `knowledge/architecture/auth-flow.md`, `knowledge/architecture/session-model.md`
-- NFT features: `knowledge/architecture/nft-spec.md`
 <!-- DOCS-AUTO:END -->
 
 ## Operational Architecture

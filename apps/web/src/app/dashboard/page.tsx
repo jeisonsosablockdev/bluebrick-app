@@ -149,8 +149,8 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       investor = dbUser;
     }
 
-    // Step 3: Query live portfolio metrics from Neon PostgreSQL
-    const summary = await investmentRepo.getPortfolioSummary(investor.id);
+    // Step 3: Query live portfolio metrics from Neon PostgreSQL (prioritizing clients table by email)
+    const summary = await investmentRepo.getPortfolioSummary(investor.email, investor.id);
     if (summary && summary.items.length > 0) {
       properties = summary.items;
       totalInvested = summary.totalInvested;
