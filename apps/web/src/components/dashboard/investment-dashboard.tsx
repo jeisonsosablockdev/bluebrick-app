@@ -41,8 +41,6 @@ import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
 const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#1A523D"];
-const FONT_LINK =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap";
 
 export interface InvestmentDashboardProps {
   initialData: DashboardViewModel;
@@ -89,17 +87,6 @@ function PropertyIcon({
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
   // Step 1: Access localized translation strings and formatters
   const { t, formatCurrency } = useI18n();
-
-  // Step 2: Inject Google Fonts dynamically on mount
-  useEffect(() => {
-    if (typeof document !== "undefined" && !document.getElementById("dash-fonts")) {
-      const link = document.createElement("link");
-      link.id = "dash-fonts";
-      link.rel = "stylesheet";
-      link.href = FONT_LINK;
-      document.head.appendChild(link);
-    }
-  }, []);
 
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);

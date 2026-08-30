@@ -4,11 +4,36 @@
  * Configures base SEO metadata, Schema.org JSON-LD, HTML shell, and global context providers.
  */
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import { Providers } from "./providers";
 import { StructuredData } from "@/components/seo/structured-data";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+export const viewport: Viewport = {
+  themeColor: "#0A1220",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bluebrick-app.vercel.app"),
@@ -24,11 +49,17 @@ export const metadata: Metadata = {
     "retornos mensuales",
     "propiedades comerciales",
     "proptech colombia",
+    "tokenización inmobiliaria",
     "bluebrick",
   ],
   authors: [{ name: "BlueBrick Global" }],
   creator: "BlueBrick Dev Team",
   publisher: "BlueBrick Platform",
+  icons: {
+    icon: [{ url: "/icon", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "/",
   },
@@ -65,13 +96,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Step 1: Wrap app contents in HTML shell with StructuredData, AuthKitProvider and global UI providers
+  // Step 1: Wrap app contents in HTML shell with font variables, StructuredData, AuthKitProvider and global UI providers
   return (
-    <html lang="es" className="dark">
+    <html
+      lang="es"
+      className={`dark ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
         <StructuredData />
       </head>
-      <body className="bg-neutral-950 text-neutral-100 antialiased selection:bg-[#C41230] selection:text-[#EDF1F5]">
+      <body className="bg-neutral-950 text-neutral-100 antialiased selection:bg-[#C41230] selection:text-[#EDF1F5] font-sans">
         <AuthKitProvider>
           <Providers>{children}</Providers>
         </AuthKitProvider>
