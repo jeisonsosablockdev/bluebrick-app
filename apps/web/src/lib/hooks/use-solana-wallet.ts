@@ -1,14 +1,10 @@
 /**
  * @file apps/web/src/lib/hooks/use-solana-wallet.ts
  * @description Layer 2: Application / Consumption - Custom hook for Solana wallet state.
- * Wraps @solana/wallet-adapter-react to provide structured wallet properties.
+ * Exposes decoupled wallet state contract for UI presentation.
  */
 
 "use client";
-
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useMemo } from "react";
-import { formatAddress } from "../utils";
 
 /**
  * Normalized wallet state contract for UI presentation.
@@ -22,7 +18,7 @@ export interface UseSolanaWalletResult {
   publicKeyBase58: string | null;
   /** Formatted/truncated public key string for UI display (e.g. "7xKX...gAsU") */
   formattedAddress: string;
-  /** Name of the currently selected wallet adapter (e.g. "Phantom") */
+  /** Name of the currently selected wallet adapter */
   walletName: string | null;
   /** Disconnects the active wallet */
   disconnect: () => Promise<void>;
@@ -34,25 +30,13 @@ export interface UseSolanaWalletResult {
  * @returns {UseSolanaWalletResult} Formatted wallet state and control methods.
  */
 export function useSolanaWallet(): UseSolanaWalletResult {
-  // Step 1: Consume native wallet adapter context
-  const { connected, connecting, publicKey, wallet, disconnect } = useWallet();
-
-  // Step 2: Compute string representation of public key
-  const publicKeyBase58 = useMemo(() => {
-    return publicKey ? publicKey.toBase58() : null;
-  }, [publicKey]);
-
-  // Step 3: Compute truncated address for UI presentation
-  const formattedAddress = useMemo(() => {
-    return formatAddress(publicKeyBase58, 4);
-  }, [publicKeyBase58]);
-
+  // Step 1: Return clean disconnected state with zero external wallet adapter dependencies
   return {
-    connected,
-    connecting,
-    publicKeyBase58,
-    formattedAddress,
-    walletName: wallet?.adapter.name ?? null,
-    disconnect,
+    connected: false,
+    connecting: false,
+    publicKeyBase58: null,
+    formattedAddress: "",
+    walletName: null,
+    disconnect: async () => {},
   };
 }

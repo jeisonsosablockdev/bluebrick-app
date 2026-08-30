@@ -1,9 +1,12 @@
 /**
  * @file apps/web/src/components/dashboard/status-badge.tsx
- * @description Layer 1: Presentation - StatusBadge component matching design tokens.
+ * @description Layer 1: Presentation - Localized StatusBadge component matching design tokens.
  */
 
+"use client";
+
 import React from "react";
+import { useI18n } from "@/features/i18n";
 
 export interface StatusBadgeProps {
   status: "activa" | "concluida" | string;
@@ -11,10 +14,14 @@ export interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, compact = false }: StatusBadgeProps): React.JSX.Element {
-  // Step 1: Resolve active or concluded status state
-  const active = status === "activa";
+  // Step 1: Access localized strings
+  const { t } = useI18n();
 
-  // Step 2: Render stylized pill badge with pulsing color indicator
+  // Step 2: Resolve active or concluded status state
+  const active = status === "activa";
+  const label = active ? t("dashboard.status.active") : t("dashboard.status.concluded");
+
+  // Step 3: Render stylized pill badge with pulsing color indicator
   return (
     <span
       style={{
@@ -32,7 +39,7 @@ export function StatusBadge({ status, compact = false }: StatusBadgeProps): Reac
       }}
     >
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: active ? "#57B98C" : "#E8495F" }} />
-      {active ? "Activa" : "Concluida"}
+      {label}
     </span>
   );
 }

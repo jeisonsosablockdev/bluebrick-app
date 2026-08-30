@@ -1,18 +1,21 @@
 /**
  * @file apps/web/src/components/wallet/wallet-connect-button.tsx
  * @description Layer 1: Presentation - Solana Wallet Connection Trigger.
- * Connects to wallet modal and renders connected address status.
+ * Renders wallet connection state using decoupled contracts.
  */
 
 "use client";
 
 import React from "react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useSolanaWallet } from "@/lib/hooks/use-solana-wallet";
 import { Button } from "../ui/button";
 
+/**
+ * Renders the Solana wallet connection trigger or active connected status pill.
+ *
+ * @returns {React.JSX.Element} The rendered wallet button or connected address display.
+ */
 export function WalletConnectButton() {
-  const { visible, setVisible } = useWalletModal();
   const { connected, connecting, formattedAddress, disconnect } = useSolanaWallet();
 
   // Step 1: If connected, render address pill with disconnect action
@@ -29,15 +32,14 @@ export function WalletConnectButton() {
     );
   }
 
-  // Step 2: Otherwise, render connect wallet trigger
+  // Step 2: Otherwise, render disabled wallet button
   return (
     <Button
-      variant="primary"
+      variant="outline"
       size="md"
-      disabled={connecting}
-      onClick={() => setVisible(!visible)}
+      disabled={connecting || true}
     >
-      {connecting ? "Connecting..." : "Connect Wallet"}
+      {connecting ? "Connecting..." : "Wallet Deshabilitado"}
     </Button>
   );
 }

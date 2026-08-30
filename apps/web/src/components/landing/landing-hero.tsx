@@ -1,18 +1,24 @@
 /**
  * @file apps/web/src/components/landing/landing-hero.tsx
- * @description Layer 1: Presentation - Landing Page Hero Header Component.
- * Features luxury dark branding, value proposition badge, and headline typography.
+ * @description Layer 1: Presentation - Landing Page Hero Header Component with Multi-Language Localization.
+ * Features luxury dark branding, value proposition badge, and dynamic i18n headline typography.
  */
+
+"use client";
 
 import React from "react";
 import { BlueBrickMark } from "@/components/dashboard/blue-brick-mark";
 import { Sparkles, ShieldCheck } from "lucide-react";
+import { useI18n } from "@/features/i18n";
 
 /**
  * LandingHero presents the BlueBrick investor portal headline and luxury theme tokens.
  */
 export function LandingHero(): React.JSX.Element {
-  // Step 1: Render top brand header with logo emblem
+  // Step 1: Access localized translation strings
+  const { t } = useI18n();
+
+  // Step 2: Render top brand header with logo emblem and translated copy
   return (
     <header style={{ display: "flex", width: "100%", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       {/* Brand Emblem & Logo */}
@@ -27,7 +33,7 @@ export function LandingHero(): React.JSX.Element {
             color: "#EDF1F5",
           }}
         >
-          BLUE BRICK
+          {t("common.brandName")}
         </span>
       </div>
 
@@ -48,7 +54,7 @@ export function LandingHero(): React.JSX.Element {
         }}
       >
         <Sparkles size={14} />
-        Plataforma Privada de Inversión Inmobiliaria Fraccionada
+        {t("landing.badge")}
       </div>
 
       {/* Primary Headline */}
@@ -63,7 +69,7 @@ export function LandingHero(): React.JSX.Element {
           margin: "20px 0 0 0",
         }}
       >
-        Invierte en activos inmobiliarios premium con retornos transparentes
+        {t("landing.headline")}
       </h1>
 
       {/* Subtitle description */}
@@ -77,14 +83,13 @@ export function LandingHero(): React.JSX.Element {
           margin: "14px 0 0 0",
         }}
       >
-        Accede a tu portafolio institucional, monitorea distribuciones mensuales,
-        consulta el rendimiento ponderado y reinvierte capital en oportunidades exclusivas.
+        {t("landing.subtitle")}
       </p>
 
       {/* Security indicator */}
       <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#7C8A9C" }}>
         <ShieldCheck size={14} color="#57B98C" />
-        <span>Gobernanza institucional · Seguridad WorkOS AuthKit & Neon Cloud</span>
+        <span>{t("landing.securityBadge")}</span>
       </div>
     </header>
   );

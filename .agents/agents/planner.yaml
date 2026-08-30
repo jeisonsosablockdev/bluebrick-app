@@ -22,6 +22,8 @@ reads:
   - ".agents/graph.json"
   - "package.json"
 delegates_to:
+  - architect
+  - ai-architect
   - solana
   - frontend
   - nft

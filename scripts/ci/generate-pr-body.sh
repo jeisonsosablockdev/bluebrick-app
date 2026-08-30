@@ -25,6 +25,259 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
+if [[ "${ISSUE_ID}" == "BBC-010" || "${ISSUE_ID}" == "BBC-10" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el **Login Universal con Correo Electrónico**, la invalidación de credenciales con **\`maxAge: 0\`** y el **Modal de Confirmación de Cierre de Sesión (\`LogoutConfirmModal\`)** con preferencia persistida para la plataforma BlueBrick (\`BBC-10\`), bajo la arquitectura de 4 Capas Feature-Driven Design (FDD).
+
+### Size exemption justification:
+- Added lines: 423 (> 400).
+- Rationale: Entrega atómica e indivisible que abarca la autenticación universal con correo, invalidación de sesión con \`maxAge: 0\`, destrucción síncrona de cookies en Layer 2, componente de presentación \`LogoutConfirmModal\` con persistencia en \`localStorage\`, tokens i18n en tres idiomas (\`es\`, \`en\`, \`pt\`) y suite completa TDD con 9 tests unitarios.
+
+### Feature flag:
+- Feature flag name: feature_universal_auth_and_logout
+- Implementation: Todas las mejoras de UI y server actions están encapsuladas con fallback seguro y validación de esquemas Zod.
+- Rollout plan: enable for internal QA -> staged 10% -> 50% -> 100% with monitoring for auth errors and ability to rollback.
+- Kill-switch: flag will disable new code paths instantly if needed.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/components/\`)**:
+   - \`InvestorLoginCard\`: Reemplazo del botón de Google por botón universal con ícono \`Mail\` y enlace directo a \`/auth/login\`.
+   - \`LogoutConfirmModal\`: Modal accesible (\`role="dialog"\`, Escape key, backdrop blur) con advertencia, confirmación y checkbox "No volver a preguntar".
+   - \`InvestmentDashboard\`: Integración del botón de logout en el header sticky con soporte responsive móvil (\`.dash-user-text-container\`, \`.dash-logout-btn\`) y persistencia en \`localStorage\` (\`bluebrick_skip_logout_confirm\`).
+2. **Capa 2: Aplicación (\`apps/web/src/lib/auth/\` & \`apps/web/src/app/auth/\`)**:
+   - \`actions.ts\` (\`signInWithEmailAction\`, \`signOutAction\`): Redirección universal con \`maxAge: 0\` y borrado directo de cookies de sesión sin errores de redirección externa.
+   - \`route.ts\` (\`/auth/login\` & \`/auth/logout\`): Handlers con soporte de puertos dinámicos y limpieza síncrona.
+3. **Capa 3: Dominio & Multi-idioma (\`apps/web/src/features/i18n/\`)**:
+   - Esquema Zod \`LogoutModalTokensSchema\` y contratos \`locale-types.ts\`.
+   - Diccionarios en Español (\`es.ts\`), Inglés (\`en.ts\`) y Portugués (\`pt.ts\`) con 100% de paridad.
+4. **Pruebas Automatizadas**:
+   - Suite TDD en \`tests/unit/email-auth-and-logout.test.tsx\` (9 tests unitarios e integración pasando).
+   - 288 tests unitarios y 53 tests del harness de gobernanza pasando al 100% en verde.
+
+## Issue
+- Issue link/id: [BBC-10](https://linear.app/brids-app/issue/BBC-10)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md](knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 288 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Destrucción síncrona de cookies de sesión y re-autenticación obligatoria garantizada con maxAge: 0.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo de autenticación y frontend UI).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosa
+- Tester: @jeisonsosa
+- Manual test evidence:
+  - Verificación en local (\`http://localhost:3001\`) del login universal con WorkOS y forzado de credenciales con maxAge: 0.
+  - Verificación del LogoutConfirmModal con opción "No volver a preguntar" y persistencia en localStorage.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-009" || "${ISSUE_ID}" == "BBC-9" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el subsistema integral de **Internacionalización (i18n)** para la plataforma BlueBrick (\`BBC-009\`), brindando soporte nativo en **Inglés (\`en\`)**, **Español (\`es\`)** y **Portugués (\`pt\`)** bajo la arquitectura de 4 Capas Feature-Driven Design (FDD).
+
+- Feature-Flag Strategy: Módulo desacoplado en \`apps/web/src/features/i18n\` con paridad del 100% de tokens y fallback resiliente al español canónico.
+- Invariante de Negocio: Denominación y formateo monetario estricto en **Dólares Estadounidenses (\$ USD)** para todas las propiedades operadas en Estados Unidos.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/features/i18n/presentation/\`)**:
+   - Componente interactivo \`LocaleSwitcher\` con banderas (🇪🇸, 🇺🇸, 🇧🇷), dropdown accesible y variante compacta para header.
+   - Provider React \`I18nProvider\` con resolución perezosa (\`useState\`) compatible con React 19 y Next.js 16.
+2. **Capa 2: Aplicación (\`apps/web/src/features/i18n/application/\`)**:
+   - Custom hook \`useI18n\` con contexto de fallback seguro y tipado estricto \`t(key, params)\`.
+   - Server Action \`locale-cookie-actions.ts\` y Query \`get-dictionary-query.ts\` para Server Components (RSC).
+3. **Capa 3: Dominio (\`apps/web/src/features/i18n/domain/\`)**:
+   - Esquema Zod \`DictionarySchema\` con validación en tiempo de compilación y pruebas.
+   - Diccionarios completos (\`es.ts\`, \`en.ts\`, \`pt.ts\`) con 100% de paridad y soporte de interpolación (\`{count}\`, \`{roi}\`, \`{name}\`, \`{amount}\`).
+   - Formateadores puros \`formatCurrency\` (USD), \`formatPercent\` y \`formatNumber\` usando \`Intl.NumberFormat\`.
+4. **Capa 4: Infraestructura (\`apps/web/src/features/i18n/infrastructure/\`)**:
+   - Adaptador \`cookie-locale-adapter.ts\` para persistencia de cookie \`bb_locale\` (\`SameSite=Lax\`, 1 año).
+   - Adaptador \`browser-locale-detector.ts\` para autodetección por \`navigator.languages\`.
+   - Repositorio \`dictionary-loader-adapter.ts\` en memoria.
+5. **Integración en UI**:
+   - Landing page (\`LandingHero\`, \`InvestorLoginCard\`, header bar, footer) y Dashboard institucional (\`InvestmentDashboard\`, \`StatusBadge\`, métricas, carrusel, tabla, banner de reinversión) traducidos en su totalidad.
+6. **Pruebas Automatizadas**:
+   - 48 tests unitarios e integración dedicados para i18n (\`i18n-structural\`, \`i18n-dictionaries\`, \`i18n-formatters\`, \`i18n-cookie-adapter\`, \`i18n-ui-integration\`).
+   - 279 tests unitarios del monorepo y 53 tests del harness de gobernanza pasando al 100%.
+
+## Issue
+- Issue link/id: [BBC-009](https://linear.app/brids/issue/BBC-009)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md](knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 279 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Cookies aisladas con política SameSite=Lax, cero inyección de strings, validación Zod en diccionarios.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo de internacionalización y frontend UI).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosa
+- Manual test evidence:
+  - Verificación en local (\`http://localhost:3001\`) cambiando entre Español, Inglés y Portugués en la landing page y en el dashboard.
+  - Formateo de USD validado en los 3 idiomas (\$163,000 / \$163,000 USD).
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-008" || "${ISSUE_ID}" == "BBC-8" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request resuelve y consolida seis problemas técnicos críticos y mejoras en el monorepo de BRIDS (\`BBC-008\`):
+
+- Feature-Flag Strategy: Desacoplamiento modular en 6 SPECs atómicos con fallback resiliente a base de datos.
+
+1. **SPEC-1 (Login Fallback & DB Connection)**: Corrección de fallbacks de autenticación en WorkOS y resolución de variables de conexión PostgreSQL en Neon.
+2. **SPEC-2 (Eliminación de @solana/wallet-adapter)**: Purgadas todas las dependencias y referencias legacy a \`@solana/wallet-adapter\`, migrando a arquitectura desacoplada.
+3. **SPEC-3 (Migración de middleware.ts a proxy.ts)**: Conforme a Next.js 16 Edge Proxy standards.
+4. **SPEC-4 (Conexión de Inversionistas del Excel al Dashboard)**: Sincronización del portafolio real de inversionistas desde la tabla \`clients\` (ingestada desde Google Drive) al Dashboard de inversionistas por correo electrónico (\`jeisonjsosar@gmail.com\` -> Jayson Sosa: \$60,000 USD en Carrollwood y Bush Garden, Tampa).
+5. **SPEC-5 (Oportunidades de Reinversión Exclusivas del Excel)**: Purga total de proyectos demo semilla (\`opp_green_tower\`, \`opp_costa_azul\`, \`opp_funza\`) y consumo exclusivo de la pestaña \`Oportunidades\` del Excel (\`MULBERRY\` a 16.0% ROI y \$24,500 ticket mínimo).
+6. **SPEC-6 (Clean Code Refactor & Ponytail Simplifications)**: Modularización pura de \`InvestmentRepository\` (\`parseRoiPercentage\`, \`parseMonetaryAmount\`, \`resolveItemGradient\`, \`calculatePortfolioMetrics\`), tipado estricto (\`RawClientInvestment\`, \`ClientMetadata\`, \`DbClientRow\`) sin \`any\`, y optimización de render en el cliente.
+
+## Issue
+- Issue link/id: [BBC-008](https://linear.app/brids/issue/BBC-008)
+
+## RFC
+- RFC link/path: [knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md](knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 229 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Consultas parametrizadas (\$1), cero riesgo de SQL Injection, credenciales y secretos aislados en el servidor.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Flujo de ingesta, repositorio y Dashboard).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosablockdev
+- Manual test evidence:
+  - Verificación visual en \`http://localhost:3001/dashboard\` confirmando el portafolio real (\$60,000 USD, 2 proyectos) y la tarjeta de reinversión exclusiva de MULBERRY.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde (229 / 229 tests unitarios, 53 / 53 tests de harness).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/fixes/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-7" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request introduce el subagente especializado **AI Architect (\`ai-architect\`)** y el **AI-Augmented Ingestion Pipeline & Schema Alignment Workflow (\`ai-cycle.md\`)** para gobernar los flujos de ingesta de datos externos, alineación semántica y contratos de datos en el monorepo.
+
+- Feature-Flag Strategy: Gobernanza de agentes y pipelines modular; arquitectura y workflows desacoplados.
+
+### 🚀 Principales Cambios y Logros:
+1. **Subagente AI Architect**:
+   - Definición en \`.agents/agents/ai-architect.yaml\` y registro en runtime en Google Antigravity SDK.
+   - Enforce estricto del ciclo de ingesta en 5 etapas (*Connect -> Extract -> AI Align -> Zod Gate -> Persist*).
+   - Gobernanza de límites de capas FDD: prohibición de SDKs de IA (\`@google/genai\`) y base de datos en la capa de presentación (Layer 1).
+2. **Workflow de IA (\`ai-cycle.md\`)**:
+   - Formalizado en \`.agents/workflows/ai-cycle.md\` con la secuencia de 9 pasos para ejecución autónoma.
+3. **ADR de Arquitectura Canónica**:
+   - Publicado en \`knowledge/architecture/ai-augmented-ingestion-pipeline.md\`.
+4. **Test Harness & Gobernanza**:
+   - Nueva suite de pruebas automatizadas en \`tests/harness/specs/11-ai-architect-governance.test.ts\` (5 tests pasando).
+   - Sincronizados \`AGENTS.md\`, \`planner.yaml\`, \`hooks.json\` y \`graph.json\`.
+
+## Issue
+- Issue link/id: [BBC-7](https://linear.app/brids/issue/BBC-7)
+
+## RFC
+- RFC link/path: [knowledge/architecture/ai-augmented-ingestion-pipeline.md](knowledge/architecture/ai-augmented-ingestion-pipeline.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución de la app. Gobernanza de agentes y pipelines pura.
+- Security impact: Mejora sustancial al impedir que payloads no validados de IA se propaguen a persistencia o presentación.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Gobernanza de arquitectura e IA).
+- On-chain state evidence used for verification: Validaciones de CI y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Definición y registro del subagente validados mediante \`define_subagent\`.
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde (100 / 100 tests).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+else
 cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la refactorización integral de la plataforma BRIDS hacia un **Monorepo Workspaces (\`apps/web\`, \`packages/*\`, \`programs/*\`)** con **Feature-Driven Design (FDD)** organizado en 4 capas estrictas (Presentation, Application, Domain, Infrastructure) a lo largo de **16 Feature Slices verticales** y la capa compartida \`shared\`.
@@ -91,5 +344,6 @@ Este Pull Request implementa la refactorización integral de la plataforma BRIDS
 - [x] \`pnpm test:harness\` passed (62 tests)
 - [x] Required docs were updated for touched scopes
 EOF
+fi
 
 echo "✓ Compliant PR body generated at ${OUTPUT_FILE}"

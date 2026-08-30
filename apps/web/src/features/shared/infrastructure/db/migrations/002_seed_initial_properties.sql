@@ -98,38 +98,6 @@ VALUES
   ('inv_sofia_005', 'user_sofia_martinez', 'prop_apartaestudios_laureles', 15000.00)
 ON CONFLICT (id) DO NOTHING;
 
--- Step 4: Insert Featured Reinvestment Opportunities
-INSERT INTO reinvestment_opportunities (id, title, city, projected_roi, min_investment, days_left, gradient)
-VALUES
-  (
-    'opp_green_tower',
-    'Green Tower',
-    'Medellín',
-    16.00,
-    8000.00,
-    3,
-    'linear-gradient(135deg,#2F8F6B 0%,#111B2E 100%)'
-  ),
-  (
-    'opp_costa_azul',
-    'Complejo Costa Azul',
-    'Cartagena',
-    19.00,
-    12000.00,
-    7,
-    'linear-gradient(135deg,#C41230 0%,#111B2E 100%)'
-  ),
-  (
-    'opp_funza',
-    'Parque Logístico Funza',
-    'Funza',
-    13.00,
-    6500.00,
-    12,
-    'linear-gradient(135deg,#57B98C 0%,#0D1526 100%)'
-  )
-ON CONFLICT (id) DO UPDATE SET
-  title = EXCLUDED.title,
-  projected_roi = EXCLUDED.projected_roi,
-  min_investment = EXCLUDED.min_investment,
-  days_left = EXCLUDED.days_left;
+-- Step 4: Reinvestment Opportunities are dynamically populated via Excel Ingestion (Oportunidades sheet)
+-- No static demo seeds allowed to ensure 100% fidelity with ingested operational sheets.
+

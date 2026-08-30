@@ -31,3 +31,4 @@ programs/**/target
 .tmp.driveupload
 **/.tmp.driveupload
 
+.env*

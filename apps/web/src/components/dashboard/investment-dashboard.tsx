@@ -24,15 +24,19 @@ import {
   Building2,
   Warehouse,
   LandPlot,
+  LogOut,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import { useCountUp } from "@/lib/hooks/use-count-up";
 import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
+import { signOutAction } from "@/lib/auth/actions";
 import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
+import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
+import { useI18n, LocaleSwitcher } from "@/features/i18n";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
@@ -83,7 +87,10 @@ function PropertyIcon({
 }
 
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
-  // Step 1: Inject Google Fonts dynamically on mount
+  // Step 1: Access localized translation strings and formatters
+  const { t, formatCurrency } = useI18n();
+
+  // Step 2: Inject Google Fonts dynamically on mount
   useEffect(() => {
     if (typeof document !== "undefined" && !document.getElementById("dash-fonts")) {
       const link = document.createElement("link");
@@ -96,38 +103,71 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
 
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.investor.avatarUrl);
 
   const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
 
-  // Step 2: Compute summary and projected earnings
-  const totalInvested = useMemo(() => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount, 0), [properties]);
-  const weightedRoi = useMemo(() => {
-    if (totalInvested === 0) return 0;
-    const sum = properties.reduce((s: number, p: PortfolioItem) => s + p.roi * p.investedAmount, 0);
-    return sum / totalInvested;
-  }, [properties, totalInvested]);
+  // Step 3: Handle logout initiation checking "Don't ask again" preference
+  const handleLogoutClick = async () => {
+    try {
+      const skipConfirm =
+        typeof window !== "undefined" &&
+        localStorage.getItem("bluebrick_skip_logout_confirm") === "true";
+      if (skipConfirm) {
+        setIsLoggingOut(true);
+        await signOutAction();
+        return;
+      }
+    } catch (e) {
+      console.warn("Could not read logout preference from localStorage", e);
+    }
+    setIsLogoutModalOpen(true);
+  };
+
+  // Step 4: Handle modal confirmation with optional preference persistence
+  const handleConfirmLogout = async (dontAskAgain: boolean) => {
+    try {
+      if (dontAskAgain && typeof window !== "undefined") {
+        localStorage.setItem("bluebrick_skip_logout_confirm", "true");
+      }
+    } catch (e) {
+      console.warn("Could not save logout preference to localStorage", e);
+    }
+    setIsLoggingOut(true);
+    await signOutAction();
+  };
+
+  // Step 3: Use pre-computed server metrics directly to eliminate client recalculation overhead
+  const totalInvested = initialData.totalInvested;
+  const weightedRoi = initialData.weightedRoi;
+  const activeCount = initialData.activeCount;
+  const concludedCount = initialData.concludedCount;
 
   const projectedEarnings = useMemo(
     () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
     [properties]
   );
 
-  const activeCount = properties.filter((p: PortfolioItem) => p.status === "activa").length;
-  const concludedCount = properties.filter((p: PortfolioItem) => p.status === "concluida").length;
-
-  // Step 3: Animated count-up hook values
+  // Step 4: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
   const animatedRoi = useCountUp(weightedRoi, { durationMs: 1400, decimals: 1 });
 
-  // Step 4: Calculate allocation pie data
+  // Step 5: Calculate allocation pie data
   const pieData = useMemo(() => {
     return properties.map((p: PortfolioItem) => ({
       name: p.propertyName,
       value: totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0,
     }));
   }, [properties, totalInvested]);
+
+  const memberSinceYear = useMemo(() => {
+    if (!initialData.investor.createdAt) return 2026;
+    const d = new Date(initialData.investor.createdAt);
+    return Number.isNaN(d.getFullYear()) ? 2026 : d.getFullYear();
+  }, [initialData.investor.createdAt]);
 
   function prevCard() {
     setCarouselIndex((i) => (i === 0 ? maxIndex : i - 1));
@@ -162,19 +202,36 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#EDF1F5",
             }}
           >
-            BLUE BRICK
+            {t("common.brandName")}
           </span>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ textAlign: "right" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Multi-language Locale Switcher */}
+          <LocaleSwitcher compact />
+
+          {/* User Profile Summary (Hidden on extra-small mobile to maintain clean single-row header) */}
+          <div className="dash-user-text-container">
             <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
               {initialData.investor.firstName} {initialData.investor.lastName}
             </div>
             <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-              {initialData.investor.tier} · desde 2021
+              {initialData.investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
             </div>
           </div>
+
+          {/* Explicit Session Logout Button */}
+          <button
+            type="button"
+            onClick={handleLogoutClick}
+            className="dash-logout-btn"
+            title={t("common.logout") || "Cerrar sesión"}
+            aria-label={t("common.logout") || "Cerrar sesión"}
+          >
+            <LogOut size={16} />
+          </button>
+
+          {/* Avatar Profile Trigger */}
           <button
             type="button"
             onClick={() => setIsAvatarModalOpen(true)}
@@ -194,7 +251,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               overflow: "hidden",
               flexShrink: 0,
             }}
-            title="Cambiar avatar"
+            title={t("dashboard.cards.changeAvatar")}
           >
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -236,7 +293,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   marginBottom: 6,
                 }}
               >
-                Patrimonio invertido total
+                {t("dashboard.totalInvested")}
               </div>
               <div
                 style={{
@@ -248,7 +305,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   wordBreak: "break-word",
                 }}
               >
-                {formatUsdCurrency(Math.round(animatedTotal))}
+                {formatCurrency(Math.round(animatedTotal))}
               </div>
               <div
                 style={{
@@ -262,17 +319,17 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 }}
               >
                 <TrendingUp size={16} />
-                ROI promedio ponderado: {animatedRoi.toFixed(1)}%
+                {t("dashboard.weightedRoi", { roi: animatedRoi.toFixed(1) })}
               </div>
             </div>
 
             <div className="dash-stat-chips-container">
-              <StatChip icon={Activity} label="Activas" value={activeCount} color="#57B98C" />
-              <StatChip icon={CheckCircle2} label="Concluidas" value={concludedCount} color="#E8495F" />
+              <StatChip icon={Activity} label={t("dashboard.activeProperties")} value={activeCount} color="#57B98C" />
+              <StatChip icon={CheckCircle2} label={t("dashboard.concludedProperties")} value={concludedCount} color="#E8495F" />
               <StatChip
                 icon={Wallet}
-                label="Ganancia proyectada"
-                value={formatUsdCurrency(Math.round(projectedEarnings))}
+                label={t("dashboard.projectedEarnings")}
+                value={formatCurrency(Math.round(projectedEarnings))}
                 color="#C41230"
                 wide
               />
@@ -299,7 +356,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 marginBottom: 16,
               }}
             >
-              Distribución del portafolio
+              {t("dashboard.portfolioDistribution")}
             </div>
             <div className="dash-distribution-body">
               <div style={{ width: "100%", maxWidth: 220, height: 180 }}>
@@ -325,7 +382,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                         fontSize: 12,
                         fontFamily: "Inter, sans-serif",
                       }}
-                      formatter={(v) => [`${v}%`, "Asignación"]}
+                      formatter={(v) => [`${v}%`, t("dashboard.allocation")]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -371,7 +428,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           <section style={{ marginTop: 40 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, margin: 0 }}>
-                Mis inversiones
+                {t("dashboard.myInvestments")}
               </h2>
               <span style={{ fontSize: 12, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
                 {carouselIndex + 1} / {properties.length}
@@ -428,10 +485,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   }}
                 >
                   <StatusBadge status={activeProperty.status} />
-                  <MetricRow label="Monto invertido" value={formatUsdCurrency(activeProperty.investedAmount)} />
-                  <MetricRow label="ROI estimado" value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
+                  <MetricRow label={t("dashboard.cards.investedAmount")} value={formatCurrency(activeProperty.investedAmount)} />
+                  <MetricRow label={t("dashboard.cards.estimatedRoi")} value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
                   <MetricRow
-                    label={activeProperty.status === "activa" ? "Fecha de retorno" : "Fecha de cierre"}
+                    label={activeProperty.status === "activa" ? t("dashboard.cards.returnDate") : t("dashboard.cards.closingDate")}
                     value={activeProperty.timing}
                     icon={Clock}
                   />
@@ -482,7 +539,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         {/* ---------- TABLE (RESPONSIVE HORIZONTAL SCROLL) ---------- */}
         <section style={{ marginTop: 44 }}>
           <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, marginBottom: 16 }}>
-            Detalle del portafolio
+            {t("dashboard.portfolioDetail")}
           </h2>
           <div className="dash-table-wrapper">
             <div className="dash-table-content">
@@ -498,11 +555,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   background: "rgba(237,241,245,0.03)",
                 }}
               >
-                <span>Proyecto</span>
-                <span>Invertido</span>
-                <span>ROI</span>
-                <span>Estado</span>
-                <span>Timing</span>
+                <span>{t("dashboard.tableColumns.project")}</span>
+                <span>{t("dashboard.tableColumns.invested")}</span>
+                <span>{t("dashboard.tableColumns.roi")}</span>
+                <span>{t("dashboard.tableColumns.status")}</span>
+                <span>{t("dashboard.tableColumns.timing")}</span>
               </div>
               {properties.map((p: PortfolioItem, idx: number) => {
                 return (
@@ -522,7 +579,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                       <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
                       {p.propertyName}
                     </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUsdCurrency(p.investedAmount)}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatCurrency(p.investedAmount)}</span>
                     <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
                     <span>
                       <StatusBadge status={p.status} compact />
@@ -569,7 +626,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 fontWeight: 600,
               }}
             >
-              Nuevas oportunidades para {initialData.investor.firstName}
+              {t("dashboard.reinvestment.badge", { name: initialData.investor.firstName })}
             </span>
           </div>
           <h2
@@ -582,11 +639,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#EDF1F5",
             }}
           >
-            Tu capital concluido ya está listo para trabajar de nuevo.
+            {t("dashboard.reinvestment.title")}
           </h2>
           <p style={{ color: "#7C8A9C", maxWidth: 520, fontSize: 13.5, marginBottom: 24, lineHeight: 1.5 }}>
-            Reinvierte las ganancias de tus proyectos concluidos en estas oportunidades seleccionadas por nuestro
-            equipo, con retornos estimados superiores al promedio de tu portafolio actual.
+            {t("dashboard.reinvestment.description")}
           </p>
 
           <div className="dash-opportunities-grid">
@@ -603,9 +659,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{o.title}</div>
                 <div style={{ fontSize: 12, color: "#7C8A9C", marginBottom: 12 }}>{o.city}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span style={{ color: "#57B98C", fontWeight: 700 }}>ROI est. {o.projectedRoi}%</span>
+                  <span style={{ color: "#57B98C", fontWeight: 700 }}>
+                    {t("dashboard.reinvestment.estimatedRoi", { roi: o.projectedRoi })}
+                  </span>
                   <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-                    desde {formatUsdCurrency(o.minInvestment)}
+                    {t("dashboard.reinvestment.minInvestmentFrom", { amount: formatCurrency(o.minInvestment) })}
                   </span>
                 </div>
               </div>
@@ -629,7 +687,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
             }}
           >
-            Reinvertir ahora
+            {t("dashboard.reinvestment.ctaButton")}
             <ArrowUpRight size={17} />
           </button>
         </section>
@@ -641,6 +699,14 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         onClose={() => setIsAvatarModalOpen(false)}
         userId={initialData.investor.id}
         onUploadSuccess={(newUrl) => setAvatarUrl(newUrl)}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+        isSubmitting={isLoggingOut}
       />
     </div>
   );
