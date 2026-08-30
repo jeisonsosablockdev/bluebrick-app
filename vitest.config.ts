@@ -16,9 +16,15 @@ export default defineConfig({
       "apps/web/src/**/*.test.tsx"
     ],
     setupFiles: ["tests/setup/vitest.setup.ts"],
+    testTimeout: 15000,
     coverage: {
       provider: "v8",
       reporter: ["text", "html"]
+    },
+    server: {
+      deps: {
+        inline: [/@workos-inc\/authkit-nextjs/]
+      }
     }
   },
   resolve: {
@@ -27,7 +33,8 @@ export default defineConfig({
       "@/scripts": path.resolve(currentDirPath, "scripts"),
       "@/tests": path.resolve(currentDirPath, "tests"),
       "@": path.resolve(currentDirPath, "apps/web/src"),
-      "server-only": path.resolve(currentDirPath, "tests/mocks/server-only.ts")
+      "server-only": path.resolve(currentDirPath, "tests/mocks/server-only.ts"),
+      "next/cache": path.resolve(currentDirPath, "node_modules/next/cache.js")
     }
   }
 });

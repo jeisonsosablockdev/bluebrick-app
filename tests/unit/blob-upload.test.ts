@@ -17,6 +17,7 @@ describe("SPEC-3: Vercel Blob Avatar Upload Pipeline (@spec BBC-6-SPEC-3)", () =
         pathname: "avatars/user_sofia_martinez-12345.png",
         contentType: "image/png",
       }),
+      del: vi.fn().mockResolvedValue(undefined),
     };
 
     const dummyBuffer = Buffer.from("fake-image-bytes");
@@ -48,6 +49,7 @@ describe("SPEC-3: Vercel Blob Avatar Upload Pipeline (@spec BBC-6-SPEC-3)", () =
     // Arrange
     const mockUploader: VercelBlobUploader = {
       put: vi.fn(),
+      del: vi.fn(),
     };
 
     const dummyFile = {

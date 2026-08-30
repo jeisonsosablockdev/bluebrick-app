@@ -3,7 +3,7 @@
  * @description Layer 4: Infrastructure - Vercel Blob client adapter.
  */
 
-import { put, type PutBlobResult } from "@vercel/blob";
+import { put, del, type PutBlobResult } from "@vercel/blob";
 
 export interface VercelBlobUploader {
   put(
@@ -11,6 +11,7 @@ export interface VercelBlobUploader {
     body: string | ArrayBuffer | Blob | Buffer,
     options?: { access: "public"; contentType?: string }
   ): Promise<PutBlobResult>;
+  del(urlOrUrls: string | string[]): Promise<void>;
 }
 
 export class VercelBlobClient implements VercelBlobUploader {
@@ -27,6 +28,14 @@ export class VercelBlobClient implements VercelBlobUploader {
       access: options?.access || "public",
       contentType: options?.contentType,
     });
+  }
+
+  /**
+   * Deletes one or multiple blobs from Vercel Blob storage.
+   */
+  async del(urlOrUrls: string | string[]): Promise<void> {
+    // Step 1: Delegate directly to official @vercel/blob del function
+    await del(urlOrUrls);
   }
 }
 

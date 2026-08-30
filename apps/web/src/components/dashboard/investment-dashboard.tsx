@@ -698,6 +698,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
         userId={initialData.investor.id}
+        currentAvatarUrl={avatarUrl}
         onUploadSuccess={(newUrl) => setAvatarUrl(newUrl)}
       />
 

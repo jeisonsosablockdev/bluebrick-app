@@ -92,4 +92,36 @@ export class UserRepository {
       updatedAt: new Date(row.updated_at),
     };
   }
+
+  /**
+   * Updates avatar URL for an existing user record.
+   */
+  async updateAvatarUrl(userId: string, avatarUrl: string | null): Promise<DbUser | null> {
+    // Step 1: Execute parameterized update query
+    const query = `
+      UPDATE users
+      SET avatar_url = $2, updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, email, first_name, last_name, avatar_url, tier, created_at, updated_at;
+    `;
+
+    const res = await this.db.query(query, [userId, avatarUrl]);
+
+    // Step 2: Return null if no matching user record was found
+    if (!res.rows || res.rows.length === 0) {
+      return null;
+    }
+
+    const row = res.rows[0];
+    return {
+      id: row.id,
+      email: row.email,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      avatarUrl: row.avatar_url,
+      tier: row.tier,
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : undefined,
+    };
+  }
 }
