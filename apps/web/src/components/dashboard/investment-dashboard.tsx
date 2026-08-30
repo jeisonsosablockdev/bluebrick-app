@@ -101,21 +101,16 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
   const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
 
-  // Step 2: Compute summary and projected earnings
-  const totalInvested = useMemo(() => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount, 0), [properties]);
-  const weightedRoi = useMemo(() => {
-    if (totalInvested === 0) return 0;
-    const sum = properties.reduce((s: number, p: PortfolioItem) => s + p.roi * p.investedAmount, 0);
-    return sum / totalInvested;
-  }, [properties, totalInvested]);
+  // Step 2: Use pre-computed server metrics directly to eliminate client recalculation overhead
+  const totalInvested = initialData.totalInvested;
+  const weightedRoi = initialData.weightedRoi;
+  const activeCount = initialData.activeCount;
+  const concludedCount = initialData.concludedCount;
 
   const projectedEarnings = useMemo(
     () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
     [properties]
   );
-
-  const activeCount = properties.filter((p: PortfolioItem) => p.status === "activa").length;
-  const concludedCount = properties.filter((p: PortfolioItem) => p.status === "concluida").length;
 
   // Step 3: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });

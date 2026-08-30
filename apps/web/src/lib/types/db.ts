@@ -69,3 +69,47 @@ export interface PortfolioSummary {
   concludedCount: number;
   items: PortfolioItem[];
 }
+
+/**
+ * Raw investment item structure parsed from Excel ingestion metadata or multi-investment payload.
+ */
+export interface RawClientInvestment {
+  id_inversion?: string;
+  nombre_proyecto?: string;
+  project?: string;
+  ciudad?: string;
+  city?: string;
+  monto_invertido?: string | number;
+  roi_pct?: string | number;
+  roi?: string | number;
+  estado?: string;
+  fecha_timing?: string;
+}
+
+/**
+ * Metadata stored in clients.metadata JSONB field from Excel ingestion.
+ */
+export interface ClientMetadata {
+  project?: string;
+  city?: string;
+  roi?: string | number;
+  investorId?: string;
+  allInvestments?: RawClientInvestment[];
+  [key: string]: unknown;
+}
+
+/**
+ * Database client record mapped from `clients` table.
+ */
+export interface DbClientRow {
+  id: string;
+  name: string;
+  tax_id: string;
+  email: string;
+  phone?: string | null;
+  contract_amount: string | number;
+  status: string;
+  metadata?: ClientMetadata | null;
+  created_at?: string | Date;
+}
+

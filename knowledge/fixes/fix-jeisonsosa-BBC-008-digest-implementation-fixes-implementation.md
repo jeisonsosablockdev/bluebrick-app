@@ -23,12 +23,13 @@
 - **SPEC-3**: Migrate `middleware.ts` to `proxy.ts` conforming to Next.js 16 conventions (Rama: `SPEC/jeisonsosa-BBC-008-s03-migrate-middleware-to-proxy`)
 - **SPEC-4**: Connect Ingested Excel Clients to Dashboard Portfolio Resolution (Rama: `SPEC/jeisonsosa-BBC-008-s04-connect-clients-ingestion-to-dashboard`)
 - **SPEC-5**: Connect Ingested Reinvestment Opportunities Exclusively from Excel `Oportunidades` Sheet (Rama: `SPEC/jeisonsosa-BBC-008-s05-reinvestment-opportunities-excel-source`)
+- **SPEC-6**: Clean Code Refactor Audit & Modular Repository Transformation (Rama: `SPEC/jeisonsosa-BBC-008-s06-clean-code-refactor-audit`)
 
 ## 4. TDD (Test-Driven Development) Strategy
-### Unit/Integration Tests (Fase RED)
-- **Test File Path**: `tests/unit/reinvestment-opportunities-resolution.test.ts`
+### Unit/Integration Tests (Fase RED & Refactor)
+- **Test File Path**: `tests/unit/investment-repository-refactor.test.ts`
 - **Command**: `pnpm test`
-- **Assertion Goals**: Verify `InvestmentRepository.getReinvestmentOpportunities` returns exclusively opportunities active from the Excel ingestion (e.g. `MULBERRY` at 16.0% ROI with $24,500 ticket mínimo), with zero lingering demo seed records. Handle empty or multiple opportunities cleanly.
+- **Assertion Goals**: Verify helper transformers (`parseRoiPercentage`, `parseMonetaryAmount`, `mapClientToPortfolioItems`, `resolveItemGradient`), zero `any` usage, and complete regression immunity across all 218 existing tests.
 
 ## 5. Local Definition of Done (DoD)
 - [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.
