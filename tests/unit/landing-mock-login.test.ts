@@ -47,7 +47,7 @@ describe("SPEC-1: Landing Page & Mock Login Entrypoint (@spec BBC-6-SPEC-1)", ()
 
       // Assert
       expect(screen.getByText(/Sofía Martínez/i)).toBeInTheDocument();
-      expect(screen.getByText(/Inversionista Privada/i)).toBeInTheDocument();
+      expect(screen.getByText(/Inversionista Privado/i)).toBeInTheDocument();
       expect(screen.getByText("SM")).toBeInTheDocument();
 
       // Assert: One-click entry button targeting /dashboard

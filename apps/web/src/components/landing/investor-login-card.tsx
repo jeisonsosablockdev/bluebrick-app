@@ -49,7 +49,7 @@ function GoogleIcon() {
  */
 export function InvestorLoginCard({
   investorName = "Sofía Martínez",
-  tier = "Inversionista Privada",
+  tier = "Inversionista Privado",
   initials = "SM",
 }: InvestorLoginCardProps): React.JSX.Element {
   // Step 1: Render stylized login card container matching luxury dark theme tokens

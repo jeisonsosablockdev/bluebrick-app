@@ -77,7 +77,7 @@ export class UserRepository {
       input.firstName,
       input.lastName,
       input.avatarUrl || null,
-      input.tier || "Inversionista Privada",
+      input.tier || "Inversionista Privado",
     ]);
 
     const row = res.rows[0];

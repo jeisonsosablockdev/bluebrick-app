@@ -23,7 +23,7 @@ const DEFAULT_INVESTOR: DbUser = {
   firstName: "Sofía",
   lastName: "Martínez",
   avatarUrl: null,
-  tier: "Inversionista Privada",
+  tier: "Inversionista Privado",
   createdAt: new Date("2021-01-01"),
 };
 
@@ -95,86 +95,50 @@ const FALLBACK_PROPERTIES: PortfolioItem[] = [
   },
 ];
 
-const FALLBACK_OPPORTUNITIES: DbReinvestmentOpportunity[] = [
-  {
-    id: "o1",
-    title: "Green Tower",
-    city: "Medellín",
-    projectedRoi: 16.0,
-    minInvestment: 8000,
-    daysLeft: 3,
-    gradient: "linear-gradient(135deg,#2F8F6B 0%,#111B2E 100%)",
-  },
-  {
-    id: "o2",
-    title: "Complejo Costa Azul",
-    city: "Cartagena",
-    projectedRoi: 19.0,
-    minInvestment: 12000,
-    daysLeft: 7,
-    gradient: "linear-gradient(135deg,#C41230 0%,#111B2E 100%)",
-  },
-  {
-    id: "o3",
-    title: "Parque Logístico Funza",
-    city: "Funza",
-    projectedRoi: 13.0,
-    minInvestment: 6500,
-    daysLeft: 12,
-    gradient: "linear-gradient(135deg,#57B98C 0%,#0D1526 100%)",
-  },
-];
-
 export default async function DashboardPage(): Promise<React.JSX.Element> {
   // Step 1: Initialize database repositories
   const investmentRepo = new InvestmentRepository();
   const userRepo = new UserRepository();
 
-  let investor = DEFAULT_INVESTOR;
-  let properties = FALLBACK_PROPERTIES;
-  let opportunities = FALLBACK_OPPORTUNITIES;
-  let totalInvested = 163000;
-  let weightedRoi = 13.7;
-  let activeCount = 4;
-  let concludedCount = 1;
+  let investor: DbUser = DEFAULT_INVESTOR;
+  let summary = {
+    userId: DEFAULT_INVESTOR.id,
+    totalInvested: 163000,
+    weightedRoi: 13.7,
+    activeCount: 4,
+    concludedCount: 1,
+    items: FALLBACK_PROPERTIES,
+  };
+  let opportunities: DbReinvestmentOpportunity[] = [];
 
   try {
-    // Step 2: Query user profile from Neon PostgreSQL
-    const dbUser = await userRepo.findById("user_sofia_martinez");
-    if (dbUser) {
-      investor = dbUser;
+    const { getAuthenticatedInvestor } = await import("@/lib/auth/workos-session");
+    investor = await getAuthenticatedInvestor(userRepo);
+
+    // Step 2: Query live portfolio metrics from Neon PostgreSQL (prioritizing clients table by email)
+    const dbSummary = await investmentRepo.getPortfolioSummary(investor.email, investor.id);
+    if (dbSummary && dbSummary.items.length > 0) {
+      summary = dbSummary;
     }
 
-    // Step 3: Query live portfolio metrics from Neon PostgreSQL
-    const summary = await investmentRepo.getPortfolioSummary("user_sofia_martinez");
-    if (summary && summary.items.length > 0) {
-      properties = summary.items;
-      totalInvested = summary.totalInvested;
-      weightedRoi = summary.weightedRoi;
-      activeCount = summary.activeCount;
-      concludedCount = summary.concludedCount;
-    }
-
-    // Step 4: Query reinvestment opportunities from Neon PostgreSQL
-    const dbOpportunities = await investmentRepo.getReinvestmentOpportunities();
-    if (dbOpportunities && dbOpportunities.length > 0) {
-      opportunities = dbOpportunities;
-    }
+    // Step 3: Query active reinvestment opportunities exclusively from Neon PostgreSQL (ingested from Excel)
+    opportunities = await investmentRepo.getReinvestmentOpportunities();
   } catch (error) {
-    // Invariant: If database connection is not provisioned locally, smoothly fall back to seed fixtures
-    console.warn("Neon PostgreSQL offline or unreachable, using seeded initial portfolio fixtures.", error);
+    // Invariant: If database connection is offline, smoothly fall back to default seed state
+    console.warn("Neon PostgreSQL offline or unreachable, using fallback portfolio fixtures.", error);
   }
 
-  // Step 5: Construct unified DashboardViewModel
+  // Step 4: Construct unified DashboardViewModel
   const dashboardData: DashboardViewModel = {
     investor,
-    totalInvested,
-    weightedRoi,
-    activeCount,
-    concludedCount,
-    properties,
+    totalInvested: summary.totalInvested,
+    weightedRoi: summary.weightedRoi,
+    activeCount: summary.activeCount,
+    concludedCount: summary.concludedCount,
+    properties: summary.items,
     reinvestmentOpportunities: opportunities,
   };
 
   return <InvestmentDashboard initialData={dashboardData} />;
 }
+
