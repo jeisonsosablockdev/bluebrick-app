@@ -24,10 +24,12 @@ import {
   Building2,
   Warehouse,
   LandPlot,
+  LogOut,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import { useCountUp } from "@/lib/hooks/use-count-up";
 import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
+import { signOutAction } from "@/lib/auth/actions";
 import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
@@ -171,11 +173,12 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           </span>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {/* Multi-language Locale Switcher */}
           <LocaleSwitcher compact />
 
-          <div style={{ textAlign: "right" }}>
+          {/* User Profile Summary (Hidden on extra-small mobile to maintain clean single-row header) */}
+          <div className="dash-user-text-container">
             <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
               {initialData.investor.firstName} {initialData.investor.lastName}
             </div>
@@ -183,6 +186,21 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               {initialData.investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
             </div>
           </div>
+
+          {/* Explicit Session Logout Button */}
+          <button
+            type="button"
+            onClick={async () => {
+              await signOutAction();
+            }}
+            className="dash-logout-btn"
+            title={t("common.logout") || t("nav.logout") || "Cerrar sesión"}
+            aria-label={t("common.logout") || t("nav.logout") || "Cerrar sesión"}
+          >
+            <LogOut size={16} />
+          </button>
+
+          {/* Avatar Profile Trigger */}
           <button
             type="button"
             onClick={() => setIsAvatarModalOpen(true)}

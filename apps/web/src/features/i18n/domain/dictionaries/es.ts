@@ -18,6 +18,7 @@ export const es: Dictionary = {
     learnMore: "Conoce más",
     language: "Idioma",
     selectLanguage: "Seleccionar idioma",
+    logout: "Cerrar sesión",
   },
   nav: {
     dashboard: "Dashboard",
@@ -25,6 +26,7 @@ export const es: Dictionary = {
     portfolio: "Portafolio",
     governance: "Gobernanza",
     support: "Soporte",
+    logout: "Cerrar sesión",
   },
   landing: {
     badge: "Plataforma Privada de Inversión Inmobiliaria Fraccionada",
@@ -40,7 +42,7 @@ export const es: Dictionary = {
     tierLabel: "Inversionista Privado",
     activeProjectsCount: "{count} Proyectos Activos",
     enterDashboardButton: "Entrar al Dashboard",
-    googleLoginButton: "Iniciar sesión con Google",
+    emailLoginButton: "Continuar con Correo Electrónico",
     disclaimerNote: "* Plataforma de Inversiones BlueBrick · Acceso demo instantáneo o federado.",
   },
   dashboard: {
