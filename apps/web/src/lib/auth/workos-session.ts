@@ -14,7 +14,7 @@ const DEFAULT_DEMO_INVESTOR: DbUser = {
   firstName: "Sofía",
   lastName: "Martínez",
   avatarUrl: null,
-  tier: "Inversionista Privada",
+  tier: "Inversionista Privado",
   createdAt: new Date("2021-01-01"),
 };
 

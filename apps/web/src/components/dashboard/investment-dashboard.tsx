@@ -172,7 +172,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               {initialData.investor.firstName} {initialData.investor.lastName}
             </div>
             <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-              {initialData.investor.tier} · desde 2021
+              {initialData.investor.tier} · desde {new Date(initialData.investor.createdAt || Date.now()).getFullYear()}
             </div>
           </div>
           <button

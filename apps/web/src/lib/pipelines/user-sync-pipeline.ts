@@ -38,6 +38,6 @@ export async function syncWorkOsUserPipeline(
     firstName,
     lastName,
     avatarUrl,
-    tier: "Inversionista Privada",
+    tier: "Inversionista Privado",
   });
 }

@@ -30,7 +30,7 @@ describe("SPEC-2: Database Repositories Behavioral Suite (@spec BBC-6-SPEC-2)", 
         first_name: "Sofía",
         last_name: "Martínez",
         avatar_url: null,
-        tier: "Inversionista Privada",
+        tier: "Inversionista Privado",
         created_at: new Date("2021-01-01"),
       };
       mockQuery.mockResolvedValueOnce({ rows: [mockUserRow] });
@@ -42,7 +42,7 @@ describe("SPEC-2: Database Repositories Behavioral Suite (@spec BBC-6-SPEC-2)", 
       // Assert
       expect(user).not.toBeNull();
       expect(user?.firstName).toBe("Sofía");
-      expect(user?.tier).toBe("Inversionista Privada");
+      expect(user?.tier).toBe("Inversionista Privado");
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("SELECT"),
         ["user_sofia_martinez"]
