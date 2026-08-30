@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-009",
-  "branch": "feature/jeisonsosa-BBC-009-internationalization",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "task_id": "BBC-10",
+  "branch": "feature/jeisonsosa-BBC-10-email-auth-and-logout",
+  "current_phase": "PHASE_2_DOCS_FILLED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
     "PHASE_2_DOCS_FILLED": { "completed": true },
-    "PHASE_3_ARCHITECT_GATE1": { "completed": true },
-    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": true },
-    "PHASE_5_TESTS_RED": { "completed": true },
-    "PHASE_6_CODE_GREEN": { "completed": true },
-    "PHASE_7_VALIDATED": { "completed": true },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true }
+    "PHASE_3_ARCHITECT_GATE1": { "completed": false },
+    "PHASE_4_HUMAN_DESIGN_APPROVED": { "completed": false },
+    "PHASE_5_TESTS_RED": { "completed": false },
+    "PHASE_6_CODE_GREEN": { "completed": false },
+    "PHASE_7_VALIDATED": { "completed": false },
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
   }
 }
