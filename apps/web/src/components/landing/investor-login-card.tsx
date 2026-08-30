@@ -1,6 +1,6 @@
 /**
  * @file apps/web/src/components/landing/investor-login-card.tsx
- * @description Layer 1: Presentation - Investor Entrypoint Card with Mock Login Action & Google OAuth.
+ * @description Layer 1: Presentation - Investor Entrypoint Card with Multi-Language Localization & Google OAuth.
  * Presents investor profile summary with 1-click dashboard entry and optional Google login.
  */
 
@@ -9,6 +9,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, UserCheck, Lock } from "lucide-react";
+import { useI18n } from "@/features/i18n";
 
 export interface InvestorLoginCardProps {
   investorName?: string;
@@ -45,14 +46,19 @@ function GoogleIcon() {
 }
 
 /**
- * InvestorLoginCard displays the investor entry card with direct dashboard navigation.
+ * InvestorLoginCard displays the investor entry card with direct dashboard navigation and translated copy.
  */
 export function InvestorLoginCard({
   investorName = "Sofía Martínez",
-  tier = "Inversionista Privado",
+  tier,
   initials = "SM",
 }: InvestorLoginCardProps): React.JSX.Element {
-  // Step 1: Render stylized login card container matching luxury dark theme tokens
+  // Step 1: Access localized translation strings
+  const { t } = useI18n();
+
+  const displayTier = tier || t("loginCard.tierLabel");
+
+  // Step 2: Render stylized login card container matching luxury dark theme tokens
   return (
     <div
       style={{
@@ -65,7 +71,7 @@ export function InvestorLoginCard({
         boxShadow: "0 20px 40px rgba(0, 0, 0, 0.45)",
       }}
     >
-      {/* Step 2: Card Header & Demo Account Badge */}
+      {/* Step 3: Card Header & Demo Account Badge */}
       <div
         style={{
           display: "flex",
@@ -77,7 +83,7 @@ export function InvestorLoginCard({
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#7C8A9C" }}>
           <Lock size={14} color="#E8495F" />
-          Acceso de Inversionista
+          {t("loginCard.headerTitle")}
         </div>
         <span
           style={{
@@ -90,11 +96,11 @@ export function InvestorLoginCard({
             border: "1px solid rgba(87,185,140,0.3)",
           }}
         >
-          Demo Verificada
+          {t("loginCard.verifiedBadge")}
         </span>
       </div>
 
-      {/* Step 3: Investor Profile Summary */}
+      {/* Step 4: Investor Profile Summary */}
       <div
         style={{
           margin: "24px 0",
@@ -138,12 +144,12 @@ export function InvestorLoginCard({
               marginTop: 2,
             }}
           >
-            {tier} · 5 Proyectos Activos
+            {displayTier} · {t("loginCard.activeProjectsCount", { count: 5 })}
           </div>
         </div>
       </div>
 
-      {/* Step 4: Primary 1-Click Entry Button */}
+      {/* Step 5: Primary 1-Click Entry Button */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <Link
           href="/dashboard"
@@ -164,11 +170,11 @@ export function InvestorLoginCard({
             cursor: "pointer",
           }}
         >
-          <span>Entrar al Dashboard</span>
+          <span>{t("loginCard.enterDashboardButton")}</span>
           <ArrowRight size={16} />
         </Link>
 
-        {/* Step 5: Optional Google Sign-In Link */}
+        {/* Step 6: Optional Google Sign-In Link */}
         <a
           href="/auth/login"
           style={{
@@ -189,13 +195,13 @@ export function InvestorLoginCard({
           }}
         >
           <GoogleIcon />
-          <span>Iniciar sesión con Google</span>
+          <span>{t("loginCard.googleLoginButton")}</span>
         </a>
       </div>
 
-      {/* Step 6: Helper Note */}
+      {/* Step 7: Helper Note */}
       <p style={{ marginTop: 16, textAlign: "center", fontSize: 11, color: "#7C8A9C" }}>
-        * Plataforma de Inversiones BlueBrick · Acceso demo instantáneo o federado.
+        {t("loginCard.disclaimerNote")}
       </p>
     </div>
   );

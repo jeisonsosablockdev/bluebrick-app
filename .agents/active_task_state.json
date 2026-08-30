@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-008",
-  "branch": "SPEC/jeisonsosa-BBC-008-s06-clean-code-refactor-audit",
+  "task_id": "BBC-009",
+  "branch": "feature/jeisonsosa-BBC-009-internationalization",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

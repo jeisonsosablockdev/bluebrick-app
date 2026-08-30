@@ -33,6 +33,7 @@ import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
+import { useI18n, LocaleSwitcher } from "@/features/i18n";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
@@ -83,7 +84,10 @@ function PropertyIcon({
 }
 
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
-  // Step 1: Inject Google Fonts dynamically on mount
+  // Step 1: Access localized translation strings and formatters
+  const { t, formatCurrency } = useI18n();
+
+  // Step 2: Inject Google Fonts dynamically on mount
   useEffect(() => {
     if (typeof document !== "undefined" && !document.getElementById("dash-fonts")) {
       const link = document.createElement("link");
@@ -101,7 +105,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
   const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
 
-  // Step 2: Use pre-computed server metrics directly to eliminate client recalculation overhead
+  // Step 3: Use pre-computed server metrics directly to eliminate client recalculation overhead
   const totalInvested = initialData.totalInvested;
   const weightedRoi = initialData.weightedRoi;
   const activeCount = initialData.activeCount;
@@ -112,11 +116,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     [properties]
   );
 
-  // Step 3: Animated count-up hook values
+  // Step 4: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
   const animatedRoi = useCountUp(weightedRoi, { durationMs: 1400, decimals: 1 });
 
-  // Step 4: Calculate allocation pie data
+  // Step 5: Calculate allocation pie data
   const pieData = useMemo(() => {
     return properties.map((p: PortfolioItem) => ({
       name: p.propertyName,
@@ -163,17 +167,20 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#EDF1F5",
             }}
           >
-            BLUE BRICK
+            {t("common.brandName")}
           </span>
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Multi-language Locale Switcher */}
+          <LocaleSwitcher compact />
+
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
               {initialData.investor.firstName} {initialData.investor.lastName}
             </div>
             <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-              {initialData.investor.tier} · desde {memberSinceYear}
+              {initialData.investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
             </div>
           </div>
           <button
@@ -195,7 +202,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               overflow: "hidden",
               flexShrink: 0,
             }}
-            title="Cambiar avatar"
+            title={t("dashboard.cards.changeAvatar")}
           >
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -237,7 +244,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   marginBottom: 6,
                 }}
               >
-                Patrimonio invertido total
+                {t("dashboard.totalInvested")}
               </div>
               <div
                 style={{
@@ -249,7 +256,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   wordBreak: "break-word",
                 }}
               >
-                {formatUsdCurrency(Math.round(animatedTotal))}
+                {formatCurrency(Math.round(animatedTotal))}
               </div>
               <div
                 style={{
@@ -263,17 +270,17 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 }}
               >
                 <TrendingUp size={16} />
-                ROI promedio ponderado: {animatedRoi.toFixed(1)}%
+                {t("dashboard.weightedRoi", { roi: animatedRoi.toFixed(1) })}
               </div>
             </div>
 
             <div className="dash-stat-chips-container">
-              <StatChip icon={Activity} label="Activas" value={activeCount} color="#57B98C" />
-              <StatChip icon={CheckCircle2} label="Concluidas" value={concludedCount} color="#E8495F" />
+              <StatChip icon={Activity} label={t("dashboard.activeProperties")} value={activeCount} color="#57B98C" />
+              <StatChip icon={CheckCircle2} label={t("dashboard.concludedProperties")} value={concludedCount} color="#E8495F" />
               <StatChip
                 icon={Wallet}
-                label="Ganancia proyectada"
-                value={formatUsdCurrency(Math.round(projectedEarnings))}
+                label={t("dashboard.projectedEarnings")}
+                value={formatCurrency(Math.round(projectedEarnings))}
                 color="#C41230"
                 wide
               />
@@ -300,7 +307,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 marginBottom: 16,
               }}
             >
-              Distribución del portafolio
+              {t("dashboard.portfolioDistribution")}
             </div>
             <div className="dash-distribution-body">
               <div style={{ width: "100%", maxWidth: 220, height: 180 }}>
@@ -326,7 +333,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                         fontSize: 12,
                         fontFamily: "Inter, sans-serif",
                       }}
-                      formatter={(v) => [`${v}%`, "Asignación"]}
+                      formatter={(v) => [`${v}%`, t("dashboard.allocation")]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -372,7 +379,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           <section style={{ marginTop: 40 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, margin: 0 }}>
-                Mis inversiones
+                {t("dashboard.myInvestments")}
               </h2>
               <span style={{ fontSize: 12, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
                 {carouselIndex + 1} / {properties.length}
@@ -429,10 +436,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   }}
                 >
                   <StatusBadge status={activeProperty.status} />
-                  <MetricRow label="Monto invertido" value={formatUsdCurrency(activeProperty.investedAmount)} />
-                  <MetricRow label="ROI estimado" value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
+                  <MetricRow label={t("dashboard.cards.investedAmount")} value={formatCurrency(activeProperty.investedAmount)} />
+                  <MetricRow label={t("dashboard.cards.estimatedRoi")} value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
                   <MetricRow
-                    label={activeProperty.status === "activa" ? "Fecha de retorno" : "Fecha de cierre"}
+                    label={activeProperty.status === "activa" ? t("dashboard.cards.returnDate") : t("dashboard.cards.closingDate")}
                     value={activeProperty.timing}
                     icon={Clock}
                   />
@@ -483,7 +490,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         {/* ---------- TABLE (RESPONSIVE HORIZONTAL SCROLL) ---------- */}
         <section style={{ marginTop: 44 }}>
           <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 500, marginBottom: 16 }}>
-            Detalle del portafolio
+            {t("dashboard.portfolioDetail")}
           </h2>
           <div className="dash-table-wrapper">
             <div className="dash-table-content">
@@ -499,11 +506,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                   background: "rgba(237,241,245,0.03)",
                 }}
               >
-                <span>Proyecto</span>
-                <span>Invertido</span>
-                <span>ROI</span>
-                <span>Estado</span>
-                <span>Timing</span>
+                <span>{t("dashboard.tableColumns.project")}</span>
+                <span>{t("dashboard.tableColumns.invested")}</span>
+                <span>{t("dashboard.tableColumns.roi")}</span>
+                <span>{t("dashboard.tableColumns.status")}</span>
+                <span>{t("dashboard.tableColumns.timing")}</span>
               </div>
               {properties.map((p: PortfolioItem, idx: number) => {
                 return (
@@ -523,7 +530,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                       <PropertyIcon type={p.propertyType} name={p.propertyName} size={16} color="#7C8A9C" />
                       {p.propertyName}
                     </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatUsdCurrency(p.investedAmount)}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatCurrency(p.investedAmount)}</span>
                     <span style={{ color: "#57B98C", fontWeight: 600 }}>{p.roi.toFixed(1)}%</span>
                     <span>
                       <StatusBadge status={p.status} compact />
@@ -570,7 +577,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 fontWeight: 600,
               }}
             >
-              Nuevas oportunidades para {initialData.investor.firstName}
+              {t("dashboard.reinvestment.badge", { name: initialData.investor.firstName })}
             </span>
           </div>
           <h2
@@ -583,11 +590,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               color: "#EDF1F5",
             }}
           >
-            Tu capital concluido ya está listo para trabajar de nuevo.
+            {t("dashboard.reinvestment.title")}
           </h2>
           <p style={{ color: "#7C8A9C", maxWidth: 520, fontSize: 13.5, marginBottom: 24, lineHeight: 1.5 }}>
-            Reinvierte las ganancias de tus proyectos concluidos en estas oportunidades seleccionadas por nuestro
-            equipo, con retornos estimados superiores al promedio de tu portafolio actual.
+            {t("dashboard.reinvestment.description")}
           </p>
 
           <div className="dash-opportunities-grid">
@@ -604,9 +610,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{o.title}</div>
                 <div style={{ fontSize: 12, color: "#7C8A9C", marginBottom: 12 }}>{o.city}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span style={{ color: "#57B98C", fontWeight: 700 }}>ROI est. {o.projectedRoi}%</span>
+                  <span style={{ color: "#57B98C", fontWeight: 700 }}>
+                    {t("dashboard.reinvestment.estimatedRoi", { roi: o.projectedRoi })}
+                  </span>
                   <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-                    desde {formatUsdCurrency(o.minInvestment)}
+                    {t("dashboard.reinvestment.minInvestmentFrom", { amount: formatCurrency(o.minInvestment) })}
                   </span>
                 </div>
               </div>
@@ -630,7 +638,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
             }}
           >
-            Reinvertir ahora
+            {t("dashboard.reinvestment.ctaButton")}
             <ArrowUpRight size={17} />
           </button>
         </section>

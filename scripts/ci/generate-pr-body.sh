@@ -25,7 +25,76 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-008" || "${ISSUE_ID}" == "BBC-8" ]]; then
+if [[ "${ISSUE_ID}" == "BBC-009" || "${ISSUE_ID}" == "BBC-9" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el subsistema integral de **Internacionalización (i18n)** para la plataforma BlueBrick (\`BBC-009\`), brindando soporte nativo en **Inglés (\`en\`)**, **Español (\`es\`)** y **Portugués (\`pt\`)** bajo la arquitectura de 4 Capas Feature-Driven Design (FDD).
+
+- Feature-Flag Strategy: Módulo desacoplado en \`apps/web/src/features/i18n\` con paridad del 100% de tokens y fallback resiliente al español canónico.
+- Invariante de Negocio: Denominación y formateo monetario estricto en **Dólares Estadounidenses (\$ USD)** para todas las propiedades operadas en Estados Unidos.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/features/i18n/presentation/\`)**:
+   - Componente interactivo \`LocaleSwitcher\` con banderas (🇪🇸, 🇺🇸, 🇧🇷), dropdown accesible y variante compacta para header.
+   - Provider React \`I18nProvider\` con resolución perezosa (\`useState\`) compatible con React 19 y Next.js 16.
+2. **Capa 2: Aplicación (\`apps/web/src/features/i18n/application/\`)**:
+   - Custom hook \`useI18n\` con contexto de fallback seguro y tipado estricto \`t(key, params)\`.
+   - Server Action \`locale-cookie-actions.ts\` y Query \`get-dictionary-query.ts\` para Server Components (RSC).
+3. **Capa 3: Dominio (\`apps/web/src/features/i18n/domain/\`)**:
+   - Esquema Zod \`DictionarySchema\` con validación en tiempo de compilación y pruebas.
+   - Diccionarios completos (\`es.ts\`, \`en.ts\`, \`pt.ts\`) con 100% de paridad y soporte de interpolación (\`{count}\`, \`{roi}\`, \`{name}\`, \`{amount}\`).
+   - Formateadores puros \`formatCurrency\` (USD), \`formatPercent\` y \`formatNumber\` usando \`Intl.NumberFormat\`.
+4. **Capa 4: Infraestructura (\`apps/web/src/features/i18n/infrastructure/\`)**:
+   - Adaptador \`cookie-locale-adapter.ts\` para persistencia de cookie \`bb_locale\` (\`SameSite=Lax\`, 1 año).
+   - Adaptador \`browser-locale-detector.ts\` para autodetección por \`navigator.languages\`.
+   - Repositorio \`dictionary-loader-adapter.ts\` en memoria.
+5. **Integración en UI**:
+   - Landing page (\`LandingHero\`, \`InvestorLoginCard\`, header bar, footer) y Dashboard institucional (\`InvestmentDashboard\`, \`StatusBadge\`, métricas, carrusel, tabla, banner de reinversión) traducidos en su totalidad.
+6. **Pruebas Automatizadas**:
+   - 48 tests unitarios e integración dedicados para i18n (\`i18n-structural\`, \`i18n-dictionaries\`, \`i18n-formatters\`, \`i18n-cookie-adapter\`, \`i18n-ui-integration\`).
+   - 279 tests unitarios del monorepo y 53 tests del harness de gobernanza pasando al 100%.
+
+## Issue
+- Issue link/id: [BBC-009](https://linear.app/brids/issue/BBC-009)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md](knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Cambios cubiertos por 279 tests unitarios y 53 tests de harness pasando al 100%.
+- Security impact: Cookies aisladas con política SameSite=Lax, cero inyección de strings, validación Zod en diccionarios.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit vía \`git revert <merge-commit-sha>\` en develop.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo de internacionalización y frontend UI).
+- On-chain state evidence used for verification: Validaciones de CI, tests unitarios y suite de harness completa aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosa
+- Manual test evidence:
+  - Verificación en local (\`http://localhost:3001\`) cambiando entre Español, Inglés y Portugués en la landing page y en el dashboard.
+  - Formateo de USD validado en los 3 idiomas (\$163,000 / \$163,000 USD).
+  - Suite de validación (\`pnpm validate\`) y tests de harness (\`pnpm test:harness\`) 100% en verde.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-008" || "${ISSUE_ID}" == "BBC-8" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request resuelve y consolida seis problemas técnicos críticos y mejoras en el monorepo de BRIDS (\`BBC-008\`):
