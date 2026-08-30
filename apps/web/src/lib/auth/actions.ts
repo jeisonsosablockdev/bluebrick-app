@@ -18,8 +18,10 @@ export async function signInWithEmailAction(): Promise<void> {
   let authorizationUrl: string | null = null;
 
   try {
-    // Step 1: Request PKCE-sealed universal AuthKit authorization URL
-    authorizationUrl = await getSignInUrl();
+    // Step 1: Request PKCE-sealed universal AuthKit authorization URL with maxAge: 0 to force fresh auth
+    authorizationUrl = await getSignInUrl({
+      maxAge: 0,
+    });
   } catch (error) {
     console.warn("WorkOS universal sign-in redirect fallback:", error);
     redirect("/dashboard");
