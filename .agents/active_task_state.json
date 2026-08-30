@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-10",
-  "branch": "SPEC/jeisonsosa-BBC-10-s01-email-auth-and-logout",
+  "branch": "feature/jeisonsosa-BBC-10-email-auth-and-logout",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
