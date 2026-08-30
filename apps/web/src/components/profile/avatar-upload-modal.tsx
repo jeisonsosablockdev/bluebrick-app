@@ -32,6 +32,18 @@ export function AvatarUploadModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Step 1: Dismiss modal on Escape key press
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isUploading) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isUploading, onClose]);
+
   if (!isOpen) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,16 +101,30 @@ export function AvatarUploadModal({
   const displayImage = previewUrl || currentAvatarUrl;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="avatar-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isUploading) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className="w-full max-w-md rounded-2xl border border-[rgba(237,241,245,0.12)] p-6 shadow-2xl"
+        className="w-full max-w-md rounded-2xl border border-[rgba(237,241,245,0.12)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         style={{
           background: "linear-gradient(160deg, #111B2E 0%, #0A1220 100%)",
           color: "#EDF1F5",
         }}
       >
         <div className="flex items-center justify-between border-b border-[rgba(237,241,245,0.08)] pb-4">
-          <h3 className="font-bold text-lg" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h3
+            id="avatar-modal-title"
+            className="font-bold text-lg"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
             Actualizar Avatar de Inversionista
           </h3>
           <button
