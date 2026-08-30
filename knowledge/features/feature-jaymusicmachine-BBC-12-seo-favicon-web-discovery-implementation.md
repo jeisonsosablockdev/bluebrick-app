@@ -8,9 +8,9 @@
 - **Security Auditor**: `security`
 
 ## 2. Solution Overview & 4-Layer Architecture
-The solution establishes an enterprise-grade, Next.js 16 native metadata and web discovery suite, structured strictly across the 4 canonical functional layers:
+The solution delivers a unified, Next.js 16 native metadata and web discovery suite while resolving code bloat, font loading anti-patterns, and redundant dependencies identified in the audit.
 
-1. **Layer 1: Presentation (Metadata & Route Handlers)**
+1. **Layer 1: Presentation (Metadata, Routes & UI Shell)**
    - `apps/web/src/app/icon.tsx`: Dynamically renders the 32x32 SVG/PNG browser favicon using Next.js `ImageResponse` with the BlueBrick 4-bar angled emblem.
    - `apps/web/src/app/apple-icon.tsx`: Dynamically renders the 180x180 PNG Apple Touch Icon for iOS home screen shortcuts.
    - `apps/web/src/app/opengraph-image.tsx`: Dynamically generates the 1200x630 OpenGraph social share card with luxury brand tokens.
@@ -18,25 +18,29 @@ The solution establishes an enterprise-grade, Next.js 16 native metadata and web
    - `apps/web/src/app/manifest.ts`: Generates `manifest.webmanifest` defining PWA application metadata and theme colors (`#0A1220`, `#C41230`, `#2F8F6B`).
    - `apps/web/src/app/robots.ts`: Next.js dynamic robots handler controlling crawler access and linking to `sitemap.xml`.
    - `apps/web/src/app/sitemap.ts`: Next.js dynamic sitemap generator declaring entries for `/` (priority 1.0) and `/dashboard` (priority 0.8 demo).
-   - `apps/web/src/app/layout.tsx`: Root HTML layout configuring enhanced metadata, canonical links, robots parameters, and Schema.org JSON-LD embedding.
+   - `apps/web/src/app/layout.tsx`: Root HTML layout configuring `next/font/google` font optimization (`Space_Grotesk`, `Inter`, `JetBrains_Mono`), enhanced metadata, canonical links, robots parameters, and Schema.org JSON-LD embedding.
    - `apps/web/src/app/dashboard/page.tsx`: Injects dedicated title and metadata for the public demo experience.
+   - `apps/web/src/components/dashboard/investment-dashboard.tsx`: Removes dynamic `useEffect` font injection and relies on CSS variables provided by `layout.tsx`.
    - `apps/web/src/components/seo/structured-data.tsx`: React component safely injecting Schema.org JSON-LD payloads into `<head>`.
+   - **Pruning Dead Presentation Components**: Deletes orphan `apps/web/src/components/theme/theme-toggle.tsx` and `apps/web/src/components/ui/card.tsx`.
 
 2. **Layer 2: Application / Consumption**
    - Direct consumption of metadata pipelines and structured data generators within Next.js App Router metadata conventions.
+   - **Pruning Dead State**: Deletes orphan `apps/web/src/lib/state/app-state.ts`.
 
 3. **Layer 3: Domain & Pipelines**
    - `apps/web/src/lib/pipelines/seo-metadata-pipeline.ts`: Domain pipeline providing:
      - `buildPageMetadata(config: SeoMetadataConfig): Metadata`: Constructs complete Next.js 16 metadata configurations.
      - `generatePlatformJsonLd(): SchemaOrgPlatform`: Emits multi-entity Schema.org structured data (`FinancialService`, `RealEstateAgent`, `WebSite`).
 
-4. **Layer 4: Infrastructure**
+4. **Layer 4: Infrastructure & Package Cleanup**
    - Zero external third-party crawler dependencies. Relies exclusively on Next.js 16 App Router native edge/node rendering via `@vercel/og` (`ImageResponse`) and web standards.
+   - `package.json`: Prunes `@cfworker/json-schema` and `valibot` dependencies, standardizing all schema validation on `zod`.
 
 ## 3. Atomic Slices & Logical Sequence
-- **SPEC-1**: SEO Metadata, Dynamic Favicons, OpenGraph Cards, Robots & Sitemap (Branch: `feature/jaymusicmachine-BBC-12-seo-favicon-web-discovery`)
-  - **Fase RED (TDD)**: Unit tests covering `buildPageMetadata`, `generatePlatformJsonLd`, `robots()` rules, `sitemap()` entries, and `manifest()` properties.
-  - **Fase GREEN**: Implementation of `icon.tsx`, `apple-icon.tsx`, `opengraph-image.tsx`, `twitter-image.tsx`, `manifest.ts`, updating `robots.ts`, `sitemap.ts`, `layout.tsx`, and `seo-metadata-pipeline.ts` with mandatory in-code commentary.
+- **SPEC-1**: SEO Metadata, Dynamic Favicons, OpenGraph Cards, Robots, Sitemap, Native Fonts & Code Cleanup (Branch: `feature/jaymusicmachine-BBC-12-seo-favicon-web-discovery`)
+  - **Fase RED (TDD)**: Unit tests covering `buildPageMetadata`, `generatePlatformJsonLd`, `robots()` rules, `sitemap()` entries, `manifest()` properties, and starter utility refactors.
+  - **Fase GREEN**: Implementation of `icon.tsx`, `apple-icon.tsx`, `opengraph-image.tsx`, `twitter-image.tsx`, `manifest.ts`, updating `robots.ts`, `sitemap.ts`, `layout.tsx` (with `next/font/google`), `investment-dashboard.tsx`, pruning dead files, updating `package.json`, and adding mandatory in-code commentary.
   - **Fase REFACTOR**: Clean code refactoring audit (`code-refactoring-refactor-clean`), layer isolation verification, full typechecking, and `pnpm validate`.
 
 ## 4. TDD (Test-Driven Development) Strategy
@@ -55,6 +59,8 @@ The solution establishes an enterprise-grade, Next.js 16 native metadata and web
 - [ ] La suite de pruebas de regresión pasa al 100% (verde).
 - [ ] `pnpm validate` se ejecuta con 0 errores y 0 warnings.
 - [ ] Los generadores dinámicos (`icon.tsx`, `apple-icon.tsx`, `opengraph-image.tsx`, `manifest.ts`) compilan y responden correctamente.
+- [ ] Google Fonts cargan de forma nativa vía `next/font/google` sin inyecciones en `useEffect`.
+- [ ] Dependencias y archivos muertos podados limpiamente.
 - [ ] Aprobación explícita del humano registrada.
 
 ## 6. Spec Artifact Traceability
