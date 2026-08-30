@@ -26,7 +26,6 @@ export const en: Dictionary = {
     portfolio: "Portfolio",
     governance: "Governance",
     support: "Support",
-    logout: "Sign out",
   },
   landing: {
     badge: "Private Fractional Real Estate Investment Platform",

@@ -33,7 +33,6 @@ export const NavTokensSchema = z.object({
   portfolio: z.string().min(1),
   governance: z.string().min(1),
   support: z.string().min(1),
-  logout: z.string().min(1),
 });
 
 /**

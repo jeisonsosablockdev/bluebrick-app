@@ -26,7 +26,6 @@ export const pt: Dictionary = {
     portfolio: "Portfólio",
     governance: "Governança",
     support: "Suporte",
-    logout: "Sair",
   },
   landing: {
     badge: "Plataforma Privada de Investimento Imobiliário Fracionado",

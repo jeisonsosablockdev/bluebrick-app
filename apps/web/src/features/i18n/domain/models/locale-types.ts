@@ -85,7 +85,6 @@ export interface Dictionary {
     portfolio: string;
     governance: string;
     support: string;
-    logout: string;
   };
   landing: {
     badge: string;

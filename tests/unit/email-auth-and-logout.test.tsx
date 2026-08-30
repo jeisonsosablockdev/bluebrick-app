@@ -178,9 +178,9 @@ describe("BBC-10: Universal Email Authentication & Dashboard Logout (@spec BBC-1
       expect(en.loginCard.emailLoginButton).toBeTruthy();
       expect(pt.loginCard.emailLoginButton).toBeTruthy();
 
-      expect(es.common.logout || es.nav.logout).toBeTruthy();
-      expect(en.common.logout || en.nav.logout).toBeTruthy();
-      expect(pt.common.logout || pt.nav.logout).toBeTruthy();
+      expect(es.common.logout).toBeTruthy();
+      expect(en.common.logout).toBeTruthy();
+      expect(pt.common.logout).toBeTruthy();
     });
   });
 });

@@ -194,8 +194,8 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               await signOutAction();
             }}
             className="dash-logout-btn"
-            title={t("common.logout") || t("nav.logout") || "Cerrar sesión"}
-            aria-label={t("common.logout") || t("nav.logout") || "Cerrar sesión"}
+            title={t("common.logout") || "Cerrar sesión"}
+            aria-label={t("common.logout") || "Cerrar sesión"}
           >
             <LogOut size={16} />
           </button>
