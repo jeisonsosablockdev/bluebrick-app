@@ -34,6 +34,7 @@ import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
+import { ProjectPhaseProgress } from "./project-phase-progress";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
 import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
 import { useI18n, LocaleSwitcher } from "@/features/i18n";
@@ -492,6 +493,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Real-time Construction Phase Progress with Dotted Milestone Stepper & Motion Animations */}
+              <div style={{ marginTop: 16 }}>
+                <ProjectPhaseProgress property={activeProperty} />
               </div>
 
               <button onClick={prevCard} aria-label="Anterior" style={navBtnStyle("left")}>

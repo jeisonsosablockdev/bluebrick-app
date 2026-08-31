@@ -1,22 +1,26 @@
 /**
  * @file apps/web/src/components/landing/landing-hero.tsx
  * @description Layer 1: Presentation - Landing Page Hero Header Component with Multi-Language Localization.
- * Features luxury dark branding, value proposition badge, and dynamic i18n headline typography.
+ * Features luxury branding, institutional headline typography, and trust indicator.
  */
 
 "use client";
 
 import React from "react";
 import { BlueBrickMark } from "@/components/dashboard/blue-brick-mark";
-import { Sparkles, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useI18n } from "@/features/i18n";
+import { useTheme } from "@/components/theme";
 
 /**
  * LandingHero presents the BlueBrick investor portal headline and luxury theme tokens.
  */
 export function LandingHero(): React.JSX.Element {
-  // Step 1: Access localized translation strings
+  // Step 1: Access localized translation strings and active theme
   const { t } = useI18n();
+  const { theme } = useTheme();
+
+  const isDark = theme === "dark";
 
   // Step 2: Render top brand header with logo emblem and translated copy
   return (
@@ -30,31 +34,11 @@ export function LandingHero(): React.JSX.Element {
             fontSize: 22,
             fontWeight: 700,
             letterSpacing: "0.08em",
-            color: "#EDF1F5",
+            color: isDark ? "#EDF1F5" : "#0A1220",
           }}
         >
           {t("common.brandName")}
         </span>
-      </div>
-
-      {/* Trust & Category Tag */}
-      <div
-        style={{
-          marginTop: 24,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          borderRadius: 999,
-          border: "1px solid rgba(47,143,107,0.35)",
-          background: "rgba(47,143,107,0.12)",
-          padding: "6px 16px",
-          fontSize: 12,
-          fontWeight: 600,
-          color: "#57B98C",
-        }}
-      >
-        <Sparkles size={14} />
-        {t("landing.badge")}
       </div>
 
       {/* Primary Headline */}
@@ -64,9 +48,9 @@ export function LandingHero(): React.JSX.Element {
           fontSize: "clamp(28px, 4vw, 42px)",
           lineHeight: 1.15,
           fontWeight: 700,
-          color: "#EDF1F5",
+          color: isDark ? "#EDF1F5" : "#0A1220",
           maxWidth: 640,
-          margin: "20px 0 0 0",
+          margin: "24px 0 0 0",
         }}
       >
         {t("landing.headline")}
@@ -79,16 +63,16 @@ export function LandingHero(): React.JSX.Element {
           maxWidth: 540,
           fontSize: 14,
           lineHeight: 1.6,
-          color: "#7C8A9C",
+          color: isDark ? "#7C8A9C" : "#4A5568",
           margin: "14px 0 0 0",
         }}
       >
         {t("landing.subtitle")}
       </p>
 
-      {/* Security indicator */}
-      <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#7C8A9C" }}>
-        <ShieldCheck size={14} color="#57B98C" />
+      {/* Security and Trust indicator */}
+      <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: isDark ? "#7C8A9C" : "#4A5568" }}>
+        <ShieldCheck size={14} color={isDark ? "#57B98C" : "#2F8F6B"} />
         <span>{t("landing.securityBadge")}</span>
       </div>
     </header>

@@ -19,6 +19,7 @@ export const pt: Dictionary = {
     language: "Idioma",
     selectLanguage: "Selecionar idioma",
     logout: "Sair",
+    toggleThemeAria: "Alternar tema claro ou escuro",
   },
   nav: {
     dashboard: "Painel",
@@ -28,21 +29,21 @@ export const pt: Dictionary = {
     support: "Suporte",
   },
   landing: {
-    badge: "Plataforma Privada de Investimento Imobiliário Fracionado",
-    headline: "Invista em ativos imobiliários premium com retornos transparentes",
+    badge: "Plataforma Privada de Investimento Imobiliário",
+    headline: "Plataforma Privada de Investimento Imobiliário",
     subtitle:
       "Acesse seu portfólio institucional, acompanhe distribuições mensais, consulte a rentabilidade ponderada e reinvista capital em oportunidades exclusivas.",
-    securityBadge: "Governança Institucional · Segurança WorkOS AuthKit & Neon Cloud",
-    footerText: "BlueBrick Platform · Investimentos Imobiliários Fracionados · Conectado à Vercel Cloud",
+    securityBadge: "Governança institucional · Máxima segurança e privacidade para investidores",
+    footerText: "BlueBrick Platform · Investimentos Imobiliários Fracionados",
   },
   loginCard: {
     headerTitle: "Acesso do Investidor",
-    verifiedBadge: "Demo Verificada",
-    tierLabel: "Investidor Privado",
-    activeProjectsCount: "{count} Projetos Ativos",
-    enterDashboardButton: "Entrar no Painel",
-    emailLoginButton: "Entrar com E-mail",
-    disclaimerNote: "* Plataforma de Investimentos BlueBrick · Acesso demo instantâneo ou federado.",
+    privatePortalBadge: "Portal Privado",
+    exclusiveAccessTitle: "Acesso exclusivo para investidores",
+    loginSubtitle: "Entre com seu e-mail pessoal ou corporativo para gerenciar seus investimentos.",
+    emailLoginButton: "Entrar com seu e-mail",
+    disclaimerNote: "Plataforma de Investimentos BlueBrick · Acesso seguro e institucional para investidores verificados.",
+    supportedProvidersLabel: "Compatível com Google, Microsoft, Apple e Yahoo",
   },
   logoutModal: {
     title: "Encerrar sessão?",
@@ -83,10 +84,10 @@ export const pt: Dictionary = {
     },
     reinvestment: {
       badge: "Novas oportunidades para {name}",
-      title: "Seu capital concluído já está pronto para trabalhar novamente.",
+      title: "Faça seu patrimônio crescer",
       description:
-        "Reinvista os rendimentos dos seus projetos concluídos nestas oportunidades selecionadas por nossa equipe, com retornos estimados superiores à média do seu portfólio atual.",
-      ctaButton: "Reinvestir agora",
+        "Descubra novas oportunidades imobiliárias selecionadas pela Blue Brick. Amplie sua exposição a ativos reais, diversifique seu capital e encontre novas oportunidades para continuar construindo patrimônio.",
+      ctaButton: "Investir agora",
       estimatedRoi: "ROI est. {roi}%",
       minInvestmentFrom: "a partir de {amount}",
     },

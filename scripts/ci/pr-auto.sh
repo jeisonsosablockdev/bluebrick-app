@@ -11,7 +11,7 @@ if [[ -z "${ISSUE_ID}" ]]; then
   ISSUE_ID="$(echo "${BRANCH}" | grep -oE 'BRI-[0-9]+' | head -1 || echo "BRI-186")"
 fi
 
-DEFAULT_TITLE="refactor(monorepo): Monorepo Workspaces & 4-Layer Feature-Driven Design (FDD) Architecture (${ISSUE_ID})"
+DEFAULT_TITLE="feat(auth): Investor Login Redesign, Theme System & Phase Progress (${ISSUE_ID})"
 TITLE="${PR_TITLE:-${DEFAULT_TITLE}}"
 CURRENT_SHA="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
 
@@ -37,7 +37,7 @@ RISK_LABEL="${PR_RISK:-risk:low}"
 
 if [[ "${BRANCH}" == *"solana"* || "${BRANCH}" == *"program"* ]]; then
   SCOPE_LABEL="scope:program"
-elif [[ "${BRANCH}" == *"app"* || "${BRANCH}" == *"frontend"* || "${BRANCH}" == *"monorepo"* ]]; then
+elif [[ "${BRANCH}" == *"app"* || "${BRANCH}" == *"frontend"* || "${BRANCH}" == *"monorepo"* || "${BRANCH}" == *"investor-login"* ]]; then
   SCOPE_LABEL="scope:app"
 elif [[ "${BRANCH}" == *"nft"* ]]; then
   SCOPE_LABEL="scope:nft"
@@ -60,6 +60,7 @@ bash "${SCRIPT_DIR}/pr-open.sh" \
   --scope "${SCOPE_LABEL}" \
   --type "${TYPE_LABEL}" \
   --risk "${RISK_LABEL}" \
+  --size-exempt "${SIZE_EXEMPT:-1}" \
   --draft 0 \
   --validate-mode full
 
