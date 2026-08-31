@@ -19,6 +19,7 @@ export const en: Dictionary = {
     language: "Language",
     selectLanguage: "Select language",
     logout: "Sign out",
+    toggleThemeAria: "Toggle light or dark theme",
   },
   nav: {
     dashboard: "Dashboard",
@@ -28,21 +29,21 @@ export const en: Dictionary = {
     support: "Support",
   },
   landing: {
-    badge: "Private Fractional Real Estate Investment Platform",
-    headline: "Invest in premium real estate assets with transparent returns",
+    badge: "Private Real Estate Investment Platform",
+    headline: "Private Real Estate Investment Platform",
     subtitle:
       "Access your institutional portfolio, monitor monthly distributions, track weighted returns, and reinvest capital into exclusive opportunities.",
-    securityBadge: "Institutional Governance · WorkOS AuthKit & Neon Cloud Security",
-    footerText: "BlueBrick Platform · Fractional Real Estate Investments · Connected to Vercel Cloud",
+    securityBadge: "Institutional Governance · Maximum security and privacy for investors",
+    footerText: "BlueBrick Platform · Fractional Real Estate Investments",
   },
   loginCard: {
     headerTitle: "Investor Access",
-    verifiedBadge: "Verified Demo",
-    tierLabel: "Private Investor",
-    activeProjectsCount: "{count} Active Projects",
-    enterDashboardButton: "Enter Dashboard",
-    emailLoginButton: "Sign in with Email",
-    disclaimerNote: "* BlueBrick Investment Platform · Instant demo or federated access.",
+    privatePortalBadge: "Private Portal",
+    exclusiveAccessTitle: "Exclusive access for investors",
+    loginSubtitle: "Sign in with your personal or corporate email to manage your investments.",
+    emailLoginButton: "Sign in with your email",
+    disclaimerNote: "BlueBrick Investment Platform · Secure and institutional access for verified investors.",
+    supportedProvidersLabel: "Compatible with Google, Microsoft, Apple & Yahoo",
   },
   logoutModal: {
     title: "Sign out?",
@@ -83,10 +84,10 @@ export const en: Dictionary = {
     },
     reinvestment: {
       badge: "New Opportunities for {name}",
-      title: "Your concluded capital is ready to work again.",
+      title: "Grow your wealth",
       description:
-        "Reinvest profits from your concluded projects into these curated opportunities selected by our team, with estimated returns exceeding your current portfolio average.",
-      ctaButton: "Reinvest Now",
+        "Discover new real estate opportunities curated by Blue Brick. Expand your exposure to real assets, diversify your capital, and find new opportunities to keep building wealth.",
+      ctaButton: "Invest Now",
       estimatedRoi: "Est. ROI {roi}%",
       minInvestmentFrom: "from {amount}",
     },

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T02:53:59.865Z",
+  "generatedAt": "2026-08-30T18:54:07.449Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -122,6 +122,18 @@
       "path": "knowledge/database/models/index.md"
     },
     {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md"
+    },
+    {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation",
@@ -156,6 +168,18 @@
       "type": "feature",
       "label": "feature-jeisonsosa-BBC-009-internationalization",
       "path": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-10-email-auth-and-logout",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",

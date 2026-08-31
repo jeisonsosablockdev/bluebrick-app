@@ -22,6 +22,7 @@ export const CommonTokensSchema = z.object({
   language: z.string().min(1),
   selectLanguage: z.string().min(1),
   logout: z.string().min(1),
+  toggleThemeAria: z.string().min(1),
 });
 
 /**
@@ -51,12 +52,12 @@ export const LandingTokensSchema = z.object({
  */
 export const LoginCardTokensSchema = z.object({
   headerTitle: z.string().min(1),
-  verifiedBadge: z.string().min(1),
-  tierLabel: z.string().min(1),
-  activeProjectsCount: z.string().min(1),
-  enterDashboardButton: z.string().min(1),
+  privatePortalBadge: z.string().min(1),
+  exclusiveAccessTitle: z.string().min(1),
+  loginSubtitle: z.string().min(1),
   emailLoginButton: z.string().min(1),
   disclaimerNote: z.string().min(1),
+  supportedProvidersLabel: z.string().min(1),
 });
 
 /**
