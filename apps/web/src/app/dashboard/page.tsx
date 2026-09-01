@@ -105,10 +105,19 @@ const FALLBACK_PROPERTIES: PortfolioItem[] = [
   },
 ];
 
-export default async function DashboardPage(): Promise<React.JSX.Element> {
+export interface DashboardPageProps {
+  readonly params?: Promise<Record<string, string>>;
+  readonly searchParams?: Promise<{ readonly [key: string]: string | string[] | undefined }>;
+}
+
+export default async function DashboardPage(props: DashboardPageProps): Promise<React.JSX.Element> {
   // Step 1: Initialize database repositories
   const investmentRepo = new InvestmentRepository();
   const userRepo = new UserRepository();
+
+  const resolvedParams = props?.searchParams ? await props.searchParams : undefined;
+  const rawEmail = resolvedParams?.email;
+  const paramEmail = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : null;
 
   let investor: DbUser = DEFAULT_INVESTOR;
   let summary = {
@@ -125,10 +134,23 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
     const { getAuthenticatedInvestor } = await import("@/lib/auth/workos-session");
     investor = await getAuthenticatedInvestor(userRepo);
 
-    // Step 2: Query live portfolio metrics from Neon PostgreSQL (prioritizing clients table by email)
-    const dbSummary = await investmentRepo.getPortfolioSummary(investor.email, investor.id);
+    // If paramEmail is provided or session investor has real email, resolve target email
+    const targetEmail = paramEmail || (investor.email !== DEFAULT_INVESTOR.email ? investor.email : null);
+
+    // Step 2: Query live portfolio metrics from Neon PostgreSQL (prioritizing dashboard_investments by email)
+    const dbSummary = await investmentRepo.getPortfolioSummary(targetEmail || investor.email, investor.id);
     if (dbSummary && dbSummary.items.length > 0) {
       summary = dbSummary;
+
+      // If resolved from a real investor email, update investor display metadata if needed
+      if (targetEmail && targetEmail !== DEFAULT_INVESTOR.email) {
+        investor = {
+          ...investor,
+          email: targetEmail,
+          firstName: investor.firstName || "Inversionista",
+          lastName: investor.lastName || "BlueBrick",
+        };
+      }
     }
 
     // Step 3: Query active reinvestment opportunities exclusively from Neon PostgreSQL (ingested from Excel)

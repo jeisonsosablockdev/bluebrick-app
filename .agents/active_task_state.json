@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-13",
-  "branch": "feature/jaymusicmachine-BBC-13-investor-login-redesign",
+  "task_id": "BBC-015",
+  "branch": "fix/jaymusicmachine-BBC-015-dashboard-real-investor-phases",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

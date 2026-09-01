@@ -11,6 +11,7 @@ import type {
   PortfolioItem,
   DbClientRow,
   RawClientInvestment,
+  ProjectPhase,
 } from "@/lib/types/db";
 
 /** Standard aesthetic gradients for portfolio cards. */
@@ -113,6 +114,12 @@ export function mapClientToPortfolioItems(
       ? new Date(inv.fecha_timing).toLocaleDateString("es-ES", { month: "long", year: "numeric" })
       : "Noviembre 2026";
 
+    const currentPhase = inv.fase_actual ? String(inv.fase_actual) : undefined;
+    const rawAvance = (inv as any).avance_fase_pct;
+    const phaseProgressPct = rawAvance !== undefined && rawAvance !== null
+      ? Number((Number(rawAvance) * (Number(rawAvance) <= 1 ? 100 : 1)).toFixed(2))
+      : undefined;
+
     return {
       id: `${client.id}_${inv.id_inversion || idx}`,
       propertyId: inv.id_inversion || client.tax_id || `prop_${idx}`,
@@ -125,6 +132,8 @@ export function mapClientToPortfolioItems(
       timing,
       monthsLeft: 4,
       gradient: resolveItemGradient(idx),
+      currentPhase,
+      phaseProgressPct,
     };
   });
 }
@@ -152,33 +161,102 @@ export class InvestmentRepository {
     const isEmail = typeof userEmailOrId === "string" && userEmailOrId.includes("@");
     const sanitizedEmail = isEmail ? userEmailOrId.trim().toLowerCase() : null;
 
-    // Step 1: Primary lookup — Search in `clients` table by sanitized email
+    // Step 1: Primary investor lookup — Search dashboard_investments and clients by sanitized email
     if (sanitizedEmail) {
-      const clientQuery = `
-        SELECT id, name, tax_id, email, phone, contract_amount, status, metadata, created_at
-        FROM clients
-        WHERE LOWER(TRIM(email)) = $1 AND status = 'ACTIVE'
-        ORDER BY created_at DESC;
-      `;
       try {
-        const clientRes = await this.db.query(clientQuery, [sanitizedEmail]);
-        const clientRows = (clientRes.rows || []) as DbClientRow[];
+        const primaryLookupQuery = `
+          SELECT
+            inv.id AS dash_id,
+            inv.id_inversion,
+            inv.nombre_proyecto AS dash_project_name,
+            inv.ciudad AS dash_city,
+            inv.tipo_propiedad AS dash_property_type,
+            inv.tipo_proyecto,
+            inv.monto_invertido,
+            inv.roi_pct AS dash_roi_pct,
+            inv.estado AS dash_estado,
+            inv.duracion_meses AS dash_duracion_meses,
+            inv.fecha_timing AS dash_fecha_timing,
+            inv.avance_fase_pct AS dash_avance_fase_pct,
+            inv.fase_actual AS dash_fase_actual,
+            c.id,
+            c.name,
+            c.tax_id,
+            c.email,
+            c.phone,
+            c.contract_amount,
+            c.status,
+            c.metadata,
+            c.created_at
+          FROM clients c
+          FULL OUTER JOIN dashboard_investors di ON LOWER(TRIM(di.email)) = LOWER(TRIM(c.email))
+          LEFT JOIN dashboard_investments inv ON di.id_inversionista = inv.id_inversionista
+          WHERE (LOWER(TRIM(c.email)) = $1 AND c.status = 'ACTIVE')
+             OR (LOWER(TRIM(di.email)) = $1)
+          ORDER BY inv.monto_invertido DESC NULLS LAST, c.created_at DESC NULLS LAST;
+        `;
+        const queryRes = await this.db.query(primaryLookupQuery, [sanitizedEmail]);
+        const rows = (queryRes?.rows || []) as any[];
 
-        if (clientRows.length > 0) {
-          const client = clientRows[0];
-          const meta = client.metadata || {};
-          const rawInvestments: RawClientInvestment[] = Array.isArray(meta.allInvestments) && meta.allInvestments.length > 0
-            ? meta.allInvestments
-            : clientRows.map((r) => ({
-                id_inversion: r.tax_id,
-                nombre_proyecto: r.metadata?.project || r.name,
-                ciudad: r.metadata?.city || "TAMPA",
-                monto_invertido: r.contract_amount,
-                roi_pct: r.metadata?.roi,
-                estado: r.status,
-              }));
+        if (rows.length > 0) {
+          const firstRow = rows[0];
+          const hasDashboardInvestment = Boolean(firstRow.id_inversion || firstRow.monto_invertido !== undefined);
+          const hasClientContract = Boolean(firstRow.contract_amount !== undefined);
 
-          const items = mapClientToPortfolioItems(client, rawInvestments);
+          let items: PortfolioItem[] = [];
+
+          if (hasDashboardInvestment && !hasClientContract) {
+            // Case A: Dashboard investments
+            items = rows.map((r, idx) => {
+              const parsedRoi = parseRoiPercentage(r.dash_roi_pct || r.roi_pct);
+              const parsedAmount = parseMonetaryAmount(r.monto_invertido);
+              const invState = String(r.dash_estado || r.estado || "Activa").toLowerCase();
+              const status: PortfolioItem["status"] = invState.includes("conclu") ? "concluida" : "activa";
+              const timing = (r.dash_fecha_timing || r.fecha_timing)
+                ? new Date(r.dash_fecha_timing || r.fecha_timing).toLocaleDateString("es-ES", { month: "long", year: "numeric" })
+                : "Noviembre 2026";
+              const rawAvance = r.dash_avance_fase_pct ?? r.avance_fase_pct;
+              const phaseProgressPct = rawAvance !== undefined && rawAvance !== null
+                ? Number((Number(rawAvance) * (Number(rawAvance) <= 1 ? 100 : 1)).toFixed(2))
+                : undefined;
+
+              return {
+                id: String(r.dash_id || r.id || `dash_inv_${idx}`),
+                propertyId: String(r.id_inversion || `prop_${idx}`),
+                propertyName: String(r.dash_project_name || r.nombre_proyecto || "Inversión Inmobiliaria"),
+                city: String(r.dash_city || r.ciudad || "TAMPA"),
+                propertyType: (r.dash_property_type || r.tipo_propiedad || "Residencial") as any,
+                investedAmount: parsedAmount,
+                roi: parsedRoi,
+                status,
+                timing,
+                monthsLeft: Number(r.dash_duracion_meses || r.duracion_meses) || 6,
+                gradient: resolveItemGradient(idx),
+                currentPhase: (r.dash_fase_actual || r.fase_actual) ? String(r.dash_fase_actual || r.fase_actual) : undefined,
+                phaseProgressPct,
+              };
+            });
+          } else {
+            // Case B: Legacy clients row with metadata / allInvestments
+            const client = firstRow as DbClientRow;
+            const meta = client.metadata || {};
+            const rawInvestments: RawClientInvestment[] = Array.isArray(meta.allInvestments) && meta.allInvestments.length > 0
+              ? meta.allInvestments
+              : rows.map((r) => ({
+                  id_inversion: r.id_inversion || r.tax_id,
+                  nombre_proyecto: r.dash_project_name || r.metadata?.project || r.name,
+                  ciudad: r.dash_city || r.metadata?.city || "TAMPA",
+                  monto_invertido: r.monto_invertido || r.contract_amount,
+                  roi_pct: r.dash_roi_pct || r.metadata?.roi,
+                  estado: r.dash_estado || r.status,
+                  avance_fase_pct: r.dash_avance_fase_pct || r.metadata?.avance_fase_pct,
+                  fase_actual: r.dash_fase_actual || r.metadata?.fase_actual,
+                }));
+
+            items = mapClientToPortfolioItems(client, rawInvestments);
+          }
+
+          await this.enrichItemsWithProjectPhases(items);
           const metrics = calculatePortfolioMetrics(items);
 
           return {
@@ -188,8 +266,8 @@ export class InvestmentRepository {
           };
         }
       } catch (err) {
-        // Invariant: Log client query issue and gracefully proceed to fallback
-        console.warn("Could not query clients table, proceeding to fallback.", err);
+        // Invariant: Non-blocking graceful degradation to user_investments fallback
+        console.warn("Could not query primary investor lookup, proceeding to fallback.", err);
       }
     }
 
@@ -232,6 +310,7 @@ export class InvestmentRepository {
       gradient: r.gradient || resolveItemGradient(idx),
     }));
 
+    await this.enrichItemsWithProjectPhases(items);
     const metrics = calculatePortfolioMetrics(items);
 
     return {
@@ -239,6 +318,69 @@ export class InvestmentRepository {
       ...metrics,
       items,
     };
+  }
+
+  /**
+   * Enriches portfolio items with real construction milestones from dashboard_project_phases table.
+   * Gracefully degrades without throwing if the table is unavailable or has no rows.
+   *
+   * @param items - List of portfolio items to enrich in-place
+   */
+  private async enrichItemsWithProjectPhases(items: PortfolioItem[]): Promise<void> {
+    if (!items || items.length === 0) return;
+
+    // Collect all candidate project identifiers (e.g. 'BG-01', 'BK-02', 'CW-04')
+    const candidateSkus = items.map((i) => i.propertyId).filter(Boolean);
+    if (candidateSkus.length === 0) return;
+
+    try {
+      const phasesRes = await this.db.query(
+        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, imagen_url_1, imagen_url_2, imagen_url_3
+         FROM dashboard_project_phases
+         WHERE id_inversion = ANY($1)
+         ORDER BY id_inversion, orden ASC`,
+        [candidateSkus]
+      );
+
+      const phaseRows = (phasesRes?.rows || []) as Array<{
+        id: string;
+        id_fase: string;
+        id_inversion: string;
+        orden: number;
+        nombre_fase: string;
+        estado: "Completada" | "En curso" | "Pendiente" | "No aplica";
+        fecha_inicio?: string | Date | null;
+        fecha_fin?: string | Date | null;
+        imagen_url_1?: string | null;
+        imagen_url_2?: string | null;
+        imagen_url_3?: string | null;
+      }>;
+
+      if (phaseRows.length === 0) return;
+
+      // Group phases by project SKU using Map.groupBy (Node 22 / ES2024 stdlib)
+      const grouped = Map.groupBy(phaseRows, (row) => String(row.id_inversion));
+
+      for (const item of items) {
+        const rows = grouped.get(item.propertyId);
+        if (rows && rows.length > 0) {
+          item.phases = rows.map((row) => ({
+            id: String(row.id_fase || row.id),
+            projectId: item.propertyId,
+            order: Number(row.orden),
+            name: String(row.nombre_fase),
+            status: row.estado,
+            startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
+            endDate: row.fecha_fin ? String(row.fecha_fin) : null,
+            images: [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3].filter(
+              (img): img is string => typeof img === "string" && img.trim().length > 0
+            ),
+          }));
+        }
+      }
+    } catch {
+      // Invariant: Non-blocking graceful degradation
+    }
   }
 
   /**
