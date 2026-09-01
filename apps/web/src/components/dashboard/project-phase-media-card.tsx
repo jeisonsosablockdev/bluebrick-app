@@ -110,7 +110,7 @@ export function ProjectPhaseMediaCard({
   };
 
 
-  // Step 7: Compute image counter label (e.g. "2/3")
+  // Step 9: Compute image counter label (e.g. "2/3")
   const counterLabel = hasMultipleImages ? `${safeIndex + 1}/${images.length}` : null;
 
   return (
