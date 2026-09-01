@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T15:20:03.050Z",
+  "generatedAt": "2026-09-01T16:12:47.571Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -204,6 +204,18 @@
       "type": "feature",
       "label": "feature-jeisonsosa-BBC-10-email-auth-and-logout",
       "path": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",

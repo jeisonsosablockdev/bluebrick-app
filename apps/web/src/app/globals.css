@@ -178,3 +178,101 @@ body {
   border-color: rgba(232, 73, 95, 0.4);
   color: #E8495F;
 }
+
+/* ==========================================================================
+   DASHBOARD HARDWARE-ACCELERATED MICRO-INTERACTIONS (BBC-016 / Core Web Vitals)
+   Guarantees: CLS = 0 (GPU transforms only), INP < 50ms, prefers-reduced-motion.
+   ========================================================================== */
+
+.dash-interactive-card {
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.dash-interactive-chip {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  border-radius: 12px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+}
+
+.dash-interactive-chip:hover {
+  transform: translateY(-2px);
+  background: rgba(237, 241, 245, 0.04);
+  border-color: rgba(237, 241, 245, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.dash-interactive-row {
+  transition: background-color 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.dash-interactive-row:hover {
+  background: rgba(237, 241, 245, 0.035) !important;
+}
+
+.dash-opportunity-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+}
+
+.dash-opportunity-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: rgba(87, 185, 140, 0.35) !important;
+  box-shadow: 0 10px 24px -4px rgba(47, 143, 107, 0.2), 0 0 0 1px rgba(87, 185, 140, 0.25);
+}
+
+.dash-cta-button {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.2s ease;
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+}
+
+.dash-cta-button:hover {
+  transform: translateY(-1px) scale(1.03);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 28px rgba(196, 18, 48, 0.4) !important;
+}
+
+.dash-cta-button:active {
+  transform: scale(0.96);
+  filter: brightness(0.96);
+}
+
+.dash-carousel-nav-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+  transform: translateY(-50%) translateZ(0);
+}
+
+.dash-carousel-nav-btn:hover {
+  transform: translateY(-50%) scale(1.12);
+  border-color: rgba(237, 241, 245, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(237, 241, 245, 0.2);
+}
+
+.dash-carousel-nav-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+/* Accessibility: Respect system motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .dash-interactive-card,
+  .dash-interactive-chip,
+  .dash-interactive-row,
+  .dash-opportunity-card,
+  .dash-cta-button,
+  .dash-carousel-nav-btn {
+    transition: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+}
+

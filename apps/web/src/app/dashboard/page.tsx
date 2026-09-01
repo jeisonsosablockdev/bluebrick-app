@@ -10,7 +10,7 @@ import { InvestmentDashboard } from "@/components/dashboard/investment-dashboard
 import { InvestmentRepository } from "@/lib/infrastructure/db/repositories/investment-repository";
 import { UserRepository } from "@/lib/infrastructure/db/repositories/user-repository";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
-import type { DbUser, PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
+import type { DbUser, PortfolioItem, DbReinvestmentOpportunity, PortfolioSummary } from "@/lib/types/db";
 
 export const metadata: Metadata = {
   title: "Panel de Inversión (Demo) | BlueBrick",
@@ -105,6 +105,15 @@ const FALLBACK_PROPERTIES: PortfolioItem[] = [
   },
 ];
 
+const DEFAULT_PORTFOLIO_SUMMARY: PortfolioSummary = {
+  userId: DEFAULT_INVESTOR.id,
+  totalInvested: 163000,
+  weightedRoi: 13.7,
+  activeCount: 4,
+  concludedCount: 1,
+  items: FALLBACK_PROPERTIES,
+};
+
 export interface DashboardPageProps {
   readonly params?: Promise<Record<string, string>>;
   readonly searchParams?: Promise<{ readonly [key: string]: string | string[] | undefined }>;
@@ -115,19 +124,12 @@ export default async function DashboardPage(props: DashboardPageProps): Promise<
   const investmentRepo = new InvestmentRepository();
   const userRepo = new UserRepository();
 
-  const resolvedParams = props?.searchParams ? await props.searchParams : undefined;
-  const rawEmail = resolvedParams?.email;
+  const searchParams = props?.searchParams ? await props.searchParams : undefined;
+  const rawEmail = searchParams?.email;
   const paramEmail = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : null;
 
   let investor: DbUser = DEFAULT_INVESTOR;
-  let summary = {
-    userId: DEFAULT_INVESTOR.id,
-    totalInvested: 163000,
-    weightedRoi: 13.7,
-    activeCount: 4,
-    concludedCount: 1,
-    items: FALLBACK_PROPERTIES,
-  };
+  let summary = { ...DEFAULT_PORTFOLIO_SUMMARY };
   let opportunities: DbReinvestmentOpportunity[] = [];
 
   try {
