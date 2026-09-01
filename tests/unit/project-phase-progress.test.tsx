@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from "vitest";
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ProjectPhaseProgress } from "@/components/dashboard/project-phase-progress";
 import { I18nProvider } from "@/features/i18n";
 import { ThemeProvider } from "@/components/theme";
@@ -179,6 +179,155 @@ describe("BBC-13: ProjectPhaseProgress Unit Suite (@spec BBC-13-PROJECT-PHASE-PR
 
       // Rule from user: If no phases, render as completely full (100% completado)
       expect(screen.getByText(/100% completado/i)).toBeInTheDocument();
+    });
+
+    it("should re-sync active phase and details when carousel active property changes (@spec BBC-015-REQ-2)", () => {
+      const mockPropertyCarrollwood: PortfolioItem = {
+        id: "inv-cw-004",
+        propertyId: "CW-04",
+        propertyName: "CARROLLWOOD",
+        city: "TAMPA",
+        propertyType: "Residencial",
+        investedAmount: 50000,
+        roi: 16.0,
+        status: "activa",
+        timing: "Q2 2027",
+        monthsLeft: 6,
+        gradient: "linear-gradient(135deg, #1C4D38, #0F3124)",
+        currentPhase: "6. Construcción de estructuras y muros",
+        phaseProgressPct: 42.86,
+        phases: [
+          { id: "CW1", projectId: "CW-04", order: 1, name: "1. Adquisición", status: "Completada", images: [] },
+          { id: "CW2", projectId: "CW-04", order: 2, name: "2. Preliminares", status: "Completada", images: [] },
+          { id: "CW3", projectId: "CW-04", order: 3, name: "3. Permisos", status: "Completada", images: [] },
+          { id: "CW4", projectId: "CW-04", order: 4, name: "4. Demolición", status: "Completada", images: [] },
+          { id: "CW5", projectId: "CW-04", order: 5, name: "5. Cimentación", status: "Completada", images: [] },
+          { id: "CW6", projectId: "CW-04", order: 6, name: "6. Construcción de estructuras y muros", status: "En curso", images: [] },
+          { id: "CW7", projectId: "CW-04", order: 7, name: "7. Acabados", status: "Pendiente", images: [] },
+          { id: "CW8", projectId: "CW-04", order: 8, name: "8. Inspecciones", status: "Pendiente", images: [] },
+          { id: "CW9", projectId: "CW-04", order: 9, name: "9. Venta", status: "Pendiente", images: [] },
+          { id: "CW10", projectId: "CW-04", order: 10, name: "10. Cierre", status: "Pendiente", images: [] },
+        ],
+      };
+
+      const { rerender } = render(
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <ProjectPhaseProgress property={mockPropertyWith14Phases} />
+          </I18nProvider>
+        </ThemeProvider>
+      );
+
+      // Initially Bush Garden (Fase 9 de 14)
+      expect(screen.getByText(/Fase 9 de 14/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/9\. Acabados/i).length).toBeGreaterThanOrEqual(1);
+
+      // Act: Re-render with Carrollwood property (Fase 2 de 2)
+      rerender(
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <ProjectPhaseProgress property={mockPropertyCarrollwood} />
+          </I18nProvider>
+        </ThemeProvider>
+      );
+
+      // Assert: Must re-sync to Carrollwood active phase (Fase 6 de 10 - 6. Construcción de estructuras y muros)
+      expect(screen.getByText(/Fase 6 de 10/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/6\. Construcción de estructuras y muros/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/43% completado/i)).toBeInTheDocument();
+    });
+
+    it("should display tooltip with nombre_fase and estado on milestone dot hover (@spec BBC-015-HOVER-TOOLTIP)", async () => {
+      const { container } = render(
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <ProjectPhaseProgress property={mockPropertyWith14Phases} />
+          </I18nProvider>
+        </ThemeProvider>
+      );
+
+      const dots = container.querySelectorAll("[data-testid='phase-dot']");
+      expect(dots.length).toBe(14);
+
+      // Act: Hover over the 9th dot (Fase 9: 9. Acabados, En curso)
+      const dot9 = dots[8];
+      fireEvent.mouseEnter(dot9);
+
+      // Assert: Tooltip shows exact 2-line layout: arriba (nombre_fase), abajo (estado)
+      const tooltip = screen.getByTestId("phase-dot-tooltip");
+      expect(tooltip).toBeInTheDocument();
+      const tooltipName = screen.getByTestId("phase-dot-tooltip-name");
+      const tooltipStatus = screen.getByTestId("phase-dot-tooltip-status");
+      expect(tooltipName).toHaveTextContent("9. Acabados");
+      expect(tooltipStatus).toHaveTextContent("En curso");
+
+      // Act: Mouse leave removes tooltip
+      fireEvent.mouseLeave(dot9);
+      await waitFor(() => {
+        expect(screen.queryByTestId("phase-dot-tooltip")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should NOT render image pagination dots when phase has 0 or 1 image (@spec BBC-015-DYNAMIC-MEDIA-CAROUSEL)", () => {
+      const propertySingleImage: PortfolioItem = {
+        ...mockActiveProperty,
+        phases: [
+          { id: "P1", projectId: "P1", order: 1, name: "1. Adquisición", status: "En curso", images: ["https://single.jpg"] },
+        ],
+      };
+
+      render(
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <ProjectPhaseProgress property={propertySingleImage} />
+          </I18nProvider>
+        </ThemeProvider>
+      );
+
+      // Assert: No pagination controls should be rendered when images <= 1
+      expect(screen.queryByTestId("phase-images-pagination")).not.toBeInTheDocument();
+    });
+
+    it("should render dynamic clickable pagination dots and support image switching when phase has multiple images (@spec BBC-015-DYNAMIC-MEDIA-CAROUSEL)", () => {
+      const propertyMultiImages: PortfolioItem = {
+        ...mockActiveProperty,
+        phases: [
+          {
+            id: "P1",
+            projectId: "P1",
+            order: 1,
+            name: "1. Adquisición",
+            status: "En curso",
+            images: [
+              "https://drive.blue-brick.com/vn/adquisicion-1.jpg",
+              "https://drive.blue-brick.com/vn/adquisicion-2.jpg",
+              "https://drive.blue-brick.com/vn/adquisicion-3.jpg",
+            ],
+          },
+        ],
+      };
+
+      render(
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <ProjectPhaseProgress property={propertyMultiImages} />
+          </I18nProvider>
+        </ThemeProvider>
+      );
+
+      // Assert: Pagination dots are rendered matching image count (3 images)
+      const pagination = screen.getByTestId("phase-images-pagination");
+      expect(pagination).toBeInTheDocument();
+      const dot0 = screen.getByTestId("phase-image-dot-0");
+      const dot1 = screen.getByTestId("phase-image-dot-1");
+      const dot2 = screen.getByTestId("phase-image-dot-2");
+      expect(dot0).toBeInTheDocument();
+      expect(dot1).toBeInTheDocument();
+      expect(dot2).toBeInTheDocument();
+
+      // Click dot 1 to switch to second image
+      fireEvent.click(dot1);
+      expect(screen.getByText(/foto 2 de 3/i)).toBeInTheDocument();
     });
   });
 });

@@ -497,7 +497,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
 
               {/* Real-time Construction Phase Progress with Dotted Milestone Stepper & Motion Animations */}
               <div style={{ marginTop: 16 }}>
-                <ProjectPhaseProgress property={activeProperty} />
+                <ProjectPhaseProgress
+                  key={activeProperty.propertyId || activeProperty.id}
+                  property={activeProperty}
+                />
               </div>
 
               <button onClick={prevCard} aria-label="Anterior" style={navBtnStyle("left")}>

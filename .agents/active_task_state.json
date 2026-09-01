@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-14",
-  "branch": "feature/jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases",
+  "task_id": "BBC-015",
+  "branch": "fix/jaymusicmachine-BBC-015-dashboard-real-investor-phases",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
@@ -11,6 +11,6 @@
     "PHASE_5_TESTS_RED": { "completed": true },
     "PHASE_6_CODE_GREEN": { "completed": true },
     "PHASE_7_VALIDATED": { "completed": true },
-    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": false }
+    "PHASE_8_HUMAN_MERGE_APPROVED": { "completed": true }
   }
 }

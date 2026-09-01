@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T18:54:07.449Z",
+  "generatedAt": "2026-09-01T15:20:03.050Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -132,6 +132,30 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-13-investor-login-redesign",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",
