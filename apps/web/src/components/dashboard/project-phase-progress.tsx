@@ -12,9 +12,10 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Camera, Image as ImageIcon, Check } from "lucide-react";
+import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
 import type { PortfolioItem } from "@/lib/types/db";
+import { ProjectPhaseMediaCard } from "@/components/dashboard/project-phase-media-card";
 
 export interface ProjectPhaseProgressProps {
   readonly property: PortfolioItem;
@@ -29,7 +30,27 @@ interface UiPhase {
   readonly images: string[];
 }
 
-const DEFAULT_PHASES: readonly UiPhase[] = [
+/**
+ * Demo photograph URLs for the fallback/Sofía Martínez construction phases.
+ * Sourced from Unsplash free-to-use construction photography. Used only when
+ * no real project phases are loaded from database.
+ *
+ * @security Only HTTPS public URLs. No auth-required endpoints.
+ */
+const DEMO_PHASE_IMAGES: Record<number, string[]> = {
+  // Phase 6 — Construcción de estructuras y muros (active demo phase)
+  6: [
+    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+    "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
+    "https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=800&q=80",
+  ],
+  // Phase 3 — Cimentación y zapatas estructurales
+  3: [
+    "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&q=80",
+  ],
+};
+
+const DEFAULT_PHASE_NAMES = [
   "Estudios y licencias de construcción",
   "Excavación y preparación del terreno",
   "Cimentación y zapatas estructurales",
@@ -42,12 +63,15 @@ const DEFAULT_PHASES: readonly UiPhase[] = [
   "Equipamiento de zonas comunes",
   "Pruebas de calidad y habitabilidad",
   "Entrega de llaves y escrituración",
-].map((name, i) => ({
+];
+
+const DEFAULT_PHASES: readonly UiPhase[] = DEFAULT_PHASE_NAMES.map((name, i) => ({
   id: i + 1,
   name,
   description: "Fase de obra completada según cronograma",
   status: "Completada",
-  images: [],
+  // Step: Attach demo photo URLs for select phases so demo mode shows carousel
+  images: DEMO_PHASE_IMAGES[i + 1] ?? [],
 }));
 
 const PHASE_THEME_TOKENS = {
@@ -146,7 +170,6 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
 
   const phaseImages: readonly string[] = currentPhase.images || [];
   const hasMultipleImages = phaseImages.length > 1;
-  const hasAnyImage = phaseImages.length > 0;
 
   // Reset active image index when selected phase or property changes
   useEffect(() => {
@@ -163,9 +186,6 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
 
     return () => clearInterval(timer);
   }, [hasMultipleImages, isHoveredOnMedia, phaseImages.length]);
-
-  const safeImageIndex = hasAnyImage ? Math.min(activeImageIndex, phaseImages.length - 1) : 0;
-  const currentPhoto = hasAnyImage ? phaseImages[safeImageIndex] : null;
 
   return (
     <div
@@ -491,106 +511,16 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           </div>
         </div>
 
-        {/* Right Column: Media Preview Card with hardware-accelerated hover zoom */}
-        <motion.div
-          onMouseEnter={() => setIsHoveredOnMedia(true)}
-          onMouseLeave={() => setIsHoveredOnMedia(false)}
-          whileHover={{ scale: 1.025, y: -2 }}
-          transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          style={{
-            borderRadius: 12,
-            background: "linear-gradient(135deg, #1C4D38 0%, #0F3124 100%)",
-            border: "1px solid rgba(87, 185, 140, 0.3)",
-            padding: "18px 14px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            minHeight: 110,
-            gap: 8,
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-            position: "relative",
-            transform: "translateZ(0)",
-            willChange: "transform",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <ImageIcon size={22} color="rgba(237, 241, 245, 0.85)" />
-            {hasMultipleImages && (
-              <span
-                style={{
-                  fontSize: 10,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: "rgba(237, 241, 245, 0.8)",
-                  background: "rgba(0, 0, 0, 0.35)",
-                  padding: "1px 6px",
-                  borderRadius: 4,
-                  fontWeight: 600,
-                }}
-              >
-                {safeImageIndex + 1}/{phaseImages.length}
-              </span>
-            )}
-          </div>
-
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#EDF1F5",
-              maxWidth: 220,
-              lineHeight: 1.3,
-            }}
-          >
-            {hasMultipleImages
-              ? `${currentPhase.name} · foto ${safeImageIndex + 1} de ${phaseImages.length}`
-              : currentPhoto
-              ? `${currentPhase.name} · foto avance`
-              : `${currentPhase.name} · avance 1`}
-          </span>
-
-          {/* Carousel dots indicator — ONLY rendered if there are multiple images */}
-          {hasMultipleImages && (
-            <div
-              data-testid="phase-images-pagination"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-                marginTop: 4,
-                zIndex: 5,
-              }}
-            >
-              {phaseImages.map((_, imgIdx) => {
-                const isActive = imgIdx === safeImageIndex;
-                return (
-                  <button
-                    key={imgIdx}
-                    type="button"
-                    data-testid={`phase-image-dot-${imgIdx}`}
-                    aria-label={`Ver imagen ${imgIdx + 1} de ${phaseImages.length}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveImageIndex(imgIdx);
-                    }}
-                    style={{
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      width: isActive ? 14 : 5,
-                      height: 5,
-                      borderRadius: 3,
-                      backgroundColor: isActive ? "#E8495F" : "rgba(237, 241, 245, 0.35)",
-                      transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                    }}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </motion.div>
+        {/* Right Column: Phase Media Preview Card — real photographs from imagen_url_1/2/3 */}
+        {/* Step 8.2: Delegate all image rendering/carousel/fallback logic to ProjectPhaseMediaCard */}
+        <ProjectPhaseMediaCard
+          phaseName={currentPhase.name}
+          images={phaseImages}
+          isDark={isDark}
+          activeIndex={activeImageIndex}
+          onIndexChange={setActiveImageIndex}
+          onHoverChange={setIsHoveredOnMedia}
+        />
       </div>
     </div>
   );
