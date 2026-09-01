@@ -32,7 +32,8 @@ const investorCooldownStore = new Map<string, number>();
 /**
  * Clears the cooldown cache. Primarily for testing and administrative resets.
  */
-export function clearInvestmentLeadCooldowns(): void {
+export async function clearInvestmentLeadCooldowns(): Promise<void> {
+  // Step 1: Clear the in-memory anti-flooding cache
   investorCooldownStore.clear();
 }
 
