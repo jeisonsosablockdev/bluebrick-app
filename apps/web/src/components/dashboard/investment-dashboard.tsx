@@ -25,11 +25,14 @@ import {
   Warehouse,
   LandPlot,
   LogOut,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip, Sector } from "recharts";
 import { useCountUp } from "@/lib/hooks/use-count-up";
 import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
 import { signOutAction } from "@/lib/auth/actions";
+import { submitInvestmentLeadAction } from "@/lib/auth/investment-actions";
 import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
@@ -123,8 +126,12 @@ export function render3DActivePieShape(props: unknown): React.JSX.Element {
 
 const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#1A523D"];
 
+/**
+ * Contract properties for the institutional InvestmentDashboard presentation component.
+ */
 export interface InvestmentDashboardProps {
-  initialData: DashboardViewModel;
+  /** Initial server-side pre-fetched view model data for the investor dashboard. */
+  readonly initialData: DashboardViewModel;
 }
 
 const BASE_NAV_BTN_STYLE: React.CSSProperties = {
@@ -176,6 +183,14 @@ function PropertyIcon({
   return <Icon size={size} color={color} />;
 }
 
+/**
+ * Layer 1: Presentation - Institutional Investment Dashboard Component.
+ * Orchestrates portfolio metrics, asset visualization, investment opportunities,
+ * and handles investment lead capture interactions with reactive feedback.
+ *
+ * @param props Component properties containing initial dashboard view model.
+ * @returns Rendered React JSX element.
+ */
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
   // Step 1: Access localized translation strings and formatters
   const { t, formatCurrency } = useI18n();
@@ -197,6 +212,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(investor.avatarUrl);
+  const [isSubmittingLead, setIsSubmittingLead] = useState<boolean>(false);
+  const [leadFeedback, setLeadFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const maxIndex = Math.max(0, properties.length - 1);
   const memberSinceYear = new Date(investor.createdAt ?? "").getFullYear() || 2026;
@@ -229,6 +249,49 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     }
     setIsLoggingOut(true);
     await signOutAction();
+  };
+
+  /**
+   * Dispatches the investment lead notification to the server action pipeline.
+   * Updates reactive UI states for pending submission and feedback notifications.
+   */
+  const handleInvestLeadClick = async (): Promise<void> => {
+    // Step 1: Set submitting state and clear prior feedback messages
+    setIsSubmittingLead(true);
+    setLeadFeedback(null);
+
+    // Step 2: Invoke investment lead server action with CTA metadata
+    try {
+      const result = await submitInvestmentLeadAction({
+        metadata: {
+          source: "dashboard_reinvestment_cta",
+        },
+      });
+
+      // Step 3: Parse response and update reactive user feedback
+      if (result.success) {
+        setLeadFeedback({
+          type: "success",
+          message: result.message,
+        });
+      } else {
+        setLeadFeedback({
+          type: "error",
+          message: result.message || "Ocurrió un error al procesar su solicitud.",
+        });
+      }
+    } catch (error) {
+      // Step 4: Gracefully handle network exceptions and unexpected errors
+      const errorMsg =
+        error instanceof Error ? error.message : "Error inesperado al conectar con el servidor.";
+      setLeadFeedback({
+        type: "error",
+        message: errorMsg,
+      });
+    } finally {
+      // Step 5: Reset submitting state to unblock controls
+      setIsSubmittingLead(false);
+    }
   };
 
   const projectedEarnings = useMemo(
@@ -820,27 +883,81 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             ))}
           </div>
 
-          <button
-            type="button"
-            className="dash-cta-button"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "linear-gradient(135deg,#E8495F,#C41230)",
-              color: "#0A1220",
-              border: "none",
-              borderRadius: 10,
-              padding: "12px 24px",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
-            }}
-          >
-            {t("dashboard.reinvestment.ctaButton")}
-            <ArrowUpRight size={17} />
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12 }}>
+            <button
+              type="button"
+              className="dash-cta-button"
+              onClick={handleInvestLeadClick}
+              disabled={isSubmittingLead}
+              aria-busy={isSubmittingLead}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(135deg,#E8495F,#C41230)",
+                color: "#0A1220",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px 24px",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: isSubmittingLead ? "not-allowed" : "pointer",
+                opacity: isSubmittingLead ? 0.7 : 1,
+                boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
+                transition: "opacity 0.2s ease, transform 0.2s ease",
+              }}
+            >
+              {isSubmittingLead ? (
+                <>
+                  <Loader2 className="animate-spin" size={17} />
+                  <span>Enviando solicitud...</span>
+                </>
+              ) : (
+                <>
+                  {t("dashboard.reinvestment.ctaButton")}
+                  <ArrowUpRight size={17} />
+                </>
+              )}
+            </button>
+
+            {leadFeedback && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="lead-feedback-message"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "12px 16px",
+                  borderRadius: 10,
+                  fontSize: 13.5,
+                  lineHeight: 1.4,
+                  maxWidth: 560,
+                  background:
+                    leadFeedback.type === "success"
+                      ? "rgba(47, 143, 107, 0.12)"
+                      : "rgba(196, 18, 48, 0.12)",
+                  border:
+                    leadFeedback.type === "success"
+                      ? "1px solid rgba(87, 185, 140, 0.3)"
+                      : "1px solid rgba(232, 73, 95, 0.3)",
+                  color:
+                    leadFeedback.type === "success"
+                      ? "#57B98C"
+                      : "#E8495F",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                }}
+              >
+                {leadFeedback.type === "success" ? (
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, color: "#57B98C" }} />
+                ) : (
+                  <AlertCircle size={18} style={{ flexShrink: 0, color: "#E8495F" }} />
+                )}
+                <span>{leadFeedback.message}</span>
+              </div>
+            )}
+          </div>
         </section>
       </main>
 

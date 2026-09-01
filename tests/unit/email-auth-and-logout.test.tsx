@@ -19,11 +19,14 @@ import { pt } from "@/features/i18n/domain/dictionaries/pt";
 import { DictionarySchema } from "@/features/i18n/domain/schemas/i18n-dictionary-schema";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 
-// Mock server actions from @/lib/auth/actions
+// Mock server actions from @/lib/auth/actions and @/lib/auth/investment-actions
 vi.mock("@/lib/auth/actions", () => ({
   signOutAction: vi.fn().mockResolvedValue(undefined),
   signInWithEmailAction: vi.fn().mockResolvedValue(undefined),
   signInWithGoogleAction: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/lib/auth/investment-actions", () => ({
+  submitInvestmentLeadAction: vi.fn().mockResolvedValue({ success: true, message: "OK" }),
 }));
 
 // Mock mock dashboard data

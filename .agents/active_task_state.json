@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-16",
-  "branch": "feature/jaymusicmachine-BBC-16-dashboard-microanimations",
+  "task_id": "BBC-17",
+  "branch": "feature/jaymusicmachine-BBC-17-investment-lead-email",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
