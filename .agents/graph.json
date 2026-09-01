@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T16:12:47.571Z",
+  "generatedAt": "2026-09-01T18:01:44.464Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -156,6 +156,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-16-dashboard-microanimations",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",

@@ -23,6 +23,9 @@ vi.mock("@/lib/auth/actions", () => ({
   signInWithEmailAction: vi.fn().mockResolvedValue(undefined),
   signInWithGoogleAction: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock("@/lib/auth/investment-actions", () => ({
+  submitInvestmentLeadAction: vi.fn().mockResolvedValue({ success: true, message: "OK" }),
+}));
 
 // Component wrapper for testing the useReducedMotion hook in React runtime
 function ReducedMotionConsumer(): React.JSX.Element {
