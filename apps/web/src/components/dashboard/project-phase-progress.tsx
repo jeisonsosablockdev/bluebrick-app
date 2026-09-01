@@ -50,6 +50,30 @@ const DEFAULT_PHASES: readonly UiPhase[] = [
   images: [],
 }));
 
+const PHASE_THEME_TOKENS = {
+  Completada: {
+    color: "#57B98C",
+    bgDark: "rgba(87, 185, 140, 0.16)",
+    bgLight: "rgba(47, 143, 107, 0.12)",
+    borderDark: "rgba(87, 185, 140, 0.32)",
+    borderLight: "rgba(47, 143, 107, 0.25)",
+  },
+  "En curso": {
+    color: "#E8495F",
+    bgDark: "rgba(232, 73, 95, 0.16)",
+    bgLight: "rgba(196, 18, 48, 0.12)",
+    borderDark: "rgba(232, 73, 95, 0.32)",
+    borderLight: "rgba(196, 18, 48, 0.25)",
+  },
+  default: {
+    color: "#7C8A9C",
+    bgDark: "rgba(124, 138, 156, 0.14)",
+    bgLight: "rgba(10, 18, 32, 0.08)",
+    borderDark: "rgba(124, 138, 156, 0.28)",
+    borderLight: "rgba(10, 18, 32, 0.16)",
+  },
+} as const;
+
 /**
  * ProjectPhaseProgress renders an interactive, animated phase progress stepper with dots.
  */
@@ -95,17 +119,16 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const currentPhase = uiPhases[activePhaseIndex] ?? uiPhases[0]!;
   const currentPhaseNumber = activePhaseIndex + 1;
 
-  // Step 4: Calculate completion percentage
-  let completionPercentage = 100;
-  if (hasDynamicPhases && property.status !== "concluida") {
-    if (property.phaseProgressPct !== undefined && property.phaseProgressPct !== null) {
+  // Step 4: Calculate completion percentage declaratively
+  const completionPercentage = (() => {
+    if (!hasDynamicPhases || property.status === "concluida") return 100;
+    if (property.phaseProgressPct != null) {
       const rawPct = Number(property.phaseProgressPct);
-      completionPercentage = Math.round(rawPct <= 1 ? rawPct * 100 : rawPct);
-    } else {
-      const completedCount = uiPhases.filter((p) => p.status === "Completada").length;
-      completionPercentage = Math.round((completedCount / totalPhases) * 100);
+      return Math.round(rawPct <= 1 ? rawPct * 100 : rawPct);
     }
-  }
+    const completedCount = uiPhases.filter((p) => p.status === "Completada").length;
+    return Math.round((completedCount / totalPhases) * 100);
+  })();
 
   // Step 5: Color tokens
   const containerBg = isDark ? "rgba(10, 18, 32, 0.7)" : "rgba(248, 250, 252, 0.9)";
@@ -235,43 +258,24 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           }}
         >
           {uiPhases.map((phase, idx) => {
-            let isCompleted = false;
-            let isCurrent = false;
+            const isCompleted = isConcluded || !hasDynamicPhases || phase.status === "Completada";
+            const isCurrent = !isCompleted && (phase.status === "En curso" || idx === activePhaseIndex);
+            const phaseStatusLabel = isConcluded || !hasDynamicPhases ? "Completada" : phase.status || "Pendiente";
+            const token = PHASE_THEME_TOKENS[phaseStatusLabel as keyof typeof PHASE_THEME_TOKENS] ?? PHASE_THEME_TOKENS.default;
 
-            if (isConcluded || !hasDynamicPhases) {
-              isCompleted = true;
-            } else {
-              isCompleted = phase.status === "Completada";
-              isCurrent = phase.status === "En curso" || idx === activePhaseIndex;
-            }
+            const badgeColor = token.color;
+            const badgeBg = isDark ? token.bgDark : token.bgLight;
+            const badgeBorder = isDark ? token.borderDark : token.borderLight;
 
-            const phaseStatusLabel = isConcluded || !hasDynamicPhases
-              ? "Completada"
-              : phase.status || "Pendiente";
+            const dotBg = isCompleted
+              ? "#57B98C"
+              : isCurrent
+              ? "#E8495F"
+              : isDark
+              ? "rgba(237, 241, 245, 0.25)"
+              : "rgba(10, 18, 32, 0.25)";
 
-            let badgeColor = "#7C8A9C";
-            let badgeBg = isDark ? "rgba(124, 138, 156, 0.14)" : "rgba(10, 18, 32, 0.08)";
-            let badgeBorder = isDark ? "rgba(124, 138, 156, 0.28)" : "rgba(10, 18, 32, 0.16)";
-
-            if (phaseStatusLabel === "Completada") {
-              badgeColor = "#57B98C";
-              badgeBg = isDark ? "rgba(87, 185, 140, 0.16)" : "rgba(47, 143, 107, 0.12)";
-              badgeBorder = isDark ? "rgba(87, 185, 140, 0.32)" : "rgba(47, 143, 107, 0.25)";
-            } else if (phaseStatusLabel === "En curso") {
-              badgeColor = "#E8495F";
-              badgeBg = isDark ? "rgba(232, 73, 95, 0.16)" : "rgba(196, 18, 48, 0.12)";
-              badgeBorder = isDark ? "rgba(232, 73, 95, 0.32)" : "rgba(196, 18, 48, 0.25)";
-            }
-
-            let dotBg = isDark ? "rgba(237, 241, 245, 0.25)" : "rgba(10, 18, 32, 0.25)";
-            let dotBorder = "2px solid transparent";
-
-            if (isCompleted) {
-              dotBg = "#57B98C";
-            } else if (isCurrent) {
-              dotBg = "#E8495F";
-              dotBorder = isDark ? "2px solid #FFFFFF" : "2px solid #0A1220";
-            }
+            const dotBorder = isCurrent ? (isDark ? "2px solid #FFFFFF" : "2px solid #0A1220") : "2px solid transparent";
 
             return (
               <button
@@ -399,6 +403,9 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                       ? { scale: [1, 1.2, 1], transition: { repeat: Infinity, duration: 2 } }
                       : { scale: 1 }
                   }
+                  whileHover={{ scale: 1.32 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 22 }}
                   style={{
                     width: isCurrent ? 14 : 10,
                     height: isCurrent ? 14 : 10,
@@ -409,6 +416,8 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    transform: "translateZ(0)",
+                    willChange: "transform",
                   }}
                 >
                   {isCompleted && <Check size={7} color="#FFFFFF" strokeWidth={3} />}
@@ -482,10 +491,12 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           </div>
         </div>
 
-        {/* Right Column: Media Preview Card */}
-        <div
+        {/* Right Column: Media Preview Card with hardware-accelerated hover zoom */}
+        <motion.div
           onMouseEnter={() => setIsHoveredOnMedia(true)}
           onMouseLeave={() => setIsHoveredOnMedia(false)}
+          whileHover={{ scale: 1.025, y: -2 }}
+          transition={{ type: "spring", stiffness: 350, damping: 25 }}
           style={{
             borderRadius: 12,
             background: "linear-gradient(135deg, #1C4D38 0%, #0F3124 100%)",
@@ -500,6 +511,8 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
             gap: 8,
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
             position: "relative",
+            transform: "translateZ(0)",
+            willChange: "transform",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
@@ -577,7 +590,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
               })}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
