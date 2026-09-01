@@ -10,6 +10,7 @@ import React from "react";
 import { I18nProvider } from "@/features/i18n";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { MotionProvider } from "@/components/motion/motion-provider";
+import { ThemeProvider } from "@/components/theme";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -19,13 +20,16 @@ export interface ProvidersProps {
  * Root context provider hierarchy wrapping client subtree.
  */
 export function Providers({ children }: ProvidersProps): React.JSX.Element {
-  // Step 1: Wrap app contents in I18nProvider for global multilingual localization
-  // Step 2: Provide Motion animations and Solana wallet runtime
+  // Step 1: Wrap app contents in ThemeProvider for light/dark mode support
+  // Step 2: Wrap in I18nProvider for global multilingual localization
+  // Step 3: Provide Motion animations and Solana wallet runtime
   return (
-    <I18nProvider>
-      <MotionProvider>
-        <WalletRuntimeProvider>{children}</WalletRuntimeProvider>
-      </MotionProvider>
-    </I18nProvider>
+    <ThemeProvider defaultTheme="dark">
+      <I18nProvider>
+        <MotionProvider>
+          <WalletRuntimeProvider>{children}</WalletRuntimeProvider>
+        </MotionProvider>
+      </I18nProvider>
+    </ThemeProvider>
   );
 }

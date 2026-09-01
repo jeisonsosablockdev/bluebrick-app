@@ -79,11 +79,6 @@ describe("BBC-009: Translation Dictionaries & Zod Validation (@spec BBC-009-DICT
   });
 
   it("should verify dynamic parameter placeholders exist in appropriate tokens", () => {
-    // Active projects parameter
-    expect(es.loginCard.activeProjectsCount).toContain("{count}");
-    expect(en.loginCard.activeProjectsCount).toContain("{count}");
-    expect(pt.loginCard.activeProjectsCount).toContain("{count}");
-
     // ROI parameter
     expect(es.dashboard.weightedRoi).toContain("{roi}");
     expect(en.dashboard.weightedRoi).toContain("{roi}");

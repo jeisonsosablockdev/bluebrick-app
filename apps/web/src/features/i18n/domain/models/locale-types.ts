@@ -78,6 +78,7 @@ export interface Dictionary {
     language: string;
     selectLanguage: string;
     logout: string;
+    toggleThemeAria: string;
   };
   nav: {
     dashboard: string;
@@ -95,12 +96,12 @@ export interface Dictionary {
   };
   loginCard: {
     headerTitle: string;
-    verifiedBadge: string;
-    tierLabel: string;
-    activeProjectsCount: string;
-    enterDashboardButton: string;
+    privatePortalBadge: string;
+    exclusiveAccessTitle: string;
+    loginSubtitle: string;
     emailLoginButton: string;
     disclaimerNote: string;
+    supportedProvidersLabel: string;
   };
   logoutModal: {
     title: string;

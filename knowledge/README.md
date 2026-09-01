@@ -30,11 +30,11 @@ Last Generated: 2026-08-25T05:12:03.660Z
 | Observations | 0 |
 | Proposals | 0 |
 | Reports | 1 |
-| Archived | 68 |
+| Archived | 87 |
 | Observed status | 1 |
 | Triaged status | 0 |
 | Promoted status | 0 |
-| Archived status | 68 |
+| Archived status | 87 |
 
 ## Inbox
 
@@ -72,12 +72,30 @@ _No items yet._
 | toolchain-policy | archived | none | [Toolchain and Runtime Policy](knowledge/architecture/toolchain-policy.md) | n/a |
 | index | archived | none | [Database Architecture & Models Index](knowledge/database/index.md) | n/a |
 | index | archived | none | [Data Models Index](knowledge/database/models/index.md) | n/a |
+| feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation | archived | none | [feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation](knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md) | n/a |
+| feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery | archived | none | [feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery](knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md) | n/a |
+| feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation | archived | none | [feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation](knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation.md) | n/a |
+| feature-jaymusicmachine-BBC-13-investor-login-redesign | archived | none | [feature-jaymusicmachine-BBC-13-investor-login-redesign](knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign.md) | n/a |
+| feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation | archived | none | [feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation](knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation.md) | n/a |
+| feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases | archived | none | [feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases](knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md) | n/a |
+| feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation | archived | none | [feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation](knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md) | n/a |
+| feature-jaymusicmachine-BBC-16-dashboard-microanimations | archived | none | [feature-jaymusicmachine-BBC-16-dashboard-microanimations](knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations.md) | n/a |
+| feature-jaymusicmachine-BBC-17-investment-lead-email-implementation | archived | none | [feature-jaymusicmachine-BBC-17-investment-lead-email-implementation](knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email-implementation.md) | n/a |
+| feature-jaymusicmachine-BBC-17-investment-lead-email | archived | none | [feature-jaymusicmachine-BBC-17-investment-lead-email](knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email.md) | n/a |
 | feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation | archived | none | [feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation](knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md) | n/a |
 | feature-jaymusicmachine-BBC-6-user-investment-dashboard | archived | none | [feature-jaymusicmachine-BBC-6-user-investment-dashboard](knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard.md) | n/a |
 | feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation | archived | none | [feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation](knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline-implementation.md) | n/a |
 | feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline | archived | none | [feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline](knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md) | n/a |
+| feature-jeisonsosa-BBC-009-internationalization-implementation | archived | none | [feature-jeisonsosa-BBC-009-internationalization-implementation](knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md) | n/a |
+| feature-jeisonsosa-BBC-009-internationalization | archived | none | [feature-jeisonsosa-BBC-009-internationalization](knowledge/features/feature-jeisonsosa-BBC-009-internationalization.md) | n/a |
+| feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation | archived | none | [feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation](knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md) | n/a |
+| feature-jeisonsosa-BBC-10-email-auth-and-logout | archived | none | [feature-jeisonsosa-BBC-10-email-auth-and-logout](knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md) | n/a |
+| fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation | archived | none | [fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation](knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation.md) | n/a |
+| fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases | archived | none | [fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases](knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md) | n/a |
 | fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation | archived | none | [fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation](knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md) | n/a |
 | fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard | archived | none | [fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard](knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard.md) | n/a |
+| fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation | archived | none | [fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation](knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md) | n/a |
+| fix-jeisonsosa-BBC-008-digest-implementation-fixes | archived | none | [fix-jeisonsosa-BBC-008-digest-implementation-fixes](knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes.md) | n/a |
 | clean-code-folder-structure | archived | none | [clean-code-folder-structure](knowledge/governance/clean-code-folder-structure.md) | n/a |
 | documentation-policy | archived | none | [Documentation Policy](knowledge/governance/documentation-policy.md) | n/a |
 | frontend-ui-policy | archived | none | [Frontend Ui Policy](knowledge/governance/frontend-ui-policy.md) | n/a |
@@ -107,6 +125,7 @@ _No items yet._
 | solana-kit-migration-recipes | archived | none | [Solana Kit Migration Recipes](knowledge/guides/solana-kit-migration-recipes.md) | n/a |
 | index | archived | none | [Knowledge Catalog](knowledge/index.md) | n/a |
 | log | archived | none | [Log](knowledge/log.md) | n/a |
+| ai-ingestion-operations-guide | archived | none | [ai-ingestion-operations-guide](knowledge/operations/ai-ingestion-operations-guide.md) | n/a |
 | STORY-001-01-service-account-auth | archived | none | [STORY-001-01 Google Service Account Auth & Token Handler](knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-01-service-account-auth.md) | n/a |
 | STORY-001-02-schema-alignment-contracts | archived | none | [STORY-001-02 Canonical Domain Contracts & Zod Validation Gate](knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-02-schema-alignment-contracts.md) | n/a |
 | STORY-001-03-drive-changes-polling | archived | none | [STORY-001-03 Google Drive Changes API & Differential Polling Engine](knowledge/rfcs/EPIC-001-ai-augmented-ingestion-pipeline/STORY-001-03-drive-changes-polling.md) | n/a |

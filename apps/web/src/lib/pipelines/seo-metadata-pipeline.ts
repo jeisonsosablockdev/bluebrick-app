@@ -16,18 +16,21 @@ export interface SeoMetadataConfig {
 
 export interface SchemaOrgOrganization {
   "@context": "https://schema.org";
-  "@type": "FinancialService" | "InvestmentOrDeposit";
+  "@type": "FinancialService" | "RealEstateAgent" | string[];
   name: string;
   url: string;
   logo: string;
   description: string;
   sameAs?: string[];
+  areaServed?: string;
+  currenciesAccepted?: string;
+  paymentAccepted?: string;
 }
 
 const DEFAULT_SITE_URL = "https://bluebrick-app.vercel.app";
 const DEFAULT_SITE_NAME = "BlueBrick";
 const DEFAULT_DESCRIPTION =
-  "Plataforma institucional de inversión inmobiliaria fraccionada. Invierte en activos premium con retornos transparentes.";
+  "Plataforma institucional de inversión inmobiliaria fraccionada. Invierte en activos premium con retornos transparentes y dividendos mensuales.";
 
 /**
  * Builds complete Next.js 16 App Router Metadata object.
@@ -36,11 +39,13 @@ const DEFAULT_DESCRIPTION =
  * @returns Fully populated Next.js Metadata object.
  */
 export function buildPageMetadata(config: SeoMetadataConfig): Metadata {
+  // Step 1: Resolve canonical hostname and route URLs
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL;
   const canonicalUrl = `${siteUrl}${config.pathname || ""}`;
   const fullTitle = `${config.title} | ${DEFAULT_SITE_NAME}`;
-  const imageUrl = config.imageUrl || `${siteUrl}/og-image.png`;
+  const imageUrl = config.imageUrl || `${siteUrl}/opengraph-image`;
 
+  // Step 2: Assemble complete OpenGraph, Twitter, and canonical metadata
   return {
     title: fullTitle,
     description: config.description,
@@ -85,21 +90,27 @@ export function buildPageMetadata(config: SeoMetadataConfig): Metadata {
 }
 
 /**
- * Generates Schema.org JSON-LD structured data for the financial investment platform.
+ * Generates Schema.org JSON-LD structured data for the financial real estate investment platform.
  */
 export function generatePlatformJsonLd(): SchemaOrgOrganization {
+  // Step 1: Resolve base URL and metadata endpoints
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL;
 
+  // Step 2: Return structured composite FinancialService entity
   return {
     "@context": "https://schema.org",
-    "@type": "FinancialService",
+    "@type": ["FinancialService", "RealEstateAgent"],
     name: "BlueBrick Platform",
     url: siteUrl,
-    logo: `${siteUrl}/brand-emblem.png`,
+    logo: `${siteUrl}/icon`,
     description: DEFAULT_DESCRIPTION,
     sameAs: [
       "https://twitter.com/bluebrick_app",
       "https://linkedin.com/company/bluebrick-app",
+      "https://github.com/jeisonsosablockdev/bluebrick-app",
     ],
+    areaServed: "Global",
+    currenciesAccepted: "USD, USDC, COP",
+    paymentAccepted: "Credit Card, Bank Transfer, Crypto",
   };
 }

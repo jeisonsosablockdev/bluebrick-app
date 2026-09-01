@@ -27,6 +27,19 @@ import {
   CanonicalClientSchema,
 } from '../domain/schemas/canonical-client-schema';
 import {
+  CanonicalDashboardWorkbook,
+  CanonicalDashboardWorkbookSchema,
+  CanonicalDashboardProject,
+  CanonicalInvestor,
+  CanonicalInvestment,
+  CanonicalProjectPhase,
+  CanonicalOpportunity,
+  CanonicalReinvestmentTransaction,
+  CanonicalInvestorSummary,
+  ProjectPhaseStatus,
+  PROJECT_PHASE_STATUSES,
+} from '../domain/schemas/canonical-dashboard-schema';
+import {
   sanitizeSpreadsheetCell,
   excelSerialToIsoDate,
 } from '../domain/utils/excel-date-converter';
@@ -246,4 +259,509 @@ export class StreamingSpreadsheetAdapter implements ISpreadsheetParserPort {
 
     return null;
   }
+
+  /**
+   * Parses all operational sheets from DASH-BOARD-Blue-Brick-Panel-Administracion.xlsx
+   * into a consolidated, typed, and sanitized CanonicalDashboardWorkbook domain payload.
+   * 
+   * @param buffer - Binary workbook buffer (XLSX)
+   * @param filename - Source filename for auditing
+   * @returns Validated CanonicalDashboardWorkbook
+   */
+  public async parseDashboardWorkbook(
+    buffer: Uint8Array | Buffer,
+    filename: string
+  ): Promise<CanonicalDashboardWorkbook> {
+    const rawBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+
+    // Step 1: Invariant - Buffer cannot be empty
+    if (!rawBuffer || rawBuffer.length === 0) {
+      throw new SpreadsheetDomainError('EMPTY_SPREADSHEET', 'Dashboard spreadsheet buffer is empty');
+    }
+
+    let workbook: XLSX.WorkBook;
+    try {
+      workbook = XLSX.read(rawBuffer, {
+        type: 'buffer',
+        cellDates: true,
+        dense: true,
+      });
+    } catch (err) {
+      throw new SpreadsheetDomainError(
+        'CORRUPTED_FILE',
+        `Failed to parse dashboard workbook: ${(err as Error)?.message || 'Invalid format'}`,
+        false,
+        err
+      );
+    }
+
+    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+      throw new SpreadsheetDomainError('EMPTY_SPREADSHEET', 'Dashboard spreadsheet contains no worksheets');
+    }
+
+    // Step 2: Parse Sheet 'Proyectos '
+    const proyectos = this.parseProyectosSheet(workbook);
+
+    // Step 3: Parse Sheet 'Inversionistas'
+    const inversionistas = this.parseInversionistasSheet(workbook);
+
+    // Step 4: Parse Sheet 'Inversiones'
+    const inversiones = this.parseInversionesSheet(workbook);
+
+    // Step 5: Parse Sheet 'Fases_Proyecto'
+    const fases = this.parseFasesSheet(workbook);
+
+    // Step 6: Parse Sheet 'Oportunidades'
+    const oportunidades = this.parseOportunidadesSheet(workbook);
+
+    // Step 7: Parse Sheet 'Transacciones_Reinversion'
+    const transacciones = this.parseTransaccionesSheet(workbook);
+
+    // Step 8: Parse Sheet 'Resumen_Dashboard'
+    const resumenes = this.parseResumenSheet(workbook);
+
+    // Step 9: Assemble and validate through CanonicalDashboardWorkbookSchema
+    const unvalidated = {
+      proyectos,
+      inversionistas,
+      inversiones,
+      fases,
+      oportunidades,
+      transacciones,
+      resumenes,
+    };
+
+    const parsed = CanonicalDashboardWorkbookSchema.parse(unvalidated);
+    return parsed;
+  }
+
+  /**
+   * Helper: Extracts rows from sheet matching a regular expression.
+   */
+  private getSheetRowsByName(workbook: XLSX.WorkBook, pattern: RegExp): unknown[][] | null {
+    const sheetName = workbook.SheetNames.find((name) => pattern.test(name.trim()));
+    if (!sheetName) return null;
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) return null;
+    return XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      raw: true,
+      defval: null,
+    }) as unknown[][];
+  }
+
+  /**
+   * Helper: Finds header row index and sanitized lowercase headers within the first 10 rows.
+   */
+  private findHeaderRowInfo(rows: unknown[][]): { headerIndex: number; headers: string[] } {
+    let headerIndex = 0;
+    for (let r = 0; r < Math.min(rows.length, 10); r++) {
+      const nonNulls = (rows[r] || []).filter((c) => c !== null && String(c).trim() !== '');
+      if (nonNulls.length >= 3) {
+        headerIndex = r;
+        break;
+      }
+    }
+    const headers = (rows[headerIndex] || []).map((h) =>
+      String(sanitizeSpreadsheetCell(h) ?? '').trim().toLowerCase()
+    );
+    return { headerIndex, headers };
+  }
+
+  /**
+   * Parses Sheet 'Proyectos ' into CanonicalDashboardProject array.
+   */
+  private parseProyectosSheet(workbook: XLSX.WorkBook): CanonicalDashboardProject[] {
+    const rows = this.getSheetRowsByName(workbook, /^proyectos/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colId = headers.findIndex((h) => h.includes('id_inversion') || h.includes('sku') || h.includes('id'));
+    const colName = headers.findIndex((h) => h.includes('nombre') || h.includes('proyecto') || h.includes('name'));
+    const colCity = headers.findIndex((h) => h.includes('ciudad') || h.includes('city') || h.includes('direccion'));
+    const colTiming = headers.findIndex((h) => h.includes('timing') || h.includes('meses') || h.includes('duracion'));
+
+    const projects: CanonicalDashboardProject[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawId = colId !== -1 ? row[colId] : row[0];
+      const rawName = colName !== -1 ? row[colName] : row[1];
+      if (!rawId || !rawName) continue;
+
+      const idInversion = String(sanitizeSpreadsheetCell(rawId) ?? '').trim();
+      const nombre = String(sanitizeSpreadsheetCell(rawName) ?? '').trim();
+      if (!idInversion || !nombre) continue;
+
+      const rawCity = colCity !== -1 ? row[colCity] : 'Tampa, FL';
+      const ciudad = String(sanitizeSpreadsheetCell(rawCity) ?? 'Tampa, FL').trim();
+      const duracionMeses = colTiming !== -1 && typeof row[colTiming] === 'number' ? Number(row[colTiming]) : 6;
+
+      projects.push({
+        idInversion,
+        nombre,
+        ciudad,
+        tipoProyecto: 'Residencial',
+        duracionMeses,
+        faseActual: '1. Adquisición',
+        avanceFasePct: 0,
+        driveUrl: null,
+      });
+    }
+
+    return projects;
+  }
+
+  /**
+   * Parses Sheet 'Inversionistas' into CanonicalInvestor array.
+   */
+  private parseInversionistasSheet(workbook: XLSX.WorkBook): CanonicalInvestor[] {
+    const rows = this.getSheetRowsByName(workbook, /^inversionista/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colId = headers.findIndex((h) => h.includes('id_inversionista') || h.includes('id'));
+    const colName = headers.findIndex((h) => h.includes('nombre') || h.includes('inversionista') || h.includes('name'));
+    const colEmail = headers.findIndex((h) => h.includes('email') || h.includes('correo'));
+    const colTipo = headers.findIndex((h) => h.includes('tipo'));
+    const colFecha = headers.findIndex((h) => h.includes('fecha'));
+    const colTiming = headers.findIndex((h) => h.includes('timing'));
+
+    const investors: CanonicalInvestor[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawId = colId !== -1 ? row[colId] : null;
+      const rawEmail = colEmail !== -1 ? row[colEmail] : null;
+      if (!rawId || !rawEmail) continue;
+
+      const idInversionista = String(sanitizeSpreadsheetCell(rawId) ?? '').trim();
+      const rawName = colName !== -1 ? row[colName] : 'Inversionista';
+      const nombre = String(sanitizeSpreadsheetCell(rawName) ?? 'Inversionista').trim();
+      const cleanEmail = String(sanitizeSpreadsheetCell(rawEmail) ?? '').trim().toLowerCase();
+      if (!cleanEmail.includes('@')) continue;
+
+      const tipoInversionista = colTipo !== -1 && row[colTipo] ? String(sanitizeSpreadsheetCell(row[colTipo])) : 'Privado';
+      const fechaIngreso = colFecha !== -1 && typeof row[colFecha] === 'number' ? excelSerialToIsoDate(row[colFecha]) : null;
+      const timingMonths = colTiming !== -1 && typeof row[colTiming] === 'number' ? Number(row[colTiming]) : 6;
+
+      investors.push({
+        idInversionista,
+        nombre,
+        email: cleanEmail,
+        tipoInversionista,
+        fechaIngreso,
+        timingMonths,
+      });
+    }
+
+    return investors;
+  }
+
+  /**
+   * Parses Sheet 'Inversiones' into CanonicalInvestment array.
+   */
+  private parseInversionesSheet(workbook: XLSX.WorkBook): CanonicalInvestment[] {
+    const rows = this.getSheetRowsByName(workbook, /^inversione/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colInv = headers.findIndex((h) => h.includes('id_inversion'));
+    const colInvestor = headers.findIndex((h) => h.includes('id_inversionista'));
+    const colName = headers.findIndex((h) => h.includes('nombre_proyecto') || h.includes('proyecto'));
+    const colCity = headers.findIndex((h) => h.includes('ciudad') || h.includes('city'));
+    const colMonto = headers.findIndex((h) => h.includes('monto') || h.includes('monto_invertido'));
+    const colRoi = headers.findIndex((h) => h.includes('roi'));
+    const colEstado = headers.findIndex((h) => h.includes('estado'));
+    const colTiming = headers.findIndex((h) => h.includes('fecha_timing'));
+    const colAvance = headers.findIndex((h) => h.includes('avance_fase_pct'));
+    const colFase = headers.findIndex((h) => h.includes('fase_actual'));
+    const colImg = headers.findIndex((h) => h.includes('imagen_url'));
+    const colGanancia = headers.findIndex((h) => h.includes('ganancia'));
+    const colRendimiento = headers.findIndex((h) => h.includes('rendimiento'));
+
+    const investments: CanonicalInvestment[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (let idx = 0; idx < dataRows.length; idx++) {
+      const row = dataRows[idx] || [];
+      const rawId = colInv !== -1 ? row[colInv] : null;
+      if (!rawId) continue;
+
+      const idInversion = String(sanitizeSpreadsheetCell(rawId) ?? '').trim();
+      const idInversionista = colInvestor !== -1 && row[colInvestor] ? String(sanitizeSpreadsheetCell(row[colInvestor])).trim() : null;
+      const nombreProyecto = colName !== -1 && row[colName] ? String(sanitizeSpreadsheetCell(row[colName])).trim() : 'Inversión Inmobiliaria';
+      const ciudad = colCity !== -1 && row[colCity] ? String(sanitizeSpreadsheetCell(row[colCity])).trim() : 'TAMPA BAY';
+      const montoInvertido = colMonto !== -1 && typeof row[colMonto] === 'number' ? Number(row[colMonto]) : 0;
+      
+      let roiPct = 0.15;
+      if (colRoi !== -1 && typeof row[colRoi] === 'number') {
+        roiPct = row[colRoi] > 1 ? Number((row[colRoi] / 100).toFixed(4)) : Number(row[colRoi]);
+      }
+
+      const estado = colEstado !== -1 && row[colEstado] ? String(sanitizeSpreadsheetCell(row[colEstado])).trim() : 'Activa';
+      const avanceFasePct = colAvance !== -1 && typeof row[colAvance] === 'number' ? Number(row[colAvance]) : 0;
+      const faseActual = colFase !== -1 && row[colFase] ? String(sanitizeSpreadsheetCell(row[colFase])).trim() : '1. Adquisición';
+      const imagenUrl = colImg !== -1 && row[colImg] ? String(row[colImg]).trim() : null;
+      const gananciaProyectada = colGanancia !== -1 && typeof row[colGanancia] === 'number' ? Number(row[colGanancia]) : 0;
+      const rendimientoDevengado = colRendimiento !== -1 && typeof row[colRendimiento] === 'number' ? Number(row[colRendimiento]) : 0;
+      const fechaTiming = colTiming !== -1 && typeof row[colTiming] === 'number' ? excelSerialToIsoDate(row[colTiming]) : null;
+
+      investments.push({
+        id: `INV_${idInversion}_${idInversionista || idx}`,
+        idInversion,
+        idInversionista,
+        nombreProyecto,
+        ciudad,
+        tipoPropiedad: 'Residencial',
+        tipoProyecto: 'Fix & Flip',
+        montoInvertido,
+        roiPct,
+        estado,
+        duracionMeses: 6,
+        rangoEsperado: '6-12 MESES',
+        fechaTiming,
+        allocationPct: 1,
+        imagenUrl,
+        avanceFasePct,
+        faseActual,
+        gananciaProyectada,
+        rendimientoDevengado,
+      });
+    }
+
+    return investments;
+  }
+
+  /**
+   * Parses Sheet 'Fases_Proyecto' into CanonicalProjectPhase array.
+   */
+  private parseFasesSheet(workbook: XLSX.WorkBook): CanonicalProjectPhase[] {
+    const rows = this.getSheetRowsByName(workbook, /^fases/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colFaseId = headers.findIndex((h) => h === 'id_fase' || h.includes('id_fase'));
+    const colInvId = headers.findIndex((h) => h === 'id_inversion' || h.includes('id_inversion'));
+    const colOrden = headers.findIndex((h) => h.includes('orden'));
+    const colNombre = headers.findIndex(
+      (h) => h === 'nombre_fase' || h.includes('nombre_fase') || (h.includes('nombre') && !h.includes('id'))
+    );
+    const colEstado = headers.findIndex((h) => h.includes('estado'));
+    const colStart = headers.findIndex((h) => h.includes('fecha_inicio'));
+    const colEnd = headers.findIndex((h) => h.includes('fecha_fin'));
+    const colImg1 = headers.findIndex((h) => h.includes('imagen_url_1'));
+    const colImg2 = headers.findIndex((h) => h.includes('imagen_url_2'));
+    const colImg3 = headers.findIndex((h) => h.includes('imagen_url_3'));
+
+    const phases: CanonicalProjectPhase[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawFaseId = colFaseId !== -1 ? row[colFaseId] : null;
+      const rawInvId = colInvId !== -1 ? row[colInvId] : null;
+      if (!rawFaseId || !rawInvId) continue;
+
+      const idFase = String(sanitizeSpreadsheetCell(rawFaseId) ?? '').trim();
+      const idInversion = String(sanitizeSpreadsheetCell(rawInvId) ?? '').trim();
+      if (!idFase || !idInversion || !idFase.startsWith('FASE-')) continue;
+
+      const rawOrden = colOrden !== -1 && typeof row[colOrden] === 'number' ? Number(row[colOrden]) : 1;
+      const orden = Math.max(1, Math.min(50, rawOrden));
+
+      const rawNombre = colNombre !== -1 ? row[colNombre] : `Fase ${orden}`;
+      const nombreFase = String(sanitizeSpreadsheetCell(rawNombre) ?? `Fase ${orden}`).trim();
+
+      const rawEstado = colEstado !== -1 && row[colEstado] ? String(sanitizeSpreadsheetCell(row[colEstado])).trim() : 'Pendiente';
+      const estado: ProjectPhaseStatus = (PROJECT_PHASE_STATUSES as readonly string[]).includes(rawEstado)
+        ? (rawEstado as ProjectPhaseStatus)
+        : 'Pendiente';
+
+      const fechaInicio = colStart !== -1 && typeof row[colStart] === 'number' ? excelSerialToIsoDate(row[colStart]) : null;
+      const fechaFin = colEnd !== -1 && typeof row[colEnd] === 'number' ? excelSerialToIsoDate(row[colEnd]) : null;
+
+      const rawImgs = [
+        colImg1 !== -1 ? row[colImg1] : null,
+        colImg2 !== -1 ? row[colImg2] : null,
+        colImg3 !== -1 ? row[colImg3] : null,
+      ];
+      const imagenes = rawImgs
+        .filter((img): img is string => typeof img === 'string' && img.trim().length > 0)
+        .map((img) => img.trim());
+
+      phases.push({
+        idFase,
+        idInversion,
+        orden,
+        nombreFase,
+        estado,
+        fechaInicio,
+        fechaFin,
+        imagenes,
+      });
+    }
+
+    return phases;
+  }
+
+  /**
+   * Parses Sheet 'Oportunidades' into CanonicalOpportunity array.
+   */
+  private parseOportunidadesSheet(workbook: XLSX.WorkBook): CanonicalOpportunity[] {
+    const rows = this.getSheetRowsByName(workbook, /^oportunidad/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colId = headers.findIndex((h) => h.includes('id_oportunidad') || h.includes('id'));
+    const colName = headers.findIndex((h) => h.includes('nombre_proyecto') || h.includes('proyecto') || h.includes('title'));
+    const colCity = headers.findIndex((h) => h.includes('ciudad') || h.includes('city'));
+    const colRoi = headers.findIndex((h) => h.includes('roi'));
+    const colTicket = headers.findIndex((h) => h.includes('ticket') || h.includes('minimo') || h.includes('monto'));
+
+    const opportunities: CanonicalOpportunity[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawId = colId !== -1 ? row[colId] : null;
+      const rawName = colName !== -1 ? row[colName] : null;
+      if (!rawId || !rawName) continue;
+
+      const id = String(sanitizeSpreadsheetCell(rawId) ?? '').trim();
+      const titulo = String(sanitizeSpreadsheetCell(rawName) ?? '').trim();
+      if (!id || !titulo) continue;
+
+      const rawCity = colCity !== -1 && row[colCity] ? row[colCity] : 'TAMPA';
+      const ciudad = String(sanitizeSpreadsheetCell(rawCity) ?? 'TAMPA').trim();
+
+      let roiProyectado = 16.0;
+      if (colRoi !== -1 && typeof row[colRoi] === 'number') {
+        roiProyectado = row[colRoi] <= 1 ? Number((row[colRoi] * 100).toFixed(1)) : Number(row[colRoi].toFixed(1));
+      }
+
+      const inversionMinima = colTicket !== -1 && typeof row[colTicket] === 'number' ? Number(row[colTicket]) : 25000;
+
+      opportunities.push({
+        id,
+        titulo,
+        ciudad,
+        roiProyectado,
+        inversionMinima,
+        diasRestantes: 15,
+        gradient: 'linear-gradient(135deg,#16223B 0%,#1F0E14 100%)',
+      });
+    }
+
+    return opportunities;
+  }
+
+  /**
+   * Parses Sheet 'Transacciones_Reinversion' into CanonicalReinvestmentTransaction array.
+   */
+  private parseTransaccionesSheet(workbook: XLSX.WorkBook): CanonicalReinvestmentTransaction[] {
+    const rows = this.getSheetRowsByName(workbook, /^transaccion/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colTrxId = headers.findIndex((h) => h.includes('id_transaccion') || h.includes('id'));
+    const colInvId = headers.findIndex((h) => h.includes('id_inversionista'));
+    const colOppId = headers.findIndex((h) => h.includes('id_oportunidad'));
+    const colMonto = headers.findIndex((h) => h.includes('monto'));
+    const colFecha = headers.findIndex((h) => h.includes('fecha_solicitud') || h.includes('fecha'));
+    const colEstado = headers.findIndex((h) => h.includes('estado'));
+
+    const transactions: CanonicalReinvestmentTransaction[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawTrx = colTrxId !== -1 ? row[colTrxId] : null;
+      const rawInv = colInvId !== -1 ? row[colInvId] : null;
+      if (!rawTrx || !rawInv) continue;
+
+      const idTransaccion = String(sanitizeSpreadsheetCell(rawTrx) ?? '').trim();
+      const idInversionista = String(sanitizeSpreadsheetCell(rawInv) ?? '').trim();
+      if (!idTransaccion || !idInversionista) continue;
+
+      const idOportunidad = colOppId !== -1 && row[colOppId] ? String(sanitizeSpreadsheetCell(row[colOppId])).trim() : null;
+      const monto = colMonto !== -1 && typeof row[colMonto] === 'number' ? Number(row[colMonto]) : 0;
+      const fechaSolicitud = colFecha !== -1 && typeof row[colFecha] === 'number' ? excelSerialToIsoDate(row[colFecha]) : null;
+
+      const rawEstado = colEstado !== -1 && row[colEstado] ? String(sanitizeSpreadsheetCell(row[colEstado])).trim() : 'Pendiente';
+      const estado = (['Pendiente', 'Confirmada', 'Rechazada'] as const).includes(rawEstado as any)
+        ? (rawEstado as 'Pendiente' | 'Confirmada' | 'Rechazada')
+        : 'Pendiente';
+
+      transactions.push({
+        idTransaccion,
+        idInversionista,
+        idOportunidad,
+        idInversionOrigen: null,
+        monto,
+        fechaSolicitud,
+        estado,
+        fechaConfirmacion: null,
+        idInversionGenerada: null,
+      });
+    }
+
+    return transactions;
+  }
+
+  /**
+   * Parses Sheet 'Resumen_Dashboard' into CanonicalInvestorSummary array.
+   */
+  private parseResumenSheet(workbook: XLSX.WorkBook): CanonicalInvestorSummary[] {
+    const rows = this.getSheetRowsByName(workbook, /^resumen/i);
+    if (!rows || rows.length < 2) return [];
+
+    const { headerIndex, headers } = this.findHeaderRowInfo(rows);
+    const colId = headers.findIndex((h) => h.includes('id_inversionista') || h.includes('id'));
+    const colName = headers.findIndex((h) => h.includes('nombre') || h.includes('name'));
+    const colPatrimonio = headers.findIndex((h) => h.includes('patrimonio'));
+    const colRendimiento = headers.findIndex((h) => h.includes('rendimiento'));
+    const colCapital = headers.findIndex((h) => h.includes('capital_total'));
+    const colRoi = headers.findIndex((h) => h.includes('roi'));
+    const colActivas = headers.findIndex((h) => h.includes('num_activas'));
+    const colConcluidas = headers.findIndex((h) => h.includes('num_concluidas'));
+    const colDisponible = headers.findIndex((h) => h.includes('disponible'));
+    const colGanancia = headers.findIndex((h) => h.includes('ganancia'));
+
+    const summaries: CanonicalInvestorSummary[] = [];
+    const dataRows = rows.slice(headerIndex + 1);
+
+    for (const row of dataRows) {
+      const rawId = colId !== -1 ? row[colId] : null;
+      if (!rawId) continue;
+
+      const idInversionista = String(sanitizeSpreadsheetCell(rawId) ?? '').trim();
+      if (!idInversionista || !idInversionista.startsWith('INV-')) continue;
+
+      const rawName = colName !== -1 ? row[colName] : 'Inversionista';
+      const nombre = String(sanitizeSpreadsheetCell(rawName) ?? 'Inversionista').trim();
+
+      const patrimonioTotalInvertido = colPatrimonio !== -1 && typeof row[colPatrimonio] === 'number' ? Number(row[colPatrimonio]) : 0;
+      const rendimientoAcumulado = colRendimiento !== -1 && typeof row[colRendimiento] === 'number' ? Number(row[colRendimiento]) : 0;
+      const capitalTotalActual = colCapital !== -1 && typeof row[colCapital] === 'number' ? Number(row[colCapital]) : 0;
+      const roiPonderado = colRoi !== -1 && typeof row[colRoi] === 'number' ? Number(row[colRoi]) : 0.15;
+      const numActivas = colActivas !== -1 && typeof row[colActivas] === 'number' ? Number(row[colActivas]) : 0;
+      const numConcluidas = colConcluidas !== -1 && typeof row[colConcluidas] === 'number' ? Number(row[colConcluidas]) : 0;
+      const capitalDisponibleReinversion = colDisponible !== -1 && typeof row[colDisponible] === 'number' ? Number(row[colDisponible]) : 0;
+      const gananciaProyectadaTotal = colGanancia !== -1 && typeof row[colGanancia] === 'number' ? Number(row[colGanancia]) : 0;
+
+      summaries.push({
+        idInversionista,
+        nombre,
+        patrimonioTotalInvertido,
+        rendimientoAcumulado,
+        capitalTotalActual,
+        roiPonderado,
+        numActivas,
+        numConcluidas,
+        capitalDisponibleReinversion,
+        gananciaProyectadaTotal,
+      });
+    }
+
+    return summaries;
+  }
 }
+

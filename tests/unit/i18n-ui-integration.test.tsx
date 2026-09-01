@@ -53,7 +53,7 @@ describe("BBC-009: I18n UI Integration & Consumer Hook (@spec BBC-009-UI-INTEGRA
 
     expect(screen.getByTestId("current-locale").textContent).toBe("es");
     expect(screen.getByTestId("landing-headline").textContent).toBe(
-      "Invierte en activos inmobiliarios premium con retornos transparentes"
+      "Plataforma Privada de Inversión Inmobiliaria"
     );
     expect(screen.getByTestId("common-loading").textContent).toBe("Cargando...");
     expect(screen.getByTestId("formatted-currency").textContent).toBe("$120,000");
@@ -72,7 +72,7 @@ describe("BBC-009: I18n UI Integration & Consumer Hook (@spec BBC-009-UI-INTEGRA
     // Step 2: Assert updated translation strings
     expect(screen.getByTestId("current-locale").textContent).toBe("en");
     expect(screen.getByTestId("landing-headline").textContent).toBe(
-      "Invest in premium real estate assets with transparent returns"
+      "Private Real Estate Investment Platform"
     );
     expect(screen.getByTestId("common-loading").textContent).toBe("Loading...");
   });
@@ -90,7 +90,7 @@ describe("BBC-009: I18n UI Integration & Consumer Hook (@spec BBC-009-UI-INTEGRA
     // Step 2: Assert updated translation strings
     expect(screen.getByTestId("current-locale").textContent).toBe("pt");
     expect(screen.getByTestId("landing-headline").textContent).toBe(
-      "Invista em ativos imobiliários premium com retornos transparentes"
+      "Plataforma Privada de Investimento Imobiliário"
     );
     expect(screen.getByTestId("common-loading").textContent).toBe("Carregando...");
   });
@@ -115,7 +115,7 @@ describe("BBC-009: I18n UI Integration & Consumer Hook (@spec BBC-009-UI-INTEGRA
     // Step 3: Verify context updated to English
     expect(screen.getByTestId("current-locale").textContent).toBe("en");
     expect(screen.getByTestId("landing-headline").textContent).toBe(
-      "Invest in premium real estate assets with transparent returns"
+      "Private Real Estate Investment Platform"
     );
   });
 });

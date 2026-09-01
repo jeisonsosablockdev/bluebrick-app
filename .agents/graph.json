@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T02:53:59.865Z",
+  "generatedAt": "2026-09-01T19:43:36.369Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -122,6 +122,66 @@
       "path": "knowledge/database/models/index.md"
     },
     {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-13-investor-login-redesign",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-13-investor-login-redesign.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-16-dashboard-microanimations",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-17-investment-lead-email-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-17-investment-lead-email",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-17-investment-lead-email.md"
+    },
+    {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation",
@@ -156,6 +216,30 @@
       "type": "feature",
       "label": "feature-jeisonsosa-BBC-009-internationalization",
       "path": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md",
+      "type": "feature",
+      "label": "feature-jeisonsosa-BBC-10-email-auth-and-logout",
+      "path": "knowledge/features/feature-jeisonsosa-BBC-10-email-auth-and-logout.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",

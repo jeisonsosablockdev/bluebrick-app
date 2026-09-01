@@ -25,49 +25,143 @@ import {
   Warehouse,
   LandPlot,
   LogOut,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip, Sector } from "recharts";
 import { useCountUp } from "@/lib/hooks/use-count-up";
 import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
 import { signOutAction } from "@/lib/auth/actions";
+import { submitInvestmentLeadAction } from "@/lib/auth/investment-actions";
 import { BlueBrickMark } from "./blue-brick-mark";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
+import { ProjectPhaseProgress } from "./project-phase-progress";
+import { DashboardInteractiveCard } from "./dashboard-interactive-card";
+import { MICRO_ANIMATION_TOKENS } from "@/lib/pipelines/micro-animation-tokens";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
 import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
 import { useI18n, LocaleSwitcher } from "@/features/i18n";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
-const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#1A523D"];
-const FONT_LINK =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap";
-
-export interface InvestmentDashboardProps {
-  initialData: DashboardViewModel;
+export interface ActivePieShapeProps {
+  readonly cx: number;
+  readonly cy: number;
+  readonly innerRadius: number;
+  readonly outerRadius: number;
+  readonly startAngle: number;
+  readonly endAngle: number;
+  readonly fill: string;
+  readonly isActive?: boolean;
 }
+
+/**
+ * Renders an elevated 3D exploded donut slice with radial displacement,
+ * expanded outer radius, and multi-layer drop shadows on hover.
+ */
+export function render3DActivePieShape(props: unknown): React.JSX.Element {
+  const sectorProps = props as ActivePieShapeProps;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, isActive = true } = sectorProps;
+
+  if (!isActive) {
+    return (
+      <Sector
+        {...sectorProps}
+        style={{
+          cursor: "pointer",
+          transition: "all 0.25s ease",
+        }}
+      />
+    );
+  }
+
+  const RADIAN = Math.PI / 180;
+  const midAngle = (startAngle + endAngle) / 2;
+  // Radial outward displacement (4px) along bisector angle for exploded 3D effect
+  const offset = 4;
+  const cos = Math.cos(-midAngle * RADIAN);
+  const sin = Math.sin(-midAngle * RADIAN);
+  const displacedCx = cx + offset * cos;
+  const displacedCy = cy + offset * sin;
+
+  return (
+    <g
+      data-testid="active-3d-pie-sector"
+      style={{
+        transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+    >
+      {/* 3D Base Shadow: Simulated depth/extrusion underneath */}
+      <Sector
+        cx={displacedCx}
+        cy={displacedCy + 3}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill="rgba(0, 0, 0, 0.45)"
+        style={{ filter: "blur(4px)" }}
+      />
+      {/* 3D Elevated Main Sector: Expanded outerRadius (+8px), radial displacement, subtle stroke & glow */}
+      <Sector
+        cx={displacedCx}
+        cy={displacedCy}
+        innerRadius={innerRadius - 1}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        stroke="rgba(255, 255, 255, 0.35)"
+        strokeWidth={1.5}
+        style={{
+          filter: "drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.55))",
+          cursor: "pointer",
+        }}
+      />
+    </g>
+  );
+}
+
+const PIE_COLORS = ["#2F8F6B", "#C41230", "#57B98C", "#E8495F", "#1A523D"];
+
+/**
+ * Contract properties for the institutional InvestmentDashboard presentation component.
+ */
+export interface InvestmentDashboardProps {
+  /** Initial server-side pre-fetched view model data for the investor dashboard. */
+  readonly initialData: DashboardViewModel;
+}
+
+const BASE_NAV_BTN_STYLE: React.CSSProperties = {
+  position: "absolute",
+  top: "50%",
+  transform: "translateY(-50%)",
+  width: 36,
+  height: 36,
+  borderRadius: "50%",
+  background: "#0A1220",
+  border: "1px solid rgba(237,241,245,0.18)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  color: "#EDF1F5",
+  boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+  zIndex: 10,
+};
 
 function navBtnStyle(dir: "left" | "right"): React.CSSProperties {
-  return {
-    position: "absolute",
-    top: "50%",
-    [dir]: -16,
-    transform: "translateY(-50%)",
-    width: 36,
-    height: 36,
-    borderRadius: "50%",
-    background: "#0A1220",
-    border: "1px solid rgba(237,241,245,0.18)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    color: "#EDF1F5",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
-    zIndex: 10,
-  };
+  return { ...BASE_NAV_BTN_STYLE, [dir]: -16 };
 }
+
+const PROPERTY_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  Lote: LandPlot,
+  Industrial: Warehouse,
+  Comercial: Building2,
+  Residencial: Home,
+};
 
 function PropertyIcon({
   type,
@@ -80,35 +174,52 @@ function PropertyIcon({
   size: number;
   color: string;
 }): React.JSX.Element {
-  if (name.includes("Lote") || type === "Lote") return <LandPlot size={size} color={color} />;
-  if (name.includes("Bodega") || type === "Industrial") return <Warehouse size={size} color={color} />;
-  if (name.includes("Torre") || type === "Comercial") return <Building2 size={size} color={color} />;
-  return <Home size={size} color={color} />;
+  const Icon =
+    (name.includes("Lote") || type === "Lote" ? LandPlot : null) ||
+    (name.includes("Bodega") || type === "Industrial" ? Warehouse : null) ||
+    (name.includes("Torre") || type === "Comercial" ? Building2 : null) ||
+    PROPERTY_ICON_MAP[type] ||
+    Home;
+  return <Icon size={size} color={color} />;
 }
 
+/**
+ * Layer 1: Presentation - Institutional Investment Dashboard Component.
+ * Orchestrates portfolio metrics, asset visualization, investment opportunities,
+ * and handles investment lead capture interactions with reactive feedback.
+ *
+ * @param props Component properties containing initial dashboard view model.
+ * @returns Rendered React JSX element.
+ */
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
   // Step 1: Access localized translation strings and formatters
   const { t, formatCurrency } = useI18n();
 
-  // Step 2: Inject Google Fonts dynamically on mount
-  useEffect(() => {
-    if (typeof document !== "undefined" && !document.getElementById("dash-fonts")) {
-      const link = document.createElement("link");
-      link.id = "dash-fonts";
-      link.rel = "stylesheet";
-      link.href = FONT_LINK;
-      document.head.appendChild(link);
-    }
-  }, []);
+  // Step 2: Destructure initial server metrics directly
+  const {
+    totalInvested,
+    weightedRoi,
+    activeCount,
+    concludedCount,
+    properties,
+    investor,
+    reinvestmentOpportunities,
+  } = initialData;
 
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState<boolean>(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.investor.avatarUrl);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(investor.avatarUrl);
+  const [isSubmittingLead, setIsSubmittingLead] = useState<boolean>(false);
+  const [leadFeedback, setLeadFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
-  const properties: PortfolioItem[] = initialData.properties;
   const maxIndex = Math.max(0, properties.length - 1);
+  const memberSinceYear = new Date(investor.createdAt ?? "").getFullYear() || 2026;
 
   // Step 3: Handle logout initiation checking "Don't ask again" preference
   const handleLogoutClick = async () => {
@@ -140,22 +251,59 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     await signOutAction();
   };
 
-  // Step 3: Use pre-computed server metrics directly to eliminate client recalculation overhead
-  const totalInvested = initialData.totalInvested;
-  const weightedRoi = initialData.weightedRoi;
-  const activeCount = initialData.activeCount;
-  const concludedCount = initialData.concludedCount;
+  /**
+   * Dispatches the investment lead notification to the server action pipeline.
+   * Updates reactive UI states for pending submission and feedback notifications.
+   */
+  const handleInvestLeadClick = async (): Promise<void> => {
+    // Step 1: Set submitting state and clear prior feedback messages
+    setIsSubmittingLead(true);
+    setLeadFeedback(null);
+
+    // Step 2: Invoke investment lead server action with CTA metadata
+    try {
+      const result = await submitInvestmentLeadAction({
+        metadata: {
+          source: "dashboard_reinvestment_cta",
+        },
+      });
+
+      // Step 3: Parse response and update reactive user feedback
+      if (result.success) {
+        setLeadFeedback({
+          type: "success",
+          message: result.message,
+        });
+      } else {
+        setLeadFeedback({
+          type: "error",
+          message: result.message || "Ocurrió un error al procesar su solicitud.",
+        });
+      }
+    } catch (error) {
+      // Step 4: Gracefully handle network exceptions and unexpected errors
+      const errorMsg =
+        error instanceof Error ? error.message : "Error inesperado al conectar con el servidor.";
+      setLeadFeedback({
+        type: "error",
+        message: errorMsg,
+      });
+    } finally {
+      // Step 5: Reset submitting state to unblock controls
+      setIsSubmittingLead(false);
+    }
+  };
 
   const projectedEarnings = useMemo(
     () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
     [properties]
   );
 
-  // Step 4: Animated count-up hook values
+  // Step 5: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
   const animatedRoi = useCountUp(weightedRoi, { durationMs: 1400, decimals: 1 });
 
-  // Step 5: Calculate allocation pie data
+  // Step 6: Calculate allocation pie data
   const pieData = useMemo(() => {
     return properties.map((p: PortfolioItem) => ({
       name: p.propertyName,
@@ -163,18 +311,19 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     }));
   }, [properties, totalInvested]);
 
-  const memberSinceYear = useMemo(() => {
-    if (!initialData.investor.createdAt) return 2026;
-    const d = new Date(initialData.investor.createdAt);
-    return Number.isNaN(d.getFullYear()) ? 2026 : d.getFullYear();
-  }, [initialData.investor.createdAt]);
+  const prevCard = () => setCarouselIndex((i) => (i === 0 ? maxIndex : i - 1));
+  const nextCard = () => setCarouselIndex((i) => (i === maxIndex ? 0 : i + 1));
 
-  function prevCard() {
-    setCarouselIndex((i) => (i === 0 ? maxIndex : i - 1));
-  }
-  function nextCard() {
-    setCarouselIndex((i) => (i === maxIndex ? 0 : i + 1));
-  }
+  const renderPieSectorShape = (props: unknown) => {
+    const sectorProps = props as { index?: number; isActive?: boolean };
+    const isElevated =
+      Boolean(sectorProps.isActive) ||
+      (activePieIndex !== undefined && sectorProps.index === activePieIndex);
+    return render3DActivePieShape({
+      ...(sectorProps as object),
+      isActive: isElevated,
+    });
+  };
 
   const activeProperty: PortfolioItem | undefined = properties[carouselIndex] || properties[0];
 
@@ -213,10 +362,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           {/* User Profile Summary (Hidden on extra-small mobile to maintain clean single-row header) */}
           <div className="dash-user-text-container">
             <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
-              {initialData.investor.firstName} {initialData.investor.lastName}
+              {investor.firstName} {investor.lastName}
             </div>
             <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
-              {initialData.investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
+              {investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
             </div>
           </div>
 
@@ -258,8 +407,8 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <span>
-                {initialData.investor.firstName[0]}
-                {initialData.investor.lastName[0]}
+                {investor.firstName[0]}
+                {investor.lastName[0]}
               </span>
             )}
           </button>
@@ -269,8 +418,9 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
       <main className="dash-main-container">
         {/* ---------- HERO SECTION (RESPONSIVE STACKED ON MOBILE) ---------- */}
         <section className="dash-hero-grid">
-          {/* Card 1: Patrimonio Invertido Total */}
-          <div
+          {/* Card 1: Patrimonio Invertido Total (Hardware-accelerated dopamine micro-interaction) */}
+          <DashboardInteractiveCard
+            accent="emerald"
             style={{
               background: "linear-gradient(160deg,#111B2E 0%,#0D1526 100%)",
               border: "1px solid rgba(237,241,245,0.07)",
@@ -334,10 +484,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 wide
               />
             </div>
-          </div>
+          </DashboardInteractiveCard>
 
-          {/* Card 2: Distribución del Portafolio */}
-          <div
+          {/* Card 2: Distribución del Portafolio (Hardware-accelerated dopamine micro-interaction) */}
+          <DashboardInteractiveCard
+            accent="subtle"
             style={{
               background: "#111B2E",
               border: "1px solid rgba(237,241,245,0.07)",
@@ -365,13 +516,24 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                     <Pie
                       data={pieData}
                       dataKey="value"
-                      innerRadius={50}
-                      outerRadius={78}
+                      innerRadius={48}
+                      outerRadius={74}
                       paddingAngle={3}
                       stroke="none"
+                      shape={renderPieSectorShape}
+                      onMouseEnter={(_data, index) => setActivePieIndex(index)}
+                      onMouseLeave={() => setActivePieIndex(undefined)}
                     >
                       {pieData.map((_entry, idx: number) => (
-                        <Cell key={`cell-${idx}`} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                        <Cell
+                          key={`cell-${idx}`}
+                          fill={PIE_COLORS[idx % PIE_COLORS.length]}
+                          style={{
+                            cursor: "pointer",
+                            transition: "opacity 0.25s ease",
+                            opacity: activePieIndex !== undefined && activePieIndex !== idx ? 0.55 : 1,
+                          }}
+                        />
                       ))}
                     </Pie>
                     <ReTooltip
@@ -390,8 +552,24 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
                 {properties.map((p: PortfolioItem, idx: number) => {
                   const allocation = totalInvested > 0 ? Math.round((p.investedAmount / totalInvested) * 100) : 0;
+                  const isHovered = activePieIndex === idx;
                   return (
-                    <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                    <div
+                      key={p.id}
+                      onMouseEnter={() => setActivePieIndex(idx)}
+                      onMouseLeave={() => setActivePieIndex(undefined)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        padding: "3px 6px",
+                        borderRadius: 6,
+                        background: isHovered ? "rgba(237, 241, 245, 0.08)" : "transparent",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
                       <span
                         style={{
                           width: 9,
@@ -399,20 +577,33 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                           borderRadius: 3,
                           background: PIE_COLORS[idx % PIE_COLORS.length],
                           flexShrink: 0,
+                          transform: isHovered ? "scale(1.3)" : "scale(1)",
+                          boxShadow: isHovered ? `0 0 8px ${PIE_COLORS[idx % PIE_COLORS.length]}` : "none",
+                          transition: "all 0.2s ease",
                         }}
                       />
                       <span
                         style={{
-                          color: "#EDF1F5",
+                          color: isHovered ? "#FFFFFF" : "#EDF1F5",
+                          fontWeight: isHovered ? 600 : 400,
                           flex: 1,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
+                          transition: "color 0.2s ease",
                         }}
                       >
                         {p.propertyName}
                       </span>
-                      <span style={{ color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace", flexShrink: 0 }}>
+                      <span
+                        style={{
+                          color: isHovered ? "#FFFFFF" : "#7C8A9C",
+                          fontWeight: isHovered ? 700 : 400,
+                          fontFamily: "'JetBrains Mono', monospace",
+                          flexShrink: 0,
+                          transition: "color 0.2s ease",
+                        }}
+                      >
                         {allocation}%
                       </span>
                     </div>
@@ -420,7 +611,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 })}
               </div>
             </div>
-          </div>
+          </DashboardInteractiveCard>
         </section>
 
         {/* ---------- CAROUSEL (RESPONSIVE) ---------- */}
@@ -436,81 +627,101 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             </div>
 
             <div style={{ position: "relative" }}>
-              <div className="dash-carousel-card-grid">
-                <div
-                  style={{
-                    background: activeProperty.gradient,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    padding: 24,
-                    position: "relative",
-                    minHeight: 140,
-                  }}
-                >
-                  <PropertyIcon
-                    type={activeProperty.propertyType}
-                    name={activeProperty.propertyName}
-                    size={28}
-                    color="rgba(237,241,245,0.85)"
-                  />
-                  <div>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, color: "#EDF1F5", lineHeight: 1.15 }}>
-                      {activeProperty.propertyName}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: 6,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 13,
-                        color: "rgba(237,241,245,0.75)",
-                      }}
-                    >
-                      <MapPin size={14} />
-                      {activeProperty.city}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    background: "#111B2E",
-                    padding: 24,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    gap: 16,
-                  }}
-                >
-                  <StatusBadge status={activeProperty.status} />
-                  <MetricRow label={t("dashboard.cards.investedAmount")} value={formatCurrency(activeProperty.investedAmount)} />
-                  <MetricRow label={t("dashboard.cards.estimatedRoi")} value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
-                  <MetricRow
-                    label={activeProperty.status === "activa" ? t("dashboard.cards.returnDate") : t("dashboard.cards.closingDate")}
-                    value={activeProperty.timing}
-                    icon={Clock}
-                  />
-                  {activeProperty.status === "activa" && (
-                    <div style={{ height: 6, borderRadius: 4, background: "rgba(237,241,245,0.08)", overflow: "hidden" }}>
+              <DashboardInteractiveCard
+                accent="emerald"
+                scaleFactor={MICRO_ANIMATION_TOKENS.scales.carouselCard}
+                className="dash-carousel-card-wrapper"
+                data-testid="my-investments-carousel-card"
+                style={{
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  border: "1px solid rgba(237, 241, 245, 0.08)",
+                }}
+              >
+                <div className="dash-carousel-card-grid" style={{ border: "none" }}>
+                  <div
+                    style={{
+                      background: activeProperty.gradient,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      padding: 24,
+                      position: "relative",
+                      minHeight: 140,
+                    }}
+                  >
+                    <PropertyIcon
+                      type={activeProperty.propertyType}
+                      name={activeProperty.propertyName}
+                      size={28}
+                      color="rgba(237,241,245,0.85)"
+                    />
+                    <div>
+                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, color: "#EDF1F5", lineHeight: 1.15 }}>
+                        {activeProperty.propertyName}
+                      </div>
                       <div
                         style={{
-                          height: "100%",
-                          width: `${Math.max(8, 100 - activeProperty.monthsLeft * 10)}%`,
-                          background: "linear-gradient(90deg,#2F8F6B,#57B98C)",
-                          borderRadius: 4,
+                          marginTop: 6,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 13,
+                          color: "rgba(237,241,245,0.75)",
                         }}
-                      />
+                      >
+                        <MapPin size={14} />
+                        {activeProperty.city}
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  <div
+                    style={{
+                      background: "#111B2E",
+                      padding: 24,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      gap: 16,
+                    }}
+                  >
+                    <StatusBadge status={activeProperty.status} />
+                    <MetricRow label={t("dashboard.cards.investedAmount")} value={formatCurrency(activeProperty.investedAmount)} />
+                    <MetricRow label={t("dashboard.cards.estimatedRoi")} value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
+                    <MetricRow
+                      label={activeProperty.status === "activa" ? t("dashboard.cards.returnDate") : t("dashboard.cards.closingDate")}
+                      value={activeProperty.timing}
+                      icon={Clock}
+                    />
+                    {activeProperty.status === "activa" && (
+                      <div style={{ height: 6, borderRadius: 4, background: "rgba(237,241,245,0.08)", overflow: "hidden" }}>
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.max(8, 100 - activeProperty.monthsLeft * 10)}%`,
+                            background: "linear-gradient(90deg,#2F8F6B,#57B98C)",
+                            borderRadius: 4,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </DashboardInteractiveCard>
+
+              {/* Real-time Construction Phase Progress with Dotted Milestone Stepper & Motion Animations */}
+              <div style={{ marginTop: 16 }}>
+                <ProjectPhaseProgress
+                  key={activeProperty.propertyId || activeProperty.id}
+                  property={activeProperty}
+                />
               </div>
 
-              <button onClick={prevCard} aria-label="Anterior" style={navBtnStyle("left")}>
+              <button onClick={prevCard} aria-label="Anterior" className="dash-carousel-nav-btn" style={navBtnStyle("left")}>
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={nextCard} aria-label="Siguiente" style={navBtnStyle("right")}>
+              <button onClick={nextCard} aria-label="Siguiente" className="dash-carousel-nav-btn" style={navBtnStyle("right")}>
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -565,6 +776,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 return (
                   <div
                     key={p.id}
+                    className="dash-interactive-row"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "2fr 1fr 1fr 1fr 1.3fr",
@@ -626,7 +838,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 fontWeight: 600,
               }}
             >
-              {t("dashboard.reinvestment.badge", { name: initialData.investor.firstName })}
+              {t("dashboard.reinvestment.badge", { name: investor.firstName })}
             </span>
           </div>
           <h2
@@ -646,9 +858,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
           </p>
 
           <div className="dash-opportunities-grid">
-            {initialData.reinvestmentOpportunities.map((o: DbReinvestmentOpportunity) => (
+            {reinvestmentOpportunities.map((o: DbReinvestmentOpportunity) => (
               <div
                 key={o.id}
+                className="dash-opportunity-card"
                 style={{
                   background: "rgba(10,21,18,0.5)",
                   border: "1px solid rgba(237,241,245,0.08)",
@@ -670,26 +883,81 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
             ))}
           </div>
 
-          <button
-            type="button"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "linear-gradient(135deg,#E8495F,#C41230)",
-              color: "#0A1220",
-              border: "none",
-              borderRadius: 10,
-              padding: "12px 24px",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
-            }}
-          >
-            {t("dashboard.reinvestment.ctaButton")}
-            <ArrowUpRight size={17} />
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12 }}>
+            <button
+              type="button"
+              className="dash-cta-button"
+              onClick={handleInvestLeadClick}
+              disabled={isSubmittingLead}
+              aria-busy={isSubmittingLead}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(135deg,#E8495F,#C41230)",
+                color: "#0A1220",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px 24px",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: isSubmittingLead ? "not-allowed" : "pointer",
+                opacity: isSubmittingLead ? 0.7 : 1,
+                boxShadow: "0 8px 24px rgba(196,18,48,0.25)",
+                transition: "opacity 0.2s ease, transform 0.2s ease",
+              }}
+            >
+              {isSubmittingLead ? (
+                <>
+                  <Loader2 className="animate-spin" size={17} />
+                  <span>Enviando solicitud...</span>
+                </>
+              ) : (
+                <>
+                  {t("dashboard.reinvestment.ctaButton")}
+                  <ArrowUpRight size={17} />
+                </>
+              )}
+            </button>
+
+            {leadFeedback && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="lead-feedback-message"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "12px 16px",
+                  borderRadius: 10,
+                  fontSize: 13.5,
+                  lineHeight: 1.4,
+                  maxWidth: 560,
+                  background:
+                    leadFeedback.type === "success"
+                      ? "rgba(47, 143, 107, 0.12)"
+                      : "rgba(196, 18, 48, 0.12)",
+                  border:
+                    leadFeedback.type === "success"
+                      ? "1px solid rgba(87, 185, 140, 0.3)"
+                      : "1px solid rgba(232, 73, 95, 0.3)",
+                  color:
+                    leadFeedback.type === "success"
+                      ? "#57B98C"
+                      : "#E8495F",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                }}
+              >
+                {leadFeedback.type === "success" ? (
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, color: "#57B98C" }} />
+                ) : (
+                  <AlertCircle size={18} style={{ flexShrink: 0, color: "#E8495F" }} />
+                )}
+                <span>{leadFeedback.message}</span>
+              </div>
+            )}
+          </div>
         </section>
       </main>
 
@@ -697,7 +965,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
       <AvatarUploadModal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
-        userId={initialData.investor.id}
+        userId={investor.id}
         onUploadSuccess={(newUrl) => setAvatarUrl(newUrl)}
       />
 

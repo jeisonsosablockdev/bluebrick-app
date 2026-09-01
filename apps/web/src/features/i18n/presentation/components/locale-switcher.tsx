@@ -65,6 +65,7 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Seleccionar idioma / Select language"
+        suppressHydrationWarning
         style={{
           display: "flex",
           alignItems: "center",
@@ -82,8 +83,10 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
         }}
       >
         <Globe size={14} color="#57B98C" />
-        <span style={{ fontSize: 13 }}>{currentConfig.flag}</span>
-        {!compact && <span>{currentConfig.code.toUpperCase()}</span>}
+        <span style={{ fontSize: 13 }} suppressHydrationWarning>
+          {currentConfig.flag}
+        </span>
+        {!compact && <span suppressHydrationWarning>{currentConfig.code.toUpperCase()}</span>}
         <ChevronDown
           size={13}
           color="#7C8A9C"

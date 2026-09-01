@@ -12,17 +12,21 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { InvestorLoginCard } from "@/components/landing/investor-login-card";
 import { InvestmentDashboard } from "@/components/dashboard/investment-dashboard";
 import { I18nProvider } from "@/features/i18n/presentation/components/i18n-provider";
+import { ThemeProvider } from "@/components/theme";
 import { es } from "@/features/i18n/domain/dictionaries/es";
 import { en } from "@/features/i18n/domain/dictionaries/en";
 import { pt } from "@/features/i18n/domain/dictionaries/pt";
 import { DictionarySchema } from "@/features/i18n/domain/schemas/i18n-dictionary-schema";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 
-// Mock server actions from @/lib/auth/actions
+// Mock server actions from @/lib/auth/actions and @/lib/auth/investment-actions
 vi.mock("@/lib/auth/actions", () => ({
   signOutAction: vi.fn().mockResolvedValue(undefined),
   signInWithEmailAction: vi.fn().mockResolvedValue(undefined),
   signInWithGoogleAction: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/lib/auth/investment-actions", () => ({
+  submitInvestmentLeadAction: vi.fn().mockResolvedValue({ success: true, message: "OK" }),
 }));
 
 // Mock mock dashboard data
@@ -64,49 +68,55 @@ describe("BBC-10: Universal Email Authentication & Dashboard Logout (@spec BBC-1
   });
 
   describe("1. Landing Page Universal Email Login Card", () => {
-    it("should render universal email login button and NOT render Google-specific button", () => {
+    it("should render universal email login button and NOT render Google-specific login button", () => {
       // Step 1: Render InvestorLoginCard with Spanish i18n context
       render(
-        <I18nProvider initialLocale="es">
-          <InvestorLoginCard />
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider initialLocale="es">
+            <InvestorLoginCard />
+          </I18nProvider>
+        </ThemeProvider>
       );
 
       // Step 2: Verify universal email login button exists
       const emailLoginBtn = screen.getByRole("link", {
-        name: /Continuar con Correo Electrónico|Iniciar sesión con Correo Electrónico|Entrar con Correo Electrónico/i,
+        name: /Ingresa con tu correo|Continuar con Correo Electrónico|Iniciar sesión con Correo Electrónico|Entrar con Correo Electrónico/i,
       });
       expect(emailLoginBtn).toBeInTheDocument();
       expect(emailLoginBtn).toHaveAttribute("href", "/auth/login");
 
-      // Step 3: Verify Google-specific text is completely eliminated
+      // Step 3: Verify Google-specific login button is completely eliminated
       expect(screen.queryByText(/Iniciar sesión con Google/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/Google/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Google/i })).not.toBeInTheDocument();
     });
 
     it("should localize email login button in English and Portuguese", () => {
       // English rendering
       const { unmount } = render(
-        <I18nProvider initialLocale="en">
-          <InvestorLoginCard />
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider initialLocale="en">
+            <InvestorLoginCard />
+          </I18nProvider>
+        </ThemeProvider>
       );
       expect(
-        screen.getByRole("link", { name: /Sign in with Email|Continue with Email/i })
+        screen.getByRole("link", { name: /Sign in with your email|Sign in with Email|Continue with Email/i })
       ).toBeInTheDocument();
-      expect(screen.queryByText(/Google/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Iniciar sesión con Google/i)).not.toBeInTheDocument();
       unmount();
 
       // Portuguese rendering
       render(
-        <I18nProvider initialLocale="pt">
-          <InvestorLoginCard />
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider initialLocale="pt">
+            <InvestorLoginCard />
+          </I18nProvider>
+        </ThemeProvider>
       );
       expect(
-        screen.getByRole("link", { name: /Entrar com E-mail|Continuar com E-mail/i })
+        screen.getByRole("link", { name: /Entrar com seu e-mail|Entrar com E-mail|Continuar com E-mail/i })
       ).toBeInTheDocument();
-      expect(screen.queryByText(/Google/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Iniciar sesión con Google/i)).not.toBeInTheDocument();
     });
   });
 

@@ -10,11 +10,21 @@ import { InvestmentDashboard } from "@/components/dashboard/investment-dashboard
 import { InvestmentRepository } from "@/lib/infrastructure/db/repositories/investment-repository";
 import { UserRepository } from "@/lib/infrastructure/db/repositories/user-repository";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
-import type { DbUser, PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
+import type { DbUser, PortfolioItem, DbReinvestmentOpportunity, PortfolioSummary } from "@/lib/types/db";
 
 export const metadata: Metadata = {
-  title: "Dashboard de Inversionista | BlueBrick",
-  description: "Portafolio de inversión inmobiliaria fraccionada y rendimientos en BlueBrick.",
+  title: "Panel de Inversión (Demo) | BlueBrick",
+  description:
+    "Monitorea el portafolio de inversión inmobiliaria fraccionada, rendimientos mensuales y oportunidades activas en BlueBrick.",
+  alternates: {
+    canonical: "/dashboard",
+  },
+  openGraph: {
+    title: "Panel de Inversión (Demo) | BlueBrick",
+    description:
+      "Portafolio institucional de inversiones inmobiliarias fraccionadas con dividendos mensuales y métricas en tiempo real.",
+    url: "/dashboard",
+  },
 };
 
 const DEFAULT_INVESTOR: DbUser = {
@@ -95,30 +105,54 @@ const FALLBACK_PROPERTIES: PortfolioItem[] = [
   },
 ];
 
-export default async function DashboardPage(): Promise<React.JSX.Element> {
+const DEFAULT_PORTFOLIO_SUMMARY: PortfolioSummary = {
+  userId: DEFAULT_INVESTOR.id,
+  totalInvested: 163000,
+  weightedRoi: 13.7,
+  activeCount: 4,
+  concludedCount: 1,
+  items: FALLBACK_PROPERTIES,
+};
+
+export interface DashboardPageProps {
+  readonly params?: Promise<Record<string, string>>;
+  readonly searchParams?: Promise<{ readonly [key: string]: string | string[] | undefined }>;
+}
+
+export default async function DashboardPage(props: DashboardPageProps): Promise<React.JSX.Element> {
   // Step 1: Initialize database repositories
   const investmentRepo = new InvestmentRepository();
   const userRepo = new UserRepository();
 
+  const searchParams = props?.searchParams ? await props.searchParams : undefined;
+  const rawEmail = searchParams?.email;
+  const paramEmail = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : null;
+
   let investor: DbUser = DEFAULT_INVESTOR;
-  let summary = {
-    userId: DEFAULT_INVESTOR.id,
-    totalInvested: 163000,
-    weightedRoi: 13.7,
-    activeCount: 4,
-    concludedCount: 1,
-    items: FALLBACK_PROPERTIES,
-  };
+  let summary = { ...DEFAULT_PORTFOLIO_SUMMARY };
   let opportunities: DbReinvestmentOpportunity[] = [];
 
   try {
     const { getAuthenticatedInvestor } = await import("@/lib/auth/workos-session");
     investor = await getAuthenticatedInvestor(userRepo);
 
-    // Step 2: Query live portfolio metrics from Neon PostgreSQL (prioritizing clients table by email)
-    const dbSummary = await investmentRepo.getPortfolioSummary(investor.email, investor.id);
+    // If paramEmail is provided or session investor has real email, resolve target email
+    const targetEmail = paramEmail || (investor.email !== DEFAULT_INVESTOR.email ? investor.email : null);
+
+    // Step 2: Query live portfolio metrics from Neon PostgreSQL (prioritizing dashboard_investments by email)
+    const dbSummary = await investmentRepo.getPortfolioSummary(targetEmail || investor.email, investor.id);
     if (dbSummary && dbSummary.items.length > 0) {
       summary = dbSummary;
+
+      // If resolved from a real investor email, update investor display metadata if needed
+      if (targetEmail && targetEmail !== DEFAULT_INVESTOR.email) {
+        investor = {
+          ...investor,
+          email: targetEmail,
+          firstName: investor.firstName || "Inversionista",
+          lastName: investor.lastName || "BlueBrick",
+        };
+      }
     }
 
     // Step 3: Query active reinvestment opportunities exclusively from Neon PostgreSQL (ingested from Excel)

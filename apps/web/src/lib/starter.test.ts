@@ -62,7 +62,7 @@ describe("Starter Utilities & Infrastructure", () => {
     });
   });
 
-  describe("Schema Validation (Zod & Valibot)", () => {
+  describe("Schema Validation (Zod Canonical)", () => {
     test("validates schema with Zod v4", async () => {
       const { z } = await import("zod");
       const UserSchema = z.object({
@@ -77,24 +77,6 @@ describe("Starter Utilities & Infrastructure", () => {
 
       expect(parsed.name).toBe("Solana Dev");
       expect(parsed.rpc).toBe("https://api.devnet.solana.com");
-    });
-
-    test("validates schema with Valibot", async () => {
-      const v = await import("valibot");
-      const ConfigSchema = v.object({
-        cluster: v.string(),
-        autoConnect: v.boolean(),
-      });
-
-      const result = v.safeParse(ConfigSchema, {
-        cluster: "devnet",
-        autoConnect: true,
-      });
-
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.output.cluster).toBe("devnet");
-      }
     });
   });
 });
