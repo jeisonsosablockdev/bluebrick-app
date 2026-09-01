@@ -11,6 +11,7 @@ import type {
   PortfolioItem,
   DbClientRow,
   RawClientInvestment,
+  ProjectPhase,
 } from "@/lib/types/db";
 
 /** Standard aesthetic gradients for portfolio cards. */
@@ -113,6 +114,12 @@ export function mapClientToPortfolioItems(
       ? new Date(inv.fecha_timing).toLocaleDateString("es-ES", { month: "long", year: "numeric" })
       : "Noviembre 2026";
 
+    const currentPhase = inv.fase_actual ? String(inv.fase_actual) : undefined;
+    const rawAvance = (inv as any).avance_fase_pct;
+    const phaseProgressPct = rawAvance !== undefined && rawAvance !== null
+      ? Number((Number(rawAvance) * (Number(rawAvance) <= 1 ? 100 : 1)).toFixed(2))
+      : undefined;
+
     return {
       id: `${client.id}_${inv.id_inversion || idx}`,
       propertyId: inv.id_inversion || client.tax_id || `prop_${idx}`,
@@ -125,6 +132,8 @@ export function mapClientToPortfolioItems(
       timing,
       monthsLeft: 4,
       gradient: resolveItemGradient(idx),
+      currentPhase,
+      phaseProgressPct,
     };
   });
 }
@@ -179,6 +188,7 @@ export class InvestmentRepository {
               }));
 
           const items = mapClientToPortfolioItems(client, rawInvestments);
+          await this.enrichItemsWithProjectPhases(items);
           const metrics = calculatePortfolioMetrics(items);
 
           return {
@@ -232,6 +242,7 @@ export class InvestmentRepository {
       gradient: r.gradient || resolveItemGradient(idx),
     }));
 
+    await this.enrichItemsWithProjectPhases(items);
     const metrics = calculatePortfolioMetrics(items);
 
     return {
@@ -239,6 +250,77 @@ export class InvestmentRepository {
       ...metrics,
       items,
     };
+  }
+
+  /**
+   * Enriches portfolio items with real construction milestones from dashboard_project_phases table.
+   * Gracefully degrades without throwing if the table is unavailable or has no rows.
+   *
+   * @param items - List of portfolio items to enrich in-place
+   */
+  private async enrichItemsWithProjectPhases(items: PortfolioItem[]): Promise<void> {
+    if (!items || items.length === 0) return;
+
+    // Collect all candidate project identifiers (e.g. 'BG-01', 'BK-02', 'CW-04')
+    const candidateSkus = items.map((i) => i.propertyId).filter(Boolean);
+    if (candidateSkus.length === 0) return;
+
+    try {
+      const phasesRes = await this.db.query(
+        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, imagen_url_1, imagen_url_2, imagen_url_3
+         FROM dashboard_project_phases
+         WHERE id_inversion = ANY($1)
+         ORDER BY id_inversion, orden ASC`,
+        [candidateSkus]
+      );
+
+      const phaseRows = (phasesRes?.rows || []) as Array<{
+        id: string;
+        id_fase: string;
+        id_inversion: string;
+        orden: number;
+        nombre_fase: string;
+        estado: "Completada" | "En curso" | "Pendiente" | "No aplica";
+        fecha_inicio?: string | Date | null;
+        fecha_fin?: string | Date | null;
+        imagen_url_1?: string | null;
+        imagen_url_2?: string | null;
+        imagen_url_3?: string | null;
+      }>;
+
+      if (phaseRows.length === 0) return;
+
+      const phasesByProject = new Map<string, ProjectPhase[]>();
+      for (const row of phaseRows) {
+        const sku = String(row.id_inversion);
+        if (!phasesByProject.has(sku)) {
+          phasesByProject.set(sku, []);
+        }
+
+        const images = [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3].filter(
+          (img): img is string => typeof img === "string" && img.trim().length > 0
+        );
+
+        phasesByProject.get(sku)!.push({
+          id: String(row.id_fase || row.id),
+          projectId: sku,
+          order: Number(row.orden),
+          name: String(row.nombre_fase),
+          status: row.estado,
+          startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
+          endDate: row.fecha_fin ? String(row.fecha_fin) : null,
+          images,
+        });
+      }
+
+      for (const item of items) {
+        if (phasesByProject.has(item.propertyId)) {
+          item.phases = phasesByProject.get(item.propertyId);
+        }
+      }
+    } catch {
+      // Invariant: Non-blocking graceful degradation
+    }
   }
 
   /**

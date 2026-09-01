@@ -14,6 +14,7 @@
     "start": "next start apps/web",
     "db:migrate": "node ./scripts/db-migrate.js",
     "db:migrate:check": "node ./scripts/db-migrate.js --check",
+    "sync:dashboard": "tsx --env-file=.env.local ./scripts/sync-dashboard-excel.ts",
     "rfc:new": "node ./scripts/rfc-new.js",
     "linear:plan": "node ./scripts/linear-plan.js",
     "linear:issue-status": "node ./scripts/linear-status.js",

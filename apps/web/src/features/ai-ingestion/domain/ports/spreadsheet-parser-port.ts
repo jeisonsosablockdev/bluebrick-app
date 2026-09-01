@@ -12,6 +12,7 @@
  */
 
 import { CanonicalClient } from '../schemas/canonical-client-schema';
+import { CanonicalDashboardWorkbook } from '../schemas/canonical-dashboard-schema';
 
 /**
  * Maximum row and column safety limits for serverless spreadsheet ingestion.
@@ -85,4 +86,17 @@ export interface ISpreadsheetParserPort {
     buffer: Uint8Array | Buffer,
     filename: string
   ): Promise<ParsedSpreadsheetResult>;
+
+  /**
+   * Parses all 7 operational sheets of the BlueBrick dashboard administrative workbook.
+   * 
+   * @param buffer - Raw binary workbook buffer
+   * @param filename - Source filename for traceability
+   * @returns CanonicalDashboardWorkbook validated domain payload
+   */
+  parseDashboardWorkbook(
+    buffer: Uint8Array | Buffer,
+    filename: string
+  ): Promise<CanonicalDashboardWorkbook>;
 }
+

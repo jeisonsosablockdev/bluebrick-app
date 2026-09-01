@@ -3,6 +3,9 @@
  * @description Layer 1: Presentation - Real-time Project Construction Phase Progress Component.
  * Features an animated dotted milestone stepper powered by Motion, responsive media preview,
  * phase status tracking, and theme-adaptive luxury styling.
+ * 
+ * Supports dynamic project phases (e.g. 14 phases from DASH-BOARD Excel workbook).
+ * If property has NO phases, renders as completely full (100% completado) per user requirement.
  */
 
 "use client";
@@ -18,25 +21,27 @@ export interface ProjectPhaseProgressProps {
   readonly className?: string;
 }
 
-interface PhaseDefinition {
+interface UiPhase {
   readonly id: number;
   readonly name: string;
   readonly description: string;
+  readonly status: "Completada" | "En curso" | "Pendiente" | "No aplica";
+  readonly images: string[];
 }
 
-const DEFAULT_PHASES: readonly PhaseDefinition[] = [
-  { id: 1, name: "Estudios y licencias de construcción", description: "Aprobación de planos y permisos ambientales" },
-  { id: 2, name: "Excavación y preparación del terreno", description: "Movimiento de tierras y estabilización de taludes" },
-  { id: 3, name: "Cimentación y zapatas estructurales", description: "Fundición de pilotes y losa de cimentación" },
-  { id: 4, name: "Levantamiento de columnas y vigas", description: "Armado de acero y vaciado de concreto estructural" },
-  { id: 5, name: "Losa de entrepisos y placas", description: "Vaciado de placas intermedias y ductos técnicos" },
-  { id: 6, name: "Construcción de estructuras y muros", description: "Mampostería perimetral y divisiones estructurales" },
-  { id: 7, name: "Redes hidrosanitarias y eléctricas", description: "Instalación de tuberías, ductos y tableros eléctricos" },
-  { id: 8, name: "Cerramientos y carpintería exterior", description: "Ventanería, fachadas ventiladas y aislamiento" },
-  { id: 9, name: "Acabados interiores y revestimientos", description: "Pisos, estuco, pintura e iluminación arquitectónica" },
-  { id: 10, name: "Equipamiento de zonas comunes", description: "Instalación de ascensores, lobby y áreas sociales" },
-  { id: 11, name: "Pruebas de calidad y habitabilidad", description: "Inspecciones técnicas y certificaciones de servicio" },
-  { id: 12, name: "Entrega de llaves y escrituración", description: "Puesta en marcha y liquidación de rendimientos" },
+const DEFAULT_PHASES: readonly UiPhase[] = [
+  { id: 1, name: "Estudios y licencias de construcción", description: "Aprobación de planos y permisos ambientales", status: "Completada", images: [] },
+  { id: 2, name: "Excavación y preparación del terreno", description: "Movimiento de tierras y estabilización de taludes", status: "Completada", images: [] },
+  { id: 3, name: "Cimentación y zapatas estructurales", description: "Fundición de pilotes y losa de cimentación", status: "Completada", images: [] },
+  { id: 4, name: "Levantamiento de columnas y vigas", description: "Armado de acero y vaciado de concreto estructural", status: "Completada", images: [] },
+  { id: 5, name: "Losa de entrepisos y placas", description: "Vaciado de placas intermedias y ductos técnicos", status: "Completada", images: [] },
+  { id: 6, name: "Construcción de estructuras y muros", description: "Mampostería perimetral y divisiones estructurales", status: "Completada", images: [] },
+  { id: 7, name: "Redes hidrosanitarias y eléctricas", description: "Instalación de tuberías, ductos y tableros eléctricos", status: "Completada", images: [] },
+  { id: 8, name: "Cerramientos y carpintería exterior", description: "Ventanería, fachadas ventiladas y aislamiento", status: "Completada", images: [] },
+  { id: 9, name: "Acabados interiores y revestimientos", description: "Pisos, estuco, pintura e iluminación arquitectónica", status: "Completada", images: [] },
+  { id: 10, name: "Equipamiento de zonas comunes", description: "Instalación de ascensores, lobby y áreas sociales", status: "Completada", images: [] },
+  { id: 11, name: "Pruebas de calidad y habitabilidad", description: "Inspecciones técnicas y certificaciones de servicio", status: "Completada", images: [] },
+  { id: 12, name: "Entrega de llaves y escrituración", description: "Puesta en marcha y liquidación de rendimientos", status: "Completada", images: [] },
 ];
 
 /**
@@ -47,30 +52,68 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Step 2: Calculate active phase and percentage based on property state
-  const totalPhases = DEFAULT_PHASES.length;
-  const isConcluded = property.status === "concluida";
+  // Step 2: Determine if dynamic phases exist or fallback to 100% full
+  const hasDynamicPhases = Array.isArray(property.phases) && property.phases.length > 0;
 
-  const rawActivePhaseIndex = isConcluded
-    ? totalPhases - 1
-    : Math.max(0, Math.min(totalPhases - 1, totalPhases - Math.max(1, Math.floor(property.monthsLeft * 0.9))));
+  const uiPhases: readonly UiPhase[] = hasDynamicPhases
+    ? property.phases!.map((p) => ({
+        id: p.order,
+        name: p.name,
+        description: p.startDate ? `Inicio: ${p.startDate}${p.endDate ? ` · Fin: ${p.endDate}` : ""}` : `Estado: ${p.status}`,
+        status: p.status,
+        images: p.images || [],
+      }))
+    : DEFAULT_PHASES;
 
-  const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number>(rawActivePhaseIndex);
+  const totalPhases = uiPhases.length;
+  const isConcluded = property.status === "concluida" || !hasDynamicPhases;
 
-  const activePhaseIndex = selectedPhaseIndex;
+  // Step 3: Compute default active phase index
+  let defaultActiveIndex = 0;
+  if (!hasDynamicPhases || isConcluded) {
+    defaultActiveIndex = totalPhases - 1;
+  } else {
+    // Find active phase (first 'En curso' or matching currentPhase)
+    const inProgressIndex = uiPhases.findIndex((p) => p.status === "En curso");
+    if (inProgressIndex !== -1) {
+      defaultActiveIndex = inProgressIndex;
+    } else {
+      const lastCompleted = uiPhases.reduce<number>(
+        (last, p, idx) => (p.status === "Completada" ? idx : last),
+        0
+      );
+      defaultActiveIndex = lastCompleted;
+    }
+  }
+
+  const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number>(defaultActiveIndex);
+  const activePhaseIndex = Math.min(selectedPhaseIndex, totalPhases - 1);
+  const currentPhase = uiPhases[activePhaseIndex] ?? uiPhases[0]!;
   const currentPhaseNumber = activePhaseIndex + 1;
-  const currentPhase = DEFAULT_PHASES[activePhaseIndex] ?? DEFAULT_PHASES[0]!;
 
-  const completionPercentage = isConcluded
-    ? 100
-    : Math.round(((activePhaseIndex + 1) / totalPhases) * 100);
+  // Step 4: Calculate completion percentage
+  let completionPercentage = 100;
+  if (hasDynamicPhases && property.status !== "concluida") {
+    if (property.phaseProgressPct !== undefined && property.phaseProgressPct !== null) {
+      const rawPct = Number(property.phaseProgressPct);
+      completionPercentage = Math.round(rawPct <= 1 ? rawPct * 100 : rawPct);
+    } else {
+      const completedCount = uiPhases.filter((p) => p.status === "Completada").length;
+      completionPercentage = Math.round((completedCount / totalPhases) * 100);
+    }
+  }
 
-  // Step 3: Color tokens
+  // Step 5: Color tokens
   const containerBg = isDark ? "rgba(10, 18, 32, 0.7)" : "rgba(248, 250, 252, 0.9)";
   const containerBorder = isDark ? "1px solid rgba(237, 241, 245, 0.08)" : "1px solid rgba(10, 18, 32, 0.08)";
   const trackBg = isDark ? "rgba(237, 241, 245, 0.12)" : "rgba(10, 18, 32, 0.12)";
   const textTitleColor = isDark ? "#EDF1F5" : "#0A1220";
   const textMutedColor = isDark ? "#7C8A9C" : "#718096";
+
+  const isCurrentActive = hasDynamicPhases && !isConcluded && currentPhase.status === "En curso";
+  const statusLabel = isConcluded ? "Completado" : isCurrentActive ? "En curso" : currentPhase.status;
+
+  const currentPhoto = currentPhase.images && currentPhase.images.length > 0 ? currentPhase.images[0] : null;
 
   return (
     <div
@@ -85,7 +128,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
         gap: 18,
       }}
     >
-      {/* Step 4: Header - Title and Progress Percentage */}
+      {/* Step 6: Header - Title and Progress Percentage */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Camera size={15} color={isDark ? "#E8495F" : "#C41230"} />
@@ -115,7 +158,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
         </div>
       </div>
 
-      {/* Step 5: Horizontal Dotted Milestone Stepper Track */}
+      {/* Step 7: Horizontal Dotted Milestone Stepper Track */}
       <div style={{ position: "relative", width: "100%", padding: "10px 0" }}>
         {/* Background track line */}
         <div
@@ -135,7 +178,9 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
         {/* Animated Active fill line */}
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${(activePhaseIndex / (totalPhases - 1)) * 100}%` }}
+          animate={{
+            width: isConcluded || !hasDynamicPhases ? "100%" : `${(activePhaseIndex / (totalPhases - 1)) * 100}%`,
+          }}
           transition={{ type: "spring", stiffness: 60, damping: 15 }}
           style={{
             position: "absolute",
@@ -160,9 +205,16 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
             zIndex: 3,
           }}
         >
-          {DEFAULT_PHASES.map((phase, idx) => {
-            const isCompleted = idx < activePhaseIndex;
-            const isCurrent = idx === activePhaseIndex;
+          {uiPhases.map((phase, idx) => {
+            let isCompleted = false;
+            let isCurrent = false;
+
+            if (isConcluded || !hasDynamicPhases) {
+              isCompleted = true;
+            } else {
+              isCompleted = phase.status === "Completada" || idx < activePhaseIndex;
+              isCurrent = idx === activePhaseIndex;
+            }
 
             let dotBg = isDark ? "rgba(237, 241, 245, 0.25)" : "rgba(10, 18, 32, 0.25)";
             let dotBorder = "2px solid transparent";
@@ -220,7 +272,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
         </div>
       </div>
 
-      {/* Step 6: Phase Description & Media Card Grid */}
+      {/* Step 8: Phase Description & Media Card Grid */}
       <div
         style={{
           display: "grid",
@@ -261,11 +313,11 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                 borderRadius: 999,
                 fontSize: 11,
                 fontWeight: 600,
-                background: isConcluded
+                background: isConcluded || statusLabel === "Completado"
                   ? "rgba(87, 185, 140, 0.12)"
                   : "rgba(232, 73, 95, 0.12)",
-                color: isConcluded ? "#57B98C" : "#E8495F",
-                border: isConcluded
+                color: isConcluded || statusLabel === "Completado" ? "#57B98C" : "#E8495F",
+                border: isConcluded || statusLabel === "Completado"
                   ? "1px solid rgba(87, 185, 140, 0.3)"
                   : "1px solid rgba(232, 73, 95, 0.3)",
               }}
@@ -275,10 +327,10 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  backgroundColor: isConcluded ? "#57B98C" : "#E8495F",
+                  backgroundColor: isConcluded || statusLabel === "Completado" ? "#57B98C" : "#E8495F",
                 }}
               />
-              {isConcluded ? "Completado" : "En curso"}
+              {statusLabel}
             </span>
           </div>
         </div>
@@ -309,7 +361,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
               maxWidth: 220,
             }}
           >
-            {currentPhase.name} · avance 1
+            {currentPhoto ? `${currentPhase.name} · foto avance` : `${currentPhase.name} · avance 1`}
           </span>
 
           {/* Carousel dots indicator */}
@@ -323,3 +375,4 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
     </div>
   );
 }
+
