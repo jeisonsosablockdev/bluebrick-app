@@ -12,6 +12,7 @@ export * from './presentation/components/hitl-split-viewer';
 // Layer 2: Application Services, Actions & RSC Queries
 export * from './application/services/differential-sync-service';
 export * from './application/services/video-ingestion-service';
+export * from './application/services/dashboard-sync-service';
 export * from './application/actions/hitl-review-actions';
 export * from './application/queries/get-dashboard-data-query';
 
@@ -32,10 +33,12 @@ export * from './domain/scoring/confidence-scoring-engine';
 export * from './domain/scoring/anomaly-detector';
 export * from './domain/utils/excel-date-converter';
 export * from './domain/models/sync-event-models';
+export * from './domain/models/dashboard-sync-models';
 export * from './domain/schemas/canonical-client-schema';
 export * from './domain/schemas/canonical-project-schema';
 export * from './domain/schemas/canonical-media-schema';
 export * from './domain/schemas/canonical-sync-record-schema';
+export * from './domain/schemas/canonical-dashboard-schema';
 
 // Layer 4: Infrastructure Adapters
 export * from './infrastructure/google-service-account-adapter';
