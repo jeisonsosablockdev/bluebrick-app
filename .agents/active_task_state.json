@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-018",
-  "branch": "SPEC/jaymusicmachine-BBC-018-s01-dashboard-sync-service",
+  "branch": "SPEC/jaymusicmachine-BBC-018-s02-cron-route-and-vercel-config",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

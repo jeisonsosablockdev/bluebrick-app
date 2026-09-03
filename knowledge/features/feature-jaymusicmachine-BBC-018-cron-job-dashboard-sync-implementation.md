@@ -105,4 +105,11 @@ flowchart TD
 - **Verification**: `pnpm validate` ejecutado con 62 archivos y 391 tests pasando.
 - **Status**: Stable & Verified. Integrated into parent feature branch.
 
+### SPEC-2: `SPEC/jaymusicmachine-BBC-018-s02-cron-route-and-vercel-config`
+- **Scope**: Implementación del Route Handler `apps/web/src/app/api/cron/sync-dashboard/route.ts` con protección `CRON_SECRET`, directiva de crons en `vercel.json` (`0 */2 * * *`), refactorización del script CLI `scripts/sync-dashboard-excel.ts` eliminando 240+ líneas duplicadas, y suite de pruebas unitarias/integración.
+- **Patterns**: Autenticación criptográfica en tiempo constante (`verifyCronAuthorization`), Serverless route config (`dynamic = "force-dynamic"`, `maxDuration = 60`), desacoplamiento en 4 capas (Layer 1 solo invoca Layer 2 sin tocar DB directamente).
+- **Testing**: 4 tests unitarios/integración en `tests/unit/api-cron-sync-dashboard.test.ts` cubriendo 401 (sin header/token inválido), 200 (éxito con payload JSON) y 500 (manejo resiliente de errores).
+- **Status**: Stable & Verified. Integrated into parent feature branch.
+
+
 
