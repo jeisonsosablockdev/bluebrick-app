@@ -10,12 +10,13 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
 import type { PortfolioItem } from "@/lib/types/db";
 import { ProjectPhaseMediaCard } from "@/components/dashboard/project-phase-media-card";
+import type { PhasePhotoCollection } from "@/features/image-detail";
 
 export interface ProjectPhaseProgressProps {
   readonly property: PortfolioItem;
@@ -164,28 +165,37 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const isCurrentActive = hasDynamicPhases && !isConcluded && currentPhase.status === "En curso";
   const statusLabel = isConcluded ? "Completado" : isCurrentActive ? "En curso" : currentPhase.status;
 
-  // Step 5.1: Dynamic media carousel state for the active phase
+  // Step 5.1: Derive all phases photos collection for modal traversal (BBC-020 SPEC-08)
+  const allPhasesPhotos: readonly PhasePhotoCollection[] = useMemo(() => {
+    return uiPhases
+      .filter((p) => Array.isArray(p.images) && p.images.length > 0)
+      .map((p) => ({
+        phaseName: p.name,
+        images: p.images,
+      }));
+  }, [uiPhases]);
+
+  // Step 5.2: Dynamic media carousel state for the active phase
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [isHoveredOnMedia, setIsHoveredOnMedia] = useState<boolean>(false);
 
   const phaseImages: readonly string[] = currentPhase.images || [];
-  const hasMultipleImages = phaseImages.length > 1;
 
-  // Reset active image index when selected phase or property changes
+  // Reset active image index when property changes in dashboard carousel
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [currentPhase.id, property.id, property.propertyId]);
+  }, [property.id, property.propertyId]);
 
-  // Automatic cycling timer (cambio automático de imágenes cada 4s) when multiple images exist
+  // Step 5.3: Automatic cycling timer strictly within active phase (every 4s) when multiple photos exist
   useEffect(() => {
-    if (!hasMultipleImages || isHoveredOnMedia) return;
+    if (phaseImages.length <= 1 || isHoveredOnMedia) return;
 
     const timer = setInterval(() => {
       setActiveImageIndex((prev) => (prev + 1) % phaseImages.length);
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [hasMultipleImages, isHoveredOnMedia, phaseImages.length]);
+  }, [phaseImages.length, isHoveredOnMedia]);
 
   return (
     <div
@@ -287,6 +297,14 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
             const badgeBg = isDark ? token.bgDark : token.bgLight;
             const badgeBorder = isDark ? token.borderDark : token.borderLight;
 
+            // Step 7.1: Image awareness for milestone indicators (BBC-020 SPEC-02)
+            const photoCount = Array.isArray(phase.images) ? phase.images.length : 0;
+            const hasPhotos = photoCount > 0;
+
+            // Enlarge completed milestone dots that have photos (15px vs standard 10px), checkmark 9px vs 7px
+            const dotSize = isCurrent ? 14 : isCompleted && hasPhotos ? 15 : 10;
+            const checkSize = isCompleted && hasPhotos ? 9 : 7;
+
             const dotBg = isCompleted
               ? "#57B98C"
               : isCurrent
@@ -302,7 +320,10 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                 key={phase.id}
                 type="button"
                 data-testid="phase-dot"
-                onClick={() => setSelectedPhaseIndex(idx)}
+                onClick={() => {
+                  setSelectedPhaseIndex(idx);
+                  setActiveImageIndex(0);
+                }}
                 onMouseEnter={() => setHoveredDotIndex(idx)}
                 onMouseLeave={() => setHoveredDotIndex(null)}
                 onFocus={() => setHoveredDotIndex(idx)}
@@ -319,7 +340,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   position: "relative",
                 }}
               >
-                {/* Floating Tooltip: Line 1 (Arriba): nombre_fase, Line 2 (Abajo): estado */}
+                {/* Floating Tooltip: Line 1: nombre_fase, Line 2: estado + fotos */}
                 <AnimatePresence>
                   {hoveredDotIndex === idx && (
                     <motion.div
@@ -370,31 +391,66 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                         {phase.name}
                       </div>
 
-                      {/* Abajo: estado */}
+                      {/* Abajo: estado y badge de fotos si existen (BBC-020 SPEC-02) */}
                       <div
-                        data-testid="phase-dot-tooltip-status"
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          flexWrap: "wrap",
+                          gap: 6,
                         }}
                       >
-                        <span
+                        <div
+                          data-testid="phase-dot-tooltip-status"
                           style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.06em",
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                            color: badgeColor,
-                            background: badgeBg,
-                            border: `1px solid ${badgeBorder}`,
-                            whiteSpace: "nowrap",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {phaseStatusLabel}
-                        </span>
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              color: badgeColor,
+                              background: badgeBg,
+                              border: `1px solid ${badgeBorder}`,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {phaseStatusLabel}
+                          </span>
+                        </div>
+
+                        {/* Step 7.2: Badge informativo de fotografías en hover (BBC-020 SPEC-05: Lucide vector icon + pill style) */}
+                        {hasPhotos && (
+                          <div
+                            data-testid="phase-dot-tooltip-photos"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              color: isDark ? "#A0AEC0" : "#4A5568",
+                              background: isDark ? "rgba(237, 241, 245, 0.08)" : "rgba(10, 18, 32, 0.05)",
+                              border: `1px solid ${isDark ? "rgba(237, 241, 245, 0.16)" : "rgba(10, 18, 32, 0.12)"}`,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <Camera size={10} strokeWidth={2.2} />
+                            <span>{photoCount === 1 ? "1 foto de avance" : `${photoCount} fotos de avance`}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Arrow */}
@@ -427,8 +483,8 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 420, damping: 22 }}
                   style={{
-                    width: isCurrent ? 14 : 10,
-                    height: isCurrent ? 14 : 10,
+                    width: dotSize,
+                    height: dotSize,
                     borderRadius: "50%",
                     backgroundColor: dotBg,
                     border: dotBorder,
@@ -440,7 +496,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                     willChange: "transform",
                   }}
                 >
-                  {isCompleted && <Check size={7} color="#FFFFFF" strokeWidth={3} />}
+                  {isCompleted && <Check size={checkSize} color="#FFFFFF" strokeWidth={3} />}
                 </motion.div>
               </button>
             );
@@ -457,23 +513,34 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           alignItems: "center",
         }}
       >
-        {/* Left Column: Phase Info */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* Left Column: Animated Phase Info (BBC-020 SPEC-06) */}
+        <div
+          data-testid="phase-header-info"
+          style={{ display: "flex", flexDirection: "column", gap: 6 }}
+        >
           <div style={{ fontSize: 11, color: textMutedColor, fontFamily: "'JetBrains Mono', monospace" }}>
             Fase {currentPhaseNumber} de {totalPhases}
           </div>
 
-          <div
+          <motion.div
+            key={currentPhase.id}
+            data-testid="phase-header-title"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              color: [isDark ? "#57B98C" : "#2F8F6B", textTitleColor],
+            }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: 16,
               fontWeight: 700,
-              color: textTitleColor,
               lineHeight: 1.25,
             }}
           >
             {currentPhase.name}
-          </div>
+          </motion.div>
 
           <div style={{ fontSize: 12, color: textMutedColor, lineHeight: 1.4 }}>
             {currentPhase.description}
@@ -520,6 +587,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           activeIndex={activeImageIndex}
           onIndexChange={setActiveImageIndex}
           onHoverChange={setIsHoveredOnMedia}
+          allPhasesPhotos={allPhasesPhotos}
         />
       </div>
     </div>

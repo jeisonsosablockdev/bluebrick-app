@@ -54,10 +54,17 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "BlueBrick Global" }],
   creator: "BlueBrick Dev Team",
-  publisher: "BlueBrick Platform",
   icons: {
-    icon: [{ url: "/icon", sizes: "32x32", type: "image/png" }],
-    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    icon: [
+      { url: "/brand/bluebrick-mark-dark.svg", type: "image/svg+xml" },
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
+    ],
   },
   manifest: "/manifest.webmanifest",
   alternates: {

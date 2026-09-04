@@ -1,7 +1,17 @@
 /**
+ * ============================================================================
  * @file apps/web/src/lib/infrastructure/db/repositories/investment-repository.ts
- * @description Layer 4: Infrastructure - Investment portfolio repository for Neon PostgreSQL.
- * Provides clean modular transformers, typed queries, and robust fallback policies.
+ * @description Layer 4: Infrastructure - Investment portfolio repository for Neon PostgreSQL
+ * ============================================================================
+ * Purpose: Provides clean modular transformers, typed queries, and robust fallback policies
+ * for investor portfolios, project milestones, and deduplicated reinvestment opportunities.
+ *
+ * Invariants:
+ *  - Native PostgreSQL deduplication using DISTINCT ON (LOWER(TRIM(title))).
+ *  - Non-blocking graceful degradation when querying project construction milestones.
+ *  - Pure infrastructure layer interacting with Neon PostgreSQL.
+ *
+ * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
  */
 
 import { DatabaseExecutor, getDatabasePool } from "../neon-client";
@@ -335,7 +345,7 @@ export class InvestmentRepository {
 
     try {
       const phasesRes = await this.db.query(
-        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, imagen_url_1, imagen_url_2, imagen_url_3
+        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, folder_url, imagenes, imagen_url_1, imagen_url_2, imagen_url_3
          FROM dashboard_project_phases
          WHERE id_inversion = ANY($1)
          ORDER BY id_inversion, orden ASC`,
@@ -351,6 +361,8 @@ export class InvestmentRepository {
         estado: "Completada" | "En curso" | "Pendiente" | "No aplica";
         fecha_inicio?: string | Date | null;
         fecha_fin?: string | Date | null;
+        folder_url?: string | null;
+        imagenes?: string[] | null;
         imagen_url_1?: string | null;
         imagen_url_2?: string | null;
         imagen_url_3?: string | null;
@@ -364,38 +376,53 @@ export class InvestmentRepository {
       for (const item of items) {
         const rows = grouped.get(item.propertyId);
         if (rows && rows.length > 0) {
-          item.phases = rows.map((row) => ({
-            id: String(row.id_fase || row.id),
-            projectId: item.propertyId,
-            order: Number(row.orden),
-            name: String(row.nombre_fase),
-            status: row.estado,
-            startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
-            endDate: row.fecha_fin ? String(row.fecha_fin) : null,
-            images: [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3].filter(
-              (img): img is string => typeof img === "string" && img.trim().length > 0
-            ),
-          }));
+          item.phases = rows.map((row) => {
+            // Step 4.1: Preferentially hydrate images from modern imagenes text[] array
+            // Fall back to legacy scalar columns imagen_url_1, 2, 3 for full backwards compatibility
+            const candidateImages = (Array.isArray(row.imagenes) && row.imagenes.length > 0)
+              ? row.imagenes
+              : [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3];
+
+            return {
+              id: String(row.id_fase || row.id),
+              projectId: item.propertyId,
+              order: Number(row.orden),
+              name: String(row.nombre_fase),
+              status: row.estado,
+              startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
+              endDate: row.fecha_fin ? String(row.fecha_fin) : null,
+              images: candidateImages.filter(
+                (img): img is string => typeof img === "string" && img.trim().length > 0
+              ),
+            };
+          });
         }
       }
-    } catch {
+    } catch (err) {
       // Invariant: Non-blocking graceful degradation
+      console.warn("Could not enrich items with project phases:", err);
     }
   }
 
   /**
-   * Retrieves featured reinvestment opportunities.
+   * Retrieves featured reinvestment opportunities from the database.
+   * Employs native PostgreSQL deduplication via DISTINCT ON (LOWER(TRIM(title)))
+   * picking the most recent record (created_at DESC), and sorts mapped entities by projectedRoi DESC.
+   *
+   * @returns Array of deduplicated reinvestment opportunities ordered by projected ROI descending.
    */
   async getReinvestmentOpportunities(): Promise<DbReinvestmentOpportunity[]> {
-    // Step 1: Query reinvestment opportunities ordered by projected ROI descending
+    // Step 1: Query reinvestment opportunities with native title deduplication ordered by title and newest created_at
     const query = `
-      SELECT id, title, city, projected_roi, min_investment, days_left, gradient, created_at
+      SELECT DISTINCT ON (LOWER(TRIM(title)))
+        id, title, city, projected_roi, min_investment, days_left, gradient, created_at
       FROM reinvestment_opportunities
-      ORDER BY projected_roi DESC;
+      ORDER BY LOWER(TRIM(title)), created_at DESC;
     `;
     const res = await this.db.query(query);
 
-    return (res.rows || []).map((r) => ({
+    // Step 2: Map raw database rows to domain DbReinvestmentOpportunity entities
+    const opportunities: DbReinvestmentOpportunity[] = (res.rows || []).map((r) => ({
       id: r.id,
       title: r.title,
       city: r.city,
@@ -405,6 +432,9 @@ export class InvestmentRepository {
       gradient: r.gradient,
       createdAt: r.created_at ? new Date(r.created_at) : undefined,
     }));
+
+    // Step 3: Sort mapped results by projected ROI descending to prioritize highest-yield opportunities in UI
+    return opportunities.sort((a, b) => b.projectedRoi - a.projectedRoi);
   }
 }
 

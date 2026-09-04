@@ -23,7 +23,16 @@
 
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import dynamic from "next/dynamic";
+import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
+import type { PhasePhotoCollection } from "@/features/image-detail";
+
+// Step 3b: Lazy load ImageDetailModal via next/dynamic (FDD Public API) to protect FCP and bundle size
+const ImageDetailModal = dynamic(
+  () => import("@/features/image-detail").then((mod) => mod.ImageDetailModal),
+  { ssr: false }
+);
 
 // ─── Public Props Contract ────────────────────────────────────────────────────
 
@@ -41,6 +50,8 @@ export interface ProjectPhaseMediaCardProps {
   readonly activeIndex?: number;
   /** Callback to request parent to set a specific image index (for dot click). */
   readonly onIndexChange?: (index: number) => void;
+  /** Optional multi-phase photograph collections for cross-phase traversal inside the modal (BBC-020 SPEC-08). */
+  readonly allPhasesPhotos?: readonly PhasePhotoCollection[];
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -63,8 +74,9 @@ export function ProjectPhaseMediaCard({
   onHoverChange,
   activeIndex,
   onIndexChange,
+  allPhasesPhotos,
 }: ProjectPhaseMediaCardProps): React.JSX.Element {
-  // Step 1: Derive display state from images prop
+  // Step 1: Derive display state from images prop (strict static dashboard invariant BBC-020 SPEC-08)
   const hasAnyImage = images.length > 0;
   const hasMultipleImages = images.length > 1;
 
@@ -110,13 +122,74 @@ export function ProjectPhaseMediaCard({
   };
 
 
+  // Step 8b: Local hover state for revealing corner navigation arrows (BBC-020 SPEC-01)
+  const [isCardHovered, setIsCardHovered] = useState<boolean>(false);
+
+  /**
+   * Step 8c: Handle previous arrow click.
+   * Cycles circularly backwards within the current phase's photos.
+   * Prevents event bubbling to avoid triggering modal opening.
+   */
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageError(false);
+    if (images.length <= 1) return;
+    const prevIdx = (safeIndex - 1 + images.length) % images.length;
+    if (isControlled) {
+      onIndexChange!(prevIdx);
+    } else {
+      setInternalIndex(prevIdx);
+    }
+  };
+
+  /**
+   * Step 8d: Handle next arrow click.
+   * Cycles circularly forwards within the current phase's photos.
+   * Prevents event bubbling to avoid triggering modal opening.
+   */
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageError(false);
+    if (images.length <= 1) return;
+    const nextIdx = (safeIndex + 1) % images.length;
+    if (isControlled) {
+      onIndexChange!(nextIdx);
+    } else {
+      setInternalIndex(nextIdx);
+    }
+  };
+
+  // Step 8e: Modal lightbox state for full-resolution inspection (BBC-020 SPEC-03)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   // Step 9: Compute image counter label (e.g. "2/3")
-  const counterLabel = hasMultipleImages ? `${safeIndex + 1}/${images.length}` : null;
+  const counterLabel = images.length > 1 ? `${safeIndex + 1}/${images.length}` : null;
 
   return (
     <motion.div
-      onMouseEnter={() => onHoverChange(true)}
-      onMouseLeave={() => onHoverChange(false)}
+      data-testid="phase-media-card-container"
+      role={showRealImage ? "button" : undefined}
+      tabIndex={showRealImage ? 0 : undefined}
+      aria-label={showRealImage ? `Ampliar fotografía de ${phaseName}` : undefined}
+      onClick={() => {
+        if (showRealImage) {
+          setIsModalOpen(true);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (showRealImage && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          setIsModalOpen(true);
+        }
+      }}
+      onMouseEnter={() => {
+        setIsCardHovered(true);
+        onHoverChange(true);
+      }}
+      onMouseLeave={() => {
+        setIsCardHovered(false);
+        onHoverChange(false);
+      }}
       whileHover={{ scale: 1.025, y: -2 }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
       style={{
@@ -136,8 +209,52 @@ export function ProjectPhaseMediaCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        cursor: showRealImage ? "pointer" : "default",
       }}
     >
+      {/* Step 8f: Ambient brand logo blurred background mesh when no real photos (BBC-020 SPEC-07) */}
+      {!showRealImage && (
+        <div
+          data-testid="phase-media-card-fallback-brand"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        >
+          {/* Blurred background logo mesh */}
+          <div
+            data-testid="phase-media-card-fallback-brand-blur"
+            style={{
+              transform: "scale(2.2)",
+              filter: "blur(28px)",
+              opacity: isDark ? 0.32 : 0.22,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <BlueBrickLogo height={72} priority={false} />
+          </div>
+          {/* Soft radial overlay to blend with theme */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: isDark
+                ? "radial-gradient(circle at center, rgba(87, 185, 140, 0.06) 0%, rgba(10, 18, 32, 0.45) 100%)"
+                : "radial-gradient(circle at center, rgba(47, 143, 107, 0.05) 0%, rgba(248, 250, 252, 0.4) 100%)",
+            }}
+          />
+        </div>
+      )}
+
       {/* Step 8: Real photograph layer — rendered ONLY when a valid URL is available */}
       {showRealImage && (
         <motion.img
@@ -194,9 +311,13 @@ export function ProjectPhaseMediaCard({
       >
         {/* Step 10a: Icon + counter row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {/* Fallback icon — visible only when no real photo is displayed */}
+          {/* Fallback brand logo with text — visible only when no real photo is displayed (BBC-020 SPEC-07) */}
           {!showRealImage && (
-            <ImageIcon size={22} color="rgba(237, 241, 245, 0.85)" />
+            <BlueBrickLogo
+              height={20}
+              data-testid="phase-media-fallback-brand-logo"
+              style={{ opacity: 0.95 }}
+            />
           )}
 
           {/* Image counter badge (e.g. "1/3") — only for multi-image */}
@@ -280,6 +401,90 @@ export function ProjectPhaseMediaCard({
           </div>
         )}
       </div>
+
+      {/* Step 11: Glassmorphic corner-spanning navigation arrows (BBC-020 SPEC-01) */}
+      {hasMultipleImages && (
+        <>
+          {/* Left corner arrow: Spans full left corner from top to bottom */}
+          <motion.button
+            type="button"
+            data-testid="phase-media-arrow-prev"
+            aria-label="Ver imagen anterior"
+            onClick={handlePrevClick}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isCardHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(10, 18, 32, 0.45)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "none",
+              borderRight: "1px solid rgba(237, 241, 245, 0.12)",
+              color: "#EDF1F5",
+              cursor: "pointer",
+              zIndex: 10,
+              transition: "background 0.2s ease",
+            }}
+            whileHover={{ backgroundColor: "rgba(10, 18, 32, 0.7)" }}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </motion.button>
+
+          {/* Right corner arrow: Spans full right corner from top to bottom */}
+          <motion.button
+            type="button"
+            data-testid="phase-media-arrow-next"
+            aria-label="Ver siguiente imagen"
+            onClick={handleNextClick}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isCardHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              right: 0,
+              width: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(10, 18, 32, 0.45)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "none",
+              borderLeft: "1px solid rgba(237, 241, 245, 0.12)",
+              color: "#EDF1F5",
+              cursor: "pointer",
+              zIndex: 10,
+              transition: "background 0.2s ease",
+            }}
+            whileHover={{ backgroundColor: "rgba(10, 18, 32, 0.7)" }}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </motion.button>
+        </>
+      )}
+
+      {/* Step 12: Lightbox Modal for high-resolution inspection (BBC-020 SPEC-03 / SPEC-08) */}
+      {isModalOpen && showRealImage && (
+        <ImageDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          images={images}
+          initialIndex={safeIndex}
+          title={`Detalle de fotografía — ${phaseName}`}
+          phaseName={phaseName}
+          allPhasesPhotos={allPhasesPhotos}
+        />
+      )}
     </motion.div>
   );
 }

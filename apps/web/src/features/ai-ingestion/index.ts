@@ -12,6 +12,7 @@ export * from './presentation/components/hitl-split-viewer';
 // Layer 2: Application Services, Actions & RSC Queries
 export * from './application/services/differential-sync-service';
 export * from './application/services/video-ingestion-service';
+export * from './application/services/dashboard-sync-service';
 export * from './application/actions/hitl-review-actions';
 export * from './application/queries/get-dashboard-data-query';
 
@@ -24,22 +25,28 @@ export * from './domain/ports/focal-point-port';
 export * from './domain/ports/video-tagger-port';
 export * from './domain/ports/pdf-extractor-port';
 export * from './domain/ports/spreadsheet-parser-port';
+export * from './domain/ports/drive-folder-reader-port';
 export * from './domain/ports/repositories-port';
 export * from './domain/policies/image-quality-policy';
+export * from './domain/policies/hitl-rbac-policy';
 export * from './domain/math/smart-crop-calculator';
 export * from './domain/validators/nit-validator';
 export * from './domain/scoring/confidence-scoring-engine';
 export * from './domain/scoring/anomaly-detector';
 export * from './domain/utils/excel-date-converter';
+export * from './domain/utils/drive-folder-utils';
 export * from './domain/models/sync-event-models';
+export * from './domain/models/dashboard-sync-models';
 export * from './domain/schemas/canonical-client-schema';
 export * from './domain/schemas/canonical-project-schema';
 export * from './domain/schemas/canonical-media-schema';
 export * from './domain/schemas/canonical-sync-record-schema';
+export * from './domain/schemas/canonical-dashboard-schema';
 
 // Layer 4: Infrastructure Adapters
 export * from './infrastructure/google-service-account-adapter';
 export * from './infrastructure/google-drive-changes-adapter';
+export * from './infrastructure/google-drive-folder-reader-adapter';
 export * from './infrastructure/vercel-blob-adapter';
 export * from './infrastructure/sharp-image-processor-adapter';
 export * from './infrastructure/gemini-focal-point-adapter';

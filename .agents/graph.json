@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T19:43:36.369Z",
+  "generatedAt": "2026-09-04T16:53:12.835Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -110,6 +110,12 @@
       "path": "knowledge/architecture/toolchain-policy.md"
     },
     {
+      "id": "knowledge/assets/brand/README.md",
+      "type": "governance",
+      "label": "README",
+      "path": "knowledge/assets/brand/README.md"
+    },
+    {
       "id": "knowledge/database/index.md",
       "type": "governance",
       "label": "index",
@@ -120,6 +126,30 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/database/models/index.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",
@@ -156,6 +186,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-14-excel-dashboard-ingestion-phases.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-15-phase-media-images-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-15-phase-media-images-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-15-phase-media-images-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-15-phase-media-images.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-15-phase-media-images",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-15-phase-media-images.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-16-dashboard-microanimations-implementation.md",
@@ -240,6 +282,18 @@
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases",
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",

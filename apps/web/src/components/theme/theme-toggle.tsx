@@ -13,12 +13,13 @@ import { useI18n } from "@/features/i18n";
 
 export interface ThemeToggleProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
 /**
  * ThemeToggle renders a luxury button to switch between dark and light modes.
  */
-export function ThemeToggle({ className = "" }: ThemeToggleProps): React.JSX.Element {
+export function ThemeToggle({ className = "", style }: ThemeToggleProps): React.JSX.Element {
   // Step 1: Read active theme and toggle action
   const { theme, toggleTheme } = useTheme();
   const { t } = useI18n();
@@ -45,6 +46,7 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps): React.JSX.Ele
         color: isDark ? "#EDF1F5" : "#0A1220",
         cursor: "pointer",
         transition: "all 0.2s ease",
+        ...style,
       }}
     >
       {isDark ? (

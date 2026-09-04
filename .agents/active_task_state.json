@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-15",
-  "branch": "feature/jaymusicmachine-BBC-15-phase-media-images",
+  "task_id": "BBC-8",
+  "branch": "feature/jaymusicmachine-BBC-8-images-drive-folder-ingestion",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

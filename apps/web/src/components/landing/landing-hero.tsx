@@ -6,11 +6,11 @@
 
 "use client";
 
-import React from "react";
-import { BlueBrickMark } from "@/components/dashboard/blue-brick-mark";
+import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
 import { ShieldCheck } from "lucide-react";
 import { useI18n } from "@/features/i18n";
 import { useTheme } from "@/components/theme";
+import { BRAND_COLORS } from "@/features/shared";
 
 /**
  * LandingHero presents the BlueBrick investor portal headline and luxury theme tokens.
@@ -22,23 +22,12 @@ export function LandingHero(): React.JSX.Element {
 
   const isDark = theme === "dark";
 
-  // Step 2: Render top brand header with logo emblem and translated copy
+  // Step 2: Render top brand header with official horizontal logo and translated copy
   return (
     <header style={{ display: "flex", width: "100%", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       {/* Brand Emblem & Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <BlueBrickMark />
-        <span
-          style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 22,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            color: isDark ? "#EDF1F5" : "#0A1220",
-          }}
-        >
-          {t("common.brandName")}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <BlueBrickLogo height={38} priority />
       </div>
 
       {/* Primary Headline */}

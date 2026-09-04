@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { BlueBrickMark } from "@/components/dashboard/blue-brick-mark";
+import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
 
 /**
  * DashboardLoading renders the instant static shell skeleton for the investment dashboard.
@@ -28,22 +28,20 @@ export default function DashboardLoading(): React.JSX.Element {
     >
       {/* ---------- TOP NAV SKELETON ---------- */}
       <header className="dash-sticky-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <BlueBrickMark />
-          <span
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 18,
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              color: "#EDF1F5",
-            }}
-          >
-            BlueBrick
-          </span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <BlueBrickLogo height={28} priority />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: "rgba(237,241,245,0.06)",
+              animation: "pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+            }}
+          />
           <div
             style={{
               width: 140,

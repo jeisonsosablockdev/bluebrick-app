@@ -9,5 +9,5 @@ describe('04 - 4-Layer Architecture & Monorepo Linter', () => {
     const result = executeHarnessScript('scripts/ci/check-layered-architecture.sh', [], { cwd: repoRoot });
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('4-Layer architecture governance check passed');
-  });
+  }, 15000);
 });

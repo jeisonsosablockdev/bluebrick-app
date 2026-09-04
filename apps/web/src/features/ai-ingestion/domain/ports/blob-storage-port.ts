@@ -74,4 +74,11 @@ export interface IBlobStoragePort {
    * @returns BlobUploadResult with public CDN URL
    */
   uploadBlob(options: BlobUploadOptions): Promise<BlobUploadResult>;
+
+  /**
+   * Deletes one or more blobs from storage by public URL.
+   * 
+   * @param urlOrUrls - Blob URL or array of Blob URLs to delete
+   */
+  deleteBlob?(urlOrUrls: string | string[]): Promise<void>;
 }
