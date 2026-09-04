@@ -389,4 +389,170 @@ describe("BBC-020 SPEC-03: Image Detail FDD Feature", () => {
       });
     });
   });
+
+  // ─── SPEC-09: Modal Fallback Validation ──────────────────────────────────────
+
+  describe("BBC-020 SPEC-09: Modal Fallback Validation", () => {
+    /**
+     * Helper: simulate a native img onError event on the first role="img" element.
+     */
+    function triggerImageError(imgElement: HTMLElement) {
+      fireEvent.error(imgElement);
+    }
+
+    it("T09-1: renders compact fallback card when onError fires for current photo", () => {
+      // Arrange: Modal open with a single dead URL
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act: Simulate image load error
+      const img = screen.getByRole("img");
+      triggerImageError(img);
+
+      // Assert: fallback card shown, photo img (broken URL) is gone
+      expect(screen.getByTestId("modal-fallback-card")).toBeInTheDocument();
+      // The fallback card itself contains logo imgs, so we target the photo by src.
+      expect(
+        document.querySelector('img[src="https://dead.example.com/broken.jpg"]')
+      ).not.toBeInTheDocument();
+    });
+
+    it("T09-2: fallback card is compact (not full-viewport) and shows phase name label", () => {
+      // Arrange
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act
+      triggerImageError(screen.getByRole("img"));
+
+      // Assert: fallback present with bounded dimensions and phase label
+      const fallback = screen.getByTestId("modal-fallback-card");
+      expect(fallback).toBeInTheDocument();
+      expect(fallback.className).not.toMatch(/w-full h-full|h-screen|w-screen/);
+      expect(screen.getByTestId("modal-fallback-phase-label")).toHaveTextContent(
+        "5. Demoliciones y/o cimentación"
+      );
+    });
+
+    it("T09-3: navigating from a broken photo to the next shows that photo normally", () => {
+      // Arrange: Two photos — first broken, second valid
+      const photos = [
+        "https://dead.example.com/broken.jpg",
+        "https://example.com/valid.jpg",
+      ];
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={photos}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act: error on first photo then navigate next
+      triggerImageError(screen.getByRole("img"));
+      expect(screen.getByTestId("modal-fallback-card")).toBeInTheDocument();
+      fireEvent.click(screen.getByLabelText("Imagen siguiente"));
+
+      // Assert: fallback gone, real img shown for second URL
+      expect(screen.queryByTestId("modal-fallback-card")).not.toBeInTheDocument();
+      expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/valid.jpg");
+    });
+
+    it("T09-4: error on index 0 does NOT affect index 1 (independent per-index state)", () => {
+      // Arrange
+      const photos = [
+        "https://dead.example.com/broken.jpg",
+        "https://example.com/valid.jpg",
+      ];
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={photos}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act: error index 0, navigate to index 1
+      triggerImageError(screen.getByRole("img"));
+      fireEvent.click(screen.getByLabelText("Imagen siguiente"));
+
+      // Assert: index 1 shows real img, no fallback
+      expect(screen.queryByTestId("modal-fallback-card")).not.toBeInTheDocument();
+      expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/valid.jpg");
+    });
+
+    it("T09-5: zoom control bar is hidden when current image is in error state", () => {
+      // Arrange
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act
+      triggerImageError(screen.getByRole("img"));
+
+      // Assert: zoom controls absent
+      expect(screen.queryByLabelText("Aumentar zoom")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Reducir zoom")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Restablecer zoom")).not.toBeInTheDocument();
+    });
+
+    it("T09-6: error set resets when modal is closed and reopened", () => {
+      // Arrange
+      const { rerender } = render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Act: error → close → reopen
+      triggerImageError(screen.getByRole("img"));
+      expect(screen.getByTestId("modal-fallback-card")).toBeInTheDocument();
+
+      rerender(
+        <ImageDetailModal
+          isOpen={false}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+      rerender(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={["https://dead.example.com/broken.jpg"]}
+          phaseName="5. Demoliciones y/o cimentación"
+        />
+      );
+
+      // Assert: img rendered again (error state cleared on re-open)
+      expect(screen.queryByTestId("modal-fallback-card")).not.toBeInTheDocument();
+      expect(screen.getByRole("img")).toHaveAttribute(
+        "src",
+        "https://dead.example.com/broken.jpg"
+      );
+    });
+  });
 });

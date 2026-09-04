@@ -16,6 +16,8 @@
  *   - Invariant 1 (Strict Unmount): Renders null when `isOpen` is false, releasing GPU textures.
  *   - Invariant 2 (Accessible Tree): Encapsulates dialog role, accessible title, and focus boundary.
  *   - Invariant 3 (GPU Compositing): Transformations apply strictly via translate3d and scale.
+ *   - Invariant 4 (Fallback Containment): When an image URL fails to load, the modal shows a
+ *       compact bounded brand fallback (≤ 320×240px) rather than a full-screen blank. (BBC-020 SPEC-09)
  */
 
 "use client";
@@ -82,6 +84,150 @@ interface FlattenedPhoto {
   readonly localTotal: number;
 }
 
+// ─── SPEC-09: Compact Brand Fallback Card (Layer 1 Presentation) ──────────────
+
+/**
+ * Props for the compact inline fallback shown in the modal when an image fails to load.
+ * @internal
+ */
+interface ModalFallbackCardProps {
+  /** Construction phase name to display inside the fallback (e.g., "5. Demoliciones y/o cimentación"). */
+  readonly phaseName: string;
+}
+
+/**
+ * Compact brand fallback rendered inside the lightbox modal when a photo URL fails to load.
+ *
+ * @description Intentionally bounded to 320×240px — does NOT stretch to full viewport.
+ *   Uses glassmorphism backdrop and the BlueBrick horizontal logo to maintain brand presence
+ *   while communicating the absence of a real photograph.
+ *
+ * @invariant Size is bounded via explicit w/h inline style — never fills the overlay.
+ * @security No user-controlled content rendered without sanitization.
+ */
+function ModalFallbackCard({ phaseName }: ModalFallbackCardProps) {
+  // Step F1: Render a contained brand box (≤ 320×240px) centered in the modal stage.
+  return (
+    <div
+      data-testid="modal-fallback-card"
+      style={{
+        // Step F2: Bounded dimensions — the key invariant for SPEC-09.
+        width: 320,
+        height: 240,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        position: "relative",
+        borderRadius: 16,
+        overflow: "hidden",
+        // Step F3: Glassmorphism chrome matching the card fallback style.
+        background: "rgba(10, 18, 32, 0.70)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+      }}
+    >
+      {/* Step F4: Blurred ambient logo mesh background for brand presence */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      >
+        <div
+          style={{
+            transform: "scale(2.4)",
+            filter: "blur(30px)",
+            opacity: 0.28,
+          }}
+        >
+          {/* Step F5: Using <img> with the public brand asset — same logo as card fallback */}
+          <img
+            src="/brand/bluebrick-logo-horizontal-white.svg"
+            alt=""
+            width={120}
+            height={40}
+            aria-hidden="true"
+          />
+        </div>
+        {/* Radial gradient to blend with dark modal overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at center, rgba(87, 185, 140, 0.08) 0%, rgba(10, 18, 32, 0.55) 100%)",
+          }}
+        />
+      </div>
+
+      {/* Step F6: Foreground — crisp logo + phase name badge */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        {/* BlueBrick logo */}
+        <img
+          src="/brand/bluebrick-logo-horizontal-white.svg"
+          alt="BlueBrick"
+          width={100}
+          height={33}
+          style={{ opacity: 0.90 }}
+        />
+
+        {/* Phase name pill */}
+        <span
+          data-testid="modal-fallback-phase-label"
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "rgba(167, 243, 208, 0.9)",
+            background: "rgba(16, 185, 129, 0.12)",
+            border: "1px solid rgba(16, 185, 129, 0.28)",
+            padding: "3px 10px",
+            borderRadius: 999,
+            backdropFilter: "blur(4px)",
+            textAlign: "center",
+            maxWidth: 270,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {phaseName}
+        </span>
+
+        {/* Caption */}
+        <p
+          style={{
+            fontSize: 10,
+            color: "rgba(148, 163, 184, 0.75)",
+            margin: 0,
+            textAlign: "center",
+          }}
+        >
+          Sin fotografía disponible
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Presentation Component (Layer 1) ─────────────────────────────────────────
 
 /**
@@ -121,6 +267,7 @@ export function ImageDetailModal({
  * Internal portal implementation handling mounted lifecycle, keyboard navigation, and GPU rendering.
  */
 function ImageDetailModalPortal({
+  isOpen,
   onClose,
   images,
   initialIndex = 0,
@@ -193,7 +340,35 @@ function ImageDetailModalPortal({
     handlePanEnd,
   } = useImageZoom();
 
-  // Step 4: Reset zoom and handle circular navigation across flattened photos
+  // Step 4 (SPEC-09): Per-photo load error tracking.
+  //   Uses a Set<number> so each flattened index is independently marked as broken.
+  //   This satisfies Invariant 4: a broken URL at index N never contaminates index M.
+  const [imageErrorIndexes, setImageErrorIndexes] = useState<ReadonlySet<number>>(
+    () => new Set<number>()
+  );
+
+  // Step 4a (SPEC-09): Reset error set whenever the modal is opened (fresh session).
+  //   Closes the stale-error edge case where a previously broken URL is tried again.
+  useEffect(() => {
+    setImageErrorIndexes(new Set<number>());
+  }, [isOpen]);
+
+  /**
+   * Marks `index` as broken in the error set.
+   * Curried so it can be passed directly as `onError` without creating inline closures per-render.
+   *
+   * @param index - The flattened photo index that failed to load.
+   * @returns A React synthetic error event handler.
+   */
+  const handleImageLoadError = useCallback(
+    (index: number) => () => {
+      // Step 4b: Add the failed index to the Set (immutable update pattern).
+      setImageErrorIndexes((prev) => new Set([...prev, index]));
+    },
+    []
+  );
+
+  // Step 5: Reset zoom and handle circular navigation across flattened photos
   const goToImage = useCallback(
     (index: number) => {
       if (totalPhotos === 0) return;
@@ -241,6 +416,10 @@ function ImageDetailModalPortal({
   const currentImageUrl = currentPhoto?.url || "";
   const currentPhaseName = currentPhoto?.phaseName || phaseName || "";
   const hasMultipleImages = totalPhotos > 1;
+
+  // Step 6b (SPEC-09): Derive whether current photo is in error state.
+  //   This drives the fallback render branch (Invariant 4).
+  const isCurrentImageBroken = imageErrorIndexes.has(currentIndex);
 
   // Step 6: Render modal portal with WAI-ARIA semantics and hardware-accelerated viewport
   return createPortal(
@@ -331,22 +510,26 @@ function ImageDetailModalPortal({
           </button>
         </div>
 
-        {/* Step 9: Interactive Image Stage with GPU Compositing */}
+        {/* Step 9: Interactive Image Stage with GPU Compositing or Compact Fallback (SPEC-09) */}
         <div
           className="relative flex h-full w-full items-center justify-center overflow-hidden p-4 sm:p-12 cursor-grab active:cursor-grabbing"
-          onWheel={handleWheel}
-          onMouseDown={(e) => handlePanStart(e.clientX, e.clientY)}
-          onMouseMove={(e) => handlePanMove(e.clientX, e.clientY)}
-          onMouseUp={handlePanEnd}
-          onMouseLeave={handlePanEnd}
-          onDoubleClick={toggleZoom}
+          onWheel={isCurrentImageBroken ? undefined : handleWheel}
+          onMouseDown={isCurrentImageBroken ? undefined : (e) => handlePanStart(e.clientX, e.clientY)}
+          onMouseMove={isCurrentImageBroken ? undefined : (e) => handlePanMove(e.clientX, e.clientY)}
+          onMouseUp={isCurrentImageBroken ? undefined : handlePanEnd}
+          onMouseLeave={isCurrentImageBroken ? undefined : handlePanEnd}
+          onDoubleClick={isCurrentImageBroken ? undefined : toggleZoom}
         >
-          {currentImageUrl ? (
+          {/* Step 9a (SPEC-09): Branch — broken URL → compact brand fallback, valid URL → full lightbox img */}
+          {isCurrentImageBroken ? (
+            <ModalFallbackCard phaseName={currentPhaseName} />
+          ) : currentImageUrl ? (
             <motion.img
               key={currentImageUrl}
               src={currentImageUrl}
               alt={title}
               onLoad={handleImageLoad}
+              onError={handleImageLoadError(currentIndex)}
               draggable={false}
               className="max-h-[85vh] max-w-[90vw] object-contain transition-transform duration-75 ease-out"
               style={{
@@ -382,36 +565,38 @@ function ImageDetailModalPortal({
           </>
         )}
 
-        {/* Step 11: Floating Glassmorphic Control Bar */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-4 py-2 backdrop-blur-md shadow-2xl">
-          <button
-            type="button"
-            onClick={zoomOut}
-            disabled={scale <= 1.0}
-            aria-label="Reducir zoom"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={resetZoom}
-            aria-label="Restablecer zoom"
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-zinc-300 transition hover:bg-white/10 hover:text-white rounded-full"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>{Math.round(scale * 100)}%</span>
-          </button>
-          <button
-            type="button"
-            onClick={zoomIn}
-            disabled={scale >= maxScale}
-            aria-label="Aumentar zoom"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
-        </div>
+        {/* Step 11: Floating Glassmorphic Control Bar — hidden when current image is broken (SPEC-09) */}
+        {!isCurrentImageBroken && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-4 py-2 backdrop-blur-md shadow-2xl">
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={scale <= 1.0}
+              aria-label="Reducir zoom"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={resetZoom}
+              aria-label="Restablecer zoom"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-zinc-300 transition hover:bg-white/10 hover:text-white rounded-full"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>{Math.round(scale * 100)}%</span>
+            </button>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={scale >= maxScale}
+              aria-label="Aumentar zoom"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
     </AnimatePresence>,
     document.body
