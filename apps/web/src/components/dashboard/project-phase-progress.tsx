@@ -287,6 +287,14 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
             const badgeBg = isDark ? token.bgDark : token.bgLight;
             const badgeBorder = isDark ? token.borderDark : token.borderLight;
 
+            // Step 7.1: Image awareness for milestone indicators (BBC-020 SPEC-02)
+            const photoCount = Array.isArray(phase.images) ? phase.images.length : 0;
+            const hasPhotos = photoCount > 0;
+
+            // Enlarge completed milestone dots that have photos (15px vs standard 10px), checkmark 9px vs 7px
+            const dotSize = isCurrent ? 14 : isCompleted && hasPhotos ? 15 : 10;
+            const checkSize = isCompleted && hasPhotos ? 9 : 7;
+
             const dotBg = isCompleted
               ? "#57B98C"
               : isCurrent
@@ -319,7 +327,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   position: "relative",
                 }}
               >
-                {/* Floating Tooltip: Line 1 (Arriba): nombre_fase, Line 2 (Abajo): estado */}
+                {/* Floating Tooltip: Line 1: nombre_fase, Line 2: estado + fotos */}
                 <AnimatePresence>
                   {hoveredDotIndex === idx && (
                     <motion.div
@@ -370,31 +378,64 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                         {phase.name}
                       </div>
 
-                      {/* Abajo: estado */}
+                      {/* Abajo: estado y badge de fotos si existen (BBC-020 SPEC-02) */}
                       <div
-                        data-testid="phase-dot-tooltip-status"
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          flexWrap: "wrap",
+                          gap: 6,
                         }}
                       >
-                        <span
+                        <div
+                          data-testid="phase-dot-tooltip-status"
                           style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.06em",
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                            color: badgeColor,
-                            background: badgeBg,
-                            border: `1px solid ${badgeBorder}`,
-                            whiteSpace: "nowrap",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {phaseStatusLabel}
-                        </span>
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              color: badgeColor,
+                              background: badgeBg,
+                              border: `1px solid ${badgeBorder}`,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {phaseStatusLabel}
+                          </span>
+                        </div>
+
+                        {/* Step 7.2: Badge informativo de fotografías en hover */}
+                        {hasPhotos && (
+                          <div
+                            data-testid="phase-dot-tooltip-photos"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: isDark ? "#EDF1F5" : "#0A1220",
+                              background: isDark ? "rgba(237, 241, 245, 0.1)" : "rgba(10, 18, 32, 0.06)",
+                              border: isDark ? "1px solid rgba(237, 241, 245, 0.16)" : "1px solid rgba(10, 18, 32, 0.12)",
+                              padding: "2px 6px",
+                              borderRadius: 4,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <span>📷</span>
+                            <span>{photoCount === 1 ? "1 foto de avance" : `${photoCount} fotos de avance`}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Arrow */}
@@ -427,8 +468,8 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 420, damping: 22 }}
                   style={{
-                    width: isCurrent ? 14 : 10,
-                    height: isCurrent ? 14 : 10,
+                    width: dotSize,
+                    height: dotSize,
                     borderRadius: "50%",
                     backgroundColor: dotBg,
                     border: dotBorder,
@@ -440,7 +481,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                     willChange: "transform",
                   }}
                 >
-                  {isCompleted && <Check size={7} color="#FFFFFF" strokeWidth={3} />}
+                  {isCompleted && <Check size={checkSize} color="#FFFFFF" strokeWidth={3} />}
                 </motion.div>
               </button>
             );
