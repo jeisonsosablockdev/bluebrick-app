@@ -152,6 +152,18 @@ apps/web/src/features/image-detail/
       - Soporte para delegar avance/retroceso inter-fase mediante props `onNextPhoto`, `onPrevPhoto` y `totalProjectPhotos`.
   - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
 
+- **SPEC-7: Fallback de Marca con Logo y Fondo Desenfoque (Fix/Design)**
+  - **Rama**: `SPEC/jaymusicmachine-BBC-020-s07-brand-logo-blurred-fallback`
+  - **Fase RED (TDD)**: Tests en `tests/unit/project-phase-media-card-fallback.test.tsx` (o `project-phase-media-card.test.tsx`):
+    - Valida que al no haber fotos (`images: []` o `imageError: true`), no se dibuja el icono genérico `ImageIcon`.
+    - Valida que se renderiza el logotipo oficial con texto `BlueBrickLogo` en el primer plano.
+    - Valida que existe la capa de fondo con desenfoque (`filter: blur(...)`) conteniendo la silueta/logo ampliada de la marca para ambientar el contenedor sin opacidad plana.
+  - **Fase GREEN**:
+    - En `apps/web/src/components/dashboard/project-phase-media-card.tsx`:
+      - Reemplazo de `ImageIcon` por `<BlueBrickLogo height={20} />` en el primer plano.
+      - Capa de fondo con `BlueBrickLogo` a escala ampliada, `filter: blur(28px)` y opacidad calibrada para crear un degradado ambiental de marca.
+  - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
+
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy

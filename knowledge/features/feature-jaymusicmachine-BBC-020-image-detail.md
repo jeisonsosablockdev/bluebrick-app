@@ -57,6 +57,11 @@ En la plataforma BlueBrick, la inspección fotográfica de alta resolución para
 7. **Carrusel Multi-Fase y Animación Sutil de Encabezado (SPEC-06)**:
    - Cuando un proyecto (ej. CARROLLWOOD) dispone de fotografías distribuidas a lo largo de diferentes fases de obra, el carrusel fotográfico no debe quedar atrapado en una sola fase; debe continuar la secuencia avanzando a las fotos de la siguiente fase con fotos al agotarse las de la fase en curso.
    - El cambio de fase debe acompañarse de una animación sutil en el encabezado (micro-slide e iluminación elegante con Motion en el título) para guiar la atención del inversionista hacia el cambio de fase y mantener la fluidez del carrusel.
+8. **Fallback de Marca con Logo y Fondo Desenfoque (SPEC-07)**:
+   - Cuando una fase no dispone de fotografías (`images.length === 0` o error de carga), `ProjectPhaseMediaCard` no debe mostrar un bloque plano o genérico con un icono genérico de imagen (`ImageIcon`).
+   - En su lugar, debe presentar una identidad visual de marca de alto nivel:
+     - Fondo ambiental con el logotipo BlueBrick ampliado y con desenfoque intenso (`filter: blur(28px)`, opacidad sutil), proyectando una atmósfera cromática que evoque la marca sin distraer.
+     - Primer plano con el logotipo oficial con texto (`BlueBrickLogo`), garantizando presencia corporativa nítida, acompañado del nombre de la fase y estado de avance.
 
 ## What gaps exist today
 - Inexistencia del directorio y módulo de feature `apps/web/src/features/image-detail/`.
