@@ -24,6 +24,8 @@ import {
   DashboardSyncService,
   GoogleServiceAccountAdapter,
   StreamingSpreadsheetAdapter,
+  GoogleDriveFolderReaderAdapter,
+  VercelBlobAdapter,
 } from "@/features/ai-ingestion";
 import { getDatabasePool } from "@/lib/infrastructure/db/neon-client";
 
@@ -57,11 +59,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
     const spreadsheetParser = new StreamingSpreadsheetAdapter();
     const dbPool = getDatabasePool();
+    const folderReader = new GoogleDriveFolderReaderAdapter({ authProvider });
+    const blobStorage = new VercelBlobAdapter();
 
     const syncService = new DashboardSyncService({
       authProvider,
       spreadsheetParser,
       dbPool,
+      folderReader,
+      blobStorage,
     });
 
     const result = await syncService.executeSync();
