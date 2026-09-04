@@ -15,7 +15,7 @@
 
 // ─── Layer 1: Presentation Modal & Contracts ──────────────────────────────────
 export { ImageDetailModal } from "./image-detail-modal";
-export type { ImageDetailModalProps } from "./image-detail-modal";
+export type { ImageDetailModalProps, PhasePhotoCollection } from "./image-detail-modal";
 
 // ─── Layer 2 & 3: Application Hook, Domain Zoom Guard & Mathematical Types ─────
 export {

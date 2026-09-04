@@ -16,6 +16,7 @@ import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
 import type { PortfolioItem } from "@/lib/types/db";
 import { ProjectPhaseMediaCard } from "@/components/dashboard/project-phase-media-card";
+import type { PhasePhotoCollection } from "@/features/image-detail";
 
 export interface ProjectPhaseProgressProps {
   readonly property: PortfolioItem;
@@ -164,15 +165,19 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const isCurrentActive = hasDynamicPhases && !isConcluded && currentPhase.status === "En curso";
   const statusLabel = isConcluded ? "Completado" : isCurrentActive ? "En curso" : currentPhase.status;
 
-  // Step 5.1: Calculate all phases that contain photographs across the property (BBC-020 SPEC-06)
-  const phasesWithPhotosIndices = useMemo(() => {
-    return uiPhases
-      .map((p, idx) => (Array.isArray(p.images) && p.images.length > 0 ? idx : -1))
-      .filter((idx) => idx !== -1);
-  }, [uiPhases]);
-
+  // Step 5.1: Calculate total photographs across all phases of the property (BBC-020 SPEC-06)
   const totalProjectPhotos = useMemo(() => {
     return uiPhases.reduce((acc, p) => acc + (Array.isArray(p.images) ? p.images.length : 0), 0);
+  }, [uiPhases]);
+
+  // Step 5.1b: Derive all phases photos collection for modal traversal (BBC-020 SPEC-08)
+  const allPhasesPhotos: readonly PhasePhotoCollection[] = useMemo(() => {
+    return uiPhases
+      .filter((p) => Array.isArray(p.images) && p.images.length > 0)
+      .map((p) => ({
+        phaseName: p.name,
+        images: p.images,
+      }));
   }, [uiPhases]);
 
   // Step 5.2: Dynamic media carousel state for the active phase
@@ -187,58 +192,36 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   }, [property.id, property.propertyId]);
 
   /**
-   * Step 5.3: Continuous next photo navigation.
-   * If current phase has another photo, advances within the phase.
-   * If at the last photo, advances to the next phase that has photos (skipping phases without photos).
-   * Circularly loops back to the first phase with photos upon reaching the end.
+   * Step 5.3: Static Dashboard next photo navigation.
+   * Cycles strictly within current phase photos when multiple photos exist.
+   * Preserves static dashboard invariant: does NOT advance across phases (BBC-020 SPEC-08).
    */
   const handleNextPhoto = useCallback(() => {
-    if (phaseImages.length > 0 && activeImageIndex + 1 < phaseImages.length) {
-      setActiveImageIndex((prev) => prev + 1);
-    } else if (phasesWithPhotosIndices.length > 0) {
-      const currentPos = phasesWithPhotosIndices.indexOf(activePhaseIndex);
-      const nextPos = currentPos !== -1 ? (currentPos + 1) % phasesWithPhotosIndices.length : 0;
-      const nextPhaseIdx = phasesWithPhotosIndices[nextPos];
-      if (nextPhaseIdx !== activePhaseIndex) {
-        setSelectedPhaseIndex(nextPhaseIdx);
-      }
-      setActiveImageIndex(0);
+    if (phaseImages.length > 1) {
+      setActiveImageIndex((prev) => (prev + 1) % phaseImages.length);
     }
-  }, [phaseImages.length, activeImageIndex, phasesWithPhotosIndices, activePhaseIndex]);
+  }, [phaseImages.length]);
 
   /**
-   * Step 5.4: Continuous previous photo navigation.
-   * If activeImageIndex > 0, decrements within the current phase.
-   * If at photo 0, jumps back to the previous phase with photos at its last photo.
+   * Step 5.4: Static Dashboard previous photo navigation.
+   * Cycles strictly within current phase photos.
    */
   const handlePrevPhoto = useCallback(() => {
-    if (activeImageIndex > 0) {
-      setActiveImageIndex((prev) => prev - 1);
-    } else if (phasesWithPhotosIndices.length > 0) {
-      const currentPos = phasesWithPhotosIndices.indexOf(activePhaseIndex);
-      const prevPos =
-        currentPos !== -1
-          ? (currentPos - 1 + phasesWithPhotosIndices.length) % phasesWithPhotosIndices.length
-          : phasesWithPhotosIndices.length - 1;
-      const prevPhaseIdx = phasesWithPhotosIndices[prevPos];
-      const prevPhaseImages = uiPhases[prevPhaseIdx]?.images || [];
-      if (prevPhaseIdx !== activePhaseIndex) {
-        setSelectedPhaseIndex(prevPhaseIdx);
-      }
-      setActiveImageIndex(Math.max(0, prevPhaseImages.length - 1));
+    if (phaseImages.length > 1) {
+      setActiveImageIndex((prev) => (prev - 1 + phaseImages.length) % phaseImages.length);
     }
-  }, [activeImageIndex, phasesWithPhotosIndices, activePhaseIndex, uiPhases]);
+  }, [phaseImages.length]);
 
-  // Step 5.5: Automatic continuous cycling timer (cambio automático cada 4s) when multiple photos exist
+  // Step 5.5: Automatic cycling timer strictly within active phase (every 4s) when multiple photos exist
   useEffect(() => {
-    if (totalProjectPhotos <= 1 || isHoveredOnMedia) return;
+    if (phaseImages.length <= 1 || isHoveredOnMedia) return;
 
     const timer = setInterval(() => {
-      handleNextPhoto();
+      setActiveImageIndex((prev) => (prev + 1) % phaseImages.length);
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [totalProjectPhotos, isHoveredOnMedia, handleNextPhoto]);
+  }, [phaseImages.length, isHoveredOnMedia]);
 
   return (
     <div
@@ -633,6 +616,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           totalProjectPhotos={totalProjectPhotos}
           onNextPhoto={handleNextPhoto}
           onPrevPhoto={handlePrevPhoto}
+          allPhasesPhotos={allPhasesPhotos}
         />
       </div>
     </div>

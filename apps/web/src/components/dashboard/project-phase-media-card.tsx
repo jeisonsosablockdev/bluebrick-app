@@ -26,6 +26,7 @@ import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
+import type { PhasePhotoCollection } from "@/features/image-detail";
 
 // Step 3b: Lazy load ImageDetailModal via next/dynamic (FDD Public API) to protect FCP and bundle size
 const ImageDetailModal = dynamic(
@@ -55,6 +56,8 @@ export interface ProjectPhaseMediaCardProps {
   readonly onNextPhoto?: () => void;
   /** Callback to navigate to the previous photograph (supports cross-phase transitions). */
   readonly onPrevPhoto?: () => void;
+  /** Optional multi-phase photograph collections for cross-phase traversal inside the modal (BBC-020 SPEC-08). */
+  readonly allPhasesPhotos?: readonly PhasePhotoCollection[];
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -80,10 +83,11 @@ export function ProjectPhaseMediaCard({
   totalProjectPhotos,
   onNextPhoto,
   onPrevPhoto,
+  allPhasesPhotos,
 }: ProjectPhaseMediaCardProps): React.JSX.Element {
-  // Step 1: Derive display state from images prop and global project photos (BBC-020 SPEC-06)
+  // Step 1: Derive display state from images prop (strict static dashboard invariant BBC-020 SPEC-08)
   const hasAnyImage = images.length > 0;
-  const hasMultipleImages = images.length > 1 || Boolean(totalProjectPhotos && totalProjectPhotos > 1);
+  const hasMultipleImages = images.length > 1;
 
   // Step 2: Internal index state — used when parent does not control carousel
   const [internalIndex, setInternalIndex] = useState<number>(0);
@@ -132,16 +136,13 @@ export function ProjectPhaseMediaCard({
 
   /**
    * Step 8c: Handle previous arrow click.
-   * Delegates to cross-phase onPrevPhoto if available, otherwise advances circularly backwards.
-   * Prevents event bubbling to avoid triggering parent container click.
+   * Cycles circularly backwards within the current phase's photos.
+   * Prevents event bubbling to avoid triggering modal opening.
    */
   const handlePrevClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setImageError(false);
-    if (onPrevPhoto) {
-      onPrevPhoto();
-      return;
-    }
+    if (images.length <= 1) return;
     const prevIdx = (safeIndex - 1 + images.length) % images.length;
     if (isControlled) {
       onIndexChange!(prevIdx);
@@ -152,16 +153,13 @@ export function ProjectPhaseMediaCard({
 
   /**
    * Step 8d: Handle next arrow click.
-   * Delegates to cross-phase onNextPhoto if available, otherwise advances circularly forwards.
-   * Prevents event bubbling to avoid triggering parent container click.
+   * Cycles circularly forwards within the current phase's photos.
+   * Prevents event bubbling to avoid triggering modal opening.
    */
   const handleNextClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setImageError(false);
-    if (onNextPhoto) {
-      onNextPhoto();
-      return;
-    }
+    if (images.length <= 1) return;
     const nextIdx = (safeIndex + 1) % images.length;
     if (isControlled) {
       onIndexChange!(nextIdx);
@@ -173,12 +171,8 @@ export function ProjectPhaseMediaCard({
   // Step 8e: Modal lightbox state for full-resolution inspection (BBC-020 SPEC-03)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Step 9: Compute image counter label (e.g. "2/3" or "1/1" when project has multiple photos)
-  const counterLabel = images.length > 1
-    ? `${safeIndex + 1}/${images.length}`
-    : totalProjectPhotos && totalProjectPhotos > 1 && images.length === 1
-    ? "1/1"
-    : null;
+  // Step 9: Compute image counter label (e.g. "2/3")
+  const counterLabel = images.length > 1 ? `${safeIndex + 1}/${images.length}` : null;
 
   return (
     <motion.div
@@ -488,7 +482,7 @@ export function ProjectPhaseMediaCard({
         </>
       )}
 
-      {/* Step 12: Lightbox Modal for high-resolution inspection (BBC-020 SPEC-03) */}
+      {/* Step 12: Lightbox Modal for high-resolution inspection (BBC-020 SPEC-03 / SPEC-08) */}
       {isModalOpen && showRealImage && (
         <ImageDetailModal
           isOpen={isModalOpen}
@@ -497,6 +491,7 @@ export function ProjectPhaseMediaCard({
           initialIndex={safeIndex}
           title={`Detalle de fotografía — ${phaseName}`}
           phaseName={phaseName}
+          allPhasesPhotos={allPhasesPhotos}
         />
       )}
     </motion.div>
