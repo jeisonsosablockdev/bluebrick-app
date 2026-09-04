@@ -14,7 +14,7 @@
 
 import 'server-only';
 import * as crypto from 'node:crypto';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import {
   IBlobStoragePort,
   BlobUploadOptions,
@@ -182,6 +182,37 @@ export class VercelBlobAdapter implements IBlobStoragePort {
       throw new BlobStorageDomainError(
         'UPLOAD_FAILED',
         `Vercel Blob upload failed: ${(err as Error)?.message || 'Unknown error'}`,
+        true,
+        err
+      );
+    }
+  }
+
+  /**
+   * Deletes one or more blobs from Vercel Blob storage by public URL.
+   *
+   * @param urlOrUrls - Blob URL or array of Blob URLs to delete
+   */
+  public async deleteBlob(urlOrUrls: string | string[]): Promise<void> {
+    // Step 1: Validate auth token presence
+    const activeToken = this.token || process.env.BLOB_READ_WRITE_TOKEN;
+    if (!activeToken) {
+      throw new BlobStorageDomainError(
+        'BLOB_TOKEN_MISSING',
+        'BLOB_READ_WRITE_TOKEN environment variable is not configured'
+      );
+    }
+
+    // Step 2: Invoke @vercel/blob del() API with authorization token
+    try {
+      await del(urlOrUrls, { token: activeToken });
+    } catch (err: unknown) {
+      if (err instanceof BlobStorageDomainError) {
+        throw err;
+      }
+      throw new BlobStorageDomainError(
+        'UPLOAD_FAILED',
+        `Vercel Blob deletion failed: ${(err as Error)?.message || 'Unknown error'}`,
         true,
         err
       );

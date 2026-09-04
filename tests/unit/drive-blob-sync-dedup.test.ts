@@ -153,7 +153,7 @@ describe("BBC-8 SPEC-2: Drive Folder Sync & Blob Deduplication", () => {
     expect(mockBlobStorage.uploadBlob).toHaveBeenCalledTimes(2);
 
     // Step 3: Verify dashboard_project_phases upsert contains folder_url and imagenes
-    const phaseUpsert = executedQueries.find((q) => q.sql.includes("dashboard_project_phases"));
+    const phaseUpsert = executedQueries.find((q) => q.sql.includes("INSERT INTO dashboard_project_phases"));
     expect(phaseUpsert).toBeDefined();
     expect(phaseUpsert?.sql).toContain("folder_url");
     expect(phaseUpsert?.sql).toContain("imagenes");
@@ -223,7 +223,7 @@ describe("BBC-8 SPEC-2: Drive Folder Sync & Blob Deduplication", () => {
     expect(mockBlobStorage.uploadBlob).not.toHaveBeenCalled();
 
     // Reused existing blob URL in phases upsert
-    const phaseUpsert = executedQueries.find((q) => q.sql.includes("dashboard_project_phases"));
+    const phaseUpsert = executedQueries.find((q) => q.sql.includes("INSERT INTO dashboard_project_phases"));
     expect(phaseUpsert).toBeDefined();
     expect(phaseUpsert?.params).toEqual(
       expect.arrayContaining([
@@ -256,7 +256,7 @@ describe("BBC-8 SPEC-2: Drive Folder Sync & Blob Deduplication", () => {
     expect(result.success).toBe(true);
 
     // Invariant: Non-fatal error in folder reader allows the overall transaction to commit
-    const phaseUpsert = executedQueries.find((q) => q.sql.includes("dashboard_project_phases"));
+    const phaseUpsert = executedQueries.find((q) => q.sql.includes("INSERT INTO dashboard_project_phases"));
     expect(phaseUpsert).toBeDefined();
     expect(phaseUpsert?.params).toContain("https://drive.google.com/drive/folders/1ABC_xyz_FOLDER_001");
   });
