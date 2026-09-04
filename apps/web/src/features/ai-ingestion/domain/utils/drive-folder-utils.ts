@@ -24,18 +24,18 @@
  *  - https://drive.google.com/drive/u/{n}/folders/{folderId}
  */
 const DRIVE_FOLDER_URL_REGEX =
-  /(?:https?:\/\/)?drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([a-zA-Z0-9_-]{20,60})/i;
+  /(?:https?:\/\/)?drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([a-zA-Z0-9_-]{15,100})/i;
 
 /**
  * Regex matching open?id={folderId} or open?id={folderId}&... links.
  */
 const DRIVE_OPEN_ID_REGEX =
-  /(?:https?:\/\/)?drive\.google\.com\/open\?(?:[^&]*&)*id=([a-zA-Z0-9_-]{20,60})/i;
+  /(?:https?:\/\/)?drive\.google\.com\/open\?(?:[^&]*&)*id=([a-zA-Z0-9_-]{15,100})/i;
 
 /**
- * Regex matching naked Drive folder IDs (standalone alphanumeric token 25-60 chars).
+ * Regex matching naked Drive folder IDs (standalone alphanumeric token 15-100 chars).
  */
-const RAW_DRIVE_FOLDER_ID_REGEX = /^[a-zA-Z0-9_-]{25,60}$/;
+const RAW_DRIVE_FOLDER_ID_REGEX = /^[a-zA-Z0-9_-]{15,100}$/;
 
 /**
  * Negative check for Google Drive file links to prevent mistaking single files for folders.
