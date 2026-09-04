@@ -77,6 +77,7 @@ export const CanonicalProjectPhaseSchema = z
     estado: z.enum(PROJECT_PHASE_STATUSES),
     fechaInicio: z.string().nullable().optional(),
     fechaFin: z.string().nullable().optional(),
+    folderUrl: z.string().nullable().optional(),
     imagenes: z.array(z.string().min(1)).default([]),
   })
   .strip();
