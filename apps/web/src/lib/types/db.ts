@@ -230,6 +230,8 @@ export interface DbDashboardProjectPhase {
   imagen_url_1?: string | null;
   imagen_url_2?: string | null;
   imagen_url_3?: string | null;
+  folder_url?: string | null;
+  imagenes?: string[] | null;
   clave_en_curso?: string | null;
   created_at?: Date;
   updated_at?: Date;

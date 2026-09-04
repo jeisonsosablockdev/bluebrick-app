@@ -43,6 +43,7 @@ import {
   sanitizeSpreadsheetCell,
   excelSerialToIsoDate,
 } from '../domain/utils/excel-date-converter';
+import { isDriveFolderReference } from '../domain/utils/drive-folder-utils';
 
 /**
  * Adapter implementing ISpreadsheetParserPort using SheetJS.
@@ -585,9 +586,24 @@ export class StreamingSpreadsheetAdapter implements ISpreadsheetParserPort {
         colImg2 !== -1 ? row[colImg2] : null,
         colImg3 !== -1 ? row[colImg3] : null,
       ];
-      const imagenes = rawImgs
-        .filter((img): img is string => typeof img === 'string' && img.trim().length > 0)
-        .map((img) => img.trim());
+
+      // Step 5.1: Separate Drive folder reference from direct image URLs
+      let folderUrl: string | undefined = undefined;
+      const directImages: string[] = [];
+
+      for (const rawImg of rawImgs) {
+        if (typeof rawImg === 'string' && rawImg.trim().length > 0) {
+          const trimmed = rawImg.trim();
+          if (isDriveFolderReference(trimmed)) {
+            // First identified Drive folder is used as the source folderUrl
+            if (!folderUrl) {
+              folderUrl = trimmed;
+            }
+          } else {
+            directImages.push(trimmed);
+          }
+        }
+      }
 
       phases.push({
         idFase,
@@ -597,7 +613,8 @@ export class StreamingSpreadsheetAdapter implements ISpreadsheetParserPort {
         estado,
         fechaInicio,
         fechaFin,
-        imagenes,
+        folderUrl,
+        imagenes: directImages,
       });
     }
 

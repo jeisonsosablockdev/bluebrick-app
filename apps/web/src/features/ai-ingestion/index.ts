@@ -34,6 +34,7 @@ export * from './domain/validators/nit-validator';
 export * from './domain/scoring/confidence-scoring-engine';
 export * from './domain/scoring/anomaly-detector';
 export * from './domain/utils/excel-date-converter';
+export * from './domain/utils/drive-folder-utils';
 export * from './domain/models/sync-event-models';
 export * from './domain/models/dashboard-sync-models';
 export * from './domain/schemas/canonical-client-schema';
