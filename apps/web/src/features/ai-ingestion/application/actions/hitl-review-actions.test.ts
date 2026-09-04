@@ -10,8 +10,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   approveSyncRecordAction,
   rejectSyncRecordAction,
-  verifyHitlPermission,
 } from './hitl-review-actions';
+import { verifyHitlPermission } from '../../domain/policies/hitl-rbac-policy';
 import { IIngestionRepositoryPort } from '../../domain/ports/repositories-port';
 
 describe('HITL Review Server Actions & RBAC Gates', () => {

@@ -105,8 +105,9 @@ export interface IDashboardSyncService {
  * @param opp - Canonical opportunity object with optional id and title
  * @returns Non-empty unique identifier string
  */
-export function resolveOpportunityId(opp: { id?: string; titulo: string }): string {
-  return opp.id || "opp_" + opp.titulo.toLowerCase().replace(/[^a-z0-9]/g, "_");
+export function resolveOpportunityId(opp: { id?: string; titulo?: string }): string {
+  const safeTitle = opp.titulo || "opp";
+  return opp.id || "opp_" + safeTitle.toLowerCase().replace(/[^a-z0-9]/g, "_");
 }
 
 /**
@@ -488,6 +489,8 @@ export class DashboardSyncService implements IDashboardSyncService {
     for (const opp of oportunidades) {
       const oppId = resolveOpportunityId(opp);
       const roi = opp.roiProyectado > 1 ? opp.roiProyectado / 100 : opp.roiProyectado;
+      const title = opp.titulo || "Oportunidad";
+      const city = opp.ciudad || "TAMPA";
 
       await client.query(
         `INSERT INTO dashboard_opportunities (
@@ -500,7 +503,7 @@ export class DashboardSyncService implements IDashboardSyncService {
            roi_estimado = EXCLUDED.roi_estimado,
            ticket_minimo = EXCLUDED.ticket_minimo,
            updated_at = NOW()`,
-        [oppId, opp.titulo, opp.ciudad, roi, opp.inversionMinima, opp.gradient]
+        [oppId, title, city, roi, opp.inversionMinima, opp.gradient]
       );
 
       await client.query(
@@ -512,7 +515,7 @@ export class DashboardSyncService implements IDashboardSyncService {
            projected_roi = EXCLUDED.projected_roi,
            min_investment = EXCLUDED.min_investment,
            gradient = EXCLUDED.gradient`,
-        [oppId, opp.titulo, opp.ciudad, opp.roiProyectado, opp.inversionMinima, opp.diasRestantes, opp.gradient]
+        [oppId, title, city, opp.roiProyectado, opp.inversionMinima, opp.diasRestantes, opp.gradient]
       );
     }
   }
