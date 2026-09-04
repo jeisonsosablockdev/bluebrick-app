@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-018",
-  "branch": "feature/jaymusicmachine-BBC-018-cron-job-dashboard-sync",
+  "branch": "bugfix/jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },

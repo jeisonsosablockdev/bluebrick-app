@@ -27,6 +27,7 @@ export * from './domain/ports/pdf-extractor-port';
 export * from './domain/ports/spreadsheet-parser-port';
 export * from './domain/ports/repositories-port';
 export * from './domain/policies/image-quality-policy';
+export * from './domain/policies/hitl-rbac-policy';
 export * from './domain/math/smart-crop-calculator';
 export * from './domain/validators/nit-validator';
 export * from './domain/scoring/confidence-scoring-engine';

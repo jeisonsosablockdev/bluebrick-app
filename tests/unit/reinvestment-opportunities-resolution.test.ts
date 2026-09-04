@@ -1,8 +1,19 @@
 /**
+ * ============================================================================
  * @file tests/unit/reinvestment-opportunities-resolution.test.ts
  * @description Layer 4 & QA: Unit test suite verifying reinvestment opportunities resolution
+ * ============================================================================
+ * Purpose: Verifies deduplication and query resolution of reinvestment opportunities
  * exclusively from ingested Excel records in the reinvestment_opportunities table.
- * @spec BBC-008-SPEC-5
+ *
+ * Invariants Tested:
+ *  - Native DISTINCT ON (LOWER(TRIM(title))) deduplication.
+ *  - Title normalization and newest record selection (created_at DESC).
+ *  - Highest projected ROI sorting order for presentation.
+ *
+ * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
+ *
+ * @spec BBC-008-SPEC-5, BBC-018-DEDUPLICATE
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -97,5 +108,60 @@ describe("SPEC-5: Reinvestment Opportunities Excel Source Resolution (@spec BBC-
 
     // Assert
     expect(opportunities).toEqual([]);
+  });
+
+  /**
+   * Test case: Deduplicate opportunities by title using DISTINCT ON.
+   * @spec BBC-018-DEDUPLICATE-QUERY
+   */
+  it("deduplicates opportunities by title using DISTINCT ON, returning only the most recent entry when multiple records exist with the same project title", async () => {
+    // Arrange: Multiple mock rows with title "MULBERRY" (e.g. opp_mb_05 from 2026-08-30 and MB-07 from 2026-09-03)
+    const mockOpportunityRows = [
+      {
+        id: "MB-07",
+        title: "MULBERRY",
+        city: "TAMPA",
+        projected_roi: "16.0",
+        min_investment: "24500",
+        days_left: 20,
+        gradient: "linear-gradient(135deg,#2F8F6B 0%,#111B2E 100%)",
+        created_at: new Date("2026-09-03T12:00:00Z"),
+      },
+      {
+        id: "opp_mb_05",
+        title: "MULBERRY",
+        city: "TAMPA",
+        projected_roi: "15.5",
+        min_investment: "25000",
+        days_left: 5,
+        gradient: "linear-gradient(135deg,#2F8F6B 0%,#111B2E 100%)",
+        created_at: new Date("2026-08-30T12:00:00Z"),
+      },
+    ];
+
+    // Mock DB executor: when SQL properly uses DISTINCT ON, DB returns deduplicated latest row
+    mockQuery.mockImplementation(async (sql: string) => {
+      const normalized = sql.replace(/\s+/g, " ");
+      if (/DISTINCT\s+ON\s*\(\s*LOWER\s*\(\s*TRIM\s*\(\s*title\s*\)\s*\)\s*\)/i.test(normalized)) {
+        return { rows: [mockOpportunityRows[0]] };
+      }
+      return { rows: mockOpportunityRows };
+    });
+
+    const repo = new InvestmentRepository(mockExecutor);
+
+    // Act: Query reinvestment opportunities
+    const opportunities = await repo.getReinvestmentOpportunities();
+
+    // Assert: Verify mockQuery was called with query containing DISTINCT ON and LOWER(TRIM(title))
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.stringMatching(/DISTINCT\s+ON/i)
+    );
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.stringMatching(/LOWER\s*\(\s*TRIM\s*\(\s*title\s*\)\s*\)/i)
+    );
+    expect(opportunities.length).toBe(1);
+    expect(opportunities[0].id).toBe("MB-07");
+    expect(opportunities[0].title).toBe("MULBERRY");
   });
 });

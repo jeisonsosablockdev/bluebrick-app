@@ -19,6 +19,7 @@ import {
   RepositoryDomainError,
 } from '../../domain/ports/repositories-port';
 import { PostgresIngestionRepository } from '../../infrastructure/postgres-ingestion-repository';
+import { verifyHitlPermission } from '../../domain/policies/hitl-rbac-policy';
 
 /**
  * Standard Action Response payload.
@@ -29,12 +30,6 @@ export interface ActionResponse<T = unknown> {
   readonly data?: T;
   readonly errors?: readonly string[];
 }
-
-/**
- * Allowed roles for HITL validation actions.
- */
-export const HITL_ALLOWED_ROLES = ['ADMIN', 'COMPLIANCE'] as const;
-export type HitlAllowedRole = (typeof HITL_ALLOWED_ROLES)[number];
 
 /**
  * Parameters for approving an ingested record.
@@ -52,13 +47,6 @@ export interface RejectRecordParams {
   readonly fileId: string;
   readonly userRole: string;
   readonly reason: string;
-}
-
-/**
- * Helper to verify RBAC permissions.
- */
-export function verifyHitlPermission(userRole: string): boolean {
-  return HITL_ALLOWED_ROLES.includes(userRole as HitlAllowedRole);
 }
 
 /**
