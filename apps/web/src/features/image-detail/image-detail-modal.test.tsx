@@ -265,5 +265,36 @@ describe("BBC-020 SPEC-03: Image Detail FDD Feature", () => {
       expect(screen.queryByLabelText("Imagen anterior")).toBeNull();
       expect(screen.queryByText("1 / 1")).toBeNull();
     });
+
+    it("should render translucent glassmorphic backdrop with blur (SPEC-04)", () => {
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={mockImages}
+        />
+      );
+
+      const backdrop = screen.getByTestId("image-detail-backdrop");
+      expect(backdrop).toBeInTheDocument();
+      expect(backdrop.className).toContain("backdrop-blur");
+      expect(backdrop.style.backdropFilter).toContain("blur");
+    });
+
+    it("should render centered header text container (SPEC-04)", () => {
+      render(
+        <ImageDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          images={mockImages}
+          title="Foto de Estructura"
+          phaseName="Fase 4"
+        />
+      );
+
+      const headerContent = screen.getByTestId("image-detail-header-content");
+      expect(headerContent).toBeInTheDocument();
+      expect(headerContent.className).toContain("justify-center");
+    });
   });
 });
