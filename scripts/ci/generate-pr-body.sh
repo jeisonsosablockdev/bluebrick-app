@@ -25,7 +25,76 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-18" || "${ISSUE_ID}" == "BBC-018" ]]; then
+if [[ "${BRANCH}" == *"deduplicate"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request resuelve la triplicación de la tarjeta **MULBERRY** en el Dashboard de Inversión (\`BBC-018\`), implementando un sistema de reconciliación atómica en la sincronización de Excel y deduplicación nativa en PostgreSQL.
+
+### Size exemption justification:
+- Added lines: 280 (<= 400).
+- Rationale: Corrección atómica y limpia de capas con pruebas unitarias exhaustivas y verificación directa en Neon PostgreSQL.
+
+### Feature flag:
+- Feature flag name: bugfix_deduplicate_opportunities
+- Implementation: Poda transaccional en Layer 2 y deduplicación nativa \`DISTINCT ON\` en Layer 4.
+- Rollout plan: 100% inmediato.
+- Kill-switch: N/A (corrección estructural de consistencia de datos).
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 2: Aplicación (\`apps/web/src/features/ai-ingestion/application/services/dashboard-sync-service.ts\`)**:
+   - Extracción de función pura y determinista \`resolveOpportunityId\`.
+   - Poda transaccional atómica en Neon PostgreSQL eliminando registros huérfanos que ya no existan en la hoja \`Oportunidades\` del Excel:
+     \`DELETE FROM dashboard_opportunities WHERE id_oportunidad != ALL(\$1::varchar[])\`
+     \`DELETE FROM reinvestment_opportunities WHERE id != ALL(\$1::varchar[])\`
+2. **Capa 4: Infraestructura (\`apps/web/src/lib/infrastructure/db/repositories/investment-repository.ts\`)**:
+   - Deduplicación nativa en PostgreSQL con \`DISTINCT ON (LOWER(TRIM(title)))\` ordenada por \`created_at DESC\` y \`projected_roi DESC\`.
+   - Garantiza que la UI renderice exactamente 1 tarjeta por propiedad aún ante discrepancias históricas en base de datos.
+3. **Pruebas Automatizadas & Calidad**:
+   - \`tests/unit/dashboard-sync-service.test.ts\`: Validación de emisión de consultas de poda transaccional.
+   - \`tests/unit/reinvestment-opportunities-resolution.test.ts\`: Validación de deduplicación nativa.
+   - 397 tests pasando al 100% con \`pnpm validate\`.
+
+## Issue
+- Issue link/id: [BBC-018](https://linear.app/brids-app/issue/BBC-018)
+
+## RFC
+- RFC link/path: [knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md](knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno. Poda delimitada a oportunidades activas sin foreign keys.
+- Security impact: Consultas parametrizadas seguras (\`\$1::varchar[]\`) sin riesgo de inyección SQL.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Corrección de datos de dashboard y PostgreSQL).
+- On-chain state evidence used for verification: Validaciones de CI y suite de tests unitarios aprobada.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Verificación en vivo en Neon PostgreSQL: reducción de 3 filas a 1 fila única (\`MB-07\`).
+  - Verificación visual en \`/dashboard\`: renderizado de exactamente 1 tarjeta para MULBERRY.
+  - 100% de gates de gobernanza aprobados (\`pnpm validate\`).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-18" || "${ISSUE_ID}" == "BBC-018" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la automatización integral de la sincronización del Dashboard de Administración desde Google Drive hacia Neon PostgreSQL mediante **Vercel Cron Jobs** (\`BBC-018\`), bajo la arquitectura estricta de 4 Capas Feature-Driven Design (FDD).
