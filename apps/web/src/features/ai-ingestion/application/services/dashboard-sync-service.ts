@@ -21,7 +21,16 @@
 
 import { IGoogleAuthProviderPort } from "../../domain/ports/google-auth-port";
 import { ISpreadsheetParserPort } from "../../domain/ports/spreadsheet-parser-port";
-import { CanonicalDashboardWorkbook } from "../../domain/schemas/canonical-dashboard-schema";
+import {
+  CanonicalDashboardWorkbook,
+  CanonicalDashboardProject,
+  CanonicalInvestor,
+  CanonicalInvestment,
+  CanonicalProjectPhase,
+  CanonicalOpportunity,
+  CanonicalReinvestmentTransaction,
+  CanonicalInvestorSummary,
+} from "../../domain/schemas/canonical-dashboard-schema";
 import {
   DEFAULT_DASHBOARD_FILE_ID,
   DashboardSyncDomainError,
@@ -216,229 +225,25 @@ export class DashboardSyncService implements IDashboardSyncService {
       await client.query("BEGIN");
 
       // Step 5.2: Upsert operational Sheet 1: dashboard_projects
-      for (const proj of workbookData.proyectos) {
-        await client.query(
-          `INSERT INTO dashboard_projects (id_inversion, nombre, direccion, tipo_proyecto, timing_months, updated_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())
-           ON CONFLICT (id_inversion) DO UPDATE SET
-             nombre = EXCLUDED.nombre,
-             direccion = EXCLUDED.direccion,
-             tipo_proyecto = EXCLUDED.tipo_proyecto,
-             timing_months = EXCLUDED.timing_months,
-             updated_at = NOW()`,
-          [proj.idInversion, proj.nombre, proj.ciudad, proj.tipoProyecto, proj.duracionMeses]
-        );
-      }
+      await this.syncProjects(client, workbookData.proyectos);
 
       // Step 5.3: Upsert operational Sheet 2: dashboard_investors
-      for (const inv of workbookData.inversionistas) {
-        await client.query(
-          `INSERT INTO dashboard_investors (id_inversionista, nombre, email, tipo_inversionista, fecha_ingreso, timing_months, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, NOW())
-           ON CONFLICT (id_inversionista) DO UPDATE SET
-             nombre = EXCLUDED.nombre,
-             email = EXCLUDED.email,
-             tipo_inversionista = EXCLUDED.tipo_inversionista,
-             fecha_ingreso = EXCLUDED.fecha_ingreso,
-             timing_months = EXCLUDED.timing_months,
-             updated_at = NOW()`,
-          [inv.idInversionista, inv.nombre, inv.email, inv.tipoInversionista, inv.fechaIngreso, inv.timingMonths]
-        );
-      }
+      await this.syncInvestors(client, workbookData.inversionistas);
 
       // Step 5.4: Upsert operational Sheet 3: dashboard_investments
-      for (const inv of workbookData.inversiones) {
-        const invId = inv.id || `INV_${inv.idInversion}_${inv.idInversionista ?? "UNKNOWN"}`;
-        await client.query(
-          `INSERT INTO dashboard_investments (
-             id, id_inversion, id_inversionista, nombre_proyecto, ciudad, tipo_propiedad, tipo_proyecto,
-             monto_invertido, roi_pct, estado, fecha_inicio, duracion_meses, rango_esperado, fecha_timing,
-             allocation_pct, imagen_url, avance_fase_pct, fase_actual, ganancia_proyectada, rendimiento_devengado, updated_at
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, NOW())
-           ON CONFLICT (id) DO UPDATE SET
-             nombre_proyecto = EXCLUDED.nombre_proyecto,
-             ciudad = EXCLUDED.ciudad,
-             monto_invertido = EXCLUDED.monto_invertido,
-             roi_pct = EXCLUDED.roi_pct,
-             estado = EXCLUDED.estado,
-             duracion_meses = EXCLUDED.duracion_meses,
-             fecha_timing = EXCLUDED.fecha_timing,
-             allocation_pct = EXCLUDED.allocation_pct,
-             imagen_url = EXCLUDED.imagen_url,
-             avance_fase_pct = EXCLUDED.avance_fase_pct,
-             fase_actual = EXCLUDED.fase_actual,
-             ganancia_proyectada = EXCLUDED.ganancia_proyectada,
-             rendimiento_devengado = EXCLUDED.rendimiento_devengado,
-             updated_at = NOW()`,
-          [
-            invId,
-            inv.idInversion,
-            inv.idInversionista,
-            inv.nombreProyecto,
-            inv.ciudad,
-            inv.tipoPropiedad,
-            inv.tipoProyecto,
-            inv.montoInvertido,
-            inv.roiPct,
-            inv.estado,
-            inv.fechaInicio,
-            inv.duracionMeses,
-            inv.rangoEsperado,
-            inv.fechaTiming,
-            inv.allocationPct,
-            inv.imagenUrl,
-            inv.avanceFasePct,
-            inv.faseActual,
-            inv.gananciaProyectada,
-            inv.rendimientoDevengado,
-          ]
-        );
-      }
+      await this.syncInvestments(client, workbookData.inversiones);
 
       // Step 5.5: Upsert operational Sheet 4: dashboard_project_phases
-      for (const phase of workbookData.fases) {
-        const phaseId = `${phase.idFase}_${phase.idInversion}`;
-        const img1 = phase.imagenes?.[0] || null;
-        const img2 = phase.imagenes?.[1] || null;
-        const img3 = phase.imagenes?.[2] || null;
+      await this.syncProjectPhases(client, workbookData.fases);
 
-        await client.query(
-          `INSERT INTO dashboard_project_phases (
-             id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
-             imagen_url_1, imagen_url_2, imagen_url_3, updated_at
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-           ON CONFLICT (id) DO UPDATE SET
-             orden = EXCLUDED.orden,
-             nombre_fase = EXCLUDED.nombre_fase,
-             estado = EXCLUDED.estado,
-             fecha_inicio = EXCLUDED.fecha_inicio,
-             fecha_fin = EXCLUDED.fecha_fin,
-             imagen_url_1 = EXCLUDED.imagen_url_1,
-             imagen_url_2 = EXCLUDED.imagen_url_2,
-             imagen_url_3 = EXCLUDED.imagen_url_3,
-             updated_at = NOW()`,
-          [
-            phaseId,
-            phase.idFase,
-            phase.idInversion,
-            phase.orden,
-            phase.nombreFase,
-            phase.estado,
-            phase.fechaInicio,
-            phase.fechaFin,
-            img1,
-            img2,
-            img3,
-          ]
-        );
-      }
-
-      // Step 5.6: Upsert operational Sheet 5: dashboard_opportunities & backward compatible sync
-      // Invariant: Prune obsolete opportunities not present in current active workbook to prevent stale entries
-      const activeOppIds = workbookData.oportunidades.map(resolveOpportunityId);
-      if (activeOppIds.length > 0) {
-        // Step 5.6.1: Prune removed opportunities from dashboard_opportunities table
-        await client.query(
-          `DELETE FROM dashboard_opportunities WHERE id_oportunidad != ALL($1::varchar[])`,
-          [activeOppIds]
-        );
-        // Step 5.6.2: Prune removed opportunities from marketplace reinvestment_opportunities table
-        await client.query(
-          `DELETE FROM reinvestment_opportunities WHERE id != ALL($1::varchar[])`,
-          [activeOppIds]
-        );
-      }
-
-      // Step 5.6.3: Upsert current active opportunities into operational and marketplace tables
-      for (const opp of workbookData.oportunidades) {
-        const oppId = resolveOpportunityId(opp);
-        const roi = opp.roiProyectado > 1 ? opp.roiProyectado / 100 : opp.roiProyectado;
-        await client.query(
-          `INSERT INTO dashboard_opportunities (
-             id_oportunidad, nombre_proyecto, ciudad, roi_estimado, ticket_minimo, activa, gradient, updated_at
-           )
-           VALUES ($1, $2, $3, $4, $5, TRUE, $6, NOW())
-           ON CONFLICT (id_oportunidad) DO UPDATE SET
-             nombre_proyecto = EXCLUDED.nombre_proyecto,
-             ciudad = EXCLUDED.ciudad,
-             roi_estimado = EXCLUDED.roi_estimado,
-             ticket_minimo = EXCLUDED.ticket_minimo,
-             updated_at = NOW()`,
-          [oppId, opp.titulo, opp.ciudad, roi, opp.inversionMinima, opp.gradient]
-        );
-
-        // Maintain backward compatibility with marketplace reinvestment_opportunities table
-        await client.query(
-          `INSERT INTO reinvestment_opportunities (id, title, city, projected_roi, min_investment, days_left, gradient)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           ON CONFLICT (id) DO UPDATE SET
-             title = EXCLUDED.title,
-             city = EXCLUDED.city,
-             projected_roi = EXCLUDED.projected_roi,
-             min_investment = EXCLUDED.min_investment,
-             gradient = EXCLUDED.gradient`,
-          [oppId, opp.titulo, opp.ciudad, opp.roiProyectado, opp.inversionMinima, opp.diasRestantes, opp.gradient]
-        );
-      }
+      // Step 5.6: Upsert operational Sheet 5: dashboard_opportunities & backward compatible sync with pruning
+      await this.syncOpportunities(client, workbookData.oportunidades);
 
       // Step 5.7: Upsert operational Sheet 6: dashboard_reinvestment_transactions
-      for (const trx of workbookData.transacciones) {
-        await client.query(
-          `INSERT INTO dashboard_reinvestment_transactions (
-             id_transaccion, id_inversionista, id_oportunidad, monto, fecha_solicitud, estado, updated_at
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, NOW())
-           ON CONFLICT (id_transaccion) DO UPDATE SET
-             monto = EXCLUDED.monto,
-             estado = EXCLUDED.estado,
-             updated_at = NOW()`,
-          [
-            trx.idTransaccion,
-            trx.idInversionista,
-            trx.idOportunidad,
-            trx.monto,
-            trx.fechaSolicitud || new Date().toISOString(),
-            trx.estado,
-          ]
-        );
-      }
+      await this.syncTransactions(client, workbookData.transacciones);
 
       // Step 5.8: Upsert operational Sheet 7: dashboard_investor_summaries
-      for (const res of workbookData.resumenes) {
-        await client.query(
-          `INSERT INTO dashboard_investor_summaries (
-             id_inversionista, nombre, patrimonio_total_invertido, rendimiento_acumulado,
-             capital_total_actual, roi_ponderado, num_activas, num_concluidas,
-             capital_disponible_reinversion, ganancia_proyectada_total, updated_at
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
-           ON CONFLICT (id_inversionista) DO UPDATE SET
-             nombre = EXCLUDED.nombre,
-             patrimonio_total_invertido = EXCLUDED.patrimonio_total_invertido,
-             rendimiento_acumulado = EXCLUDED.rendimiento_acumulado,
-             capital_total_actual = EXCLUDED.capital_total_actual,
-             roi_ponderado = EXCLUDED.roi_ponderado,
-             num_activas = EXCLUDED.num_activas,
-             num_concluidas = EXCLUDED.num_concluidas,
-             capital_disponible_reinversion = EXCLUDED.capital_disponible_reinversion,
-             ganancia_proyectada_total = EXCLUDED.ganancia_proyectada_total,
-             updated_at = NOW()`,
-          [
-            res.idInversionista,
-            res.nombre,
-            res.patrimonioTotalInvertido,
-            res.rendimientoAcumulado,
-            res.capitalTotalActual,
-            res.roiPonderado,
-            res.numActivas,
-            res.numConcluidas,
-            res.capitalDisponibleReinversion,
-            res.gananciaProyectadaTotal,
-          ]
-        );
-      }
+      await this.syncInvestorSummaries(client, workbookData.resumenes);
 
       // Step 5.9: Commit atomic database transaction
       await client.query("COMMIT");
@@ -506,4 +311,281 @@ export class DashboardSyncService implements IDashboardSyncService {
       metrics,
     };
   }
+
+  /**
+   * Upserts projects from Sheet 'Proyectos' into dashboard_projects.
+   */
+  private async syncProjects(
+    client: IDashboardDbClient,
+    proyectos: readonly CanonicalDashboardProject[]
+  ): Promise<void> {
+    for (const proj of proyectos) {
+      await client.query(
+        `INSERT INTO dashboard_projects (id_inversion, nombre, direccion, tipo_proyecto, timing_months, updated_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())
+         ON CONFLICT (id_inversion) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           direccion = EXCLUDED.direccion,
+           tipo_proyecto = EXCLUDED.tipo_proyecto,
+           timing_months = EXCLUDED.timing_months,
+           updated_at = NOW()`,
+        [proj.idInversion, proj.nombre, proj.ciudad, proj.tipoProyecto, proj.duracionMeses]
+      );
+    }
+  }
+
+  /**
+   * Upserts investors from Sheet 'Inversionistas' into dashboard_investors.
+   */
+  private async syncInvestors(
+    client: IDashboardDbClient,
+    inversionistas: readonly CanonicalInvestor[]
+  ): Promise<void> {
+    for (const inv of inversionistas) {
+      await client.query(
+        `INSERT INTO dashboard_investors (id_inversionista, nombre, email, tipo_inversionista, fecha_ingreso, timing_months, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         ON CONFLICT (id_inversionista) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           email = EXCLUDED.email,
+           tipo_inversionista = EXCLUDED.tipo_inversionista,
+           fecha_ingreso = EXCLUDED.fecha_ingreso,
+           timing_months = EXCLUDED.timing_months,
+           updated_at = NOW()`,
+        [inv.idInversionista, inv.nombre, inv.email, inv.tipoInversionista, inv.fechaIngreso, inv.timingMonths]
+      );
+    }
+  }
+
+  /**
+   * Upserts investments from Sheet 'Inversiones' into dashboard_investments.
+   */
+  private async syncInvestments(
+    client: IDashboardDbClient,
+    inversiones: readonly CanonicalInvestment[]
+  ): Promise<void> {
+    for (const inv of inversiones) {
+      const invId = inv.id || `INV_${inv.idInversion}_${inv.idInversionista ?? "UNKNOWN"}`;
+      await client.query(
+        `INSERT INTO dashboard_investments (
+           id, id_inversion, id_inversionista, nombre_proyecto, ciudad, tipo_propiedad, tipo_proyecto,
+           monto_invertido, roi_pct, estado, fecha_inicio, duracion_meses, rango_esperado, fecha_timing,
+           allocation_pct, imagen_url, avance_fase_pct, fase_actual, ganancia_proyectada, rendimiento_devengado, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, NOW())
+         ON CONFLICT (id) DO UPDATE SET
+           nombre_proyecto = EXCLUDED.nombre_proyecto,
+           ciudad = EXCLUDED.ciudad,
+           monto_invertido = EXCLUDED.monto_invertido,
+           roi_pct = EXCLUDED.roi_pct,
+           estado = EXCLUDED.estado,
+           duracion_meses = EXCLUDED.duracion_meses,
+           fecha_timing = EXCLUDED.fecha_timing,
+           allocation_pct = EXCLUDED.allocation_pct,
+           imagen_url = EXCLUDED.imagen_url,
+           avance_fase_pct = EXCLUDED.avance_fase_pct,
+           fase_actual = EXCLUDED.fase_actual,
+           ganancia_proyectada = EXCLUDED.ganancia_proyectada,
+           rendimiento_devengado = EXCLUDED.rendimiento_devengado,
+           updated_at = NOW()`,
+        [
+          invId,
+          inv.idInversion,
+          inv.idInversionista,
+          inv.nombreProyecto,
+          inv.ciudad,
+          inv.tipoPropiedad,
+          inv.tipoProyecto,
+          inv.montoInvertido,
+          inv.roiPct,
+          inv.estado,
+          inv.fechaInicio,
+          inv.duracionMeses,
+          inv.rangoEsperado,
+          inv.fechaTiming,
+          inv.allocationPct,
+          inv.imagenUrl,
+          inv.avanceFasePct,
+          inv.faseActual,
+          inv.gananciaProyectada,
+          inv.rendimientoDevengado,
+        ]
+      );
+    }
+  }
+
+  /**
+   * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases.
+   */
+  private async syncProjectPhases(
+    client: IDashboardDbClient,
+    fases: readonly CanonicalProjectPhase[]
+  ): Promise<void> {
+    for (const phase of fases) {
+      const phaseId = `${phase.idFase}_${phase.idInversion}`;
+      const img1 = phase.imagenes?.[0] || null;
+      const img2 = phase.imagenes?.[1] || null;
+      const img3 = phase.imagenes?.[2] || null;
+
+      await client.query(
+        `INSERT INTO dashboard_project_phases (
+           id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
+           imagen_url_1, imagen_url_2, imagen_url_3, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+         ON CONFLICT (id) DO UPDATE SET
+           orden = EXCLUDED.orden,
+           nombre_fase = EXCLUDED.nombre_fase,
+           estado = EXCLUDED.estado,
+           fecha_inicio = EXCLUDED.fecha_inicio,
+           fecha_fin = EXCLUDED.fecha_fin,
+           imagen_url_1 = EXCLUDED.imagen_url_1,
+           imagen_url_2 = EXCLUDED.imagen_url_2,
+           imagen_url_3 = EXCLUDED.imagen_url_3,
+           updated_at = NOW()`,
+        [
+          phaseId,
+          phase.idFase,
+          phase.idInversion,
+          phase.orden,
+          phase.nombreFase,
+          phase.estado,
+          phase.fechaInicio,
+          phase.fechaFin,
+          img1,
+          img2,
+          img3,
+        ]
+      );
+    }
+  }
+
+  /**
+   * Reconciles opportunities from Sheet 'Oportunidades' into dashboard_opportunities
+   * and backward-compatible marketplace reinvestment_opportunities with atomic orphan pruning.
+   */
+  private async syncOpportunities(
+    client: IDashboardDbClient,
+    oportunidades: readonly CanonicalOpportunity[]
+  ): Promise<void> {
+    // Invariant: Prune obsolete opportunities not present in current active workbook to prevent stale entries
+    const activeOppIds = oportunidades.map(resolveOpportunityId);
+    if (activeOppIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_opportunities WHERE id_oportunidad != ALL($1::varchar[])`,
+        [activeOppIds]
+      );
+      await client.query(
+        `DELETE FROM reinvestment_opportunities WHERE id != ALL($1::varchar[])`,
+        [activeOppIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_opportunities`);
+      await client.query(`DELETE FROM reinvestment_opportunities`);
+    }
+
+    // Upsert current active opportunities into operational and marketplace tables
+    for (const opp of oportunidades) {
+      const oppId = resolveOpportunityId(opp);
+      const roi = opp.roiProyectado > 1 ? opp.roiProyectado / 100 : opp.roiProyectado;
+
+      await client.query(
+        `INSERT INTO dashboard_opportunities (
+           id_oportunidad, nombre_proyecto, ciudad, roi_estimado, ticket_minimo, activa, gradient, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, TRUE, $6, NOW())
+         ON CONFLICT (id_oportunidad) DO UPDATE SET
+           nombre_proyecto = EXCLUDED.nombre_proyecto,
+           ciudad = EXCLUDED.ciudad,
+           roi_estimado = EXCLUDED.roi_estimado,
+           ticket_minimo = EXCLUDED.ticket_minimo,
+           updated_at = NOW()`,
+        [oppId, opp.titulo, opp.ciudad, roi, opp.inversionMinima, opp.gradient]
+      );
+
+      await client.query(
+        `INSERT INTO reinvestment_opportunities (id, title, city, projected_roi, min_investment, days_left, gradient)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           city = EXCLUDED.city,
+           projected_roi = EXCLUDED.projected_roi,
+           min_investment = EXCLUDED.min_investment,
+           gradient = EXCLUDED.gradient`,
+        [oppId, opp.titulo, opp.ciudad, opp.roiProyectado, opp.inversionMinima, opp.diasRestantes, opp.gradient]
+      );
+    }
+  }
+
+  /**
+   * Upserts reinvestment requests from Sheet 'Transacciones_Reinversion' into dashboard_reinvestment_transactions.
+   */
+  private async syncTransactions(
+    client: IDashboardDbClient,
+    transacciones: readonly CanonicalReinvestmentTransaction[]
+  ): Promise<void> {
+    for (const trx of transacciones) {
+      await client.query(
+        `INSERT INTO dashboard_reinvestment_transactions (
+           id_transaccion, id_inversionista, id_oportunidad, monto, fecha_solicitud, estado, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         ON CONFLICT (id_transaccion) DO UPDATE SET
+           monto = EXCLUDED.monto,
+           estado = EXCLUDED.estado,
+           updated_at = NOW()`,
+        [
+          trx.idTransaccion,
+          trx.idInversionista,
+          trx.idOportunidad,
+          trx.monto,
+          trx.fechaSolicitud || new Date().toISOString(),
+          trx.estado,
+        ]
+      );
+    }
+  }
+
+  /**
+   * Upserts portfolio investor aggregations from Sheet 'Resumen_Dashboard' into dashboard_investor_summaries.
+   */
+  private async syncInvestorSummaries(
+    client: IDashboardDbClient,
+    resumenes: readonly CanonicalInvestorSummary[]
+  ): Promise<void> {
+    for (const res of resumenes) {
+      await client.query(
+        `INSERT INTO dashboard_investor_summaries (
+           id_inversionista, nombre, patrimonio_total_invertido, rendimiento_acumulado,
+           capital_total_actual, roi_ponderado, num_activas, num_concluidas,
+           capital_disponible_reinversion, ganancia_proyectada_total, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+         ON CONFLICT (id_inversionista) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           patrimonio_total_invertido = EXCLUDED.patrimonio_total_invertido,
+           rendimiento_acumulado = EXCLUDED.rendimiento_acumulado,
+           capital_total_actual = EXCLUDED.capital_total_actual,
+           roi_ponderado = EXCLUDED.roi_ponderado,
+           num_activas = EXCLUDED.num_activas,
+           num_concluidas = EXCLUDED.num_concluidas,
+           capital_disponible_reinversion = EXCLUDED.capital_disponible_reinversion,
+           ganancia_proyectada_total = EXCLUDED.ganancia_proyectada_total,
+           updated_at = NOW()`,
+        [
+          res.idInversionista,
+          res.nombre,
+          res.patrimonioTotalInvertido,
+          res.rendimientoAcumulado,
+          res.capitalTotalActual,
+          res.roiPonderado,
+          res.numActivas,
+          res.numConcluidas,
+          res.capitalDisponibleReinversion,
+          res.gananciaProyectadaTotal,
+        ]
+      );
+    }
+  }
 }
+
