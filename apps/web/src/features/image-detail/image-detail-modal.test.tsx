@@ -296,5 +296,97 @@ describe("BBC-020 SPEC-03: Image Detail FDD Feature", () => {
       expect(headerContent).toBeInTheDocument();
       expect(headerContent.className).toContain("justify-center");
     });
+
+    describe("Multi-Phase Project Traversal & Animated Header Feedback (SPEC-08)", () => {
+      const mockMultiPhasePhotos = [
+        {
+          phaseName: "1. Adquisición y Licencias",
+          images: ["https://example.com/cw-phase1-photo1.jpg"],
+        },
+        {
+          phaseName: "3. Cimentación y Estructura",
+          images: [
+            "https://example.com/cw-phase3-photo1.jpg",
+            "https://example.com/cw-phase3-photo2.jpg",
+          ],
+        },
+      ];
+
+      it("should navigate sequentially across phases and update phase badge and title", () => {
+        // Step 1: Render modal initialized with Phase 1 photo
+        render(
+          <ImageDetailModal
+            isOpen={true}
+            onClose={vi.fn()}
+            images={mockMultiPhasePhotos[0]!.images}
+            phaseName={mockMultiPhasePhotos[0]!.phaseName}
+            allPhasesPhotos={mockMultiPhasePhotos}
+          />
+        );
+
+        // Verify initial state: Phase 1, photo 1 / 3
+        expect(screen.getByText("1. Adquisición y Licencias")).toBeInTheDocument();
+        expect(screen.getByText("1 / 3")).toBeInTheDocument();
+        const img = screen.getByRole("img");
+        expect(img).toHaveAttribute("src", "https://example.com/cw-phase1-photo1.jpg");
+
+        // Step 2: Click next -> navigates to Phase 3 photo 1
+        const nextBtn = screen.getByLabelText("Imagen siguiente");
+        fireEvent.click(nextBtn);
+
+        expect(screen.getByText("3. Cimentación y Estructura")).toBeInTheDocument();
+        expect(screen.getByText("2 / 3")).toBeInTheDocument();
+        expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/cw-phase3-photo1.jpg");
+
+        // Step 3: Click next -> navigates to Phase 3 photo 2
+        fireEvent.click(nextBtn);
+        expect(screen.getByText("3. Cimentación y Estructura")).toBeInTheDocument();
+        expect(screen.getByText("3 / 3")).toBeInTheDocument();
+        expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/cw-phase3-photo2.jpg");
+
+        // Step 4: Click next -> wraps back to Phase 1 photo 1
+        fireEvent.click(nextBtn);
+        expect(screen.getByText("1. Adquisición y Licencias")).toBeInTheDocument();
+        expect(screen.getByText("1 / 3")).toBeInTheDocument();
+        expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/cw-phase1-photo1.jpg");
+      });
+
+      it("should navigate backward across phases via previous button", () => {
+        // Step 1: Render modal at Phase 1
+        render(
+          <ImageDetailModal
+            isOpen={true}
+            onClose={vi.fn()}
+            images={mockMultiPhasePhotos[0]!.images}
+            phaseName={mockMultiPhasePhotos[0]!.phaseName}
+            allPhasesPhotos={mockMultiPhasePhotos}
+          />
+        );
+
+        // Step 2: Click prev -> wraps backward to Phase 3 photo 2
+        const prevBtn = screen.getByLabelText("Imagen anterior");
+        fireEvent.click(prevBtn);
+
+        expect(screen.getByText("3. Cimentación y Estructura")).toBeInTheDocument();
+        expect(screen.getByText("3 / 3")).toBeInTheDocument();
+        expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/cw-phase3-photo2.jpg");
+      });
+
+      it("should render animated phase header badge container", () => {
+        render(
+          <ImageDetailModal
+            isOpen={true}
+            onClose={vi.fn()}
+            images={mockMultiPhasePhotos[0]!.images}
+            phaseName={mockMultiPhasePhotos[0]!.phaseName}
+            allPhasesPhotos={mockMultiPhasePhotos}
+          />
+        );
+
+        const phaseBadge = screen.getByTestId("image-detail-phase-badge");
+        expect(phaseBadge).toBeInTheDocument();
+        expect(phaseBadge).toHaveTextContent("1. Adquisición y Licencias");
+      });
+    });
   });
 });

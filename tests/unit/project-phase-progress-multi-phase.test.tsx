@@ -1,8 +1,8 @@
 /**
  * @file tests/unit/project-phase-progress-multi-phase.test.tsx
- * @description Layer 1 & QA: Behavioral Unit Test Suite for Continuous Multi-Phase Carousel
- * Transitions and Animated Phase Header (Carrollwood multi-phase photo case).
- * @spec BBC-020-SPEC-06
+ * @description Layer 1 & QA: Behavioral Unit Test Suite for Static Dashboard Invariant
+ * and Multi-Phase Modal Traversal (Carrollwood multi-phase photo case).
+ * @spec BBC-020-SPEC-08
  * @vitest-environment jsdom
  */
 
@@ -78,7 +78,7 @@ function renderProgress(property: PortfolioItem = mockCarrollwoodProperty) {
   );
 }
 
-describe("BBC-020 SPEC-06: Continuous Multi-Phase Carousel & Animated Header", () => {
+describe("BBC-020 SPEC-08: Static Dashboard Invariant in ProjectPhaseProgress", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -87,8 +87,8 @@ describe("BBC-020 SPEC-06: Continuous Multi-Phase Carousel & Animated Header", (
     vi.useRealTimers();
   });
 
-  describe("Automatic Multi-Phase Carousel Cycling", () => {
-    it("should advance from Phase 1 to Phase 3 (skipping Phase 2 without photos) on 4s timer tick", () => {
+  describe("Static Dashboard Phase Persistence", () => {
+    it("should remain strictly on Phase 1 and NOT advance across phases on 4s timer tick", () => {
       // Step 1: Render Carrollwood property starting at Phase 1 by selecting it
       const { container } = renderProgress();
       const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
@@ -99,18 +99,22 @@ describe("BBC-020 SPEC-06: Continuous Multi-Phase Carousel & Animated Header", (
       expect(screen.getByTestId("phase-header-title")).toHaveTextContent("1. Adquisición y Licencias");
       expect(screen.getByText(/Fase 1 de 4/i)).toBeInTheDocument();
 
-      // Step 2: Advance time by 4 seconds (timer tick)
+      // Step 2: Advance time by 4s, 8s, 12s (multiple timer ticks)
       act(() => {
         vi.advanceTimersByTime(4000);
       });
+      // Invariant: Dashboard remains static on Phase 1
+      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("1. Adquisición y Licencias");
+      expect(screen.getByText(/Fase 1 de 4/i)).toBeInTheDocument();
 
-      // Step 3: Verify it advanced to Phase 3 (skipping Phase 2 which has 0 photos)
-      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
-      expect(screen.getByText(/Fase 3 de 4/i)).toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(8000);
+      });
+      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("1. Adquisición y Licencias");
     });
 
-    it("should cycle through multiple photos in Phase 3 before looping back to Phase 1", () => {
-      // Step 1: Render component and select Phase 3
+    it("should cycle only within Phase 3 photos on timer and never jump to Phase 1", () => {
+      // Step 1: Render component and select Phase 3 (has 2 photos)
       const { container } = renderProgress();
       const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
       fireEvent.click(dotButtons[2]); // Phase 3
@@ -119,51 +123,53 @@ describe("BBC-020 SPEC-06: Continuous Multi-Phase Carousel & Animated Header", (
       const realImg = screen.getByTestId("phase-real-image");
       expect(realImg.getAttribute("src")).toBe("https://example.com/cw-phase3-photo1.jpg");
 
-      // Step 2: 4s tick -> Photo 2 of Phase 3
+      // Step 2: 4s tick -> Photo 2 of Phase 3 (remains on Phase 3)
       act(() => {
         vi.advanceTimersByTime(4000);
       });
       expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
       expect(screen.getByTestId("phase-real-image").getAttribute("src")).toBe("https://example.com/cw-phase3-photo2.jpg");
 
-      // Step 3: Next 4s tick -> Loops circularly to Phase 1 (first phase with photos)
+      // Step 3: Next 4s tick -> Loops back to Photo 1 of Phase 3 (remains on Phase 3, does NOT jump to Phase 1)
       act(() => {
         vi.advanceTimersByTime(4000);
       });
-      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("1. Adquisición y Licencias");
-      expect(screen.getByTestId("phase-real-image").getAttribute("src")).toBe("https://example.com/cw-phase1-photo1.jpg");
+      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
+      expect(screen.getByTestId("phase-real-image").getAttribute("src")).toBe("https://example.com/cw-phase3-photo1.jpg");
     });
   });
 
-  describe("Manual Cross-Phase Arrow Navigation in ProjectPhaseMediaCard", () => {
-    it("should show corner navigation arrows on Phase 1 because total project photos > 1", () => {
-      // Step 1: Render and select Phase 1 (1 photo, but project has 3 photos total)
+  describe("Dashboard Card Navigation Arrows Scope", () => {
+    it("should NOT show corner navigation arrows on Phase 1 because Phase 1 only has 1 photo", () => {
+      // Step 1: Render and select Phase 1 (1 local photo)
       const { container } = renderProgress();
       const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
       fireEvent.click(dotButtons[0]);
 
-      // Step 2: Verify next arrow exists even though Phase 1 only has 1 local photo
+      // Step 2: Verify arrows are hidden because dashboard media card only cycles local phase photos
+      expect(screen.queryByTestId("phase-media-arrow-next")).toBeNull();
+      expect(screen.queryByTestId("phase-media-arrow-prev")).toBeNull();
+    });
+
+    it("should show corner navigation arrows on Phase 3 and cycle only within Phase 3 photos", () => {
+      // Step 1: Render and select Phase 3 (2 local photos)
+      const { container } = renderProgress();
+      const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
+      fireEvent.click(dotButtons[2]);
+
+      // Step 2: Verify next arrow exists for Phase 3
       const nextArrow = screen.getByTestId("phase-media-arrow-next");
       expect(nextArrow).toBeInTheDocument();
 
-      // Step 3: Clicking next arrow jumps to Phase 3 (next phase with photos)
+      // Step 3: Clicking next advances to Photo 2 of Phase 3
       fireEvent.click(nextArrow);
       expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
-    });
-
-    it("should allow navigating backward to Phase 3 photo 2 when on Phase 1 photo 1", () => {
-      // Step 1: Render and select Phase 1
-      const { container } = renderProgress();
-      const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
-      fireEvent.click(dotButtons[0]);
-
-      // Step 2: Prev arrow exists and clicking it goes backward to Phase 3 photo 2
-      const prevArrow = screen.getByTestId("phase-media-arrow-prev");
-      expect(prevArrow).toBeInTheDocument();
-
-      fireEvent.click(prevArrow);
-      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
       expect(screen.getByTestId("phase-real-image").getAttribute("src")).toBe("https://example.com/cw-phase3-photo2.jpg");
+
+      // Step 4: Clicking next again loops back to Photo 1 of Phase 3 (does NOT jump to Phase 1)
+      fireEvent.click(nextArrow);
+      expect(screen.getByTestId("phase-header-title")).toHaveTextContent("3. Cimentación y Estructura");
+      expect(screen.getByTestId("phase-real-image").getAttribute("src")).toBe("https://example.com/cw-phase3-photo1.jpg");
     });
   });
 

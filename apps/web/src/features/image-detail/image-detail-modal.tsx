@@ -24,6 +24,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   useId,
   useSyncExternalStore,
 } from "react";
@@ -42,6 +43,16 @@ import { useImageZoom } from "./use-image-zoom";
 // ─── Public Contracts & Interfaces (Layer 1) ──────────────────────────────────
 
 /**
+ * Photograph collection belonging to a specific project phase for multi-phase traversal (BBC-020 SPEC-08).
+ */
+export interface PhasePhotoCollection {
+  /** Display name of the construction phase (e.g. "1. Adquisición y Licencias"). */
+  readonly phaseName: string;
+  /** Photograph URLs registered for this phase. */
+  readonly images: readonly string[];
+}
+
+/**
  * Props contract for the ImageDetailModal component.
  */
 export interface ImageDetailModalProps {
@@ -57,6 +68,18 @@ export interface ImageDetailModalProps {
   readonly title?: string;
   /** Optional construction phase name badge. */
   readonly phaseName?: string;
+  /** Optional multi-phase collection of photographs for global project traversal (BBC-020 SPEC-08). */
+  readonly allPhasesPhotos?: readonly PhasePhotoCollection[];
+}
+
+/**
+ * Internal representation of a photo within the flattened multi-phase sequence.
+ */
+interface FlattenedPhoto {
+  readonly url: string;
+  readonly phaseName: string;
+  readonly localIndex: number;
+  readonly localTotal: number;
 }
 
 // ─── Presentation Component (Layer 1) ─────────────────────────────────────────
@@ -74,6 +97,7 @@ export function ImageDetailModal({
   initialIndex = 0,
   title = "Detalle de fotografía",
   phaseName,
+  allPhasesPhotos,
 }: ImageDetailModalProps) {
   // Step 1: Enforce Strict Unmount Invariant when closed
   if (!isOpen) {
@@ -88,6 +112,7 @@ export function ImageDetailModal({
       initialIndex={initialIndex}
       title={title}
       phaseName={phaseName}
+      allPhasesPhotos={allPhasesPhotos}
     />
   );
 }
@@ -101,6 +126,7 @@ function ImageDetailModalPortal({
   initialIndex = 0,
   title = "Detalle de fotografía",
   phaseName,
+  allPhasesPhotos = [],
 }: ImageDetailModalProps) {
   // Step 2: Hydration-safe client portal check using useSyncExternalStore
   const mounted = useSyncExternalStore(
@@ -108,9 +134,49 @@ function ImageDetailModalPortal({
     () => true,
     () => false
   );
+
+  // Step 2b: Build unified flattened photo list across all phases when provided (BBC-020 SPEC-08)
+  const flattenedPhotos: readonly FlattenedPhoto[] = useMemo(() => {
+    if (allPhasesPhotos && allPhasesPhotos.length > 0) {
+      const list: FlattenedPhoto[] = [];
+      for (const group of allPhasesPhotos) {
+        if (Array.isArray(group.images)) {
+          group.images.forEach((url, idx) => {
+            list.push({
+              url,
+              phaseName: group.phaseName,
+              localIndex: idx,
+              localTotal: group.images.length,
+            });
+          });
+        }
+      }
+      if (list.length > 0) return list;
+    }
+
+    // Fallback: Use images array from the active phase
+    return images.map((url, idx) => ({
+      url,
+      phaseName: phaseName || "",
+      localIndex: idx,
+      localTotal: images.length,
+    }));
+  }, [allPhasesPhotos, images, phaseName]);
+
+  const totalPhotos = flattenedPhotos.length;
+
   const [currentIndex, setCurrentIndex] = useState<number>(() => {
-    if (images.length === 0) return 0;
-    return Math.max(0, Math.min(initialIndex, images.length - 1));
+    if (flattenedPhotos.length === 0) return 0;
+    if (allPhasesPhotos && allPhasesPhotos.length > 0) {
+      const targetUrl = images[initialIndex] || images[0];
+      const foundIdx = flattenedPhotos.findIndex(
+        (p) => p.url === targetUrl && (!phaseName || p.phaseName === phaseName)
+      );
+      if (foundIdx !== -1) return foundIdx;
+      const fallbackIdx = flattenedPhotos.findIndex((p) => p.url === targetUrl);
+      if (fallbackIdx !== -1) return fallbackIdx;
+    }
+    return Math.max(0, Math.min(initialIndex, flattenedPhotos.length - 1));
   });
 
   const titleId = useId();
@@ -132,15 +198,15 @@ function ImageDetailModalPortal({
     handlePanEnd,
   } = useImageZoom();
 
-  // Step 4: Reset zoom and handle circular navigation when transitioning to another image
+  // Step 4: Reset zoom and handle circular navigation across flattened photos
   const goToImage = useCallback(
     (index: number) => {
-      if (images.length === 0) return;
-      const safeIndex = (index + images.length) % images.length;
+      if (totalPhotos === 0) return;
+      const safeIndex = (index + totalPhotos) % totalPhotos;
       setCurrentIndex(safeIndex);
       resetZoom();
     },
-    [images.length, resetZoom]
+    [totalPhotos, resetZoom]
   );
 
   const handlePrev = useCallback(() => {
@@ -157,10 +223,10 @@ function ImageDetailModalPortal({
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
-      } else if (e.key === "ArrowLeft" && images.length > 1) {
+      } else if (e.key === "ArrowLeft" && totalPhotos > 1) {
         e.preventDefault();
         handlePrev();
-      } else if (e.key === "ArrowRight" && images.length > 1) {
+      } else if (e.key === "ArrowRight" && totalPhotos > 1) {
         e.preventDefault();
         handleNext();
       }
@@ -170,14 +236,16 @@ function ImageDetailModalPortal({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose, handlePrev, handleNext, images.length]);
+  }, [onClose, handlePrev, handleNext, totalPhotos]);
 
   if (!mounted || typeof document === "undefined") {
     return null;
   }
 
-  const currentImageUrl = images[currentIndex] || "";
-  const hasMultipleImages = images.length > 1;
+  const currentPhoto = flattenedPhotos[currentIndex];
+  const currentImageUrl = currentPhoto?.url || "";
+  const currentPhaseName = currentPhoto?.phaseName || phaseName || "";
+  const hasMultipleImages = totalPhotos > 1;
 
   // Step 6: Render modal portal with WAI-ARIA semantics and hardware-accelerated viewport
   return createPortal(
@@ -205,24 +273,54 @@ function ImageDetailModalPortal({
           }}
         />
 
-        {/* Step 8: Accessible Top Header Bar — Centered layout (BBC-020 SPEC-04) */}
+        {/* Step 8: Accessible Top Header Bar — Centered layout with subtle motion feedback (BBC-020 SPEC-04 / SPEC-08) */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-auto">
           {/* Centered typography and metadata container */}
           <div
             data-testid="image-detail-header-content"
             className="flex flex-wrap items-center justify-center gap-3 text-center px-12"
           >
-            {phaseName && (
-              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-medium text-emerald-400 backdrop-blur-md">
-                {phaseName}
-              </span>
-            )}
-            <h2 id={titleId} className="text-sm sm:text-base font-semibold text-white tracking-wide drop-shadow-md">
-              {title}
-            </h2>
+            {/* Step 8b: Micro-animated phase identity block when changing phases */}
+            <motion.div
+              key={currentPhaseName}
+              initial={{ opacity: 0.4, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="flex flex-wrap items-center justify-center gap-3 text-center"
+            >
+              {currentPhaseName && (
+                <motion.span
+                  data-testid="image-detail-phase-badge"
+                  animate={{
+                    backgroundColor: [
+                      "rgba(16, 185, 129, 0.35)",
+                      "rgba(16, 185, 129, 0.10)",
+                    ],
+                    borderColor: [
+                      "rgba(16, 185, 129, 0.65)",
+                      "rgba(16, 185, 129, 0.30)",
+                    ],
+                  }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-medium text-emerald-400 backdrop-blur-md"
+                >
+                  {currentPhaseName}
+                </motion.span>
+              )}
+              <motion.h2
+                id={titleId}
+                animate={{
+                  color: ["#57B98C", "#FFFFFF"],
+                }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="text-sm sm:text-base font-semibold text-white tracking-wide drop-shadow-md"
+              >
+                {title}
+              </motion.h2>
+            </motion.div>
             {hasMultipleImages && (
               <span className="text-xs text-zinc-300 font-mono bg-black/40 px-2 py-0.5 rounded-full border border-white/10 backdrop-blur-md">
-                {currentIndex + 1} / {images.length}
+                {currentIndex + 1} / {totalPhotos}
               </span>
             )}
           </div>
