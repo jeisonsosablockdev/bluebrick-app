@@ -48,6 +48,12 @@ export interface ProjectPhaseMediaCardProps {
   readonly activeIndex?: number;
   /** Callback to request parent to set a specific image index (for dot click). */
   readonly onIndexChange?: (index: number) => void;
+  /** Total photograph count across all phases of the project (enables cross-phase arrows). */
+  readonly totalProjectPhotos?: number;
+  /** Callback to advance to the next photograph (supports cross-phase transitions). */
+  readonly onNextPhoto?: () => void;
+  /** Callback to navigate to the previous photograph (supports cross-phase transitions). */
+  readonly onPrevPhoto?: () => void;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -70,10 +76,13 @@ export function ProjectPhaseMediaCard({
   onHoverChange,
   activeIndex,
   onIndexChange,
+  totalProjectPhotos,
+  onNextPhoto,
+  onPrevPhoto,
 }: ProjectPhaseMediaCardProps): React.JSX.Element {
-  // Step 1: Derive display state from images prop
+  // Step 1: Derive display state from images prop and global project photos (BBC-020 SPEC-06)
   const hasAnyImage = images.length > 0;
-  const hasMultipleImages = images.length > 1;
+  const hasMultipleImages = images.length > 1 || Boolean(totalProjectPhotos && totalProjectPhotos > 1);
 
   // Step 2: Internal index state — used when parent does not control carousel
   const [internalIndex, setInternalIndex] = useState<number>(0);
@@ -122,12 +131,16 @@ export function ProjectPhaseMediaCard({
 
   /**
    * Step 8c: Handle previous arrow click.
-   * Advances circularly backwards: (safeIndex - 1 + len) % len.
+   * Delegates to cross-phase onPrevPhoto if available, otherwise advances circularly backwards.
    * Prevents event bubbling to avoid triggering parent container click.
    */
   const handlePrevClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setImageError(false);
+    if (onPrevPhoto) {
+      onPrevPhoto();
+      return;
+    }
     const prevIdx = (safeIndex - 1 + images.length) % images.length;
     if (isControlled) {
       onIndexChange!(prevIdx);
@@ -138,12 +151,16 @@ export function ProjectPhaseMediaCard({
 
   /**
    * Step 8d: Handle next arrow click.
-   * Advances circularly forwards: (safeIndex + 1) % len.
+   * Delegates to cross-phase onNextPhoto if available, otherwise advances circularly forwards.
    * Prevents event bubbling to avoid triggering parent container click.
    */
   const handleNextClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setImageError(false);
+    if (onNextPhoto) {
+      onNextPhoto();
+      return;
+    }
     const nextIdx = (safeIndex + 1) % images.length;
     if (isControlled) {
       onIndexChange!(nextIdx);
@@ -155,8 +172,12 @@ export function ProjectPhaseMediaCard({
   // Step 8e: Modal lightbox state for full-resolution inspection (BBC-020 SPEC-03)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Step 9: Compute image counter label (e.g. "2/3")
-  const counterLabel = hasMultipleImages ? `${safeIndex + 1}/${images.length}` : null;
+  // Step 9: Compute image counter label (e.g. "2/3" or "1/1" when project has multiple photos)
+  const counterLabel = images.length > 1
+    ? `${safeIndex + 1}/${images.length}`
+    : totalProjectPhotos && totalProjectPhotos > 1 && images.length === 1
+    ? "1/1"
+    : null;
 
   return (
     <motion.div

@@ -10,7 +10,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
@@ -164,28 +164,81 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const isCurrentActive = hasDynamicPhases && !isConcluded && currentPhase.status === "En curso";
   const statusLabel = isConcluded ? "Completado" : isCurrentActive ? "En curso" : currentPhase.status;
 
-  // Step 5.1: Dynamic media carousel state for the active phase
+  // Step 5.1: Calculate all phases that contain photographs across the property (BBC-020 SPEC-06)
+  const phasesWithPhotosIndices = useMemo(() => {
+    return uiPhases
+      .map((p, idx) => (Array.isArray(p.images) && p.images.length > 0 ? idx : -1))
+      .filter((idx) => idx !== -1);
+  }, [uiPhases]);
+
+  const totalProjectPhotos = useMemo(() => {
+    return uiPhases.reduce((acc, p) => acc + (Array.isArray(p.images) ? p.images.length : 0), 0);
+  }, [uiPhases]);
+
+  // Step 5.2: Dynamic media carousel state for the active phase
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [isHoveredOnMedia, setIsHoveredOnMedia] = useState<boolean>(false);
 
   const phaseImages: readonly string[] = currentPhase.images || [];
-  const hasMultipleImages = phaseImages.length > 1;
 
-  // Reset active image index when selected phase or property changes
+  // Reset active image index when property changes in dashboard carousel
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [currentPhase.id, property.id, property.propertyId]);
+  }, [property.id, property.propertyId]);
 
-  // Automatic cycling timer (cambio automático de imágenes cada 4s) when multiple images exist
+  /**
+   * Step 5.3: Continuous next photo navigation.
+   * If current phase has another photo, advances within the phase.
+   * If at the last photo, advances to the next phase that has photos (skipping phases without photos).
+   * Circularly loops back to the first phase with photos upon reaching the end.
+   */
+  const handleNextPhoto = useCallback(() => {
+    if (phaseImages.length > 0 && activeImageIndex + 1 < phaseImages.length) {
+      setActiveImageIndex((prev) => prev + 1);
+    } else if (phasesWithPhotosIndices.length > 0) {
+      const currentPos = phasesWithPhotosIndices.indexOf(activePhaseIndex);
+      const nextPos = currentPos !== -1 ? (currentPos + 1) % phasesWithPhotosIndices.length : 0;
+      const nextPhaseIdx = phasesWithPhotosIndices[nextPos];
+      if (nextPhaseIdx !== activePhaseIndex) {
+        setSelectedPhaseIndex(nextPhaseIdx);
+      }
+      setActiveImageIndex(0);
+    }
+  }, [phaseImages.length, activeImageIndex, phasesWithPhotosIndices, activePhaseIndex]);
+
+  /**
+   * Step 5.4: Continuous previous photo navigation.
+   * If activeImageIndex > 0, decrements within the current phase.
+   * If at photo 0, jumps back to the previous phase with photos at its last photo.
+   */
+  const handlePrevPhoto = useCallback(() => {
+    if (activeImageIndex > 0) {
+      setActiveImageIndex((prev) => prev - 1);
+    } else if (phasesWithPhotosIndices.length > 0) {
+      const currentPos = phasesWithPhotosIndices.indexOf(activePhaseIndex);
+      const prevPos =
+        currentPos !== -1
+          ? (currentPos - 1 + phasesWithPhotosIndices.length) % phasesWithPhotosIndices.length
+          : phasesWithPhotosIndices.length - 1;
+      const prevPhaseIdx = phasesWithPhotosIndices[prevPos];
+      const prevPhaseImages = uiPhases[prevPhaseIdx]?.images || [];
+      if (prevPhaseIdx !== activePhaseIndex) {
+        setSelectedPhaseIndex(prevPhaseIdx);
+      }
+      setActiveImageIndex(Math.max(0, prevPhaseImages.length - 1));
+    }
+  }, [activeImageIndex, phasesWithPhotosIndices, activePhaseIndex, uiPhases]);
+
+  // Step 5.5: Automatic continuous cycling timer (cambio automático cada 4s) when multiple photos exist
   useEffect(() => {
-    if (!hasMultipleImages || isHoveredOnMedia) return;
+    if (totalProjectPhotos <= 1 || isHoveredOnMedia) return;
 
     const timer = setInterval(() => {
-      setActiveImageIndex((prev) => (prev + 1) % phaseImages.length);
+      handleNextPhoto();
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [hasMultipleImages, isHoveredOnMedia, phaseImages.length]);
+  }, [totalProjectPhotos, isHoveredOnMedia, handleNextPhoto]);
 
   return (
     <div
@@ -310,7 +363,10 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                 key={phase.id}
                 type="button"
                 data-testid="phase-dot"
-                onClick={() => setSelectedPhaseIndex(idx)}
+                onClick={() => {
+                  setSelectedPhaseIndex(idx);
+                  setActiveImageIndex(0);
+                }}
                 onMouseEnter={() => setHoveredDotIndex(idx)}
                 onMouseLeave={() => setHoveredDotIndex(null)}
                 onFocus={() => setHoveredDotIndex(idx)}
@@ -500,23 +556,34 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           alignItems: "center",
         }}
       >
-        {/* Left Column: Phase Info */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* Left Column: Animated Phase Info (BBC-020 SPEC-06) */}
+        <div
+          data-testid="phase-header-info"
+          style={{ display: "flex", flexDirection: "column", gap: 6 }}
+        >
           <div style={{ fontSize: 11, color: textMutedColor, fontFamily: "'JetBrains Mono', monospace" }}>
             Fase {currentPhaseNumber} de {totalPhases}
           </div>
 
-          <div
+          <motion.div
+            key={currentPhase.id}
+            data-testid="phase-header-title"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              color: [isDark ? "#57B98C" : "#2F8F6B", textTitleColor],
+            }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: 16,
               fontWeight: 700,
-              color: textTitleColor,
               lineHeight: 1.25,
             }}
           >
             {currentPhase.name}
-          </div>
+          </motion.div>
 
           <div style={{ fontSize: 12, color: textMutedColor, lineHeight: 1.4 }}>
             {currentPhase.description}
@@ -563,6 +630,9 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           activeIndex={activeImageIndex}
           onIndexChange={setActiveImageIndex}
           onHoverChange={setIsHoveredOnMedia}
+          totalProjectPhotos={totalProjectPhotos}
+          onNextPhoto={handleNextPhoto}
+          onPrevPhoto={handlePrevPhoto}
         />
       </div>
     </div>
