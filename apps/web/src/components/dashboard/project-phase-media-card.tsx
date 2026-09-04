@@ -24,6 +24,13 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// Step 3b: Lazy load ImageDetailModal via next/dynamic (FDD Public API) to protect FCP and bundle size
+const ImageDetailModal = dynamic(
+  () => import("@/features/image-detail").then((mod) => mod.ImageDetailModal),
+  { ssr: false }
+);
 
 // ─── Public Props Contract ────────────────────────────────────────────────────
 
@@ -145,11 +152,29 @@ export function ProjectPhaseMediaCard({
     }
   };
 
+  // Step 8e: Modal lightbox state for full-resolution inspection (BBC-020 SPEC-03)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   // Step 9: Compute image counter label (e.g. "2/3")
   const counterLabel = hasMultipleImages ? `${safeIndex + 1}/${images.length}` : null;
 
   return (
     <motion.div
+      data-testid="phase-media-card-container"
+      role={showRealImage ? "button" : undefined}
+      tabIndex={showRealImage ? 0 : undefined}
+      aria-label={showRealImage ? `Ampliar fotografía de ${phaseName}` : undefined}
+      onClick={() => {
+        if (showRealImage) {
+          setIsModalOpen(true);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (showRealImage && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          setIsModalOpen(true);
+        }
+      }}
       onMouseEnter={() => {
         setIsCardHovered(true);
         onHoverChange(true);
@@ -177,6 +202,7 @@ export function ProjectPhaseMediaCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        cursor: showRealImage ? "pointer" : "default",
       }}
     >
       {/* Step 8: Real photograph layer — rendered ONLY when a valid URL is available */}
@@ -391,6 +417,18 @@ export function ProjectPhaseMediaCard({
             <ChevronRight size={20} strokeWidth={2.5} />
           </motion.button>
         </>
+      )}
+
+      {/* Step 12: Lightbox Modal for high-resolution inspection (BBC-020 SPEC-03) */}
+      {isModalOpen && showRealImage && (
+        <ImageDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          images={images}
+          initialIndex={safeIndex}
+          title={`Detalle de fotografía — ${phaseName}`}
+          phaseName={phaseName}
+        />
       )}
     </motion.div>
   );
