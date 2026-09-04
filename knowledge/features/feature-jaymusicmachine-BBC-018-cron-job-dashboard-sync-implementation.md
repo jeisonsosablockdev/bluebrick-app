@@ -12,7 +12,7 @@ El sistema automatiza la ingesta periódica desde Google Drive hacia Neon Postgr
 
 ```mermaid
 flowchart TD
-    VercelCron["⏰ Vercel Cron Engine\n(Schedule: 0 */2 * * *)"] -->|HTTP GET /api/cron/sync-dashboard\nAuthorization: Bearer CRON_SECRET| RouteHandler["Layer 1: Route Handler\napps/web/src/app/api/cron/sync-dashboard/route.ts"]
+    VercelCron["⏰ Vercel Cron Engine\n(Schedule: 0 1 * * * / Daily Hobby Limit)"] -->|HTTP GET /api/cron/sync-dashboard\nAuthorization: Bearer CRON_SECRET| RouteHandler["Layer 1: Route Handler\napps/web/src/app/api/cron/sync-dashboard/route.ts"]
     CLI["💻 CLI Script\npnpm sync:dashboard"] -->|Invoke| Service
     RouteHandler -->|Validate CRON_SECRET\n& Dispatch| Service["Layer 2: DashboardSyncService\napps/web/src/features/ai-ingestion/application/services/dashboard-sync-service.ts"]
     Service -->|Authenticate| GoogleAuth["Layer 4: GoogleServiceAccountAdapter\nOAuth2 JWT"]
@@ -106,7 +106,7 @@ flowchart TD
 - **Status**: Stable & Verified. Integrated into parent feature branch.
 
 ### SPEC-2: `SPEC/jaymusicmachine-BBC-018-s02-cron-route-and-vercel-config`
-- **Scope**: Implementación del Route Handler `apps/web/src/app/api/cron/sync-dashboard/route.ts` con protección `CRON_SECRET`, directiva de crons en `vercel.json` (`0 */2 * * *`), refactorización del script CLI `scripts/sync-dashboard-excel.ts` eliminando 240+ líneas duplicadas, y suite de pruebas unitarias/integración.
+- **Scope**: Implementación del Route Handler `apps/web/src/app/api/cron/sync-dashboard/route.ts` con protección `CRON_SECRET`, directiva de crons en `vercel.json` (`0 1 * * *` ajustada al límite diario de Vercel Hobby), refactorización del script CLI `scripts/sync-dashboard-excel.ts` eliminando 240+ líneas duplicadas, y suite de pruebas unitarias/integración.
 - **Patterns**: Autenticación criptográfica en tiempo constante (`verifyCronAuthorization`), Serverless route config (`dynamic = "force-dynamic"`, `maxDuration = 60`), desacoplamiento en 4 capas (Layer 1 solo invoca Layer 2 sin tocar DB directamente).
 - **Testing**: 4 tests unitarios/integración en `tests/unit/api-cron-sync-dashboard.test.ts` cubriendo 401 (sin header/token inválido), 200 (éxito con payload JSON) y 500 (manejo resiliente de errores).
 - **Status**: Stable & Verified. Integrated into parent feature branch.

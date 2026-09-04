@@ -17,7 +17,7 @@
 2. **Route Handler Protegido en Next.js (Capa de Presentación / API)**:
    - Implementar `apps/web/src/app/api/cron/sync-dashboard/route.ts` con método `GET`, validación de cabecera `Authorization: Bearer <CRON_SECRET>`, control de tiempo de ejecución (`maxDuration = 60`) y respuestas JSON estructuradas con métricas de la sincronización.
 3. **Configuración Declarativa en `vercel.json`**:
-   - Incorporar la directiva `crons` en `vercel.json` apuntando a `/api/cron/sync-dashboard` con un cronograma periódico óptimo (ej. cada 2 o 4 horas).
+   - Incorporar la directiva `crons` en `vercel.json` apuntando a `/api/cron/sync-dashboard` con cronograma diario (`0 1 * * *`) respetando las restricciones del plan Hobby de Vercel (1 ejecución diaria).
 4. **Reutilización en Script CLI**:
    - Refactorizar `scripts/sync-dashboard-excel.ts` para invocar el mismo servicio modular, evitando dispersión o divergencia de código entre local y producción.
 5. **Cobertura de Pruebas Unitarias e Integración (TDD RED-GREEN-REFACTOR)**:
