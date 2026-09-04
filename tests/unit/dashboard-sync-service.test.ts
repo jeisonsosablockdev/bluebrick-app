@@ -8,13 +8,14 @@
  * 
  * Invariants Tested:
  *  - Atomic transaction: BEGIN, COMMIT on success; ROLLBACK & release on DB error.
+ *  - Atomic opportunity pruning on synchronization: deletes obsolete opportunities within transaction.
  *  - Clean domain port delegation to IGoogleAuthProviderPort and ISpreadsheetParserPort.
  *  - Constant-time secret comparison and Bearer token verification.
  *  - Zero direct UI or framework coupling.
  * 
  * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
  * 
- * @spec BBC-018-SYNC-SERVICE
+ * @spec BBC-018-SYNC-SERVICE, BBC-018-DEDUPLICATE
  */
 
 import { describe, it, expect, vi } from "vitest";
@@ -293,6 +294,14 @@ describe("BBC-018: DashboardSyncService & Domain Contracts (@spec BBC-018-SYNC-S
       expect.stringContaining("INSERT INTO dashboard_investor_summaries"),
       expect.any(Array)
     );
+    expect(mockDbClient.query).toHaveBeenCalledWith(
+      expect.stringMatching(/DELETE\s+FROM\s+dashboard_opportunities\s+WHERE\s+id_oportunidad\s+(!=\s*ALL\(\$1(?:::varchar\[\])?\)|NOT\s+IN)/i),
+      expect.any(Array)
+    );
+    expect(mockDbClient.query).toHaveBeenCalledWith(
+      expect.stringMatching(/DELETE\s+FROM\s+reinvestment_opportunities\s+WHERE\s+id\s+(!=\s*ALL\(\$1(?:::varchar\[\])?\)|NOT\s+IN)/i),
+      expect.any(Array)
+    );
     expect(mockDbClient.query).toHaveBeenCalledWith("COMMIT");
     expect(mockDbClient.release).toHaveBeenCalledTimes(1);
 
@@ -466,5 +475,52 @@ describe("BBC-018: DashboardSyncService & Domain Contracts (@spec BBC-018-SYNC-S
     expect(compareDifferentSameLen).toBe(false);
     expect(compareDifferentLen).toBe(false);
     expect(compareNonString).toBe(false);
+  });
+
+  /**
+   * Test case g: Atomically prune stale opportunities not present in active workbook.
+   * @spec BBC-018-DEDUPLICATE-PRUNE
+   */
+  it("should atomically prune stale opportunities not present in active workbook", async () => {
+    // Arrange: Configure active workbook containing only 'MB-07' opportunity
+    const authProvider = createMockAuthProvider();
+    const mockWorkbook = createMockWorkbook({
+      oportunidades: [
+        {
+          id: "MB-07",
+          titulo: "Mulberry Phase 7",
+          ciudad: "Tampa Bay",
+          roiProyectado: 16,
+          inversionMinima: 25000,
+          diasRestantes: 20,
+          gradient: "from-blue-600 to-indigo-600",
+        },
+      ],
+    });
+    const spreadsheetParser = createMockSpreadsheetParser(mockWorkbook);
+    const mockDbClient = createMockDbClient();
+    const dbPool = createMockDbPool(mockDbClient);
+    const fetchFn = createMockFetch();
+
+    const service = new DashboardSyncService({
+      authProvider,
+      spreadsheetParser,
+      dbPool,
+      fetchFn,
+    });
+
+    // Act: Execute synchronization
+    const result = await service.executeSync();
+
+    // Assert: Verify atomic pruning queries delete records with id_oportunidad != ALL(['MB-07']) and id != ALL(['MB-07'])
+    expect(mockDbClient.query).toHaveBeenCalledWith(
+      expect.stringMatching(/DELETE\s+FROM\s+dashboard_opportunities\s+WHERE\s+id_oportunidad\s+(!=\s*ALL\(\$1(?:::varchar\[\])?\)|NOT\s+IN)/i),
+      [["MB-07"]]
+    );
+    expect(mockDbClient.query).toHaveBeenCalledWith(
+      expect.stringMatching(/DELETE\s+FROM\s+reinvestment_opportunities\s+WHERE\s+id\s+(!=\s*ALL\(\$1(?:::varchar\[\])?\)|NOT\s+IN)/i),
+      [["MB-07"]]
+    );
+    expect(result.success).toBe(true);
   });
 });

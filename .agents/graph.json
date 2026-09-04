@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T21:40:00.566Z",
+  "generatedAt": "2026-09-04T01:49:57.290Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -120,6 +120,18 @@
       "type": "governance",
       "label": "index",
       "path": "knowledge/database/models/index.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",

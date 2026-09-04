@@ -9,6 +9,7 @@
  * Invariants:
  *  - Relies exclusively on Layer 3 Domain Ports (GoogleAuth, SpreadsheetParser).
  *  - Atomic transaction boundary: All 7 operational tables upsert or all rollback.
+ *  - Atomic opportunity pruning: Obsolete opportunities deleted within the transaction boundary.
  *  - Fail-safe resource cleanup: Database client is guaranteed to be released back
  *    to the connection pool via try/finally block regardless of transaction outcome.
  *  - Zero direct UI or framework coupling; consumable by API route handlers & CLI scripts.
@@ -86,6 +87,17 @@ export interface IDashboardSyncService {
    * @returns Structured sync result DTO
    */
   executeSync(options?: DashboardSyncOptions): Promise<DashboardSyncResultDto>;
+}
+
+/**
+ * Resolves the persistent identifier for a canonical opportunity,
+ * falling back to a deterministic slug generated from the opportunity title.
+ * 
+ * @param opp - Canonical opportunity object with optional id and title
+ * @returns Non-empty unique identifier string
+ */
+export function resolveOpportunityId(opp: { id?: string; titulo: string }): string {
+  return opp.id || "opp_" + opp.titulo.toLowerCase().replace(/[^a-z0-9]/g, "_");
 }
 
 /**
@@ -324,8 +336,24 @@ export class DashboardSyncService implements IDashboardSyncService {
       }
 
       // Step 5.6: Upsert operational Sheet 5: dashboard_opportunities & backward compatible sync
+      // Invariant: Prune obsolete opportunities not present in current active workbook to prevent stale entries
+      const activeOppIds = workbookData.oportunidades.map(resolveOpportunityId);
+      if (activeOppIds.length > 0) {
+        // Step 5.6.1: Prune removed opportunities from dashboard_opportunities table
+        await client.query(
+          `DELETE FROM dashboard_opportunities WHERE id_oportunidad != ALL($1::varchar[])`,
+          [activeOppIds]
+        );
+        // Step 5.6.2: Prune removed opportunities from marketplace reinvestment_opportunities table
+        await client.query(
+          `DELETE FROM reinvestment_opportunities WHERE id != ALL($1::varchar[])`,
+          [activeOppIds]
+        );
+      }
+
+      // Step 5.6.3: Upsert current active opportunities into operational and marketplace tables
       for (const opp of workbookData.oportunidades) {
-        const oppId = opp.id || "opp_" + opp.titulo.toLowerCase().replace(/[^a-z0-9]/g, "_");
+        const oppId = resolveOpportunityId(opp);
         const roi = opp.roiProyectado > 1 ? opp.roiProyectado / 100 : opp.roiProyectado;
         await client.query(
           `INSERT INTO dashboard_opportunities (

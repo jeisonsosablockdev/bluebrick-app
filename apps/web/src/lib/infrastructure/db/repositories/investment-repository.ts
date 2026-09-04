@@ -1,7 +1,17 @@
 /**
+ * ============================================================================
  * @file apps/web/src/lib/infrastructure/db/repositories/investment-repository.ts
- * @description Layer 4: Infrastructure - Investment portfolio repository for Neon PostgreSQL.
- * Provides clean modular transformers, typed queries, and robust fallback policies.
+ * @description Layer 4: Infrastructure - Investment portfolio repository for Neon PostgreSQL
+ * ============================================================================
+ * Purpose: Provides clean modular transformers, typed queries, and robust fallback policies
+ * for investor portfolios, project milestones, and deduplicated reinvestment opportunities.
+ *
+ * Invariants:
+ *  - Native PostgreSQL deduplication using DISTINCT ON (LOWER(TRIM(title))).
+ *  - Non-blocking graceful degradation when querying project construction milestones.
+ *  - Pure infrastructure layer interacting with Neon PostgreSQL.
+ *
+ * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
  */
 
 import { DatabaseExecutor, getDatabasePool } from "../neon-client";
@@ -384,18 +394,24 @@ export class InvestmentRepository {
   }
 
   /**
-   * Retrieves featured reinvestment opportunities.
+   * Retrieves featured reinvestment opportunities from the database.
+   * Employs native PostgreSQL deduplication via DISTINCT ON (LOWER(TRIM(title)))
+   * picking the most recent record (created_at DESC), and sorts mapped entities by projectedRoi DESC.
+   *
+   * @returns Array of deduplicated reinvestment opportunities ordered by projected ROI descending.
    */
   async getReinvestmentOpportunities(): Promise<DbReinvestmentOpportunity[]> {
-    // Step 1: Query reinvestment opportunities ordered by projected ROI descending
+    // Step 1: Query reinvestment opportunities with native title deduplication ordered by title and newest created_at
     const query = `
-      SELECT id, title, city, projected_roi, min_investment, days_left, gradient, created_at
+      SELECT DISTINCT ON (LOWER(TRIM(title)))
+        id, title, city, projected_roi, min_investment, days_left, gradient, created_at
       FROM reinvestment_opportunities
-      ORDER BY projected_roi DESC;
+      ORDER BY LOWER(TRIM(title)), created_at DESC;
     `;
     const res = await this.db.query(query);
 
-    return (res.rows || []).map((r) => ({
+    // Step 2: Map raw database rows to domain DbReinvestmentOpportunity entities
+    const opportunities: DbReinvestmentOpportunity[] = (res.rows || []).map((r) => ({
       id: r.id,
       title: r.title,
       city: r.city,
@@ -405,6 +421,9 @@ export class InvestmentRepository {
       gradient: r.gradient,
       createdAt: r.created_at ? new Date(r.created_at) : undefined,
     }));
+
+    // Step 3: Sort mapped results by projected ROI descending to prioritize highest-yield opportunities in UI
+    return opportunities.sort((a, b) => b.projectedRoi - a.projectedRoi);
   }
 }
 
