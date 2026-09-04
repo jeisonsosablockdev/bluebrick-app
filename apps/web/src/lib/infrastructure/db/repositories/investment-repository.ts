@@ -398,8 +398,9 @@ export class InvestmentRepository {
           });
         }
       }
-    } catch {
+    } catch (err) {
       // Invariant: Non-blocking graceful degradation
+      console.warn("Could not enrich items with project phases:", err);
     }
   }
 

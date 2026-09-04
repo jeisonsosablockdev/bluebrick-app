@@ -41,8 +41,8 @@ export function detectMagicBytesMime(buffer: Uint8Array): string | null {
     return null;
   }
 
-  // Step 1: Check for executable markup / script tags (Stored XSS defense)
-  const headerSlice = Buffer.from(buffer.slice(0, 100)).toString('utf-8').trim().toLowerCase();
+  // Step 1: Check for executable markup / script tags (Stored XSS defense with 512-byte header inspection)
+  const headerSlice = Buffer.from(buffer.slice(0, 512)).toString('utf-8').trim().toLowerCase();
   if (
     headerSlice.includes('<svg') ||
     headerSlice.includes('<?xml') ||

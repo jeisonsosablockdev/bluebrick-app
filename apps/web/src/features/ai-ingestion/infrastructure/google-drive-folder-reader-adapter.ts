@@ -93,7 +93,7 @@ export class GoogleDriveFolderReaderAdapter implements IDriveFolderReaderPort {
       );
     }
 
-    const cleanFolderId = folderId.trim();
+    const cleanFolderId = folderId.trim().replace(/'/g, "\\'");
     const allowedMimeTypes = options?.allowedMimeTypes ?? DEFAULT_ALLOWED_IMAGE_MIME_TYPES;
     const maxFiles = options?.maxFiles ?? 100;
 
