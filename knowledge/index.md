@@ -23,10 +23,14 @@ knowledge/
 ├── database/                   # Database schemas and data models
 ├── security/                   # Security audits, threat models, compliance
 ├── templates/                  # Scaffolding templates for features, fixes, and RFCs
+├── assets/                     # Brand graphics, icons, and media assets
 └── guides/                     # Implementation guides
 ```
 
 ## Quick Navigation
+
+### Brand & Design Assets
+* [Brand Assets & Visual Identity Specification](assets/brand/README.md)
 
 ### Governance
 * [Documentation Policy](governance/documentation-policy.md)

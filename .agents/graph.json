@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T01:49:57.290Z",
+  "generatedAt": "2026-09-04T12:01:38.258Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -264,6 +264,18 @@
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases",
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-015-dashboard-real-investor-phases.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",
