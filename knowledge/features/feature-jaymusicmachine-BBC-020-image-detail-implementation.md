@@ -129,6 +129,14 @@ apps/web/src/features/image-detail/
   - **Fase GREEN**: Actualización de estilos en `apps/web/src/features/image-detail/image-detail-modal.tsx`.
   - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
 
+- **SPEC-5: Badge Estilo Pill con Icono Vectorial para Conteo de Fotos en Tooltip (Fix)**
+  - **Rama**: `SPEC/jaymusicmachine-BBC-020-s05-photo-pill-badge-fix`
+  - **Fase RED (TDD)**: Tests en `tests/unit/project-phase-progress-dots.test.tsx`:
+    - Valida que el badge de fotos no contiene el emoji de cámara `📷`, sino un icono vectorial SVG (`Camera` de Lucide).
+    - Valida que el contenedor del badge de fotos posee estilo pill idéntico al badge de estado ('Completada'), con borde, fondo semitransparente, padding uniforme y tipografía de 10px.
+  - **Fase GREEN**: Reemplazo del emoji por icono Lucide `Camera` y estilización tipo pill en `apps/web/src/components/dashboard/project-phase-progress.tsx`.
+  - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
+
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy
