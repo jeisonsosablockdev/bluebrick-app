@@ -10,7 +10,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
@@ -165,12 +165,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
   const isCurrentActive = hasDynamicPhases && !isConcluded && currentPhase.status === "En curso";
   const statusLabel = isConcluded ? "Completado" : isCurrentActive ? "En curso" : currentPhase.status;
 
-  // Step 5.1: Calculate total photographs across all phases of the property (BBC-020 SPEC-06)
-  const totalProjectPhotos = useMemo(() => {
-    return uiPhases.reduce((acc, p) => acc + (Array.isArray(p.images) ? p.images.length : 0), 0);
-  }, [uiPhases]);
-
-  // Step 5.1b: Derive all phases photos collection for modal traversal (BBC-020 SPEC-08)
+  // Step 5.1: Derive all phases photos collection for modal traversal (BBC-020 SPEC-08)
   const allPhasesPhotos: readonly PhasePhotoCollection[] = useMemo(() => {
     return uiPhases
       .filter((p) => Array.isArray(p.images) && p.images.length > 0)
@@ -191,28 +186,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
     setActiveImageIndex(0);
   }, [property.id, property.propertyId]);
 
-  /**
-   * Step 5.3: Static Dashboard next photo navigation.
-   * Cycles strictly within current phase photos when multiple photos exist.
-   * Preserves static dashboard invariant: does NOT advance across phases (BBC-020 SPEC-08).
-   */
-  const handleNextPhoto = useCallback(() => {
-    if (phaseImages.length > 1) {
-      setActiveImageIndex((prev) => (prev + 1) % phaseImages.length);
-    }
-  }, [phaseImages.length]);
-
-  /**
-   * Step 5.4: Static Dashboard previous photo navigation.
-   * Cycles strictly within current phase photos.
-   */
-  const handlePrevPhoto = useCallback(() => {
-    if (phaseImages.length > 1) {
-      setActiveImageIndex((prev) => (prev - 1 + phaseImages.length) % phaseImages.length);
-    }
-  }, [phaseImages.length]);
-
-  // Step 5.5: Automatic cycling timer strictly within active phase (every 4s) when multiple photos exist
+  // Step 5.3: Automatic cycling timer strictly within active phase (every 4s) when multiple photos exist
   useEffect(() => {
     if (phaseImages.length <= 1 || isHoveredOnMedia) return;
 
@@ -613,9 +587,6 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           activeIndex={activeImageIndex}
           onIndexChange={setActiveImageIndex}
           onHoverChange={setIsHoveredOnMedia}
-          totalProjectPhotos={totalProjectPhotos}
-          onNextPhoto={handleNextPhoto}
-          onPrevPhoto={handlePrevPhoto}
           allPhasesPhotos={allPhasesPhotos}
         />
       </div>

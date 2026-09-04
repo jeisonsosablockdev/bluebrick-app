@@ -138,19 +138,14 @@ function ImageDetailModalPortal({
   // Step 2b: Build unified flattened photo list across all phases when provided (BBC-020 SPEC-08)
   const flattenedPhotos: readonly FlattenedPhoto[] = useMemo(() => {
     if (allPhasesPhotos && allPhasesPhotos.length > 0) {
-      const list: FlattenedPhoto[] = [];
-      for (const group of allPhasesPhotos) {
-        if (Array.isArray(group.images)) {
-          group.images.forEach((url, idx) => {
-            list.push({
-              url,
-              phaseName: group.phaseName,
-              localIndex: idx,
-              localTotal: group.images.length,
-            });
-          });
-        }
-      }
+      const list = allPhasesPhotos.flatMap((group) =>
+        (group.images || []).map((url, idx) => ({
+          url,
+          phaseName: group.phaseName,
+          localIndex: idx,
+          localTotal: group.images.length,
+        }))
+      );
       if (list.length > 0) return list;
     }
 

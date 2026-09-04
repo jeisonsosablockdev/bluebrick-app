@@ -50,12 +50,6 @@ export interface ProjectPhaseMediaCardProps {
   readonly activeIndex?: number;
   /** Callback to request parent to set a specific image index (for dot click). */
   readonly onIndexChange?: (index: number) => void;
-  /** Total photograph count across all phases of the project (enables cross-phase arrows). */
-  readonly totalProjectPhotos?: number;
-  /** Callback to advance to the next photograph (supports cross-phase transitions). */
-  readonly onNextPhoto?: () => void;
-  /** Callback to navigate to the previous photograph (supports cross-phase transitions). */
-  readonly onPrevPhoto?: () => void;
   /** Optional multi-phase photograph collections for cross-phase traversal inside the modal (BBC-020 SPEC-08). */
   readonly allPhasesPhotos?: readonly PhasePhotoCollection[];
 }
@@ -80,9 +74,6 @@ export function ProjectPhaseMediaCard({
   onHoverChange,
   activeIndex,
   onIndexChange,
-  totalProjectPhotos,
-  onNextPhoto,
-  onPrevPhoto,
   allPhasesPhotos,
 }: ProjectPhaseMediaCardProps): React.JSX.Element {
   // Step 1: Derive display state from images prop (strict static dashboard invariant BBC-020 SPEC-08)
