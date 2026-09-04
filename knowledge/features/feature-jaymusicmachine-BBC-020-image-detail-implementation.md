@@ -121,6 +121,14 @@ apps/web/src/features/image-detail/
   - **Fase GREEN**: Implementación de la feature FDD en `apps/web/src/features/image-detail/` y conexión vía `next/dynamic` en `project-phase-media-card.tsx`.
   - **Fase REFACTOR**: Auditoría clean code, verificación GPU (`translateZ(0)`) y validación con `pnpm validate`.
 
+- **SPEC-4: Fondo Glassmorphism Transparente con Blur y Encabezado Centrado en Modal**
+  - **Rama**: `SPEC/jaymusicmachine-BBC-020-s04-glassmorphic-modal-styling`
+  - **Fase RED (TDD)**: Tests en `apps/web/src/features/image-detail/image-detail-modal.test.tsx`:
+    - Valida que el fondo del modal posee acabado translúcido con desenfoque (`backdrop-filter: blur(16px)`, `background: rgba(10, 18, 32, 0.55)`).
+    - Valida que el contenedor del encabezado (título, badge de fase y contador) esté centrado horizontalmente (`justify-content: center` / `text-align: center`), con el botón de cierre anclado a la derecha.
+  - **Fase GREEN**: Actualización de estilos en `apps/web/src/features/image-detail/image-detail-modal.tsx`.
+  - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
+
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy
@@ -131,10 +139,13 @@ apps/web/src/features/image-detail/
   - `renders dialog with aria-modal and title`: Valida accesibilidad WAI-ARIA.
   - `calls onClose on Escape key press`: Valida listener de teclado.
   - `navigates to next/previous image on arrow keys`: Valida navegación fluida.
+  - `renders translucent glassmorphic backdrop with blur`: Valida transparencia y blur de fondo.
+  - `renders centered header elements`: Valida centrado de títulos y metadatos.
 
 ### 4.2. Tests de Componentes del Dashboard (`tests/unit/`)
 - **`project-phase-media-card-arrows.test.tsx`**: Valida presencia de franjas laterales glassmorphic solo si `images.length > 1` y detención de propagación de clic.
 - **`project-phase-progress-dots.test.tsx`**: Valida escala a 15px en fases completadas con imágenes y presencia de badge en hover tooltip.
+- **`project-phase-media-card-modal.test.tsx`**: Valida apertura de modal desde miniatura y aislamiento de clics en flechas.
 
 ---
 
@@ -151,7 +162,7 @@ apps/web/src/features/image-detail/
 ---
 
 ## 6. Spec Artifact Traceability
-- **Problem Spec**: [feature-jaymusicmachine-BBC-020-image-detail-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-020-image-detail-implementation.md)
-- **Solution Spec**: [feature-jaymusicmachine-BBC-020-image-detail-implementation-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-020-image-detail-implementation-implementation.md)
+- **Problem Spec**: [feature-jaymusicmachine-BBC-020-image-detail.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-020-image-detail.md)
+- **Solution Spec**: [feature-jaymusicmachine-BBC-020-image-detail-implementation.md](file:///Users/jaymusicmachine/Documents/Desarrollo/bluebrick-app/knowledge/features/feature-jaymusicmachine-BBC-020-image-detail-implementation.md)
 - **Linear Issue**: BBC-020 (Sincronización Linear omitida por instrucción del usuario)
 

@@ -49,6 +49,9 @@ En la plataforma BlueBrick, la inspección fotográfica de alta resolución para
    - Los puntos completados con fotografías (`images.length > 0`) incrementan su diámetro de `10px` a `15px` con checkmark proporcionalmente mayor.
    - Tooltip emergente (sólo en hover) exhibe el badge de conteo fotográfico: `📷 X fotos de avance`.
    - Fases en curso conservan su tamaño y pulso característico.
+5. **Estilo Glassmorphism Transparente y Encabezado Centrado en Modal (SPEC-04)**:
+   - El fondo del modal expandido debe ser transparente con desenfoque intenso (`backdrop-filter: blur(16px)`, `rgba(10, 18, 32, 0.55)`), preservando la visibilidad del dashboard de fondo sin oscuridad opaca.
+   - La información del encabezado (nombre de la fase, título de la foto y contador) debe situarse centrada horizontalmente en la parte superior, no escorada hacia un lado, con el botón de cierre conservado en la esquina superior derecha.
 
 ## What gaps exist today
 - Inexistencia del directorio y módulo de feature `apps/web/src/features/image-detail/`.
