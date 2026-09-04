@@ -14,7 +14,7 @@ import { useTheme } from "@/components/theme";
 /**
  * Props for BlueBrickLogo component.
  */
-export interface BlueBrickLogoProps {
+export interface BlueBrickLogoProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Height in pixels of the logo (default: 32) */
   height?: number;
   /** Optional custom CSS class */
@@ -38,6 +38,7 @@ export function BlueBrickLogo({
   className,
   style,
   priority = true,
+  ...restProps
 }: BlueBrickLogoProps = {}): React.JSX.Element {
   // Step 1: Detect active theme to choose between dark-mode white logo and light-mode navy logo
   const { theme } = useTheme();
@@ -60,6 +61,7 @@ export function BlueBrickLogo({
         alignItems: "center",
         ...style,
       }}
+      {...restProps}
     >
       <Image
         src={src}

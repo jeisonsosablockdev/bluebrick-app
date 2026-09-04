@@ -73,13 +73,11 @@ describe("BBC-015: ProjectPhaseMediaCard (@spec BBC-015-MEDIA-CARD-*)", () => {
   // ─── FALLBACK STATE TESTS ───────────────────────────────────────────────────
 
   describe("Fallback State (no images) (@spec BBC-015-MEDIA-CARD-FALLBACK)", () => {
-    it("should NOT render an <img> element when images array is empty", () => {
-      // Arrange
-      const { container } = render(<ProjectPhaseMediaCard {...noImagesProps} />);
-      // Act
-      const imgEl = container.querySelector("img");
+    it("should NOT render a real photograph <img> element when images array is empty", () => {
+      // Arrange & Act
+      render(<ProjectPhaseMediaCard {...noImagesProps} />);
       // Assert: No real photograph rendered in the fallback state
-      expect(imgEl).toBeNull();
+      expect(screen.queryByTestId("phase-real-image")).toBeNull();
     });
 
     it("should render a fallback placeholder container with the phase name text when images is empty", () => {
@@ -94,6 +92,28 @@ describe("BBC-015: ProjectPhaseMediaCard (@spec BBC-015-MEDIA-CARD-*)", () => {
       const { queryByTestId } = render(<ProjectPhaseMediaCard {...noImagesProps} />);
       // Assert: Pagination is invisible for fallback state
       expect(queryByTestId("phase-images-pagination")).not.toBeInTheDocument();
+    });
+
+    it("should render BlueBrick official brand logo with text and NO generic ImageIcon in fallback state (BBC-020 SPEC-07)", () => {
+      // Arrange & Act
+      const { container } = render(<ProjectPhaseMediaCard {...noImagesProps} />);
+      // Assert 1: Generic ImageIcon is NOT rendered
+      expect(container.querySelector("svg.lucide-image")).toBeNull();
+      // Assert 2: Official brand logo is rendered in foreground
+      const brandLogo = screen.getByTestId("phase-media-fallback-brand-logo");
+      expect(brandLogo).toBeInTheDocument();
+      expect(screen.getAllByText(/Blue Brick/i).length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("should render diffused brand logo mesh in background layer (BBC-020 SPEC-07)", () => {
+      // Arrange & Act
+      render(<ProjectPhaseMediaCard {...noImagesProps} />);
+      // Assert 1: Ambient background mesh container exists
+      const bgMesh = screen.getByTestId("phase-media-card-fallback-brand");
+      expect(bgMesh).toBeInTheDocument();
+      // Assert 2: Blurred logo element inside mesh applies blur filter
+      const blurEl = screen.getByTestId("phase-media-card-fallback-brand-blur");
+      expect(blurEl.style.filter).toContain("blur");
     });
   });
 
