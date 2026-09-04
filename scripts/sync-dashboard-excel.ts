@@ -24,6 +24,8 @@ async function main() {
 
   const { GoogleServiceAccountAdapter } = await import("../apps/web/src/features/ai-ingestion/infrastructure/google-service-account-adapter");
   const { StreamingSpreadsheetAdapter } = await import("../apps/web/src/features/ai-ingestion/infrastructure/streaming-spreadsheet-adapter");
+  const { GoogleDriveFolderReaderAdapter } = await import("../apps/web/src/features/ai-ingestion/infrastructure/google-drive-folder-reader-adapter");
+  const { VercelBlobAdapter } = await import("../apps/web/src/features/ai-ingestion/infrastructure/vercel-blob-adapter");
   const { DashboardSyncService } = await import("../apps/web/src/features/ai-ingestion/application/services/dashboard-sync-service");
 
   // Step 1: Initialize Google Service Account Adapter
@@ -32,8 +34,10 @@ async function main() {
     privateKey: process.env.GOOGLE_PRIVATE_KEY,
   });
 
-  // Step 2: Initialize Streaming Spreadsheet Adapter
+  // Step 2: Initialize Streaming Spreadsheet Adapter, Folder Reader & Blob Storage
   const spreadsheetAdapter = new StreamingSpreadsheetAdapter();
+  const folderReader = new GoogleDriveFolderReaderAdapter({ authProvider: authAdapter });
+  const blobStorage = new VercelBlobAdapter();
 
   // Step 3: Initialize Database Connection Pool
   const pool = new Pool({
@@ -46,6 +50,8 @@ async function main() {
     authProvider: authAdapter,
     spreadsheetParser: spreadsheetAdapter,
     dbPool: pool,
+    folderReader,
+    blobStorage,
   });
 
   console.log("Executing synchronization via DashboardSyncService...");

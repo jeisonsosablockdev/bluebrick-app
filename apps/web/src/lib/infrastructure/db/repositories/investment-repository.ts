@@ -345,7 +345,7 @@ export class InvestmentRepository {
 
     try {
       const phasesRes = await this.db.query(
-        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, imagen_url_1, imagen_url_2, imagen_url_3
+        `SELECT id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin, folder_url, imagenes, imagen_url_1, imagen_url_2, imagen_url_3
          FROM dashboard_project_phases
          WHERE id_inversion = ANY($1)
          ORDER BY id_inversion, orden ASC`,
@@ -361,6 +361,8 @@ export class InvestmentRepository {
         estado: "Completada" | "En curso" | "Pendiente" | "No aplica";
         fecha_inicio?: string | Date | null;
         fecha_fin?: string | Date | null;
+        folder_url?: string | null;
+        imagenes?: string[] | null;
         imagen_url_1?: string | null;
         imagen_url_2?: string | null;
         imagen_url_3?: string | null;
@@ -374,22 +376,31 @@ export class InvestmentRepository {
       for (const item of items) {
         const rows = grouped.get(item.propertyId);
         if (rows && rows.length > 0) {
-          item.phases = rows.map((row) => ({
-            id: String(row.id_fase || row.id),
-            projectId: item.propertyId,
-            order: Number(row.orden),
-            name: String(row.nombre_fase),
-            status: row.estado,
-            startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
-            endDate: row.fecha_fin ? String(row.fecha_fin) : null,
-            images: [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3].filter(
-              (img): img is string => typeof img === "string" && img.trim().length > 0
-            ),
-          }));
+          item.phases = rows.map((row) => {
+            // Step 4.1: Preferentially hydrate images from modern imagenes text[] array
+            // Fall back to legacy scalar columns imagen_url_1, 2, 3 for full backwards compatibility
+            const candidateImages = (Array.isArray(row.imagenes) && row.imagenes.length > 0)
+              ? row.imagenes
+              : [row.imagen_url_1, row.imagen_url_2, row.imagen_url_3];
+
+            return {
+              id: String(row.id_fase || row.id),
+              projectId: item.propertyId,
+              order: Number(row.orden),
+              name: String(row.nombre_fase),
+              status: row.estado,
+              startDate: row.fecha_inicio ? String(row.fecha_inicio) : null,
+              endDate: row.fecha_fin ? String(row.fecha_fin) : null,
+              images: candidateImages.filter(
+                (img): img is string => typeof img === "string" && img.trim().length > 0
+              ),
+            };
+          });
         }
       }
-    } catch {
+    } catch (err) {
       // Invariant: Non-blocking graceful degradation
+      console.warn("Could not enrich items with project phases:", err);
     }
   }
 

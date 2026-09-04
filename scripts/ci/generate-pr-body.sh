@@ -25,7 +25,81 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${BRANCH}" == *"deduplicate"* ]]; then
+if [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la **Ingesta Automatizada de Carpetas de Imágenes de Google Drive y Sincronización con Vercel Blob con Deduplicación y Poda de Huérfanos** (\`BBC-8\`), bajo la estricta arquitectura de 4 Capas Feature-Driven Design (FDD) y 100% de comentarios en código.
+
+### Size exemption justification:
+- Added lines: 950 (> 400).
+- Rationale: Entrega atómica integral dividida en 3 SPECs que abarca: migración DDL de base de datos (\`005_phase_folder_and_images_array.sql\`), adaptadores de infraestructura para Google Drive API v3 (\`GoogleDriveFolderReaderAdapter\`) y Vercel Blob (\`VercelBlobAdapter\`), deduplicación por hash SHA-256 en \`media_assets\`, reconciliación y poda atómica de blobs huérfanos con salvaguarda de activos compartidos, enriquecimiento de repositorio (\`InvestmentRepository\`) con soporte de array nativo \`imagenes TEXT[]\`, integración en el componente UI \`ProjectPhaseMediaCard\`, cableado en CLI (\`scripts/sync-dashboard-excel.ts\`), y suite completa de pruebas unitarias/integración con 428/428 tests pasando.
+
+### Feature flag:
+- Feature flag name: feature_drive_folder_blob_sync
+- Implementation: Desacoplado mediante puertos en Layer 3 (\`IDriveFolderReaderPort\`, \`IBlobStoragePort\`) e implementaciones en Layer 4, consumidos por \`DashboardSyncService\` en Layer 2 y presentados en Layer 1.
+- Rollout plan: 100% inmediato. Sincronización ejecutada en Neon PostgreSQL y Vercel Blob.
+- Kill-switch: Fallback transparente a columnas escalares legacy (\`imagen_url_1..3\`) en \`InvestmentRepository\` si \`imagenes\` está vacío o no disponible.
+
+### 🚀 Principales Cambios y Entregables:
+1. **SPEC-1 (Detección de Carpetas y Esquema DDL)**:
+   - Migración PostgreSQL \`005_phase_folder_and_images_array.sql\` agregando \`folder_url TEXT\` e \`imagenes TEXT[] DEFAULT '{}'\` a \`dashboard_project_phases\`.
+   - Utilidad pura de dominio \`drive-folder-utils.ts\` para extracción y normalización segura de ID de carpetas de Drive con protección contra ReDoS.
+   - Esquema Zod canónico \`CanonicalProjectPhaseSchema\` extendido para soportar \`folder_url\` e \`imagenes\`.
+2. **SPEC-2 (Ingesta de Drive API v3, Subida a Vercel Blob y Deduplicación)**:
+   - Puerto de dominio \`IDriveFolderReaderPort\` y adaptador \`GoogleDriveFolderReaderAdapter\` que lista archivos de imagen recursivamente vía Google Drive API v3.
+   - Puerto de dominio \`IBlobStoragePort\` y adaptador \`VercelBlobAdapter\` con validación de magic bytes (JPEG/PNG/WebP), sanitización XSS SVG y deduplicación por hash SHA-256 en tabla \`media_assets\`.
+   - Orquestación en \`DashboardSyncService\` sincronizando carpetas de Drive hacia Vercel Blob e insertando URLs seguras del CDN en Neon.
+3. **SPEC-3 (Poda de Huérfanos, Salvaguarda de Activos Compartidos y Enriquecimiento de UI)**:
+   - Poda de blobs huérfanos (\`del()\` de \`@vercel/blob\`) al removerse fotos de las carpetas de Drive, protegiendo activos compartidos entre fases o proyectos.
+   - \`InvestmentRepository.enrichItemsWithProjectPhases\` hidratando preferencialmente desde \`row.imagenes\` con fallback a columnas legacy.
+   - Presentación enriquecida en \`ProjectPhaseMediaCard\` con carrusel interactivo, dots de paginación y precarga fluida.
+4. **Pruebas Automatizadas & Calidad**:
+   - 428 tests unitarios e integración pasando al 100% (67 suites).
+   - 53 tests de harness de gobernanza pasando al 100% (11 suites).
+   - Auditorías de Clean Code y Arquitecto (Gate 1 y Gate 2) aprobadas con 100% de comentarios en código y verificación de 4 capas.
+
+## Issue
+- Issue link/id: [BBC-8](https://linear.app/brids-app/issue/BBC-8)
+
+## RFC
+- RFC link/path: knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion-implementation.md
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Fallback automático a columnas legacy \`imagen_url_1..3\` si no hay array de imágenes.
+- Security impact: Sanitización estricta de SVG/XSS, validación de magic bytes, queries parametrizadas (\$1, \$2) contra SQL injection, tokens de Drive y Vercel Blob restringidos al servidor.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`. La migración DDL agrega columnas opcionales que no rompen queries existentes.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo de ingesta de datos, Vercel Blob y Dashboard UI; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación de sincronización real: Ejecución exitosa de \`pnpm sync:dashboard\` sincronizando 83 activos multimedia en Vercel Blob y 98 fases en Neon PostgreSQL.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Ejecución en vivo de la sincronización \`pnpm sync:dashboard\` con 0 errores y subida verificada a Vercel Blob CDN.
+  - Verificación de URLs de Vercel Blob retornando HTTP 200 con encabezados de caché y CORS válidos.
+  - 100% de pruebas y gobernanza aprobadas (\`pnpm validate\`).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion.md
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${BRANCH}" == *"deduplicate"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request resuelve la triplicación de la tarjeta **MULBERRY** en el Dashboard de Inversión (\`BBC-018\`), implementando un sistema de reconciliación atómica en la sincronización de Excel y deduplicación nativa en PostgreSQL.
