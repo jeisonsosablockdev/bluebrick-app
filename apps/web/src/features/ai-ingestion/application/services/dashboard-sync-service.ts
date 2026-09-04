@@ -439,6 +439,20 @@ export class DashboardSyncService implements IDashboardSyncService {
     for (const phase of fases) {
       const phaseId = `${phase.idFase}_${phase.idInversion}`;
 
+      // Step 5.5.0: Query existing phase record to track previously associated images
+      let previousPhaseImages: string[] = [];
+      try {
+        const prevRes = (await client.query(
+          `SELECT folder_url, imagenes FROM dashboard_project_phases WHERE id = $1`,
+          [phaseId]
+        )) as { rows?: Array<{ folder_url?: string | null; imagenes?: string[] | null }> };
+        if (prevRes?.rows?.[0]?.imagenes && Array.isArray(prevRes.rows[0].imagenes)) {
+          previousPhaseImages = prevRes.rows[0].imagenes;
+        }
+      } catch {
+        // Invariant: Non-fatal fallback if table or column is not yet queried
+      }
+
       // Step 5.5.1: If phase references a Google Drive folder, discover and ingest images
       const resolvedBlobUrls: string[] = [];
 
@@ -501,13 +515,47 @@ export class DashboardSyncService implements IDashboardSyncService {
                 }
               }
             }
+
+            // Step 5.5.4: Detect and prune orphan blobs removed from the Google Drive folder
+            const orphanBlobUrls = previousPhaseImages.filter(
+              (url) =>
+                !resolvedBlobUrls.includes(url) &&
+                (url.includes("blob.vercel-storage.com") || url.includes("vercel-storage.com"))
+            );
+
+            for (const orphanUrl of orphanBlobUrls) {
+              // Invariant: Guard against deleting assets shared with other project phases
+              const sharedRes = (await client.query(
+                `SELECT 1 FROM dashboard_project_phases WHERE id != $1 AND $2 = ANY(imagenes) LIMIT 1`,
+                [phaseId, orphanUrl]
+              )) as { rows?: unknown[] };
+
+              const isShared = Boolean(sharedRes?.rows && sharedRes.rows.length > 0);
+
+              if (!isShared) {
+                // Step 5.5.4a: Delete from Vercel Blob storage (storage maintenance)
+                if (this.blobStorage.deleteBlob) {
+                  try {
+                    await this.blobStorage.deleteBlob(orphanUrl);
+                  } catch {
+                    // Invariant: Non-fatal graceful degradation if edge deletion encounters temporary network issue
+                  }
+                }
+
+                // Step 5.5.4b: Prune media_assets mapping
+                await client.query(
+                  `DELETE FROM media_assets WHERE blob_url = $1`,
+                  [orphanUrl]
+                );
+              }
+            }
           } catch {
             // Invariant: Non-fatal graceful degradation — proceed with any available images
           }
         }
       }
 
-      // Step 5.5.4: Deduplicate and aggregate images array
+      // Step 5.5.5: Deduplicate and aggregate images array
       const allImages = Array.from(
         new Set([...resolvedBlobUrls, ...(phase.imagenes || [])])
       );
@@ -515,6 +563,7 @@ export class DashboardSyncService implements IDashboardSyncService {
       const img2 = allImages[1] || null;
       const img3 = allImages[2] || null;
 
+      // Step 5.5.6: Upsert phase record into dashboard_project_phases table
       await client.query(
         `INSERT INTO dashboard_project_phases (
            id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
