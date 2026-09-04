@@ -23,8 +23,9 @@
 
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
+import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
 
 // Step 3b: Lazy load ImageDetailModal via next/dynamic (FDD Public API) to protect FCP and bundle size
 const ImageDetailModal = dynamic(
@@ -226,6 +227,49 @@ export function ProjectPhaseMediaCard({
         cursor: showRealImage ? "pointer" : "default",
       }}
     >
+      {/* Step 8f: Ambient brand logo blurred background mesh when no real photos (BBC-020 SPEC-07) */}
+      {!showRealImage && (
+        <div
+          data-testid="phase-media-card-fallback-brand"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        >
+          {/* Blurred background logo mesh */}
+          <div
+            data-testid="phase-media-card-fallback-brand-blur"
+            style={{
+              transform: "scale(2.2)",
+              filter: "blur(28px)",
+              opacity: isDark ? 0.32 : 0.22,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <BlueBrickLogo height={72} priority={false} />
+          </div>
+          {/* Soft radial overlay to blend with theme */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: isDark
+                ? "radial-gradient(circle at center, rgba(87, 185, 140, 0.06) 0%, rgba(10, 18, 32, 0.45) 100%)"
+                : "radial-gradient(circle at center, rgba(47, 143, 107, 0.05) 0%, rgba(248, 250, 252, 0.4) 100%)",
+            }}
+          />
+        </div>
+      )}
+
       {/* Step 8: Real photograph layer — rendered ONLY when a valid URL is available */}
       {showRealImage && (
         <motion.img
@@ -282,9 +326,13 @@ export function ProjectPhaseMediaCard({
       >
         {/* Step 10a: Icon + counter row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {/* Fallback icon — visible only when no real photo is displayed */}
+          {/* Fallback brand logo with text — visible only when no real photo is displayed (BBC-020 SPEC-07) */}
           {!showRealImage && (
-            <ImageIcon size={22} color="rgba(237, 241, 245, 0.85)" />
+            <BlueBrickLogo
+              height={20}
+              data-testid="phase-media-fallback-brand-logo"
+              style={{ opacity: 0.95 }}
+            />
           )}
 
           {/* Image counter badge (e.g. "1/3") — only for multi-image */}
