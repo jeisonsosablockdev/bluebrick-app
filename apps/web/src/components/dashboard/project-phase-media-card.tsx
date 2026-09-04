@@ -23,7 +23,7 @@
 
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Public Props Contract ────────────────────────────────────────────────────
 
@@ -110,13 +110,54 @@ export function ProjectPhaseMediaCard({
   };
 
 
+  // Step 8b: Local hover state for revealing corner navigation arrows (BBC-020 SPEC-01)
+  const [isCardHovered, setIsCardHovered] = useState<boolean>(false);
+
+  /**
+   * Step 8c: Handle previous arrow click.
+   * Advances circularly backwards: (safeIndex - 1 + len) % len.
+   * Prevents event bubbling to avoid triggering parent container click.
+   */
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageError(false);
+    const prevIdx = (safeIndex - 1 + images.length) % images.length;
+    if (isControlled) {
+      onIndexChange!(prevIdx);
+    } else {
+      setInternalIndex(prevIdx);
+    }
+  };
+
+  /**
+   * Step 8d: Handle next arrow click.
+   * Advances circularly forwards: (safeIndex + 1) % len.
+   * Prevents event bubbling to avoid triggering parent container click.
+   */
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageError(false);
+    const nextIdx = (safeIndex + 1) % images.length;
+    if (isControlled) {
+      onIndexChange!(nextIdx);
+    } else {
+      setInternalIndex(nextIdx);
+    }
+  };
+
   // Step 9: Compute image counter label (e.g. "2/3")
   const counterLabel = hasMultipleImages ? `${safeIndex + 1}/${images.length}` : null;
 
   return (
     <motion.div
-      onMouseEnter={() => onHoverChange(true)}
-      onMouseLeave={() => onHoverChange(false)}
+      onMouseEnter={() => {
+        setIsCardHovered(true);
+        onHoverChange(true);
+      }}
+      onMouseLeave={() => {
+        setIsCardHovered(false);
+        onHoverChange(false);
+      }}
       whileHover={{ scale: 1.025, y: -2 }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
       style={{
@@ -280,6 +321,77 @@ export function ProjectPhaseMediaCard({
           </div>
         )}
       </div>
+
+      {/* Step 11: Glassmorphic corner-spanning navigation arrows (BBC-020 SPEC-01) */}
+      {hasMultipleImages && (
+        <>
+          {/* Left corner arrow: Spans full left corner from top to bottom */}
+          <motion.button
+            type="button"
+            data-testid="phase-media-arrow-prev"
+            aria-label="Ver imagen anterior"
+            onClick={handlePrevClick}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isCardHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(10, 18, 32, 0.45)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "none",
+              borderRight: "1px solid rgba(237, 241, 245, 0.12)",
+              color: "#EDF1F5",
+              cursor: "pointer",
+              zIndex: 10,
+              transition: "background 0.2s ease",
+            }}
+            whileHover={{ backgroundColor: "rgba(10, 18, 32, 0.7)" }}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </motion.button>
+
+          {/* Right corner arrow: Spans full right corner from top to bottom */}
+          <motion.button
+            type="button"
+            data-testid="phase-media-arrow-next"
+            aria-label="Ver siguiente imagen"
+            onClick={handleNextClick}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isCardHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              right: 0,
+              width: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(10, 18, 32, 0.45)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "none",
+              borderLeft: "1px solid rgba(237, 241, 245, 0.12)",
+              color: "#EDF1F5",
+              cursor: "pointer",
+              zIndex: 10,
+              transition: "background 0.2s ease",
+            }}
+            whileHover={{ backgroundColor: "rgba(10, 18, 32, 0.7)" }}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </motion.button>
+        </>
+      )}
     </motion.div>
   );
 }
