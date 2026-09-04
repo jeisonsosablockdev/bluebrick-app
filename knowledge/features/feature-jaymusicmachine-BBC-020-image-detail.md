@@ -54,9 +54,10 @@ En la plataforma BlueBrick, la inspección fotográfica de alta resolución para
 6. **Badge Estilo Pill con Icono Vectorial para Conteo de Fotos en Tooltip (SPEC-05)**:
    - Eliminar el emoji genérico (`📷`) del tooltip.
    - Utilizar un badge con estilo pill idéntico al badge de estado ('Completada'), con borde fino, fondo semitransparente, tipografía uppercase/mono de 10px y un icono SVG vectorial nítido de Lucide (`Camera`), garantizando una apariencia refinada y homogénea con el sistema de diseño de BlueBrick.
-7. **Carrusel Multi-Fase y Animación Sutil de Encabezado (SPEC-06)**:
-   - Cuando un proyecto (ej. CARROLLWOOD) dispone de fotografías distribuidas a lo largo de diferentes fases de obra, el carrusel fotográfico no debe quedar atrapado en una sola fase; debe continuar la secuencia avanzando a las fotos de la siguiente fase con fotos al agotarse las de la fase en curso.
-   - El cambio de fase debe acompañarse de una animación sutil en el encabezado (micro-slide e iluminación elegante con Motion en el título) para guiar la atención del inversionista hacia el cambio de fase y mantener la fluidez del carrusel.
+7. **Navegación Multi-Fase en Modal de Detalle con Animación de Encabezado y Dashboard Estático (SPEC-06/08)**:
+   - En el Dashboard (`ProjectPhaseProgress` y `ProjectPhaseMediaCard`), la vista permanece **estática** sobre la fase seleccionada; el carrusel de la tarjeta solo cicla fotos de la fase actual y no salta a otras fases.
+   - La navegación continua multi-fase (caso CARROLLWOOD) se habilita en el **Modal de Detalle Expandido** (`ImageDetailModal`), permitiendo recorrer todas las fotos de las fases del proyecto.
+   - Al pasar a fotos de una nueva fase dentro del modal, el encabezado (badge de fase y título) ejecuta una animación sutil con Motion (micro-slide e iluminación temporal de color) para llamar la atención del inversionista sobre el cambio de fase.
 8. **Fallback de Marca con Logo y Fondo Desenfoque (SPEC-07)**:
    - Cuando una fase no dispone de fotografías (`images.length === 0` o error de carga), `ProjectPhaseMediaCard` no debe mostrar un bloque plano o genérico con un icono genérico de imagen (`ImageIcon`).
    - En su lugar, debe presentar una identidad visual de marca de alto nivel:

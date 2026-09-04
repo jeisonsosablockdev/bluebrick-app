@@ -164,6 +164,17 @@ apps/web/src/features/image-detail/
       - Capa de fondo con `BlueBrickLogo` a escala ampliada, `filter: blur(28px)` y opacidad calibrada para crear un degradado ambiental de marca.
   - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
 
+- **SPEC-8: Navegación Multi-Fase en Modal de Detalle con Animación de Encabezado y Dashboard Estático (Fix del Fix)**
+  - **Rama**: `SPEC/jaymusicmachine-BBC-020-s08-modal-multiphase-static-dashboard-fix`
+  - **Fase RED (TDD)**:
+    - En `tests/unit/project-phase-progress-multi-phase.test.tsx`: Validar que el dashboard (`ProjectPhaseProgress`) permanece estrictamente estático en la fase seleccionada (no cambia de fase automáticamente con timers ni con flechas de la tarjeta).
+    - En `apps/web/src/features/image-detail/image-detail-modal.test.tsx`: Validar que `ImageDetailModal` acepta colección de fotos multi-fase (`allPhasesPhotos?: readonly { phaseName: string; images: readonly string[] }[]`), permitiendo navegar secuencialmente entre fotos de todas las fases del proyecto. Validar que al cambiar de fase dentro del modal, el encabezado (badge de fase y título) ejecuta una animación sutil con Motion (`x: -6 -> 0` e iluminación temporal) para llamar la atención del usuario al cambio de fase.
+  - **Fase GREEN**:
+    - En `apps/web/src/components/dashboard/project-phase-progress.tsx`: Restaurar el temporizador estrictamente local a la fase activa (`phaseImages.length > 1`). Preparar y propagar `allPhasesPhotos` a `ProjectPhaseMediaCard`.
+    - En `apps/web/src/components/dashboard/project-phase-media-card.tsx`: Flechas laterales operan estrictamente sobre las fotos locales de la fase activa (`images.length > 1`). Propagar `allPhasesPhotos` al modal `ImageDetailModal`.
+    - En `apps/web/src/features/image-detail/image-detail-modal.tsx`: Implementar la navegación secuencial multi-fase y la animación sutil con Motion en el badge/título del encabezado ante el cambio de fase.
+  - **Fase REFACTOR**: Limpieza de código, verificación de estándares y paso de `pnpm validate`.
+
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy
