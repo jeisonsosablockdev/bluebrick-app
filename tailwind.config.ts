@@ -1,5 +1,12 @@
+/**
+ * @file tailwind.config.ts
+ * @description Layer 1: Presentation - Tailwind CSS Configuration with BlueBrick Brand Design System Tokens.
+ * Configures application-wide responsive utility classes, colors, gradients, and typography.
+ */
+
 import type { Config } from "tailwindcss";
 
+// Step 1: Define Tailwind configuration extending brand design tokens
 const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -9,12 +16,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Step 2: Extend color palette with canonical BlueBrick brand tokens
       colors: {
         bg: "#04060F",
         panel: "#0E1324",
         soft: "#1A2140",
         accentFrom: "#2FC6FF",
-        accentTo: "#7C3AED"
+        accentTo: "#7C3AED",
+        brand: {
+          crimson: "#FC040C",
+          navy: "#04283C",
+          white: "#FFFFFF",
+          canvas: "#F7F7F7",
+          text: "#102838",
+        }
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"]
@@ -32,4 +47,5 @@ const config: Config = {
   plugins: []
 };
 
+// Step 3: Export default Tailwind CSS configuration
 export default config;

@@ -37,6 +37,11 @@ body {
   }
 }
 
+html.light .dash-sticky-header {
+  background: rgba(247, 249, 252, 0.85);
+  border-bottom: 1px solid rgba(10, 18, 32, 0.08);
+}
+
 .dash-main-container {
   max-width: 1180px;
   margin: 0 auto;

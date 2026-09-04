@@ -33,7 +33,7 @@ import { useCountUp } from "@/lib/hooks/use-count-up";
 import { formatUsdCurrency } from "@/lib/pipelines/dashboard-metrics";
 import { signOutAction } from "@/lib/auth/actions";
 import { submitInvestmentLeadAction } from "@/lib/auth/investment-actions";
-import { BlueBrickMark } from "./blue-brick-mark";
+import { BlueBrickLogo } from "./blue-brick-logo";
 import { StatChip } from "./stat-chip";
 import { MetricRow } from "./metric-row";
 import { StatusBadge } from "./status-badge";
@@ -43,6 +43,7 @@ import { MICRO_ANIMATION_TOKENS } from "@/lib/pipelines/micro-animation-tokens";
 import { AvatarUploadModal } from "@/components/profile/avatar-upload-modal";
 import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
 import { useI18n, LocaleSwitcher } from "@/features/i18n";
+import { useTheme, ThemeToggle } from "@/components/theme";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { PortfolioItem, DbReinvestmentOpportunity } from "@/lib/types/db";
 
@@ -192,8 +193,10 @@ function PropertyIcon({
  * @returns Rendered React JSX element.
  */
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
-  // Step 1: Access localized translation strings and formatters
+  // Step 1: Access localized translation strings, formatters, and active theme
   const { t, formatCurrency } = useI18n();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Step 2: Destructure initial server metrics directly
   const {
@@ -331,40 +334,33 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "radial-gradient(1200px 600px at 15% -10%, rgba(196,18,48,0.08), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47,143,107,0.10), transparent), #0A1220",
+        background: isDark
+          ? "radial-gradient(1200px 600px at 15% -10%, rgba(196,18,48,0.08), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47,143,107,0.10), transparent), #0A1220"
+          : "radial-gradient(1200px 600px at 15% -10%, rgba(196,18,48,0.04), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47,143,107,0.06), transparent), #F7F9FC",
         fontFamily: "'Inter', sans-serif",
-        color: "#EDF1F5",
+        color: isDark ? "#EDF1F5" : "#0A1220",
         paddingBottom: "64px",
       }}
     >
       {/* ---------- TOP NAV (STICKY & RESPONSIVE) ---------- */}
       <header className="dash-sticky-header">
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <BlueBrickMark />
-          <span
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 18,
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              color: "#EDF1F5",
-            }}
-          >
-            {t("common.brandName")}
-          </span>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <BlueBrickLogo height={28} priority />
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Light/Dark Luxury Theme Switcher Button */}
+          <ThemeToggle />
+
           {/* Multi-language Locale Switcher */}
           <LocaleSwitcher compact />
 
           {/* User Profile Summary (Hidden on extra-small mobile to maintain clean single-row header) */}
           <div className="dash-user-text-container">
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#EDF1F5" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? "#EDF1F5" : "#0A1220" }}>
               {investor.firstName} {investor.lastName}
             </div>
-            <div style={{ fontSize: 11, color: "#7C8A9C", fontFamily: "'JetBrains Mono', monospace" }}>
+            <div style={{ fontSize: 11, color: isDark ? "#7C8A9C" : "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
               {investor.tier} · {t("dashboard.cards.memberSince", { year: memberSinceYear })}
             </div>
           </div>

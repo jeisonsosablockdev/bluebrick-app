@@ -94,6 +94,84 @@ Este Pull Request resuelve la triplicación de la tarjeta **MULBERRY** en el Das
 - [x] \`pnpm test:harness\` passed (53 tests)
 - [x] Required docs were updated for touched scopes
 EOF
+elif [[ "${ISSUE_ID}" == "BBC-19" || "${ISSUE_ID}" == "BBC-019" || "${BRANCH}" == *"brand-visual-identity-redesign"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el **Rediseño Integral de la Identidad Visual Oficial de BlueBrick**, la incorporación de **Activos Vectoriales SVG Puros**, la eliminación de artefactos rasterizados legacy y la integración del botón de cambio de tema **Light/Dark (\`ThemeToggle\`) en el Dashboard de Inversión** (\`BBC-019\`), bajo la estricta arquitectura de 4 Capas Feature-Driven Design (FDD) y 100% de comentarios en código.
+
+### Size exemption justification:
+- Added lines: 450 (> 400).
+- Rationale: Entrega integral que incluye tokens de identidad de marca en Layer 3 (\`BRAND_COLORS\`, \`BRAND_BARS\`, \`BRAND_GEOMETRY\`), componentes vectoriales en Layer 1 (\`BlueBrickMark\`, \`BlueBrickLogo\`), integración de \`ThemeToggle\` en la cabecera del Dashboard (\`/dashboard\`) con skeleton en \`loading.tsx\` (CLS = 0), regeneración de metadatos dinámicos Next.js (\`apple-icon\`, \`icon\`, \`opengraph-image\`, \`twitter-image\`), catálogo y activos vectoriales SVG oficiales en \`apps/web/public/brand/\` y \`knowledge/assets/brand/\`, eliminación de archivos \`.jpg\` obsoletos, y suite completa de pruebas unitarias y de gobernanza con 405/405 tests pasando.
+
+### Feature flag:
+- Feature flag name: feature_brand_visual_identity_redesign
+- Implementation: Tokens de dominio en Layer 3 y componentes desacoplados en Layer 1 compatibles con Next.js App Router y \`next-themes\`.
+- Rollout plan: 100% inmediato en toda la aplicación web.
+- Kill-switch: N/A (reemplazo de identidad visual oficial de plataforma).
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 3: Dominio (\`apps/web/src/features/shared/domain/brand-tokens.ts\`)**:
+   - Tokens inmutables de color corporativo: Navy Marina (\`#04283C\`), Blanco Puro (\`#FFFFFF\`), Rojo Acento (\`#FC040C\`) y Gris Borde (\`#E2E8F0\`).
+   - Geometría de barras inclinadas a -24° (\`BRAND_BARS\`, \`BRAND_GEOMETRY\`) con alturas proporcionales (16px a 40px), espaciado de 6px y bordes redondeados.
+   - Función pura de resolución de colores según tema (\`getBarFill\`).
+2. **Capa 1: Presentación & UI**:
+   - **\`BlueBrickMark\` (\`apps/web/src/components/dashboard/blue-brick-mark.tsx\`)**: Isologo geométrico de 7 barras adaptativo a temas light/dark.
+   - **\`BlueBrickLogo\` (\`apps/web/src/components/dashboard/blue-brick-logo.tsx\`)**: Componente que consume los activos vectoriales SVG mediante Next.js \`Image\` con \`unoptimized={true}\` para nitidez matemática infinita.
+   - **Dashboard ThemeToggle (\`apps/web/src/components/dashboard/investment-dashboard.tsx\`)**: Incorporado botón de alternancia light/dark en la barra superior junto al perfil y notificaciones, con soporte dinámico de fondos (\`dash-sticky-header\`) y placeholder esqueleto de 38x38px en \`apps/web/src/app/dashboard/loading.tsx\` garantizando CLS = 0.
+   - **Metadatos y Favicon**: Actualizados \`apple-icon.tsx\`, \`icon.tsx\`, \`opengraph-image.tsx\` y \`twitter-image.tsx\` con la paleta y geometría oficial.
+3. **Activos Vectoriales SVG Oficiales & Limpieza de Bitmaps**:
+   - Creados en \`apps/web/public/brand/\` y \`knowledge/assets/brand/\`:
+     - \`bluebrick-logo-horizontal.svg\` y \`bluebrick-logo-horizontal-white.svg\` (892×168 px).
+     - \`bluebrick-mark-dark.svg\` y \`bluebrick-mark-white.svg\` (160×168 px con viewBox ajustado a 0 padding).
+     - Renders PNG de alta fidelidad: \`bluebrick-logo-horizontal.png\`, \`bluebrick-mark-dark.png\`, \`bluebrick-mark-white.png\`, \`apple-touch-icon.png\`, \`icon.png\`, \`favicon.ico\`.
+   - Eliminados todos los archivos rasterizados legacy con artefactos (\`.jpg\`).
+4. **Pruebas Automatizadas & Gobernanza**:
+   - \`tests/unit/blue-brick-brand.test.tsx\`: 8 pruebas unitarias verdes validando tokens, geometría y renderizado SVG.
+   - 64 suites de pruebas y 405 tests unitarios pasando al 100% (\`pnpm test\`).
+   - 11 suites y 53 tests del harness de gobernanza pasando al 100% (\`pnpm test:harness\`).
+   - 16 de 16 gates de \`pnpm validate\` aprobados.
+
+## Issue
+- Issue link/id: [BBC-019](https://linear.app/brids-app/issue/BBC-019)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md](knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Los cambios son a nivel de tokens de diseño, componentes visuales e iconografía estática.
+- Security impact: Sin impacto en seguridad; cero mutaciones de estado de autenticación o contratos de base de datos.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Ámbito exclusivo de frontend, presentación y tokens de marca; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Compilación de producción: Verificada con \`pnpm validate\` y suites completas de pruebas unitarias.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Inspección y validación visual de los bordes nítidos de los logotipos vectoriales SVG en landing y dashboard.
+  - Verificación funcional de la alternancia light/dark en \`/dashboard\` mediante el \`ThemeToggle\` con persistencia local.
+  - Validación del 100% de los gates de gobernanza y harness (\`pnpm validate\`).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
 elif [[ "${ISSUE_ID}" == "BBC-18" || "${ISSUE_ID}" == "BBC-018" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary

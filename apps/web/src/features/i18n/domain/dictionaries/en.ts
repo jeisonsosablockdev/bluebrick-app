@@ -7,7 +7,7 @@ import type { Dictionary } from "../models/locale-types";
 
 export const en: Dictionary = {
   common: {
-    brandName: "BLUE BRICK",
+    brandName: "Blue Brick",
     loading: "Loading...",
     error: "An error occurred",
     retry: "Retry",

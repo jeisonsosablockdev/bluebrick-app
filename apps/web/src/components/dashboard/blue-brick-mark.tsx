@@ -1,48 +1,66 @@
 /**
  * @file apps/web/src/components/dashboard/blue-brick-mark.tsx
- * @description Layer 1: Presentation - BlueBrick brand vector logo mark component.
- * Renders the four-bar angled isometric gradient branding emblem.
+ * @description Layer 1: Presentation - BlueBrick official adaptive brand vector emblem component.
+ * Renders the canonical 4-bar angled stadium geometry with theme-adaptive fill colors.
  */
+
+"use client";
 
 import React from "react";
-
-interface BarConfig {
-  h: number;
-  bg: string;
-}
-
-const BRAND_BARS: readonly BarConfig[] = [
-  { h: 16, bg: "linear-gradient(160deg,#F2F5F8 0%,#8E9BAA 55%,#4A5566 100%)" },
-  { h: 26, bg: "linear-gradient(160deg,#F2F5F8 0%,#8E9BAA 55%,#4A5566 100%)" },
-  { h: 32, bg: "linear-gradient(160deg,#F2F5F8 0%,#8E9BAA 55%,#4A5566 100%)" },
-  { h: 26, bg: "linear-gradient(160deg,#F0576B 0%,#C41230 55%,#7A0E1F 100%)" },
-] as const;
+import { useTheme } from "@/components/theme";
+import {
+  BRAND_BARS,
+  BRAND_GEOMETRY,
+  getBarFill,
+  type BrandThemeMode,
+} from "@/features/shared";
 
 /**
- * BlueBrickMark renders the signature angled 4-bar brand mark.
+ * Props for BlueBrickMark component (optional styling overrides).
  */
-export function BlueBrickMark(): React.JSX.Element {
-  // Step 1: Render stylized vertical bars with isometric rotation (-14deg)
+export interface BlueBrickMarkProps {
+  /** Optional additional CSS class names */
+  className?: string;
+  /** Optional custom inline styles for root container */
+  style?: React.CSSProperties;
+}
+
+/**
+ * BlueBrickMark renders the signature angled 4-bar brand emblem.
+ * Adapts bar fills based on light and dark mode while maintaining Crimson Red accent invariant.
+ * 
+ * @param props - Component props for container customisation
+ * @returns Official BlueBrick vector mark JSX element
+ */
+export function BlueBrickMark({ className, style }: BlueBrickMarkProps = {}): React.JSX.Element {
+  // Step 1: Detect active theme ('light' | 'dark') from application context
+  const { theme } = useTheme();
+  const activeTheme: BrandThemeMode = theme === "light" ? "light" : "dark";
+
+  // Step 2: Render angled container with canonical -24 degree rotation
   return (
     <div
+      className={className}
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 3,
-        transform: "rotate(-14deg)",
+        gap: BRAND_GEOMETRY.barGap,
+        transform: `rotate(${BRAND_GEOMETRY.angleDeg}deg)`,
         padding: "2px 4px",
+        ...style,
       }}
       aria-hidden="true"
     >
-      {BRAND_BARS.map((b, i) => (
+      {/* Step 3: Render each stadium capsule bar according to canonical geometry and theme fills */}
+      {BRAND_BARS.map((b) => (
         <span
-          key={i}
+          key={b.id}
           style={{
-            width: 6,
-            height: b.h,
-            borderRadius: 3,
-            background: b.bg,
-            boxShadow: "0 1px 2px rgba(0,0,0,0.4)",
+            width: BRAND_GEOMETRY.barWidth,
+            height: b.height,
+            borderRadius: BRAND_GEOMETRY.borderRadius,
+            background: getBarFill(b, activeTheme),
+            flexShrink: 0,
           }}
         />
       ))}
