@@ -21,6 +21,9 @@
 
 import { IGoogleAuthProviderPort } from "../../domain/ports/google-auth-port";
 import { ISpreadsheetParserPort } from "../../domain/ports/spreadsheet-parser-port";
+import { IDriveFolderReaderPort } from "../../domain/ports/drive-folder-reader-port";
+import { IBlobStoragePort } from "../../domain/ports/blob-storage-port";
+import { extractDriveFolderId } from "../../domain/utils/drive-folder-utils";
 import {
   CanonicalDashboardWorkbook,
   CanonicalDashboardProject,
@@ -39,6 +42,12 @@ import {
   DashboardSyncOptions,
   DashboardSyncResultDto,
 } from "../../domain/models/dashboard-sync-models";
+
+/** Known Vercel Blob hostnames for edge CDN asset filtering */
+export const VERCEL_STORAGE_HOSTS = [
+  "blob.vercel-storage.com",
+  "vercel-storage.com",
+] as const;
 
 /**
  * Minimal database transaction client contract required for transactional operations.
@@ -83,6 +92,10 @@ export interface DashboardSyncServiceDependencies {
   readonly dbPool: IDashboardDbPool;
   /** Optional fetch function override for testing and custom HTTP dispatch */
   readonly fetchFn?: typeof fetch;
+  /** Optional Drive folder reader port for construction phase image discovery */
+  readonly folderReader?: IDriveFolderReaderPort;
+  /** Optional Blob storage port for uploading edge CDN media assets */
+  readonly blobStorage?: IBlobStoragePort;
 }
 
 /**
@@ -119,6 +132,8 @@ export class DashboardSyncService implements IDashboardSyncService {
   private readonly spreadsheetParser: ISpreadsheetParserPort;
   private readonly dbPool: IDashboardDbPool;
   private readonly fetchFn: typeof fetch;
+  private readonly folderReader?: IDriveFolderReaderPort;
+  private readonly blobStorage?: IBlobStoragePort;
 
   /**
    * Initializes the DashboardSyncService with required domain ports and database pool.
@@ -130,6 +145,8 @@ export class DashboardSyncService implements IDashboardSyncService {
     this.spreadsheetParser = dependencies.spreadsheetParser;
     this.dbPool = dependencies.dbPool;
     this.fetchFn = dependencies.fetchFn ?? fetch;
+    this.folderReader = dependencies.folderReader;
+    this.blobStorage = dependencies.blobStorage;
   }
 
   /**
@@ -417,6 +434,171 @@ export class DashboardSyncService implements IDashboardSyncService {
 
   /**
    * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases.
+   * Resolves Google Drive folder images, uploads new assets to Vercel Blob with magic byte
+   * validation, deduplicates against media_assets, and populates both the new array column
+   * (imagenes) and backwards-compatible scalar columns (imagen_url_1, 2, 3).
+   */
+  /**
+   * Retrieves previous images associated with a project phase from the database.
+   *
+   * @param client - Active database transaction client
+   * @param phaseId - Compound identifier of the project phase (idFase_idInversion)
+   * @returns Array of previous image URLs
+   */
+  private async fetchPreviousPhaseImages(
+    client: IDashboardDbClient,
+    phaseId: string
+  ): Promise<string[]> {
+    try {
+      const prevRes = (await client.query(
+        `SELECT folder_url, imagenes FROM dashboard_project_phases WHERE id = $1`,
+        [phaseId]
+      )) as { rows?: Array<{ folder_url?: string | null; imagenes?: string[] | null }> };
+      if (prevRes?.rows?.[0]?.imagenes && Array.isArray(prevRes.rows[0].imagenes)) {
+        return prevRes.rows[0].imagenes;
+      }
+    } catch (err) {
+      // Invariant: Non-fatal fallback if table or column is not yet queried
+      console.warn(`[DashboardSyncService] Could not fetch previous images for phase ${phaseId}:`, err);
+    }
+    return [];
+  }
+
+  /**
+   * Discovers images within a Google Drive folder, deduplicates against media_assets,
+   * uploads new binaries to Vercel Blob, and returns resolved CDN URLs.
+   *
+   * @param client - Active database transaction client
+   * @param phase - Canonical project phase record
+   * @param folderId - Extracted Google Drive folder ID
+   * @returns Array of resolved Vercel Blob CDN URLs
+   */
+  private async resolvePhaseFolderImages(
+    client: IDashboardDbClient,
+    phase: CanonicalProjectPhase,
+    folderId: string
+  ): Promise<string[]> {
+    if (!this.folderReader || !this.blobStorage) return [];
+
+    const resolvedBlobUrls: string[] = [];
+
+    try {
+      const driveImages = await this.folderReader.listImageFiles(folderId);
+      if (driveImages.length === 0) return [];
+
+      const driveFileIds = driveImages.map((img) => img.id);
+
+      // Step 1: Query existing media_assets to deduplicate previously uploaded blobs
+      const existingRes = (await client.query(
+        `SELECT drive_file_id, blob_url FROM media_assets WHERE drive_file_id = ANY($1::varchar[])`,
+        [driveFileIds]
+      )) as { rows?: Array<{ drive_file_id: string; blob_url: string }> };
+
+      const existingMap = new Map<string, string>();
+      if (existingRes?.rows) {
+        for (const row of existingRes.rows) {
+          existingMap.set(row.drive_file_id, row.blob_url);
+        }
+      }
+
+      // Step 2: Process each image (deduplicate or upload to Vercel Blob)
+      for (const img of driveImages) {
+        const existingBlobUrl = existingMap.get(img.id);
+
+        if (existingBlobUrl) {
+          // Invariant: Re-use existing Vercel Blob URL without re-downloading or re-uploading
+          resolvedBlobUrls.push(existingBlobUrl);
+        } else {
+          // Download binary from Google Drive API v3
+          const binary = await this.folderReader.downloadImageBinary(img.id);
+
+          // Upload to Vercel Blob Edge CDN
+          const uploadResult = await this.blobStorage.uploadBlob({
+            projectId: phase.idInversion,
+            driveFileId: img.id,
+            filename: img.name,
+            contentType: img.mimeType,
+            data: binary,
+          });
+
+          // Upsert mapping in media_assets table for subsequent deduplication
+          await client.query(
+            `INSERT INTO media_assets (
+               project_id, drive_file_id, blob_url, media_type, caption
+             )
+             VALUES ($1, $2, $3, 'IMAGE', $4)
+             ON CONFLICT (drive_file_id) DO UPDATE SET
+               blob_url = EXCLUDED.blob_url,
+               project_id = EXCLUDED.project_id`,
+            [phase.idInversion, img.id, uploadResult.url, img.name]
+          );
+
+          resolvedBlobUrls.push(uploadResult.url);
+        }
+      }
+    } catch (err) {
+      // Invariant: Non-fatal graceful degradation — proceed with available images
+      console.warn(`[DashboardSyncService] Failed to resolve Drive folder images for project ${phase.idInversion}:`, err);
+    }
+
+    return resolvedBlobUrls;
+  }
+
+  /**
+   * Identifies orphaned Vercel Blob URLs no longer present in Google Drive,
+   * verifies they are not shared with other active phases, and deletes them.
+   *
+   * @param client - Active database transaction client
+   * @param phaseId - Compound identifier of current phase
+   * @param previousPhaseImages - Images previously associated with the phase
+   * @param resolvedBlobUrls - Active images currently discovered in Google Drive
+   */
+  private async prunePhaseOrphanBlobs(
+    client: IDashboardDbClient,
+    phaseId: string,
+    previousPhaseImages: string[],
+    resolvedBlobUrls: string[]
+  ): Promise<void> {
+    const orphanBlobUrls = previousPhaseImages.filter(
+      (url) =>
+        !resolvedBlobUrls.includes(url) &&
+        VERCEL_STORAGE_HOSTS.some((host) => url.includes(host))
+    );
+
+    for (const orphanUrl of orphanBlobUrls) {
+      // Invariant: Guard against deleting assets shared with other project phases
+      const sharedRes = (await client.query(
+        `SELECT 1 FROM dashboard_project_phases WHERE id != $1 AND $2 = ANY(imagenes) LIMIT 1`,
+        [phaseId, orphanUrl]
+      )) as { rows?: unknown[] };
+
+      const isShared = Boolean(sharedRes?.rows && sharedRes.rows.length > 0);
+
+      if (!isShared) {
+        // Step 1: Delete from Vercel Blob storage (storage maintenance)
+        if (this.blobStorage?.deleteBlob) {
+          try {
+            await this.blobStorage.deleteBlob(orphanUrl);
+          } catch (delErr) {
+            // Invariant: Non-fatal graceful degradation if edge deletion encounters temporary network issue
+            console.warn(`[DashboardSyncService] Failed to delete orphan blob at ${orphanUrl}:`, delErr);
+          }
+        }
+
+        // Step 2: Prune media_assets mapping
+        await client.query(
+          `DELETE FROM media_assets WHERE blob_url = $1`,
+          [orphanUrl]
+        );
+      }
+    }
+  }
+
+  /**
+   * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases.
+   * Resolves Google Drive folder images, uploads new assets to Vercel Blob with magic byte
+   * validation, deduplicates against media_assets, and populates both the new array column
+   * (imagenes) and backwards-compatible scalar columns (imagen_url_1, 2, 3).
    */
   private async syncProjectPhases(
     client: IDashboardDbClient,
@@ -424,22 +606,43 @@ export class DashboardSyncService implements IDashboardSyncService {
   ): Promise<void> {
     for (const phase of fases) {
       const phaseId = `${phase.idFase}_${phase.idInversion}`;
-      const img1 = phase.imagenes?.[0] || null;
-      const img2 = phase.imagenes?.[1] || null;
-      const img3 = phase.imagenes?.[2] || null;
 
+      // Step 5.5.0: Query existing phase record to track previously associated images
+      const previousPhaseImages = await this.fetchPreviousPhaseImages(client, phaseId);
+
+      // Step 5.5.1: If phase references a Google Drive folder, discover and ingest images
+      let resolvedBlobUrls: string[] = [];
+      if (phase.folderUrl && this.folderReader && this.blobStorage) {
+        const folderId = extractDriveFolderId(phase.folderUrl);
+        if (folderId) {
+          resolvedBlobUrls = await this.resolvePhaseFolderImages(client, phase, folderId);
+          await this.prunePhaseOrphanBlobs(client, phaseId, previousPhaseImages, resolvedBlobUrls);
+        }
+      }
+
+      // Step 5.5.2: Deduplicate and aggregate images array
+      const allImages = Array.from(
+        new Set([...resolvedBlobUrls, ...(phase.imagenes || [])])
+      );
+      const img1 = allImages[0] || null;
+      const img2 = allImages[1] || null;
+      const img3 = allImages[2] || null;
+
+      // Step 5.5.6: Upsert phase record into dashboard_project_phases table
       await client.query(
         `INSERT INTO dashboard_project_phases (
            id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
-           imagen_url_1, imagen_url_2, imagen_url_3, updated_at
+           folder_url, imagenes, imagen_url_1, imagen_url_2, imagen_url_3, updated_at
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
          ON CONFLICT (id) DO UPDATE SET
            orden = EXCLUDED.orden,
            nombre_fase = EXCLUDED.nombre_fase,
            estado = EXCLUDED.estado,
            fecha_inicio = EXCLUDED.fecha_inicio,
            fecha_fin = EXCLUDED.fecha_fin,
+           folder_url = EXCLUDED.folder_url,
+           imagenes = EXCLUDED.imagenes,
            imagen_url_1 = EXCLUDED.imagen_url_1,
            imagen_url_2 = EXCLUDED.imagen_url_2,
            imagen_url_3 = EXCLUDED.imagen_url_3,
@@ -453,6 +656,8 @@ export class DashboardSyncService implements IDashboardSyncService {
           phase.estado,
           phase.fechaInicio,
           phase.fechaFin,
+          phase.folderUrl || null,
+          allImages,
           img1,
           img2,
           img3,

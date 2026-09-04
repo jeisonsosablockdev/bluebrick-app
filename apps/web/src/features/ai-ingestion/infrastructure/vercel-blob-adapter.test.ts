@@ -15,6 +15,7 @@ import * as vercelBlob from '@vercel/blob';
 
 vi.mock('@vercel/blob', () => ({
   put: vi.fn(),
+  del: vi.fn(),
 }));
 
 describe('VercelBlobAdapter', () => {
@@ -124,6 +125,36 @@ describe('VercelBlobAdapter', () => {
       expect(result.contentType).toBe('image/jpeg');
       expect(result.sizeBytes).toBe(validJpeg.byteLength);
       expect(vercelBlob.put).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('deleteBlob()', () => {
+    it('throws BLOB_TOKEN_MISSING if token is missing', async () => {
+      const origEnv = process.env.BLOB_READ_WRITE_TOKEN;
+      delete process.env.BLOB_READ_WRITE_TOKEN;
+      try {
+        const adapter = new VercelBlobAdapter({ token: '' });
+        await expect(
+          adapter.deleteBlob('https://public.blob.vercel-storage.com/test.jpg')
+        ).rejects.toMatchObject({
+          code: 'BLOB_TOKEN_MISSING',
+        });
+      } finally {
+        process.env.BLOB_READ_WRITE_TOKEN = origEnv;
+      }
+    });
+
+    it('invokes @vercel/blob del with URL and active token', async () => {
+      vi.mocked(vercelBlob.del).mockResolvedValue(undefined as any);
+
+      const adapter = new VercelBlobAdapter({ token: 'mock-del-token' });
+      const targetUrl = 'https://public.blob.vercel-storage.com/projects/p1/file-to-delete.jpg';
+
+      await adapter.deleteBlob(targetUrl);
+
+      expect(vercelBlob.del).toHaveBeenCalledWith(targetUrl, {
+        token: 'mock-del-token',
+      });
     });
   });
 });
