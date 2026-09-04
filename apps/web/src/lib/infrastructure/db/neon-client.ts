@@ -18,7 +18,7 @@ let poolInstance: Pool | null = null;
 /**
  * Resolves the active PostgreSQL database pool instance.
  */
-export function getDatabasePool(): DatabaseExecutor {
+export function getDatabasePool(): Pool {
   // Step 1: Return existing pool instance if already initialized
   if (poolInstance) {
     return poolInstance;
