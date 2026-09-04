@@ -155,22 +155,40 @@ describe("BBC-020 SPEC-02: Milestone Photo Dot Indicators & Hover Tooltips", () 
     });
   });
 
-  describe("Hover Tooltip Photo Badge (@invariants progressive disclosure)", () => {
-    it("should display '📷 3 fotos de avance' badge on hover for completed phase with 3 photos", () => {
+  describe("Hover Tooltip Photo Badge (@invariants progressive disclosure & pill styling - BBC-020 SPEC-05)", () => {
+    it("should display photo count as a pill badge with Lucide Camera icon and NO generic emoji on hover", () => {
       // Step 1: Render component
       const { container } = renderProgress();
       const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
 
-      // Step 2: Trigger hover on Phase 1
+      // Step 2: Trigger hover on Phase 1 (completed with 3 photos)
       fireEvent.mouseEnter(dotButtons[0]);
 
       // Step 3: Verify tooltip contains photo count badge
       const tooltip = screen.getByTestId("phase-dot-tooltip");
       expect(tooltip).toBeInTheDocument();
       expect(screen.getByText(/3 fotos de avance/i)).toBeInTheDocument();
+
+      // Step 4 (SPEC-05): Verify NO generic camera emoji is rendered
+      expect(tooltip.textContent).not.toContain("📷");
+
+      // Step 5 (SPEC-05): Verify Lucide Camera vector icon is rendered inside badge
+      const photoBadge = screen.getByTestId("phase-dot-tooltip-photos");
+      expect(photoBadge).toBeInTheDocument();
+      const cameraIcon = photoBadge.querySelector("svg");
+      expect(cameraIcon).not.toBeNull();
+      expect(cameraIcon?.classList.contains("lucide-camera")).toBe(true);
+
+      // Step 6 (SPEC-05): Verify pill styling identical to the status badge
+      expect(photoBadge.style.fontSize).toBe("10px");
+      expect(photoBadge.style.fontWeight).toBe("700");
+      expect(photoBadge.style.textTransform).toBe("uppercase");
+      expect(photoBadge.style.letterSpacing).toBe("0.06em");
+      expect(photoBadge.style.padding).toBe("2px 8px");
+      expect(photoBadge.style.borderRadius).toBe("4px");
     });
 
-    it("should display singular '📷 1 foto de avance' badge on hover for completed phase with 1 photo", () => {
+    it("should display singular '1 foto de avance' pill badge on hover for completed phase with 1 photo", () => {
       // Step 1: Render component
       const { container } = renderProgress();
       const dotButtons = container.querySelectorAll("[data-testid='phase-dot']");
@@ -178,8 +196,16 @@ describe("BBC-020 SPEC-02: Milestone Photo Dot Indicators & Hover Tooltips", () 
       // Step 2: Trigger hover on Phase 2 (1 photo)
       fireEvent.mouseEnter(dotButtons[1]);
 
-      // Step 3: Verify singular wording
+      // Step 3: Verify singular wording and no emoji
+      const tooltip = screen.getByTestId("phase-dot-tooltip");
+      expect(tooltip.textContent).not.toContain("📷");
       expect(screen.getByText(/1 foto de avance/i)).toBeInTheDocument();
+
+      // Step 4 (SPEC-05): Verify Lucide Camera vector icon
+      const photoBadge = screen.getByTestId("phase-dot-tooltip-photos");
+      const cameraIcon = photoBadge.querySelector("svg");
+      expect(cameraIcon).not.toBeNull();
+      expect(cameraIcon?.classList.contains("lucide-camera")).toBe(true);
     });
 
     it("should NOT display any photo count badge on hover for completed phase WITHOUT photos", () => {

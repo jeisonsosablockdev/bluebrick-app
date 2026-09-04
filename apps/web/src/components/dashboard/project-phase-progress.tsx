@@ -414,7 +414,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                           </span>
                         </div>
 
-                        {/* Step 7.2: Badge informativo de fotografías en hover */}
+                        {/* Step 7.2: Badge informativo de fotografías en hover (BBC-020 SPEC-05: Lucide vector icon + pill style) */}
                         {hasPhotos && (
                           <div
                             data-testid="phase-dot-tooltip-photos"
@@ -423,16 +423,18 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                               alignItems: "center",
                               gap: 4,
                               fontSize: 10,
-                              fontWeight: 600,
-                              color: isDark ? "#EDF1F5" : "#0A1220",
-                              background: isDark ? "rgba(237, 241, 245, 0.1)" : "rgba(10, 18, 32, 0.06)",
-                              border: isDark ? "1px solid rgba(237, 241, 245, 0.16)" : "1px solid rgba(10, 18, 32, 0.12)",
-                              padding: "2px 6px",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              padding: "2px 8px",
                               borderRadius: 4,
+                              color: isDark ? "#A0AEC0" : "#4A5568",
+                              background: isDark ? "rgba(237, 241, 245, 0.08)" : "rgba(10, 18, 32, 0.05)",
+                              border: `1px solid ${isDark ? "rgba(237, 241, 245, 0.16)" : "rgba(10, 18, 32, 0.12)"}`,
                               whiteSpace: "nowrap",
                             }}
                           >
-                            <span>📷</span>
+                            <Camera size={10} strokeWidth={2.2} />
                             <span>{photoCount === 1 ? "1 foto de avance" : `${photoCount} fotos de avance`}</span>
                           </div>
                         )}
