@@ -137,6 +137,21 @@ apps/web/src/features/image-detail/
   - **Fase GREEN**: Reemplazo del emoji por icono Lucide `Camera` y estilización tipo pill en `apps/web/src/components/dashboard/project-phase-progress.tsx`.
   - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
 
+- **SPEC-6: Transición Continua de Carrusel Multi-Fase y Animación de Encabezado (Fix/Enhancement)**
+  - **Rama**: `SPEC/jaymusicmachine-BBC-020-s06-multi-phase-carousel-sync`
+  - **Fase RED (TDD)**: Tests en `tests/unit/project-phase-progress-multi-phase.test.tsx`:
+    - Valida que al avanzar desde la última foto de una fase (o en fases de 1 sola foto), si existen fases posteriores con fotos (caso CARROLLWOOD), el carrusel transiciona a la siguiente fase con fotos (`selectedPhaseIndex` se actualiza) y reinicia el `activeImageIndex` a 0.
+    - Valida que el cambio de fase activa el contenedor animado (`motion.div` con key ligada a la fase) para destacar sutilmente el nuevo título.
+    - Valida que la navegación circular retrocede a la fase anterior con fotos al presionar flecha izquierda en el primer índice.
+  - **Fase GREEN**:
+    - En `apps/web/src/components/dashboard/project-phase-progress.tsx`:
+      - Identificación declarativa de fases con imágenes (`phasesWithPhotosIndices`).
+      - Temporizador automático y callbacks de avance/retroceso continuo (`onNextPhoto`, `onPrevPhoto`).
+      - Animación sutil con `motion.div` y `AnimatePresence mode="wait"` en el título y bloque informativo de la fase.
+    - En `apps/web/src/components/dashboard/project-phase-media-card.tsx`:
+      - Soporte para delegar avance/retroceso inter-fase mediante props `onNextPhoto`, `onPrevPhoto` y `totalProjectPhotos`.
+  - **Fase REFACTOR**: Limpieza y verificación con `pnpm validate`.
+
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy

@@ -54,6 +54,9 @@ En la plataforma BlueBrick, la inspección fotográfica de alta resolución para
 6. **Badge Estilo Pill con Icono Vectorial para Conteo de Fotos en Tooltip (SPEC-05)**:
    - Eliminar el emoji genérico (`📷`) del tooltip.
    - Utilizar un badge con estilo pill idéntico al badge de estado ('Completada'), con borde fino, fondo semitransparente, tipografía uppercase/mono de 10px y un icono SVG vectorial nítido de Lucide (`Camera`), garantizando una apariencia refinada y homogénea con el sistema de diseño de BlueBrick.
+7. **Carrusel Multi-Fase y Animación Sutil de Encabezado (SPEC-06)**:
+   - Cuando un proyecto (ej. CARROLLWOOD) dispone de fotografías distribuidas a lo largo de diferentes fases de obra, el carrusel fotográfico no debe quedar atrapado en una sola fase; debe continuar la secuencia avanzando a las fotos de la siguiente fase con fotos al agotarse las de la fase en curso.
+   - El cambio de fase debe acompañarse de una animación sutil en el encabezado (micro-slide e iluminación elegante con Motion en el título) para guiar la atención del inversionista hacia el cambio de fase y mantener la fluidez del carrusel.
 
 ## What gaps exist today
 - Inexistencia del directorio y módulo de feature `apps/web/src/features/image-detail/`.
