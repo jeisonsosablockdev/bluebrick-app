@@ -9,79 +9,92 @@
 
 ---
 
-## 2. Solution Overview & 4-Layer Feature-Driven Design (FDD)
+## 2. Solution Overview: Lean FDD & Next.js 16 Architecture
 
-Conforme a `knowledge/architecture/architecture-overview.md` y `knowledge/governance/clean-code-folder-structure.md`, la funcionalidad de inspección visual se estructura como una **Vertical Slice autónoma** en `apps/web/src/features/image-detail/`, garantizando independencia de dominio, reusabilidad en el producto y cumplimiento estricto del flujo unidireccional de 4 capas.
+Conforme a `knowledge/architecture/architecture-overview.md` y tras la auditoría de sobreingeniería (*Ponytail Review*), la funcionalidad se organiza como una **Vertical Slice autónoma y compacta** en `apps/web/src/features/image-detail/`. Se eliminan capas intermedias especulativas (adaptadores innecesarios para APIs nativas del navegador) concentrando la lógica en 3 archivos altamente cohesivos con su suite de pruebas colocalizada.
 
 ```text
 apps/web/src/features/image-detail/
-├── index.ts                                   <-- 🛡️ Public API Boundary (único punto de exportación)
-├── presentation/                              <-- Capa 1: Componentes visuales y accesibilidad
-│   ├── image-detail-modal.tsx
-│   └── image-detail-modal.test.tsx            <-- 🧪 Test colocalizado de presentación
-├── application/                               <-- Capa 2: Hooks de consumo y estado interactivo
-│   ├── use-image-zoom.ts
-│   └── use-image-zoom.test.ts                 <-- 🧪 Test colocalizado de hook
-├── domain/                                    <-- Capa 3: Lógica pura, Zoom Guard e invariantes
-│   ├── zoom-boundary-calculator.ts            <-- Cálculo puro de escala 1:1 sin pixelado
-│   ├── zoom-boundary-calculator.test.ts       <-- 🧪 Test colocalizado de dominio
-│   └── image-detail-types.ts                  <-- Contratos tipados e interfaces de escala
-└── infrastructure/                            <-- Capa 4: Adaptadores del navegador
-    ├── browser-image-loader.ts                <-- Extracción cliente de naturalWidth / naturalHeight
-    └── browser-image-loader.test.ts           <-- 🧪 Test colocalizado de infraestructura
+├── index.ts                                   <-- 🛡️ Public API Boundary (exporta ImageDetailModal y tipos)
+├── image-detail-modal.tsx                     <-- Capa 1: Presentación (Dialog accesible WAI-ARIA + Motion)
+├── use-image-zoom.ts                          <-- Capa 2 & 3: Aplicación / Dominio (Hook + Zoom Guard 1:1 puro)
+└── image-detail-modal.test.tsx                <-- 🧪 Tests colocalizados (Zoom Guard, Gestos, Teclado)
 ```
+
+---
 
 ### 2.1. Anatomía Interna de la Feature (`apps/web/src/features/image-detail/`)
 
-#### Layer 1: Presentation Layer (`presentation/`)
-- **`image-detail-modal.tsx`** [NEW]:
-  - Modal lightbox montado sobre React Portal / Motion `AnimatePresence`.
-  - Fondo oscuro con desenfoque de cristal (`backdrop-filter: blur(16px)`).
-  - Controles flotantes accesibles: `(+)`, `(-)`, `(1:1 / Reset)`, botón de cierre `(X)`.
-  - Escenario interactivo para la imagen con soporte de arrastre (drag/pan) suave cuando la imagen está ampliada (`drag`, `dragConstraints`).
-  - Navegación entre imágenes de la galería (flechas izquierda/derecha y atajos de teclado `ArrowLeft`, `ArrowRight`).
-  - Cierre mediante tecla `Escape`, botón `(X)` o clic fuera de la imagen.
+#### Layer 1: Presentation Layer (`image-detail-modal.tsx`)
+- **Montaje en Portal & Accesibilidad**:
+  - Montado mediante `createPortal` en `document.body` y animado con Motion `AnimatePresence`.
+  - Semántica WAI-ARIA: `role="dialog"`, `aria-modal="true"`, `aria-label="Detalle de fotografía"`.
+  - Backdrop con desenfoque de cristal (`backdrop-filter: blur(16px)`, `rgba(0, 0, 0, 0.85)`).
+- **Controles de Interacción**:
+  - Botones flotantes con glassmorphism: `(+)`, `(-)`, `(1:1 / Reset)`, `(X Cerrar)`.
+  - Flechas de navegación previa/siguiente con soporte de wrapping circular.
+  - Cierre inmediato mediante tecla `Escape`, botón `(X)` o clic en el fondo oscuro.
+- **Escenario de Imagen con GPU Compositing**:
+  - Contenedor con `overflow: hidden`.
+  - Transformaciones aplicadas estrictamente sobre `transform: translate3d(x, y, 0) scale(s)`. Prohibido alterar `width`, `height`, `top` o `left` para evitar recálculos de layout (*reflows*).
 
-#### Layer 2: Application / Consumption Layer (`application/`)
-- **`use-image-zoom.ts`** [NEW]:
-  - Custom hook reactivo que encapsula el estado de escala (`scale`), desplazamiento (`panOffset`), e índice activo.
-  - Expone handlers optimizados para zoom por botones, doble clic (toggle fit / 100%), rueda del ratón (wheel listener no pasivo con throttle) y atajos de teclado.
-  - Conecta la vista de presentación con el calculador de límites del dominio.
-
-#### Layer 3: Domain / Pipelines Layer (`domain/`)
-- **`zoom-boundary-calculator.ts`** [NEW]:
-  - Función matemática pura y agnóstica de frameworks:
-    `calculateZoomBoundaries({ viewportWidth, viewportHeight, naturalWidth, naturalHeight }): ZoomBoundaryContract`.
-  - **Invariante Central (Zoom Guard)**: `maxScale = Math.max(1, Math.min(viewportWidth / naturalWidth, viewportHeight / naturalHeight) >= 1 ? 1 : 1 / fitScale)`.
-  - Garantiza que el zoom jamás amplíe los píxeles por encima del 100% de la resolución nativa de la imagen fuente (`scale <= maxScale`), evitando distorsiones o artefactos de pixelado.
-- **`image-detail-types.ts`** [NEW]:
-  - Declaración de contratos: `ZoomBoundaryContract`, `ImageDetailModalProps`, `ImageItem`.
-
-#### Layer 4: Infrastructure Layer (`infrastructure/`)
-- **`browser-image-loader.ts`** [NEW]:
-  - Adaptador para resolver las dimensiones intrínsecas (`naturalWidth`, `naturalHeight`) desde un elemento `HTMLImageElement` cargado en el cliente, de forma ultra ligera y sin dependencias externas.
+#### Layer 2 & 3: Application & Domain Layer (`use-image-zoom.ts`)
+- **Hook `useImageZoom`**:
+  - Maneja estado reactivo: `scale`, `panOffset`, `isZoomed`, `naturalDimensions`.
+  - Captura dimensiones nativas directamente mediante `e.currentTarget.naturalWidth` y `naturalHeight` en el `onLoad` nativo de React (cero dependencias de infraestructura).
+- **Invariante Central (Zoom Guard Matemático)**:
+  - Función pura:
+    $$\text{fitScale} = \min\left(\frac{\text{viewportWidth}}{\text{naturalWidth}}, \frac{\text{viewportHeight}}{\text{naturalHeight}}, 1\right)$$
+    $$\text{maxScale} = \max\left(1, \frac{1}{\text{fitScale}}\right)$$
+  - **Invariante**: $\text{scale} \le \text{maxScale}$. Garantiza matemáticamente que la imagen nunca supere el 100% de su densidad de píxeles nativa, impidiendo distorsión o pixelación.
+- **Contención de Eventos**:
+  - Doble clic / doble tap: alterna entre `fitScale` y `maxScale` (1:1).
+  - Rueda del ratón (`wheel`): ajusta la escala con throttle mediante `requestAnimationFrame`.
 
 #### Public API Boundary (`index.ts`)
-- **`index.ts`** [NEW]:
-  - Exporta únicamente los componentes y tipos que el resto de la aplicación puede consumir:
-    `export { ImageDetailModal } from "./presentation/image-detail-modal";`
-    `export type { ImageDetailModalProps, ImageItem } from "./domain/image-detail-types";`
+- Exporta únicamente el contrato público de consumo:
+  ```ts
+  export { ImageDetailModal } from "./image-detail-modal";
+  export type { ImageDetailModalProps } from "./image-detail-modal";
+  ```
 
 ---
 
 ### 2.2. Capa de Consumo en Dashboard (`apps/web/src/components/dashboard/`)
 
-- **`apps/web/src/components/dashboard/project-phase-media-card.tsx`** [MODIFY]:
-  - Importa de forma limpia y desacoplada: `import { ImageDetailModal } from "@/features/image-detail"`.
-  - Al hacer clic en la fotografía real, abre `ImageDetailModal` pasando las imágenes de la fase y el índice actual.
-  - Incorpora franjas laterales de navegación izquierda y derecha de altura completa (`top: 0, bottom: 0`).
-  - Base estilizada en glassmorphism (`backdrop-filter: blur(8px)`, `rgba(10, 18, 32, 0.45)`, borde translúcido).
-  - Revelación suave con hover (`opacity: 0` a `opacity: 1`) y `e.stopPropagation()` al hacer clic en las flechas para evitar abrir el modal.
+#### `project-phase-media-card.tsx` [MODIFY]
+- **Next.js 16 Dynamic Import**:
+  - Importa el modal con carga diferida y sin SSR para proteger el bundle inicial y el FCP de `/dashboard`:
+    ```tsx
+    const ImageDetailModal = dynamic(
+      () => import("@/features/image-detail").then((m) => m.ImageDetailModal),
+      { ssr: false }
+    );
+    ```
+- **Flechas Laterales Glassmorphism**:
+  - Franjas de esquina a esquina en laterales izquierdo y derecho (`top: 0, bottom: 0`).
+  - Base con estilo glassmorphism: `backdrop-filter: blur(8px)`, `background: rgba(10, 18, 32, 0.45)`.
+  - Revelación suave en hover (`opacity: 0` a `opacity: 1`).
+  - Clic ejecuta `e.stopPropagation()` para cambiar de imagen sin disparar la apertura del modal.
   - Se ocultan automáticamente si `images.length <= 1`.
-- **`apps/web/src/components/dashboard/project-phase-progress.tsx`** [MODIFY]:
-  - Detecta si la fase dispone de fotos (`phase.images.length > 0`).
-  - Los hitos de fases completadas con fotografías incrementan su tamaño de `10px` a `15px` con checkmark proporcional (`9px`), resaltando frente a los hitos sin fotos.
-  - En hover, el tooltip existente incorpora la insignia `📷 X fotos de avance`.
+
+#### `project-phase-progress.tsx` [MODIFY]
+- **Hitos Prominentes**:
+  - Para fases completadas que contienen fotos (`phase.images.length > 0`), incrementa el diámetro del círculo de `10px` a `15px` con checkmark proporcional de `9px`.
+  - Fases sin fotos mantienen `10px`. Fases en curso mantienen su indicador y pulso.
+- **Tooltip Informativo**:
+  - Al hacer hover, añade el badge: `📷 X fotos de avance` si la fase dispone de imágenes registradas.
+
+---
+
+### 2.3. Matriz de Protección contra el Abuso de Recursos
+
+| Vector de Riesgo | Mecanismo de Mitigación Implementado |
+| :--- | :--- |
+| **Memoria RAM & GPU (Texturas 4K)** | **Desmontaje Total**: Al cerrar el modal (`isOpen === false`), el DOM y decodificadores se eliminan vía `<AnimatePresence>`. El **Zoom Guard (1:1)** bloquea buffers de renderizado hipertrofiados en pantallas Retina. |
+| **CPU & Event Loop (Gestos/Wheel)** | **GPU Compositing**: Transformaciones exclusivamente con `translate3d` y `scale`. Throttling de rueda con `requestAnimationFrame`. Listeners de teclado agregados solo cuando el modal está montado. |
+| **Ancho de Banda / Egress** | **Carga Lazy Bajo Demanda**: Cero precarga en segundo plano de fotografías pesadas en el dashboard; la imagen se consume en alta resolución únicamente cuando el usuario abre el modal. |
+| **Bundle Size & First Paint (FCP)** | **Code Splitting (`next/dynamic`)**: El código del visor modal no forma parte del JavaScript inicial del dashboard; se transfiere solo tras la primera interacción del usuario. |
 
 ---
 
@@ -89,54 +102,44 @@ apps/web/src/features/image-detail/
 
 - **SPEC-1: Flechas Laterales de Navegación Glassmorphism en Tarjeta Multimedia**
   - **Rama**: `SPEC/jaymusicmachine-BBC-020-s01-glassmorphic-corner-arrows`
-  - **Fase RED (TDD)**: Diseñar tests en `tests/unit/project-phase-media-card-arrows.test.tsx` verificando renderizado de franjas laterales de esquina a esquina, revelación en hover, alternancia de imágenes con `stopPropagation()`, y ocultamiento cuando hay 1 o 0 imágenes.
-  - **Fase GREEN**: Implementar las franjas laterales glassmorphic en `project-phase-media-card.tsx` con Motion y Lucide icons.
-  - **Fase REFACTOR**: Limpieza de código, verificación de estándares y comentarios paso a paso (`// Step N:`).
+  - **Fase RED (TDD)**: Test en `tests/unit/project-phase-media-card-arrows.test.tsx` verificando franjas laterales completas, hover, `stopPropagation()` y ocultamiento cuando `images.length <= 1`.
+  - **Fase GREEN**: Implementación de franjas laterales en `project-phase-media-card.tsx`.
+  - **Fase REFACTOR**: Limpieza y comentarios paso a paso (`// Step N:`).
 
 - **SPEC-2: Hitos de Fase Agrandados con Fotos y Tooltip Informativo**
   - **Rama**: `SPEC/jaymusicmachine-BBC-020-s02-milestone-photo-indicators`
-  - **Fase RED (TDD)**: Diseñar tests en `tests/unit/project-phase-progress-dots.test.tsx` validando que las fases completadas con imágenes tengan diámetro agrandado (15px), las fases sin imágenes mantengan 10px, y el tooltip muestre el conteo de fotos sólo en hover.
-  - **Fase GREEN**: Actualizar el renderizado del stepper y tooltip en `project-phase-progress.tsx`.
-  - **Fase REFACTOR**: Limpieza de estilos, tipado estricto y auditoría clean code.
+  - **Fase RED (TDD)**: Test en `tests/unit/project-phase-progress-dots.test.tsx` validando hitos de 15px en fases con fotos, 10px en fases sin fotos, y badge en tooltip en hover.
+  - **Fase GREEN**: Actualización del stepper y tooltip en `project-phase-progress.tsx`.
+  - **Fase REFACTOR**: Limpieza de estilos y auditoría clean code.
 
-- **SPEC-3: Feature FDD Image-Detail con Zoom Guard y Modal Lightbox**
+- **SPEC-3: Feature FDD `image-detail` con Zoom Guard y Modal Lightbox**
   - **Rama**: `SPEC/jaymusicmachine-BBC-020-s03-fdd-image-detail-feature`
-  - **Fase RED (TDD)**: Diseñar tests colocalizados:
-    - `domain/zoom-boundary-calculator.test.ts` (invariante 1:1, nunca sobrepasar resolución nativa).
-    - `application/use-image-zoom.test.ts` (gestión de escala, pan, reset y atajos).
-    - `presentation/image-detail-modal.test.tsx` (montaje, accesibilidad, cierre por Escape, navegación).
-  - **Fase GREEN**: Implementar los archivos de la feature FDD en `apps/web/src/features/image-detail/` e integrar `ImageDetailModal` en `project-phase-media-card.tsx`.
-  - **Fase REFACTOR**: Limpieza de deuda técnica, verificación de rendimiento GPU (`translateZ(0)`) y validación integral de la suite (`pnpm validate`).
+  - **Fase RED (TDD)**: Tests colocalizados en `apps/web/src/features/image-detail/image-detail-modal.test.tsx`:
+    - Valida cálculo de `maxScale` acotado a 1:1 nativo (sin pixelación).
+    - Valida apertura accesible (`dialog`) y cierre por `Escape` o botón.
+    - Valida navegación circular entre imágenes con flechas y teclado.
+  - **Fase GREEN**: Implementación de la feature FDD en `apps/web/src/features/image-detail/` y conexión vía `next/dynamic` en `project-phase-media-card.tsx`.
+  - **Fase REFACTOR**: Auditoría clean code, verificación GPU (`translateZ(0)`) y validación con `pnpm validate`.
 
 ---
 
 ## 4. TDD (Test-Driven Development) Strategy
 
 ### 4.1. Tests Colocalizados en la Feature (`apps/web/src/features/image-detail/`)
-1. **`zoom-boundary-calculator.test.ts` (Dominio)**:
-   - Valida que para imágenes con dimensiones pequeñas (ej. 400x300) en una pantalla de 1920x1080, `maxScale` esté acotado estrictamente a 1.0 (tamaño real 1:1) impidiendo ampliación artificial.
-   - Valida cálculo correcto de `fitScale` cuando la imagen excede la resolución de pantalla.
-2. **`use-image-zoom.test.ts` (Aplicación)**:
-   - Valida incremento y decremento de escala con límites inferior (`fitScale`) y superior (`maxScale`).
-   - Valida reseteo de escala a 1:1 o fit al alternar imágenes o invocar reset.
-3. **`image-detail-modal.test.tsx` (Presentación)**:
-   - Valida renderizado accesible (`role="dialog"`, `aria-modal="true"`, `aria-label`).
-   - Valida que presionar la tecla `Escape` o hacer clic en el botón de cierre ejecute `onClose`.
-   - Valida que las flechas de navegación y teclas `ArrowLeft` / `ArrowRight` cambien la imagen activa.
+- **`image-detail-modal.test.tsx`**:
+  - `clamps maxScale to 1.0 when image is smaller than container`: Valida que imágenes de 400x300 no se amplíen más allá de 1:1.
+  - `renders dialog with aria-modal and title`: Valida accesibilidad WAI-ARIA.
+  - `calls onClose on Escape key press`: Valida listener de teclado.
+  - `navigates to next/previous image on arrow keys`: Valida navegación fluida.
 
 ### 4.2. Tests de Componentes del Dashboard (`tests/unit/`)
-1. **`project-phase-media-card-arrows.test.tsx`**:
-   - Valida presencia de franjas laterales glassmorphic solo con `images.length > 1`.
-   - Valida `e.stopPropagation()` al hacer clic en las flechas laterales.
-   - Valida apertura del modal al hacer clic en la miniatura fotográfica.
-2. **`project-phase-progress-dots.test.tsx`**:
-   - Valida diámetro de `15px` para fases completadas con fotografías y `10px` para fases sin fotos.
-   - Valida texto `📷 X fotos de avance` en el tooltip visible en hover.
+- **`project-phase-media-card-arrows.test.tsx`**: Valida presencia de franjas laterales glassmorphic solo si `images.length > 1` y detención de propagación de clic.
+- **`project-phase-progress-dots.test.tsx`**: Valida escala a 15px en fases completadas con imágenes y presencia de badge en hover tooltip.
 
 ---
 
 ## 5. Local Definition of Done (DoD)
-- [ ] Documentos duales de requerimientos (`knowledge/features/`) completados y alineados con FDD sin placeholders.
+- [ ] Documentos duales de requerimientos (`knowledge/features/`) completados y alineados con FDD Lean sin placeholders.
 - [ ] Architect Gate 1 completado con aprobación del diseño FDD y andamiaje canónico en `apps/web/src/features/image-detail/`.
 - [ ] 🛑 Human Design Approval otorgado explícitamente antes de escribir lógica.
 - [ ] Tests en fallo (RED) implementados previamente con `tdd-primal` para cada SPEC.
