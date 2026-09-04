@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T12:01:38.258Z",
+  "generatedAt": "2026-09-04T16:53:12.835Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -110,6 +110,12 @@
       "path": "knowledge/architecture/toolchain-policy.md"
     },
     {
+      "id": "knowledge/assets/brand/README.md",
+      "type": "governance",
+      "label": "README",
+      "path": "knowledge/assets/brand/README.md"
+    },
+    {
       "id": "knowledge/database/index.md",
       "type": "governance",
       "label": "index",
@@ -132,6 +138,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-018-cron-job-dashboard-sync.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",

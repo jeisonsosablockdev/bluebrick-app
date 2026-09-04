@@ -25,6 +25,7 @@ export * from './domain/ports/focal-point-port';
 export * from './domain/ports/video-tagger-port';
 export * from './domain/ports/pdf-extractor-port';
 export * from './domain/ports/spreadsheet-parser-port';
+export * from './domain/ports/drive-folder-reader-port';
 export * from './domain/ports/repositories-port';
 export * from './domain/policies/image-quality-policy';
 export * from './domain/policies/hitl-rbac-policy';
@@ -44,6 +45,7 @@ export * from './domain/schemas/canonical-dashboard-schema';
 // Layer 4: Infrastructure Adapters
 export * from './infrastructure/google-service-account-adapter';
 export * from './infrastructure/google-drive-changes-adapter';
+export * from './infrastructure/google-drive-folder-reader-adapter';
 export * from './infrastructure/vercel-blob-adapter';
 export * from './infrastructure/sharp-image-processor-adapter';
 export * from './infrastructure/gemini-focal-point-adapter';
