@@ -186,6 +186,7 @@ function ImageDetailModalPortal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        onClick={(e) => e.stopPropagation()}
         className="fixed inset-0 z-50 flex items-center justify-center select-none"
       >
         {/* Step 7: Glassmorphism blurred backdrop */}
@@ -282,7 +283,7 @@ function ImageDetailModalPortal({
           <button
             type="button"
             onClick={zoomOut}
-            disabled={scale <= fitScale}
+            disabled={scale <= 1.0}
             aria-label="Reducir zoom"
             className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
           >

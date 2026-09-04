@@ -48,6 +48,8 @@ export interface UseImageZoomOptions {
   readonly initialScale?: number;
   /** Custom scale increment step for controls. Defaults to 0.25. */
   readonly scaleStep?: number;
+  /** Optional viewport / container dimensions override. */
+  readonly viewport?: ViewportDimensions;
 }
 
 /** Return contract and action dispatchers of the useImageZoom hook. */
@@ -181,51 +183,72 @@ export function useImageZoom(options: UseImageZoomOptions = {}): UseImageZoomRet
 
   // Step 3: Compute Zoom Guard ceiling
   const maxScale = calculateMaxScale(fitScale);
-  const isZoomed = scale > fitScale;
+  const isZoomed = scale > 1.0;
 
-  // Step 4: Stepwise zoom dispatchers
+  // Step 4: Stepwise zoom dispatchers bounded between 1.0 baseline and maxScale
   const zoomIn = useCallback(() => {
-    setScale((current) => clampScale(current + scaleStep, fitScale, maxScale));
-  }, [scaleStep, fitScale, maxScale]);
+    setScale((current) => clampScale(current + scaleStep, 1.0, maxScale));
+  }, [scaleStep, maxScale]);
 
   const zoomOut = useCallback(() => {
     setScale((current) => {
-      const next = clampScale(current - scaleStep, fitScale, maxScale);
-      if (next <= fitScale) {
+      const next = clampScale(current - scaleStep, 1.0, maxScale);
+      if (next <= 1.0) {
         setPanOffset({ x: 0, y: 0 });
       }
       return next;
     });
-  }, [scaleStep, fitScale, maxScale]);
+  }, [scaleStep, maxScale]);
 
   const resetZoom = useCallback(() => {
-    setScale(fitScale);
+    setScale(1.0);
     setPanOffset({ x: 0, y: 0 });
-  }, [fitScale]);
+  }, []);
 
   const toggleZoom = useCallback(() => {
     setScale((current) => {
-      if (current > fitScale) {
+      if (current > 1.0) {
         setPanOffset({ x: 0, y: 0 });
-        return fitScale;
+        return 1.0;
       }
       return maxScale;
     });
-  }, [fitScale, maxScale]);
+  }, [maxScale]);
 
-  // Step 5: Native image load handler to extract natural pixel dimensions
-  const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
-      setNaturalDimensions({
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-      });
-      // In a headless or initial state, baseline fit scale is 1.0 until viewport is measured
-      const defaultFit = 1.0;
-      setFitScale(defaultFit);
-    }
-  }, []);
+  // Step 5: Native image load handler to extract natural pixel dimensions & compute fitScale
+  const handleImageLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const img = e.currentTarget;
+      if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        const natural: NaturalDimensions = {
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        };
+        setNaturalDimensions(natural);
+
+        // Determine viewport / rendered container dimensions
+        const parent = img.parentElement;
+        const viewportWidth =
+          options.viewport?.width ||
+          (parent && parent.clientWidth > 0 ? parent.clientWidth : 0) ||
+          (img.clientWidth > 0 ? img.clientWidth : 0) ||
+          (typeof window !== "undefined" && window.innerWidth > 0 ? window.innerWidth * 0.9 : natural.width);
+
+        const viewportHeight =
+          options.viewport?.height ||
+          (parent && parent.clientHeight > 0 ? parent.clientHeight : 0) ||
+          (img.clientHeight > 0 ? img.clientHeight : 0) ||
+          (typeof window !== "undefined" && window.innerHeight > 0 ? window.innerHeight * 0.85 : natural.height);
+
+        const computedFit = calculateFitScale(
+          { width: viewportWidth, height: viewportHeight },
+          natural
+        );
+        setFitScale(computedFit);
+      }
+    },
+    [options.viewport]
+  );
 
   // Step 6: Throttled mouse wheel handler for progressive zooming
   const handleWheel = useCallback(
@@ -233,14 +256,14 @@ export function useImageZoom(options: UseImageZoomOptions = {}): UseImageZoomRet
       e.preventDefault();
       const delta = e.deltaY < 0 ? scaleStep : -scaleStep;
       setScale((current) => {
-        const next = clampScale(current + delta, fitScale, maxScale);
-        if (next <= fitScale) {
+        const next = clampScale(current + delta, 1.0, maxScale);
+        if (next <= 1.0) {
           setPanOffset({ x: 0, y: 0 });
         }
         return next;
       });
     },
-    [scaleStep, fitScale, maxScale]
+    [scaleStep, maxScale]
   );
 
   // Step 7: Pan gesture lifecycle handlers
