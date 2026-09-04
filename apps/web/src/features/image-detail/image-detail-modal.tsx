@@ -189,39 +189,50 @@ function ImageDetailModalPortal({
         onClick={(e) => e.stopPropagation()}
         className="fixed inset-0 z-50 flex items-center justify-center select-none"
       >
-        {/* Step 7: Glassmorphism blurred backdrop */}
+        {/* Step 7: Glassmorphism translucent blurred backdrop (BBC-020 SPEC-04) */}
         <motion.div
+          data-testid="image-detail-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/85 backdrop-blur-md"
+          className="absolute inset-0 backdrop-blur-md"
+          style={{
+            background: "rgba(10, 18, 32, 0.55)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+          }}
         />
 
-        {/* Step 8: Accessible Top Header Bar */}
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 sm:p-6 bg-gradient-to-b from-black/80 to-transparent pointer-events-auto">
-          <div className="flex items-center gap-3">
+        {/* Step 8: Accessible Top Header Bar — Centered layout (BBC-020 SPEC-04) */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-auto">
+          {/* Centered typography and metadata container */}
+          <div
+            data-testid="image-detail-header-content"
+            className="flex flex-wrap items-center justify-center gap-3 text-center px-12"
+          >
             {phaseName && (
-              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-medium text-emerald-400">
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-medium text-emerald-400 backdrop-blur-md">
                 {phaseName}
               </span>
             )}
-            <h2 id={titleId} className="text-sm sm:text-base font-semibold text-white tracking-wide">
+            <h2 id={titleId} className="text-sm sm:text-base font-semibold text-white tracking-wide drop-shadow-md">
               {title}
             </h2>
             {hasMultipleImages && (
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-zinc-300 font-mono bg-black/40 px-2 py-0.5 rounded-full border border-white/10 backdrop-blur-md">
                 {currentIndex + 1} / {images.length}
               </span>
             )}
           </div>
 
+          {/* Close button anchored to the top-right corner */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar detalle de imagen"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="absolute right-4 sm:right-6 top-4 sm:top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-300 backdrop-blur-md transition-colors hover:bg-zinc-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <X className="h-5 w-5" />
           </button>
