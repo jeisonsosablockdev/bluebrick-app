@@ -331,12 +331,23 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts projects from Sheet 'Proyectos' into dashboard_projects.
+   * Upserts projects from Sheet 'Proyectos' into dashboard_projects with atomic orphan pruning.
    */
   private async syncProjects(
     client: IDashboardDbClient,
     proyectos: readonly CanonicalDashboardProject[]
   ): Promise<void> {
+    // Step 5.2.0: Prune obsolete projects not in current workbook
+    const activeProjectIds = proyectos.map((p) => p.idInversion).filter(Boolean);
+    if (activeProjectIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_projects WHERE id_inversion != ALL($1::varchar[])`,
+        [activeProjectIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_projects`);
+    }
+
     for (const proj of proyectos) {
       await client.query(
         `INSERT INTO dashboard_projects (id_inversion, nombre, direccion, tipo_proyecto, timing_months, updated_at)
@@ -353,12 +364,23 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts investors from Sheet 'Inversionistas' into dashboard_investors.
+   * Upserts investors from Sheet 'Inversionistas' into dashboard_investors with atomic orphan pruning.
    */
   private async syncInvestors(
     client: IDashboardDbClient,
     inversionistas: readonly CanonicalInvestor[]
   ): Promise<void> {
+    // Step 5.3.0: Prune obsolete investors not in current workbook
+    const activeInvestorIds = inversionistas.map((i) => i.idInversionista).filter(Boolean);
+    if (activeInvestorIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_investors WHERE id_inversionista != ALL($1::varchar[])`,
+        [activeInvestorIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_investors`);
+    }
+
     for (const inv of inversionistas) {
       await client.query(
         `INSERT INTO dashboard_investors (id_inversionista, nombre, email, tipo_inversionista, fecha_ingreso, timing_months, updated_at)
@@ -376,12 +398,25 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts investments from Sheet 'Inversiones' into dashboard_investments.
+   * Upserts investments from Sheet 'Inversiones' into dashboard_investments with atomic orphan pruning.
    */
   private async syncInvestments(
     client: IDashboardDbClient,
     inversiones: readonly CanonicalInvestment[]
   ): Promise<void> {
+    // Step 5.4.0: Prune obsolete investments not in current workbook
+    const activeInvestmentIds = inversiones
+      .map((inv) => inv.id || `INV_${inv.idInversion}_${inv.idInversionista ?? "UNKNOWN"}`)
+      .filter(Boolean);
+    if (activeInvestmentIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_investments WHERE id != ALL($1::varchar[])`,
+        [activeInvestmentIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_investments`);
+    }
+
     for (const inv of inversiones) {
       const invId = inv.id || `INV_${inv.idInversion}_${inv.idInversionista ?? "UNKNOWN"}`;
       await client.query(
@@ -595,7 +630,7 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases.
+   * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases with atomic orphan pruning.
    * Resolves Google Drive folder images, uploads new assets to Vercel Blob with magic byte
    * validation, deduplicates against media_assets, and populates both the new array column
    * (imagenes) and backwards-compatible scalar columns (imagen_url_1, 2, 3).
@@ -604,10 +639,21 @@ export class DashboardSyncService implements IDashboardSyncService {
     client: IDashboardDbClient,
     fases: readonly CanonicalProjectPhase[]
   ): Promise<void> {
+    // Step 5.5.0: Prune obsolete phases not in current workbook
+    const activePhaseIds = fases.map((p) => `${p.idFase}_${p.idInversion}`).filter(Boolean);
+    if (activePhaseIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_project_phases WHERE id != ALL($1::varchar[])`,
+        [activePhaseIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_project_phases`);
+    }
+
     for (const phase of fases) {
       const phaseId = `${phase.idFase}_${phase.idInversion}`;
 
-      // Step 5.5.0: Query existing phase record to track previously associated images
+      // Step 5.5.1: Query existing phase record to track previously associated images
       const previousPhaseImages = await this.fetchPreviousPhaseImages(client, phaseId);
 
       // Step 5.5.1: If phase references a Google Drive folder, discover and ingest images
@@ -726,12 +772,23 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts reinvestment requests from Sheet 'Transacciones_Reinversion' into dashboard_reinvestment_transactions.
+   * Upserts reinvestment requests from Sheet 'Transacciones_Reinversion' into dashboard_reinvestment_transactions with atomic orphan pruning.
    */
   private async syncTransactions(
     client: IDashboardDbClient,
     transacciones: readonly CanonicalReinvestmentTransaction[]
   ): Promise<void> {
+    // Step 5.7.0: Prune obsolete reinvestment transactions not in current workbook
+    const activeTxIds = transacciones.map((t) => t.idTransaccion).filter(Boolean);
+    if (activeTxIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_reinvestment_transactions WHERE id_transaccion != ALL($1::varchar[])`,
+        [activeTxIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_reinvestment_transactions`);
+    }
+
     for (const trx of transacciones) {
       await client.query(
         `INSERT INTO dashboard_reinvestment_transactions (
@@ -755,12 +812,23 @@ export class DashboardSyncService implements IDashboardSyncService {
   }
 
   /**
-   * Upserts portfolio investor aggregations from Sheet 'Resumen_Dashboard' into dashboard_investor_summaries.
+   * Upserts portfolio investor aggregations from Sheet 'Resumen_Dashboard' into dashboard_investor_summaries with atomic orphan pruning.
    */
   private async syncInvestorSummaries(
     client: IDashboardDbClient,
     resumenes: readonly CanonicalInvestorSummary[]
   ): Promise<void> {
+    // Step 5.8.0: Prune obsolete investor summaries not in current workbook
+    const activeSummaryIds = resumenes.map((r) => r.idInversionista).filter(Boolean);
+    if (activeSummaryIds.length > 0) {
+      await client.query(
+        `DELETE FROM dashboard_investor_summaries WHERE id_inversionista != ALL($1::varchar[])`,
+        [activeSummaryIds]
+      );
+    } else {
+      await client.query(`DELETE FROM dashboard_investor_summaries`);
+    }
+
     for (const res of resumenes) {
       await client.query(
         `INSERT INTO dashboard_investor_summaries (

@@ -8,6 +8,7 @@
 // Layer 1: Presentation Components & Providers
 export * from "./presentation/components/locale-switcher";
 export * from "./presentation/components/i18n-provider";
+export * from "./presentation/components/flag-icons";
 
 // Layer 2: Application Hooks, Server Actions & Queries
 export * from "./application/hooks/use-i18n";

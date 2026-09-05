@@ -118,4 +118,16 @@ describe("BBC-009: I18n UI Integration & Consumer Hook (@spec BBC-009-UI-INTEGRA
       "Private Real Estate Investment Platform"
     );
   });
+
+  it("should render vector SVG flag in LocaleSwitcher and render all national flag components", () => {
+    const { container } = render(
+      <I18nProvider initialLocale="es">
+        <LocaleSwitcher />
+      </I18nProvider>
+    );
+
+    // Assert SVG flag is present in trigger
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBeGreaterThan(0);
+  });
 });

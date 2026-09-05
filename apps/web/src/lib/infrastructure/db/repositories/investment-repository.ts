@@ -210,14 +210,14 @@ export class InvestmentRepository {
 
         if (rows.length > 0) {
           const firstRow = rows[0];
-          const hasDashboardInvestment = Boolean(firstRow.id_inversion || firstRow.monto_invertido !== undefined);
-          const hasClientContract = Boolean(firstRow.contract_amount !== undefined);
+          // Step 1.1: Identify all active dashboard investments returned from relational JOIN
+          const dashboardRows = rows.filter((r) => Boolean(r.id_inversion || r.dash_id || r.dash_project_name));
 
           let items: PortfolioItem[] = [];
 
-          if (hasDashboardInvestment && !hasClientContract) {
-            // Case A: Dashboard investments
-            items = rows.map((r, idx) => {
+          if (dashboardRows.length > 0) {
+            // Case A: Prioritize authoritative multi-project dashboard investments synchronized from Excel
+            items = dashboardRows.map((r, idx) => {
               const parsedRoi = parseRoiPercentage(r.dash_roi_pct || r.roi_pct);
               const parsedAmount = parseMonetaryAmount(r.monto_invertido);
               const invState = String(r.dash_estado || r.estado || "Activa").toLowerCase();
@@ -247,7 +247,7 @@ export class InvestmentRepository {
               };
             });
           } else {
-            // Case B: Legacy clients row with metadata / allInvestments
+            // Case B: Fall back to legacy clients row metadata only if no dashboard investments exist
             const client = firstRow as DbClientRow;
             const meta = client.metadata || {};
             const rawInvestments: RawClientInvestment[] = Array.isArray(meta.allInvestments) && meta.allInvestments.length > 0

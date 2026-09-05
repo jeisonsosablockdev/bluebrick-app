@@ -134,4 +134,100 @@ describe("InvestmentRepository - Real Investor Portfolio Resolution (@spec BBC-0
     expect(result.items[0].propertyName).toBe("Residencial Vista Norte");
     expect(result.items[0].investedAmount).toBe(45000);
   });
+
+  it("should resolve ALL dashboard investments when investor has both a legacy clients row and multiple dashboard_investments (BBC-18)", async () => {
+    // Step 1: Arrange - Mock DB returning 2 rows from dashboard_investments JOIN clients for pazosjp@gmail.com
+    const mockDbQuery = mockDb.query as ReturnType<typeof vi.fn>;
+    mockDbQuery.mockImplementation(async (sql: string, params: any[]) => {
+      if (sql.includes("clients") && sql.includes("dashboard_investments")) {
+        return {
+          rows: [
+            {
+              dash_id: "INV_BG-01_INV-010",
+              id_inversion: "BG-01",
+              dash_project_name: "BUSH GARDEN",
+              dash_city: "TAMPA BAY",
+              dash_property_type: "Residencial",
+              tipo_proyecto: "Fix & Flip",
+              monto_invertido: "10000.00",
+              dash_roi_pct: "0.1600",
+              dash_estado: "Activa",
+              dash_duracion_meses: 6,
+              dash_fecha_timing: null,
+              dash_avance_fase_pct: "0.5714",
+              dash_fase_actual: "9. Acabados",
+              id: "dac1a9d1-4179-45e6-89f0-e05ddaaf17d6",
+              name: "JUAN PABLO PAZOS",
+              tax_id: null,
+              email: "pazosjp@gmail.com",
+              contract_amount: "10000.00", // Legacy client contract amount present!
+              status: "ACTIVE",
+              metadata: {
+                // Stale legacy metadata containing only 1 investment
+                allInvestments: [
+                  {
+                    id_inversion: "BG-01",
+                    nombre_proyecto: "BUSH GARDEN",
+                    ciudad: "TAMPA",
+                    monto_invertido: 10000,
+                    roi_pct: 0.16,
+                    estado: "Activa",
+                  },
+                ],
+              },
+            },
+            {
+              dash_id: "INV_BK-02_INV-010",
+              id_inversion: "BK-02",
+              dash_project_name: "BROOKSVILLE",
+              dash_city: "TAMPA BAY",
+              dash_property_type: "Residencial",
+              tipo_proyecto: "Fix & Flip",
+              monto_invertido: "9860.00",
+              dash_roi_pct: "0.1550",
+              dash_estado: "Activa",
+              dash_duracion_meses: 6,
+              dash_fecha_timing: null,
+              dash_avance_fase_pct: "0.2143",
+              dash_fase_actual: "Sin fase en curso",
+              id: "dac1a9d1-4179-45e6-89f0-e05ddaaf17d6",
+              name: "JUAN PABLO PAZOS",
+              tax_id: null,
+              email: "pazosjp@gmail.com",
+              contract_amount: "10000.00",
+              status: "ACTIVE",
+              metadata: {
+                allInvestments: [
+                  {
+                    id_inversion: "BG-01",
+                    nombre_proyecto: "BUSH GARDEN",
+                    ciudad: "TAMPA",
+                    monto_invertido: 10000,
+                    roi_pct: 0.16,
+                    estado: "Activa",
+                  },
+                ],
+              },
+            },
+          ],
+        };
+      }
+
+      if (sql.includes("dashboard_project_phases")) {
+        return { rows: [] };
+      }
+
+      return { rows: [] };
+    });
+
+    // Step 2: Act - Query portfolio for Juan Pablo Pazos
+    const result = await repository.getPortfolioSummary("pazosjp@gmail.com");
+
+    // Step 3: Assert - Both projects must be resolved, not just the single legacy one
+    expect(result.userId).toBe("pazosjp@gmail.com");
+    expect(result.items).toHaveLength(2);
+    expect(result.items.map((i) => i.propertyName)).toEqual(["BUSH GARDEN", "BROOKSVILLE"]);
+    expect(result.totalInvested).toBe(19860);
+    expect(result.activeCount).toBe(2);
+  });
 });

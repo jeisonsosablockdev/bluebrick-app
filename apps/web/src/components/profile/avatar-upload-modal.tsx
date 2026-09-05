@@ -6,7 +6,8 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Upload, X, Check, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { Upload, X, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { useI18n } from "@/features/i18n";
 
 export interface AvatarUploadModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function AvatarUploadModal({
   onClose,
   onUploadSuccess,
 }: AvatarUploadModalProps): React.JSX.Element | null {
+  const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -36,7 +38,7 @@ export function AvatarUploadModal({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrorMessage("Por favor selecciona un archivo de imagen válido.");
+      setErrorMessage(t("dashboard.avatarModal.invalidImage"));
       return;
     }
 
@@ -58,7 +60,7 @@ export function AvatarUploadModal({
       onUploadSuccess?.(simulatedUrl);
       onClose();
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error al subir la imagen.");
+      setErrorMessage(err instanceof Error ? err.message : t("dashboard.avatarModal.uploadError"));
     } finally {
       setIsUploading(false);
     }
@@ -75,12 +77,12 @@ export function AvatarUploadModal({
       >
         <div className="flex items-center justify-between border-b border-[rgba(237,241,245,0.08)] pb-4">
           <h3 className="font-bold text-lg" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Actualizar Avatar de Inversionista
+            {t("dashboard.avatarModal.title")}
           </h3>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-[#7C8A9C] hover:bg-[rgba(237,241,245,0.06)] hover:text-[#EDF1F5]"
-            aria-label="Cerrar"
+            aria-label={t("common.close")}
           >
             <X size={18} />
           </button>
@@ -100,7 +102,7 @@ export function AvatarUploadModal({
               className="flex h-28 w-28 flex-col items-center justify-center rounded-full border-2 border-dashed border-[rgba(237,241,245,0.2)] bg-[rgba(237,241,245,0.03)] text-[#7C8A9C] hover:border-[#E8495F] hover:text-[#E8495F] transition-colors"
             >
               <ImageIcon size={28} />
-              <span className="mt-1 text-[11px] font-semibold">Seleccionar</span>
+              <span className="mt-1 text-[11px] font-semibold">{t("dashboard.avatarModal.browse")}</span>
             </button>
           )}
 
@@ -113,7 +115,7 @@ export function AvatarUploadModal({
           />
 
           <p className="mt-4 text-center text-xs text-[#7C8A9C]">
-            Formatos soportados: PNG, JPG, WEBP. Máximo 5 MB. Almacenado en Vercel Blob.
+            {t("dashboard.avatarModal.supportedFormats")}
           </p>
 
           {errorMessage && (
@@ -131,7 +133,7 @@ export function AvatarUploadModal({
             onClick={onClose}
             className="rounded-xl border border-[rgba(237,241,245,0.1)] px-4 py-2 text-xs font-semibold text-[#8E9BAA] hover:bg-[rgba(237,241,245,0.05)]"
           >
-            Cancelar
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -143,11 +145,11 @@ export function AvatarUploadModal({
             }}
           >
             {isUploading ? (
-              <span>Subiendo...</span>
+              <span>{t("dashboard.avatarModal.uploading")}</span>
             ) : (
               <>
                 <Upload size={14} />
-                <span>Guardar Avatar</span>
+                <span>{t("dashboard.avatarModal.uploadButton")}</span>
               </>
             )}
           </button>
