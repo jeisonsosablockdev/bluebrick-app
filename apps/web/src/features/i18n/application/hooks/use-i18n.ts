@@ -14,6 +14,9 @@ import {
   formatCurrency,
   formatPercent,
   formatNumber,
+  formatTiming,
+  formatPhaseName,
+  formatPhaseDescription,
   resolveNestedToken,
   interpolate,
 } from "../../domain/formatters/locale-formatters";
@@ -34,6 +37,9 @@ const defaultFallbackContext: I18nContextValue = {
   formatCurrency: (amount, options) => formatCurrency(amount, { locale: DEFAULT_LOCALE, ...options }),
   formatPercent: (val, options) => formatPercent(val, { locale: DEFAULT_LOCALE, ...options }),
   formatNumber: (val, options) => formatNumber(val, { locale: DEFAULT_LOCALE, ...options }),
+  formatTiming: (timing, options) => formatTiming(timing, { locale: DEFAULT_LOCALE, ...options }),
+  formatPhaseName: (name, options) => formatPhaseName(name, { locale: DEFAULT_LOCALE, ...options }),
+  formatPhaseDescription: (desc, options) => formatPhaseDescription(desc, { locale: DEFAULT_LOCALE, ...options }),
 };
 
 /**

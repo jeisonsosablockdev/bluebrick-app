@@ -14,6 +14,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera, Check } from "lucide-react";
 import { useTheme } from "@/components/theme";
+import { useI18n } from "@/features/i18n";
 import type { PortfolioItem } from "@/lib/types/db";
 import { ProjectPhaseMediaCard } from "@/components/dashboard/project-phase-media-card";
 import type { PhasePhotoCollection } from "@/features/image-detail";
@@ -103,9 +104,29 @@ const PHASE_THEME_TOKENS = {
  * ProjectPhaseProgress renders an interactive, animated phase progress stepper with dots.
  */
 export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseProgressProps): React.JSX.Element {
-  // Step 1: Access active theme
+  // Step 1: Access active theme and localized translation strings
   const { theme } = useTheme();
+  const { t, formatPhaseName, formatPhaseDescription } = useI18n();
   const isDark = theme === "dark";
+
+  /**
+   * Helper to localize construction phase statuses consistently across languages.
+   */
+  const getLocalizedPhaseStatus = (status: string): string => {
+    switch (status) {
+      case "Completada":
+      case "Completado":
+        return t("dashboard.phaseProgress.status.completed");
+      case "En curso":
+        return t("dashboard.phaseProgress.status.inProgress");
+      case "Pendiente":
+        return t("dashboard.phaseProgress.status.pending");
+      case "No aplica":
+        return t("dashboard.phaseProgress.status.notApplicable");
+      default:
+        return status;
+    }
+  };
 
   // Step 2: Determine if dynamic phases exist or fallback to 100% full
   const hasDynamicPhases = Array.isArray(property.phases) && property.phases.length > 0;
@@ -170,10 +191,10 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
     return uiPhases
       .filter((p) => Array.isArray(p.images) && p.images.length > 0)
       .map((p) => ({
-        phaseName: p.name,
+        phaseName: formatPhaseName(p.name),
         images: p.images,
       }));
-  }, [uiPhases]);
+  }, [uiPhases, formatPhaseName]);
 
   // Step 5.2: Dynamic media carousel state for the active phase
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
@@ -224,7 +245,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
               color: isDark ? "#E8495F" : "#C41230",
             }}
           >
-            AVANCE DE OBRA POR FASES
+            {t("dashboard.phaseProgress.title")}
           </span>
         </div>
 
@@ -236,7 +257,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
             color: textMutedColor,
           }}
         >
-          {completionPercentage}% completado
+          {t("dashboard.phaseProgress.completed", { percentage: completionPercentage })}
         </div>
       </div>
 
@@ -328,7 +349,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                 onMouseLeave={() => setHoveredDotIndex(null)}
                 onFocus={() => setHoveredDotIndex(idx)}
                 onBlur={() => setHoveredDotIndex(null)}
-                aria-label={`Fase ${phase.id}: ${phase.name} - ${phaseStatusLabel}`}
+                aria-label={`${t("dashboard.phaseProgress.phaseXofY", { current: phase.id, total: totalPhases })}: ${phase.name} - ${getLocalizedPhaseStatus(phaseStatusLabel)}`}
                 style={{
                   padding: 0,
                   background: "transparent",
@@ -388,7 +409,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                           textAlign: "center",
                         }}
                       >
-                        {phase.name}
+                        {formatPhaseName(phase.name)}
                       </div>
 
                       {/* Abajo: estado y badge de fotos si existen (BBC-020 SPEC-02) */}
@@ -423,7 +444,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                               whiteSpace: "nowrap",
                             }}
                           >
-                            {phaseStatusLabel}
+                            {getLocalizedPhaseStatus(phaseStatusLabel)}
                           </span>
                         </div>
 
@@ -448,7 +469,11 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                             }}
                           >
                             <Camera size={10} strokeWidth={2.2} />
-                            <span>{photoCount === 1 ? "1 foto de avance" : `${photoCount} fotos de avance`}</span>
+                            <span>
+                              {photoCount === 1
+                                ? t("dashboard.phaseProgress.photoCountSingle")
+                                : t("dashboard.phaseProgress.photoCountMultiple", { count: photoCount })}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -519,7 +544,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
           style={{ display: "flex", flexDirection: "column", gap: 6 }}
         >
           <div style={{ fontSize: 11, color: textMutedColor, fontFamily: "'JetBrains Mono', monospace" }}>
-            Fase {currentPhaseNumber} de {totalPhases}
+            {t("dashboard.phaseProgress.phaseXofY", { current: currentPhaseNumber, total: totalPhases })}
           </div>
 
           <motion.div
@@ -539,11 +564,11 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
               lineHeight: 1.25,
             }}
           >
-            {currentPhase.name}
+            {formatPhaseName(currentPhase.name)}
           </motion.div>
 
           <div style={{ fontSize: 12, color: textMutedColor, lineHeight: 1.4 }}>
-            {currentPhase.description}
+            {formatPhaseDescription(currentPhase.description)}
           </div>
 
           <div style={{ marginTop: 4, display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -573,7 +598,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
                   backgroundColor: isConcluded || statusLabel === "Completado" ? "#57B98C" : "#E8495F",
                 }}
               />
-              {statusLabel}
+              {getLocalizedPhaseStatus(statusLabel)}
             </span>
           </div>
         </div>
@@ -581,7 +606,7 @@ export function ProjectPhaseProgress({ property, className = "" }: ProjectPhaseP
         {/* Right Column: Phase Media Preview Card — real photographs from imagen_url_1/2/3 */}
         {/* Step 8.2: Delegate all image rendering/carousel/fallback logic to ProjectPhaseMediaCard */}
         <ProjectPhaseMediaCard
-          phaseName={currentPhase.name}
+          phaseName={formatPhaseName(currentPhase.name)}
           images={phaseImages}
           isDark={isDark}
           activeIndex={activeImageIndex}

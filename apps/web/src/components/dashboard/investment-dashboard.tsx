@@ -194,7 +194,7 @@ function PropertyIcon({
  */
 export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): React.JSX.Element {
   // Step 1: Access localized translation strings, formatters, and active theme
-  const { t, formatCurrency } = useI18n();
+  const { t, formatCurrency, formatTiming } = useI18n();
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -280,13 +280,13 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
       } else {
         setLeadFeedback({
           type: "error",
-          message: result.message || "Ocurrió un error al procesar su solicitud.",
+          message: result.message || t("dashboard.reinvestment.defaultError"),
         });
       }
     } catch (error) {
       // Step 4: Gracefully handle network exceptions and unexpected errors
       const errorMsg =
-        error instanceof Error ? error.message : "Error inesperado al conectar con el servidor.";
+        error instanceof Error ? error.message : t("dashboard.reinvestment.unexpectedError");
       setLeadFeedback({
         type: "error",
         message: errorMsg,
@@ -687,7 +687,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                     <MetricRow label={t("dashboard.cards.estimatedRoi")} value={`${activeProperty.roi.toFixed(1)}%`} accent="#57B98C" />
                     <MetricRow
                       label={activeProperty.status === "activa" ? t("dashboard.cards.returnDate") : t("dashboard.cards.closingDate")}
-                      value={activeProperty.timing}
+                      value={formatTiming(activeProperty.timing)}
                       icon={Clock}
                     />
                     {activeProperty.status === "activa" && (
@@ -714,10 +714,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 />
               </div>
 
-              <button onClick={prevCard} aria-label="Anterior" className="dash-carousel-nav-btn" style={navBtnStyle("left")}>
+              <button onClick={prevCard} aria-label={t("dashboard.previous")} className="dash-carousel-nav-btn" style={navBtnStyle("left")}>
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={nextCard} aria-label="Siguiente" className="dash-carousel-nav-btn" style={navBtnStyle("right")}>
+              <button onClick={nextCard} aria-label={t("dashboard.next")} className="dash-carousel-nav-btn" style={navBtnStyle("right")}>
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -727,7 +727,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                 <button
                   key={p.id}
                   onClick={() => setCarouselIndex(idx)}
-                  aria-label={`Ir a ${p.propertyName}`}
+                  aria-label={t("dashboard.goToProperty", { property: p.propertyName })}
                   style={{
                     width: idx === carouselIndex ? 22 : 8,
                     height: 8,
@@ -792,7 +792,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
                     <span>
                       <StatusBadge status={p.status} compact />
                     </span>
-                    <span style={{ color: "#7C8A9C" }}>{p.timing}</span>
+                    <span style={{ color: "#7C8A9C" }}>{formatTiming(p.timing)}</span>
                   </div>
                 );
               })}
@@ -906,7 +906,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
               {isSubmittingLead ? (
                 <>
                   <Loader2 className="animate-spin" size={17} />
-                  <span>Enviando solicitud...</span>
+                  <span>{t("dashboard.reinvestment.submitting")}</span>
                 </>
               ) : (
                 <>

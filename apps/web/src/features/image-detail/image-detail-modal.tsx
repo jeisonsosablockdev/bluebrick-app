@@ -40,6 +40,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useI18n } from "@/features/i18n";
 import { useImageZoom } from "./use-image-zoom";
 
 // ─── Public Contracts & Interfaces (Layer 1) ──────────────────────────────────
@@ -275,6 +276,9 @@ function ImageDetailModalPortal({
   phaseName,
   allPhasesPhotos = [],
 }: ImageDetailModalProps) {
+  // Step 1: Access localized translation strings
+  const { t, formatPhaseName } = useI18n();
+
   // Step 2: Hydration-safe client portal check using useSyncExternalStore
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -414,7 +418,7 @@ function ImageDetailModalPortal({
 
   const currentPhoto = flattenedPhotos[currentIndex];
   const currentImageUrl = currentPhoto?.url || "";
-  const currentPhaseName = currentPhoto?.phaseName || phaseName || "";
+  const currentPhaseName = formatPhaseName(currentPhoto?.phaseName || phaseName || "");
   const hasMultipleImages = totalPhotos > 1;
 
   // Step 6b (SPEC-09): Derive whether current photo is in error state.
@@ -503,7 +507,7 @@ function ImageDetailModalPortal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar detalle de imagen"
+            aria-label={t("dashboard.imageDetail.close")}
             className="absolute right-4 sm:right-6 top-4 sm:top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-300 backdrop-blur-md transition-colors hover:bg-zinc-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <X className="h-5 w-5" />
@@ -538,7 +542,7 @@ function ImageDetailModalPortal({
             />
           ) : (
             <div className="text-sm text-zinc-400">
-              No hay imagen disponible para visualización.
+              {t("dashboard.imageDetail.fallbackDescription")}
             </div>
           )}
         </div>
@@ -549,7 +553,7 @@ function ImageDetailModalPortal({
             <button
               type="button"
               onClick={handlePrev}
-              aria-label="Imagen anterior"
+              aria-label={t("dashboard.imageDetail.prevPhoto")}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 backdrop-blur-md transition hover:bg-black/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -557,7 +561,7 @@ function ImageDetailModalPortal({
             <button
               type="button"
               onClick={handleNext}
-              aria-label="Imagen siguiente"
+              aria-label={t("dashboard.imageDetail.nextPhoto")}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 backdrop-blur-md transition hover:bg-black/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <ChevronRight className="h-6 w-6" />
@@ -572,7 +576,7 @@ function ImageDetailModalPortal({
               type="button"
               onClick={zoomOut}
               disabled={scale <= 1.0}
-              aria-label="Reducir zoom"
+              aria-label={t("dashboard.imageDetail.zoomOut")}
               className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
             >
               <ZoomOut className="h-4 w-4" />
@@ -580,7 +584,7 @@ function ImageDetailModalPortal({
             <button
               type="button"
               onClick={resetZoom}
-              aria-label="Restablecer zoom"
+              aria-label={t("dashboard.imageDetail.reset")}
               className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-zinc-300 transition hover:bg-white/10 hover:text-white rounded-full"
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -590,7 +594,7 @@ function ImageDetailModalPortal({
               type="button"
               onClick={zoomIn}
               disabled={scale >= maxScale}
-              aria-label="Aumentar zoom"
+              aria-label={t("dashboard.imageDetail.zoomIn")}
               className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
             >
               <ZoomIn className="h-4 w-4" />

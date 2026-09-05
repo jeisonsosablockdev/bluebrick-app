@@ -26,6 +26,7 @@ import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import { BlueBrickLogo } from "@/components/dashboard/blue-brick-logo";
+import { useI18n } from "@/features/i18n";
 import type { PhasePhotoCollection } from "@/features/image-detail";
 
 // Step 3b: Lazy load ImageDetailModal via next/dynamic (FDD Public API) to protect FCP and bundle size
@@ -76,7 +77,10 @@ export function ProjectPhaseMediaCard({
   onIndexChange,
   allPhasesPhotos,
 }: ProjectPhaseMediaCardProps): React.JSX.Element {
-  // Step 1: Derive display state from images prop (strict static dashboard invariant BBC-020 SPEC-08)
+  // Step 1: Access localized translation strings
+  const { t } = useI18n();
+
+  // Step 1b: Derive display state from images prop (strict static dashboard invariant BBC-020 SPEC-08)
   const hasAnyImage = images.length > 0;
   const hasMultipleImages = images.length > 1;
 
@@ -170,7 +174,7 @@ export function ProjectPhaseMediaCard({
       data-testid="phase-media-card-container"
       role={showRealImage ? "button" : undefined}
       tabIndex={showRealImage ? 0 : undefined}
-      aria-label={showRealImage ? `Ampliar fotografía de ${phaseName}` : undefined}
+      aria-label={showRealImage ? t("dashboard.mediaCard.expandAria", { phase: phaseName }) : undefined}
       onClick={() => {
         if (showRealImage) {
           setIsModalOpen(true);
@@ -261,7 +265,7 @@ export function ProjectPhaseMediaCard({
           key={`phase-img-${safeIndex}`}
           data-testid="phase-real-image"
           src={currentSrc!}
-          alt={`Foto de avance ${safeIndex + 1} de ${phaseName} — obra en construcción`}
+          alt={t("dashboard.mediaCard.photoAlt", { index: safeIndex + 1, phase: phaseName })}
           loading="lazy"
           decoding="async"
           onError={handleImageError}
@@ -352,10 +356,10 @@ export function ProjectPhaseMediaCard({
           }}
         >
           {hasMultipleImages
-            ? `${phaseName} · foto ${safeIndex + 1} de ${images.length}`
+            ? t("dashboard.mediaCard.photoCounter", { phase: phaseName, current: safeIndex + 1, total: images.length })
             : currentSrc
-            ? `${phaseName} · foto avance`
-            : `${phaseName} · avance 1`}
+            ? t("dashboard.mediaCard.progressPhoto", { phase: phaseName })
+            : t("dashboard.mediaCard.progress1", { phase: phaseName })}
         </span>
 
         {/* Step 10c: Pagination dots — ONLY for multi-image carousels */}
@@ -378,7 +382,7 @@ export function ProjectPhaseMediaCard({
                   key={imgIdx}
                   type="button"
                   data-testid={`phase-image-dot-${imgIdx}`}
-                  aria-label={`Ver imagen ${imgIdx + 1} de ${images.length}`}
+                  aria-label={t("dashboard.mediaCard.viewImageAria", { index: imgIdx + 1, total: images.length })}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDotClick(imgIdx);
@@ -409,7 +413,7 @@ export function ProjectPhaseMediaCard({
           <motion.button
             type="button"
             data-testid="phase-media-arrow-prev"
-            aria-label="Ver imagen anterior"
+            aria-label={t("dashboard.mediaCard.prevImageAria")}
             onClick={handlePrevClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: isCardHovered ? 1 : 0 }}
@@ -442,7 +446,7 @@ export function ProjectPhaseMediaCard({
           <motion.button
             type="button"
             data-testid="phase-media-arrow-next"
-            aria-label="Ver siguiente imagen"
+            aria-label={t("dashboard.mediaCard.nextImageAria")}
             onClick={handleNextClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: isCardHovered ? 1 : 0 }}
@@ -480,7 +484,7 @@ export function ProjectPhaseMediaCard({
           onClose={() => setIsModalOpen(false)}
           images={images}
           initialIndex={safeIndex}
-          title={`Detalle de fotografía — ${phaseName}`}
+          title={t("dashboard.mediaCard.modalTitle", { phase: phaseName })}
           phaseName={phaseName}
           allPhasesPhotos={allPhasesPhotos}
         />
