@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-19",
-  "branch": "SPEC/jaymusicmachine-BBC-19-s01-social-sharing-card-preview",
+  "branch": "fix/jaymusicmachine-BBC-19-social-sharing-card-preview",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": {
