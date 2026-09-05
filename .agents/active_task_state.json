@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-19",
-  "branch": "fix/jaymusicmachine-BBC-19-social-sharing-card-preview",
-  "current_phase": "PHASE_4_HUMAN_DESIGN_APPROVED",
+  "branch": "SPEC/jaymusicmachine-BBC-19-s01-social-sharing-card-preview",
+  "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": {
       "completed": true
@@ -14,16 +14,16 @@
       "completed": true
     },
     "PHASE_4_HUMAN_DESIGN_APPROVED": {
-      "completed": false
+      "completed": true
     },
     "PHASE_5_TESTS_RED": {
-      "completed": false
+      "completed": true
     },
     "PHASE_6_CODE_GREEN": {
-      "completed": false
+      "completed": true
     },
     "PHASE_7_VALIDATED": {
-      "completed": false
+      "completed": true
     },
     "PHASE_8_HUMAN_MERGE_APPROVED": {
       "completed": false
