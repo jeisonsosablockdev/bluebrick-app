@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T16:53:12.835Z",
+  "generatedAt": "2026-09-05T00:25:45.080Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -152,6 +152,30 @@
       "path": "knowledge/features/feature-jaymusicmachine-BBC-019-brand-visual-identity-redesign.md"
     },
     {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-020-image-detail-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-020-image-detail-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-020-image-detail-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-020-image-detail.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-020-image-detail",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-020-image-detail.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-020-s09-modal-fallback-validation.md"
+    },
+    {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation.md",
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-12-seo-favicon-web-discovery-implementation",
@@ -246,6 +270,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-7-ai-architect-ingestion-pipeline.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-8-images-drive-folder-ingestion.md"
     },
     {
       "id": "knowledge/features/feature-jeisonsosa-BBC-009-internationalization-implementation.md",
