@@ -92,6 +92,36 @@ describe("BBC-009: Translation Dictionaries & Zod Validation (@spec BBC-009-DICT
     expect(es.dashboard.reinvestment.minInvestmentFrom).toContain("{amount}");
     expect(en.dashboard.reinvestment.minInvestmentFrom).toContain("{amount}");
     expect(pt.dashboard.reinvestment.minInvestmentFrom).toContain("{amount}");
+
+    // Phase progress & media card dynamic parameters
+    expect(es.dashboard.phaseProgress.photoCountMultiple).toContain("{count}");
+    expect(en.dashboard.phaseProgress.photoCountMultiple).toContain("{count}");
+    expect(pt.dashboard.phaseProgress.photoCountMultiple).toContain("{count}");
+
+    expect(es.dashboard.mediaCard.photoCounter).toContain("{total}");
+    expect(en.dashboard.mediaCard.photoCounter).toContain("{total}");
+    expect(pt.dashboard.mediaCard.photoCounter).toContain("{total}");
+
+    expect(es.dashboard.mediaCard.expandAria).toContain("{phase}");
+    expect(en.dashboard.mediaCard.expandAria).toContain("{phase}");
+    expect(pt.dashboard.mediaCard.expandAria).toContain("{phase}");
+  });
+
+  it("should verify new subcomponent namespaces (phaseProgress, mediaCard, avatarModal, imageDetail) are properly structured", () => {
+    // Phase Progress
+    expect(es.dashboard.phaseProgress.title).toBe("Avance de obra por fases");
+    expect(en.dashboard.phaseProgress.title).toBe("Construction Phase Progress");
+    expect(pt.dashboard.phaseProgress.title).toBe("Avanço da Obra por Fases");
+
+    // Avatar Upload Modal
+    expect(es.dashboard.avatarModal.title).toBe("Actualizar Avatar de Inversionista");
+    expect(en.dashboard.avatarModal.title).toBe("Update Investor Avatar");
+    expect(pt.dashboard.avatarModal.title).toBe("Atualizar Avatar do Investidor");
+
+    // Media Card
+    expect(es.dashboard.mediaCard.prevImageAria).toBe("Ver imagen anterior");
+    expect(en.dashboard.mediaCard.prevImageAria).toBe("View previous image");
+    expect(pt.dashboard.mediaCard.prevImageAria).toBe("Ver imagem anterior");
   });
 
   it("should load dictionary properly from dictionaryLoaderAdapter with fallback", () => {

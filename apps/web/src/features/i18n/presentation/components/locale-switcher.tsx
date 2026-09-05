@@ -7,13 +7,14 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Globe, Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { useI18n } from "../../application/hooks/use-i18n";
 import {
   SUPPORTED_LOCALES,
   LOCALE_CONFIGS,
   type SupportedLocale,
 } from "../../domain/models/locale-types";
+import { LocaleFlag } from "./flag-icons";
 
 export interface LocaleSwitcherProps {
   compact?: boolean;
@@ -69,7 +70,7 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 6,
+          gap: 7,
           background: "rgba(237,241,245,0.05)",
           border: "1px solid rgba(237,241,245,0.12)",
           borderRadius: 10,
@@ -82,10 +83,7 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
           outline: "none",
         }}
       >
-        <Globe size={14} color="#57B98C" />
-        <span style={{ fontSize: 13 }} suppressHydrationWarning>
-          {currentConfig.flag}
-        </span>
+        <LocaleFlag locale={locale} width={compact ? 18 : 20} height={compact ? 12 : 14} />
         {!compact && <span suppressHydrationWarning>{currentConfig.code.toUpperCase()}</span>}
         <ChevronDown
           size={13}
@@ -106,7 +104,7 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
             top: "calc(100% + 6px)",
             right: 0,
             zIndex: 50,
-            minWidth: 150,
+            minWidth: 160,
             background: "#0D1526",
             border: "1px solid rgba(237,241,245,0.15)",
             borderRadius: 12,
@@ -145,8 +143,8 @@ export function LocaleSwitcher({ compact = false, className }: LocaleSwitcherPro
                   transition: "background 0.15s ease",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span>{config.flag}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <LocaleFlag locale={code} width={18} height={12} />
                   <span>{config.nativeName}</span>
                 </div>
                 {isSelected && <Check size={13} color="#57B98C" />}

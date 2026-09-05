@@ -20,6 +20,9 @@ import {
   formatCurrency as domainFormatCurrency,
   formatPercent as domainFormatPercent,
   formatNumber as domainFormatNumber,
+  formatTiming as domainFormatTiming,
+  formatPhaseName as domainFormatPhaseName,
+  formatPhaseDescription as domainFormatPhaseDescription,
   resolveNestedToken,
   interpolate,
 } from "../../domain/formatters/locale-formatters";
@@ -32,6 +35,9 @@ export interface I18nContextValue {
   formatCurrency: (amount: number, options?: FormatOptions) => string;
   formatPercent: (value: number, options?: FormatOptions) => string;
   formatNumber: (value: number, options?: FormatOptions) => string;
+  formatTiming: (timing: string | null | undefined, options?: FormatOptions) => string;
+  formatPhaseName: (phaseName: string | null | undefined, options?: FormatOptions) => string;
+  formatPhaseDescription: (description: string | null | undefined, options?: FormatOptions) => string;
 }
 
 export const I18nContext = createContext<I18nContextValue | null>(null);
@@ -109,6 +115,27 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps): Re
     [locale]
   );
 
+  const formatTiming = useCallback(
+    (timing: string | null | undefined, options?: FormatOptions) => {
+      return domainFormatTiming(timing, { locale, ...options });
+    },
+    [locale]
+  );
+
+  const formatPhaseName = useCallback(
+    (phaseName: string | null | undefined, options?: FormatOptions) => {
+      return domainFormatPhaseName(phaseName, { locale, ...options });
+    },
+    [locale]
+  );
+
+  const formatPhaseDescription = useCallback(
+    (description: string | null | undefined, options?: FormatOptions) => {
+      return domainFormatPhaseDescription(description, { locale, ...options });
+    },
+    [locale]
+  );
+
   const contextValue = useMemo<I18nContextValue>(
     () => ({
       locale,
@@ -118,8 +145,22 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps): Re
       formatCurrency,
       formatPercent,
       formatNumber,
+      formatTiming,
+      formatPhaseName,
+      formatPhaseDescription,
     }),
-    [locale, dictionary, setLocale, t, formatCurrency, formatPercent, formatNumber]
+    [
+      locale,
+      dictionary,
+      setLocale,
+      t,
+      formatCurrency,
+      formatPercent,
+      formatNumber,
+      formatTiming,
+      formatPhaseName,
+      formatPhaseDescription,
+    ]
   );
 
   return <I18nContext.Provider value={contextValue}>{children}</I18nContext.Provider>;

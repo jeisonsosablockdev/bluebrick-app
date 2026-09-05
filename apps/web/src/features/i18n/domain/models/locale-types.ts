@@ -120,6 +120,9 @@ export interface Dictionary {
     allocation: string;
     myInvestments: string;
     portfolioDetail: string;
+    previous: string;
+    next: string;
+    goToProperty: string;
     tableColumns: {
       project: string;
       invested: string;
@@ -131,6 +134,11 @@ export interface Dictionary {
       active: string;
       concluded: string;
       pending: string;
+    };
+    propertyTypes: {
+      residential: string;
+      commercial: string;
+      industrial: string;
     };
     cards: {
       investedAmount: string;
@@ -145,8 +153,58 @@ export interface Dictionary {
       title: string;
       description: string;
       ctaButton: string;
+      submitting: string;
+      defaultError: string;
+      unexpectedError: string;
       estimatedRoi: string;
       minInvestmentFrom: string;
+    };
+    phaseProgress: {
+      title: string;
+      completed: string;
+      phaseXofY: string;
+      status: {
+        completed: string;
+        inProgress: string;
+        pending: string;
+        notApplicable: string;
+      };
+      photoCountSingle: string;
+      photoCountMultiple: string;
+      defaultDescription: string;
+    };
+    mediaCard: {
+      expandAria: string;
+      photoAlt: string;
+      photoCounter: string;
+      progressPhoto: string;
+      progress1: string;
+      prevImageAria: string;
+      nextImageAria: string;
+      viewImageAria: string;
+      modalTitle: string;
+    };
+    avatarModal: {
+      title: string;
+      dragDrop: string;
+      browse: string;
+      supportedFormats: string;
+      uploading: string;
+      uploadButton: string;
+      cancel: string;
+      invalidImage: string;
+      uploadError: string;
+    };
+    imageDetail: {
+      zoomIn: string;
+      zoomOut: string;
+      reset: string;
+      close: string;
+      prevPhoto: string;
+      nextPhoto: string;
+      allPhasesNav: string;
+      fallbackTitle: string;
+      fallbackDescription: string;
     };
   };
   wallet: {
