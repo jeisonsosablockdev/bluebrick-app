@@ -68,3 +68,10 @@ On the BlueBrick Investment Dashboard (`/dashboard`), the primary call to action
 - **Contact Phone**: Include investor phone number (`investorPhone`) resolved from `clients` table or client state.
 - **Reinvestment Capacity**: Highlight projected / available reinvestment capital (`reinvestmentCapital`).
 - **Holdings Brief**: Breakdown of current property investments with amounts, ROI, and status.
+
+### 7. Scope SPEC-3: Lead Feedback Internationalization (i18n)
+- **Hardcoded Feedback Problem**: When an investor clicks "Invertir ahora" (or "Invest now"), the server action returns hardcoded Spanish strings (`Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad.`), displaying Spanish messages even when the dashboard is viewed in English or Portuguese.
+- **Expected Outcome**:
+  - Dictionaries (`es.ts`, `en.ts`, `pt.ts`) must provide localized translation strings for lead submission states (`success`, `successDryRun`, `cooldownError`).
+  - Server Action (`investment-actions.ts`) provides machine-readable status codes (`code: "SUCCESS" | "DRY_RUN" | "RATE_LIMIT_COOLDOWN" | "ERROR"`).
+  - Dashboard component (`investment-dashboard.tsx`) translates feedback reactively through `useI18n()` according to the active locale.

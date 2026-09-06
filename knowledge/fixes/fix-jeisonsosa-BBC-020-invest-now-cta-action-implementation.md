@@ -117,24 +117,34 @@ The solution decouples action execution from the auth provider, uses Neon Postgr
 
 - **SPEC-2**: `feat(lead-email): enrich lead notification with investor phone, reinvestment brief, and portfolio holdings summary`
   - Branch: `SPEC/jeisonsosa-BBC-020-lead-email-portfolio-brief`
+  - Status: Merged into parent work branch.
+
+- **SPEC-3**: `feat(i18n): internationalize investment lead feedback messages across ES, EN, and PT`
+  - Branch: `SPEC/jeisonsosa-BBC-020-s03-i18n-lead-feedback`
   - 4-Layer Delivery:
     - **Layer 1 (Presentation)**: `apps/web/src/components/dashboard/investment-dashboard.tsx`
-      - Pass `reinvestmentCapital`, `totalInvested`, and active property holdings to `submitInvestmentLeadAction`.
+      - Translate lead submission feedback reactively via `t("dashboard.reinvestment.success")`, `t("dashboard.reinvestment.successDryRun")`, and `t("dashboard.reinvestment.cooldownError")`.
     - **Layer 2 (Application)**: `apps/web/src/lib/auth/investment-actions.ts`
-      - Look up client phone in `clients` table if absent from payload, enrich payload.
+      - Return machine-readable `code: "SUCCESS" | "DRY_RUN" | "RATE_LIMIT_COOLDOWN" | "ERROR"` in `InvestmentLeadActionResult`.
     - **Layer 3 (Domain)**:
-      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-schema.ts`: Validate `investorPhone`, `reinvestmentCapital`, `totalInvested`, `currentInvestments`.
-      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-template.ts`: Render contact phone, reinvestment brief, and portfolio holdings card table.
-    - **Layer 4 (Infrastructure)**: `apps/web/src/lib/infrastructure/email/smtp-mailer.ts`.
+      - `apps/web/src/features/i18n/domain/dictionaries/es.ts`: Add Spanish translation keys.
+      - `apps/web/src/features/i18n/domain/dictionaries/en.ts`: Add English translation keys.
+      - `apps/web/src/features/i18n/domain/dictionaries/pt.ts`: Add Portuguese translation keys.
+      - `apps/web/src/features/i18n/domain/schemas/i18n-dictionary-schema.ts`: Ensure schema accepts new keys.
+    - **Layer 4 (Infrastructure)**: `apps/web/src/features/i18n/infrastructure/dictionary-loader-adapter.ts`.
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (RED Phase)
 - **Test Files**:
-  - `tests/unit/investment-dashboard-cta.test.tsx`: Verifies "Invest Now" click forwards holdings, reinvestment capacity, and phone.
-  - `tests/unit/investment-lead-behavioral.test.ts`: Verifies schema acceptance, HTML and plain-text rendering for phone, reinvestment brief, and property list.
-- **Test Command**: `pnpm test tests/unit/investment-dashboard-cta.test.tsx tests/unit/investment-lead-behavioral.test.ts`
+  - `tests/unit/investment-dashboard-cta.test.tsx`:
+    - Add test asserting that when dashboard locale is English (`en`), clicking "Invest Now" renders "Investment request submitted successfully. Our team will contact you shortly." instead of Spanish.
+    - Add test asserting that rate limit cooldown renders in English "Please wait before submitting a new investment request.".
+  - `tests/unit/i18n-dictionaries.test.ts`:
+    - Assert all 3 dictionaries (`es`, `en`, `pt`) contain matching keys for `dashboard.reinvestment.success`, `dashboard.reinvestment.successDryRun`, and `dashboard.reinvestment.cooldownError`.
+- **Test Command**: `pnpm test tests/unit/investment-dashboard-cta.test.tsx tests/unit/i18n-dictionaries.test.ts`
 - **Assertion Goals**:
-  - Template includes phone row, reinvestment card, and current investments breakdown.
+  - 100% dictionary symmetry across languages.
+  - Client feedback respects active locale.
 
 ## 5. Local Definition of Done (DoD)
 - [ ] State tracker phase is `PHASE_8_HUMAN_MERGE_APPROVED`.
