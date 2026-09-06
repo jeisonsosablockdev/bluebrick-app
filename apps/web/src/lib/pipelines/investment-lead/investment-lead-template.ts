@@ -49,8 +49,57 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
   const sanitizedTier = escapeHtml(payload.tier);
   const sanitizedId = escapeHtml(payload.investorId);
   const sanitizedTimestamp = escapeHtml(payload.timestamp ?? new Date().toISOString());
+  const sanitizedPhone = payload.investorPhone ? escapeHtml(payload.investorPhone) : "No registrado";
 
-  // Step 2: Format optional metadata table rows if present
+  // Step 2: Format reinvestment capital card if provided
+  const reinvestmentSection = payload.reinvestmentCapital !== undefined
+    ? `
+      <!-- Reinvestment Capital Card -->
+      <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%); border: 1px solid #2563EB; border-radius: 8px;">
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #60A5FA;">Capital disponible para reinvertir</div>
+        <div style="font-size: 28px; font-weight: 800; color: #38BDF8; margin-top: 6px;">
+          $${payload.reinvestmentCapital.toLocaleString("en-US")} USD
+        </div>
+        ${payload.totalInvested !== undefined ? `
+        <div style="font-size: 13px; color: #94A3B8; margin-top: 6px;">
+          Total Histórico Invertido: <strong style="color: #F3F4F6;">$${payload.totalInvested.toLocaleString("en-US")} USD</strong>
+        </div>
+        ` : ""}
+      </div>
+    `
+    : "";
+
+  // Step 3: Format current portfolio holdings table if provided
+  const holdingsSection = payload.currentInvestments && payload.currentInvestments.length > 0
+    ? `
+      <!-- Current Portfolio Holdings Section -->
+      <div style="margin-top: 24px;">
+        <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8;">Inversiones Actuales / Portafolio Actual</h3>
+        <table style="width: 100%; border-collapse: collapse; background-color: #1E293B; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
+          <thead>
+            <tr style="background-color: #0F172A; text-align: left;">
+              <th style="padding: 10px 14px; color: #94A3B8; font-size: 12px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #334155;">Proyecto</th>
+              <th style="padding: 10px 14px; color: #94A3B8; font-size: 12px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #334155; text-align: right;">Monto</th>
+              <th style="padding: 10px 14px; color: #94A3B8; font-size: 12px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #334155; text-align: right;">ROI</th>
+              <th style="padding: 10px 14px; color: #94A3B8; font-size: 12px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #334155; text-align: center;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${payload.currentInvestments.map(inv => `
+              <tr>
+                <td style="padding: 10px 14px; border-bottom: 1px solid #334155; color: #FFFFFF; font-size: 13px; font-weight: 500;">${escapeHtml(inv.propertyName)}</td>
+                <td style="padding: 10px 14px; border-bottom: 1px solid #334155; color: #38BDF8; font-size: 13px; font-weight: 600; text-align: right; font-family: monospace;">$${inv.investedAmount.toLocaleString("en-US")}</td>
+                <td style="padding: 10px 14px; border-bottom: 1px solid #334155; color: #34D399; font-size: 13px; font-weight: 600; text-align: right; font-family: monospace;">${inv.roi}%</td>
+                <td style="padding: 10px 14px; border-bottom: 1px solid #334155; color: #94A3B8; font-size: 12px; text-align: center;">${escapeHtml(inv.status)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+    : "";
+
+  // Step 4: Format optional metadata table rows if present
   const metadataRows = payload.metadata && Object.keys(payload.metadata).length > 0
     ? Object.entries(payload.metadata)
         .map(([key, value]) => `
@@ -73,7 +122,7 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
     `
     : "";
 
-  // Step 3: Assemble corporate dark-mode email document with BlueBrick branding
+  // Step 5: Assemble corporate dark-mode email document with BlueBrick branding
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -109,6 +158,10 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
           </td>
         </tr>
         <tr>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #334155; color: #94A3B8; font-size: 14px;">Teléfono</td>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #334155; color: #FFFFFF; font-size: 14px; font-weight: 600;">${sanitizedPhone}</td>
+        </tr>
+        <tr>
           <td style="padding: 12px 16px; border-bottom: 1px solid #334155; color: #94A3B8; font-size: 14px;">Nivel / Tier</td>
           <td style="padding: 12px 16px; border-bottom: 1px solid #334155; color: #F59E0B; font-size: 14px; font-weight: 600;">${sanitizedTier}</td>
         </tr>
@@ -121,6 +174,10 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
           <td style="padding: 12px 16px; color: #94A3B8; font-size: 13px;">${sanitizedTimestamp}</td>
         </tr>
       </table>
+
+      ${reinvestmentSection}
+
+      ${holdingsSection}
 
       ${metadataSection}
 
@@ -137,7 +194,7 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
       Este es un correo institucional generado automáticamente por el sistema de notificaciones de BlueBrick Capital.
     </div>
   </div>
-</body>
+ </body>
 </html>`;
 }
 
@@ -152,8 +209,9 @@ export function buildInvestmentLeadHtml(payload: InvestmentLeadPayload): string 
  * @returns Plain text formatted email string.
  */
 export function buildInvestmentLeadPlainText(payload: InvestmentLeadPayload): string {
-  // Step 1: Resolve timestamp
+  // Step 1: Resolve timestamp and telephone representation
   const timestamp = payload.timestamp ?? new Date().toISOString();
+  const phoneText = payload.investorPhone ? payload.investorPhone : "No registrado";
 
   // Step 2: Format metadata lines cleanly without HTML
   const metadataLines = payload.metadata && Object.keys(payload.metadata).length > 0
@@ -162,7 +220,36 @@ export function buildInvestmentLeadPlainText(payload: InvestmentLeadPayload): st
         .join("\n")
     : "  (Ninguno)";
 
-  // Step 3: Assemble un-formatted text summary with institutional facts
+  // Step 3: Format reinvestment capacity lines if provided
+  const reinvestmentLines: string[] = [];
+  if (payload.reinvestmentCapital !== undefined || payload.totalInvested !== undefined) {
+    reinvestmentLines.push("");
+    reinvestmentLines.push("Resumen de Portafolio y Reinversión:");
+    if (payload.reinvestmentCapital !== undefined) {
+      reinvestmentLines.push(
+        `  - Capital para reinvertir: $${payload.reinvestmentCapital.toLocaleString("en-US")} USD`
+      );
+    }
+    if (payload.totalInvested !== undefined) {
+      reinvestmentLines.push(
+        `  - Total Histórico Invertido: $${payload.totalInvested.toLocaleString("en-US")} USD`
+      );
+    }
+  }
+
+  // Step 4: Format current portfolio investments list if provided
+  const holdingsLines: string[] = [];
+  if (payload.currentInvestments && payload.currentInvestments.length > 0) {
+    holdingsLines.push("");
+    holdingsLines.push("Inversiones Actuales / Portafolio:");
+    for (const inv of payload.currentInvestments) {
+      holdingsLines.push(
+        `  - ${inv.propertyName}: $${inv.investedAmount.toLocaleString("en-US")} USD (ROI: ${inv.roi}%, Estado: ${inv.status})`
+      );
+    }
+  }
+
+  // Step 5: Assemble un-formatted text summary with institutional facts
   return [
     "==================================================",
     "BLUEBRICK CAPITAL - NOTIFICACIÓN DE LEAD DE INVERSIÓN",
@@ -171,9 +258,12 @@ export function buildInvestmentLeadPlainText(payload: InvestmentLeadPayload): st
     "Detalles del Inversionista:",
     `  - Nombre: ${payload.investorName}`,
     `  - Email: ${payload.investorEmail}`,
+    `  - Teléfono: ${phoneText}`,
     `  - Nivel / Tier: ${payload.tier}`,
     `  - ID: ${payload.investorId}`,
     `  - Timestamp: ${timestamp}`,
+    ...reinvestmentLines,
+    ...holdingsLines,
     "",
     "Metadatos Adicionales:",
     metadataLines,

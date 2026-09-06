@@ -78,12 +78,16 @@ const mockDashboardData: Readonly<DashboardViewModel> = {
  * Helper to render InvestmentDashboard within required Theme and I18n context providers.
  *
  * @param data Optional dashboard view model overrides.
+ * @param locale Active locale for testing translations (defaults to 'es').
  * @returns Render result with testing utilities.
  */
-function renderDashboard(data: DashboardViewModel = mockDashboardData as DashboardViewModel) {
+function renderDashboard(
+  data: DashboardViewModel = mockDashboardData as DashboardViewModel,
+  locale: "es" | "en" | "pt" = "es"
+) {
   return render(
     <ThemeProvider>
-      <I18nProvider initialLocale="es">
+      <I18nProvider initialLocale={locale}>
         <InvestmentDashboard initialData={data} />
       </I18nProvider>
     </ThemeProvider>
@@ -130,11 +134,17 @@ describe("SPEC BBC-17: Investment Dashboard CTA Lead Generation (@spec BBC-17)",
     fireEvent.click(ctaButton);
 
     // Assert: Verify action invocation and reactive UI updates
-    // Step 5: Verify server action was called with source metadata
+    // Step 5: Verify server action was called with connected investor data and source metadata
     expect(submitInvestmentLeadAction).toHaveBeenCalledTimes(1);
-    expect(submitInvestmentLeadAction).toHaveBeenCalledWith({
-      metadata: { source: "dashboard_reinvestment_cta" },
-    });
+    expect(submitInvestmentLeadAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        investorId: "usr_01HXYZ123456789",
+        investorEmail: "sofia.martinez@bluebrick.investments",
+        investorName: "Sofía Martínez",
+        tier: "BRONZE",
+        metadata: { source: "dashboard_reinvestment_cta" },
+      })
+    );
 
     // Step 6: Verify success feedback is rendered with accessible role
     await waitFor(() => {
@@ -241,5 +251,125 @@ describe("SPEC BBC-17: Investment Dashboard CTA Lead Generation (@spec BBC-17)",
 
     // Step 5: Verify button is re-enabled following exception
     expect(ctaButton).not.toBeDisabled();
+  });
+
+  it("should forward totalInvested, reinvestmentCapital, and active properties breakdown when clicking 'Invertir ahora' (@spec BBC-020-SPEC-2-CTA-DATA)", async () => {
+    // Arrange: Mock successful submission
+    // Step 1: Set up action mock
+    vi.mocked(submitInvestmentLeadAction).mockResolvedValueOnce({
+      success: true,
+      message: "Lead processed",
+    });
+
+    // Step 2: Render dashboard with mock data
+    renderDashboard();
+    const ctaButton = screen.getByRole("button", { name: /invertir ahora/i });
+
+    // Act: Click CTA button
+    // Step 3: Trigger click
+    fireEvent.click(ctaButton);
+
+    // Assert: Verify action called with enriched portfolio details
+    // Step 4: Verify payload contains totalInvested, reinvestmentCapital, and currentInvestments
+    await waitFor(() => {
+      expect(submitInvestmentLeadAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalInvested: 150000,
+          reinvestmentCapital: expect.any(Number),
+          currentInvestments: expect.arrayContaining([
+            expect.objectContaining({
+              propertyName: "Torre Alvear",
+              investedAmount: 150000,
+              roi: 14.5,
+              status: "activa",
+            }),
+          ]),
+        })
+      );
+    });
+  });
+
+  it("should render localized success feedback in English when dashboard locale is 'en' (@spec BBC-020-SPEC-3-CTA-EN)", async () => {
+    // Arrange: Mock server action returning success code
+    // Step 1: Setup action mock returning code: SUCCESS
+    vi.mocked(submitInvestmentLeadAction).mockResolvedValueOnce({
+      success: true,
+      message: "Fallback message",
+      code: "SUCCESS",
+    });
+
+    // Step 2: Render dashboard with English locale
+    renderDashboard(mockDashboardData as DashboardViewModel, "en");
+    const ctaButton = screen.getByRole("button", { name: /invest now/i });
+
+    // Act: Trigger submission in English
+    // Step 3: Click CTA button
+    fireEvent.click(ctaButton);
+
+    // Assert: Verify feedback banner is translated to English
+    // Step 4: Verify English success banner
+    await waitFor(() => {
+      const feedback = screen.getByRole("status");
+      expect(feedback).toBeInTheDocument();
+      expect(feedback.textContent).toContain(
+        "Investment request submitted successfully. Our team will contact you shortly."
+      );
+    });
+  });
+
+  it("should render localized success feedback in Portuguese when dashboard locale is 'pt' (@spec BBC-020-SPEC-3-CTA-PT)", async () => {
+    // Arrange: Mock server action returning success code
+    // Step 1: Setup action mock returning code: SUCCESS
+    vi.mocked(submitInvestmentLeadAction).mockResolvedValueOnce({
+      success: true,
+      message: "Fallback message",
+      code: "SUCCESS",
+    });
+
+    // Step 2: Render dashboard with Portuguese locale
+    renderDashboard(mockDashboardData as DashboardViewModel, "pt");
+    const ctaButton = screen.getByRole("button", { name: /investir agora/i });
+
+    // Act: Trigger submission in Portuguese
+    // Step 3: Click CTA button
+    fireEvent.click(ctaButton);
+
+    // Assert: Verify feedback banner is translated to Portuguese
+    // Step 4: Verify Portuguese success banner
+    await waitFor(() => {
+      const feedback = screen.getByRole("status");
+      expect(feedback).toBeInTheDocument();
+      expect(feedback.textContent).toContain(
+        "Solicitação de investimento enviada com sucesso. Nossa equipe entrará em contato em breve."
+      );
+    });
+  });
+
+  it("should render localized cooldown error in English when action returns RATE_LIMIT_COOLDOWN (@spec BBC-020-SPEC-3-COOLDOWN-EN)", async () => {
+    // Arrange: Mock cooldown error with code
+    // Step 1: Setup mock returning RATE_LIMIT_COOLDOWN code
+    vi.mocked(submitInvestmentLeadAction).mockResolvedValueOnce({
+      success: false,
+      message: "Fallback cooldown message",
+      code: "RATE_LIMIT_COOLDOWN",
+    });
+
+    // Step 2: Render dashboard with English locale
+    renderDashboard(mockDashboardData as DashboardViewModel, "en");
+    const ctaButton = screen.getByRole("button", { name: /invest now/i });
+
+    // Act: Click CTA button
+    // Step 3: Trigger submission
+    fireEvent.click(ctaButton);
+
+    // Assert: Verify English cooldown error message
+    // Step 4: Verify localized cooldown banner
+    await waitFor(() => {
+      const feedback = screen.getByRole("status");
+      expect(feedback).toBeInTheDocument();
+      expect(feedback.textContent).toContain(
+        "Please wait before submitting a new investment request."
+      );
+    });
   });
 });

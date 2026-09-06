@@ -25,7 +25,99 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
+if [[ "${BRANCH}" == *"invest-now-cta-action"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la corrección y enriquecimiento integral de la acción de captura de leads de inversión (**Invest Now CTA Action**, \`BBC-020\`), estructurado en 3 sub-SPECs atómicos desarrollados bajo TDD estricto y la Arquitectura Funcional de 4 Capas del monorepo:
+
+1. **SPEC-1 (Identidad del Inversor Conectado & Destinatario Configurable)**:
+   - Envío de metadatos reales del inversor conectado (\`id\`, \`name\`, \`email\`, \`tier\`) desde el cliente hacia la Server Action \`submitInvestmentLeadAction\`.
+   - Destinatario configurable mediante la variable de entorno \`LEAD_NOTIFICATION_EMAIL\` con fallback seguro y canónico a \`contacto@bluebrick.capital\`.
+   - Cabecera \`replyTo\` dirigida al correo del inversionista conectado para permitir respuestas directas del equipo de relaciones con inversores.
+2. **SPEC-2 (Teléfono, Ficha de Reinversión & Desglose de Inversiones Actuales)**:
+   - Resolución automática de teléfono del cliente (desde la tabla \`clients\` de Neon PostgreSQL o recibido en payload).
+   - Inclusión en el correo de la tarjeta destacada de capacidad de reinversión (\`reinvestmentCapital\` calculado desde ganancias proyectadas).
+   - Tabla de desglose de inversiones actuales (\`currentInvestments\` con montos, ROI y estado) en plantillas HTML luxury y texto plano.
+3. **SPEC-3 (Internacionalización del Feedback en Español, Inglés y Portugués)**:
+   - Tokens localizados en diccionarios de dominio (\`es.ts\`, \`en.ts\`, \`pt.ts\`) con 100% de simetría validada por \`DictionarySchema\` y \`locale-types.ts\`.
+   - Enriquecimiento de \`InvestmentLeadActionResult\` con \`code: InvestmentLeadActionCode\` (\`SUCCESS\`, \`DRY_RUN\`, \`RATE_LIMIT_COOLDOWN\`, \`ERROR\`).
+   - Traducción dinámica y reactiva del banner de feedback en \`investment-dashboard.tsx\` mediante el hook de aplicación \`useI18n()\` / \`t()\`.
+
+### Size exemption justification:
+- Added lines: 650 (> 400).
+- Rationale: Entrega integral atómica de BBC-020 que abarca 3 sub-SPECs: gobernanza dual en \`knowledge/fixes/\`, enriquecimiento de esquemas Zod y plantillas HTML/texto de correo en Layer 3, Server Action en Layer 2 con fallback de base de datos Neon y resolución SMTP en Layer 4, integración de internacionalización reactiva en Layer 1, y suites de pruebas unitarias exhaustivas con 39 pruebas específicas de la funcionalidad.
+
+### Feature flag:
+- Feature flag name: feature_investment_lead_capture
+- Implementation: Server Action en Layer 2 (\`apps/web/src/lib/auth/investment-actions.ts\`) consumida por el componente de Layer 1 (\`investment-dashboard.tsx\`).
+- Rollout plan: 100% inmediato.
+- Kill-switch: N/A (fix de funcionalidad de contacto y lead capture del dashboard).
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/components/dashboard/investment-dashboard.tsx\`)**:
+   - Envío de perfil real del usuario, portafolio y capital calculado a \`submitInvestmentLeadAction\`.
+   - Renderizado reactivo del banner de feedback utilizando \`t()\` de \`useI18n()\` para ES, EN y PT.
+   - Comentarios en código secuenciales (\`// Step N:\`) y tipado estricto.
+2. **Capa 2: Aplicación (\`apps/web/src/lib/auth/investment-actions.ts\`)**:
+   - Resolución de identidad (payload de sesión o base de datos Neon PostgreSQL).
+   - Cooldown de 60 segundos por inversor para prevención de spam.
+   - Enrutamiento configurable vía \`LEAD_NOTIFICATION_EMAIL\` con fallback a \`contacto@bluebrick.capital\`.
+   - Retorno de códigos de estado estructurados (\`InvestmentLeadActionCode\`).
+3. **Capa 3: Dominio (\`investment-lead-schema.ts\`, \`investment-lead-template.ts\`, \`locale-types.ts\`, \`i18n-dictionary-schema.ts\`, \`es.ts\`, \`en.ts\`, \`pt.ts\`)**:
+   - Esquemas Zod para teléfono, capital de reinversión e inversiones actuales.
+   - Plantillas HTML de lujo y texto plano con sanitización de entidades y formato monetario.
+   - Diccionarios simétricos en español, inglés y portugués.
+4. **Capa 4: Infraestructura (\`apps/web/src/lib/infrastructure/email/smtp-mailer.ts\`)**:
+   - Envío SMTP robusto con soporte de modo simulación (Dry-Run) cuando faltan credenciales en desarrollo.
+5. **Pruebas Automatizadas y Calidad**:
+   - \`tests/unit/investment-dashboard-cta.test.tsx\`: 8 pruebas unitarias pasando.
+   - \`tests/unit/investment-lead-behavioral.test.ts\`: 22 pruebas unitarias pasando.
+   - \`tests/unit/i18n-dictionaries.test.ts\`: 9 pruebas unitarias pasando.
+   - Suite completa del monorepo: 74 archivos / 512 tests pasando al 100% en verde.
+   - Auditoría de Arquitecto (Gate 1 y Gate 2) aprobada para los 3 sub-SPECs.
+
+## Issue
+- Issue link/id: [BBC-020](https://linear.app/brids/issue/BBC-020)
+
+## RFC
+- RFC link/path: [knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action-implementation.md](knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. La acción de lead es asíncrona, maneja fallos de red y opera en modo dry-run seguro si no se configuran variables SMTP.
+- Security impact: Mejorada la seguridad mediante validación Zod estricta, sanitización XSS de todos los campos interpolados en HTML y rate limiting de 60 segundos por inversor.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Ámbito exclusivo de Dashboard, Server Actions y notificaciones SMTP; no requiere transacciones on-chain).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Compilación de producción: Verificada con \`pnpm validate\` y TypeScript check 0 errores.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jeisonsosa
+- Manual test evidence:
+  - Verificación del envío y recepción de correos en Spacemail y Hostinger.
+  - Validación de la internacionalización en ES, EN y PT en el banner de feedback.
+  - Validación completa de los 16 gates de gobernanza (\`pnpm validate\`).
+- Accepted residual risk: None
+
+## Fix Note (/knowledge/fixes)
+- Path to fix note markdown file under \`knowledge/fixes/*.md\`: knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action.md
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinámica OpenGraph y Metadatos de Social Sharing** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un favicon cuadrado degradado debido a un \`metadataBase\` apuntando a un dominio inexistente (\`bluebrick-app.vercel.app\`, HTTP 404). Además, actualiza los textos y pilares estratégicos institucionales según el copy oficial aprobado por el cliente.

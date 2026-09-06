@@ -154,6 +154,9 @@ export interface Dictionary {
       description: string;
       ctaButton: string;
       submitting: string;
+      success: string;
+      successDryRun: string;
+      cooldownError: string;
       defaultError: string;
       unexpectedError: string;
       estimatedRoi: string;
