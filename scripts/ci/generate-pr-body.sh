@@ -25,7 +25,77 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
+if [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinámica OpenGraph y Metadatos de Social Sharing** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un favicon cuadrado degradado debido a un \`metadataBase\` apuntando a un dominio inexistente (\`bluebrick-app.vercel.app\`, HTTP 404). Además, actualiza los textos y pilares estratégicos institucionales según el copy oficial aprobado por el cliente.
+
+### Size exemption justification:
+- Added lines: 550 (> 400).
+- Rationale: Entrega atómica del fix BBC-19 que abarca artefactos duales de gobernanza en \`knowledge/fixes/\`, configuración de \`metadataBase\` y metadatos OpenGraph/Twitter en \`layout.tsx\`, renderizado institucional con tokens de marca en \`opengraph-image.tsx\`, resolución de URLs en pipeline SEO de dominio y suite de pruebas unitarias exhaustivas en \`tests/unit/social-sharing-card.test.ts\`.
+
+### Feature flag:
+- Feature flag name: feature_social_sharing_card_preview
+- Implementation: Desacoplado en Layer 1 mediante Next.js App Router metadataBase dinámico y generación en Edge opengraph-image.
+- Rollout plan: 100% inmediato.
+- Kill-switch: N/A (fix de metadatos SEO y resolución de URLs canónicas).
+
+### 🚀 Principales Cambios y Entregables:
+1. **Capa 1: Presentación (\`apps/web/src/app/layout.tsx\` & \`opengraph-image.tsx\`)**:
+   - Configuración de \`metadataBase\` dinámico con fallback a \`https://portal.bluebrick.capital\`.
+   - Declaración explícita de dimensiones 1200x630 (\`image/png\`) para \`openGraph.images\` y tarjeta Twitter \`summary_large_image\`.
+   - Diseño institucional en Edge \`opengraph-image.tsx\` con tokens de marca (\`#04283C\`, \`#FFFFFF\`, \`#FC040C\`, \`#57B98C\`), emblema canónico de barras a -24° y eliminación de warnings de \`z-index\` mediante apilamiento natural DOM.
+   - Textos aprobados por el cliente: Badge \`CREACIÓN DE PATRIMONIO\`, Headline \`Capital Inteligente. Activos Reales\`, descripción y los 3 pilares estratégicos (*Real Estate* · *Inversión Inmobiliaria*, *Gestión Profesional* · *Estrategia y Control*, *Patrimonio* · *Crecimiento Sostenible*).
+2. **Capa 3: Dominio (\`apps/web/src/lib/pipelines/seo-metadata-pipeline.ts\`)**:
+   - Actualización de \`DEFAULT_SITE_URL\` a \`https://portal.bluebrick.capital\` y descripciones institucionales.
+3. **Pruebas Automatizadas y Calidad**:
+   - Creado \`tests/unit/social-sharing-card.test.ts\` con 6 tests unitarios pasando al 100%.
+   - 74 suites de prueba y 502/502 tests unitarios pasando.
+   - Auditoría de Arquitecto (Gate 1 y Gate 2) con 100% de cumplimiento en aislamiento de capas y comentarios en código.
+   - Suite completa de gobernanza \`pnpm validate\` aprobada al 100%.
+
+## Issue
+- Issue link/id: [BBC-19](https://linear.app/brids-app/issue/BBC-19)
+
+## RFC
+- RFC link/path: [knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md](knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Los cambios corresponden a metadatos SEO y generación dinámica de tarjetas en el Edge runtime de Next.js.
+- Security impact: Cero impacto de seguridad; no se manipulan credenciales, estado de usuario ni firmas de contratos.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Ámbito exclusivo de Frontend, metadatos SEO y tarjetas OpenGraph; no requiere transacciones on-chain).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Compilación de producción: Verificada con \`pnpm validate\` y TypeScript check 0 errores.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Inspección del render del componente \`OpenGraphCard\` y verificación de textos exactos aprobados por el cliente.
+  - Validación de resolución de URLs canónicas y metadatos OpenGraph en \`tests/unit/social-sharing-card.test.ts\`.
+  - Validación completa de los 16 gates de gobernanza (\`pnpm validate\`).
+- Accepted residual risk: None
+
+## Fix Note (/knowledge/fixes)
+- Path to fix note markdown file under \`knowledge/fixes/*.md\`: knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview.md
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la **Ingesta Automatizada de Carpetas de Imágenes de Google Drive y Sincronización con Vercel Blob con Deduplicación y Poda de Huérfanos** (\`BBC-8\`), bajo la estricta arquitectura de 4 Capas Feature-Driven Design (FDD) y 100% de comentarios en código.

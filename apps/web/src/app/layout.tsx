@@ -29,20 +29,32 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+/**
+ * Viewport configuration defining responsive device behavior and theme color.
+ */
 export const viewport: Viewport = {
   themeColor: "#0A1220",
   width: "device-width",
   initialScale: 1,
 };
 
+/**
+ * Root metadata configuration for Next.js App Router.
+ * Configures OpenGraph, Twitter cards, SEO titles, descriptions, and icons.
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bluebrick-app.vercel.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "https://portal.bluebrick.capital")
+  ),
   title: {
-    default: "BlueBrick | Plataforma de Inversión Inmobiliaria Fraccionada",
+    default: "BlueBrick | Capital Inteligente · Activos Reales",
     template: "%s | BlueBrick Platform",
   },
   description:
-    "Invierte en fracciones de proyectos inmobiliarios premium (comerciales, residenciales e industriales) con retornos transparentes y dividendos mensuales.",
+    "Oportunidades inmobiliarias seleccionadas para crear y hacer crecer tu patrimonio.",
   keywords: [
     "inversión inmobiliaria",
     "real estate fraccionado",
@@ -75,14 +87,25 @@ export const metadata: Metadata = {
     locale: "es_ES",
     url: "/",
     siteName: "BlueBrick",
-    title: "BlueBrick | Inversión Inmobiliaria Fraccionada",
+    title: "BlueBrick | Capital Inteligente · Activos Reales",
     description:
-      "Plataforma privada de inversión en fracciones inmobiliarias comerciales, industriales y residenciales con alta rentabilidad.",
+      "Oportunidades inmobiliarias seleccionadas para crear y hacer crecer tu patrimonio.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        type: "image/png",
+        alt: "BlueBrick | Capital Inteligente · Activos Reales",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BlueBrick | Inversión Inmobiliaria Fraccionada",
-    description: "Invierte en activos inmobiliarios premium con rendimientos mensuales transparentes.",
+    title: "BlueBrick | Capital Inteligente · Activos Reales",
+    description:
+      "Oportunidades inmobiliarias seleccionadas para crear y hacer crecer tu patrimonio.",
+    images: ["/opengraph-image"],
     creator: "@bluebrick_app",
   },
   robots: {
@@ -98,6 +121,13 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Presentation Layer Root Layout for Next.js App Router.
+ * Configures font providers, HTML head structured data, WorkOS AuthKit, and global application providers.
+ *
+ * @param props.children React sub-tree to render within the root layout.
+ * @returns Root HTML shell with applied theme and providers.
+ */
 export default function RootLayout({
   children,
 }: {
