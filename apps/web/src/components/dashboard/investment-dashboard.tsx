@@ -254,6 +254,12 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     await signOutAction();
   };
 
+  // Step 5: Compute projected earnings from active portfolio
+  const projectedEarnings = useMemo(
+    () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
+    [properties]
+  );
+
   /**
    * Dispatches the investment lead notification to the server action pipeline.
    * Enriches lead payload with telephone, reinvestment capital capacity, and current portfolio holdings.
@@ -264,43 +270,36 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     setIsSubmittingLead(true);
     setLeadFeedback(null);
 
-    // Step 2: Extract connected investor profile loaded from the database
-    const connectedInvestor = initialData?.investor;
-    const connectedName = [connectedInvestor?.firstName, connectedInvestor?.lastName]
+    // Step 2: Extract connected investor profile loaded from database
+    const connectedName = [investor.firstName, investor.lastName]
       .filter(Boolean)
       .join(" ")
       .trim();
 
-    // Step 3: Compute projected reinvestment capital from portfolio items
-    const calculatedReinvestmentCapital = (initialData?.properties || []).reduce(
-      (acc: number, p: PortfolioItem) => acc + (p.investedAmount || 0) * ((p.roi || 0) / 100),
-      0
-    );
-
-    // Step 4: Map current portfolio holdings for enriched lead brief
-    const mappedInvestments = (initialData?.properties || []).map((p: PortfolioItem) => ({
+    // Step 3: Map current portfolio holdings for enriched lead brief
+    const mappedInvestments = properties.map((p: PortfolioItem) => ({
       propertyName: p.propertyName,
       investedAmount: p.investedAmount,
       roi: p.roi,
       status: p.status,
     }));
 
-    // Step 5: Invoke investment lead server action with connected investor data, portfolio brief, and CTA metadata
+    // Step 4: Invoke investment lead server action with connected investor data, portfolio brief, and CTA metadata
     try {
       const result = await submitInvestmentLeadAction({
-        investorId: connectedInvestor?.id,
+        investorId: investor.id,
         investorName: connectedName || "Inversionista",
-        investorEmail: connectedInvestor?.email,
-        tier: connectedInvestor?.tier,
-        totalInvested: initialData?.totalInvested,
-        reinvestmentCapital: calculatedReinvestmentCapital,
+        investorEmail: investor.email,
+        tier: investor.tier,
+        totalInvested,
+        reinvestmentCapital: projectedEarnings,
         currentInvestments: mappedInvestments,
         metadata: {
           source: "dashboard_reinvestment_cta",
         },
       });
 
-      // Step 6: Parse response and update reactive user feedback
+      // Step 5: Parse response and update reactive user feedback
       if (result.success) {
         setLeadFeedback({
           type: "success",
@@ -313,7 +312,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         });
       }
     } catch (error) {
-      // Step 7: Gracefully handle network exceptions and unexpected errors
+      // Step 6: Gracefully handle network exceptions and unexpected errors
       const errorMsg =
         error instanceof Error ? error.message : t("dashboard.reinvestment.unexpectedError");
       setLeadFeedback({
@@ -321,15 +320,10 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         message: errorMsg,
       });
     } finally {
-      // Step 8: Reset submitting state to unblock controls
+      // Step 7: Reset submitting state to unblock controls
       setIsSubmittingLead(false);
     }
   };
-
-  const projectedEarnings = useMemo(
-    () => properties.reduce((s: number, p: PortfolioItem) => s + p.investedAmount * (p.roi / 100), 0),
-    [properties]
-  );
 
   // Step 5: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });

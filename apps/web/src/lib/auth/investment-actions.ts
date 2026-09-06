@@ -7,7 +7,6 @@
 
 "use server";
 
-import { withAuth } from "@workos-inc/authkit-nextjs";
 import { getAuthenticatedInvestor } from "@/lib/auth/workos-session";
 import { executeQuery } from "@/lib/infrastructure/db/neon-client";
 import {
@@ -77,12 +76,11 @@ export async function submitInvestmentLeadAction(
     };
   }
 
-  // Case B: If payload did not specify email, query authenticated session from WorkOS / DB helper
+  // Case B: If payload did not specify email, query authenticated session from session helper
   if (!resolvedInvestor) {
     try {
-      const auth = await withAuth();
       const investor = await getAuthenticatedInvestor();
-      if (auth?.user || investor?.id) {
+      if (investor?.id && investor.email) {
         resolvedInvestor = {
           id: investor.id,
           email: investor.email,
@@ -91,23 +89,9 @@ export async function submitInvestmentLeadAction(
           tier: investor.tier,
         };
       }
-    } catch {
-      // Invariant: If withAuth fails (e.g. in Next.js Server Action POST without proxy headers),
-      // smoothly fall back to database investor retriever
-      try {
-        const investor = await getAuthenticatedInvestor();
-        if (investor?.id && investor.email) {
-          resolvedInvestor = {
-            id: investor.id,
-            email: investor.email,
-            firstName: investor.firstName,
-            lastName: investor.lastName,
-            tier: investor.tier,
-          };
-        }
-      } catch {
-        // Fall through to authority guard
-      }
+    } catch (error) {
+      // Invariant: Fall through to authority guard if session retrieval fails
+      console.warn("[InvestmentLeadAction] Could not resolve authenticated investor session:", error);
     }
   }
 
