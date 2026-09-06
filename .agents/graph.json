@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-05T18:05:03.912Z",
+  "generatedAt": "2026-09-06T04:30:12.350Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -342,6 +342,18 @@
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio",
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-19-social-sharing-card-preview",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview.md"
     },
     {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",
