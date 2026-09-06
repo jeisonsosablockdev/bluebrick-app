@@ -263,15 +263,26 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     setIsSubmittingLead(true);
     setLeadFeedback(null);
 
-    // Step 2: Invoke investment lead server action with CTA metadata
+    // Step 2: Extract connected investor profile loaded from the database
+    const connectedInvestor = initialData?.investor;
+    const connectedName = [connectedInvestor?.firstName, connectedInvestor?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    // Step 3: Invoke investment lead server action with connected investor data and CTA metadata
     try {
       const result = await submitInvestmentLeadAction({
+        investorId: connectedInvestor?.id,
+        investorName: connectedName || "Inversionista",
+        investorEmail: connectedInvestor?.email,
+        tier: connectedInvestor?.tier,
         metadata: {
           source: "dashboard_reinvestment_cta",
         },
       });
 
-      // Step 3: Parse response and update reactive user feedback
+      // Step 4: Parse response and update reactive user feedback
       if (result.success) {
         setLeadFeedback({
           type: "success",
@@ -284,7 +295,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         });
       }
     } catch (error) {
-      // Step 4: Gracefully handle network exceptions and unexpected errors
+      // Step 5: Gracefully handle network exceptions and unexpected errors
       const errorMsg =
         error instanceof Error ? error.message : t("dashboard.reinvestment.unexpectedError");
       setLeadFeedback({
@@ -292,7 +303,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         message: errorMsg,
       });
     } finally {
-      // Step 5: Reset submitting state to unblock controls
+      // Step 6: Reset submitting state to unblock controls
       setIsSubmittingLead(false);
     }
   };

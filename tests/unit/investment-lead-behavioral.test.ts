@@ -26,7 +26,10 @@ import {
   type SendEmailParams,
   type SmtpConfig,
 } from "@/lib/infrastructure/email/smtp-mailer";
-import { submitInvestmentLeadAction } from "@/lib/auth/investment-actions";
+import {
+  submitInvestmentLeadAction,
+  clearInvestmentLeadCooldowns,
+} from "@/lib/auth/investment-actions";
 import { withAuth } from "@workos-inc/authkit-nextjs";
 import { getAuthenticatedInvestor } from "@/lib/auth/workos-session";
 
@@ -125,8 +128,14 @@ const CONFIGURED_SMTP_CONFIG: Readonly<SmtpConfig> = {
 };
 
 describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.mocked(withAuth).mockReset();
+    vi.mocked(getAuthenticatedInvestor).mockReset();
+    mockCreateTransport.mockReturnValue({
+      sendMail: mockSendMail,
+    });
+    await clearInvestmentLeadCooldowns();
   });
 
   // =========================================================================
@@ -456,27 +465,81 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
   // Layer 2: Application Server Action
   // =========================================================================
   describe("Layer 2: Application - submitInvestmentLeadAction Server Action Behavior", () => {
-    it("should reject unauthenticated requests immediately with UNAUTHENTICATED error and not dispatch email", async () => {
+    it("should reject submission if payload is missing or has invalid email format (@spec BBC-020-SPEC-1)", async () => {
       // Arrange
-      // Step 1: Mock WorkOS session to return null (unauthenticated visitor)
-      // Authority Guard: Invariant - unauthenticated requests must be blocked before invoking SMTP
+      // Invariant: Unauthenticated requests without valid investor payload must fail fast
       vi.mocked(withAuth).mockResolvedValueOnce({ user: null } as any);
       vi.mocked(getAuthenticatedInvestor).mockRejectedValueOnce(new Error("UNAUTHENTICATED"));
 
       // Act
-      // Step 2: Invoke Server Action without authenticated session
+      // Step 1: Call action without payload or authenticated session
       const result = await submitInvestmentLeadAction();
 
       // Assert
-      // Step 3: Verify rejection and confirm no SMTP dispatch occurred
+      // Step 2: Confirm rejection without triggering SMTP
       expect(result.success).toBe(false);
-      expect(result.error).toMatch(/UNAUTHENTICATED|UNAUTHORIZED/i);
+      expect(result.error).toMatch(/UNAUTHENTICATED|INVALID/i);
       expect(sendSmtpEmail).not.toHaveBeenCalled();
     });
 
-    it("should validate session, orchestrate domain pipeline, and dispatch email to contacto@bluebrick.capital", async () => {
+    it("should route notification email to configurable LEAD_NOTIFICATION_EMAIL and accept connected investor payload (@spec BBC-020-SPEC-1)", async () => {
       // Arrange
-      // Step 1: Mock active authenticated WorkOS investor session
+      // Step 1: Configure destination recipient via environment variable
+      const originalEnv = process.env.LEAD_NOTIFICATION_EMAIL;
+      process.env.LEAD_NOTIFICATION_EMAIL = "jsosa@primalcodelab.com";
+
+      // Step 2: Simulate unauthenticated WorkOS session (e.g. Server Action POST context in production/local)
+      vi.mocked(withAuth).mockResolvedValueOnce({ user: null } as any);
+      vi.mocked(getAuthenticatedInvestor).mockResolvedValueOnce({
+        id: "usr_jsosa_test",
+        email: "jsosa@primalcodelab.com",
+        firstName: "Jeison",
+        lastName: "Sosa",
+        avatarUrl: null,
+        tier: "Inversionista Privado",
+        createdAt: new Date("2026-01-01"),
+      });
+
+      // Step 3: Connected investor payload supplied by dashboard
+      const payload = {
+        investorId: "usr_jsosa_test",
+        investorEmail: "jsosa@primalcodelab.com",
+        investorName: "Jeison Sosa",
+        tier: "Inversionista Privado",
+        metadata: { source: "dashboard_reinvestment_cta" },
+      };
+
+      try {
+        // Act
+        // Step 4: Invoke Server Action with connected investor payload
+        const result = await submitInvestmentLeadAction(payload);
+
+        // Assert
+        // Step 5: Verify successful delivery to configured recipient with connected investor data
+        expect(result.success).toBe(true);
+        expect(sendSmtpEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            to: "jsosa@primalcodelab.com", // Recipient must be the configured LEAD_NOTIFICATION_EMAIL
+            replyTo: "jsosa@primalcodelab.com", // Reply-to must be the connected investor's email
+            subject: expect.stringMatching(/lead|inversión|jeison sosa/i),
+            html: expect.stringContaining("jsosa@primalcodelab.com"),
+          })
+        );
+      } finally {
+        // Restore environment
+        if (originalEnv !== undefined) {
+          process.env.LEAD_NOTIFICATION_EMAIL = originalEnv;
+        } else {
+          delete process.env.LEAD_NOTIFICATION_EMAIL;
+        }
+      }
+    });
+
+    it("should fall back to contacto@bluebrick.capital if LEAD_NOTIFICATION_EMAIL is unset (@spec BBC-020-SPEC-1)", async () => {
+      // Arrange
+      const originalEnv = process.env.LEAD_NOTIFICATION_EMAIL;
+      delete process.env.LEAD_NOTIFICATION_EMAIL;
+
       const mockInvestor = {
         id: "usr_01HXYZ123456789",
         email: "sofia.martinez@bluebrick.investments",
@@ -486,7 +549,7 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
         tier: "Inversionista Privado",
         createdAt: new Date("2021-01-01"),
       };
-      vi.mocked(withAuth).mockResolvedValueOnce({
+      vi.mocked(withAuth).mockResolvedValue({
         user: {
           id: mockInvestor.id,
           email: mockInvestor.email,
@@ -494,25 +557,31 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
           lastName: mockInvestor.lastName,
         },
       } as any);
-      vi.mocked(getAuthenticatedInvestor).mockResolvedValueOnce(mockInvestor);
+      vi.mocked(getAuthenticatedInvestor).mockResolvedValue(mockInvestor);
 
-      // Act
-      // Step 2: Invoke Server Action on behalf of authenticated investor
-      const result = await submitInvestmentLeadAction({
-        metadata: { source: "reinvestment_opportunities_cta" },
-      });
+      try {
+        // Act
+        const result = await submitInvestmentLeadAction({
+          investorId: mockInvestor.id,
+          investorEmail: mockInvestor.email,
+          investorName: "Sofía Martínez",
+          tier: mockInvestor.tier,
+          metadata: { source: "reinvestment_opportunities_cta" },
+        });
 
-      // Assert
-      // Step 3: Verify action result and verify destination address and payload details in SMTP dispatch
-      expect(result.success).toBe(true);
-      expect(sendSmtpEmail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          to: "contacto@bluebrick.capital",
-          subject: expect.stringMatching(/lead|inversión|sofía martínez/i),
-          html: expect.stringContaining("sofia.martinez@bluebrick.investments"),
-          text: expect.stringContaining("sofia.martinez@bluebrick.investments"),
-        })
-      );
+        // Assert
+        expect(result.success).toBe(true);
+        expect(sendSmtpEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            to: "contacto@bluebrick.capital",
+            replyTo: "sofia.martinez@bluebrick.investments",
+          })
+        );
+      } finally {
+        if (originalEnv !== undefined) {
+          process.env.LEAD_NOTIFICATION_EMAIL = originalEnv;
+        }
+      }
     });
 
     it("should enforce rate-limiting / cooldown to prevent rapid duplicate submissions from the same session", async () => {
