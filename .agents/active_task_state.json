@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "task_id": "BBC-19",
   "branch": "fix/jaymusicmachine-BBC-19-social-sharing-card-preview",
-  "current_phase": "PHASE_7_VALIDATED",
+  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": {
       "completed": true
@@ -26,7 +26,7 @@
       "completed": true
     },
     "PHASE_8_HUMAN_MERGE_APPROVED": {
-      "completed": false
+      "completed": true
     }
   }
 }
