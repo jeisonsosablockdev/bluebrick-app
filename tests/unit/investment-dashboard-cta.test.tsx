@@ -130,11 +130,17 @@ describe("SPEC BBC-17: Investment Dashboard CTA Lead Generation (@spec BBC-17)",
     fireEvent.click(ctaButton);
 
     // Assert: Verify action invocation and reactive UI updates
-    // Step 5: Verify server action was called with source metadata
+    // Step 5: Verify server action was called with connected investor data and source metadata
     expect(submitInvestmentLeadAction).toHaveBeenCalledTimes(1);
-    expect(submitInvestmentLeadAction).toHaveBeenCalledWith({
-      metadata: { source: "dashboard_reinvestment_cta" },
-    });
+    expect(submitInvestmentLeadAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        investorId: "usr_01HXYZ123456789",
+        investorEmail: "sofia.martinez@bluebrick.investments",
+        investorName: "Sofía Martínez",
+        tier: "BRONZE",
+        metadata: { source: "dashboard_reinvestment_cta" },
+      })
+    );
 
     // Step 6: Verify success feedback is rendered with accessible role
     await waitFor(() => {
