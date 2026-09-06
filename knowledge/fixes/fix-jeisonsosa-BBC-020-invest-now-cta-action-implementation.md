@@ -10,26 +10,26 @@
 - **Security Auditor**: `security` (validación de esquemas Zod y sanitización de entrada)
 
 ## 2. Descripción de la Solución y Arquitectura en 4 Capas
-La solución desacopla la ejecución de la acción del proveedor de autenticación y utiliza la base de datos de Neon PostgreSQL como fuente de verdad de la identidad del usuario, enviando el correo de confirmación directamente al usuario conectado (`validatedLead.investorEmail`):
+La solución desacopla la ejecución de la acción del proveedor de autenticación y utiliza la base de datos de Neon PostgreSQL como fuente de verdad de la identidad del usuario, enviando el correo de notificación al buzón configurado dinámicamente mediante variables de entorno:
 
 1. **Capa 1: Presentación (`apps/web/src/components/dashboard/investment-dashboard.tsx`)**:
-   - `handleInvestLeadClick` extrae los datos del inversionista conectado ya provistos desde el servidor y la base de datos (`initialData.investor`), incluyendo `investorId`, `investorName`, `investorEmail` y `tier`.
+   - `handleInvestLeadClick` extrae los datos del inversionista conectado provistos desde el servidor y la base de datos (`initialData.investor`), incluyendo `investorId`, `investorName`, `investorEmail` y `tier`.
    - Invoca `submitInvestmentLeadAction` pasando este payload estructurado, manteniendo spinner (`isSubmittingLead`), feedback reactivo accesible (`role="status"`, `aria-live="polite"`) y estados de error.
 
 2. **Capa 2: Aplicación / Server Action (`apps/web/src/lib/auth/investment-actions.ts`)**:
-   - Elimina la dependencia frágil de `withAuth()` que falla en las peticiones POST de Server Actions tanto en producción como en local.
+   - Elimina la dependencia frágil de `withAuth()` que falla en peticiones POST de Server Actions en producción y local.
    - Resuelve y verifica al inversionista consultando el repositorio de base de datos (`UserRepository` / `InvestmentRepository`). Si el payload contiene un correo o ID válido registrado en la base de datos o en la sesión, procede con la validación de dominio.
-   - **Destinatario del Correo**: El destinatario principal (`to:`) del despacho SMTP es estrictamente el correo del usuario conectado (`validatedLead.investorEmail`).
-   - Opcionalmente despacha copia (`cc` o `bcc`) a la casilla institucional (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` o `contacto@bluebrick.capital`).
+   - **Buzón Receptor Configurable**: El destinatario del correo (`to:`) se resuelve dinámicamente desde la variable de entorno `process.env.LEAD_NOTIFICATION_EMAIL` (con fallback a `process.env.SMTP_TO` o `contacto@bluebrick.capital`), permitiendo cambiarlo fácilmente para testing (`jsosa@primalcodelab.com`) o producción sin modificar código.
+   - **Remitente y Respuesta**: El contenido del lead refleja al inversionista conectado, y `replyTo: validatedLead.investorEmail` para poder responderle directamente.
    - Aplica el cooldown anti-spam de 60 segundos por usuario (`investorId`).
 
 3. **Capa 3: Dominio y Pipelines (`apps/web/src/lib/pipelines/investment-lead/`)**:
    - `investment-lead-schema.ts`: Esquema estricto Zod para validar `investorEmail`, `investorName`, `investorId`, `tier` y `timestamp`.
-   - `investment-lead-template.ts`: Plantilla personalizada para el inversionista receptor, confirmando la recepción formal de su intención de inversión.
+   - `investment-lead-template.ts`: Plantilla estructurada con los datos del inversionista que solicita reinvertir y detalles de contacto.
 
 4. **Capa 4: Infraestructura (`apps/web/src/lib/infrastructure/`)**:
    - `user-repository.ts`: Añade método `findByEmail(email: string): Promise<DbUser | null>` para consulta directa por email contra Neon PostgreSQL.
-   - `smtp-mailer.ts`: Despacho SMTP resiliente mediante Nodemailer con transporte seguro (puerto 465/587) o fallback a dry-run loggeado en consola cuando las credenciales no están presentes en local.
+   - `smtp-mailer.ts`: Despacho SMTP resiliente mediante Nodemailer con transporte seguro o fallback dry-run loggeado en consola.
 
 ## 3. Desglose de SPECs y Secuencia Lógica
 - **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback`
@@ -73,25 +73,25 @@ La solución desacopla la ejecución de la acción del proveedor de autenticaci�
 - **Security Auditor**: `security` (Zod schemas & input sanitization)
 
 ## 2. Solution Overview & 4-Layer Architecture
-The solution decouples action execution from the auth provider and leverages Neon PostgreSQL database as the single source of truth for user identity, dispatching the confirmation email directly to the connected user (`validatedLead.investorEmail`):
+The solution decouples action execution from the auth provider, uses Neon PostgreSQL database as the source of truth for the connected user, and routes notifications to a dynamically configurable inbox:
 
 1. **Layer 1: Presentation (`apps/web/src/components/dashboard/investment-dashboard.tsx`)**:
-   - `handleInvestLeadClick` extracts the connected investor metadata already provided by the database on server render (`initialData.investor`), including `investorId`, `investorName`, `investorEmail`, and `tier`.
+   - `handleInvestLeadClick` extracts connected investor metadata from `initialData.investor` (`investorId`, `investorName`, `investorEmail`, `tier`).
    - Dispatches `submitInvestmentLeadAction` forwarding this structured payload, maintaining loading spinner (`isSubmittingLead`), accessible status feedback (`role="status"`, `aria-live="polite"`), and error states.
 
 2. **Layer 2: Application / Server Action (`apps/web/src/lib/auth/investment-actions.ts`)**:
-   - Eliminates fragile dependency on `withAuth()` which fails during Server Action POST requests in both production and local setups.
-   - Verifies the investor against the database repository (`UserRepository` / `InvestmentRepository`). When valid investor metadata is supplied or present in session, it proceeds to domain validation.
-   - **Email Recipient**: Primary recipient (`to:`) for SMTP dispatch is strictly the connected user's email (`validatedLead.investorEmail`).
-   - Optionally sends a copy (`cc` or `bcc`) to corporate lead inbox (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` or `contacto@bluebrick.capital`).
+   - Eliminates fragile `withAuth()` guard that fails during Server Action POST requests in both production and local setups.
+   - Verifies the investor against the database repository (`UserRepository` / `InvestmentRepository`).
+   - **Configurable Destination Inbox**: Outbound lead notification recipient (`to:`) is dynamically resolved via `process.env.LEAD_NOTIFICATION_EMAIL` (falling back to `process.env.SMTP_TO` or `contacto@bluebrick.capital`), easily configurable for testing (`jsosa@primalcodelab.com`) or production without code edits.
+   - **Lead Context & Reply-To**: Contains the connected user's metadata with `replyTo: validatedLead.investorEmail`.
    - Enforces 60-second anti-spam cooldown per investor (`investorId`).
 
 3. **Layer 3: Domain & Pipelines (`apps/web/src/lib/pipelines/investment-lead/`)**:
    - `investment-lead-schema.ts`: Strict Zod schema validating `investorEmail`, `investorName`, `investorId`, `tier`, and `timestamp`.
-   - `investment-lead-template.ts`: Tailored confirmation template for the recipient investor.
+   - `investment-lead-template.ts`: Tailored notification template for the operations/sales team detailing the investor request.
 
 4. **Layer 4: Infrastructure (`apps/web/src/lib/infrastructure/`)**:
-   - `user-repository.ts`: Adds `findByEmail(email: string): Promise<DbUser | null>` for direct database resolution.
+   - `user-repository.ts`: Adds `findByEmail(email: string): Promise<DbUser | null>`.
    - `smtp-mailer.ts`: Resilient Nodemailer SMTP transport with dry-run fallback.
 
 ## 3. Atomic Slices & Logical Sequence
