@@ -168,6 +168,14 @@ export async function submitInvestmentLeadAction(
     process.env.SMTP_TO?.trim() ||
     "contacto@bluebrick.capital";
 
+  console.log("[InvestmentLeadAction] 📥 Procesando solicitud de lead:", {
+    investorId: resolvedInvestor.id,
+    investorName: validatedLead.investorName,
+    investorEmail: validatedLead.investorEmail,
+    recipientEmail,
+    replyTo: validatedLead.investorEmail,
+  });
+
   // Step 6: Dispatch email notification via SMTP transport with replyTo set to the connected investor
   const emailResult = await sendSmtpEmail({
     to: recipientEmail,
@@ -178,11 +186,25 @@ export async function submitInvestmentLeadAction(
   });
 
   if (!emailResult.success) {
+    console.error(
+      `[InvestmentLeadAction] ❌ Error en despacho SMTP hacia <${recipientEmail}>:`,
+      emailResult.error
+    );
     return {
       success: false,
       message: "No fue posible enviar la notificación en este momento.",
       error: emailResult.error ?? "SMTP_DISPATCH_FAILED",
     };
+  }
+
+  if (emailResult.dryRun) {
+    console.warn(
+      `[InvestmentLeadAction] ⚠️ AVISO DRY-RUN: El correo hacia <${recipientEmail}> NO fue enviado por la red porque faltan las credenciales SMTP en .env.local (SMTP_HOST, SMTP_USER, SMTP_PASS). El sistema operó en modo simulado.`
+    );
+  } else {
+    console.log(
+      `[InvestmentLeadAction] 🚀 Correo real enviado exitosamente hacia <${recipientEmail}> (ID: ${emailResult.messageId})`
+    );
   }
 
   // Step 7: Update cooldown timestamp for this investor upon successful dispatch
@@ -191,6 +213,8 @@ export async function submitInvestmentLeadAction(
   // Step 8: Return structured success response contract
   return {
     success: true,
-    message: "Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad.",
+    message: emailResult.dryRun
+      ? "Solicitud registrada (Modo Simulado: credenciales SMTP pendientes de configurar)."
+      : "Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad.",
   };
 }
