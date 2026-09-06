@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-05T00:25:45.080Z",
+  "generatedAt": "2026-09-06T04:30:12.350Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -332,6 +332,30 @@
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-018-deduplicate-dashboard-opportunities.md"
     },
     {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-18-idempotent-sync-multi-project-portfolio.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-BBC-19-social-sharing-card-preview",
+      "path": "knowledge/fixes/fix-jaymusicmachine-BBC-19-social-sharing-card-preview.md"
+    },
+    {
       "id": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation.md",
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard-implementation",
@@ -342,6 +366,18 @@
       "type": "fix",
       "label": "fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard",
       "path": "knowledge/fixes/fix-jaymusicmachine-BBC-6-responsive-mobile-dashboard.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-i18n-localization-fix-implementation.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-i18n-localization-fix-implementation",
+      "path": "knowledge/fixes/fix-jaymusicmachine-i18n-localization-fix-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jaymusicmachine-i18n-localization-fix.md",
+      "type": "fix",
+      "label": "fix-jaymusicmachine-i18n-localization-fix",
+      "path": "knowledge/fixes/fix-jaymusicmachine-i18n-localization-fix.md"
     },
     {
       "id": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes-implementation.md",

@@ -97,6 +97,12 @@ export const es: Dictionary = {
         "Descubre nuevas oportunidades inmobiliarias seleccionadas por Blue Brick. Amplía tu exposición a activos reales, diversifica tu capital y encuentra nuevas oportunidades para seguir construyendo patrimonio.",
       ctaButton: "Invertir ahora",
       submitting: "Enviando solicitud...",
+      success:
+        "Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad.",
+      successDryRun:
+        "Solicitud registrada (Modo Simulado: credenciales SMTP pendientes de configurar).",
+      cooldownError:
+        "Por favor espere antes de enviar una nueva solicitud de inversión.",
       defaultError: "Ocurrió un error al procesar su solicitud.",
       unexpectedError: "Error inesperado al conectar con el servidor.",
       estimatedRoi: "ROI est. {roi}%",

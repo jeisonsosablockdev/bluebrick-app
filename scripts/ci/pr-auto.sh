@@ -15,6 +15,10 @@ if [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
   DEFAULT_TITLE="feat(ai-ingestion): Drive Folder Image Ingestion & Vercel Blob Sync (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"deduplicate"* ]]; then
   DEFAULT_TITLE="fix(ai-ingestion): Deduplicate Dashboard Opportunities (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
+  DEFAULT_TITLE="fix(seo): OpenGraph Dynamic Card Preview and Social Sharing Metadata Alignment (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"invest-now-cta-action"* ]]; then
+  DEFAULT_TITLE="fix(dashboard): connected investor lead capture with portfolio brief and i18n feedback (${ISSUE_ID})"
 else
   DEFAULT_TITLE="feat(auth): Investor Login Redesign, Theme System & Phase Progress (${ISSUE_ID})"
 fi

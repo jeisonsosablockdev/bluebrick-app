@@ -123,6 +123,9 @@ export async function sendSmtpEmail(
   // Step 2: Determine if transport should operate in dry-run mode
   if (!resolvedConfig || !resolvedConfig.auth) {
     const dryRunId = `dry-run-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    console.warn(
+      `[SmtpMailer] ⚠️ Credenciales SMTP ausentes (SMTP_HOST: "${process.env.SMTP_HOST || ""}", SMTP_USER: "${process.env.SMTP_USER || ""}"). Operando en modo DRY-RUN. El correo hacia <${params.to}> NO se enviará por la red. MessageId simulado: ${dryRunId}`
+    );
     return {
       success: true,
       messageId: dryRunId,
@@ -132,6 +135,9 @@ export async function sendSmtpEmail(
 
   // Step 3: Instantiate nodemailer transport and dispatch email
   try {
+    console.log(
+      `[SmtpMailer] 📤 Despachando correo vía SMTP (${resolvedConfig.host}:${resolvedConfig.port}, secure: ${resolvedConfig.secure}) hacia <${params.to}>. Asunto: "${params.subject}"`
+    );
     const transporter = nodemailer.createTransport({
       host: resolvedConfig.host,
       port: resolvedConfig.port,
@@ -152,6 +158,10 @@ export async function sendSmtpEmail(
       replyTo: params.replyTo,
     });
 
+    console.log(
+      `[SmtpMailer] ✅ Correo despachado exitosamente vía SMTP hacia <${params.to}>. ID del mensaje: ${info?.messageId}`
+    );
+
     return {
       success: true,
       messageId: info?.messageId ?? `sent-${Date.now()}`,
@@ -166,6 +176,10 @@ export async function sendSmtpEmail(
     const sanitizedError = passToRedact
       ? rawErrorMessage.replaceAll(passToRedact, "[REDACTED]")
       : rawErrorMessage;
+
+    console.error(
+      `[SmtpMailer] ❌ Error en transporte SMTP al enviar a <${params.to}>: ${sanitizedError}`
+    );
 
     return {
       success: false,

@@ -132,4 +132,39 @@ describe("BBC-009: Translation Dictionaries & Zod Validation (@spec BBC-009-DICT
     // @ts-expect-error Testing invalid runtime locale
     expect(dictionaryLoaderAdapter.loadDictionary("fr")).toBe(es);
   });
+
+  it("should contain localized investment lead feedback tokens across ES, EN, and PT (@spec BBC-020-SPEC-3-I18N)", () => {
+    // Spanish
+    expect(es.dashboard.reinvestment.success).toBe(
+      "Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad."
+    );
+    expect(es.dashboard.reinvestment.successDryRun).toBe(
+      "Solicitud registrada (Modo Simulado: credenciales SMTP pendientes de configurar)."
+    );
+    expect(es.dashboard.reinvestment.cooldownError).toBe(
+      "Por favor espere antes de enviar una nueva solicitud de inversión."
+    );
+
+    // English
+    expect(en.dashboard.reinvestment.success).toBe(
+      "Investment request submitted successfully. Our team will contact you shortly."
+    );
+    expect(en.dashboard.reinvestment.successDryRun).toBe(
+      "Request registered (Simulated Mode: SMTP credentials pending configuration)."
+    );
+    expect(en.dashboard.reinvestment.cooldownError).toBe(
+      "Please wait before submitting a new investment request."
+    );
+
+    // Portuguese
+    expect(pt.dashboard.reinvestment.success).toBe(
+      "Solicitação de investimento enviada com sucesso. Nossa equipe entrará em contato em breve."
+    );
+    expect(pt.dashboard.reinvestment.successDryRun).toBe(
+      "Solicitação registrada (Modo Simulado: credenciais SMTP pendentes de configuração)."
+    );
+    expect(pt.dashboard.reinvestment.cooldownError).toBe(
+      "Por favor aguarde antes de enviar uma nova solicitação de investimento."
+    );
+  });
 });

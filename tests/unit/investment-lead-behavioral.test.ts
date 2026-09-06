@@ -26,7 +26,10 @@ import {
   type SendEmailParams,
   type SmtpConfig,
 } from "@/lib/infrastructure/email/smtp-mailer";
-import { submitInvestmentLeadAction } from "@/lib/auth/investment-actions";
+import {
+  submitInvestmentLeadAction,
+  clearInvestmentLeadCooldowns,
+} from "@/lib/auth/investment-actions";
 import { withAuth } from "@workos-inc/authkit-nextjs";
 import { getAuthenticatedInvestor } from "@/lib/auth/workos-session";
 
@@ -125,8 +128,14 @@ const CONFIGURED_SMTP_CONFIG: Readonly<SmtpConfig> = {
 };
 
 describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.mocked(withAuth).mockReset();
+    vi.mocked(getAuthenticatedInvestor).mockReset();
+    mockCreateTransport.mockReturnValue({
+      sendMail: mockSendMail,
+    });
+    await clearInvestmentLeadCooldowns();
   });
 
   // =========================================================================
@@ -288,6 +297,46 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
         expect(result.data.investorEmail).toBe("sofia.martinez@bluebrick.investments");
       }
     });
+
+    it("should parse and validate enriched investorPhone, reinvestmentCapital, totalInvested, and currentInvestments (@spec BBC-020-SPEC-2-SCHEMA)", () => {
+      // Arrange
+      // Step 1: Construct enriched lead payload with contact and portfolio holdings
+      const enrichedInput = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+          {
+            propertyName: "Torre Corporativa Sabana",
+            investedAmount: 60000,
+            roi: 11.8,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Validate against domain schema
+      const result = investmentLeadSchema.safeParse(enrichedInput);
+
+      // Assert
+      // Step 3: Ensure all enriched fields are preserved and strictly typed
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.investorPhone).toBe("+57 300 123 4567");
+        expect(result.data.reinvestmentCapital).toBe(25400);
+        expect(result.data.totalInvested).toBe(163000);
+        expect(result.data.currentInvestments).toHaveLength(2);
+        expect(result.data.currentInvestments?.[0]?.propertyName).toBe("Residencial Vista Norte");
+      }
+    });
   });
 
   // =========================================================================
@@ -367,6 +416,83 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
       // Step 3: Verify absence of any HTML element tags (<...>)
       // Edge Case: Plain-text MIME parts must remain strictly un-formatted text
       expect(text).not.toMatch(/<[^>]+>/);
+    });
+
+    it("should render investor phone, reinvestment brief card, and current holdings breakdown in HTML email (@spec BBC-020-SPEC-2-HTML-TEMPLATE)", () => {
+      // Arrange
+      // Step 1: Set up enriched lead payload with contact and portfolio holdings
+      const enrichedPayload: InvestmentLeadPayload = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+          {
+            propertyName: "Torre Corporativa Sabana",
+            investedAmount: 60000,
+            roi: 11.8,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Generate HTML email
+      const html = buildInvestmentLeadHtml(enrichedPayload);
+
+      // Assert
+      // Step 3: Verify investor phone is rendered in contact card
+      expect(html).toContain("Teléfono");
+      expect(html).toContain("+57 300 123 4567");
+
+      // Step 4: Verify reinvestment brief card is prominently displayed
+      expect(html).toMatch(/Capital disponible para reinvertir|Capital para reinvertir/i);
+      expect(html).toContain("25,400");
+
+      // Step 5: Verify holdings table lists active properties and amounts
+      expect(html).toMatch(/Inversiones Actuales|Portafolio Actual/i);
+      expect(html).toContain("Residencial Vista Norte");
+      expect(html).toContain("Torre Corporativa Sabana");
+      expect(html).toContain("45,000");
+      expect(html).toContain("60,000");
+      expect(html).toContain("163,000");
+    });
+
+    it("should render phone, reinvestment brief, and current investments in plain text template (@spec BBC-020-SPEC-2-TEXT-TEMPLATE)", () => {
+      // Arrange
+      // Step 1: Set up enriched lead payload
+      const enrichedPayload: InvestmentLeadPayload = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Generate plain text
+      const text = buildInvestmentLeadPlainText(enrichedPayload);
+
+      // Assert
+      // Step 3: Assert plain text representation
+      expect(text).toContain("Teléfono: +57 300 123 4567");
+      expect(text).toMatch(/Capital para reinvertir/i);
+      expect(text).toContain("25,400");
+      expect(text).toContain("Residencial Vista Norte");
+      expect(text).toContain("45,000");
     });
   });
 
@@ -456,27 +582,81 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
   // Layer 2: Application Server Action
   // =========================================================================
   describe("Layer 2: Application - submitInvestmentLeadAction Server Action Behavior", () => {
-    it("should reject unauthenticated requests immediately with UNAUTHENTICATED error and not dispatch email", async () => {
+    it("should reject submission if payload is missing or has invalid email format (@spec BBC-020-SPEC-1)", async () => {
       // Arrange
-      // Step 1: Mock WorkOS session to return null (unauthenticated visitor)
-      // Authority Guard: Invariant - unauthenticated requests must be blocked before invoking SMTP
+      // Invariant: Unauthenticated requests without valid investor payload must fail fast
       vi.mocked(withAuth).mockResolvedValueOnce({ user: null } as any);
       vi.mocked(getAuthenticatedInvestor).mockRejectedValueOnce(new Error("UNAUTHENTICATED"));
 
       // Act
-      // Step 2: Invoke Server Action without authenticated session
+      // Step 1: Call action without payload or authenticated session
       const result = await submitInvestmentLeadAction();
 
       // Assert
-      // Step 3: Verify rejection and confirm no SMTP dispatch occurred
+      // Step 2: Confirm rejection without triggering SMTP
       expect(result.success).toBe(false);
-      expect(result.error).toMatch(/UNAUTHENTICATED|UNAUTHORIZED/i);
+      expect(result.error).toMatch(/UNAUTHENTICATED|INVALID/i);
       expect(sendSmtpEmail).not.toHaveBeenCalled();
     });
 
-    it("should validate session, orchestrate domain pipeline, and dispatch email to contacto@bluebrick.capital", async () => {
+    it("should route notification email to configurable LEAD_NOTIFICATION_EMAIL and accept connected investor payload (@spec BBC-020-SPEC-1)", async () => {
       // Arrange
-      // Step 1: Mock active authenticated WorkOS investor session
+      // Step 1: Configure destination recipient via environment variable
+      const originalEnv = process.env.LEAD_NOTIFICATION_EMAIL;
+      process.env.LEAD_NOTIFICATION_EMAIL = "jsosa@primalcodelab.com";
+
+      // Step 2: Simulate unauthenticated WorkOS session (e.g. Server Action POST context in production/local)
+      vi.mocked(withAuth).mockResolvedValueOnce({ user: null } as any);
+      vi.mocked(getAuthenticatedInvestor).mockResolvedValueOnce({
+        id: "usr_jsosa_test",
+        email: "jsosa@primalcodelab.com",
+        firstName: "Jeison",
+        lastName: "Sosa",
+        avatarUrl: null,
+        tier: "Inversionista Privado",
+        createdAt: new Date("2026-01-01"),
+      });
+
+      // Step 3: Connected investor payload supplied by dashboard
+      const payload = {
+        investorId: "usr_jsosa_test",
+        investorEmail: "jsosa@primalcodelab.com",
+        investorName: "Jeison Sosa",
+        tier: "Inversionista Privado",
+        metadata: { source: "dashboard_reinvestment_cta" },
+      };
+
+      try {
+        // Act
+        // Step 4: Invoke Server Action with connected investor payload
+        const result = await submitInvestmentLeadAction(payload);
+
+        // Assert
+        // Step 5: Verify successful delivery to configured recipient with connected investor data
+        expect(result.success).toBe(true);
+        expect(sendSmtpEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            to: "jsosa@primalcodelab.com", // Recipient must be the configured LEAD_NOTIFICATION_EMAIL
+            replyTo: "jsosa@primalcodelab.com", // Reply-to must be the connected investor's email
+            subject: expect.stringMatching(/lead|inversión|jeison sosa/i),
+            html: expect.stringContaining("jsosa@primalcodelab.com"),
+          })
+        );
+      } finally {
+        // Restore environment
+        if (originalEnv !== undefined) {
+          process.env.LEAD_NOTIFICATION_EMAIL = originalEnv;
+        } else {
+          delete process.env.LEAD_NOTIFICATION_EMAIL;
+        }
+      }
+    });
+
+    it("should fall back to contacto@bluebrick.capital if LEAD_NOTIFICATION_EMAIL is unset (@spec BBC-020-SPEC-1)", async () => {
+      // Arrange
+      const originalEnv = process.env.LEAD_NOTIFICATION_EMAIL;
+      delete process.env.LEAD_NOTIFICATION_EMAIL;
+
       const mockInvestor = {
         id: "usr_01HXYZ123456789",
         email: "sofia.martinez@bluebrick.investments",
@@ -486,7 +666,7 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
         tier: "Inversionista Privado",
         createdAt: new Date("2021-01-01"),
       };
-      vi.mocked(withAuth).mockResolvedValueOnce({
+      vi.mocked(withAuth).mockResolvedValue({
         user: {
           id: mockInvestor.id,
           email: mockInvestor.email,
@@ -494,25 +674,31 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
           lastName: mockInvestor.lastName,
         },
       } as any);
-      vi.mocked(getAuthenticatedInvestor).mockResolvedValueOnce(mockInvestor);
+      vi.mocked(getAuthenticatedInvestor).mockResolvedValue(mockInvestor);
 
-      // Act
-      // Step 2: Invoke Server Action on behalf of authenticated investor
-      const result = await submitInvestmentLeadAction({
-        metadata: { source: "reinvestment_opportunities_cta" },
-      });
+      try {
+        // Act
+        const result = await submitInvestmentLeadAction({
+          investorId: mockInvestor.id,
+          investorEmail: mockInvestor.email,
+          investorName: "Sofía Martínez",
+          tier: mockInvestor.tier,
+          metadata: { source: "reinvestment_opportunities_cta" },
+        });
 
-      // Assert
-      // Step 3: Verify action result and verify destination address and payload details in SMTP dispatch
-      expect(result.success).toBe(true);
-      expect(sendSmtpEmail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          to: "contacto@bluebrick.capital",
-          subject: expect.stringMatching(/lead|inversión|sofía martínez/i),
-          html: expect.stringContaining("sofia.martinez@bluebrick.investments"),
-          text: expect.stringContaining("sofia.martinez@bluebrick.investments"),
-        })
-      );
+        // Assert
+        expect(result.success).toBe(true);
+        expect(sendSmtpEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            to: "contacto@bluebrick.capital",
+            replyTo: "sofia.martinez@bluebrick.investments",
+          })
+        );
+      } finally {
+        if (originalEnv !== undefined) {
+          process.env.LEAD_NOTIFICATION_EMAIL = originalEnv;
+        }
+      }
     });
 
     it("should enforce rate-limiting / cooldown to prevent rapid duplicate submissions from the same session", async () => {
@@ -553,6 +739,41 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
 
       // Step 5: Assert SMTP dispatch was only triggered once
       expect(sendSmtpEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it("should accept enriched lead payload with phone, reinvestmentCapital, and currentInvestments and forward to SMTP (@spec BBC-020-SPEC-2-SERVER-ACTION)", async () => {
+      // Arrange
+      // Step 1: Construct enriched lead payload with phone, capital, and active portfolio items
+      const payload = {
+        investorId: "usr_enriched_01",
+        investorName: "Jeison Sosa",
+        investorEmail: "jsosa@primalcodelab.com",
+        investorPhone: "+57 300 987 6543",
+        reinvestmentCapital: 32000,
+        totalInvested: 180000,
+        currentInvestments: [
+          {
+            propertyName: "Bush Garden BG-01",
+            investedAmount: 100000,
+            roi: 16.0,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Execute server action with enriched payload
+      const result = await submitInvestmentLeadAction(payload as any);
+
+      // Assert
+      // Step 3: Action succeeds and SMTP transport is invoked with phone and portfolio facts in HTML
+      expect(result.success).toBe(true);
+      expect(sendSmtpEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: expect.any(String),
+          html: expect.stringContaining("+57 300 987 6543"),
+        })
+      );
     });
   });
 });

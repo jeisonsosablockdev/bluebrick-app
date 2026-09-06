@@ -6,14 +6,25 @@
 
 import type { Metadata } from "next";
 
+/**
+ * Configuration options for generating page-level SEO and OpenGraph metadata.
+ */
 export interface SeoMetadataConfig {
+  /** Page title without brand suffix (suffix will be automatically appended). */
   title: string;
+  /** Primary meta description describing page value proposition. */
   description: string;
+  /** Relative pathname for canonical and OpenGraph URL resolution (e.g., '/dashboard'). */
   pathname?: string;
+  /** OpenGraph content type classification. */
   ogType?: "website" | "article";
+  /** Explicit social banner image URL override. */
   imageUrl?: string;
 }
 
+/**
+ * Schema.org FinancialService / RealEstateAgent structured JSON-LD entity definition.
+ */
 export interface SchemaOrgOrganization {
   "@context": "https://schema.org";
   "@type": "FinancialService" | "RealEstateAgent" | string[];
@@ -27,10 +38,10 @@ export interface SchemaOrgOrganization {
   paymentAccepted?: string;
 }
 
-const DEFAULT_SITE_URL = "https://bluebrick-app.vercel.app";
+const DEFAULT_SITE_URL = "https://portal.bluebrick.capital";
 const DEFAULT_SITE_NAME = "BlueBrick";
 const DEFAULT_DESCRIPTION =
-  "Plataforma institucional de inversión inmobiliaria fraccionada. Invierte en activos premium con retornos transparentes y dividendos mensuales.";
+  "Plataforma privada de inversión en fracciones inmobiliarias. Oportunidades seleccionadas para crear y hacer crecer tu patrimonio con capital inteligente y activos reales.";
 
 /**
  * Builds complete Next.js 16 App Router Metadata object.
@@ -91,6 +102,8 @@ export function buildPageMetadata(config: SeoMetadataConfig): Metadata {
 
 /**
  * Generates Schema.org JSON-LD structured data for the financial real estate investment platform.
+ *
+ * @returns SchemaOrgOrganization structured JSON-LD entity.
  */
 export function generatePlatformJsonLd(): SchemaOrgOrganization {
   // Step 1: Resolve base URL and metadata endpoints
