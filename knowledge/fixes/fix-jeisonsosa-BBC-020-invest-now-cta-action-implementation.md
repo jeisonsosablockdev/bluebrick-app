@@ -10,25 +10,26 @@
 - **Security Auditor**: `security` (validación de esquemas Zod y sanitización de entrada)
 
 ## 2. Descripción de la Solución y Arquitectura en 4 Capas
-La solución corrige el flujo completo de la llamada a la acción "Invertir ahora" para que tome la identidad del usuario conectado y despache el correo de confirmación directamente a su casilla de correo (`validatedLead.investorEmail`), con soporte para modo testing (`jsosa@primalcodelab.com`):
+La solución desacopla la ejecución de la acción del proveedor de autenticación y utiliza la base de datos de Neon PostgreSQL como fuente de verdad de la identidad del usuario, enviando el correo de confirmación directamente al usuario conectado (`validatedLead.investorEmail`):
 
 1. **Capa 1: Presentación (`apps/web/src/components/dashboard/investment-dashboard.tsx`)**:
-   - `handleInvestLeadClick` actualiza la invocación de `submitInvestmentLeadAction` pasando los metadatos del inversionista conectado (`investorId`, `investorName`, `investorEmail`, `tier`) obtenidos desde `initialData.investor`.
-   - Se mantiene el spinner de carga (`isSubmittingLead`), feedback reactivo accesible (`role="status"`, `aria-live="polite"`) y mensajes en el idioma activo vía `useTranslation()`.
+   - `handleInvestLeadClick` extrae los datos del inversionista conectado ya provistos desde el servidor y la base de datos (`initialData.investor`), incluyendo `investorId`, `investorName`, `investorEmail` y `tier`.
+   - Invoca `submitInvestmentLeadAction` pasando este payload estructurado, manteniendo spinner (`isSubmittingLead`), feedback reactivo accesible (`role="status"`, `aria-live="polite"`) y estados de error.
 
 2. **Capa 2: Aplicación / Server Action (`apps/web/src/lib/auth/investment-actions.ts`)**:
-   - Resuelve el inversionista de forma desacoplada y robusta:
-     1. Prioriza la sesión activa de WorkOS (`withAuth()`).
-     2. Si WorkOS no tiene sesión activa (entornos de prueba local, navegación con query param `?email=...`, o demo), resuelve el inversionista mediante el payload validado en conjunto con `getAuthenticatedInvestor()`.
-   - **Destinatario del Correo**: El destinatario principal (`to:`) del despacho SMTP es estrictamente `validatedLead.investorEmail` (la persona conectada).
-   - Opcionalmente añade copia (`cc` o `bcc`) a la casilla institucional (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` o `contacto@bluebrick.capital`), preservando la invariante de que quien hace clic es quien recibe la confirmación.
+   - Elimina la dependencia frágil de `withAuth()` que falla en las peticiones POST de Server Actions tanto en producción como en local.
+   - Resuelve y verifica al inversionista consultando el repositorio de base de datos (`UserRepository` / `InvestmentRepository`). Si el payload contiene un correo o ID válido registrado en la base de datos o en la sesión, procede con la validación de dominio.
+   - **Destinatario del Correo**: El destinatario principal (`to:`) del despacho SMTP es estrictamente el correo del usuario conectado (`validatedLead.investorEmail`).
+   - Opcionalmente despacha copia (`cc` o `bcc`) a la casilla institucional (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` o `contacto@bluebrick.capital`).
+   - Aplica el cooldown anti-spam de 60 segundos por usuario (`investorId`).
 
 3. **Capa 3: Dominio y Pipelines (`apps/web/src/lib/pipelines/investment-lead/`)**:
    - `investment-lead-schema.ts`: Esquema estricto Zod para validar `investorEmail`, `investorName`, `investorId`, `tier` y `timestamp`.
-   - `investment-lead-template.ts`: Plantilla bilingüe/personalizada para el inversionista receptor, confirmando la recepción formal de su intención de inversión inmobiliaria.
+   - `investment-lead-template.ts`: Plantilla personalizada para el inversionista receptor, confirmando la recepción formal de su intención de inversión.
 
-4. **Capa 4: Infraestructura (`apps/web/src/lib/infrastructure/email/smtp-mailer.ts`)**:
-   - Despacho SMTP resiliente mediante Nodemailer con transporte seguro (puerto 465/587) o fallback a dry-run loggeado en consola cuando las credenciales no están presentes en local.
+4. **Capa 4: Infraestructura (`apps/web/src/lib/infrastructure/`)**:
+   - `user-repository.ts`: Añade método `findByEmail(email: string): Promise<DbUser | null>` para consulta directa por email contra Neon PostgreSQL.
+   - `smtp-mailer.ts`: Despacho SMTP resiliente mediante Nodemailer con transporte seguro (puerto 465/587) o fallback a dry-run loggeado en consola cuando las credenciales no están presentes en local.
 
 ## 3. Desglose de SPECs y Secuencia Lógica
 - **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback`
@@ -72,25 +73,26 @@ La solución corrige el flujo completo de la llamada a la acción "Invertir ahor
 - **Security Auditor**: `security` (Zod schemas & input sanitization)
 
 ## 2. Solution Overview & 4-Layer Architecture
-The solution fixes the complete "Invest Now" CTA flow so that it captures the connected investor's identity and dispatches the confirmation email directly to their email address (`validatedLead.investorEmail`), with full support for testing environments (`jsosa@primalcodelab.com`):
+The solution decouples action execution from the auth provider and leverages Neon PostgreSQL database as the single source of truth for user identity, dispatching the confirmation email directly to the connected user (`validatedLead.investorEmail`):
 
 1. **Layer 1: Presentation (`apps/web/src/components/dashboard/investment-dashboard.tsx`)**:
-   - `handleInvestLeadClick` updates the call to `submitInvestmentLeadAction` passing connected investor attributes (`investorId`, `investorName`, `investorEmail`, `tier`) from `initialData.investor`.
-   - Preserves loading spinner (`isSubmittingLead`), accessible reactive status feedback (`role="status"`, `aria-live="polite"`), and multi-language strings via `useTranslation()`.
+   - `handleInvestLeadClick` extracts the connected investor metadata already provided by the database on server render (`initialData.investor`), including `investorId`, `investorName`, `investorEmail`, and `tier`.
+   - Dispatches `submitInvestmentLeadAction` forwarding this structured payload, maintaining loading spinner (`isSubmittingLead`), accessible status feedback (`role="status"`, `aria-live="polite"`), and error states.
 
 2. **Layer 2: Application / Server Action (`apps/web/src/lib/auth/investment-actions.ts`)**:
-   - Resolves investor identity in a decoupled and resilient manner:
-     1. Prioritizes active WorkOS session (`withAuth()`).
-     2. If WorkOS session is unavailable (local testing, query parameter `?email=...`, or demo), resolves identity from the validated client payload alongside `getAuthenticatedInvestor()`.
-   - **Email Recipient**: Primary recipient (`to:`) for SMTP dispatch is strictly `validatedLead.investorEmail` (the connected user).
-   - Optionally includes a copy (`cc` or `bcc`) to corporate inbox (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` or `contacto@bluebrick.capital`), preserving the invariant that whoever clicks receives confirmation.
+   - Eliminates fragile dependency on `withAuth()` which fails during Server Action POST requests in both production and local setups.
+   - Verifies the investor against the database repository (`UserRepository` / `InvestmentRepository`). When valid investor metadata is supplied or present in session, it proceeds to domain validation.
+   - **Email Recipient**: Primary recipient (`to:`) for SMTP dispatch is strictly the connected user's email (`validatedLead.investorEmail`).
+   - Optionally sends a copy (`cc` or `bcc`) to corporate lead inbox (`process.env.LEAD_NOTIFICATION_COPY_EMAIL` or `contacto@bluebrick.capital`).
+   - Enforces 60-second anti-spam cooldown per investor (`investorId`).
 
 3. **Layer 3: Domain & Pipelines (`apps/web/src/lib/pipelines/investment-lead/`)**:
-   - `investment-lead-schema.ts`: Strict Zod validation for `investorEmail`, `investorName`, `investorId`, `tier`, and `timestamp`.
-   - `investment-lead-template.ts`: Personalized investor template confirming receipt of their fractional real estate investment intent.
+   - `investment-lead-schema.ts`: Strict Zod schema validating `investorEmail`, `investorName`, `investorId`, `tier`, and `timestamp`.
+   - `investment-lead-template.ts`: Tailored confirmation template for the recipient investor.
 
-4. **Layer 4: Infrastructure (`apps/web/src/lib/infrastructure/email/smtp-mailer.ts`)**:
-   - Resilient Nodemailer SMTP transport (port 465/587) with dry-run console logging fallback when credentials are absent.
+4. **Layer 4: Infrastructure (`apps/web/src/lib/infrastructure/`)**:
+   - `user-repository.ts`: Adds `findByEmail(email: string): Promise<DbUser | null>` for direct database resolution.
+   - `smtp-mailer.ts`: Resilient Nodemailer SMTP transport with dry-run fallback.
 
 ## 3. Atomic Slices & Logical Sequence
 - **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback`
