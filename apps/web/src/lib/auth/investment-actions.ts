@@ -38,11 +38,24 @@ export async function clearInvestmentLeadCooldowns(): Promise<void> {
 }
 
 /**
+ * Machine-readable result status codes for investment lead actions.
+ */
+export type InvestmentLeadActionCode =
+  | "SUCCESS"
+  | "DRY_RUN"
+  | "RATE_LIMIT_COOLDOWN"
+  | "UNAUTHENTICATED"
+  | "INVALID_PAYLOAD"
+  | "SMTP_DISPATCH_FAILED"
+  | "ERROR";
+
+/**
  * Result contract returned by submitInvestmentLeadAction.
  */
 export interface InvestmentLeadActionResult {
   readonly success: boolean;
   readonly message: string;
+  readonly code?: InvestmentLeadActionCode;
   readonly error?: string;
 }
 
@@ -99,6 +112,7 @@ export async function submitInvestmentLeadAction(
   if (!resolvedInvestor || !resolvedInvestor.email) {
     return {
       success: false,
+      code: "UNAUTHENTICATED",
       message: "No se encuentra autenticado.",
       error: "UNAUTHENTICATED: Active investor session or verified database profile is required",
     };
@@ -112,6 +126,7 @@ export async function submitInvestmentLeadAction(
   if (lastSubmissionTime !== undefined && now - lastSubmissionTime < COOLDOWN_DURATION_MS) {
     return {
       success: false,
+      code: "RATE_LIMIT_COOLDOWN",
       message: "Por favor espere antes de enviar una nueva solicitud de inversión.",
       error: "RATE_LIMIT_COOLDOWN_ACTIVE: Submission cooldown period has not elapsed",
     };
@@ -155,6 +170,7 @@ export async function submitInvestmentLeadAction(
   if (!validationResult.success) {
     return {
       success: false,
+      code: "INVALID_PAYLOAD",
       message: "Los datos de la solicitud son inválidos.",
       error: validationResult.error.issues.map((issue) => issue.message).join(", "),
     };
@@ -201,6 +217,7 @@ export async function submitInvestmentLeadAction(
     );
     return {
       success: false,
+      code: "SMTP_DISPATCH_FAILED",
       message: "No fue posible enviar la notificación en este momento.",
       error: emailResult.error ?? "SMTP_DISPATCH_FAILED",
     };
@@ -219,9 +236,10 @@ export async function submitInvestmentLeadAction(
   // Step 7: Update cooldown timestamp for this investor upon successful dispatch
   investorCooldownStore.set(cooldownKey, Date.now());
 
-  // Step 8: Return structured success response contract
+  // Step 8: Return structured success response contract with machine-readable code
   return {
     success: true,
+    code: emailResult.dryRun ? "DRY_RUN" : "SUCCESS",
     message: emailResult.dryRun
       ? "Solicitud registrada (Modo Simulado: credenciales SMTP pendientes de configurar)."
       : "Solicitud de inversión enviada con éxito. Nuestro equipo se comunicará a la brevedad.",

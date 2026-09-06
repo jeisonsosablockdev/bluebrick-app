@@ -260,6 +260,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     [properties]
   );
 
+  // Step 6: Handle investment lead CTA dispatch
   /**
    * Dispatches the investment lead notification to the server action pipeline.
    * Enriches lead payload with telephone, reinvestment capital capacity, and current portfolio holdings.
@@ -299,16 +300,30 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         },
       });
 
-      // Step 5: Parse response and update reactive user feedback
+      // Step 5: Parse response and update reactive user feedback with localized translations
       if (result.success) {
+        const successMessage =
+          result.code === "DRY_RUN"
+            ? t("dashboard.reinvestment.successDryRun")
+            : result.code === "SUCCESS"
+              ? t("dashboard.reinvestment.success")
+              : (result.message || t("dashboard.reinvestment.success"));
         setLeadFeedback({
           type: "success",
-          message: result.message,
+          message: successMessage,
         });
       } else {
+        const isCooldown =
+          result.code === "RATE_LIMIT_COOLDOWN" ||
+          Boolean(result.error && result.error.includes("RATE_LIMIT_COOLDOWN"));
+        const errorMessage = isCooldown
+          ? t("dashboard.reinvestment.cooldownError")
+          : result.code
+            ? t("dashboard.reinvestment.defaultError")
+            : (result.message || t("dashboard.reinvestment.defaultError"));
         setLeadFeedback({
           type: "error",
-          message: result.message || t("dashboard.reinvestment.defaultError"),
+          message: errorMessage,
         });
       }
     } catch (error) {
@@ -325,11 +340,11 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     }
   };
 
-  // Step 5: Animated count-up hook values
+  // Step 7: Animated count-up hook values
   const animatedTotal = useCountUp(totalInvested, { durationMs: 1400 });
   const animatedRoi = useCountUp(weightedRoi, { durationMs: 1400, decimals: 1 });
 
-  // Step 6: Calculate allocation pie data
+  // Step 8: Calculate allocation pie data
   const pieData = useMemo(() => {
     return properties.map((p: PortfolioItem) => ({
       name: p.propertyName,
@@ -351,6 +366,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
     });
   };
 
+  // Step 9: Determine active property for carousel presentation
   const activeProperty: PortfolioItem | undefined = properties[carouselIndex] || properties[0];
 
   return (
