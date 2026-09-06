@@ -29,6 +29,11 @@ En el Dashboard de Inversiones de BlueBrick (`/dashboard`), el botón principal 
 - **Variable de Configuración**: `LEAD_NOTIFICATION_EMAIL` definirá el destinatario (`to:`), permitiendo cambiarlo dinámicamente según el entorno.
 - **Datos del Lead**: El remitente e información del inversionista se toman del usuario conectado cargado desde la base de datos.
 
+### 6. Alcance SPEC-2: Enriquecimiento del Correo de Lead con Teléfono y Brief de Portafolio
+- **Teléfono de Contacto**: Incluir el teléfono del inversionista en el correo (`investorPhone`), consultándolo de la tabla `clients` o del payload enviado por el dashboard. Si no está registrado, indicar "No registrado".
+- **Brief de Capital para Reinvertir**: Añadir una sección que resuma cuánto capital tiene disponible / proyectado para reinvertir (`reinvestmentCapital`).
+- **Resumen de en qué ha Invertido**: Desglosar los proyectos en los que el inversionista mantiene capital (`currentInvestments`), con nombre de proyecto, monto invertido, ROI pactado y estado (`activa` / `concluida`), junto con el total acumulado invertido.
+
 ---
 
 ## ENGLISH VERSION
@@ -42,20 +47,24 @@ On the BlueBrick Investment Dashboard (`/dashboard`), the primary call to action
 ### 2. Why does it matter?
 - **Production Conversion**: Restores reinvestment lead capture across all environments.
 - **Configurable Notification Routing**: Allows teams to easily change the destination inbox via `LEAD_NOTIFICATION_EMAIL` without code changes.
-- **Investor Traceability**: The notification email body accurately portrays the connected database user, with `replyTo` pointing to the investor's personal email.
+- **Investor Traceability & Context**: The notification email body accurately portrays the connected database user, includes their phone number, and equips the sales team with a complete brief of their reinvestment capacity and active holdings.
 
 ### 3. What outcome is expected?
 - Clicking "Invest Now" sends the connected user's database metadata (`initialData.investor`).
 - Server Action validates the payload and verifies identity against the database without failing on WorkOS server-action checks.
-- Notification email is delivered to `process.env.LEAD_NOTIFICATION_EMAIL || "contacto@bluebrick.capital"`, containing the investor's details and `replyTo: validatedLead.investorEmail`.
-- Setting `LEAD_NOTIFICATION_EMAIL=jsosa@primalcodelab.com` sends testing leads directly to the developer's mailbox.
+- Notification email is delivered to `process.env.LEAD_NOTIFICATION_EMAIL || "contacto@bluebrick.capital"`, containing the investor's details, phone number, reinvestment capital brief, active portfolio items, and `replyTo: validatedLead.investorEmail`.
 - Responsive feedback with spinner and accessible confirmation banner.
 
 ### 4. Gaps identified
 - `investment-actions.ts`: Hardcoded recipient and rigid `withAuth()` dependency.
-- `investment-dashboard.tsx`: Missing investor attributes in action call.
-- Environment templates lacking `LEAD_NOTIFICATION_EMAIL`.
+- `investment-dashboard.tsx`: Missing investor attributes, phone, and portfolio summary in action call.
+- `investment-lead-schema.ts` and `investment-lead-template.ts`: Missing schema fields and visual sections for phone, reinvestment brief, and active portfolio breakdown.
 
 ### 5. Open questions & Design decisions
 - Recipient email is driven by `process.env.LEAD_NOTIFICATION_EMAIL`.
-- Lead investor details are populated from the connected database user.
+- Lead investor details are populated from the connected database user and enriched with client portfolio summary.
+
+### 6. Scope SPEC-2: Lead Email Portfolio & Contact Enrichment
+- **Contact Phone**: Include investor phone number (`investorPhone`) resolved from `clients` table or client state.
+- **Reinvestment Capacity**: Highlight projected / available reinvestment capital (`reinvestmentCapital`).
+- **Holdings Brief**: Breakdown of current property investments with amounts, ROI, and status.

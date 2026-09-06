@@ -9,6 +9,7 @@
 
 import { withAuth } from "@workos-inc/authkit-nextjs";
 import { getAuthenticatedInvestor } from "@/lib/auth/workos-session";
+import { executeQuery } from "@/lib/infrastructure/db/neon-client";
 import {
   investmentLeadSchema,
   type InvestmentLeadPayload,
@@ -132,7 +133,23 @@ export async function submitInvestmentLeadAction(
     };
   }
 
-  // Step 3: Validate lead payload with Layer 3 domain investmentLeadSchema
+  // Step 3: Resolve investor contact telephone and validate lead payload with Layer 3 domain investmentLeadSchema
+  let resolvedPhone = _payload?.investorPhone?.trim();
+  if (!resolvedPhone && resolvedInvestor?.email && process.env.DATABASE_URL) {
+    try {
+      const phoneRes = await executeQuery<{ phone: string | null }>(
+        "SELECT phone FROM clients WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND phone IS NOT NULL LIMIT 1;",
+        [resolvedInvestor.email]
+      );
+      if (phoneRes.rows?.[0]?.phone) {
+        resolvedPhone = phoneRes.rows[0].phone.trim();
+      }
+    } catch (err) {
+      // Invariant: If database phone lookup fails or clients table is unavailable, continue gracefully
+      console.warn("[InvestmentLeadAction] Could not resolve phone from clients table:", err);
+    }
+  }
+
   const investorFullName =
     _payload?.investorName ??
     [resolvedInvestor.firstName, resolvedInvestor.lastName].filter(Boolean).join(" ").trim();
@@ -144,6 +161,10 @@ export async function submitInvestmentLeadAction(
     tier: _payload?.tier ?? resolvedInvestor.tier ?? "Inversionista Privado",
     timestamp: _payload?.timestamp ?? new Date().toISOString(),
     metadata: _payload?.metadata,
+    investorPhone: resolvedPhone || undefined,
+    reinvestmentCapital: _payload?.reinvestmentCapital,
+    totalInvested: _payload?.totalInvested,
+    currentInvestments: _payload?.currentInvestments,
   };
 
   const validationResult = investmentLeadSchema.safeParse(rawPayload);
@@ -172,6 +193,10 @@ export async function submitInvestmentLeadAction(
     investorId: resolvedInvestor.id,
     investorName: validatedLead.investorName,
     investorEmail: validatedLead.investorEmail,
+    investorPhone: validatedLead.investorPhone || "No registrado",
+    reinvestmentCapital: validatedLead.reinvestmentCapital,
+    totalInvested: validatedLead.totalInvested,
+    holdingsCount: validatedLead.currentInvestments?.length ?? 0,
     recipientEmail,
     replyTo: validatedLead.investorEmail,
   });

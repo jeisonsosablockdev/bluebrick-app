@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-020",
-  "branch": "fix/jeisonsosa-BBC-020-invest-now-cta-action",
-  "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
+  "branch": "SPEC/jeisonsosa-BBC-020-lead-email-portfolio-brief",
+  "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
     "PHASE_2_DOCS_FILLED": { "completed": true },

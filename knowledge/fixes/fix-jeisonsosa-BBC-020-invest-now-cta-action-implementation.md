@@ -32,22 +32,38 @@ La solución desacopla la ejecución de la acción del proveedor de autenticaci�
    - `smtp-mailer.ts`: Despacho SMTP resiliente mediante Nodemailer con transporte seguro o fallback dry-run loggeado en consola.
 
 ## 3. Desglose de SPECs y Secuencia Lógica
-- **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback`
+- **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback` (COMPLETADO)
   - Rama: `SPEC/jeisonsosa-BBC-020-s01-invest-now-connected-user-fix`
-  - Ciclo interno:
-    1. **RED (TDD)**: Actualizar y escribir pruebas unitarias en `tests/unit/investment-dashboard-cta.test.tsx` y `tests/unit/investment-lead-behavioral.test.ts` esperando que el correo vaya al inversionista conectado y no falle en modo demo/prueba.
-    2. **GREEN**: Modificar `investment-dashboard.tsx` e `investment-actions.ts` para transferir y validar el perfil del inversionista y enviar a su correo.
-    3. **REFACTOR**: Limpieza y auditoría de Clean Code en las 4 capas, garantizando cero dead code y comentarios JSDoc/TSDoc completos.
+  - Estado: Merged en rama padre.
+
+- **SPEC-2**: `feat(lead-email): enrich lead notification with investor phone, reinvestment brief, and portfolio holdings summary`
+  - Rama: `SPEC/jeisonsosa-BBC-020-lead-email-portfolio-brief`
+  - Proyección 4 Capas:
+    - **Capa 1 (Presentación)**: `apps/web/src/components/dashboard/investment-dashboard.tsx`
+      - Extrae `totalInvested`, calcula capital proyectado para reinvertir (`reinvestmentCapital`), y mapea el resumen de `properties` (`propertyName`, `investedAmount`, `roi`, `status`).
+      - Pasa estos campos al Server Action `submitInvestmentLeadAction`.
+    - **Capa 2 (Aplicación)**: `apps/web/src/lib/auth/investment-actions.ts`
+      - Consulta la tabla `clients` en Neon DB para obtener el teléfono si no viene en el payload (`SELECT phone FROM clients WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))`).
+      - Enriquece el payload del lead antes de invocar la plantilla.
+    - **Capa 3 (Dominio)**:
+      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-schema.ts`: Agrega `investorPhone`, `reinvestmentCapital`, `totalInvested` y `currentInvestments` (array de objetos) como campos validados opcionales.
+      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-template.ts`: Renderiza en HTML y texto plano:
+        1. Fila de teléfono en la ficha del inversionista.
+        2. Bloque destacado de **Capital Disponible / Proyectado para Reinvertir**.
+        3. Tabla de **Portafolio Actual** con los activos en los que ha invertido, montos y rendimientos.
+    - **Capa 4 (Infraestructura)**: `apps/web/src/lib/infrastructure/email/smtp-mailer.ts` (mantiene transporte SMTP con logs y dry-run).
 
 ## 4. Estrategia de TDD (Test-Driven Development)
 ### Pruebas Unitarias / Integración (Fase RED)
 - **Archivos de Prueba**:
-  - `tests/unit/investment-dashboard-cta.test.tsx`: Verifica que el click en "Invertir ahora" envíe el perfil del inversionista conectado (`initialData.investor`) al Server Action.
-  - `tests/unit/investment-lead-behavioral.test.ts`: Verifica que `submitInvestmentLeadAction` use `to: validatedLead.investorEmail`, admita inversionistas con email resuelto aun sin cookie WorkOS en local, y aplique el rate-limiting de 60 segundos.
+  - `tests/unit/investment-dashboard-cta.test.tsx`: Verifica que el click en "Invertir ahora" envíe el teléfono, el capital de reinversión y la lista de inversiones actuales.
+  - `tests/unit/investment-lead-behavioral.test.ts`: Verifica que el esquema acepte `investorPhone`, `reinvestmentCapital` y `currentInvestments`, y que las plantillas HTML y texto plano incluyan el teléfono, el monto de reinversión y la tabla de proyectos invertidos.
 - **Comando de Ejecución**: `pnpm test tests/unit/investment-dashboard-cta.test.tsx tests/unit/investment-lead-behavioral.test.ts`
 - **Metas de Aserción**:
-  - `expect(sendSmtpEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "jsosa@primalcodelab.com" }))` cuando el usuario conectado es `jsosa@primalcodelab.com`.
-  - Respuestas exitosas `{ success: true, message: ... }` sin errores de `UNAUTHENTICATED` cuando se provee identidad válida.
+  - `expect(html).toContain("Teléfono")` y `expect(html).toContain("+57 300 123 4567")` (o valor sanitizado).
+  - `expect(html).toContain("Capital para Reinvertir")` y `expect(html).toContain("$25,000")`.
+  - `expect(html).toContain("Portafolio Actual")` y nombres de proyectos con sus montos invertidos.
+  - `expect(text).toContain("Teléfono:")` y lista en texto plano.
 
 ## 5. Definición de Terminado Local (DoD)
 - [ ] La fase actual del tracker de estado es `PHASE_8_HUMAN_MERGE_APPROVED`.
@@ -95,22 +111,30 @@ The solution decouples action execution from the auth provider, uses Neon Postgr
    - `smtp-mailer.ts`: Resilient Nodemailer SMTP transport with dry-run fallback.
 
 ## 3. Atomic Slices & Logical Sequence
-- **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback`
+- **SPEC-1**: `fix(cta): dispatch investment lead to connected investor email and handle session fallback` (COMPLETED)
   - Branch: `SPEC/jeisonsosa-BBC-020-s01-invest-now-connected-user-fix`
-  - Internal cycle:
-    1. **RED (TDD)**: Update unit tests in `tests/unit/investment-dashboard-cta.test.tsx` and `tests/unit/investment-lead-behavioral.test.ts` to assert that emails are addressed to the connected investor and do not fail in demo/test modes.
-    2. **GREEN**: Implement payload passing in `investment-dashboard.tsx` and recipient resolution in `investment-actions.ts`.
-    3. **REFACTOR**: Clean Code review across the 4 layers, verifying zero dead code and thorough TSDoc comments.
+  - Status: Merged into parent work branch.
+
+- **SPEC-2**: `feat(lead-email): enrich lead notification with investor phone, reinvestment brief, and portfolio holdings summary`
+  - Branch: `SPEC/jeisonsosa-BBC-020-lead-email-portfolio-brief`
+  - 4-Layer Delivery:
+    - **Layer 1 (Presentation)**: `apps/web/src/components/dashboard/investment-dashboard.tsx`
+      - Pass `reinvestmentCapital`, `totalInvested`, and active property holdings to `submitInvestmentLeadAction`.
+    - **Layer 2 (Application)**: `apps/web/src/lib/auth/investment-actions.ts`
+      - Look up client phone in `clients` table if absent from payload, enrich payload.
+    - **Layer 3 (Domain)**:
+      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-schema.ts`: Validate `investorPhone`, `reinvestmentCapital`, `totalInvested`, `currentInvestments`.
+      - `apps/web/src/lib/pipelines/investment-lead/investment-lead-template.ts`: Render contact phone, reinvestment brief, and portfolio holdings card table.
+    - **Layer 4 (Infrastructure)**: `apps/web/src/lib/infrastructure/email/smtp-mailer.ts`.
 
 ## 4. TDD (Test-Driven Development) Strategy
 ### Unit/Integration Tests (RED Phase)
 - **Test Files**:
-  - `tests/unit/investment-dashboard-cta.test.tsx`: Verifies "Invest Now" click forwards connected investor profile to server action.
-  - `tests/unit/investment-lead-behavioral.test.ts`: Verifies `submitInvestmentLeadAction` targets `to: validatedLead.investorEmail`, accepts resolved emails without active WorkOS cookies in local mode, and enforces 60-second cooldown.
+  - `tests/unit/investment-dashboard-cta.test.tsx`: Verifies "Invest Now" click forwards holdings, reinvestment capacity, and phone.
+  - `tests/unit/investment-lead-behavioral.test.ts`: Verifies schema acceptance, HTML and plain-text rendering for phone, reinvestment brief, and property list.
 - **Test Command**: `pnpm test tests/unit/investment-dashboard-cta.test.tsx tests/unit/investment-lead-behavioral.test.ts`
 - **Assertion Goals**:
-  - `expect(sendSmtpEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "jsosa@primalcodelab.com" }))` when user is `jsosa@primalcodelab.com`.
-  - `{ success: true }` responses without `UNAUTHENTICATED` errors on valid identity.
+  - Template includes phone row, reinvestment card, and current investments breakdown.
 
 ## 5. Local Definition of Done (DoD)
 - [ ] State tracker phase is `PHASE_8_HUMAN_MERGE_APPROVED`.

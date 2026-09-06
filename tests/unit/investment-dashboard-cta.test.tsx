@@ -248,4 +248,40 @@ describe("SPEC BBC-17: Investment Dashboard CTA Lead Generation (@spec BBC-17)",
     // Step 5: Verify button is re-enabled following exception
     expect(ctaButton).not.toBeDisabled();
   });
+
+  it("should forward totalInvested, reinvestmentCapital, and active properties breakdown when clicking 'Invertir ahora' (@spec BBC-020-SPEC-2-CTA-DATA)", async () => {
+    // Arrange: Mock successful submission
+    // Step 1: Set up action mock
+    vi.mocked(submitInvestmentLeadAction).mockResolvedValueOnce({
+      success: true,
+      message: "Lead processed",
+    });
+
+    // Step 2: Render dashboard with mock data
+    renderDashboard();
+    const ctaButton = screen.getByRole("button", { name: /invertir ahora/i });
+
+    // Act: Click CTA button
+    // Step 3: Trigger click
+    fireEvent.click(ctaButton);
+
+    // Assert: Verify action called with enriched portfolio details
+    // Step 4: Verify payload contains totalInvested, reinvestmentCapital, and currentInvestments
+    await waitFor(() => {
+      expect(submitInvestmentLeadAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalInvested: 150000,
+          reinvestmentCapital: expect.any(Number),
+          currentInvestments: expect.arrayContaining([
+            expect.objectContaining({
+              propertyName: "Torre Alvear",
+              investedAmount: 150000,
+              roi: 14.5,
+              status: "activa",
+            }),
+          ]),
+        })
+      );
+    });
+  });
 });

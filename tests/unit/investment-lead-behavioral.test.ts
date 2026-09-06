@@ -297,6 +297,46 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
         expect(result.data.investorEmail).toBe("sofia.martinez@bluebrick.investments");
       }
     });
+
+    it("should parse and validate enriched investorPhone, reinvestmentCapital, totalInvested, and currentInvestments (@spec BBC-020-SPEC-2-SCHEMA)", () => {
+      // Arrange
+      // Step 1: Construct enriched lead payload with contact and portfolio holdings
+      const enrichedInput = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+          {
+            propertyName: "Torre Corporativa Sabana",
+            investedAmount: 60000,
+            roi: 11.8,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Validate against domain schema
+      const result = investmentLeadSchema.safeParse(enrichedInput);
+
+      // Assert
+      // Step 3: Ensure all enriched fields are preserved and strictly typed
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.investorPhone).toBe("+57 300 123 4567");
+        expect(result.data.reinvestmentCapital).toBe(25400);
+        expect(result.data.totalInvested).toBe(163000);
+        expect(result.data.currentInvestments).toHaveLength(2);
+        expect(result.data.currentInvestments?.[0]?.propertyName).toBe("Residencial Vista Norte");
+      }
+    });
   });
 
   // =========================================================================
@@ -376,6 +416,83 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
       // Step 3: Verify absence of any HTML element tags (<...>)
       // Edge Case: Plain-text MIME parts must remain strictly un-formatted text
       expect(text).not.toMatch(/<[^>]+>/);
+    });
+
+    it("should render investor phone, reinvestment brief card, and current holdings breakdown in HTML email (@spec BBC-020-SPEC-2-HTML-TEMPLATE)", () => {
+      // Arrange
+      // Step 1: Set up enriched lead payload with contact and portfolio holdings
+      const enrichedPayload: InvestmentLeadPayload = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+          {
+            propertyName: "Torre Corporativa Sabana",
+            investedAmount: 60000,
+            roi: 11.8,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Generate HTML email
+      const html = buildInvestmentLeadHtml(enrichedPayload);
+
+      // Assert
+      // Step 3: Verify investor phone is rendered in contact card
+      expect(html).toContain("Teléfono");
+      expect(html).toContain("+57 300 123 4567");
+
+      // Step 4: Verify reinvestment brief card is prominently displayed
+      expect(html).toMatch(/Capital disponible para reinvertir|Capital para reinvertir/i);
+      expect(html).toContain("25,400");
+
+      // Step 5: Verify holdings table lists active properties and amounts
+      expect(html).toMatch(/Inversiones Actuales|Portafolio Actual/i);
+      expect(html).toContain("Residencial Vista Norte");
+      expect(html).toContain("Torre Corporativa Sabana");
+      expect(html).toContain("45,000");
+      expect(html).toContain("60,000");
+      expect(html).toContain("163,000");
+    });
+
+    it("should render phone, reinvestment brief, and current investments in plain text template (@spec BBC-020-SPEC-2-TEXT-TEMPLATE)", () => {
+      // Arrange
+      // Step 1: Set up enriched lead payload
+      const enrichedPayload: InvestmentLeadPayload = {
+        ...VALID_LEAD_PAYLOAD,
+        investorPhone: "+57 300 123 4567",
+        reinvestmentCapital: 25400,
+        totalInvested: 163000,
+        currentInvestments: [
+          {
+            propertyName: "Residencial Vista Norte",
+            investedAmount: 45000,
+            roi: 14.2,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Generate plain text
+      const text = buildInvestmentLeadPlainText(enrichedPayload);
+
+      // Assert
+      // Step 3: Assert plain text representation
+      expect(text).toContain("Teléfono: +57 300 123 4567");
+      expect(text).toMatch(/Capital para reinvertir/i);
+      expect(text).toContain("25,400");
+      expect(text).toContain("Residencial Vista Norte");
+      expect(text).toContain("45,000");
     });
   });
 
@@ -622,6 +739,41 @@ describe("BBC-17: Investment Lead Behavioral Suite (@spec BBC-17)", () => {
 
       // Step 5: Assert SMTP dispatch was only triggered once
       expect(sendSmtpEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it("should accept enriched lead payload with phone, reinvestmentCapital, and currentInvestments and forward to SMTP (@spec BBC-020-SPEC-2-SERVER-ACTION)", async () => {
+      // Arrange
+      // Step 1: Construct enriched lead payload with phone, capital, and active portfolio items
+      const payload = {
+        investorId: "usr_enriched_01",
+        investorName: "Jeison Sosa",
+        investorEmail: "jsosa@primalcodelab.com",
+        investorPhone: "+57 300 987 6543",
+        reinvestmentCapital: 32000,
+        totalInvested: 180000,
+        currentInvestments: [
+          {
+            propertyName: "Bush Garden BG-01",
+            investedAmount: 100000,
+            roi: 16.0,
+            status: "activa",
+          },
+        ],
+      };
+
+      // Act
+      // Step 2: Execute server action with enriched payload
+      const result = await submitInvestmentLeadAction(payload as any);
+
+      // Assert
+      // Step 3: Action succeeds and SMTP transport is invoked with phone and portfolio facts in HTML
+      expect(result.success).toBe(true);
+      expect(sendSmtpEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: expect.any(String),
+          html: expect.stringContaining("+57 300 987 6543"),
+        })
+      );
     });
   });
 });

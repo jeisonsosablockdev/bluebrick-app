@@ -256,6 +256,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
 
   /**
    * Dispatches the investment lead notification to the server action pipeline.
+   * Enriches lead payload with telephone, reinvestment capital capacity, and current portfolio holdings.
    * Updates reactive UI states for pending submission and feedback notifications.
    */
   const handleInvestLeadClick = async (): Promise<void> => {
@@ -270,19 +271,36 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
       .join(" ")
       .trim();
 
-    // Step 3: Invoke investment lead server action with connected investor data and CTA metadata
+    // Step 3: Compute projected reinvestment capital from portfolio items
+    const calculatedReinvestmentCapital = (initialData?.properties || []).reduce(
+      (acc: number, p: PortfolioItem) => acc + (p.investedAmount || 0) * ((p.roi || 0) / 100),
+      0
+    );
+
+    // Step 4: Map current portfolio holdings for enriched lead brief
+    const mappedInvestments = (initialData?.properties || []).map((p: PortfolioItem) => ({
+      propertyName: p.propertyName,
+      investedAmount: p.investedAmount,
+      roi: p.roi,
+      status: p.status,
+    }));
+
+    // Step 5: Invoke investment lead server action with connected investor data, portfolio brief, and CTA metadata
     try {
       const result = await submitInvestmentLeadAction({
         investorId: connectedInvestor?.id,
         investorName: connectedName || "Inversionista",
         investorEmail: connectedInvestor?.email,
         tier: connectedInvestor?.tier,
+        totalInvested: initialData?.totalInvested,
+        reinvestmentCapital: calculatedReinvestmentCapital,
+        currentInvestments: mappedInvestments,
         metadata: {
           source: "dashboard_reinvestment_cta",
         },
       });
 
-      // Step 4: Parse response and update reactive user feedback
+      // Step 6: Parse response and update reactive user feedback
       if (result.success) {
         setLeadFeedback({
           type: "success",
@@ -295,7 +313,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         });
       }
     } catch (error) {
-      // Step 5: Gracefully handle network exceptions and unexpected errors
+      // Step 7: Gracefully handle network exceptions and unexpected errors
       const errorMsg =
         error instanceof Error ? error.message : t("dashboard.reinvestment.unexpectedError");
       setLeadFeedback({
@@ -303,7 +321,7 @@ export function InvestmentDashboard({ initialData }: InvestmentDashboardProps): 
         message: errorMsg,
       });
     } finally {
-      // Step 6: Reset submitting state to unblock controls
+      // Step 8: Reset submitting state to unblock controls
       setIsSubmittingLead(false);
     }
   };
