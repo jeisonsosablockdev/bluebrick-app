@@ -173,3 +173,61 @@ export function verifyCronAuthorization(
   // Step 3: Verify equality using constant-time comparison
   return constantTimeCompare(token, expectedSecret);
 }
+
+/**
+ * Status lifecycle state for the singleton synchronization pipeline.
+ */
+export type DashboardSyncStatus =
+  | 'IDLE'
+  | 'RUNNING'
+  | 'SUCCESS'
+  | 'FAILED'
+  | 'CIRCUIT_BREAKER_TRIPPED';
+
+/**
+ * Persistent synchronization state model matching dashboard_sync_state singleton table.
+ */
+export interface DashboardSyncState {
+  readonly id: string;
+  readonly lastSyncStartedAt: Date | null;
+  readonly lastSyncCompletedAt: Date | null;
+  readonly lastSyncStatus: DashboardSyncStatus;
+  readonly pendingSync: boolean;
+  readonly pendingSyncRequestedAt: Date | null;
+  readonly pendingSyncSource: string | null;
+  readonly cooldownUntil: Date | null;
+  readonly activeLockOwner: string | null;
+  readonly currentFileId: string | null;
+  readonly lastError: string | null;
+  readonly consecutiveFailures: number;
+  readonly version: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+/**
+ * Parameters for atomic cooldown acquisition or pending synchronization toggling.
+ */
+export interface AcquireCooldownParams {
+  /** Optional cooldown window in minutes (defaults to 30) */
+  readonly cooldownMinutes?: number;
+  /** Trigger source initiating the request ('WEBHOOK', 'ADMIN_UI', 'MANUAL', 'CRON') */
+  readonly source?: string;
+  /** Force bypass flag ignoring active cooldown */
+  readonly force?: boolean;
+}
+
+/**
+ * Result DTO representing whether execution was permitted or deferred under cooldown.
+ */
+export interface AcquireCooldownResult {
+  /** True if cooldown was acquired or bypassed and synchronization may proceed */
+  readonly acquired: boolean;
+  /** True if execution was deferred and marked pending for trailing-edge resolution */
+  readonly pending: boolean;
+  /** ISO timestamp string until which cooldown remains active */
+  readonly cooldownUntil?: string | null;
+  /** Informational diagnostic message */
+  readonly message?: string;
+}
+

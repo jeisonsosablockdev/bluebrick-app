@@ -27,6 +27,9 @@ import {
   constantTimeCompare,
   DashboardSyncEntityCounts,
   DashboardSyncMetrics,
+  type AcquireCooldownParams,
+  type AcquireCooldownResult,
+  type DashboardSyncState,
 } from '../../domain/models/dashboard-sync-models';
 import { verifyHitlPermission } from '../../domain/policies/hitl-rbac-policy';
 import { DashboardSyncService } from '../services/dashboard-sync-service';
@@ -34,7 +37,42 @@ import { GoogleServiceAccountAdapter } from '../../infrastructure/google-service
 import { StreamingSpreadsheetAdapter } from '../../infrastructure/streaming-spreadsheet-adapter';
 import { GoogleDriveFolderReaderAdapter } from '../../infrastructure/google-drive-folder-reader-adapter';
 import { VercelBlobAdapter } from '../../infrastructure/vercel-blob-adapter';
+import {
+  fetchDashboardSyncStateFromDb,
+  acquireCooldownOrMarkPendingInDb,
+  markSyncStarted,
+  markSyncCompleted,
+  markSyncFailed,
+} from '../../infrastructure/dashboard-sync-state-repository';
 import { getDatabasePool } from '@/lib/infrastructure/db/neon-client';
+
+/**
+ * Webhook incoming authentication credentials container.
+ */
+export interface WebhookCredentials {
+  readonly authHeader?: string | null;
+  readonly channelToken?: string | null;
+  readonly customSecretHeader?: string | null;
+  readonly expectedSecret?: string;
+}
+
+/**
+ * Resolves current persistent synchronization state from Layer 4 repository.
+ */
+export async function getDashboardSyncState(): Promise<DashboardSyncState> {
+  return fetchDashboardSyncStateFromDb();
+}
+
+/**
+ * Checks cooldown and atomically claims execution window or flags trailing-edge pending sync.
+ *
+ * @param params - Cooldown parameters (cooldownMinutes, source, force)
+ */
+export async function acquireCooldownOrMarkPending(
+  params?: AcquireCooldownParams
+): Promise<AcquireCooldownResult> {
+  return acquireCooldownOrMarkPendingInDb(params);
+}
 
 /**
  * Trigger sync invocation options and context.
@@ -76,39 +114,67 @@ export interface TriggerSyncResult {
 
 /**
  * Verifies that an incoming webhook request provides valid credentials matching DRIVE_WEBHOOK_SECRET.
- * Supports standard Bearer authorization header or Google's X-Goog-Channel-Token header.
+ * Supports standard Bearer authorization header, Google's X-Goog-Channel-Token header,
+ * or custom x-bluebrick-webhook-secret header from Google Apps Script.
  *
- * @param authHeader - Raw Authorization HTTP header (e.g., 'Bearer <secret>')
+ * @param authHeaderOrCreds - Raw Authorization HTTP header or structured WebhookCredentials
  * @param channelToken - Optional Google Drive channel token header ('X-Goog-Channel-Token')
  * @param expectedSecret - Configured DRIVE_WEBHOOK_SECRET environment variable
+ * @param customSecretHeader - Optional custom secret header ('x-bluebrick-webhook-secret')
  * @returns True if authorization credentials match in constant time
  */
 export function verifyWebhookSecret(
-  authHeader: string | null | undefined,
-  channelToken: string | null | undefined,
-  expectedSecret: string | undefined
+  authHeaderOrCreds: string | WebhookCredentials | null | undefined,
+  channelToken?: string | null | undefined,
+  expectedSecret?: string | undefined,
+  customSecretHeader?: string | null | undefined
 ): boolean {
-  // Step 1: Fail closed if expected secret is not configured in environment
-  if (!expectedSecret || typeof expectedSecret !== 'string') {
+  let authHeader: string | null | undefined;
+  let token: string | null | undefined;
+  let customHeader: string | null | undefined;
+  let secret: string | undefined;
+
+  // Step 1: Normalize arguments depending on invocation signature
+  if (typeof authHeaderOrCreds === 'object' && authHeaderOrCreds !== null) {
+    authHeader = authHeaderOrCreds.authHeader;
+    token = authHeaderOrCreds.channelToken;
+    customHeader = authHeaderOrCreds.customSecretHeader;
+    secret = authHeaderOrCreds.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
+  } else {
+    authHeader = authHeaderOrCreds;
+    token = channelToken;
+    secret = expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
+    customHeader = customSecretHeader;
+  }
+
+  // Step 2: Fail closed if expected secret is not configured
+  if (!secret || typeof secret !== 'string') {
     return false;
   }
 
-  // Step 2: Check X-Goog-Channel-Token header first if provided
-  if (channelToken && typeof channelToken === 'string') {
-    if (constantTimeCompare(channelToken.trim(), expectedSecret)) {
+  // Step 3: Check custom Apps Script header if provided
+  if (customHeader && typeof customHeader === 'string') {
+    if (constantTimeCompare(customHeader.trim(), secret)) {
       return true;
     }
   }
 
-  // Step 3: Check Authorization Bearer header
-  if (authHeader && typeof authHeader === 'string') {
-    const parts = authHeader.trim().split(' ');
-    if (parts.length === 2 && parts[0] === 'Bearer') {
-      return constantTimeCompare(parts[1], expectedSecret);
+  // Step 4: Check X-Goog-Channel-Token header if provided
+  if (token && typeof token === 'string') {
+    if (constantTimeCompare(token.trim(), secret)) {
+      return true;
     }
   }
 
-  // Step 4: Reject any request that did not match either token format
+  // Step 5: Check Authorization Bearer header
+  if (authHeader && typeof authHeader === 'string') {
+    const parts = authHeader.trim().split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      return constantTimeCompare(parts[1], secret);
+    }
+  }
+
+  // Step 6: Reject any request that did not match any token format
   return false;
 }
 
@@ -152,13 +218,27 @@ export async function triggerSyncAction(
         blobStorage: new VercelBlobAdapter(),
       });
 
-    // Step 3: Execute synchronization
+    // Step 3: Record sync started in persistent state
+    try {
+      await markSyncStarted(params?.source ?? 'MANUAL', params?.fileId);
+    } catch {
+      // Non-fatal if state repository is unconfigured or in testing
+    }
+
+    // Step 4: Execute synchronization
     const result = await syncService.executeSync({
       fileId: params?.fileId,
       forceRefreshAuth: params?.forceRefreshAuth,
     });
 
-    // Step 4: Invalidate Next.js dashboard cache for instant UI freshness
+    // Step 5: Mark sync completed in persistent state
+    try {
+      await markSyncCompleted();
+    } catch {
+      // Non-fatal
+    }
+
+    // Step 6: Invalidate Next.js dashboard cache for instant UI freshness
     try {
       revalidatePath('/dashboard');
     } catch {
@@ -167,7 +247,7 @@ export async function triggerSyncAction(
 
     const durationMs = Date.now() - startTime;
 
-    // Step 5: Format and return successful result DTO
+    // Step 7: Format and return successful result DTO
     return {
       success: true,
       message: `Dashboard synchronization completed successfully in ${durationMs}ms.`,
@@ -181,6 +261,12 @@ export async function triggerSyncAction(
     const durationMs = Date.now() - startTime;
     const message =
       error instanceof Error ? error.message : 'Unexpected synchronization error';
+
+    try {
+      await markSyncFailed(message);
+    } catch {
+      // Non-fatal
+    }
 
     return {
       success: false,
