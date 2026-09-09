@@ -256,3 +256,100 @@ export async function markSyncFailed(
     [status, error, CANONICAL_SYNC_ID]
   );
 }
+
+/**
+ * Audit and dead-letter log entry payload.
+ */
+export interface SyncAuditLogEntry {
+  /** Unique execution correlation identifier */
+  readonly syncId: string;
+  /** Trigger source descriptor ('WEBHOOK' | 'ADMIN_UI' | 'CRON' | 'TRAILING_EDGE' | 'MANUAL') */
+  readonly triggerSource: string;
+  /** Timestamp when sync execution commenced */
+  readonly startedAt?: Date;
+  /** Timestamp when sync execution completed */
+  readonly completedAt?: Date;
+  /** Final execution status */
+  readonly status: DashboardSyncStatus;
+  /** Total elapsed duration in milliseconds */
+  readonly durationMs?: number;
+  /** Total count of database entities upserted */
+  readonly totalEntitiesSynced?: number;
+  /** Count breakdown per operational entity table */
+  readonly entityCounts?: Record<string, number>;
+  /** Operational latency metrics */
+  readonly metrics?: Record<string, number>;
+  /** Error diagnostic identifier */
+  readonly errorCode?: string | null;
+  /** Human-readable error message */
+  readonly errorMessage?: string | null;
+  /** Detailed error stack trace */
+  readonly errorStack?: string | null;
+  /** Specific circuit breaker rejection explanation */
+  readonly circuitBreakerReason?: string | null;
+  /** Target Google Drive spreadsheet file ID */
+  readonly driveFileId?: string | null;
+  /** Downloaded file size in bytes */
+  readonly fileBytes?: number | null;
+  /** File content hash / checksum */
+  readonly fileChecksum?: string | null;
+  /** Dead-letter queue flag (true for failed or circuit-breaker executions) */
+  readonly isDeadLetter?: boolean;
+}
+
+/**
+ * Inserts an immutable execution record into the dashboard_sync_logs audit and dead-letter table.
+ *
+ * @param entry - Structured audit log entry
+ * @param pool - Optional injected PostgreSQL pool
+ */
+export async function recordSyncAuditLogInDb(
+  entry: SyncAuditLogEntry,
+  pool?: Pool
+): Promise<void> {
+  const db = pool ?? getDatabasePool();
+  try {
+    // Step 1: Serialize JSON fields safely
+    const entityCountsJson = entry.entityCounts ? JSON.stringify(entry.entityCounts) : null;
+    const metricsJson = entry.metrics ? JSON.stringify(entry.metrics) : null;
+
+    // Step 2: Insert audit row into dashboard_sync_logs
+    await db.query(
+      `INSERT INTO dashboard_sync_logs (
+         sync_id, trigger_source, started_at, completed_at, status,
+         duration_ms, total_entities_synced, entity_counts, metrics,
+         error_code, error_message, error_stack, circuit_breaker_reason,
+         drive_file_id, file_bytes, file_checksum, is_dead_letter, created_at
+       )
+       VALUES (
+         $1, $2, COALESCE($3, NOW()), COALESCE($4, NOW()), $5,
+         $6, $7, $8::jsonb, $9::jsonb,
+         $10, $11, $12, $13,
+         $14, $15, $16, $17, NOW()
+       );`,
+      [
+        entry.syncId,
+        entry.triggerSource,
+        entry.startedAt ? entry.startedAt.toISOString() : null,
+        entry.completedAt ? entry.completedAt.toISOString() : null,
+        entry.status,
+        entry.durationMs ?? null,
+        entry.totalEntitiesSynced ?? 0,
+        entityCountsJson,
+        metricsJson,
+        entry.errorCode ?? null,
+        entry.errorMessage ?? null,
+        entry.errorStack ?? null,
+        entry.circuitBreakerReason ?? null,
+        entry.driveFileId ?? null,
+        entry.fileBytes ?? null,
+        entry.fileChecksum ?? null,
+        Boolean(entry.isDeadLetter),
+      ]
+    );
+  } catch (err) {
+    // Invariant: Non-fatal graceful degradation if audit logging encounters a database issue
+    console.warn('[DashboardSyncStateRepository] Failed to write audit log to dashboard_sync_logs:', err);
+  }
+}
+

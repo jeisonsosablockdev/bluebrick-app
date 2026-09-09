@@ -43,6 +43,7 @@ import {
   markSyncStarted,
   markSyncCompleted,
   markSyncFailed,
+  recordSyncAuditLogInDb,
 } from '../../infrastructure/dashboard-sync-state-repository';
 import { getDatabasePool } from '@/lib/infrastructure/db/neon-client';
 
@@ -78,8 +79,8 @@ export async function acquireCooldownOrMarkPending(
  * Trigger sync invocation options and context.
  */
 export interface TriggerSyncParams {
-  /** Source initiating the synchronization: UI admin action, webhook, or script */
-  readonly source?: 'ADMIN_UI' | 'WEBHOOK' | 'MANUAL';
+  /** Source initiating the synchronization: UI admin action, webhook, trailing-edge reconciler, or cron */
+  readonly source?: 'ADMIN_UI' | 'WEBHOOK' | 'MANUAL' | 'TRAILING_EDGE' | 'CRON';
   /** Optional user role for RBAC enforcement when triggered from UI */
   readonly userRole?: string;
   /** Optional specific spreadsheet file ID to sync */
@@ -202,25 +203,31 @@ export async function triggerSyncAction(
 
   // Step 2: Assemble synchronization service dependencies (or use injected)
   const startTime = Date.now();
-  try {
-    const authProvider = new GoogleServiceAccountAdapter({
-      clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      privateKey: process.env.GOOGLE_PRIVATE_KEY,
-    });
+  const syncId = `sync_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const triggerSource = params?.source ?? 'MANUAL';
 
-    const syncService =
-      injectedSyncService ??
-      new DashboardSyncService({
+  try {
+    let syncService: DashboardSyncService;
+    if (injectedSyncService) {
+      syncService = injectedSyncService;
+    } else {
+      const authProvider = new GoogleServiceAccountAdapter({
+        clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        privateKey: process.env.GOOGLE_PRIVATE_KEY,
+      });
+
+      syncService = new DashboardSyncService({
         authProvider,
         spreadsheetParser: new StreamingSpreadsheetAdapter(),
         dbPool: getDatabasePool(),
         folderReader: new GoogleDriveFolderReaderAdapter({ authProvider }),
         blobStorage: new VercelBlobAdapter(),
       });
+    }
 
     // Step 3: Record sync started in persistent state
     try {
-      await markSyncStarted(params?.source ?? 'MANUAL', params?.fileId);
+      await markSyncStarted(triggerSource, params?.fileId);
     } catch {
       // Non-fatal if state repository is unconfigured or in testing
     }
@@ -238,14 +245,33 @@ export async function triggerSyncAction(
       // Non-fatal
     }
 
+    const durationMs = Date.now() - startTime;
+
+    // Step 5.5: Record audit log in dashboard_sync_logs
+    try {
+      await recordSyncAuditLogInDb({
+        syncId,
+        triggerSource,
+        startedAt: new Date(startTime),
+        completedAt: new Date(),
+        status: 'SUCCESS',
+        durationMs,
+        totalEntitiesSynced: result.totalEntitiesSynced,
+        entityCounts: result.counts as unknown as Record<string, number> | undefined,
+        metrics: result.metrics as unknown as Record<string, number> | undefined,
+        driveFileId: params?.fileId,
+        isDeadLetter: false,
+      });
+    } catch {
+      // Non-fatal
+    }
+
     // Step 6: Invalidate Next.js dashboard cache for instant UI freshness
     try {
       revalidatePath('/dashboard');
     } catch {
       // Non-fatal if executed outside Next.js request context (e.g. unit tests)
     }
-
-    const durationMs = Date.now() - startTime;
 
     // Step 7: Format and return successful result DTO
     return {
@@ -261,9 +287,31 @@ export async function triggerSyncAction(
     const durationMs = Date.now() - startTime;
     const message =
       error instanceof Error ? error.message : 'Unexpected synchronization error';
+    const isCircuitBreaker =
+      message.includes('Circuit breaker') ||
+      (error as any)?.code === 'CIRCUIT_BREAKER_TRIPPED';
 
     try {
-      await markSyncFailed(message);
+      await markSyncFailed(message, isCircuitBreaker);
+    } catch {
+      // Non-fatal
+    }
+
+    // Step 5.6: Record dead-letter audit log in dashboard_sync_logs
+    try {
+      await recordSyncAuditLogInDb({
+        syncId,
+        triggerSource,
+        startedAt: new Date(startTime),
+        completedAt: new Date(),
+        status: isCircuitBreaker ? 'CIRCUIT_BREAKER_TRIPPED' : 'FAILED',
+        durationMs,
+        errorMessage: message,
+        errorStack: error instanceof Error ? error.stack : undefined,
+        circuitBreakerReason: isCircuitBreaker ? message : undefined,
+        driveFileId: params?.fileId,
+        isDeadLetter: true,
+      });
     } catch {
       // Non-fatal
     }
@@ -276,4 +324,33 @@ export async function triggerSyncAction(
       errors: [message],
     };
   }
+}
+
+/**
+ * Lazy reconciler called on dashboard page access (via Next.js after()) to process
+ * pending trailing-edge synchronizations once their accumulation cooldown has elapsed.
+ *
+ * @param injectedSyncService - Optional injected DashboardSyncService for unit testing
+ * @returns TriggerSyncResult if reconciliation ran, or null if no pending sync or still in cooldown
+ */
+export async function reconcilePendingDashboardSync(
+  injectedSyncService?: DashboardSyncService
+): Promise<TriggerSyncResult | null> {
+  // Step 1: Query current persistent synchronization state
+  const state = await fetchDashboardSyncStateFromDb();
+
+  // Step 2: Check if there is a pending sync requested
+  if (!state.pendingSync) {
+    return null;
+  }
+
+  // Step 3: Check if cooldown has expired (cooldownUntil <= now or null)
+  const now = new Date();
+  if (state.cooldownUntil && state.cooldownUntil > now) {
+    // Cooldown is still active, defer execution until future visits or nightly cron
+    return null;
+  }
+
+  // Step 4: Dispatch trailing-edge synchronization
+  return triggerSyncAction({ source: 'TRAILING_EDGE' }, injectedSyncService);
 }
