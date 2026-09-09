@@ -14,6 +14,8 @@
  * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
  */
 
+import { createHash, timingSafeEqual } from "crypto";
+
 /**
  * Canonical Google Drive File ID for DASH-BOARD-Blue-Brick-Panel-Administracion.xlsx.
  */
@@ -118,31 +120,31 @@ export interface DashboardSyncOptions {
 }
 
 /**
- * Performs a constant-time string comparison to mitigate timing attacks against authorization secrets.
+ * Performs a length-independent, constant-time comparison of two strings using SHA-256 digests.
+ * Prevents timing attacks that could reveal secret length or character matches.
  * 
  * @param a - First string
  * @param b - Second string
  * @returns True if both strings are identical in constant time
  */
-export function constantTimeCompare(a: string, b: string): boolean {
+export function timingSafeEqualSha256(a: string, b: string): boolean {
   // Step 1: Invariant validation for string types
   if (typeof a !== "string" || typeof b !== "string") {
     return false;
   }
 
-  // Step 2: Compare lengths (non-matching lengths exit safely)
-  if (a.length !== b.length) {
-    return false;
-  }
+  // Step 2: Digest strings into fixed 32-byte SHA-256 buffers to eliminate length leakage
+  const hashA = createHash("sha256").update(a).digest();
+  const hashB = createHash("sha256").update(b).digest();
 
-  // Step 3: Bitwise XOR accumulator over each character code point
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
-  return diff === 0;
+  // Step 3: Constant-time buffer comparison over identical 32-byte buffers
+  return timingSafeEqual(hashA, hashB);
 }
+
+/**
+ * Backwards-compatible constant-time string comparison backed by SHA-256 digests.
+ */
+export const constantTimeCompare = timingSafeEqualSha256;
 
 /**
  * Verifies that the provided HTTP Authorization header matches the expected CRON_SECRET Bearer token.
