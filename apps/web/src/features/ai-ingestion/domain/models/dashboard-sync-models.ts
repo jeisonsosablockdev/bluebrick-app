@@ -117,6 +117,8 @@ export interface DashboardSyncOptions {
   readonly fileId?: string;
   /** Force refresh the Google OAuth2 access token cache */
   readonly forceRefreshAuth?: boolean;
+  /** Force bypass of anti-wipe circuit breaker threshold check */
+  readonly forceBypassCircuitBreaker?: boolean;
 }
 
 /**
