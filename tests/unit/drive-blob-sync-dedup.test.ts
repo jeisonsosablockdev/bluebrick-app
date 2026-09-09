@@ -157,16 +157,21 @@ describe("BBC-8 SPEC-2: Drive Folder Sync & Blob Deduplication", () => {
     expect(phaseUpsert).toBeDefined();
     expect(phaseUpsert?.sql).toContain("folder_url");
     expect(phaseUpsert?.sql).toContain("imagenes");
-    expect(phaseUpsert?.params).toContain("https://drive.google.com/drive/folders/1ABC_xyz_FOLDER_001");
-    // Verify parameters include the Vercel Blob URLs
-    expect(phaseUpsert?.params).toEqual(
-      expect.arrayContaining([
-        expect.arrayContaining([
-          "https://public.blob.vercel-storage.com/drive-img-1.jpg",
-          "https://public.blob.vercel-storage.com/drive-img-2.jpg",
-        ]),
-      ])
-    );
+    const flatParams = phaseUpsert?.params ? (phaseUpsert.params as any[]).flat() : [];
+    expect(flatParams).toContain("https://drive.google.com/drive/folders/1ABC_xyz_FOLDER_001");
+    // Verify parameters include the Vercel Blob URLs (either direct arrays or JSON strings for UNNEST batching)
+    const allParsedParams = flatParams.flatMap((p: any) => {
+      if (typeof p === "string" && p.startsWith("[")) {
+        try {
+          return JSON.parse(p);
+        } catch {
+          return p;
+        }
+      }
+      return p;
+    });
+    expect(allParsedParams).toContain("https://public.blob.vercel-storage.com/drive-img-1.jpg");
+    expect(allParsedParams).toContain("https://public.blob.vercel-storage.com/drive-img-2.jpg");
   });
 
   it("should deduplicate existing images in media_assets without re-downloading or re-uploading (@spec BBC-8-SPEC-2-DEDUPLICATION)", async () => {
@@ -258,7 +263,8 @@ describe("BBC-8 SPEC-2: Drive Folder Sync & Blob Deduplication", () => {
     // Invariant: Non-fatal error in folder reader allows the overall transaction to commit
     const phaseUpsert = executedQueries.find((q) => q.sql.includes("INSERT INTO dashboard_project_phases"));
     expect(phaseUpsert).toBeDefined();
-    expect(phaseUpsert?.params).toContain("https://drive.google.com/drive/folders/1ABC_xyz_FOLDER_001");
+    const flatParams = phaseUpsert?.params ? (phaseUpsert.params as any[]).flat() : [];
+    expect(flatParams).toContain("https://drive.google.com/drive/folders/1ABC_xyz_FOLDER_001");
   });
 });
 
