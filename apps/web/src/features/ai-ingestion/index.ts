@@ -56,3 +56,4 @@ export * from './infrastructure/gemini-video-tagger-adapter';
 export * from './infrastructure/gemini-pdf-extractor-adapter';
 export * from './infrastructure/streaming-spreadsheet-adapter';
 export * from './infrastructure/postgres-ingestion-repository';
+export * from './infrastructure/dashboard-sync-state-repository';

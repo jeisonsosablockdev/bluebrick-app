@@ -25,25 +25,22 @@ import { type NextRequest, NextResponse, after } from 'next/server';
 import {
   triggerSyncAction,
   verifyWebhookSecret,
-  type TriggerSyncResult,
+  acquireCooldownOrMarkPending,
 } from '@/features/ai-ingestion';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-/** Resolves the accumulation cooldown window in milliseconds from environment variables (defaults to 30 minutes) */
-export function getCooldownWindowMs(): number {
+/** Resolves the accumulation cooldown window in minutes from environment variables (defaults to 30 minutes) */
+export function getCooldownWindowMinutes(): number {
   const envMinutes = process.env.SYNC_COOLDOWN_MINUTES;
   const minutes = envMinutes ? parseInt(envMinutes, 10) : 30;
-  return (!Number.isNaN(minutes) && minutes > 0 ? minutes : 30) * 60 * 1000;
+  return !Number.isNaN(minutes) && minutes > 0 ? minutes : 30;
 }
 
-/** Timestamp of the last accepted sync invocation */
-let lastSyncTimestamp = 0;
-
-/** Resets the in-memory cooldown timestamp (exposed for unit testing) */
-export function resetLastSyncTimestampForTesting(): void {
-  lastSyncTimestamp = 0;
+/** Resolves the accumulation cooldown window in milliseconds from environment variables (defaults to 30 minutes) */
+export function getCooldownWindowMs(): number {
+  return getCooldownWindowMinutes() * 60 * 1000;
 }
 
 /**
@@ -56,11 +53,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Step 1: Extract Google Drive push headers and authorization credentials
   const authHeader = request.headers.get('authorization');
   const channelToken = request.headers.get('x-goog-channel-token');
+  const customSecret = request.headers.get('x-bluebrick-webhook-secret');
   const resourceState = request.headers.get('x-goog-resource-state');
+  const forceHeader = request.headers.get('x-force-sync');
   const expectedSecret = process.env.DRIVE_WEBHOOK_SECRET;
 
   // Step 2: Constant-time authorization verification via Layer 2 validator
-  const isAuthorized = verifyWebhookSecret(authHeader, channelToken, expectedSecret);
+  const isAuthorized = verifyWebhookSecret({
+    authHeader,
+    channelToken,
+    customSecretHeader: customSecret,
+    expectedSecret,
+  });
+
   if (!isAuthorized) {
     return NextResponse.json(
       { error: 'Unauthorized: Invalid or missing webhook authorization credentials' },
@@ -79,34 +84,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Step 4: Cooldown enforcement (default: 30 minutes) to consolidate changes and protect Vercel quota
-  const now = Date.now();
-  const cooldownWindowMs = getCooldownWindowMs();
-  if (now - lastSyncTimestamp < cooldownWindowMs) {
-    const elapsedMinutes = Math.round((now - lastSyncTimestamp) / 60000);
-    const totalMinutes = Math.round(cooldownWindowMs / 60000);
+  // Step 4: Distributed persistent cooldown enforcement (default: 30 minutes)
+  const isForce = forceHeader === 'true' || request.nextUrl?.searchParams?.get('force') === 'true';
+  const cooldownMinutes = getCooldownWindowMinutes();
+
+  const cooldownResult = await acquireCooldownOrMarkPending({
+    cooldownMinutes,
+    source: 'WEBHOOK',
+    force: isForce,
+  });
+
+  // If inside cooldown and not forced, return 200 OK with pending flag and exit in <50ms
+  if (!cooldownResult.acquired) {
     return NextResponse.json(
       {
         status: 'cooldown',
-        message: `Synchronization cooldown active (${elapsedMinutes}/${totalMinutes} min). Changes consolidated for next run.`,
+        pending: true,
+        cooldownUntil: cooldownResult.cooldownUntil,
+        message: cooldownResult.message ?? 'Synchronization cooldown active. Changes marked pending.',
       },
       { status: 200 }
     );
   }
-  lastSyncTimestamp = now;
 
   // Step 5: Schedule background synchronization via Layer 2 without blocking HTTP response
   try {
     after(async () => {
       try {
-        await triggerSyncAction({ source: 'WEBHOOK' });
+        await triggerSyncAction({ source: 'WEBHOOK', force: isForce });
       } catch (err) {
         console.error('[GoogleDriveWebhook] Background synchronization error:', err);
       }
     });
   } catch {
     // Non-request context fallback (e.g. test harness / synthetic invokes)
-    void triggerSyncAction({ source: 'WEBHOOK' }).catch((err) => {
+    void triggerSyncAction({ source: 'WEBHOOK', force: isForce }).catch((err) => {
       console.error('[GoogleDriveWebhook] Background execution failed:', err);
     });
   }
@@ -115,6 +127,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json(
     {
       success: true,
+      status: 'sync_dispatched',
+      cooldownUntil: cooldownResult.cooldownUntil,
       message: 'Google Drive webhook received; background synchronization dispatched.',
       timestamp: new Date().toISOString(),
     },
