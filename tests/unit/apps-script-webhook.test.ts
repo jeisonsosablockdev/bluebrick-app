@@ -200,7 +200,7 @@ describe('BBC-021: Google Apps Script Trailing-Edge Webhook (@spec BBC-021)', ()
     const appsScript = await import('../../scripts/google-drive/apps-script-webhook.js');
 
     expect(() => appsScript.sendImmediateWebhook('FILE_ERR')).toThrow(
-      /BLUEBRICK_WEBHOOK_SECRET is not configured/
+      /DRIVE_WEBHOOK_SECRET.*not configured/
     );
   });
 });

@@ -23,7 +23,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { POST, getCooldownWindowMs } from '@/app/api/webhooks/google-drive/route';
+import { POST, getCooldownWindowMinutes } from '@/app/api/webhooks/google-drive/route';
 
 // Mocks for Layer 2 Application Services & Repositories
 const mockTriggerSyncAction = vi.fn();
@@ -279,12 +279,12 @@ describe('BBC-021: Google Drive Webhook Route Handler (@spec BBC-021)', () => {
 
   it('[@spec BBC-021:CONFIG-01] should parse SYNC_COOLDOWN_MINUTES correctly with fallback to 30 min', () => {
     process.env.SYNC_COOLDOWN_MINUTES = '45';
-    expect(getCooldownWindowMs()).toBe(45 * 60 * 1000);
+    expect(getCooldownWindowMinutes()).toBe(45);
 
     process.env.SYNC_COOLDOWN_MINUTES = 'invalid';
-    expect(getCooldownWindowMs()).toBe(30 * 60 * 1000);
+    expect(getCooldownWindowMinutes()).toBe(30);
 
     delete process.env.SYNC_COOLDOWN_MINUTES;
-    expect(getCooldownWindowMs()).toBe(30 * 60 * 1000);
+    expect(getCooldownWindowMinutes()).toBe(30);
   });
 });

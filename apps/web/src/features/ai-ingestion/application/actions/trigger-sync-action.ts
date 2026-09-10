@@ -118,35 +118,13 @@ export interface TriggerSyncResult {
  * Supports standard Bearer authorization header, Google's X-Goog-Channel-Token header,
  * or custom x-bluebrick-webhook-secret header from Google Apps Script.
  *
- * @param authHeaderOrCreds - Raw Authorization HTTP header or structured WebhookCredentials
- * @param channelToken - Optional Google Drive channel token header ('X-Goog-Channel-Token')
- * @param expectedSecret - Configured DRIVE_WEBHOOK_SECRET environment variable
- * @param customSecretHeader - Optional custom secret header ('x-bluebrick-webhook-secret')
+ * @param credentials - Structured WebhookCredentials container
  * @returns True if authorization credentials match in constant time
  */
-export function verifyWebhookSecret(
-  authHeaderOrCreds: string | WebhookCredentials | null | undefined,
-  channelToken?: string | null | undefined,
-  expectedSecret?: string | undefined,
-  customSecretHeader?: string | null | undefined
-): boolean {
-  let authHeader: string | null | undefined;
-  let token: string | null | undefined;
-  let customHeader: string | null | undefined;
-  let secret: string | undefined;
-
-  // Step 1: Normalize arguments depending on invocation signature
-  if (typeof authHeaderOrCreds === 'object' && authHeaderOrCreds !== null) {
-    authHeader = authHeaderOrCreds.authHeader;
-    token = authHeaderOrCreds.channelToken;
-    customHeader = authHeaderOrCreds.customSecretHeader;
-    secret = authHeaderOrCreds.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
-  } else {
-    authHeader = authHeaderOrCreds;
-    token = channelToken;
-    secret = expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
-    customHeader = customSecretHeader;
-  }
+export function verifyWebhookSecret(credentials: WebhookCredentials): boolean {
+  // Step 1: Extract credential headers and resolve expected secret
+  const { authHeader, channelToken, customSecretHeader } = credentials;
+  const secret = credentials.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
 
   // Step 2: Fail closed if expected secret is not configured
   if (!secret || typeof secret !== 'string') {
@@ -154,15 +132,15 @@ export function verifyWebhookSecret(
   }
 
   // Step 3: Check custom Apps Script header if provided
-  if (customHeader && typeof customHeader === 'string') {
-    if (constantTimeCompare(customHeader.trim(), secret)) {
+  if (customSecretHeader && typeof customSecretHeader === 'string') {
+    if (constantTimeCompare(customSecretHeader.trim(), secret)) {
       return true;
     }
   }
 
   // Step 4: Check X-Goog-Channel-Token header if provided
-  if (token && typeof token === 'string') {
-    if (constantTimeCompare(token.trim(), secret)) {
+  if (channelToken && typeof channelToken === 'string') {
+    if (constantTimeCompare(channelToken.trim(), secret)) {
       return true;
     }
   }
