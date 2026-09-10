@@ -14,10 +14,20 @@
  * Architecture: 4-Layer Functional Web3 / Ingestion Architecture.
  */
 
+import { createHash, timingSafeEqual } from "crypto";
+
 /**
  * Canonical Google Drive File ID for DASH-BOARD-Blue-Brick-Panel-Administracion.xlsx.
  */
-export const DEFAULT_DASHBOARD_FILE_ID = "1MToOPlgJnmrLk8kDYooyQeCrTqT3HtGl";
+export const DEFAULT_DASHBOARD_FILE_ID =
+  process.env.GOOGLE_DRIVE_DASHBOARD_FILE_ID || "1MToOPlgJnmrLk8kDYooyQeCrTqT3HtGl";
+
+/** Resolves the accumulation cooldown window in minutes from environment variables (defaults to 30 minutes) */
+export function getCooldownWindowMinutes(): number {
+  const envMinutes = process.env.SYNC_COOLDOWN_MINUTES;
+  const minutes = envMinutes ? parseInt(envMinutes, 10) : 30;
+  return !Number.isNaN(minutes) && minutes > 0 ? minutes : 30;
+}
 
 /**
  * Domain error codes for dashboard synchronization operations.
@@ -26,7 +36,6 @@ export type DashboardSyncErrorCode =
   | "UNAUTHORIZED"
   | "AUTHENTICATION_FAILED"
   | "MISSING_SECRET"
-  | "DOWNLOAD_FAILED"
   | "DRIVE_DOWNLOAD_FAILED"
   | "EMPTY_WORKBOOK"
   | "PARSING_FAILED"
@@ -115,34 +124,36 @@ export interface DashboardSyncOptions {
   readonly fileId?: string;
   /** Force refresh the Google OAuth2 access token cache */
   readonly forceRefreshAuth?: boolean;
+  /** Force bypass of anti-wipe circuit breaker threshold check */
+  readonly forceBypassCircuitBreaker?: boolean;
 }
 
 /**
- * Performs a constant-time string comparison to mitigate timing attacks against authorization secrets.
+ * Performs a length-independent, constant-time comparison of two strings using SHA-256 digests.
+ * Prevents timing attacks that could reveal secret length or character matches.
  * 
  * @param a - First string
  * @param b - Second string
  * @returns True if both strings are identical in constant time
  */
-export function constantTimeCompare(a: string, b: string): boolean {
+export function timingSafeEqualSha256(a: string, b: string): boolean {
   // Step 1: Invariant validation for string types
   if (typeof a !== "string" || typeof b !== "string") {
     return false;
   }
 
-  // Step 2: Compare lengths (non-matching lengths exit safely)
-  if (a.length !== b.length) {
-    return false;
-  }
+  // Step 2: Digest strings into fixed 32-byte SHA-256 buffers to eliminate length leakage
+  const hashA = createHash("sha256").update(a).digest();
+  const hashB = createHash("sha256").update(b).digest();
 
-  // Step 3: Bitwise XOR accumulator over each character code point
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
-  return diff === 0;
+  // Step 3: Constant-time buffer comparison over identical 32-byte buffers
+  return timingSafeEqual(hashA, hashB);
 }
+
+/**
+ * Backwards-compatible constant-time string comparison backed by SHA-256 digests.
+ */
+export const constantTimeCompare = timingSafeEqualSha256;
 
 /**
  * Verifies that the provided HTTP Authorization header matches the expected CRON_SECRET Bearer token.
@@ -171,3 +182,115 @@ export function verifyCronAuthorization(
   // Step 3: Verify equality using constant-time comparison
   return constantTimeCompare(token, expectedSecret);
 }
+
+/**
+ * Webhook incoming authentication credentials container.
+ */
+export interface WebhookCredentials {
+  readonly authHeader?: string | null;
+  readonly channelToken?: string | null;
+  readonly customSecretHeader?: string | null;
+  readonly expectedSecret?: string;
+}
+
+/**
+ * Verifies that an incoming webhook request provides valid credentials matching DRIVE_WEBHOOK_SECRET.
+ * Supports standard Bearer authorization header, Google's X-Goog-Channel-Token header,
+ * or custom x-bluebrick-webhook-secret header from Google Apps Script.
+ *
+ * @param credentials - Structured WebhookCredentials container
+ * @returns True if authorization credentials match in constant time
+ */
+export function verifyWebhookSecret(credentials: WebhookCredentials): boolean {
+  // Step 1: Extract credential headers and resolve expected secret
+  const { authHeader, channelToken, customSecretHeader } = credentials;
+  const secret = credentials.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
+
+  // Step 2: Fail closed if expected secret is not configured
+  if (!secret || typeof secret !== "string") {
+    return false;
+  }
+
+  // Step 3: Check custom Apps Script header if provided
+  if (customSecretHeader && typeof customSecretHeader === "string") {
+    if (constantTimeCompare(customSecretHeader.trim(), secret)) {
+      return true;
+    }
+  }
+
+  // Step 4: Check X-Goog-Channel-Token header if provided
+  if (channelToken && typeof channelToken === "string") {
+    if (constantTimeCompare(channelToken.trim(), secret)) {
+      return true;
+    }
+  }
+
+  // Step 5: Check Authorization Bearer header
+  if (authHeader && typeof authHeader === "string") {
+    const parts = authHeader.trim().split(" ");
+    if (parts.length === 2 && parts[0] === "Bearer") {
+      return constantTimeCompare(parts[1], secret);
+    }
+  }
+
+  // Step 6: Reject any request that did not match any token format
+  return false;
+}
+
+/**
+ * Status lifecycle state for the singleton synchronization pipeline.
+ */
+export type DashboardSyncStatus =
+  | 'IDLE'
+  | 'RUNNING'
+  | 'SUCCESS'
+  | 'FAILED'
+  | 'CIRCUIT_BREAKER_TRIPPED';
+
+/**
+ * Persistent synchronization state model matching dashboard_sync_state singleton table.
+ */
+export interface DashboardSyncState {
+  readonly id: string;
+  readonly lastSyncStartedAt: Date | null;
+  readonly lastSyncCompletedAt: Date | null;
+  readonly lastSyncStatus: DashboardSyncStatus;
+  readonly pendingSync: boolean;
+  readonly pendingSyncRequestedAt: Date | null;
+  readonly pendingSyncSource: string | null;
+  readonly cooldownUntil: Date | null;
+  readonly activeLockOwner: string | null;
+  readonly currentFileId: string | null;
+  readonly lastError: string | null;
+  readonly consecutiveFailures: number;
+  readonly version: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+/**
+ * Parameters for atomic cooldown acquisition or pending synchronization toggling.
+ */
+export interface AcquireCooldownParams {
+  /** Optional cooldown window in minutes (defaults to 30) */
+  readonly cooldownMinutes?: number;
+  /** Trigger source initiating the request ('WEBHOOK', 'ADMIN_UI', 'MANUAL', 'CRON') */
+  readonly source?: string;
+  /** Force bypass flag ignoring active cooldown */
+  readonly force?: boolean;
+}
+
+/**
+ * Result DTO representing whether execution was permitted or deferred under cooldown.
+ */
+export interface AcquireCooldownResult {
+  /** True if cooldown was acquired or bypassed and synchronization may proceed */
+  readonly acquired: boolean;
+  /** True if execution was deferred and marked pending for trailing-edge resolution */
+  readonly pending: boolean;
+  /** ISO timestamp string until which cooldown remains active */
+  readonly cooldownUntil?: string | null;
+  /** Informational diagnostic message */
+  readonly message?: string;
+}
+

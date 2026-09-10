@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T04:30:12.350Z",
+  "generatedAt": "2026-09-08T02:58:23.338Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -390,6 +390,18 @@
       "type": "fix",
       "label": "fix-jeisonsosa-BBC-008-digest-implementation-fixes",
       "path": "knowledge/fixes/fix-jeisonsosa-BBC-008-digest-implementation-fixes.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action-implementation.md",
+      "type": "fix",
+      "label": "fix-jeisonsosa-BBC-020-invest-now-cta-action-implementation",
+      "path": "knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action-implementation.md"
+    },
+    {
+      "id": "knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action.md",
+      "type": "fix",
+      "label": "fix-jeisonsosa-BBC-020-invest-now-cta-action",
+      "path": "knowledge/fixes/fix-jeisonsosa-BBC-020-invest-now-cta-action.md"
     },
     {
       "id": "knowledge/governance/clean-code-folder-structure.md",

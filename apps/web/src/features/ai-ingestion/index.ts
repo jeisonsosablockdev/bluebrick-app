@@ -14,6 +14,7 @@ export * from './application/services/differential-sync-service';
 export * from './application/services/video-ingestion-service';
 export * from './application/services/dashboard-sync-service';
 export * from './application/actions/hitl-review-actions';
+export * from './application/actions/trigger-sync-action';
 export * from './application/queries/get-dashboard-data-query';
 
 // Layer 3: Domain Ports, Models, Policies, Math, Validators, Scoring, Utils, Types & Schemas
@@ -29,6 +30,7 @@ export * from './domain/ports/drive-folder-reader-port';
 export * from './domain/ports/repositories-port';
 export * from './domain/policies/image-quality-policy';
 export * from './domain/policies/hitl-rbac-policy';
+export * from './domain/policies/sync-circuit-breaker-policy';
 export * from './domain/math/smart-crop-calculator';
 export * from './domain/validators/nit-validator';
 export * from './domain/scoring/confidence-scoring-engine';
@@ -54,3 +56,4 @@ export * from './infrastructure/gemini-video-tagger-adapter';
 export * from './infrastructure/gemini-pdf-extractor-adapter';
 export * from './infrastructure/streaming-spreadsheet-adapter';
 export * from './infrastructure/postgres-ingestion-repository';
+export * from './infrastructure/dashboard-sync-state-repository';

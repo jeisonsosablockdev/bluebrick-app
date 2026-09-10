@@ -42,12 +42,16 @@ import {
   DashboardSyncOptions,
   DashboardSyncResultDto,
 } from "../../domain/models/dashboard-sync-models";
+import { evaluateSyncCircuitBreaker } from "../../domain/policies/sync-circuit-breaker-policy";
 
 /** Known Vercel Blob hostnames for edge CDN asset filtering */
 export const VERCEL_STORAGE_HOSTS = [
   "blob.vercel-storage.com",
   "vercel-storage.com",
 ] as const;
+
+/** Canonical PostgreSQL 64-bit session advisory lock ID for dashboard sync */
+export const DASHBOARD_SYNC_ADVISORY_LOCK_ID = 4242424200001;
 
 /**
  * Minimal database transaction client contract required for transactional operations.
@@ -174,12 +178,14 @@ export class DashboardSyncService implements IDashboardSyncService {
       throw new DashboardSyncDomainError("AUTHENTICATION_FAILED", finalMsg, false, authError);
     }
 
-    // Step 3: Download Excel binary stream from Google Drive API v3
+    // Step 3: Export native Google Sheets workbook from Google Drive API v3
+    // Invariant: Strictly supports native Google Sheets (application/vnd.google-apps.spreadsheet).
+    // Raw binary .xlsx files are disallowed; export endpoint is invoked directly.
     const downloadStart = Date.now();
-    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+    const exportUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=application%2Fvnd.openxmlformats-officedocument.spreadsheetml.sheet`;
     let response: Response;
     try {
-      response = await this.fetchFn(downloadUrl, {
+      response = await this.fetchFn(exportUrl, {
         headers: {
           Authorization: `Bearer ${authPayload.token}`,
         },
@@ -188,7 +194,7 @@ export class DashboardSyncService implements IDashboardSyncService {
       const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
       throw new DashboardSyncDomainError(
         "DRIVE_DOWNLOAD_FAILED",
-        `Network error during Google Drive file download: ${errMsg}`,
+        `Network error during Google Sheets export: ${errMsg}`,
         true,
         fetchError
       );
@@ -196,9 +202,13 @@ export class DashboardSyncService implements IDashboardSyncService {
 
     // Step 3.1: Validate HTTP status invariant from Google Drive API
     if (!response.ok) {
+      const errorDetail =
+        response.status === 400 || response.status === 403
+          ? `Only native Google Sheets documents (application/vnd.google-apps.spreadsheet) are supported. Binary .xlsx files are disallowed (HTTP ${response.status}).`
+          : `Failed to export dashboard workbook from Google Sheets (HTTP ${response.status} ${response.statusText})`;
       throw new DashboardSyncDomainError(
         "DRIVE_DOWNLOAD_FAILED",
-        `Failed to download dashboard workbook from Google Drive (HTTP ${response.status} ${response.statusText})`,
+        errorDetail,
         response.status >= 500
       );
     }
@@ -239,8 +249,90 @@ export class DashboardSyncService implements IDashboardSyncService {
     }
 
     try {
-      // Step 5.1: Begin atomic transaction block
+      // Step 5.0: Acquire distributed 64-bit advisory lock to prevent concurrent executions
+      const lockRes = (await client.query(
+        `SELECT pg_try_advisory_lock($1) AS acquired;`,
+        [DASHBOARD_SYNC_ADVISORY_LOCK_ID]
+      )) as { rows?: Array<{ acquired?: boolean }> };
+
+      if (lockRes?.rows?.[0]?.acquired === false) {
+        throw new DashboardSyncDomainError(
+          "TRANSACTION_FAILED",
+          "Concurrent dashboard synchronization is already running. Advisory lock not acquired.",
+          false
+        );
+      }
+
+      // Step 5.0.1: Pre-transaction media resolution (External I/O decoupled from PostgreSQL transaction)
+      const resolvedMediaMap = new Map<string, string[]>();
+      if (this.folderReader && this.blobStorage) {
+        for (const phase of workbookData.fases) {
+          if (phase.folderUrl) {
+            const folderId = extractDriveFolderId(phase.folderUrl);
+            if (folderId) {
+              const phaseKey = `${phase.idFase}_${phase.idInversion}`;
+              const previousPhaseImages = await this.fetchPreviousPhaseImages(client, phaseKey);
+              const urls = await this.resolvePhaseFolderImages(client, phase, folderId);
+              await this.prunePhaseOrphanBlobs(client, phaseKey, previousPhaseImages, urls);
+              resolvedMediaMap.set(phaseKey, urls);
+            }
+          }
+        }
+      }
+
+      // Step 5.1: Begin atomic transaction block (<200ms duration)
       await client.query("BEGIN");
+
+      // Step 5.1.1: Anti-wipe circuit breaker evaluation
+      if (!options?.forceBypassCircuitBreaker) {
+        try {
+          const countRes = (await client.query(
+            `SELECT
+               (SELECT COUNT(*) FROM dashboard_projects)::integer AS proyectos_count,
+               (SELECT COUNT(*) FROM dashboard_investors)::integer AS inversionistas_count,
+               (SELECT COUNT(*) FROM dashboard_investments)::integer AS inversiones_count,
+               (SELECT COUNT(*) FROM dashboard_project_phases)::integer AS fases_count;`
+          )) as {
+            rows?: Array<{
+              proyectos_count?: number | string;
+              inversionistas_count?: number | string;
+              inversiones_count?: number | string;
+              fases_count?: number | string;
+            }>;
+          };
+
+          const row = countRes?.rows?.[0];
+          if (row && (row.proyectos_count !== undefined || row.fases_count !== undefined)) {
+            const currentDbCounts = {
+              proyectos: Number(row.proyectos_count || 0),
+              inversionistas: Number(row.inversionistas_count || 0),
+              inversiones: Number(row.inversiones_count || 0),
+              fases: Number(row.fases_count || 0),
+            };
+
+            const incomingCounts = {
+              proyectos: workbookData.proyectos.length,
+              inversionistas: workbookData.inversionistas.length,
+              inversiones: workbookData.inversiones.length,
+              fases: workbookData.fases.length,
+            };
+
+            const cbResult = evaluateSyncCircuitBreaker(currentDbCounts, incomingCounts);
+            if (cbResult.tripped) {
+              await client.query("ROLLBACK");
+              throw new DashboardSyncDomainError(
+                "TRANSACTION_FAILED",
+                cbResult.reason ?? "Anti-Wipe Circuit Breaker Tripped"
+              );
+            }
+          }
+        } catch (cbErr) {
+          if (cbErr instanceof DashboardSyncDomainError) {
+            throw cbErr;
+          }
+          // Non-fatal if counts query fails in mock or unmigrated environment
+        }
+      }
 
       // Step 5.2: Upsert operational Sheet 1: dashboard_projects
       await this.syncProjects(client, workbookData.proyectos);
@@ -251,8 +343,8 @@ export class DashboardSyncService implements IDashboardSyncService {
       // Step 5.4: Upsert operational Sheet 3: dashboard_investments
       await this.syncInvestments(client, workbookData.inversiones);
 
-      // Step 5.5: Upsert operational Sheet 4: dashboard_project_phases
-      await this.syncProjectPhases(client, workbookData.fases);
+      // Step 5.5: Upsert operational Sheet 4: dashboard_project_phases via UNNEST
+      await this.syncProjectPhases(client, workbookData.fases, resolvedMediaMap);
 
       // Step 5.6: Upsert operational Sheet 5: dashboard_opportunities & backward compatible sync with pruning
       await this.syncOpportunities(client, workbookData.oportunidades);
@@ -272,6 +364,9 @@ export class DashboardSyncService implements IDashboardSyncService {
       } catch {
         // Suppress rollback errors to preserve the original exception context
       }
+      if (dbError instanceof DashboardSyncDomainError) {
+        throw dbError;
+      }
       const errMsg = dbError instanceof Error ? dbError.message : String(dbError);
       throw new DashboardSyncDomainError(
         "DATABASE_TRANSACTION_FAILED",
@@ -280,7 +375,14 @@ export class DashboardSyncService implements IDashboardSyncService {
         dbError
       );
     } finally {
-      // Invariant: Client must always be released back to the connection pool
+      // Invariant: Always release advisory lock and return client to pool
+      try {
+        await client.query(`SELECT pg_advisory_unlock($1) AS unlocked;`, [
+          DASHBOARD_SYNC_ADVISORY_LOCK_ID,
+        ]);
+      } catch {
+        // Suppress unlock errors
+      }
       client.release();
     }
 
@@ -635,9 +737,13 @@ export class DashboardSyncService implements IDashboardSyncService {
    * validation, deduplicates against media_assets, and populates both the new array column
    * (imagenes) and backwards-compatible scalar columns (imagen_url_1, 2, 3).
    */
+  /**
+   * Upserts project milestones from Sheet 'Fases_Proyecto' into dashboard_project_phases using batched UNNEST with atomic orphan pruning.
+   */
   private async syncProjectPhases(
     client: IDashboardDbClient,
-    fases: readonly CanonicalProjectPhase[]
+    fases: readonly CanonicalProjectPhase[],
+    resolvedMediaMap?: Map<string, string[]>
   ): Promise<void> {
     // Step 5.5.0: Prune obsolete phases not in current workbook
     const activePhaseIds = fases.map((p) => `${p.idFase}_${p.idInversion}`).filter(Boolean);
@@ -648,68 +754,94 @@ export class DashboardSyncService implements IDashboardSyncService {
       );
     } else {
       await client.query(`DELETE FROM dashboard_project_phases`);
+      return;
     }
+
+    if (fases.length === 0) {
+      return;
+    }
+
+    // Step 5.5.1: Build columnar arrays for single batched UNNEST multi-row upsert
+    const ids: string[] = [];
+    const idFases: string[] = [];
+    const idInversiones: string[] = [];
+    const ordenes: number[] = [];
+    const nombresFase: string[] = [];
+    const estados: string[] = [];
+    const fechasInicio: (string | null)[] = [];
+    const fechasFin: (string | null)[] = [];
+    const folderUrls: (string | null)[] = [];
+    const imagenesJsonList: string[] = [];
+    const imagenes1: (string | null)[] = [];
+    const imagenes2: (string | null)[] = [];
+    const imagenes3: (string | null)[] = [];
 
     for (const phase of fases) {
       const phaseId = `${phase.idFase}_${phase.idInversion}`;
-
-      // Step 5.5.1: Query existing phase record to track previously associated images
-      const previousPhaseImages = await this.fetchPreviousPhaseImages(client, phaseId);
-
-      // Step 5.5.1: If phase references a Google Drive folder, discover and ingest images
-      let resolvedBlobUrls: string[] = [];
-      if (phase.folderUrl && this.folderReader && this.blobStorage) {
-        const folderId = extractDriveFolderId(phase.folderUrl);
-        if (folderId) {
-          resolvedBlobUrls = await this.resolvePhaseFolderImages(client, phase, folderId);
-          await this.prunePhaseOrphanBlobs(client, phaseId, previousPhaseImages, resolvedBlobUrls);
-        }
-      }
-
-      // Step 5.5.2: Deduplicate and aggregate images array
+      const preResolved = resolvedMediaMap?.get(phaseId) ?? [];
       const allImages = Array.from(
-        new Set([...resolvedBlobUrls, ...(phase.imagenes || [])])
+        new Set([...preResolved, ...(phase.imagenes || [])])
       );
-      const img1 = allImages[0] || null;
-      const img2 = allImages[1] || null;
-      const img3 = allImages[2] || null;
 
-      // Step 5.5.6: Upsert phase record into dashboard_project_phases table
-      await client.query(
-        `INSERT INTO dashboard_project_phases (
-           id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
-           folder_url, imagenes, imagen_url_1, imagen_url_2, imagen_url_3, updated_at
-         )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
-         ON CONFLICT (id) DO UPDATE SET
-           orden = EXCLUDED.orden,
-           nombre_fase = EXCLUDED.nombre_fase,
-           estado = EXCLUDED.estado,
-           fecha_inicio = EXCLUDED.fecha_inicio,
-           fecha_fin = EXCLUDED.fecha_fin,
-           folder_url = EXCLUDED.folder_url,
-           imagenes = EXCLUDED.imagenes,
-           imagen_url_1 = EXCLUDED.imagen_url_1,
-           imagen_url_2 = EXCLUDED.imagen_url_2,
-           imagen_url_3 = EXCLUDED.imagen_url_3,
-           updated_at = NOW()`,
-        [
-          phaseId,
-          phase.idFase,
-          phase.idInversion,
-          phase.orden,
-          phase.nombreFase,
-          phase.estado,
-          phase.fechaInicio,
-          phase.fechaFin,
-          phase.folderUrl || null,
-          allImages,
-          img1,
-          img2,
-          img3,
-        ]
-      );
+      ids.push(phaseId);
+      idFases.push(phase.idFase);
+      idInversiones.push(phase.idInversion);
+      ordenes.push(phase.orden);
+      nombresFase.push(phase.nombreFase);
+      estados.push(phase.estado);
+      fechasInicio.push(phase.fechaInicio || null);
+      fechasFin.push(phase.fechaFin || null);
+      folderUrls.push(phase.folderUrl || null);
+      imagenesJsonList.push(JSON.stringify(allImages));
+      imagenes1.push(allImages[0] || null);
+      imagenes2.push(allImages[1] || null);
+      imagenes3.push(allImages[2] || null);
     }
+
+    // Step 5.5.2: Execute single batched UNNEST multi-row upsert
+    await client.query(
+      `INSERT INTO dashboard_project_phases (
+         id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
+         folder_url, imagenes, imagen_url_1, imagen_url_2, imagen_url_3, updated_at
+       )
+       SELECT
+         u.id, u.id_fase, u.id_inversion, u.orden, u.nombre_fase, u.estado, u.fecha_inicio, u.fecha_fin,
+         u.folder_url, ARRAY(SELECT jsonb_array_elements_text(u.imagenes_json::jsonb)), u.imagen_url_1, u.imagen_url_2, u.imagen_url_3, NOW()
+       FROM UNNEST(
+         $1::varchar[], $2::varchar[], $3::varchar[], $4::integer[], $5::varchar[], $6::varchar[],
+         $7::timestamptz[], $8::timestamptz[], $9::text[], $10::text[], $11::text[], $12::text[], $13::text[]
+       ) AS u(
+         id, id_fase, id_inversion, orden, nombre_fase, estado, fecha_inicio, fecha_fin,
+         folder_url, imagenes_json, imagen_url_1, imagen_url_2, imagen_url_3
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         orden = EXCLUDED.orden,
+         nombre_fase = EXCLUDED.nombre_fase,
+         estado = EXCLUDED.estado,
+         fecha_inicio = EXCLUDED.fecha_inicio,
+         fecha_fin = EXCLUDED.fecha_fin,
+         folder_url = EXCLUDED.folder_url,
+         imagenes = EXCLUDED.imagenes,
+         imagen_url_1 = EXCLUDED.imagen_url_1,
+         imagen_url_2 = EXCLUDED.imagen_url_2,
+         imagen_url_3 = EXCLUDED.imagen_url_3,
+         updated_at = NOW()`,
+      [
+        ids,
+        idFases,
+        idInversiones,
+        ordenes,
+        nombresFase,
+        estados,
+        fechasInicio,
+        fechasFin,
+        folderUrls,
+        imagenesJsonList,
+        imagenes1,
+        imagenes2,
+        imagenes3,
+      ]
+    );
   }
 
   /**

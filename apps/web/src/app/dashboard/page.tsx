@@ -6,9 +6,11 @@
 
 import React from "react";
 import type { Metadata } from "next";
+import { after } from "next/server";
 import { InvestmentDashboard } from "@/components/dashboard/investment-dashboard";
 import { InvestmentRepository } from "@/lib/infrastructure/db/repositories/investment-repository";
 import { UserRepository } from "@/lib/infrastructure/db/repositories/user-repository";
+import { reconcilePendingDashboardSync } from "@/features/ai-ingestion";
 import type { DashboardViewModel } from "@/lib/types/dashboard";
 import type { DbUser, PortfolioItem, DbReinvestmentOpportunity, PortfolioSummary } from "@/lib/types/db";
 
@@ -160,6 +162,21 @@ export default async function DashboardPage(props: DashboardPageProps): Promise<
   } catch (error) {
     // Invariant: If database connection is offline, smoothly fall back to default seed state
     console.warn("Neon PostgreSQL offline or unreachable, using fallback portfolio fixtures.", error);
+  }
+
+  // Step 3.5: Non-blocking lazy reconciliation of trailing-edge synchronizations
+  // Evaluates pending syncs in the background via Next.js after() without stalling initial page response
+  try {
+    after(async () => {
+      try {
+        await reconcilePendingDashboardSync();
+      } catch (reconcileErr) {
+        // Invariant: Non-fatal background task error; never crashes investor UI
+        console.warn("[DashboardPage] Background lazy reconciler task error:", reconcileErr);
+      }
+    });
+  } catch {
+    // Non-fatal if rendered outside Next.js request lifecycle context (e.g. testing)
   }
 
   // Step 4: Construct unified DashboardViewModel
