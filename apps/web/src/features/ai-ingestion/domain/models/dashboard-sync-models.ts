@@ -22,6 +22,13 @@ import { createHash, timingSafeEqual } from "crypto";
 export const DEFAULT_DASHBOARD_FILE_ID =
   process.env.GOOGLE_DRIVE_DASHBOARD_FILE_ID || "1MToOPlgJnmrLk8kDYooyQeCrTqT3HtGl";
 
+/** Resolves the accumulation cooldown window in minutes from environment variables (defaults to 30 minutes) */
+export function getCooldownWindowMinutes(): number {
+  const envMinutes = process.env.SYNC_COOLDOWN_MINUTES;
+  const minutes = envMinutes ? parseInt(envMinutes, 10) : 30;
+  return !Number.isNaN(minutes) && minutes > 0 ? minutes : 30;
+}
+
 /**
  * Domain error codes for dashboard synchronization operations.
  */
@@ -174,6 +181,60 @@ export function verifyCronAuthorization(
 
   // Step 3: Verify equality using constant-time comparison
   return constantTimeCompare(token, expectedSecret);
+}
+
+/**
+ * Webhook incoming authentication credentials container.
+ */
+export interface WebhookCredentials {
+  readonly authHeader?: string | null;
+  readonly channelToken?: string | null;
+  readonly customSecretHeader?: string | null;
+  readonly expectedSecret?: string;
+}
+
+/**
+ * Verifies that an incoming webhook request provides valid credentials matching DRIVE_WEBHOOK_SECRET.
+ * Supports standard Bearer authorization header, Google's X-Goog-Channel-Token header,
+ * or custom x-bluebrick-webhook-secret header from Google Apps Script.
+ *
+ * @param credentials - Structured WebhookCredentials container
+ * @returns True if authorization credentials match in constant time
+ */
+export function verifyWebhookSecret(credentials: WebhookCredentials): boolean {
+  // Step 1: Extract credential headers and resolve expected secret
+  const { authHeader, channelToken, customSecretHeader } = credentials;
+  const secret = credentials.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
+
+  // Step 2: Fail closed if expected secret is not configured
+  if (!secret || typeof secret !== "string") {
+    return false;
+  }
+
+  // Step 3: Check custom Apps Script header if provided
+  if (customSecretHeader && typeof customSecretHeader === "string") {
+    if (constantTimeCompare(customSecretHeader.trim(), secret)) {
+      return true;
+    }
+  }
+
+  // Step 4: Check X-Goog-Channel-Token header if provided
+  if (channelToken && typeof channelToken === "string") {
+    if (constantTimeCompare(channelToken.trim(), secret)) {
+      return true;
+    }
+  }
+
+  // Step 5: Check Authorization Bearer header
+  if (authHeader && typeof authHeader === "string") {
+    const parts = authHeader.trim().split(" ");
+    if (parts.length === 2 && parts[0] === "Bearer") {
+      return constantTimeCompare(parts[1], secret);
+    }
+  }
+
+  // Step 6: Reject any request that did not match any token format
+  return false;
 }
 
 /**

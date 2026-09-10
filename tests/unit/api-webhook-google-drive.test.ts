@@ -23,7 +23,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { POST, getCooldownWindowMinutes } from '@/app/api/webhooks/google-drive/route';
+import { POST } from '@/app/api/webhooks/google-drive/route';
+import { getCooldownWindowMinutes } from '@/features/ai-ingestion';
 
 // Mocks for Layer 2 Application Services & Repositories
 const mockTriggerSyncAction = vi.fn();

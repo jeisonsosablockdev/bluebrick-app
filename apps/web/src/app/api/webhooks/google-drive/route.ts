@@ -26,17 +26,11 @@ import {
   triggerSyncAction,
   verifyWebhookSecret,
   acquireCooldownOrMarkPending,
+  getCooldownWindowMinutes,
 } from '@/features/ai-ingestion';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
-
-/** Resolves the accumulation cooldown window in minutes from environment variables (defaults to 30 minutes) */
-export function getCooldownWindowMinutes(): number {
-  const envMinutes = process.env.SYNC_COOLDOWN_MINUTES;
-  const minutes = envMinutes ? parseInt(envMinutes, 10) : 30;
-  return !Number.isNaN(minutes) && minutes > 0 ? minutes : 30;
-}
 
 /**
  * Handles incoming webhook POST requests from Google Drive or Google Apps Script triggers.

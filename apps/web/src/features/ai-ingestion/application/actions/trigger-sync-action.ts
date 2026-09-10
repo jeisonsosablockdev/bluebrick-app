@@ -24,7 +24,6 @@
 
 import { revalidatePath } from 'next/cache';
 import {
-  constantTimeCompare,
   DashboardSyncEntityCounts,
   DashboardSyncMetrics,
   type AcquireCooldownParams,
@@ -46,16 +45,6 @@ import {
   recordSyncAuditLogInDb,
 } from '../../infrastructure/dashboard-sync-state-repository';
 import { getDatabasePool } from '@/lib/infrastructure/db/neon-client';
-
-/**
- * Webhook incoming authentication credentials container.
- */
-export interface WebhookCredentials {
-  readonly authHeader?: string | null;
-  readonly channelToken?: string | null;
-  readonly customSecretHeader?: string | null;
-  readonly expectedSecret?: string;
-}
 
 /**
  * Resolves current persistent synchronization state from Layer 4 repository.
@@ -113,49 +102,6 @@ export interface TriggerSyncResult {
   readonly errors?: readonly string[];
 }
 
-/**
- * Verifies that an incoming webhook request provides valid credentials matching DRIVE_WEBHOOK_SECRET.
- * Supports standard Bearer authorization header, Google's X-Goog-Channel-Token header,
- * or custom x-bluebrick-webhook-secret header from Google Apps Script.
- *
- * @param credentials - Structured WebhookCredentials container
- * @returns True if authorization credentials match in constant time
- */
-export function verifyWebhookSecret(credentials: WebhookCredentials): boolean {
-  // Step 1: Extract credential headers and resolve expected secret
-  const { authHeader, channelToken, customSecretHeader } = credentials;
-  const secret = credentials.expectedSecret ?? process.env.DRIVE_WEBHOOK_SECRET;
-
-  // Step 2: Fail closed if expected secret is not configured
-  if (!secret || typeof secret !== 'string') {
-    return false;
-  }
-
-  // Step 3: Check custom Apps Script header if provided
-  if (customSecretHeader && typeof customSecretHeader === 'string') {
-    if (constantTimeCompare(customSecretHeader.trim(), secret)) {
-      return true;
-    }
-  }
-
-  // Step 4: Check X-Goog-Channel-Token header if provided
-  if (channelToken && typeof channelToken === 'string') {
-    if (constantTimeCompare(channelToken.trim(), secret)) {
-      return true;
-    }
-  }
-
-  // Step 5: Check Authorization Bearer header
-  if (authHeader && typeof authHeader === 'string') {
-    const parts = authHeader.trim().split(' ');
-    if (parts.length === 2 && parts[0] === 'Bearer') {
-      return constantTimeCompare(parts[1], secret);
-    }
-  }
-
-  // Step 6: Reject any request that did not match any token format
-  return false;
-}
 
 /**
  * Server action to execute the Google Drive dashboard Excel synchronization pipeline on-demand.
