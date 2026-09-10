@@ -13,6 +13,8 @@ fi
 
 if [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
   DEFAULT_TITLE="feat(ai-ingestion): Drive Folder Image Ingestion & Vercel Blob Sync (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* || "${ISSUE_ID}" == "BBC-021" || "${ISSUE_ID}" == "BBC-21" ]]; then
+  DEFAULT_TITLE="feat(ai-ingestion): Google Drive Webhook Ingestion & Resilient Ingestion Pipeline (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"deduplicate"* ]]; then
   DEFAULT_TITLE="fix(ai-ingestion): Deduplicate Dashboard Opportunities (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
@@ -47,6 +49,8 @@ RISK_LABEL="${PR_RISK:-risk:low}"
 
 if [[ "${BRANCH}" == *"solana"* || "${BRANCH}" == *"program"* ]]; then
   SCOPE_LABEL="scope:program"
+elif [[ "${BRANCH}" == *"shared"* ]]; then
+  SCOPE_LABEL="scope:shared"
 elif [[ "${BRANCH}" == *"app"* || "${BRANCH}" == *"frontend"* || "${BRANCH}" == *"monorepo"* || "${BRANCH}" == *"investor-login"* ]]; then
   SCOPE_LABEL="scope:app"
 elif [[ "${BRANCH}" == *"nft"* ]]; then
