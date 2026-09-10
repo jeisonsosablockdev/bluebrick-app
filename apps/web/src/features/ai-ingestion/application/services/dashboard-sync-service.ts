@@ -178,12 +178,14 @@ export class DashboardSyncService implements IDashboardSyncService {
       throw new DashboardSyncDomainError("AUTHENTICATION_FAILED", finalMsg, false, authError);
     }
 
-    // Step 3: Download Excel binary stream from Google Drive API v3
+    // Step 3: Export native Google Sheets workbook from Google Drive API v3
+    // Invariant: Strictly supports native Google Sheets (application/vnd.google-apps.spreadsheet).
+    // Raw binary .xlsx files are disallowed; export endpoint is invoked directly.
     const downloadStart = Date.now();
-    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+    const exportUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=application%2Fvnd.openxmlformats-officedocument.spreadsheetml.sheet`;
     let response: Response;
     try {
-      response = await this.fetchFn(downloadUrl, {
+      response = await this.fetchFn(exportUrl, {
         headers: {
           Authorization: `Bearer ${authPayload.token}`,
         },
@@ -192,7 +194,7 @@ export class DashboardSyncService implements IDashboardSyncService {
       const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
       throw new DashboardSyncDomainError(
         "DRIVE_DOWNLOAD_FAILED",
-        `Network error during Google Drive file download: ${errMsg}`,
+        `Network error during Google Sheets export: ${errMsg}`,
         true,
         fetchError
       );
@@ -200,9 +202,13 @@ export class DashboardSyncService implements IDashboardSyncService {
 
     // Step 3.1: Validate HTTP status invariant from Google Drive API
     if (!response.ok) {
+      const errorDetail =
+        response.status === 400 || response.status === 403
+          ? `Only native Google Sheets documents (application/vnd.google-apps.spreadsheet) are supported. Binary .xlsx files are disallowed (HTTP ${response.status}).`
+          : `Failed to export dashboard workbook from Google Sheets (HTTP ${response.status} ${response.statusText})`;
       throw new DashboardSyncDomainError(
         "DRIVE_DOWNLOAD_FAILED",
-        `Failed to download dashboard workbook from Google Drive (HTTP ${response.status} ${response.statusText})`,
+        errorDetail,
         response.status >= 500
       );
     }

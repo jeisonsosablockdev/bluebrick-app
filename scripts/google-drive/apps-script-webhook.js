@@ -133,8 +133,8 @@ function scheduleDebouncedSync(fileId) {
  */
 function executeWebhookPost(source, fileId) {
   // Step 1: Validate required endpoint URL and secret credentials
-  var webhookUrl = getScriptConfig("BLUEBRICK_WEBHOOK_URL");
-  var webhookSecret = getScriptConfig("BLUEBRICK_WEBHOOK_SECRET");
+  var webhookUrl = getScriptConfig("BLUEBRICK_WEBHOOK_URL") || getScriptConfig("WEBHOOK_URL");
+  var webhookSecret = getScriptConfig("DRIVE_WEBHOOK_SECRET") || getScriptConfig("BLUEBRICK_WEBHOOK_SECRET");
 
   if (!webhookUrl) {
     throw new Error(
@@ -143,7 +143,7 @@ function executeWebhookPost(source, fileId) {
   }
   if (!webhookSecret) {
     throw new Error(
-      "[BlueBrick Webhook] BLUEBRICK_WEBHOOK_SECRET is not configured in Script Properties."
+      "[BlueBrick Webhook] DRIVE_WEBHOOK_SECRET (or BLUEBRICK_WEBHOOK_SECRET) is not configured in Script Properties."
     );
   }
 

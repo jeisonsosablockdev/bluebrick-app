@@ -350,4 +350,56 @@ describe('BBC-021: DashboardSyncService Resilient Batching & Circuit Breaker (@s
     const unnestPhaseQuery = phaseQueries.find((q) => q.includes('UNNEST'));
     expect(unnestPhaseQuery).toBeDefined();
   });
+
+  it('[@spec BBC-021:GSHEET-EXPORT-01] should directly export native Google Sheets documents using the /export endpoint', async () => {
+    // Arrange: /export returns 200 OK with exported spreadsheet binary
+    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('/export')) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => new ArrayBuffer(1024),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
+
+    const service = new DashboardSyncService({
+      authProvider: mockAuthProvider as any,
+      spreadsheetParser: mockSpreadsheetParser as any,
+      dbPool: mockDbPool as any,
+      fetchFn: mockFetch as any,
+    });
+
+    // Act
+    const result = await service.executeSync();
+
+    // Assert
+    expect(result.success).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/export?mimeType=application%2Fvnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+      expect.any(Object)
+    );
+  });
+
+  it('[@spec BBC-021:GSHEET-EXPORT-02] should reject raw binary .xlsx files with informative error', async () => {
+    // Arrange: /export returns 400 when invoked against binary files
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request - Export only supports Docs Editors files',
+    });
+
+    const service = new DashboardSyncService({
+      authProvider: mockAuthProvider as any,
+      spreadsheetParser: mockSpreadsheetParser as any,
+      dbPool: mockDbPool as any,
+      fetchFn: mockFetch as any,
+    });
+
+    // Act & Assert
+    await expect(service.executeSync()).rejects.toThrow(
+      /Only native Google Sheets documents \(application\/vnd\.google-apps\.spreadsheet\) are supported/
+    );
+  });
 });

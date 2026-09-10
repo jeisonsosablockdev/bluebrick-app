@@ -19,7 +19,8 @@ import { createHash, timingSafeEqual } from "crypto";
 /**
  * Canonical Google Drive File ID for DASH-BOARD-Blue-Brick-Panel-Administracion.xlsx.
  */
-export const DEFAULT_DASHBOARD_FILE_ID = "1MToOPlgJnmrLk8kDYooyQeCrTqT3HtGl";
+export const DEFAULT_DASHBOARD_FILE_ID =
+  process.env.GOOGLE_DRIVE_DASHBOARD_FILE_ID || "1MToOPlgJnmrLk8kDYooyQeCrTqT3HtGl";
 
 /**
  * Domain error codes for dashboard synchronization operations.
@@ -28,7 +29,6 @@ export type DashboardSyncErrorCode =
   | "UNAUTHORIZED"
   | "AUTHENTICATION_FAILED"
   | "MISSING_SECRET"
-  | "DOWNLOAD_FAILED"
   | "DRIVE_DOWNLOAD_FAILED"
   | "EMPTY_WORKBOOK"
   | "PARSING_FAILED"

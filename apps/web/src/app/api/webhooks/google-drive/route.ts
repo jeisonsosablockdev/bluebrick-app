@@ -38,11 +38,6 @@ export function getCooldownWindowMinutes(): number {
   return !Number.isNaN(minutes) && minutes > 0 ? minutes : 30;
 }
 
-/** Resolves the accumulation cooldown window in milliseconds from environment variables (defaults to 30 minutes) */
-export function getCooldownWindowMs(): number {
-  return getCooldownWindowMinutes() * 60 * 1000;
-}
-
 /**
  * Handles incoming webhook POST requests from Google Drive or Google Apps Script triggers.
  *
@@ -84,6 +79,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Step 3.5: Extract dynamic target fileId if provided in request payload or query parameters
+  let targetFileId: string | undefined;
+  try {
+    const payload = await request.clone().json().catch(() => null);
+    if (payload?.fileId && typeof payload.fileId === 'string' && payload.fileId.trim() !== '') {
+      targetFileId = payload.fileId.trim();
+    }
+  } catch {
+    // Non-fatal if payload is empty or not JSON
+  }
+  if (!targetFileId) {
+    const queryFileId = request.nextUrl?.searchParams?.get('fileId');
+    if (queryFileId && typeof queryFileId === 'string' && queryFileId.trim() !== '') {
+      targetFileId = queryFileId.trim();
+    }
+  }
+
   // Step 4: Distributed persistent cooldown enforcement (default: 30 minutes)
   const isForce = forceHeader === 'true' || request.nextUrl?.searchParams?.get('force') === 'true';
   const cooldownMinutes = getCooldownWindowMinutes();
@@ -111,14 +123,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     after(async () => {
       try {
-        await triggerSyncAction({ source: 'WEBHOOK', force: isForce });
+        await triggerSyncAction({ source: 'WEBHOOK', fileId: targetFileId, force: isForce });
       } catch (err) {
         console.error('[GoogleDriveWebhook] Background synchronization error:', err);
       }
     });
   } catch {
     // Non-request context fallback (e.g. test harness / synthetic invokes)
-    void triggerSyncAction({ source: 'WEBHOOK', force: isForce }).catch((err) => {
+    void triggerSyncAction({ source: 'WEBHOOK', fileId: targetFileId, force: isForce }).catch((err) => {
       console.error('[GoogleDriveWebhook] Background execution failed:', err);
     });
   }
