@@ -11,7 +11,9 @@ if [[ -z "${ISSUE_ID}" ]]; then
   ISSUE_ID="$(echo "${BRANCH}" | grep -oE 'BRI-[0-9]+' | head -1 || echo "BRI-186")"
 fi
 
-if [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
+if [[ "${BRANCH}" == *"splash-screen"* ]]; then
+  DEFAULT_TITLE="feat(splash): animated brand startup screen with motion 12 and load optimization (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
   DEFAULT_TITLE="feat(ai-ingestion): Drive Folder Image Ingestion & Vercel Blob Sync (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* || "${ISSUE_ID}" == "BBC-021" || "${ISSUE_ID}" == "BBC-21" ]]; then
   DEFAULT_TITLE="feat(ai-ingestion): Google Drive Webhook Ingestion & Resilient Ingestion Pipeline (${ISSUE_ID})"

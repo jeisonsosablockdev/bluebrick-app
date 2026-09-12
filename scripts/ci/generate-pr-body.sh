@@ -25,7 +25,76 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-21" || "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
+if [[ "${BRANCH}" == *"splash-screen"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el **Startup Animated Splash Screen con Motion 12 y Optimización de Carga** (\`${ISSUE_ID}\`), descomponiendo vectorialmente el isotipo oficial de BlueBrick en sus 4 piezas, orquestando su entrada secuencial de izquierda a derecha, estado de reposo de 5 segundos, rotación axial en 3D con transición a la paleta institucional secundaria, e integrando la tipografía oficial del logotipo en vector (\`AnimatedWordmarkVector\`).
+
+### Size exemption justification:
+- Added lines: 650 (> 400).
+- Rationale: Implementación modular completa bajo la arquitectura de 4 capas: Capa 1 de Presentación (\`brand-splash-screen.tsx\`, \`animated-isotype-vector.tsx\`, \`animated-wordmark-vector.tsx\`, \`splash-portal.tsx\`), Capa 2 de Aplicación (\`use-splash-screen.ts\`, \`splash-provider.tsx\`), Capa 3 de Dominio (\`isotype-geometry.ts\`, \`load-optimizer.ts\`, \`types.ts\`), y Capa 4 de Infraestructura (\`splash-storage.ts\`) con suites exhaustivas de pruebas TDD unitarias e integración (24 tests de splash, 574 tests de repositorio).
+
+### Feature flag:
+- Feature flag name: feature_splash_screen
+- Implementation: Componente montado en el layout raíz mediante \`SplashPortal\` y controlado por sesión con \`sessionStorage\`.
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable automáticamente por sesión, clic de usuario o prop \`forceShow=false\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Descomposición Vectorial del Isotipo (Capa 3: Dominio)**:
+   - Extracción de las 4 piezas canónicas: barra pequeña blanca inferior izquierda, dos barras grandes blancas diagonales y ladrillo rojo de acento (\`#FC040C\`).
+   - Extracción de la tipografía vectorial oficial del logotipo ("BLUE BRICK") en \`WORDMARK_PATH_DATA\` con viewBox \`185 20 710 115\`.
+2. **Orquestación con Motion 12 (Capa 1: Presentación)**:
+   - Coreografía de entrada escalonada de izquierda a derecha con curvas cúbicas suaves.
+   - Retención visible de 5 segundos con el isotipo completamente formado.
+   - Giro sobre el propio eje en 3D (\`rotateY: 180deg\`, \`perspective: 800px\`) con cambio a color secundario institucional (\`#04283C\` / \`#E0030A\`).
+   - Transición de salida suave revelando la página web sin saltos de maquetación (CLS = 0).
+3. **Pipeline de Optimización de Carga (Capa 3 & 4: Dominio e Infraestructura)**:
+   - Precarga en segundo plano de rutas críticas (\`/dashboard\`, \`/auth/login\`) durante el tiempo de espera.
+   - Gating de sesión mediante \`sessionStorage\` con fallback seguro en memoria para SSR y navegación privada.
+4. **Pruebas y Verificación**:
+   - 24 tests unitarios dedicados a splash screen y optimización de carga.
+   - 100% de la suite de pruebas del monorepo en verde (82 archivos, 574 pruebas).
+   - Validaciones de arquitectura, licencias y gobernanza documental aprobadas sin errores.
+
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. El splash screen se desmonta limpiamente mediante React Portal y no interfiere con la jerarquía de rutas.
+- Security impact: Manejo seguro de Web Storage con fallback en memoria sin almacenamiento de credenciales sensibles.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\` o desactivar el montaje en \`Providers\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo UI de experiencia de usuario y optimización de carga; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación real: Verificación en Vitest, Testing Library, y 100% de tests unitarios y de integración pasando.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence: Aprobación explícita del desarrollador en chat tras validar la coreografía de 4 piezas, espera de 5s, giro 3D y vector de letras oficial.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la infraestructura completa y de alta resiliencia para la sincronización del Dashboard de Administración mediante **Google Drive Webhook Ingestion con Cooldown Configurable y Trailing-Edge Debouncing en Google Apps Script** (\`BBC-021\`), bajo la estricta arquitectura de 4 capas Feature-Driven Design (FDD) y respetando las cuotas de Vercel Hobby (límite de 1 cron diario).

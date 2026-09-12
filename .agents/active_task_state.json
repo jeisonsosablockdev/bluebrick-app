@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-021",
-  "branch": "feature/shared-rework-auth-ingestion-w-webhook",
+  "task_id": "BBC-21",
+  "branch": "feature/jaymusicmachine-BBC-21-splash-screen",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
