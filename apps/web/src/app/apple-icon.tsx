@@ -6,7 +6,7 @@
  */
 
 import { ImageResponse } from "next/og";
-import { BRAND_COLORS, BRAND_GEOMETRY } from "@/features/shared";
+import { BRAND_COLORS, BRAND_LOGO_PATHS } from "@/features/shared";
 
 export const size = {
   width: 180,
@@ -36,21 +36,24 @@ export default function AppleIcon(): ImageResponse {
           border: "2px solid rgba(255, 255, 255, 0.12)",
         }}
       >
-        {/* Step 2: Angled container with canonical -24deg rotation */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 10,
-            transform: `rotate(${BRAND_GEOMETRY.angleDeg}deg)`,
-          }}
+        {/* Step 2: Render canonical vector mark with 3 structural ribbons and crimson red accent */}
+        <svg
+          viewBox={BRAND_LOGO_PATHS.mark.viewBox}
+          width={114}
+          height={120}
+          style={{ display: "flex" }}
         >
-          {/* Step 3: Structural bars in Pure White (#FFFFFF) and accent bar in Crimson Red (#FC040C) */}
-          <div style={{ width: 14, height: 50, borderRadius: 7, background: BRAND_COLORS.pureWhite }} />
-          <div style={{ width: 14, height: 80, borderRadius: 7, background: BRAND_COLORS.pureWhite }} />
-          <div style={{ width: 14, height: 100, borderRadius: 7, background: BRAND_COLORS.pureWhite }} />
-          <div style={{ width: 14, height: 80, borderRadius: 7, background: BRAND_COLORS.crimsonRed }} />
-        </div>
+          <path
+            d={BRAND_LOGO_PATHS.mark.whitePath}
+            fill={BRAND_COLORS.pureWhite}
+            fillRule="evenodd"
+          />
+          <path
+            d={BRAND_LOGO_PATHS.mark.redPath}
+            fill={BRAND_COLORS.crimsonRed}
+            fillRule="evenodd"
+          />
+        </svg>
       </div>
     ),
     {
