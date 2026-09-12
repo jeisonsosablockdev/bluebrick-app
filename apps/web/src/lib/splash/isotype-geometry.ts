@@ -78,25 +78,6 @@ export const ISOTYPE_PIECES: readonly IsotypePieceConfig[] = [
 ] as const;
 
 /**
- * Step 2: Pure helper to retrieve config by piece ID.
- *
- * @param id - The unique piece identifier
- * @returns The piece configuration or undefined if not found
- */
-export function getIsotypePieceById(id: IsotypePieceId): IsotypePieceConfig | undefined {
-  return ISOTYPE_PIECES.find((piece) => piece.id === id);
-}
-
-/**
- * Step 3: Pure helper to return all 4 isotype piece configurations.
- *
- * @returns Array of all 4 isotype piece configs
- */
-export function getAllIsotypePieces(): readonly IsotypePieceConfig[] {
-  return ISOTYPE_PIECES;
-}
-
-/**
  * Standard SVG viewBox coordinates for the official typographic lettermark.
  */
 export const WORDMARK_VIEWBOX = "185 20 710 115";

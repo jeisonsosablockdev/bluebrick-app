@@ -24,21 +24,14 @@ export const DEFAULT_SPLASH_OPTIMIZATION_CONFIG: SplashOptimizationConfig = {
  * @returns Fully resolved SplashPhaseSchedule
  */
 export function calculateSplashSchedule(holdDurationMs: number = 5000): SplashPhaseSchedule {
-  // Step 1: Establish phase durations according to Motion 12 brand choreography
-  const enteringDurationMs = 1200;  // 1.2s staggered piece entrance
-  const resolvedHoldMs = Math.max(0, holdDurationMs); // Enforce non-negative duration
-  const flippingDurationMs = 1000;  // 1.0s 3D axial rotation & color transition
-  const exitingDurationMs = 600;    // 0.6s curtain dissolve reveal
-
-  // Step 2: Calculate cumulative lifecycle duration
-  const totalDurationMs = enteringDurationMs + resolvedHoldMs + flippingDurationMs + exitingDurationMs;
-
+  // Step 1: Enforce non-negative hold duration and calculate cumulative lifecycle duration
+  const hold = Math.max(0, holdDurationMs);
   return {
-    enteringDurationMs,
-    holdDurationMs: resolvedHoldMs,
-    flippingDurationMs,
-    exitingDurationMs,
-    totalDurationMs,
+    enteringDurationMs: 1200,
+    holdDurationMs: hold,
+    flippingDurationMs: 1000,
+    exitingDurationMs: 600,
+    totalDurationMs: 1200 + hold + 1000 + 600,
   };
 }
 
@@ -55,18 +48,8 @@ export function shouldBypassSplash(
   forceShow: boolean = false,
   bypassEnabled: boolean = true
 ): boolean {
-  // Step 1: Honor explicit manual force show override
-  if (forceShow) {
-    return false;
-  }
-
-  // Step 2: Honor global configuration bypass toggle
-  if (!bypassEnabled) {
-    return false;
-  }
-
-  // Step 3: Check session observation marker
-  return hasViewedInSession;
+  // Step 1: Evaluate bypass condition (bypassed if enabled, not forced, and previously viewed)
+  return !forceShow && bypassEnabled && hasViewedInSession;
 }
 
 /**

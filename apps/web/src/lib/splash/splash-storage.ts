@@ -20,20 +20,14 @@ export function createMemorySplashStorage(): SplashStorageAdapter {
   let viewed = false;
 
   return {
-    hasViewed(): boolean {
-      // Step 1: Query in-memory flag
-      return viewed;
-    },
-    markAsViewed(): void {
-      // Step 2: Set in-memory flag
+    hasViewed: () => viewed,
+    markAsViewed: () => {
       viewed = true;
     },
-    reset(): void {
-      // Step 3: Clear in-memory flag
+    reset: () => {
       viewed = false;
     },
-    clear(): void {
-      // Step 4: Alias to reset for test suite compatibility
+    clear: () => {
       viewed = false;
     },
   };
@@ -51,64 +45,42 @@ export function createSessionSplashStorage(
 ): SplashStorageAdapter {
   const memoryFallback = createMemorySplashStorage();
 
-  // Step 1: Detect if window and sessionStorage are accessible in current runtime
-  const isSessionStorageAvailable = (): boolean => {
-    if (typeof window === "undefined" || !window.sessionStorage) {
-      return false;
-    }
-    try {
-      const testKey = "__bluebrick_storage_test__";
-      window.sessionStorage.setItem(testKey, "1");
-      window.sessionStorage.removeItem(testKey);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   return {
     hasViewed(): boolean {
-      // Step 2: Read from sessionStorage if available, otherwise fall back to memory
-      if (!isSessionStorageAvailable()) {
-        return memoryFallback.hasViewed();
-      }
+      // Step 1: Read from sessionStorage if available, fallback to memory
       try {
-        return window.sessionStorage.getItem(storageKey) === "true";
+        if (typeof window !== "undefined" && window.sessionStorage) {
+          return window.sessionStorage.getItem(storageKey) === "true";
+        }
       } catch {
-        return memoryFallback.hasViewed();
+        // Storage access restricted (private browsing / sandbox)
       }
+      return memoryFallback.hasViewed();
     },
     markAsViewed(): void {
-      // Step 3: Write to sessionStorage and sync memory fallback
+      // Step 2: Write to sessionStorage and sync memory fallback
       memoryFallback.markAsViewed();
-      if (isSessionStorageAvailable()) {
-        try {
+      try {
+        if (typeof window !== "undefined" && window.sessionStorage) {
           window.sessionStorage.setItem(storageKey, "true");
-        } catch {
-          // Graceful fallback: storage quota exceeded or disabled
         }
+      } catch {
+        // Storage quota exceeded or disabled
       }
     },
     reset(): void {
-      // Step 4: Clear from sessionStorage and memory fallback
-      memoryFallback.reset();
-      if (isSessionStorageAvailable()) {
-        try {
-          window.sessionStorage.removeItem(storageKey);
-        } catch {
-          // Graceful fallback
-        }
-      }
+      // Step 3: Delegate reset to clear
+      this.clear();
     },
     clear(): void {
-      // Step 5: Alias to reset for clean testing lifecycles
+      // Step 4: Clear from sessionStorage and memory fallback
       memoryFallback.clear();
-      if (isSessionStorageAvailable()) {
-        try {
+      try {
+        if (typeof window !== "undefined" && window.sessionStorage) {
           window.sessionStorage.removeItem(storageKey);
-        } catch {
-          // Graceful fallback
         }
+      } catch {
+        // Storage restricted or inaccessible
       }
     },
   };
