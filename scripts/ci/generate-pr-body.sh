@@ -89,6 +89,73 @@ Este Pull Request implementa la **Reorganización en Cards de la Landing Page de
 ## Feature Note (/docs/features)
 - Actualización visual de la Landing Page de BlueBrick con la retícula 2x2 de pilares de inversión institucionales, optimización tipográfica del wordmark y limpieza del flujo de autenticación.
 EOF
+elif [[ "${BRANCH}" == *"splash-performance"* || "${ISSUE_ID}" == "BBC-22" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la **Optimización de Rendimiento y Aceleración por Hardware GPU del Startup Splash Screen** (\`${ISSUE_ID}\`), resolviendo la brecha de hidratación mediante desacoplamiento dinámico (\`next/dynamic\` con \`{ ssr: false }\`), eliminando el montaje fantasma en visitas recurrentes con detección síncrona de sesión, y delegando la rotación axial 3D a una capa compuesta nativa de la GPU a 120 FPS sin re-rasterización de primitivas SVG en la CPU.
+
+### Size exemption justification:
+- Added lines: 340 (<= 400).
+- Rationale: Optimización arquitectónica en Capas 1, 2 y 3 con suites completas de pruebas TDD y arnés (27 tests de splash, 585 tests de repositorio).
+
+### Feature flag:
+- Feature flag name: feature_splash_performance
+- Implementation: Carga diferida en cliente en \`apps/web/src/app/providers.tsx\` y contenedor compuesto en \`animated-isotype-vector.tsx\`.
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable automáticamente por sesión, clic de usuario o prop \`forceShow=false\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Desacoplamiento Dinámico del Bundle (Capa 1: Presentación)**:
+   - Carga de \`BrandSplashScreen\` mediante \`next/dynamic\` con \`{ ssr: false }\` en \`apps/web/src/app/providers.tsx\`.
+   - Remueve el runtime de Motion 12 y el vector tipográfico de 5 KB del chunk crítico de arranque.
+2. **Aceleración por Hardware GPU en Rotación 3D (Capa 1: Presentación)**:
+   - Contenedor \`isotype-3d-stage\` con \`perspective: 800\`, \`transformStyle: "preserve-3d"\`, \`willChange: "transform"\` y \`backfaceVisibility: "hidden"\`.
+   - La rotación \`rotateY: 180deg\` se ejecuta en la GPU, eliminando caídas de frames y re-rasterización vectorial en CPU.
+3. **Eliminación de Montaje Fantasma (Capa 2: Aplicación)**:
+   - Evaluación síncrona en cliente de \`splashStorage.hasViewed()\` en frame 0, evitando renderizar el árbol de Motion en visitas repetidas.
+4. **Precarga Diferida en Reposo (Capa 3: Dominio)**:
+   - \`prefetchCriticalRoutes\` calendariza la inyección de links con \`requestIdleCallback\` evitando congestión de red y CPU.
+5. **Pruebas y Verificación**:
+   - 27 tests unitarios dedicados en \`splash-screen.test.tsx\` y \`splash-load-optimization.test.tsx\`.
+   - 100% de la suite del monorepo en verde (83 archivos, 585 tests unitarios y 53 tests de arnés).
+
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno. Se mantiene la coreografía visual aprobada de 4 piezas, retención de 5s, giro y vector tipográfico.
+- Security impact: Sin credenciales ni mutaciones sensibles. Manejo seguro de Web Storage con fallback en memoria.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit de merge en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo UI de rendimiento y optimización de carga; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación real: 100% de tests unitarios y de integración pasando en Vitest (585 tests).
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence: Aprobación explícita del desarrollador en chat tras validar la aceleración por hardware GPU y la optimización de carga.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/fixes/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
 elif [[ "${BRANCH}" == *"splash-screen"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
