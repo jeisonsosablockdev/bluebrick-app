@@ -14,7 +14,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { BrandSplashScreen } from "@/components/splash/brand-splash-screen";
 import { AnimatedIsotypeVector } from "@/components/splash/animated-isotype-vector";
-import { ISOTYPE_PIECES, ISOTYPE_VIEWBOX } from "@/lib/splash/isotype-geometry";
+import { AnimatedWordmarkVector } from "@/components/splash/animated-wordmark-vector";
+import {
+  ISOTYPE_PIECES,
+  ISOTYPE_VIEWBOX,
+  WORDMARK_PATH_DATA,
+  WORDMARK_VIEWBOX,
+} from "@/lib/splash/isotype-geometry";
 import { splashStorage } from "@/lib/splash/splash-storage";
 
 // Mock motion/react to verify render contracts and SVG path attributes deterministically in jsdom
@@ -111,6 +117,36 @@ describe("BBC-21: Brand Splash Screen & Isotype Motion Choreography", () => {
       expect(redPiece).toHaveAttribute("fill", "#E0030A");
       expect(whitePiece).toHaveAttribute("fill", "#04283C");
       expect(largeWhite1).toHaveAttribute("fill", "#04283C");
+    });
+  });
+
+  describe("Official Brand Wordmark Vector (@spec BBC-21-REQ-01)", () => {
+    it("should render official SVG vector typography letters rather than plain font text", () => {
+      // Step 1: Arrange & Act
+      render(<AnimatedWordmarkVector phase="holding" width={220} />);
+
+      // Step 2: Assert SVG wordmark element and attributes
+      const wordmark = screen.getByTestId("animated-wordmark-vector");
+      expect(wordmark).toBeInTheDocument();
+      expect(wordmark).toHaveAttribute("viewBox", WORDMARK_VIEWBOX);
+
+      const path = wordmark.querySelector("path");
+      expect(path).toHaveAttribute("d", WORDMARK_PATH_DATA);
+      expect(path).toHaveAttribute("fill-rule", "evenodd");
+    });
+
+    it("should render official vector letters inside BrandSplashScreen when showWordmark is true", () => {
+      render(<BrandSplashScreen forceShow={true} showWordmark={true} />);
+
+      // Step 1: Assert official vector wordmark is rendered
+      expect(screen.getByTestId("animated-wordmark-vector")).toBeInTheDocument();
+    });
+
+    it("should omit wordmark vector when showWordmark is explicitly disabled", () => {
+      render(<BrandSplashScreen forceShow={true} showWordmark={false} />);
+
+      // Step 1: Assert wordmark is omitted
+      expect(screen.queryByTestId("animated-wordmark-vector")).not.toBeInTheDocument();
     });
   });
 

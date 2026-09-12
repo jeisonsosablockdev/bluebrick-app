@@ -10,6 +10,7 @@ import React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { BrandSplashScreenProps } from "@/lib/splash/types";
 import { AnimatedIsotypeVector } from "./animated-isotype-vector";
+import { AnimatedWordmarkVector } from "./animated-wordmark-vector";
 import { SplashPortal } from "./splash-portal";
 import { useSplashScreen } from "./use-splash-screen";
 
@@ -24,6 +25,7 @@ export function BrandSplashScreen({
   onComplete,
   className,
   forceShow = false,
+  showWordmark = true,
 }: BrandSplashScreenProps): React.JSX.Element | null {
   // Step 1: Hook into the splash lifecycle state machine
   const { phase, isVisible, skipSplash } = useSplashScreen({
@@ -77,25 +79,10 @@ export function BrandSplashScreen({
             >
               <AnimatedIsotypeVector phase={phase} size={140} />
 
-              {/* Step 4: Minimal accessible brand wordmark label */}
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
-                animate={{
-                  opacity: phase === "entering" || phase === "idle" ? 0 : 0.85,
-                  y: phase === "entering" || phase === "idle" ? 10 : 0,
-                }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                style={{
-                  fontFamily: "var(--font-geist-sans), sans-serif",
-                  fontSize: "0.875rem",
-                  letterSpacing: "0.25em",
-                  textTransform: "uppercase",
-                  color: "#94A3B8",
-                  fontWeight: 500,
-                }}
-              >
-                BlueBrick
-              </motion.span>
+              {/* Step 4: Render official animated vector lettermark (replaces plain font text) */}
+              {showWordmark && (
+                <AnimatedWordmarkVector phase={phase} width={210} />
+              )}
             </div>
           </motion.div>
         )}

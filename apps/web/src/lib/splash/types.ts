@@ -123,6 +123,20 @@ export interface AnimatedIsotypeVectorProps {
 }
 
 /**
+ * Props for the AnimatedWordmarkVector official brand typography component.
+ */
+export interface AnimatedWordmarkVectorProps {
+  /** Current animation phase driving typography states */
+  readonly phase: SplashPhase;
+  /** Display width in pixels (default: 200) */
+  readonly width?: number;
+  /** Optional container CSS class name */
+  readonly className?: string;
+  /** Optional custom inline style overrides */
+  readonly style?: CSSProperties;
+}
+
+/**
  * Props for the root BrandSplashScreen presentation overlay component.
  */
 export interface BrandSplashScreenProps {
@@ -132,6 +146,8 @@ export interface BrandSplashScreenProps {
   readonly className?: string;
   /** If true, forces animation to display regardless of session bypass state */
   readonly forceShow?: boolean;
+  /** If true, renders the official lettermark logo alongside the isotype (default: true) */
+  readonly showWordmark?: boolean;
 }
 
 /**
