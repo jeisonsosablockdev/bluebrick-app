@@ -71,31 +71,51 @@ export function shouldBypassSplash(
 
 /**
  * Asynchronously triggers background prefetching for critical platform routes during the holding phase.
+ * Defers execution to browser idle periods via requestIdleCallback (with setTimeout fallback)
+ * to avoid network and CPU contention during active UI animations.
  * Safe for execution in both SSR (no-op) and browser environments.
  *
  * @param routes - Array of route paths to prefetch
  * @returns Promise that resolves once link hints are dispatched
  */
 export async function prefetchCriticalRoutes(routes: readonly string[]): Promise<void> {
-  // Step 1: Guard against server-side execution where document is unavailable
-  if (typeof window === "undefined" || typeof document === "undefined") {
+  // Step 1: Guard against server-side execution where document is unavailable or empty routes
+  if (typeof window === "undefined" || typeof document === "undefined" || routes.length === 0) {
     return;
   }
 
-  // Step 2: Insert rel="prefetch" link tags in document head for non-existing links
-  for (const route of routes) {
-    try {
-      const existingLink = document.querySelector(`link[rel="prefetch"][href="${route}"]`);
-      if (!existingLink) {
-        const link = document.createElement("link");
-        link.rel = "prefetch";
-        link.href = route;
-        link.as = "document";
-        document.head.appendChild(link);
+  // Step 2: Define worker function to inject rel="prefetch" links into document head
+  const injectPrefetchLinks = () => {
+    for (const route of routes) {
+      try {
+        const existingLink = document.querySelector(`link[rel="prefetch"][href="${route}"]`);
+        if (!existingLink) {
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.href = route;
+          link.as = "document";
+          document.head.appendChild(link);
+        }
+      } catch {
+        // Step 3: Non-blocking graceful fallback if DOM manipulation fails
+        continue;
       }
-    } catch {
-      // Step 3: Non-blocking graceful fallback if DOM manipulation fails
-      continue;
     }
-  }
+  };
+
+  // Step 4: Schedule injection during idle browser time if requestIdleCallback is available
+  return new Promise<void>((resolve) => {
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(() => {
+        injectPrefetchLinks();
+        resolve();
+      });
+    } else {
+      // Step 5: Fallback to deferred timer for environments without requestIdleCallback
+      setTimeout(() => {
+        injectPrefetchLinks();
+        resolve();
+      }, 0);
+    }
+  });
 }

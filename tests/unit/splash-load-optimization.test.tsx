@@ -90,6 +90,21 @@ describe("BBC-21: Splash Load Optimization & Storage Pipelines", () => {
     it("should safely handle empty route arrays gracefully", async () => {
       await expect(prefetchCriticalRoutes([])).resolves.not.toThrow();
     });
+
+    it("should delegate prefetch scheduling to requestIdleCallback when available (@spec BBC-22-REQ-03)", async () => {
+      const idleSpy = vi.fn((cb: () => void) => {
+        cb();
+        return 1;
+      });
+      vi.stubGlobal("requestIdleCallback", idleSpy);
+
+      try {
+        await prefetchCriticalRoutes(["/dashboard"]);
+        expect(idleSpy).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
   });
 
   describe("Storage Adapters & SSR Safety (@spec BBC-21-REQ-06)", () => {

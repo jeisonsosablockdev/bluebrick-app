@@ -239,5 +239,34 @@ describe("BBC-21: Brand Splash Screen & Isotype Motion Choreography", () => {
       expect(screen.getByTestId("brand-splash-screen")).toBeInTheDocument();
       expect(onCompleteSpy).not.toHaveBeenCalled();
     });
+
+    it("should synchronously eliminate ghost mounts on frame 0 when previously viewed (@spec BBC-22-REQ-02)", () => {
+      // Step 1: Set storage flag as already viewed
+      splashStorage.markAsViewed();
+      const onCompleteSpy = vi.fn();
+
+      // Step 2: Render without advancing any timers (frame 0 check)
+      render(<BrandSplashScreen onComplete={onCompleteSpy} forceShow={false} />);
+
+      // Assert that on the very first synchronous paint pass, the splash overlay is NOT in the DOM
+      expect(screen.queryByTestId("brand-splash-screen")).toBeNull();
+    });
+  });
+
+  describe("BBC-22: GPU Hardware Acceleration & 3D Compositing Stage (@spec BBC-22-REQ-01)", () => {
+    it("should wrap isotype in a hardware-accelerated 3D DOM stage container", () => {
+      // Step 1: Render AnimatedIsotypeVector
+      render(<AnimatedIsotypeVector phase="flipping" size={140} />);
+
+      // Step 2: Query the outer 3D stage container
+      const stage = screen.getByTestId("isotype-3d-stage");
+      expect(stage).toBeInTheDocument();
+
+      // Step 3: Assert GPU hardware compositing and 3D perspective styles
+      expect(stage).toHaveStyle({
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      });
+    });
   });
 });

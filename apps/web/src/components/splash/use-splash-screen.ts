@@ -46,10 +46,17 @@ export function useSplashScreen(
     [config.holdDurationMs]
   );
 
-  // Step 2: Initialize phase states
-  const [phase, setPhase] = useState<SplashPhase>("idle");
-  const [isVisible, setIsVisible] = useState<boolean>(true);
-  const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  // Step 2: Check session bypass eligibility synchronously during initial mount (zero-frame ghost mount elimination)
+  const checkInitialBypass = useCallback((): boolean => {
+    const alreadyViewed = splashStorage.hasViewed();
+    return shouldBypassSplash(alreadyViewed, forceShow, config.bypassOnRepeatVisit);
+  }, [config.bypassOnRepeatVisit, forceShow]);
+
+  const isBypassedSync = checkInitialBypass();
+
+  const [phase, setPhase] = useState<SplashPhase>(isBypassedSync ? "completed" : "idle");
+  const [isVisible, setIsVisible] = useState<boolean>(!isBypassedSync);
+  const [isCompleted, setIsCompleted] = useState<boolean>(isBypassedSync);
   const activeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Step 3: Fast-forward / manual skip handler
@@ -67,19 +74,10 @@ export function useSplashScreen(
 
   // Step 4: Primary lifecycle and timer progression effect
   useEffect(() => {
-    // Check session bypass eligibility
-    const alreadyViewed = splashStorage.hasViewed();
-    if (shouldBypassSplash(alreadyViewed, forceShow, config.bypassOnRepeatVisit)) {
-      const bypassTimer = setTimeout(() => {
-        setPhase("completed");
-        setIsVisible(false);
-        setIsCompleted(true);
-        onComplete?.();
-      }, 0);
-      activeTimersRef.current.push(bypassTimer);
-      return () => {
-        clearTimeout(bypassTimer);
-      };
+    // Check session bypass eligibility - if already bypassed synchronously, trigger completion callback and exit
+    if (checkInitialBypass()) {
+      onComplete?.();
+      return;
     }
 
     // Begin Phase A: entering
@@ -134,6 +132,7 @@ export function useSplashScreen(
       activeTimersRef.current = [];
     };
   }, [
+    checkInitialBypass,
     config.bypassOnRepeatVisit,
     config.criticalRoutes,
     config.fallbackTimeoutMs,

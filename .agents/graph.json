@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-12T19:02:05.517Z",
+  "generatedAt": "2026-09-12T22:11:33.604Z",
   "nodes": [
     {
       "id": "AGENTS.md",
@@ -258,6 +258,18 @@
       "type": "feature",
       "label": "feature-jaymusicmachine-BBC-20-landing-cards-reorganization",
       "path": "knowledge/features/feature-jaymusicmachine-BBC-20-landing-cards-reorganization.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-21-splash-screen-implementation.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-21-splash-screen-implementation",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-21-splash-screen-implementation.md"
+    },
+    {
+      "id": "knowledge/features/feature-jaymusicmachine-BBC-21-splash-screen.md",
+      "type": "feature",
+      "label": "feature-jaymusicmachine-BBC-21-splash-screen",
+      "path": "knowledge/features/feature-jaymusicmachine-BBC-21-splash-screen.md"
     },
     {
       "id": "knowledge/features/feature-jaymusicmachine-BBC-6-user-investment-dashboard-implementation.md",

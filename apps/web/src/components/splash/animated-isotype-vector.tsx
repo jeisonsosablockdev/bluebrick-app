@@ -16,20 +16,58 @@ import {
 import type { AnimatedIsotypeVectorProps } from "@/lib/splash/types";
 
 /**
- * Step 1: Define Motion 12 animation variants for individual isotype pieces.
+ * Step 1: Define Motion 12 animation variants for the hardware-accelerated 3D stage container.
+ * Moves the 3D axial rotation (rotateY: 180deg) to an outer GPU compositor layer, eliminating
+ * CPU-bound SVG and path re-rasterization on every frame.
+ */
+const stageVariants: Variants = {
+  idle: {
+    rotateY: 0,
+    scale: 1,
+  },
+  entering: {
+    rotateY: 0,
+    scale: 1,
+  },
+  holding: {
+    rotateY: 0,
+    scale: 1,
+  },
+  flipping: {
+    rotateY: 180,
+    scale: 1.05,
+    transition: {
+      duration: 0.8,
+      ease: [0.34, 1.56, 0.64, 1], // Spring-like overshoot ease
+    },
+  },
+  exiting: {
+    rotateY: 180,
+    scale: 0.92,
+    transition: {
+      duration: 0.5,
+      ease: [0.7, 0, 0.84, 0],
+    },
+  },
+  completed: {
+    rotateY: 180,
+    opacity: 0,
+  },
+};
+
+/**
+ * Step 2: Define Motion 12 animation variants for individual isotype pieces (entrance and exit).
  */
 const pieceVariants: Variants = {
   idle: {
     opacity: 0,
     y: 24,
     scale: 0.9,
-    rotateY: 0,
   },
   entering: (custom: { delay: number; duration: number }) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    rotateY: 0,
     transition: {
       delay: custom.delay,
       duration: custom.duration,
@@ -40,20 +78,15 @@ const pieceVariants: Variants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    rotateY: 0,
     transition: {
       duration: 0.3,
     },
   },
-  flipping: (custom: { delay: number }) => ({
-    rotateY: 180,
-    scale: 1.05,
-    transition: {
-      delay: custom.delay * 0.5,
-      duration: 0.8,
-      ease: [0.34, 1.56, 0.64, 1], // Spring-like overshoot ease
-    },
-  }),
+  flipping: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+  },
   exiting: {
     opacity: 0,
     scale: 0.92,
@@ -69,10 +102,10 @@ const pieceVariants: Variants = {
 
 /**
  * AnimatedIsotypeVector renders the 4 decomposed BlueBrick logo pieces
- * as individually animated vector elements using Motion 12.
+ * wrapped inside a hardware-accelerated 3D stage container.
  *
- * @param props - Presentation configuration including active animation phase
- * @returns SVG element containing choreographed isotype segments
+ * @param props - Presentation configuration including active animation phase and size
+ * @returns 3D DOM stage containing the choreographed isotype SVG
  */
 export function AnimatedIsotypeVector({
   phase,
@@ -80,45 +113,61 @@ export function AnimatedIsotypeVector({
   className,
   style,
 }: AnimatedIsotypeVectorProps): React.JSX.Element {
-  // Step 2: Establish SVG dimensions and 3D perspective context
+  // Step 3: Wrap SVG in GPU-promoted 3D stage container for hardware composition
   return (
-    <motion.svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={ISOTYPE_VIEWBOX}
-      width={size}
-      height={size}
+    <motion.div
+      data-testid="isotype-3d-stage"
+      variants={stageVariants}
+      initial="idle"
+      animate={phase}
       className={className}
       style={{
         perspective: 800,
         transformStyle: "preserve-3d",
-        overflow: "visible",
+        willChange: "transform",
+        backfaceVisibility: "hidden",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
         ...style,
       }}
-      aria-label="BlueBrick Brand Mark"
-      role="img"
     >
-      {/* Step 3: Render each decomposed segment with Motion 12 animation parameters */}
-      {ISOTYPE_PIECES.map((piece) => {
-        const isFlipped = phase === "flipping" || phase === "exiting" || phase === "completed";
-        const currentFill = isFlipped ? piece.secondaryFill : piece.initialFill;
+      {/* Step 4: Render SVG graphic canvas without expensive per-frame SVG matrix transforms */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox={ISOTYPE_VIEWBOX}
+        width={size}
+        height={size}
+        style={{
+          overflow: "visible",
+          display: "block",
+        }}
+        aria-label="BlueBrick Brand Mark"
+        role="img"
+      >
+        {/* Step 5: Render each decomposed segment with Motion 12 entrance and fill transitions */}
+        {ISOTYPE_PIECES.map((piece) => {
+          const isFlipped = phase === "flipping" || phase === "exiting" || phase === "completed";
+          const currentFill = isFlipped ? piece.secondaryFill : piece.initialFill;
 
-        return (
-          <motion.path
-            key={piece.id}
-            d={piece.pathData}
-            fill={currentFill}
-            fillRule="evenodd"
-            custom={{ delay: piece.delaySeconds, duration: piece.durationSeconds }}
-            variants={pieceVariants}
-            initial="idle"
-            animate={phase}
-            style={{
-              transformOrigin: "center",
-            }}
-            data-testid={`isotype-piece-${piece.id}`}
-          />
-        );
-      })}
-    </motion.svg>
+          return (
+            <motion.path
+              key={piece.id}
+              d={piece.pathData}
+              fill={currentFill}
+              fillRule="evenodd"
+              custom={{ delay: piece.delaySeconds, duration: piece.durationSeconds }}
+              variants={pieceVariants}
+              initial="idle"
+              animate={phase}
+              style={{
+                transformOrigin: "center",
+              }}
+              data-testid={`isotype-piece-${piece.id}`}
+            />
+          );
+        })}
+      </svg>
+    </motion.div>
   );
 }
