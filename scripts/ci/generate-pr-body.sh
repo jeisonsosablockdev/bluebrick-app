@@ -326,10 +326,10 @@ Este Pull Request implementa la corrección y enriquecimiento integral de la acc
 - [x] \`pnpm test:harness\` passed (53 tests)
 - [x] Required docs were updated for touched scopes
 EOF
-elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
+elif [[ "${BRANCH}" == *"social-sharing-card-preview"* || "${BRANCH}" == *"fix-social-card"* || "${BRANCH}" == *"social-card"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
-Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinámica OpenGraph y Metadatos de Social Sharing** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un favicon cuadrado degradado debido a un \`metadataBase\` apuntando a un dominio inexistente (\`bluebrick-app.vercel.app\`, HTTP 404). Además, actualiza los textos y pilares estratégicos institucionales según el copy oficial aprobado por el cliente.
+Este Pull Request implementa la actualización y alineación de la **Tarjeta Dinámica OpenGraph, Dynamic Favicons e Icons con el Nuevo Logotipo Oficial Vectorial de BlueBrick** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un isotipo antiguo y texto plano. Ahora incorpora el vector SVG canónico del logotipo horizontal (\`892x168\`) en el header, el nuevo isotipo de tres cintas orgánicas con el acento rojo carmesí (\`#FC040C\`) en un tile luxury esmerilado, y regenera los activos táctiles \`apple-touch-icon.png\` e \`icon.png\`.
 
 ### Size exemption justification:
 - Added lines: 550 (> 400).
@@ -342,17 +342,16 @@ Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinám
 - Kill-switch: N/A (fix de metadatos SEO y resolución de URLs canónicas).
 
 ### 🚀 Principales Cambios y Entregables:
-1. **Capa 1: Presentación (\`apps/web/src/app/layout.tsx\` & \`opengraph-image.tsx\`)**:
-   - Configuración de \`metadataBase\` dinámico con fallback a \`https://portal.bluebrick.capital\`.
-   - Declaración explícita de dimensiones 1200x630 (\`image/png\`) para \`openGraph.images\` y tarjeta Twitter \`summary_large_image\`.
-   - Diseño institucional en Edge \`opengraph-image.tsx\` con tokens de marca (\`#04283C\`, \`#FFFFFF\`, \`#FC040C\`, \`#57B98C\`), emblema canónico de barras a -24° y eliminación de warnings de \`z-index\` mediante apilamiento natural DOM.
-   - Textos aprobados por el cliente: Badge \`CREACIÓN DE PATRIMONIO\`, Headline \`Capital Inteligente. Activos Reales\`, descripción y los 3 pilares estratégicos (*Real Estate* · *Inversión Inmobiliaria*, *Gestión Profesional* · *Estrategia y Control*, *Patrimonio* · *Crecimiento Sostenible*).
-2. **Capa 3: Dominio (\`apps/web/src/lib/pipelines/seo-metadata-pipeline.ts\`)**:
-   - Actualización de \`DEFAULT_SITE_URL\` a \`https://portal.bluebrick.capital\` y descripciones institucionales.
+1. **Capa 1: Presentación (\`apps/web/src/app/opengraph-image.tsx\`, \`apple-icon.tsx\`, \`icon.tsx\`)**:
+   - Header superior de la social card: Renderiza el logo horizontal oficial vectorial (\`892x168\`) con cintas orgánicas y tipografía Blue Brick oficial.
+   - Hero central: Tile de vidrio esmerilado con el isotipo oficial (\`160x168\`) y ladrillo rojo carmesí (\`#FC040C\`).
+   - Favicons dinámicos (\`icon.tsx\` y \`apple-icon.tsx\`): Actualizados con el nuevo isotipo vectorial.
+   - Activos estáticos en \`public/\`: Regenerados \`apple-touch-icon.png\` e \`icon.png\` en alta resolución con el nuevo isotipo centrado sobre fondo Deep Navy (\`#04283C\`).
+2. **Capa 3: Dominio (\`apps/web/src/features/shared/domain/brand-tokens.ts\`)**:
+   - Incorporados \`BRAND_LOGO_PATHS\` con datos SVG vectoriales canónicos para \`horizontalLogo\` y \`mark\`.
 3. **Pruebas Automatizadas y Calidad**:
-   - Creado \`tests/unit/social-sharing-card.test.ts\` con 6 tests unitarios pasando al 100%.
-   - 74 suites de prueba y 502/502 tests unitarios pasando.
-   - Auditoría de Arquitecto (Gate 1 y Gate 2) con 100% de cumplimiento en aislamiento de capas y comentarios en código.
+   - Actualizado \`tests/unit/social-sharing-card.test.ts\` con validación de paths vectoriales, colores y generación de iconos dinámicos.
+   - 100% de tests unitarios pasando (83 suites, 583 tests en verde).
    - Suite completa de gobernanza \`pnpm validate\` aprobada al 100%.
 
 ## Issue
