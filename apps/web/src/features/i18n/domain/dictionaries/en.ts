@@ -35,6 +35,14 @@ export const en: Dictionary = {
       "Access your institutional portfolio, monitor monthly distributions, track weighted returns, and reinvest capital into exclusive opportunities.",
     securityBadge: "Institutional Governance · Maximum security and privacy for investors",
     footerText: "BlueBrick Platform · Fractional Real Estate Investments",
+    platformTagline: "investment platform",
+    greetingHeadline: "Hello, Investor",
+    portfolioAccessSubtitle: "Access your portfolio...",
+    cardExclusiveAccessTitle: "Exclusive Access",
+    cardExclusiveAccessSubtitle: "Manage your investments",
+    cardPerformanceTitle: "Check Performance",
+    cardDistributionsTitle: "Monitor Distributions",
+    cardReinvestTitle: "Reinvest Capital",
   },
   loginCard: {
     headerTitle: "Investor Access",
@@ -43,7 +51,7 @@ export const en: Dictionary = {
     loginSubtitle: "Sign in with your personal or corporate email to manage your investments.",
     emailLoginButton: "Sign in with your email",
     disclaimerNote: "BlueBrick Investment Platform · Secure and institutional access for verified investors.",
-    supportedProvidersLabel: "Compatible with Google, Microsoft, Apple & Yahoo",
+    supportedProvidersLabel: "Compatible with Google, Microsoft & Apple",
   },
   logoutModal: {
     title: "Sign out?",

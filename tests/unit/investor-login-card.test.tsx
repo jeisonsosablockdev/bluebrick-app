@@ -68,7 +68,7 @@ describe("BBC-13: Investor Login Redesign Unit Suite (@spec BBC-13-INVESTOR-LOGI
       expect(loginLink).toHaveAttribute("href", "/auth/login");
     });
 
-    it("should render multi-provider compatibility indicators (Google, Microsoft, Apple, Yahoo)", () => {
+    it("should render multi-provider compatibility indicators (Google, Microsoft, Apple) and NOT render Yahoo", () => {
       // Step 1: Render card
       const { container } = render(
         <I18nProvider initialLocale="es">
@@ -80,7 +80,7 @@ describe("BBC-13: Investor Login Redesign Unit Suite (@spec BBC-13-INVESTOR-LOGI
       expect(container.querySelector('[data-provider="google"]')).toBeInTheDocument();
       expect(container.querySelector('[data-provider="microsoft"]')).toBeInTheDocument();
       expect(container.querySelector('[data-provider="apple"]')).toBeInTheDocument();
-      expect(container.querySelector('[data-provider="yahoo"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-provider="yahoo"]')).not.toBeInTheDocument();
     });
 
     it("should render institutional disclaimer note without mentioning demo or federated jargon", () => {

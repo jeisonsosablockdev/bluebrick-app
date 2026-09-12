@@ -8,6 +8,7 @@
 
 import React from "react";
 import { LandingHero } from "@/components/landing/landing-hero";
+import { LandingFeatureCards } from "@/components/landing/landing-feature-cards";
 import { InvestorLoginCard } from "@/components/landing/investor-login-card";
 import { LocaleSwitcher, useI18n } from "@/features/i18n";
 import { ThemeToggle, useTheme } from "@/components/theme";
@@ -24,11 +25,15 @@ export default function HomePage(): React.JSX.Element {
     <div
       style={{
         minHeight: "100vh",
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "24px 24px 48px",
+        padding: "20px 16px 40px",
         background: isDark
           ? "radial-gradient(1200px 600px at 15% -10%, rgba(196, 18, 48, 0.12), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47, 143, 107, 0.12), transparent), #0A1220"
           : "radial-gradient(1200px 600px at 15% -10%, rgba(196, 18, 48, 0.05), transparent), radial-gradient(1000px 500px at 100% 0%, rgba(47, 143, 107, 0.05), transparent), #F8FAFC",
@@ -41,12 +46,13 @@ export default function HomePage(): React.JSX.Element {
       <nav
         style={{
           width: "100%",
-          maxWidth: 960,
+          maxWidth: 460,
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
           gap: 12,
           paddingBottom: 16,
+          boxSizing: "border-box",
         }}
       >
         <ThemeToggle />
@@ -57,23 +63,29 @@ export default function HomePage(): React.JSX.Element {
       <main
         style={{
           width: "100%",
-          maxWidth: 720,
+          maxWidth: 460,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           margin: "auto 0",
-          gap: 36,
+          gap: 24,
+          boxSizing: "border-box",
         }}
       >
         <LandingHero />
 
-        {/* Step 5: Interactive Investor Real Auth Login Card */}
+        {/* Step 5: 2x2 Value Proposition Feature Cards Grid */}
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <InvestorLoginCard />
+          <LandingFeatureCards />
+        </div>
+
+        {/* Step 6: Interactive Investor Real Auth Login Card */}
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+          <InvestorLoginCard compact />
         </div>
       </main>
 
-      {/* Step 6: Governance & Compliance Footer */}
+      {/* Step 7: Governance & Compliance Footer */}
       <footer
         style={{
           marginTop: 48,

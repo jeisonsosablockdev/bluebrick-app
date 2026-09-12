@@ -93,6 +93,14 @@ export interface Dictionary {
     subtitle: string;
     securityBadge: string;
     footerText: string;
+    platformTagline: string;
+    greetingHeadline: string;
+    portfolioAccessSubtitle: string;
+    cardExclusiveAccessTitle: string;
+    cardExclusiveAccessSubtitle: string;
+    cardPerformanceTitle: string;
+    cardDistributionsTitle: string;
+    cardReinvestTitle: string;
   };
   loginCard: {
     headerTitle: string;
