@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "task_id": "BBC-22",
-  "branch": "SPEC/jaymusicmachine-BBC-22-s01-splash-performance",
+  "branch": "bugfix/jaymusicmachine-BBC-22-splash-performance-optimization",
   "current_phase": "PHASE_7_VALIDATED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
