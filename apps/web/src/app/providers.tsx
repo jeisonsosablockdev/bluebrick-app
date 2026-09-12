@@ -11,6 +11,7 @@ import { I18nProvider } from "@/features/i18n";
 import { WalletRuntimeProvider } from "@/components/wallet/wallet-runtime-provider";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { ThemeProvider } from "@/components/theme";
+import { SplashProvider, BrandSplashScreen } from "@/components/splash";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -23,11 +24,17 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
   // Step 1: Wrap app contents in ThemeProvider for light/dark mode support
   // Step 2: Wrap in I18nProvider for global multilingual localization
   // Step 3: Provide Motion animations and Solana wallet runtime
+  // Step 4: Mount startup SplashProvider and BrandSplashScreen portal overlay
   return (
     <ThemeProvider defaultTheme="dark">
       <I18nProvider>
         <MotionProvider>
-          <WalletRuntimeProvider>{children}</WalletRuntimeProvider>
+          <WalletRuntimeProvider>
+            <SplashProvider>
+              <BrandSplashScreen />
+              {children}
+            </SplashProvider>
+          </WalletRuntimeProvider>
         </MotionProvider>
       </I18nProvider>
     </ThemeProvider>
