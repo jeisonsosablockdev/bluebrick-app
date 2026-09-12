@@ -45,6 +45,14 @@ export const LandingTokensSchema = z.object({
   subtitle: z.string().min(1),
   securityBadge: z.string().min(1),
   footerText: z.string().min(1),
+  platformTagline: z.string().min(1),
+  greetingHeadline: z.string().min(1),
+  portfolioAccessSubtitle: z.string().min(1),
+  cardExclusiveAccessTitle: z.string().min(1),
+  cardExclusiveAccessSubtitle: z.string().min(1),
+  cardPerformanceTitle: z.string().min(1),
+  cardDistributionsTitle: z.string().min(1),
+  cardReinvestTitle: z.string().min(1),
 });
 
 /**

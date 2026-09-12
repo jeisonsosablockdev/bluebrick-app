@@ -11,7 +11,9 @@ if [[ -z "${ISSUE_ID}" ]]; then
   ISSUE_ID="$(echo "${BRANCH}" | grep -oE 'BRI-[0-9]+' | head -1 || echo "BRI-186")"
 fi
 
-if [[ "${BRANCH}" == *"splash-screen"* ]]; then
+if [[ "${BRANCH}" == *"landing-cards-reorganization"* || "${BRANCH}" == *"landing"* ]]; then
+  DEFAULT_TITLE="feat(landing): 2x2 value proposition feature cards grid and hero alignment (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"splash-screen"* ]]; then
   DEFAULT_TITLE="feat(splash): animated brand startup screen with motion 12 and load optimization (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then
   DEFAULT_TITLE="feat(ai-ingestion): Drive Folder Image Ingestion & Vercel Blob Sync (${ISSUE_ID})"

@@ -1,18 +1,19 @@
 /**
  * @file apps/web/src/components/landing/investor-login-card.tsx
  * @description Layer 1: Presentation - Institutional Investor Login Card with WorkOS Multi-Provider Support & Theme Adaptivity.
- * Presents dedicated secure authentication entrypoint for verified investors, supporting WorkOS email sign-in, multi-provider compatibility, and light/dark theme modes.
+ * Presents dedicated secure authentication entrypoint for verified investors, supporting WorkOS email sign-in, multi-provider compatibility (Google, Microsoft, Apple), and light/dark theme modes.
  */
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/features/i18n";
 import { useTheme } from "@/components/theme";
 
 export interface InvestorLoginCardProps {
   className?: string;
+  compact?: boolean;
 }
 
 /**
@@ -60,27 +61,16 @@ function AppleIcon({ color }: { color: string }): React.JSX.Element {
   );
 }
 
-function YahooIcon(): React.JSX.Element {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M2.5 4h3.5l4.8 9.5L15.6 4h3.5l-6.8 12.8v5.2H8.8v-5.2L2.5 4z"
-        fill="#7B0099"
-      />
-      <circle cx="20.5" cy="18" r="1.8" fill="#7B0099" />
-    </svg>
-  );
-}
-
 /**
  * InvestorLoginCard displays the dedicated, institutional investor entry card.
  */
-export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): React.JSX.Element {
+export function InvestorLoginCard({ className = "", compact = false }: InvestorLoginCardProps): React.JSX.Element {
   // Step 1: Access localized translation strings and active theme
   const { t } = useI18n();
   const { theme } = useTheme();
 
   const isDark = theme === "dark";
+  const [isCtaHovered, setIsCtaHovered] = useState(false);
 
   // Step 2: Theme-adaptive color tokens matching luxury design specifications
   const cardBg = isDark
@@ -103,88 +93,94 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
         background: cardBg,
         border: cardBorder,
         borderRadius: 20,
-        padding: "32px",
+        padding: compact ? "20px 16px" : "32px",
         width: "100%",
         maxWidth: 460,
+        boxSizing: "border-box",
         boxShadow: cardShadow,
         transition: "all 0.3s ease",
       }}
     >
-      {/* Step 4: Card Header with Investor Access & Private Portal Badge */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: headerBorder,
-          paddingBottom: 16,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: isDark ? "#7C8A9C" : "#718096",
-          }}
-        >
-          <Lock size={14} color="#E8495F" />
-          <span>{t("loginCard.headerTitle")}</span>
-        </div>
+      {/* Step 4: Card Header with Investor Access & Private Portal Badge (omitted in compact mode) */}
+      {!compact && (
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderBottom: headerBorder,
+              paddingBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: isDark ? "#7C8A9C" : "#718096",
+              }}
+            >
+              <Lock size={14} color="#E8495F" />
+              <span>{t("loginCard.headerTitle")}</span>
+            </div>
 
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            borderRadius: 999,
-            background: isDark ? "rgba(87, 185, 140, 0.12)" : "rgba(47, 143, 107, 0.1)",
-            padding: "4px 10px",
-            fontSize: 11,
-            fontWeight: 600,
-            color: isDark ? "#57B98C" : "#2F8F6B",
-            border: isDark ? "1px solid rgba(87, 185, 140, 0.3)" : "1px solid rgba(47, 143, 107, 0.3)",
-          }}
-        >
-          <ShieldCheck size={12} />
-          {t("loginCard.privatePortalBadge")}
-        </span>
-      </div>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                borderRadius: 999,
+                background: isDark ? "rgba(87, 185, 140, 0.12)" : "rgba(47, 143, 107, 0.1)",
+                padding: "4px 10px",
+                fontSize: 11,
+                fontWeight: 600,
+                color: isDark ? "#57B98C" : "#2F8F6B",
+                border: isDark ? "1px solid rgba(87, 185, 140, 0.3)" : "1px solid rgba(47, 143, 107, 0.3)",
+              }}
+            >
+              <ShieldCheck size={12} />
+              {t("loginCard.privatePortalBadge")}
+            </span>
+          </div>
 
-      {/* Step 5: Exclusive Access Headline & Explanatory Subtitle */}
-      <div style={{ margin: "24px 0 20px" }}>
-        <h2
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: titleColor,
-            lineHeight: 1.3,
-            margin: "0 0 8px",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          {t("loginCard.exclusiveAccessTitle")}
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: subtitleColor,
-            lineHeight: 1.5,
-            margin: 0,
-          }}
-        >
-          {t("loginCard.loginSubtitle")}
-        </p>
-      </div>
+          <div style={{ margin: "24px 0 20px" }}>
+            <h2
+              style={{
+                fontSize: 20,
+                fontWeight: 700,
+                color: titleColor,
+                lineHeight: 1.3,
+                margin: "0 0 8px",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {t("loginCard.exclusiveAccessTitle")}
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: subtitleColor,
+                lineHeight: 1.5,
+                margin: 0,
+              }}
+            >
+              {t("loginCard.loginSubtitle")}
+            </p>
+          </div>
+        </>
+      )}
 
-      {/* Step 6: Primary Action - WorkOS AuthKit Universal Email Login */}
+      {/* Step 5: Primary Action - WorkOS AuthKit Universal Email Login */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <a
           href="/auth/login"
+          onMouseEnter={() => setIsCtaHovered(true)}
+          onMouseLeave={() => setIsCtaHovered(false)}
           style={{
             display: "flex",
             width: "100%",
@@ -197,10 +193,13 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
             fontWeight: 700,
             color: "#FFFFFF",
             background: "linear-gradient(135deg, #E8495F 0%, #C41230 100%)",
-            boxShadow: "0 8px 24px rgba(196, 18, 48, 0.35)",
+            boxShadow: isCtaHovered
+              ? "0 12px 28px rgba(196, 18, 48, 0.45)"
+              : "0 8px 24px rgba(196, 18, 48, 0.35)",
+            transform: isCtaHovered ? "translateY(-2px)" : "translateY(0)",
             textDecoration: "none",
             cursor: "pointer",
-            transition: "transform 0.15s ease, box-shadow 0.15s ease",
+            transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease",
           }}
         >
           <Mail size={18} color="#FFFFFF" />
@@ -208,7 +207,7 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
           <ArrowRight size={16} color="#FFFFFF" />
         </a>
 
-        {/* Step 7: Multi-Provider Compatibility Row (Google, Microsoft, Apple, Corporate SSO) */}
+        {/* Step 6: Multi-Provider Compatibility Row (Google, Microsoft, Apple) */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <span
             style={{
@@ -238,7 +237,7 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "6px 10px",
+                padding: "6px 12px",
                 borderRadius: 8,
                 background: chipBg,
                 border: chipBorder,
@@ -258,7 +257,7 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "6px 10px",
+                padding: "6px 12px",
                 borderRadius: 8,
                 background: chipBg,
                 border: chipBorder,
@@ -278,7 +277,7 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "6px 10px",
+                padding: "6px 12px",
                 borderRadius: 8,
                 background: chipBg,
                 border: chipBorder,
@@ -290,32 +289,12 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
               <AppleIcon color={isDark ? "#EDF1F5" : "#0A1220"} />
               <span>Apple</span>
             </div>
-
-            <div
-              data-provider="yahoo"
-              title="Yahoo"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 10px",
-                borderRadius: 8,
-                background: chipBg,
-                border: chipBorder,
-                fontSize: 11,
-                fontWeight: 600,
-                color: chipText,
-              }}
-            >
-              <YahooIcon />
-              <span>Yahoo</span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Step 8: Institutional Governance & Security Disclaimer */}
-      <p
+      {/* Step 7: Institutional Governance & Security Disclaimer */}
+      <div
         style={{
           marginTop: 20,
           textAlign: "center",
@@ -326,8 +305,21 @@ export function InvestorLoginCard({ className = "" }: InvestorLoginCardProps): R
           borderTop: headerBorder,
         }}
       >
-        {t("loginCard.disclaimerNote")}
-      </p>
+        <p style={{ margin: 0 }}>{t("loginCard.disclaimerNote")}</p>
+        {compact && (
+          <p
+            style={{
+              margin: "8px 0 0 0",
+              fontSize: 10,
+              letterSpacing: "0.06em",
+              color: isDark ? "#4A5568" : "#A0AEC0",
+              fontFamily: "monospace",
+            }}
+          >
+            V 11.5.1.4 - 2.10.2
+          </p>
+        )}
+      </div>
     </div>
   );
 }

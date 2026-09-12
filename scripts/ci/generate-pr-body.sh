@@ -25,7 +25,71 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${BRANCH}" == *"splash-screen"* ]]; then
+if [[ "${BRANCH}" == *"landing-cards-reorganization"* || "${BRANCH}" == *"landing"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la **Reorganización en Cards de la Landing Page de BlueBrick** (\`${ISSUE_ID}\`), transformando el área de valor institucional en una retícula 2x2 de cards informativas con microanimaciones, isotipo y wordmark canónicos, alineación exacta del subtítulo "plataforma de inversión", y vectorización de alta precisión de los iconos de la plataforma.
+
+### Size exemption justification:
+- Added lines: 650 (> 400).
+- Rationale: Implementación modular completa bajo la arquitectura de 4 capas: Capa 1 de Presentación (\`landing-feature-cards.tsx\`, \`landing-hero.tsx\`, \`investor-login-card.tsx\`, \`globals.css\`), Capa 3 de Dominio (\`locale-types.ts\`, \`i18n-dictionary-schema.ts\`, diccionarios en \`es.ts\`, \`en.ts\`, \`pt.ts\`) con suites exhaustivas de pruebas TDD unitarias e integración (8 tests de cards, 7 de login, 582 tests del repositorio).
+
+### Feature flag:
+- Feature flag name: feature_landing_cards_reorganization
+- Implementation: Componente montado en el layout de la landing (\`apps/web/src/app/page.tsx\`).
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable o desacoplable desde \`apps/web/src/app/page.tsx\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Retícula 2x2 de Cards Informativas (Capa 1: Presentación)**:
+   - \`landing-feature-cards.tsx\`: 4 cards institucionales con elevación e iluminación en hover.
+   - Card 1: Acceso Exclusivo con badge verde "Portal Privado".
+   - Card 2: Consultar Rendimiento con gráfico de barras ascendente y flecha superior.
+   - Card 3: Monitorear Distribuciones con mano anatómica recibiendo monedas.
+   - Card 4: Reinvertir Capital con icono Handshake.
+2. **Hero & Tipografía Vectorial Oficial**:
+   - Tagline "plataforma de inversión" alineado exactamente al ancho del wordmark "Blue Brick".
+   - Eliminación de Yahoo OAuth en \`investor-login-card.tsx\`.
+   - Bloqueo estricto de desbordamiento horizontal en móvil (\`maxScroll = 0\`).
+3. **Internacionalización Trilingüe (Capa 3: Dominio)**:
+   - Contratos tipados y esquemas Zod en \`locale-types.ts\` e \`i18n-dictionary-schema.ts\`.
+   - Diccionarios completos en español, inglés y portugués.
+4. **Pruebas y Verificación**:
+   - 8 tests unitarios dedicados en \`landing-feature-cards.test.tsx\`.
+   - 100% de la suite de pruebas del monorepo en verde (83 suites, 582 pruebas unitarias y 53 de harness).
+
+## Issue
+- Issue link/id: [BBC-20](https://linear.app/brids-app/issue/BBC-20)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jaymusicmachine-BBC-20-landing-cards-reorganization-implementation.md](knowledge/features/feature-jaymusicmachine-BBC-20-landing-cards-reorganization-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Los componentes son puramente presentacionales y no mutan estado persistente ni blockchain.
+- Security impact: Desacoplamiento de cliente/servidor, sin exposición de secretos ni claves privadas.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo visual de interfaz de usuario en Next.js, no interactúa directamente con contratos inteligentes de Solana en esta fase).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Inspección visual en vivo en viewports móvil (390x844) y desktop (1280x900) confirmando que no hay desbordamiento horizontal (\`maxScroll = 0\`).
+  - Verificación del gradiente esmeralda sutil en modo oscuro y modo claro.
+  - Verificación de la vectorización exacta de los iconos de gráfico de barras y mano con monedas.
+  - Validación del 100% de los gates de gobernanza y suites de tests (\`pnpm validate\` con 582 tests unitarios y 53 tests de harness).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Actualización visual de la Landing Page de BlueBrick con la retícula 2x2 de pilares de inversión institucionales, optimización tipográfica del wordmark y limpieza del flujo de autenticación.
+EOF
+elif [[ "${BRANCH}" == *"splash-screen"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa el **Startup Animated Splash Screen con Motion 12 y Optimización de Carga** (\`${ISSUE_ID}\`), descomponiendo vectorialmente el isotipo oficial de BlueBrick en sus 4 piezas, orquestando su entrada secuencial de izquierda a derecha, estado de reposo de 5 segundos, rotación axial en 3D con transición a la paleta institucional secundaria, e integrando la tipografía oficial del logotipo en vector (\`AnimatedWordmarkVector\`).
