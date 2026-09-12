@@ -57,6 +57,12 @@ Este Pull Request implementa el **Startup Animated Splash Screen con Motion 12 y
    - 100% de la suite de pruebas del monorepo en verde (82 archivos, 574 pruebas).
    - Validaciones de arquitectura, licencias y gobernanza documental aprobadas sin errores.
 
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
 ## Riesgos
 - Main risks introduced by this PR: Ninguno en tiempo de ejecución. El splash screen se desmonta limpiamente mediante React Portal y no interfiere con la jerarquía de rutas.
 - Security impact: Manejo seguro de Web Storage con fallback en memoria sin almacenamiento de credenciales sensibles.
@@ -88,7 +94,7 @@ Este Pull Request implementa el **Startup Animated Splash Screen con Motion 12 y
 - [x] \`pnpm test:harness\` passed (53 tests)
 - [x] Required docs were updated for touched scopes
 EOF
-elif [[ "${ISSUE_ID}" == "BBC-21" || "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
+elif [[ "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la infraestructura completa y de alta resiliencia para la sincronización del Dashboard de Administración mediante **Google Drive Webhook Ingestion con Cooldown Configurable y Trailing-Edge Debouncing en Google Apps Script** (\`BBC-021\`), bajo la estricta arquitectura de 4 capas Feature-Driven Design (FDD) y respetando las cuotas de Vercel Hobby (límite de 1 cron diario).
