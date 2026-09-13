@@ -124,9 +124,9 @@ describe("BBC-23: Zero-FOUC Splash Startup Curtain & Loading Order", () => {
       const onComplete = vi.fn();
       render(<BrandSplashScreen onComplete={onComplete} forceShow={true} />);
 
-      // Act: Fast-forward through entrance (1.2s), hold (5s), flip (1s), exit (0.6s)
+      // Act: Fast-forward through entrance (1.2s), hold (1.0s), flip (0.5s), exit (0.3s)
       act(() => {
-        vi.advanceTimersByTime(1200 + 5000 + 1000 + 600);
+        vi.advanceTimersByTime(1200 + 1000 + 500 + 300);
       });
 
       // Assert: onComplete was called and splash overlay is dismissed

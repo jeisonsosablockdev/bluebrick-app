@@ -37,7 +37,7 @@ const stageVariants: Variants = {
     rotateY: 180,
     scale: 1.05,
     transition: {
-      duration: 0.8,
+      duration: 0.45,
       ease: [0.34, 1.56, 0.64, 1], // Spring-like overshoot ease
     },
   },
@@ -45,7 +45,7 @@ const stageVariants: Variants = {
     rotateY: 180,
     scale: 0.92,
     transition: {
-      duration: 0.5,
+      duration: 0.28,
       ease: [0.7, 0, 0.84, 0],
     },
   },
@@ -91,7 +91,7 @@ const pieceVariants: Variants = {
     opacity: 0,
     scale: 0.92,
     transition: {
-      duration: 0.5,
+      duration: 0.28,
       ease: [0.7, 0, 0.84, 0],
     },
   },

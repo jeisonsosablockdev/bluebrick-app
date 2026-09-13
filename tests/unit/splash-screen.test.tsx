@@ -168,22 +168,22 @@ describe("BBC-21: Brand Splash Screen & Isotype Motion Choreography", () => {
       expect(onCompleteSpy).not.toHaveBeenCalled();
       expect(screen.getByTestId("brand-splash-screen")).toBeInTheDocument();
 
-      // Step 3: Advance through 5000ms holding phase -> flipping
-      act(() => {
-        vi.advanceTimersByTime(5000);
-      });
-      expect(onCompleteSpy).not.toHaveBeenCalled();
-      expect(screen.getByTestId("brand-splash-screen")).toBeInTheDocument();
-
-      // Step 4: Advance through 1000ms flipping phase -> exiting
+      // Step 3: Advance through 1000ms holding phase -> flipping
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(onCompleteSpy).not.toHaveBeenCalled();
+      expect(screen.getByTestId("brand-splash-screen")).toBeInTheDocument();
 
-      // Step 5: Advance through 600ms exiting phase -> completed
+      // Step 4: Advance through 500ms flipping phase -> exiting
       act(() => {
-        vi.advanceTimersByTime(600);
+        vi.advanceTimersByTime(500);
+      });
+      expect(onCompleteSpy).not.toHaveBeenCalled();
+
+      // Step 5: Advance through 300ms exiting phase -> completed
+      act(() => {
+        vi.advanceTimersByTime(300);
       });
 
       // Complete lifecycle finished
