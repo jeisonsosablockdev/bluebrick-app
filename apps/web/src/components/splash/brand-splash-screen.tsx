@@ -39,6 +39,7 @@ export function BrandSplashScreen({
       <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
+            id="brand-splash-curtain"
             key="brand-splash-overlay"
             role="dialog"
             aria-modal="true"
@@ -48,7 +49,7 @@ export function BrandSplashScreen({
             animate={{ opacity: 1 }}
             exit={{
               opacity: 0,
-              transition: { duration: 0.6, ease: "easeInOut" },
+              transition: { duration: 0.3, ease: "easeInOut" },
             }}
             style={{
               position: "fixed",

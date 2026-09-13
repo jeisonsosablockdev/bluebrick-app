@@ -10,7 +10,7 @@ import type { SplashOptimizationConfig, SplashPhaseSchedule } from "./types";
  * Default optimization and timing configuration.
  */
 export const DEFAULT_SPLASH_OPTIMIZATION_CONFIG: SplashOptimizationConfig = {
-  holdDurationMs: 5000,
+  holdDurationMs: 1000,
   sessionStorageKey: "bluebrick:splash:viewed",
   bypassOnRepeatVisit: true,
   criticalRoutes: ["/dashboard", "/auth/login"],
@@ -20,18 +20,18 @@ export const DEFAULT_SPLASH_OPTIMIZATION_CONFIG: SplashOptimizationConfig = {
 /**
  * Computes exact timing milestones and total duration for all state machine phases.
  *
- * @param holdDurationMs - Customizable hold duration in milliseconds (default: 5000ms)
+ * @param holdDurationMs - Customizable hold duration in milliseconds (default: 1000ms)
  * @returns Fully resolved SplashPhaseSchedule
  */
-export function calculateSplashSchedule(holdDurationMs: number = 5000): SplashPhaseSchedule {
+export function calculateSplashSchedule(holdDurationMs: number = 1000): SplashPhaseSchedule {
   // Step 1: Enforce non-negative hold duration and calculate cumulative lifecycle duration
   const hold = Math.max(0, holdDurationMs);
   return {
     enteringDurationMs: 1200,
     holdDurationMs: hold,
-    flippingDurationMs: 1000,
-    exitingDurationMs: 600,
-    totalDurationMs: 1200 + hold + 1000 + 600,
+    flippingDurationMs: 500,
+    exitingDurationMs: 300,
+    totalDurationMs: 1200 + hold + 500 + 300,
   };
 }
 

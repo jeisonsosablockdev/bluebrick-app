@@ -51,7 +51,7 @@ const wordmarkVariants: Variants = {
     opacity: 0,
     scale: 0.94,
     transition: {
-      duration: 0.5,
+      duration: 0.28,
       ease: [0.7, 0, 0.84, 0],
     },
   },

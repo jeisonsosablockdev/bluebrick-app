@@ -4,9 +4,11 @@
  */
 
 export * from "./brand-splash-screen";
+export * from "./splash-curtain";
 export * from "./animated-isotype-vector";
 export * from "./animated-wordmark-vector";
 export * from "./splash-portal";
 export * from "./use-splash-screen";
 export * from "./splash-provider";
+
 

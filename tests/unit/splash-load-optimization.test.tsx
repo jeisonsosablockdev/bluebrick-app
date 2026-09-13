@@ -22,30 +22,30 @@ import {
 
 describe("BBC-21: Splash Load Optimization & Storage Pipelines", () => {
   describe("Splash Schedule Calculations (@spec BBC-21-REQ-05)", () => {
-    it("should accurately compute total elapsed time including the mandatory 5s hold duration", () => {
-      // Step 1: Default 5000ms hold
-      const schedule = calculateSplashSchedule(5000);
+    it("should accurately compute total elapsed time with default 1s hold duration and new phase timings", () => {
+      // Step 1: Default 1000ms hold
+      const schedule = calculateSplashSchedule();
 
       expect(schedule.enteringDurationMs).toBe(1200);
-      expect(schedule.holdDurationMs).toBe(5000);
-      expect(schedule.flippingDurationMs).toBe(1000);
-      expect(schedule.exitingDurationMs).toBe(600);
+      expect(schedule.holdDurationMs).toBe(1000);
+      expect(schedule.flippingDurationMs).toBe(500);
+      expect(schedule.exitingDurationMs).toBe(300);
 
-      // Total duration must equal sum of all 4 phases: 1200 + 5000 + 1000 + 600 = 7800ms
-      expect(schedule.totalDurationMs).toBe(7800);
+      // Total duration must equal sum of all 4 phases: 1200 + 1000 + 500 + 300 = 3000ms (3.0s)
+      expect(schedule.totalDurationMs).toBe(3000);
     });
 
     it("should dynamically recalculate total elapsed time when custom hold duration is provided", () => {
-      const schedule = calculateSplashSchedule(3000);
+      const schedule = calculateSplashSchedule(2000);
 
-      expect(schedule.holdDurationMs).toBe(3000);
-      expect(schedule.totalDurationMs).toBe(1200 + 3000 + 1000 + 600);
+      expect(schedule.holdDurationMs).toBe(2000);
+      expect(schedule.totalDurationMs).toBe(1200 + 2000 + 500 + 300);
     });
 
     it("should enforce non-negative hold durations", () => {
       const schedule = calculateSplashSchedule(-500);
       expect(schedule.holdDurationMs).toBe(0);
-      expect(schedule.totalDurationMs).toBe(1200 + 0 + 1000 + 600);
+      expect(schedule.totalDurationMs).toBe(1200 + 0 + 500 + 300);
     });
   });
 

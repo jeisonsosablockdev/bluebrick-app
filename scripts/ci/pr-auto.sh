@@ -11,10 +11,12 @@ if [[ -z "${ISSUE_ID}" ]]; then
   ISSUE_ID="$(echo "${BRANCH}" | grep -oE 'BRI-[0-9]+' | head -1 || echo "BRI-186")"
 fi
 
-if [[ "${BRANCH}" == *"landing-cards-reorganization"* || "${BRANCH}" == *"landing"* ]]; then
-  DEFAULT_TITLE="feat(landing): 2x2 value proposition feature cards grid and hero alignment (${ISSUE_ID})"
+if [[ "${BRANCH}" == *"splash-fouc"* || "${ISSUE_ID}" == "BBC-23" ]]; then
+  DEFAULT_TITLE="fix(splash): zero-FOUC startup curtain, head session pre-detection and SSR coverage (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"splash-performance"* || "${ISSUE_ID}" == "BBC-22" ]]; then
   DEFAULT_TITLE="fix(splash): startup performance optimization, dynamic bundle decoupling and GPU compositing (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"landing-cards-reorganization"* || "${BRANCH}" == *"landing"* ]]; then
+  DEFAULT_TITLE="feat(landing): 2x2 value proposition feature cards grid and hero alignment (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"splash-screen"* ]]; then
   DEFAULT_TITLE="feat(splash): animated brand startup screen with motion 12 and load optimization (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"images-drive-folder-ingestion"* ]]; then

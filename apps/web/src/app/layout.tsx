@@ -5,6 +5,7 @@
  */
 
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import { Providers } from "./providers";
@@ -137,10 +138,24 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`dark ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <StructuredData />
+        {/* Step 0: Pre-paint session detection script to eliminate FOUC on repeat visits */}
+        <Script
+          id="splash-session-bypass"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(sessionStorage.getItem("bluebrick:splash:viewed")==="true"||sessionStorage.getItem("bluebrick_splash_viewed")==="true"){document.documentElement.classList.add("splash-bypassed");}}catch(e){}})();`,
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.splash-bypassed #brand-splash-curtain,.splash-bypassed [data-testid="brand-splash-screen"]{display:none!important;}`,
+          }}
+        />
       </head>
       <body className="bg-neutral-950 text-neutral-100 antialiased selection:bg-[#C41230] selection:text-[#EDF1F5] font-sans">
         <AuthKitProvider>
