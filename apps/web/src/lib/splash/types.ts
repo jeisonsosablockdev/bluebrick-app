@@ -167,6 +167,18 @@ export interface BrandSplashScreenProps {
 }
 
 /**
+ * Props for the SSR Shell Curtain presentation component.
+ */
+export interface SplashCurtainProps {
+  /** Optional container CSS class name */
+  readonly className?: string;
+  /** Optional inline styles for curtain customization */
+  readonly style?: CSSProperties;
+  /** Child elements enclosed within the curtain overlay */
+  readonly children?: ReactNode;
+}
+
+/**
  * Props for the SSR-safe SplashPortal presentation wrapper.
  */
 export interface SplashPortalProps {

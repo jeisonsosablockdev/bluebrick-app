@@ -291,3 +291,10 @@ html.light .dash-sticky-header {
   }
 }
 
+/* Zero-FOUC Splash Curtain Bypass on Repeat Visits */
+.splash-bypassed #brand-splash-curtain,
+.splash-bypassed [data-testid="brand-splash-screen"] {
+  display: none !important;
+}
+
+

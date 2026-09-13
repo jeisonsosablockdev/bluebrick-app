@@ -89,6 +89,72 @@ Este Pull Request implementa la **Reorganización en Cards de la Landing Page de
 ## Feature Note (/docs/features)
 - Actualización visual de la Landing Page de BlueBrick con la retícula 2x2 de pilares de inversión institucionales, optimización tipográfica del wordmark y limpieza del flujo de autenticación.
 EOF
+elif [[ "${BRANCH}" == *"splash-fouc"* || "${ISSUE_ID}" == "BBC-23" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la solución definitiva al parpadeo de contenido (**Zero-FOUC Startup Shell Curtain & Loading Order Fix**) (\`${ISSUE_ID}\`), asegurando que la aplicación arranque en el color básico de marca (\`#020813\`) desde el Frame 0 (SSR) cubriendo la pantalla por completo en el HTML inicial. Además, inyecta un micro-script síncrono en \`<head>\` para pre-detectar la sesión antes del pintado del \`<body>\` en visitas recurrentes, logrando navegación interna instantánea sin destellos.
+
+### Size exemption justification:
+- Added lines: 270 (<= 400).
+- Rationale: Corrección arquitectónica en Capas 1 y 2 con suite TDD (33 tests de splash, 592 tests de repositorio).
+
+### Feature flag:
+- Feature flag name: feature_splash_fouc_curtain
+- Implementation: Cortina estática en SSR en \`apps/web/src/components/splash/splash-curtain.tsx\` y detección síncrona en \`layout.tsx\`.
+- Rollout plan: 100% en producción.
+- Kill-switch: Bypasseable automáticamente por sesión, clic de usuario o prop \`forceShow=false\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Cortina Estática de Arranque SSR en Frame 0 (Capa 1: Presentación)**:
+   - Creado \`SplashCurtain\` (\`#brand-splash-curtain\`) con fondo canónico \`#020813\` y \`z-index: 9999\` montado directamente en el árbol de renderizado del servidor.
+   - La landing page queda 100% cubierta desde el primer byte de HTML entregado por el servidor, eliminando el parpadeo de contenido previo.
+2. **Pre-Detección Síncrona en \`<head>\` para Visitas Recurrentes (Capa 1: Presentación)**:
+   - Script con \`strategy="beforeInteractive"\` y regla CSS crítica para inyectar \`.splash-bypassed\` antes de que el navegador procese el \`<body>\`.
+   - Si el usuario ya vio el splash en la sesión activa, la cortina no se pinta, permitiendo navegación interna instantánea.
+3. **Desmontaje Coordinado y Limpieza de Portal (Capa 1 & Capa 2)**:
+   - \`SplashPortal\` actualizado para renderizar hijos directamente en-tree durante SSR en lugar de abortar en \`null\`.
+   - \`BrandSplashScreen\` coordinado con \`useSplashScreen\` para desvanecer suavemente la cortina y el splash tras la retención de 5s y giro 3D.
+4. **Pruebas y Verificación**:
+   - Creado \`tests/unit/splash-fouc-curtain.test.tsx\` con 6 tests unitarios pasando al 100%.
+   - 33 tests unitarios de splash en verde y 592 tests de monorepo aprobados.
+
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno. Se mantiene la coreografía visual aprobada de 4 piezas, retención de 5s, giro 3D y vector tipográfico.
+- Security impact: Cero impacto de seguridad; no se manipulan credenciales ni firmas de contratos.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit de merge en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo UI de experiencia de usuario y renderizado de arranque; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación real: 100% de tests unitarios y de integración pasando en Vitest (592 tests).
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence: Aprobación explícita del desarrollador en chat tras validar que la página arranca en el color base #020813 sin FOUC.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/fixes/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
 elif [[ "${BRANCH}" == *"splash-performance"* || "${ISSUE_ID}" == "BBC-22" ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary

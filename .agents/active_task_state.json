@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "task_id": "BBC-22",
-  "branch": "bugfix/jaymusicmachine-BBC-22-splash-performance-optimization",
+  "task_id": "BBC-23",
+  "branch": "bugfix/jaymusicmachine-BBC-23-splash-fouc-order-fix",
   "current_phase": "PHASE_8_HUMAN_MERGE_APPROVED",
   "phases": {
     "PHASE_1_BOOTSTRAP": { "completed": true },
