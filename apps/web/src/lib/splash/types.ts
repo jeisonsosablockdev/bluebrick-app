@@ -109,6 +109,20 @@ export interface SplashContextValue {
 }
 
 /**
+ * Hardware and GPU acceleration configuration options for splash rendering.
+ */
+export interface SplashGpuAccelerationConfig {
+  /** 3D Perspective distance in pixels (canonical: 800) */
+  readonly perspective: number;
+  /** CSS transform-style property for nested 3D scene composition */
+  readonly transformStyle: "preserve-3d" | "flat";
+  /** Hardware layer promotion hint */
+  readonly willChange: "transform" | "auto";
+  /** CSS backface visibility */
+  readonly backfaceVisibility: "visible" | "hidden";
+}
+
+/**
  * Props for the AnimatedIsotypeVector presentation component.
  */
 export interface AnimatedIsotypeVectorProps {
@@ -120,6 +134,8 @@ export interface AnimatedIsotypeVectorProps {
   readonly className?: string;
   /** Optional custom inline style overrides */
   readonly style?: CSSProperties;
+  /** Optional GPU acceleration override toggle */
+  readonly gpuAccelerated?: boolean;
 }
 
 /**
