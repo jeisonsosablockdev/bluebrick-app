@@ -39,6 +39,7 @@ export function BrandSplashScreen({
       <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
+            id="brand-splash-curtain"
             key="brand-splash-overlay"
             role="dialog"
             aria-modal="true"
