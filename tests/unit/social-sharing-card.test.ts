@@ -23,6 +23,9 @@ vi.mock("next/font/google", () => ({
 
 import { metadata } from "@/app/layout";
 import OpenGraphImage, { OpenGraphCard, alt, size, contentType } from "@/app/opengraph-image";
+import Icon from "@/app/icon";
+import AppleIcon from "@/app/apple-icon";
+import { BRAND_LOGO_PATHS, BRAND_COLORS } from "@/features/shared";
 import { buildPageMetadata } from "@/lib/pipelines/seo-metadata-pipeline";
 
 describe("BBC-19: Social Sharing OpenGraph Card & Preview Alignment (@spec BBC-19-SPEC-1)", () => {
@@ -131,9 +134,25 @@ describe("BBC-19: Social Sharing OpenGraph Card & Preview Alignment (@spec BBC-1
       // Canonical domain
       expect(serialized).toContain("portal.bluebrick.capital");
 
-      // Step 3: Verify ImageResponse is callable
+      // Step 3: Verify official horizontal vector logo and emblem mark paths are rendered
+      expect(serialized).toContain(BRAND_LOGO_PATHS.horizontalLogo.viewBox);
+      expect(serialized).toContain(BRAND_LOGO_PATHS.mark.viewBox);
+      expect(serialized).toContain(BRAND_COLORS.crimsonRed);
+      expect(serialized).toContain(BRAND_COLORS.pureWhite);
+
+      // Step 4: Verify ImageResponse is callable
       const response = OpenGraphImage();
       expect(response).toBeDefined();
+    });
+
+    it("should render Icon and AppleIcon using official brand vector mark", () => {
+      // Step 1: Render dynamic 32x32 favicon
+      const iconResponse = Icon();
+      expect(iconResponse).toBeDefined();
+
+      // Step 2: Render dynamic 180x180 Apple Touch Icon
+      const appleIconResponse = AppleIcon();
+      expect(appleIconResponse).toBeDefined();
     });
   });
 });

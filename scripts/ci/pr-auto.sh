@@ -23,8 +23,8 @@ elif [[ "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* || "${ISSUE_ID}" == "
   DEFAULT_TITLE="feat(ai-ingestion): Google Drive Webhook Ingestion & Resilient Ingestion Pipeline (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"deduplicate"* ]]; then
   DEFAULT_TITLE="fix(ai-ingestion): Deduplicate Dashboard Opportunities (${ISSUE_ID})"
-elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
-  DEFAULT_TITLE="fix(seo): OpenGraph Dynamic Card Preview and Social Sharing Metadata Alignment (${ISSUE_ID})"
+elif [[ "${BRANCH}" == *"social-sharing-card-preview"* || "${BRANCH}" == *"fix-social-card"* || "${BRANCH}" == *"social-card"* ]]; then
+  DEFAULT_TITLE="fix(brand): update social sharing card and dynamic icons with official vector logo (${ISSUE_ID})"
 elif [[ "${BRANCH}" == *"invest-now-cta-action"* ]]; then
   DEFAULT_TITLE="fix(dashboard): connected investor lead capture with portfolio brief and i18n feedback (${ISSUE_ID})"
 else

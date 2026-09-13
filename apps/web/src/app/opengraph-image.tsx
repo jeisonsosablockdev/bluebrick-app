@@ -5,7 +5,7 @@
  */
 
 import { ImageResponse } from "next/og";
-import { BRAND_COLORS, BRAND_GEOMETRY } from "@/features/shared";
+import { BRAND_COLORS, BRAND_LOGO_PATHS } from "@/features/shared";
 
 /**
  * Dimensions for the OpenGraph card according to standard social media metadata specifications (1200x630).
@@ -72,25 +72,27 @@ export function OpenGraphCard(): React.ReactElement {
         }}
       />
 
-      {/* Step 3: Top Header Bar with official angled 4-bar emblem and brand title */}
+      {/* Step 3: Top Header Bar with official horizontal BlueBrick vector logo */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              gap: 4,
-              transform: `rotate(${BRAND_GEOMETRY.angleDeg}deg)`,
-            }}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <svg
+            viewBox={BRAND_LOGO_PATHS.horizontalLogo.viewBox}
+            width={280}
+            height={53}
+            style={{ display: "flex" }}
+            aria-label="Blue Brick"
           >
-            <div style={{ width: 8, height: 26, borderRadius: 4, background: BRAND_COLORS.pureWhite }} />
-            <div style={{ width: 8, height: 42, borderRadius: 4, background: BRAND_COLORS.pureWhite }} />
-            <div style={{ width: 8, height: 54, borderRadius: 4, background: BRAND_COLORS.pureWhite }} />
-            <div style={{ width: 8, height: 42, borderRadius: 4, background: BRAND_COLORS.crimsonRed }} />
-          </div>
-          <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: "0.08em", color: BRAND_COLORS.pureWhite }}>
-            BLUEBRICK
-          </span>
+            <path
+              d={BRAND_LOGO_PATHS.horizontalLogo.whitePath}
+              fill={BRAND_COLORS.pureWhite}
+              fillRule="evenodd"
+            />
+            <path
+              d={BRAND_LOGO_PATHS.horizontalLogo.redPath}
+              fill={BRAND_COLORS.crimsonRed}
+              fillRule="evenodd"
+            />
+          </svg>
         </div>
 
         {/* Step 4: Header Tag Pill Badge */}
@@ -113,14 +115,51 @@ export function OpenGraphCard(): React.ReactElement {
         </div>
       </div>
 
-      {/* Step 5: Core Value Proposition Section (Headline & Description) */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 1000 }}>
-        <h1 style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.1, color: BRAND_COLORS.pureWhite, margin: 0 }}>
-          Capital Inteligente. Activos Reales
-        </h1>
-        <p style={{ fontSize: 22, lineHeight: 1.35, color: "#94A3B8", margin: 0 }}>
-          Oportunidades inmobiliarias seleccionadas para crear y hacer crecer tu patrimonio.
-        </p>
+      {/* Step 5: Core Value Proposition Section & Signature Brand Emblem Badge */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 820 }}>
+          <h1 style={{ fontSize: 50, fontWeight: 800, lineHeight: 1.12, color: BRAND_COLORS.pureWhite, margin: 0 }}>
+            Capital Inteligente. Activos Reales
+          </h1>
+          <p style={{ fontSize: 22, lineHeight: 1.35, color: "#94A3B8", margin: 0 }}>
+            Oportunidades inmobiliarias seleccionadas para crear y hacer crecer tu patrimonio.
+          </p>
+        </div>
+
+        {/* Step 5.1: Luxury Glassmorphic Brand Mark Tile */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 140,
+            height: 140,
+            borderRadius: 28,
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
+            flexShrink: 0,
+          }}
+        >
+          <svg
+            viewBox={BRAND_LOGO_PATHS.mark.viewBox}
+            width={96}
+            height={101}
+            style={{ display: "flex" }}
+            aria-label="BlueBrick Brand Mark"
+          >
+            <path
+              d={BRAND_LOGO_PATHS.mark.whitePath}
+              fill={BRAND_COLORS.pureWhite}
+              fillRule="evenodd"
+            />
+            <path
+              d={BRAND_LOGO_PATHS.mark.redPath}
+              fill={BRAND_COLORS.crimsonRed}
+              fillRule="evenodd"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Step 6: 3 Strategic Pillars Grid */}
