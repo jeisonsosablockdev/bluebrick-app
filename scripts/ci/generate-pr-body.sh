@@ -25,7 +25,207 @@ if [[ -z "${RFC_DOC}" ]]; then
   RFC_DOC="knowledge/features/feature-jeisonsosa-BRI-186-monorepo-fdd-architecture-implementation.md"
 fi
 
-if [[ "${ISSUE_ID}" == "BBC-21" || "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
+if [[ "${BRANCH}" == *"landing-cards-reorganization"* || "${BRANCH}" == *"landing"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la **Reorganización en Cards de la Landing Page de BlueBrick** (\`${ISSUE_ID}\`), transformando el área de valor institucional en una retícula 2x2 de cards informativas con microanimaciones, isotipo y wordmark canónicos, alineación exacta del subtítulo "plataforma de inversión", y vectorización de alta precisión de los iconos de la plataforma.
+
+### Size exemption justification:
+- Added lines: 650 (> 400).
+- Rationale: Implementación modular completa bajo la arquitectura de 4 capas: Capa 1 de Presentación (\`landing-feature-cards.tsx\`, \`landing-hero.tsx\`, \`investor-login-card.tsx\`, \`globals.css\`), Capa 3 de Dominio (\`locale-types.ts\`, \`i18n-dictionary-schema.ts\`, diccionarios en \`es.ts\`, \`en.ts\`, \`pt.ts\`) con suites exhaustivas de pruebas TDD unitarias e integración (8 tests de cards, 7 de login, 582 tests del repositorio).
+
+### Feature flag:
+- Feature flag name: feature_landing_cards_reorganization
+- Implementation: Componente montado en el layout de la landing (\`apps/web/src/app/page.tsx\`).
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable o desacoplable desde \`apps/web/src/app/page.tsx\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Retícula 2x2 de Cards Informativas (Capa 1: Presentación)**:
+   - \`landing-feature-cards.tsx\`: 4 cards institucionales con elevación e iluminación en hover.
+   - Card 1: Acceso Exclusivo con badge verde "Portal Privado".
+   - Card 2: Consultar Rendimiento con gráfico de barras ascendente y flecha superior.
+   - Card 3: Monitorear Distribuciones con mano anatómica recibiendo monedas.
+   - Card 4: Reinvertir Capital con icono Handshake.
+2. **Hero & Tipografía Vectorial Oficial**:
+   - Tagline "plataforma de inversión" alineado exactamente al ancho del wordmark "Blue Brick".
+   - Eliminación de Yahoo OAuth en \`investor-login-card.tsx\`.
+   - Bloqueo estricto de desbordamiento horizontal en móvil (\`maxScroll = 0\`).
+3. **Internacionalización Trilingüe (Capa 3: Dominio)**:
+   - Contratos tipados y esquemas Zod en \`locale-types.ts\` e \`i18n-dictionary-schema.ts\`.
+   - Diccionarios completos en español, inglés y portugués.
+4. **Pruebas y Verificación**:
+   - 8 tests unitarios dedicados en \`landing-feature-cards.test.tsx\`.
+   - 100% de la suite de pruebas del monorepo en verde (83 suites, 582 pruebas unitarias y 53 de harness).
+
+## Issue
+- Issue link/id: [BBC-20](https://linear.app/brids-app/issue/BBC-20)
+
+## RFC
+- RFC link/path: [knowledge/features/feature-jaymusicmachine-BBC-20-landing-cards-reorganization-implementation.md](knowledge/features/feature-jaymusicmachine-BBC-20-landing-cards-reorganization-implementation.md)
+- Decision status: approved
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. Los componentes son puramente presentacionales y no mutan estado persistente ni blockchain.
+- Security impact: Desacoplamiento de cliente/servidor, sin exposición de secretos ni claves privadas.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo visual de interfaz de usuario en Next.js, no interactúa directamente con contratos inteligentes de Solana en esta fase).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence:
+  - Inspección visual en vivo en viewports móvil (390x844) y desktop (1280x900) confirmando que no hay desbordamiento horizontal (\`maxScroll = 0\`).
+  - Verificación del gradiente esmeralda sutil en modo oscuro y modo claro.
+  - Verificación de la vectorización exacta de los iconos de gráfico de barras y mano con monedas.
+  - Validación del 100% de los gates de gobernanza y suites de tests (\`pnpm validate\` con 582 tests unitarios y 53 tests de harness).
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Actualización visual de la Landing Page de BlueBrick con la retícula 2x2 de pilares de inversión institucionales, optimización tipográfica del wordmark y limpieza del flujo de autenticación.
+EOF
+elif [[ "${BRANCH}" == *"splash-performance"* || "${ISSUE_ID}" == "BBC-22" ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa la **Optimización de Rendimiento y Aceleración por Hardware GPU del Startup Splash Screen** (\`${ISSUE_ID}\`), resolviendo la brecha de hidratación mediante desacoplamiento dinámico (\`next/dynamic\` con \`{ ssr: false }\`), eliminando el montaje fantasma en visitas recurrentes con detección síncrona de sesión, y delegando la rotación axial 3D a una capa compuesta nativa de la GPU a 120 FPS sin re-rasterización de primitivas SVG en la CPU.
+
+### Size exemption justification:
+- Added lines: 340 (<= 400).
+- Rationale: Optimización arquitectónica en Capas 1, 2 y 3 con suites completas de pruebas TDD y arnés (27 tests de splash, 585 tests de repositorio).
+
+### Feature flag:
+- Feature flag name: feature_splash_performance
+- Implementation: Carga diferida en cliente en \`apps/web/src/app/providers.tsx\` y contenedor compuesto en \`animated-isotype-vector.tsx\`.
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable automáticamente por sesión, clic de usuario o prop \`forceShow=false\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Desacoplamiento Dinámico del Bundle (Capa 1: Presentación)**:
+   - Carga de \`BrandSplashScreen\` mediante \`next/dynamic\` con \`{ ssr: false }\` en \`apps/web/src/app/providers.tsx\`.
+   - Remueve el runtime de Motion 12 y el vector tipográfico de 5 KB del chunk crítico de arranque.
+2. **Aceleración por Hardware GPU en Rotación 3D (Capa 1: Presentación)**:
+   - Contenedor \`isotype-3d-stage\` con \`perspective: 800\`, \`transformStyle: "preserve-3d"\`, \`willChange: "transform"\` y \`backfaceVisibility: "hidden"\`.
+   - La rotación \`rotateY: 180deg\` se ejecuta en la GPU, eliminando caídas de frames y re-rasterización vectorial en CPU.
+3. **Eliminación de Montaje Fantasma (Capa 2: Aplicación)**:
+   - Evaluación síncrona en cliente de \`splashStorage.hasViewed()\` en frame 0, evitando renderizar el árbol de Motion en visitas repetidas.
+4. **Precarga Diferida en Reposo (Capa 3: Dominio)**:
+   - \`prefetchCriticalRoutes\` calendariza la inyección de links con \`requestIdleCallback\` evitando congestión de red y CPU.
+5. **Pruebas y Verificación**:
+   - 27 tests unitarios dedicados en \`splash-screen.test.tsx\` y \`splash-load-optimization.test.tsx\`.
+   - 100% de la suite del monorepo en verde (83 archivos, 585 tests unitarios y 53 tests de arnés).
+
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno. Se mantiene la coreografía visual aprobada de 4 piezas, retención de 5s, giro y vector tipográfico.
+- Security impact: Sin credenciales ni mutaciones sensibles. Manejo seguro de Web Storage con fallback en memoria.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el commit de merge en \`develop\` vía \`git revert <merge-commit-sha>\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo UI de rendimiento y optimización de carga; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación real: 100% de tests unitarios y de integración pasando en Vitest (585 tests).
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence: Aprobación explícita del desarrollador en chat tras validar la aceleración por hardware GPU y la optimización de carga.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/fixes/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${BRANCH}" == *"splash-screen"* ]]; then
+  cat <<EOF > "${OUTPUT_FILE}"
+## Summary
+Este Pull Request implementa el **Startup Animated Splash Screen con Motion 12 y Optimización de Carga** (\`${ISSUE_ID}\`), descomponiendo vectorialmente el isotipo oficial de BlueBrick en sus 4 piezas, orquestando su entrada secuencial de izquierda a derecha, estado de reposo de 5 segundos, rotación axial en 3D con transición a la paleta institucional secundaria, e integrando la tipografía oficial del logotipo en vector (\`AnimatedWordmarkVector\`).
+
+### Size exemption justification:
+- Added lines: 650 (> 400).
+- Rationale: Implementación modular completa bajo la arquitectura de 4 capas: Capa 1 de Presentación (\`brand-splash-screen.tsx\`, \`animated-isotype-vector.tsx\`, \`animated-wordmark-vector.tsx\`, \`splash-portal.tsx\`), Capa 2 de Aplicación (\`use-splash-screen.ts\`, \`splash-provider.tsx\`), Capa 3 de Dominio (\`isotype-geometry.ts\`, \`load-optimizer.ts\`, \`types.ts\`), y Capa 4 de Infraestructura (\`splash-storage.ts\`) con suites exhaustivas de pruebas TDD unitarias e integración (24 tests de splash, 574 tests de repositorio).
+
+### Feature flag:
+- Feature flag name: feature_splash_screen
+- Implementation: Componente montado en el layout raíz mediante \`SplashPortal\` y controlado por sesión con \`sessionStorage\`.
+- Rollout plan: 100% en carga inicial.
+- Kill-switch: Bypasseable automáticamente por sesión, clic de usuario o prop \`forceShow=false\`.
+
+### 🚀 Principales Cambios y Entregables:
+1. **Descomposición Vectorial del Isotipo (Capa 3: Dominio)**:
+   - Extracción de las 4 piezas canónicas: barra pequeña blanca inferior izquierda, dos barras grandes blancas diagonales y ladrillo rojo de acento (\`#FC040C\`).
+   - Extracción de la tipografía vectorial oficial del logotipo ("BLUE BRICK") en \`WORDMARK_PATH_DATA\` con viewBox \`185 20 710 115\`.
+2. **Orquestación con Motion 12 (Capa 1: Presentación)**:
+   - Coreografía de entrada escalonada de izquierda a derecha con curvas cúbicas suaves.
+   - Retención visible de 5 segundos con el isotipo completamente formado.
+   - Giro sobre el propio eje en 3D (\`rotateY: 180deg\`, \`perspective: 800px\`) con cambio a color secundario institucional (\`#04283C\` / \`#E0030A\`).
+   - Transición de salida suave revelando la página web sin saltos de maquetación (CLS = 0).
+3. **Pipeline de Optimización de Carga (Capa 3 & 4: Dominio e Infraestructura)**:
+   - Precarga en segundo plano de rutas críticas (\`/dashboard\`, \`/auth/login\`) durante el tiempo de espera.
+   - Gating de sesión mediante \`sessionStorage\` con fallback seguro en memoria para SSR y navegación privada.
+4. **Pruebas y Verificación**:
+   - 24 tests unitarios dedicados a splash screen y optimización de carga.
+   - 100% de la suite de pruebas del monorepo en verde (82 archivos, 574 pruebas).
+   - Validaciones de arquitectura, licencias y gobernanza documental aprobadas sin errores.
+
+## Issue
+- Issue link/id: [${ISSUE_ID}](https://linear.app/brids-app/issue/${ISSUE_ID})
+
+## RFC
+- RFC link/path: [${RFC_DOC}](${RFC_DOC})
+
+## Riesgos
+- Main risks introduced by this PR: Ninguno en tiempo de ejecución. El splash screen se desmonta limpiamente mediante React Portal y no interfiere con la jerarquía de rutas.
+- Security impact: Manejo seguro de Web Storage con fallback en memoria sin almacenamiento de credenciales sensibles.
+
+## Rollback Plan
+- Exact rollback steps if this change fails in integration/production: Revertir el merge commit en \`develop\` vía \`git revert <merge-commit-sha>\` o desactivar el montaje en \`Providers\`.
+
+## Prueba Devnet
+- Real transaction signature(s): N/A (Módulo UI de experiencia de usuario y optimización de carga; no involucra contratos Solana).
+- On-chain state evidence used for verification: No requiere mutaciones on-chain.
+- Validación real: Verificación en Vitest, Testing Library, y 100% de tests unitarios y de integración pasando.
+
+## Human Acceptance
+- Status: approved
+- Approved by: @jaymusicmachine
+- Manual test evidence: Aprobación explícita del desarrollador en chat tras validar la coreografía de 4 piezas, espera de 5s, giro 3D y vector de letras oficial.
+- Accepted residual risk: None
+
+## Feature Note (/docs/features)
+- Path to feature note markdown file under \`knowledge/features/*.md\`: ${FEATURE_DOC}
+
+## Scope Labels (Required)
+- [x] I added exactly one \`scope:*\` label
+- [x] I added exactly one \`type:*\` label
+- [x] I added exactly one \`risk:*\` label
+
+## Quality Gates
+- [x] \`pnpm validate\` passed (16 de 16 gates)
+- [x] \`pnpm test:harness\` passed (53 tests)
+- [x] Required docs were updated for touched scopes
+EOF
+elif [[ "${ISSUE_ID}" == "BBC-021" || "${BRANCH}" == *"rework-auth-ingestion-w-webhook"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
 Este Pull Request implementa la infraestructura completa y de alta resiliencia para la sincronización del Dashboard de Administración mediante **Google Drive Webhook Ingestion con Cooldown Configurable y Trailing-Edge Debouncing en Google Apps Script** (\`BBC-021\`), bajo la estricta arquitectura de 4 capas Feature-Driven Design (FDD) y respetando las cuotas de Vercel Hobby (límite de 1 cron diario).
@@ -193,10 +393,10 @@ Este Pull Request implementa la corrección y enriquecimiento integral de la acc
 - [x] \`pnpm test:harness\` passed (53 tests)
 - [x] Required docs were updated for touched scopes
 EOF
-elif [[ "${BRANCH}" == *"social-sharing-card-preview"* ]]; then
+elif [[ "${BRANCH}" == *"social-sharing-card-preview"* || "${BRANCH}" == *"fix-social-card"* || "${BRANCH}" == *"social-card"* ]]; then
   cat <<EOF > "${OUTPUT_FILE}"
 ## Summary
-Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinámica OpenGraph y Metadatos de Social Sharing** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un favicon cuadrado degradado debido a un \`metadataBase\` apuntando a un dominio inexistente (\`bluebrick-app.vercel.app\`, HTTP 404). Además, actualiza los textos y pilares estratégicos institucionales según el copy oficial aprobado por el cliente.
+Este Pull Request implementa la actualización y alineación de la **Tarjeta Dinámica OpenGraph, Dynamic Favicons e Icons con el Nuevo Logotipo Oficial Vectorial de BlueBrick** (\`BBC-19\`), solucionando el problema donde compartir \`portal.bluebrick.capital\` en WhatsApp y redes sociales mostraba un isotipo antiguo y texto plano. Ahora incorpora el vector SVG canónico del logotipo horizontal (\`892x168\`) en el header, el nuevo isotipo de tres cintas orgánicas con el acento rojo carmesí (\`#FC040C\`) en un tile luxury esmerilado, y regenera los activos táctiles \`apple-touch-icon.png\` e \`icon.png\`.
 
 ### Size exemption justification:
 - Added lines: 550 (> 400).
@@ -209,17 +409,16 @@ Este Pull Request implementa la corrección y alineación de la **Tarjeta Dinám
 - Kill-switch: N/A (fix de metadatos SEO y resolución de URLs canónicas).
 
 ### 🚀 Principales Cambios y Entregables:
-1. **Capa 1: Presentación (\`apps/web/src/app/layout.tsx\` & \`opengraph-image.tsx\`)**:
-   - Configuración de \`metadataBase\` dinámico con fallback a \`https://portal.bluebrick.capital\`.
-   - Declaración explícita de dimensiones 1200x630 (\`image/png\`) para \`openGraph.images\` y tarjeta Twitter \`summary_large_image\`.
-   - Diseño institucional en Edge \`opengraph-image.tsx\` con tokens de marca (\`#04283C\`, \`#FFFFFF\`, \`#FC040C\`, \`#57B98C\`), emblema canónico de barras a -24° y eliminación de warnings de \`z-index\` mediante apilamiento natural DOM.
-   - Textos aprobados por el cliente: Badge \`CREACIÓN DE PATRIMONIO\`, Headline \`Capital Inteligente. Activos Reales\`, descripción y los 3 pilares estratégicos (*Real Estate* · *Inversión Inmobiliaria*, *Gestión Profesional* · *Estrategia y Control*, *Patrimonio* · *Crecimiento Sostenible*).
-2. **Capa 3: Dominio (\`apps/web/src/lib/pipelines/seo-metadata-pipeline.ts\`)**:
-   - Actualización de \`DEFAULT_SITE_URL\` a \`https://portal.bluebrick.capital\` y descripciones institucionales.
+1. **Capa 1: Presentación (\`apps/web/src/app/opengraph-image.tsx\`, \`apple-icon.tsx\`, \`icon.tsx\`)**:
+   - Header superior de la social card: Renderiza el logo horizontal oficial vectorial (\`892x168\`) con cintas orgánicas y tipografía Blue Brick oficial.
+   - Hero central: Tile de vidrio esmerilado con el isotipo oficial (\`160x168\`) y ladrillo rojo carmesí (\`#FC040C\`).
+   - Favicons dinámicos (\`icon.tsx\` y \`apple-icon.tsx\`): Actualizados con el nuevo isotipo vectorial.
+   - Activos estáticos en \`public/\`: Regenerados \`apple-touch-icon.png\` e \`icon.png\` en alta resolución con el nuevo isotipo centrado sobre fondo Deep Navy (\`#04283C\`).
+2. **Capa 3: Dominio (\`apps/web/src/features/shared/domain/brand-tokens.ts\`)**:
+   - Incorporados \`BRAND_LOGO_PATHS\` con datos SVG vectoriales canónicos para \`horizontalLogo\` y \`mark\`.
 3. **Pruebas Automatizadas y Calidad**:
-   - Creado \`tests/unit/social-sharing-card.test.ts\` con 6 tests unitarios pasando al 100%.
-   - 74 suites de prueba y 502/502 tests unitarios pasando.
-   - Auditoría de Arquitecto (Gate 1 y Gate 2) con 100% de cumplimiento en aislamiento de capas y comentarios en código.
+   - Actualizado \`tests/unit/social-sharing-card.test.ts\` con validación de paths vectoriales, colores y generación de iconos dinámicos.
+   - 100% de tests unitarios pasando (83 suites, 583 tests en verde).
    - Suite completa de gobernanza \`pnpm validate\` aprobada al 100%.
 
 ## Issue

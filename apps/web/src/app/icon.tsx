@@ -6,7 +6,7 @@
  */
 
 import { ImageResponse } from "next/og";
-import { BRAND_COLORS, BRAND_GEOMETRY } from "@/features/shared";
+import { BRAND_COLORS, BRAND_LOGO_PATHS } from "@/features/shared";
 
 export const size = {
   width: 32,
@@ -21,7 +21,7 @@ export const contentType = "image/png";
  * @returns ImageResponse containing the rendered favicon
  */
 export default function Icon(): ImageResponse {
-  // Step 1: Render stylized 4-bar BlueBrick emblem inside 32x32 Deep Navy canvas with canonical -24deg rotation
+  // Step 1: Render official BlueBrick brand mark inside 32x32 Deep Navy canvas
   return new ImageResponse(
     (
       <div
@@ -35,21 +35,24 @@ export default function Icon(): ImageResponse {
           borderRadius: 8,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 2,
-            transform: `rotate(${BRAND_GEOMETRY.angleDeg}deg)`,
-          }}
+        {/* Step 2: Render official vector mark */}
+        <svg
+          viewBox={BRAND_LOGO_PATHS.mark.viewBox}
+          width={22}
+          height={23}
+          style={{ display: "flex" }}
         >
-          {/* Step 2: Render 3 structural bars in Pure White (#FFFFFF) */}
-          <div style={{ width: 3, height: 10, borderRadius: 1.5, background: BRAND_COLORS.pureWhite }} />
-          <div style={{ width: 3, height: 16, borderRadius: 1.5, background: BRAND_COLORS.pureWhite }} />
-          <div style={{ width: 3, height: 20, borderRadius: 1.5, background: BRAND_COLORS.pureWhite }} />
-          {/* Step 3: Render accent bar in Crimson Red (#FC040C) */}
-          <div style={{ width: 3, height: 16, borderRadius: 1.5, background: BRAND_COLORS.crimsonRed }} />
-        </div>
+          <path
+            d={BRAND_LOGO_PATHS.mark.whitePath}
+            fill={BRAND_COLORS.pureWhite}
+            fillRule="evenodd"
+          />
+          <path
+            d={BRAND_LOGO_PATHS.mark.redPath}
+            fill={BRAND_COLORS.crimsonRed}
+            fillRule="evenodd"
+          />
+        </svg>
       </div>
     ),
     {

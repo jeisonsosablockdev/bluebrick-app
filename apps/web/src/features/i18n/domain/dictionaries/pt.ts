@@ -35,6 +35,14 @@ export const pt: Dictionary = {
       "Acesse seu portfólio institucional, acompanhe distribuições mensais, consulte a rentabilidade ponderada e reinvista capital em oportunidades exclusivas.",
     securityBadge: "Governança institucional · Máxima segurança e privacidade para investidores",
     footerText: "BlueBrick Platform · Investimentos Imobiliários Fracionados",
+    platformTagline: "plataforma de investimento",
+    greetingHeadline: "Olá, Investidor",
+    portfolioAccessSubtitle: "Acesse seu portfólio...",
+    cardExclusiveAccessTitle: "Acesso Exclusivo",
+    cardExclusiveAccessSubtitle: "Gerencie seus investimentos",
+    cardPerformanceTitle: "Consultar Rendimento",
+    cardDistributionsTitle: "Monitorar Distribuições",
+    cardReinvestTitle: "Reinvestir Capital",
   },
   loginCard: {
     headerTitle: "Acesso do Investidor",
@@ -43,7 +51,7 @@ export const pt: Dictionary = {
     loginSubtitle: "Entre com seu e-mail pessoal ou corporativo para gerenciar seus investimentos.",
     emailLoginButton: "Entrar com seu e-mail",
     disclaimerNote: "Plataforma de Investimentos BlueBrick · Acesso seguro e institucional para investidores verificados.",
-    supportedProvidersLabel: "Compatível com Google, Microsoft, Apple e Yahoo",
+    supportedProvidersLabel: "Compatível com Google, Microsoft e Apple",
   },
   logoutModal: {
     title: "Encerrar sessão?",
